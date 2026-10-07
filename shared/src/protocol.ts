@@ -2,6 +2,7 @@ import type { AvatarLook } from './avatar';
 import type { AcaoCombate, Combate, FichaAmeaca } from './combate/tipos';
 import type { RollResult } from './dice';
 import type { FloorItem, FloorStyle, Hint, ParticleKind, WallItem } from './room';
+import type { ViagemInfo } from './viagem';
 import type { CampaignState, LootKind } from './rpg';
 import type { PapelConta, Role, Session, SessionAction, Token } from './session';
 import type { Documento } from './documentos';
@@ -310,6 +311,8 @@ export interface RoomInfo {
   nevoa?: NevoaCena;
   /** mapa improvisado: a imagem que o mestre subiu, deitada no chão inteiro da cena */
   mapa?: string;
+  /** a Viagem: a van parada na tela e o mundo passando */
+  viagem?: ViagemInfo;
   /** o cliente atual pode construir/editar */
   canBuild: boolean;
   /** o cliente atual é o dono (mestre) */
@@ -328,6 +331,8 @@ export interface SceneInfo {
   users: { id: number; name: string; x: number; y: number }[];
   /** o piso do cômodo: a planta pinta o cômodo na cor dele (ladrilho, carpete, taco...) */
   estilo?: FloorStyle;
+  /** a Viagem (a van): fora da planta */
+  viagem?: boolean;
   /** ao ar livre: a planta desenha o terreno (grama, estrada, água) no lugar da pedra */
   aberto?: boolean;
   terreno?: string;
@@ -420,6 +425,13 @@ export type ClientMsg =
   | { t: 'mapaImprovisado'; nome: string; url: string; largura: number; altura: number; levar?: boolean }
   /** apaga um mapa improvisado (só o mestre): quem estava nele volta para a cena ligada */
   | { t: 'mapaApagar'; roomId: number }
+  /**
+   * a Viagem (só o mestre): `iniciar` leva os agentes (cada um no banco que o mestre escolheu) para a van;
+   * `ajustar` muda o cenário, a hora, a velocidade e o destino; `chegar` leva todos à cena escolhida e a viagem acaba.
+   */
+  | { t: 'viagem'; acao: 'iniciar'; bancos: { tokenId: number; banco: number }[]; cenario?: string; hora?: string; velocidade?: number; destino?: string }
+  | { t: 'viagem'; acao: 'ajustar'; cenario?: string; hora?: string; velocidade?: number; destino?: string }
+  | { t: 'viagem'; acao: 'chegar'; roomId: number }
   | { t: 'setLink'; id: number; roomId: number | null }
   | { t: 'sendTo'; userId: number | 'all'; roomId: number }
   | { t: 'tokenAdd'; name: string; look: AvatarLook; color?: string; capacity?: number }

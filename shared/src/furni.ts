@@ -241,6 +241,10 @@ const FURNI_METERS: FurniDef[] = [
   // a cortina do leito, inteira (06/10): o leito e o soro ficam dentro (as casas vazias). Desde 07/10 o
   // lado de dentro é todo chão (dá para andar em volta do leito); só a fileira da frente é a cortina, que
   // fechada não deixa passar e aberta deixa
+  // a van da Viagem (07/10): só o jogo põe (não aparecem no catálogo). Os bancos olham para a frente do veículo (+x, giro 2)
+  { id: 'van_seat', name: 'Banco da Van', category: 'mobilia', kind: 'van_seat', width: 1, depth: 1, height: 0.5, sit: true, interno: true, rotations: [2], colors: ['#3a3a44', '#55555f'] },
+  { id: 'van_console', name: 'Console da Van', category: 'mobilia', kind: 'van_console', width: 1, depth: 1, height: 0.45, interno: true, rotations: [2], colors: ['#1b1b1f', '#34343c'] },
+  { id: 'van_dash', name: 'Painel da Van', category: 'mobilia', kind: 'van_dash', width: 3, depth: 1, height: 0.55, xray: true, interno: true, rotations: [2], colors: ['#1b1b1f', '#34343c'] },
   { id: 'bed_curtain', name: 'Cortina do Leito', category: 'saude', kind: 'divider', width: 3, depth: 4, height: 2.2, states: 2, openState: 1, xray: true, vazio: [0, 1, 2].flatMap((u) => [0, 1, 2].map((v) => [u, v] as [number, number])), aberto: ['fundo'], rotations: ALL, colors: ['#a8d0b8', '#9aa0a8'], desc: 'O trilho em U com a cortina verde-clara, com espaço para andar em volta do leito. Fechada, a frente fica cerrada; aberta, a cortina fica franzida nos cantos de trás.' },
   { id: 'hospital_bed', name: 'Leito Hospitalar', category: 'saude', kind: 'hospital_bed', width: 1, depth: 3, height: 0.7, rotations: ALL, colors: ['#7fb88a', '#c9ccd0'] },
   { id: 'iv_stand', name: 'Suporte de Soro', category: 'saude', kind: 'iv_stand', width: 1, depth: 1, height: 1.9, rotations: ALL, colors: ['#9aa0a8', '#d8e8f0'] },

@@ -49,6 +49,7 @@ import { Particles } from '../render/particles';
 import { boxSilhouette, Mapper, Painter, pointInPoly, type WBox } from '../render/painter';
 import { buildStatic, doorClipPath, roomBounds, type StaticLayer } from '../render/roomStatic';
 import { versaoTexturas } from '../render/texturas';
+import { MundoViagem } from '../render/viagemMundo';
 import { Celas, escurecerChao, escurecerForma, escuroEm } from './celas';
 import { cmp, sortDrawables, type Drawable } from '../render/sort';
 import {
@@ -356,6 +357,8 @@ export class RoomView {
   private followAt = 0;
   private bubbles = new Bubbles();
   private staticLayer: StaticLayer | null = null;
+  /** a Viagem: o mundo passando por fora da van (só nas cenas de viagem) */
+  private mundoViagem = new MundoViagem();
   private staticKey = '';
   private tilesFrontFirst: [number, number, number][] = [];
   private hits: Hit[] = [];
@@ -482,8 +485,10 @@ export class RoomView {
     if (!this.map) return;
     const b = roomBounds(this.map, !!this.info?.aberto);
     const f = this.frame_();
-    const bw = b.maxX - b.minX + 16;
-    const bh = b.maxY - b.minY + 16;
+    // a Viagem: a van num pedaço do quadro, para o mundo passando aparecer em volta
+    const k = this.info?.viagem ? 2.2 : 1;
+    const bw = (b.maxX - b.minX) * k + 16;
+    const bh = (b.maxY - b.minY) * k + 16;
     const availW = f.w;
     const availH = f.h;
     // zoom contínuo: o quarto preenche o tabuleiro
@@ -1529,11 +1534,21 @@ export class RoomView {
       this.staticLayer = buildStatic(map, scale, this.info.floorStyle, this.info.terreno, !!this.info.aberto);
       this.staticKey = key;
     }
-    ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
+    // a Viagem: o mundo passa por baixo e por fora; a van (e quem está nela) só balança de leve
+    const viagem = this.info.viagem;
+    let balanco = 0;
+    if (viagem) {
+      this.mundoViagem.atualizar(now, viagem);
+      ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
+      this.mundoViagem.chao(ctx, viagem);
+      balanco = this.mundoViagem.balanco(now) * z;
+    }
+    ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, (this.cam.y + balanco) * dpr);
     const st = this.staticLayer!;
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(st.canvas, st.x, st.y, st.w, st.h);
     ctx.imageSmoothingEnabled = true;
+    if (viagem) this.mundoViagem.casco(ctx, viagem);
     // mapa improvisado: a imagem deitada no chão inteiro (a casa x, y vai para o losango dela)
     const imgMapa = imagemDoMapa(this.info.mapa);
     if (imgMapa) {
@@ -2217,6 +2232,14 @@ export class RoomView {
       if (h) hits.push(h);
     }
     this.hits = hits;
+    if (viagem) {
+      this.mundoViagem.frente(ctx);
+      // o que passa de perto é do mundo: não balança com a van
+      ctx.save();
+      ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
+      this.mundoViagem.proximo(ctx, viagem);
+      ctx.restore();
+    }
     // a casa do mouse atrás de um móvel: o contorno tracejado por cima, para ver onde a peça vai parar
     if (this.cursorPorCima && ht && this.mouse.inside && !place) {
       const h = map.standHeight(ht.x, ht.y);
@@ -2322,6 +2345,28 @@ export class RoomView {
     }
 
     this.bubbles.draw(ctx, (wx) => wx * z + this.cam.x, this.vw);
+    if (viagem?.destino) this.faixaDoDestino(viagem.destino);
+  }
+
+  /** O que o mestre escreveu como destino da viagem, numa faixa no alto do tabuleiro (a mesa também lê). */
+  private faixaDoDestino(texto: string) {
+    const ctx = this.ctx;
+    const fr = this.frame_();
+    ctx.save();
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.font = `700 17px ${UI_FONT}`;
+    ctx.textBaseline = 'middle';
+    const w = ctx.measureText(texto).width + 40;
+    const x = Math.round(fr.x + fr.w / 2 - w / 2);
+    const y = Math.round(fr.y + 22);
+    ctx.fillStyle = 'rgba(5,11,20,0.82)';
+    ctx.fillRect(x, y, w, 32);
+    ctx.strokeStyle = 'rgba(233,169,68,0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x + 0.75, y + 0.75, w - 1.5, 30.5);
+    ctx.fillStyle = '#ffd27a';
+    ctx.fillText(texto, x + 20, y + 16.5);
+    ctx.restore();
   }
 
   /** O móvel some na mesa quando todas as casas dele estão na névoa. */

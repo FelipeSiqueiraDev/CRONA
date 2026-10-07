@@ -177,6 +177,13 @@ Feito ainda em 07/10 (commits 6cee4a4 e 926c976):
   cobertura entraram no pacote do Códex dos personagens (etapa 9).
 - **Bug do Descartar:** corrigido (o item cai na cena da peça, na campanha de quem pediu).
 
+Feito ainda em 07/10 (tarde):
+- **A Viagem** (`docs/VIAGEM.md`): o botão VIAGEM leva os agentes para a van preta (o mestre escolhe o banco de cada um, o
+  cenário, a hora e a velocidade); a van fica parada e o mundo passa; fica até o mestre escolher onde chegar. Tudo em código; a
+  arte do Códex é o `PROMPT-VIAGEM.txt` (Lote 3B). **Falta:** a arte entrar, o botão Ilustração, a chuva, o mapa tático da van.
+- **Fazenda:** os 7 pisos do Códex no jogo (isométrico e tático).
+- A pasta da arte reorganizada (`00-COMECE-AQUI.txt`), com os pedidos novos (rituais, prisão inteira, viagem).
+
 Ainda falta (pedido do Felipe):
 - **Quando a arte chegar:**
   - montar a sala de tecnologia cheia e o posto da enfermaria (tirar as duas bancadas e a mesa do

@@ -44,6 +44,8 @@ export class FerramentasMesa {
   private sig = '';
   /** a ferramenta ligada mudou (a aba COMBATE marca os botões dela) */
   aoMudar: ((tipo: Tipo | null) => void) | null = null;
+  /** o botão VIAGEM: a janela de partir (a Shell sabe quem são os agentes) */
+  aoViagem: (() => void) | null = null;
 
   constructor(app: App) {
     this.app = app;
@@ -73,6 +75,12 @@ export class FerramentasMesa {
           { class: 'bv', type: 'button', title: 'Mapa improvisado: suba uma imagem e ela vira uma cena vista de cima', 'aria-label': 'Mapa improvisado', onclick: () => (sfx.click(), abrirMapaImprovisado(app)) },
           pintado('mapa', 'imagem'),
           h('span', null, 'MAPA'),
+        ),
+        h(
+          'button',
+          { class: 'bv', type: 'button', title: 'Viagem: os agentes na van, a estrada passando; fica até você decidir chegar', 'aria-label': 'Viagem', onclick: () => (sfx.click(), this.aoViagem?.()) },
+          arteOu(['/arte/icones/mesa-viagem.png'], ic('van')),
+          h('span', null, 'VIAGEM'),
         ),
       ),
       this.opcoes,

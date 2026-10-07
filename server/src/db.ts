@@ -1,4 +1,4 @@
-import type { AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
+import type { ViagemInfo, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
 import type { Conta } from './contas';
@@ -44,6 +44,8 @@ export interface RoomData {
   nevoa?: NevoaCena;
   /** mapa improvisado: a imagem enviada pelo mestre, no chão inteiro da cena */
   mapa?: string;
+  /** a Viagem: esta cena é a van parada com o mundo passando (docs/VIAGEM.md) */
+  viagem?: ViagemInfo;
 }
 
 export interface TokenData {

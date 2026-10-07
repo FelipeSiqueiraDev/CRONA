@@ -1,6 +1,14 @@
 import crypto from 'node:crypto';
 import type { WebSocket } from 'ws';
 import {
+  BANCOS_VAN,
+  heightmapDaVan,
+  isCenarioViagem,
+  isHoraViagem,
+  moveisDaVan,
+  VAN,
+  type BancoVan,
+  type ViagemInfo,
   DIR_KEYS,
   getLayout,
   MAX_NAME,
@@ -100,6 +108,7 @@ const GM_ONLY = new Set([
   'nevoa',
   'mapaImprovisado',
   'mapaApagar',
+  'viagem',
   'setLink',
   'unlock',
   'relock',
@@ -199,6 +208,8 @@ export class Hotel implements HotelApi {
       (adj.get(b) ?? adj.set(b, new Set()).get(b)!).add(a);
     };
     for (const r of this.rooms.values()) for (const p of r.portals()) link(r.data.id, p.link);
+    // a Viagem pertence à campanha de onde partiu
+    for (const r of this.rooms.values()) if (r.data.viagem) link(r.data.id, r.data.viagem.origem);
     const seen = new Set([roomId]);
     const queue = [roomId];
     while (queue.length) for (const n of adj.get(queue.shift()!) ?? []) if (!seen.has(n)) (seen.add(n), queue.push(n));
@@ -969,6 +980,7 @@ export class Hotel implements HotelApi {
       portals: r.portals(),
       users: r.userPositions(),
       ...(r.data.floorStyle ? { estilo: r.data.floorStyle } : {}),
+      ...(r.data.viagem ? { viagem: true } : {}),
       ...(r.data.aberto ? { aberto: true, terreno: r.data.terreno, marcos: r.marcos() } : {}),
     }));
     this.ensureLayout(camp, scenes);
@@ -1555,6 +1567,9 @@ export class Hotel implements HotelApi {
       case 'mapaApagar':
         this.mapaApagar(c, m);
         return;
+      case 'viagem':
+        this.viagem(c, m);
+        return;
       case 'join': {
         const room = typeof m.roomId === 'number' ? this.rooms.get(m.roomId) : undefined;
         if (!room) return c.send({ t: 'error', msg: 'Quarto não encontrado.' });
@@ -1840,6 +1855,122 @@ export class Hotel implements HotelApi {
     this.save();
     this.roomChanged();
     if (c.room !== destino) this.enter(c, destino);
+  }
+
+  // ---------- a Viagem (docs/VIAGEM.md) ----------
+
+  private viagem(c: Client, m: Record<string, unknown>) {
+    if (m.acao === 'iniciar') return this.viagemIniciar(c, m);
+    if (m.acao === 'ajustar') return this.viagemAjustar(c, m);
+    if (m.acao === 'chegar') return this.viagemChegar(c, m);
+  }
+
+  /** Os ajustes de uma Viagem que o mestre mandou (o que vier errado fica como estava). */
+  private viagemAjustes(m: Record<string, unknown>, base: ViagemInfo): ViagemInfo {
+    const v = { ...base };
+    if (isCenarioViagem(m.cenario)) v.cenario = m.cenario;
+    if (isHoraViagem(m.hora)) v.hora = m.hora;
+    if (typeof m.velocidade === 'number' && Number.isFinite(m.velocidade)) v.velocidade = Math.max(0, Math.min(1, m.velocidade));
+    if (typeof m.destino === 'string') {
+      const d = m.destino.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 60);
+      if (d) v.destino = d;
+      else delete v.destino;
+    }
+    return v;
+  }
+
+  /** A van parada com o mundo passando: leva os agentes para os bancos que o mestre escolheu e abre a cena para ele e para a mesa. */
+  private viagemIniciar(c: Client, m: Record<string, unknown>) {
+    const de = c.room;
+    if (!de) return c.send({ t: 'error', msg: 'Abra uma cena antes de começar a viagem.' });
+    if (de.data.viagem) return c.send({ t: 'error', msg: 'Já estão em viagem.' });
+    const lista = Array.isArray(m.bancos) ? m.bancos : [];
+    const group = this.sceneGroup(de.data.id);
+    // quem vai e onde senta: cada peça da campanha uma vez, cada banco uma vez
+    const vai: { id: number; name: string; de: RoomInstance; banco: BancoVan }[] = [];
+    const usados = new Set<number>();
+    const viram = new Set<number>();
+    for (const item of lista as { tokenId?: unknown; banco?: unknown }[]) {
+      if (!isInt(item?.tokenId) || !isInt(item?.banco) || usados.has(item.banco) || viram.has(item.tokenId)) continue;
+      const banco = BANCOS_VAN.find((b) => b.id === item.banco);
+      if (!banco) continue;
+      for (const id of group) {
+        const r = this.rooms.get(id);
+        const t = r?.tokenList().find((x) => x.id === item.tokenId);
+        if (!r || !t) continue;
+        vai.push({ id: t.id, name: t.name, de: r, banco });
+        usados.add(banco.id);
+        viram.add(item.tokenId);
+        break;
+      }
+    }
+    if (!vai.length) return c.send({ t: 'error', msg: 'Escolha quem vai e em que banco cada um senta.' });
+    const base: ViagemInfo = { cenario: 'rodovia', hora: 'dia', velocidade: 0.7, origem: de.data.id };
+    let sala = group.map((id) => this.rooms.get(id)).find((r) => r?.data.viagem);
+    if (!sala) {
+      const lugar = de.data.name.includes('·') ? de.data.name.split('·')[0].trim() : '';
+      const data: RoomData = {
+        id: this.db.nextRoomId++,
+        name: lugar ? `${lugar} · Viagem` : 'Viagem',
+        description: 'A van preta na estrada: a van fica parada na tela e o mundo passa por fora.',
+        owner: de.data.owner,
+        heightmap: heightmapDaVan(),
+        door: { x: 1, y: 1, dir: 2 },
+        items: moveisDaVan().map((mv) => ({ id: this.nextItemId(), defId: mv.defId, x: mv.x, y: mv.y, z: 0, rot: mv.rot, state: 0 })),
+        wallItems: [],
+        publicBuild: false,
+        darkness: 0,
+        aberto: true,
+        floorStyle: 'metal',
+        particles: [],
+        viagem: base,
+        ...(de.data.floor ? { floor: de.data.floor } : {}),
+      };
+      this.db.rooms.push(data);
+      sala = new RoomInstance(data, this);
+      this.rooms.set(data.id, sala);
+    }
+    const v = this.viagemAjustes(m, { ...base, ...(sala.data.viagem ?? {}), origem: de.data.id });
+    sala.definirViagem(v);
+    for (const x of vai) {
+      const t = x.de.takeToken(x.id);
+      if (t) sala.putToken({ ...t, x: x.banco.x, y: x.banco.y, dir: VAN.giroBanco }, null);
+    }
+    this.log(sala.data.id, 'scene', `A viagem começou: ${vai.map((x) => x.name).join(', ')} na van.`);
+    this.save();
+    this.roomChanged();
+    this.enter(c, sala);
+  }
+
+  private viagemAjustar(c: Client, m: Record<string, unknown>) {
+    const r = c.room;
+    if (!r?.data.viagem) return c.send({ t: 'error', msg: 'Isto não é uma viagem.' });
+    r.definirViagem(this.viagemAjustes(m, r.data.viagem));
+    this.save();
+  }
+
+  /** Chegou: todos descem na cena escolhida (na porta dela) e a viagem fecha; a van fica pronta para a próxima. */
+  private viagemChegar(c: Client, m: Record<string, unknown>) {
+    const van = c.room;
+    if (!van?.data.viagem) return c.send({ t: 'error', msg: 'Isto não é uma viagem.' });
+    const dest = isInt(m.roomId) ? this.rooms.get(m.roomId) : undefined;
+    if (!dest || dest.data.viagem) return c.send({ t: 'error', msg: 'Escolha a cena de chegada.' });
+    const vindos = van.tokenList();
+    // outra campanha tem as peças dela: quem chega no lugar delas é o grupo da viagem, e as de antes saem
+    const grupoDest = this.sceneGroup(dest.data.id);
+    if (!grupoDest.includes(van.data.id)) {
+      const charIds = new Set(vindos.map((t) => t.look?.charId).filter((x): x is number => !!x));
+      for (const id of grupoDest) {
+        const r = this.rooms.get(id);
+        if (!r || r === van) continue;
+        for (const t of r.tokenList()) if (t.look?.charId && charIds.has(t.look.charId)) r.takeToken(t.id);
+      }
+    }
+    for (const t of vindos) this.moveToken(van, t.id, dest.data.id);
+    this.log(dest.data.id, 'scene', `Chegaram: ${vindos.map((t) => t.name).join(', ') || 'ninguém'}.`);
+    this.save();
+    this.roomChanged();
+    this.enter(c, dest);
   }
 
   // ---------- personagens ----------

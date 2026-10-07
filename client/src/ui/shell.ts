@@ -47,6 +47,7 @@ import { characterPicker, lookEditor } from './lookEditor';
 import { logIcon, lootIcon } from './lootIcons';
 import { brushSweep, brushWash, bump, countUp, drawStroke, eraseDraw, enter, floatText, flyArc, fxLayer, leave, pencilDraw, pencilShade, reduced, shake, stamp, tilt, typeInto, wait, wipeIn } from './motion';
 import { askNote, promptNote } from './note';
+import { abrirViagem, ViagemPainel } from './viagem';
 import { brushize, paperize, textures, unpaint } from './paperArt';
 import { sfx } from './sfx';
 import { CombateScreen } from './combate';
@@ -292,6 +293,7 @@ export class Shell {
   private abaInterludio: AbaInterludio;
   private app: App;
   private campaign: CampaignState | null = null;
+  private viagemPainel!: ViagemPainel;
   private tokenWin: TokenWin;
   private hintEditor: HintEditor;
   private hintViewer: HintViewer;
@@ -549,6 +551,8 @@ export class Shell {
       /* sem armazenamento: começa com a fileira */
     }
     this.ferramentas = new FerramentasMesa(app);
+    this.ferramentas.aoViagem = () => abrirViagem(app, this.campaign?.party ?? []);
+    this.viagemPainel = new ViagemPainel(app);
     this.abaInterludio = new AbaInterludio(app);
     this.combate.aoFerramentaMesa = (tipo) => this.ferramentas.alternar(tipo, false);
     this.ferramentas.aoMudar = (tipo) => this.combate.marcarFerramentaMesa(tipo);
@@ -558,7 +562,7 @@ export class Shell {
     this.placaEl = h('div', { class: 'board-placa' });
     this.estadoEl = h('div', { class: 'board-estado hidden' });
     const ferr = h('div', { class: 'board-ferr' }, this.ferramentas.el, centro);
-    this.board = h('main', { class: 'board' }, moldura, this.placeBar, zoom, this.placaEl, ferr, this.vistaEl, this.tabOverlay, this.teclado.el);
+    this.board = h('main', { class: 'board' }, moldura, this.placeBar, zoom, this.placaEl, ferr, this.vistaEl, this.viagemPainel.el, this.tabOverlay, this.teclado.el);
 
     // ================= direita =================
     const backboard = h('div', { class: 'backboard', 'aria-hidden': 'true' });
@@ -745,6 +749,7 @@ export class Shell {
   private onRoom() {
     this.marcarVista();
     this.ferramentas.atualizar();
+    this.viagemPainel.atualizar();
     const id = this.app.state.room?.id ?? null;
     if (id !== this.lastRoom) this.planFloor = null;
     if (id !== this.lastRoom && this.lastRoom !== null) this.sceneFade();
@@ -1270,7 +1275,8 @@ export class Shell {
       this.planShown = shown;
       this.renderPlanTabs(floors, shown);
     }
-    const todos = camp.scenes.map((s) => {
+    // a Viagem (a van) não é um lugar da planta
+    const todos = camp.scenes.filter((s) => !s.viagem).map((s) => {
       const p = camp.layout[s.id] ?? { x: 0, y: 0 };
       const raw = parseHeightmap(s.heightmap);
       const rot = (x: number, y: number) => rotatePt(raw, p.r ?? 0, x, y);

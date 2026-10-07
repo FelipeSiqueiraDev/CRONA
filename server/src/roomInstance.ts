@@ -1,5 +1,7 @@
 import crypto from 'node:crypto';
 import {
+  HORAS_VIAGEM,
+  type ViagemInfo,
   directionTo,
   evalRoll,
   findPath,
@@ -448,6 +450,7 @@ export class RoomInstance {
       tatico: this.data.tatico,
       nevoa: this.nevoaAtual() ?? undefined,
       mapa: this.data.mapa,
+      viagem: this.data.viagem,
       canBuild: this.canBuild(c),
       isOwner: this.isOwner(c),
     };
@@ -1437,6 +1440,18 @@ export class RoomInstance {
     this.persist();
     this.hotel.touch();
     return null;
+  }
+
+  /** A Viagem desta cena mudou (cenário, hora, velocidade, destino): a luz acompanha a hora e todos que olham recebem. */
+  definirViagem(v: ViagemInfo) {
+    this.data.viagem = v;
+    const hora = HORAS_VIAGEM.find((h) => h.id === v.hora);
+    if (hora) {
+      this.data.darkness = hora.escuro;
+      this.data.ambient = hora.ambiente;
+    }
+    this.hotel.save();
+    this.enviarInfo();
   }
 
   /** Clima ao vivo: luz (normal/piscando/apagão), névoa e escuridão; e a vista tática (a câmera em cima). */
