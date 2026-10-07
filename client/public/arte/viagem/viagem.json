@@ -1,0 +1,32 @@
+{
+ "van-casco": {
+  "arquivo": "van-casco.png",
+  "ax": 157.1,
+  "ay": 143.6,
+  "escala": 0.6305
+ },
+ "arvore": {
+  "arquivo": "arvore.png",
+  "ax": 72.5,
+  "ay": 314,
+  "escala": 1
+ },
+ "poste": {
+  "arquivo": "poste.png",
+  "ax": 33.5,
+  "ay": 418,
+  "escala": 1
+ },
+ "sedan": {
+  "arquivo": "sedan.png",
+  "ax": 132.0,
+  "ay": 172,
+  "escala": 1
+ },
+ "caminhao": {
+  "arquivo": "caminhao.png",
+  "ax": 224.0,
+  "ay": 388,
+  "escala": 1
+ }
+}

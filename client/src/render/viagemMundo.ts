@@ -1,6 +1,7 @@
 import { VAN, Z_PER_M, type ViagemInfo } from '@crona/shared';
 import { hash, shade } from './color';
 import { iso, unIso, Z_PX } from './iso';
+import { imagemDoMapa } from './mapaImagem';
 import { texturaPiso } from './texturas';
 
 /**
@@ -13,8 +14,11 @@ import { texturaPiso } from './texturas';
 
 /** O chão fica um pouco abaixo do piso da van (a espessura da laje). */
 const CHAO_Z = -0.5;
-/** Casas por segundo com a velocidade em 1 (o mundo passando). */
-const CASAS_POR_S = 14;
+/** Casas por segundo com a velocidade em 1 (o mundo passando). Devagar de propósito (07/10): é a ilustração de um momento, leve e suave. */
+const CASAS_POR_S = 5;
+
+/** Quanto o piso da van fica acima do chão (debaixo das rodas), em metros: o desenho do casco tem a base lá embaixo. */
+const PISO_NA_ARTE_M = 0.45;
 const ALTURA_CASCO = 1.7;
 
 const ASFALTO = '#2b2d33';
@@ -53,6 +57,34 @@ export class MundoViagem {
   private vel = 0;
   private ultimo = 0;
   private asfalto: HTMLCanvasElement | null = null;
+  /** a arte da viagem (public/arte/viagem): o casco, a árvore, o poste e os veículos, com a âncora de cada um */
+  private pecas: Record<string, { arquivo: string; ax: number; ay: number; escala: number }> | null = null;
+  private pedido = false;
+
+  private arte(nome: string) {
+    if (!this.pecas) {
+      if (!this.pedido) {
+        this.pedido = true;
+        fetch('/arte/viagem/viagem.json')
+          .then((r) => (r.ok ? r.json() : null))
+          .then((j) => (this.pecas = j ?? {}))
+          .catch(() => (this.pecas = {}));
+      }
+      return null;
+    }
+    const m = this.pecas[nome];
+    const img = m ? imagemDoMapa(`/arte/viagem/${m.arquivo}`) : null;
+    return m && img ? { ...m, img } : null;
+  }
+
+  /** Uma peça de arte no chão (x, y em casas): o ponto de apoio dela cai nele. */
+  private peca(ctx: CanvasRenderingContext2D, nome: string, x: number, y: number, z = CHAO_Z) {
+    const a = this.arte(nome);
+    if (!a) return false;
+    const [bx, by] = iso(x, y, z);
+    ctx.drawImage(a.img, bx - a.ax * a.escala, by - a.ay * a.escala, a.img.naturalWidth * a.escala, a.img.naturalHeight * a.escala);
+    return true;
+  }
 
   /** Anda o mundo: chamado uma vez por quadro. */
   atualizar(now: number, v: ViagemInfo) {
@@ -161,19 +193,12 @@ export class MundoViagem {
 
   /** As linhas da rodovia: a amarela dupla no meio e as brancas nas bordas, andando com o mundo. */
   private faixas(ctx: CanvasRenderingContext2D, b: { x0: number; x1: number }) {
-    const passo = 6;
-    const fase = this.pos % passo;
     ctx.fillStyle = FAIXA_AMARELA;
     ctx.fillRect(b.x0, PISTA.centro - 0.22, b.x1 - b.x0, 0.1);
     ctx.fillRect(b.x0, PISTA.centro + 0.1, b.x1 - b.x0, 0.1);
     ctx.fillStyle = FAIXA_BRANCA;
     ctx.fillRect(b.x0, PISTA.y1 - 0.45, b.x1 - b.x0, 0.12);
     ctx.fillRect(b.x0, PISTA.y0 + 0.35, b.x1 - b.x0, 0.12);
-    // o tracejado das faixas de cada lado (a pista é larga: uma faixa só por mão, então só o do meio das mãos)
-    for (let x = Math.floor((b.x0 + fase) / passo) * passo - fase; x < b.x1; x += passo) {
-      ctx.fillRect(x, 1.45, 2.2, 0.1);
-      ctx.fillRect(x, -3.0, 2.2, 0.1);
-    }
   }
 
   private farois(ctx: CanvasRenderingContext2D, v: ViagemInfo) {
@@ -194,47 +219,28 @@ export class MundoViagem {
     }
   }
 
-  /** Árvores altas e postes lá no fundo (y negativo, atrás da van), e os carros da outra mão. */
+  /** Lá no fundo (y negativo, atrás da van): uma árvore de vez em quando, um poste mais raro e um carro que passa. Pouca coisa de propósito. */
   private fundo(ctx: CanvasRenderingContext2D, v: ViagemInfo, b: { x0: number; x1: number }) {
-    const passo = 5;
+    const passo = 14;
     const primeiro = Math.floor((b.x0 + this.pos) / passo) - 1;
     const ultimo = Math.ceil((b.x1 + this.pos) / passo) + 1;
     for (let i = primeiro; i <= ultimo; i++) {
       const x = i * passo - this.pos;
-      // atrás da pista (y de -8 para trás): árvores, em alturas e lugares sorteados pelo número
-      for (let k = 0; k < 2; k++) {
-        const r = aleat(i, k, 5);
-        if (r < 0.28) continue;
-        const y = -8.5 - k * 3.2 - aleat(i, k, 6) * 2.2;
-        this.arvore(ctx, x + aleat(i, k, 7) * 2, y, 3 + aleat(i, k, 8) * 2.2, i * 3 + k);
-      }
-      // os postes de luz da rodovia, a cada 3 passos, na beira de lá
-      if (v.cenario === 'rodovia' && i % 3 === 0) this.poste(ctx, x, -6.4);
+      if (aleat(i, 5) > 0.35) this.peca(ctx, 'arvore', x + aleat(i, 7) * 6, -9.5 - aleat(i, 6) * 3);
+      // o poste de luz da rodovia, na beira de lá, a cada quatro
+      if (v.cenario === 'rodovia' && i % 4 === 0) this.peca(ctx, 'poste', x + 3, -6.6);
     }
     this.carros(ctx, v);
   }
 
+  /** Um veículo de cada vez, na outra mão, e raro: o sedan e o caminhão se revezam. */
   private carros(ctx: CanvasRenderingContext2D, v: ViagemInfo) {
     if (this.vel < 0.05) return;
-    const periodo = 110;
-    const cores = ['#8a2020', '#d8d8dc', '#2c4c7c', '#c8b030', '#3a3a3e'];
-    for (let i = 0; i < 3; i++) {
-      // vêm do fundo (x grande) para a frente (x pequeno), mais depressa que o mundo: estão vindo
-      const x = ((((i * periodo) / 3 + aleat(i, 77) * 20 - this.pos * 1.9) % periodo) + periodo) % periodo - 30;
-      const y = -3.6;
-      const cor = cores[Math.floor(aleat(i, 78) * cores.length)];
-      caixa(ctx, x, x + 2.8, y - 0.65, y + 0.65, CHAO_Z, CHAO_Z + 0.55, cor);
-      caixa(ctx, x + 0.5, x + 1.9, y - 0.55, y + 0.55, CHAO_Z + 0.55, CHAO_Z + 0.95, shade(cor, -0.2));
-      if (v.hora !== 'dia') {
-        ctx.fillStyle = 'rgba(255,240,190,0.85)';
-        for (const dy of [-0.4, 0.4]) {
-          const [fx, fy] = iso(x, y + dy, CHAO_Z + 0.3);
-          ctx.beginPath();
-          ctx.arc(fx, fy, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-    }
+    const periodo = 190;
+    const n = Math.floor((this.pos * 1.9 + 60) / periodo);
+    const x = periodo - (((this.pos * 1.9 + 60) % periodo) + periodo) % periodo - 40;
+    this.peca(ctx, n % 2 ? 'caminhao' : 'sedan', x, -3.0);
+    void v;
   }
 
   private arvore(ctx: CanvasRenderingContext2D, x: number, y: number, h: number, seed: number) {
@@ -274,6 +280,8 @@ export class MundoViagem {
   // ---------------------------------------------------------------- o casco da van, atrás das peças
 
   casco(ctx: CanvasRenderingContext2D, v: ViagemInfo) {
+    // a arte: o casco cortado, com a base debaixo das rodas (o piso da van fica PISO_NA_ARTE_M acima dela)
+    if (this.peca(ctx, 'van-casco', 0, 0, -PISO_NA_ARTE_M * Z_PER_M)) return;
     const L = VAN.comprimento;
     const W = VAN.largura;
     const H = ALTURA_CASCO;
@@ -299,6 +307,8 @@ export class MundoViagem {
 
   /** O que fica na frente das peças: a beirada de perto da van (baixa, para não esconder ninguém). */
   frente(ctx: CanvasRenderingContext2D) {
+    // com a arte, a beirada de perto já está no desenho
+    if (this.arte('van-casco')) return;
     const L = VAN.comprimento;
     const W = VAN.largura;
     caixa(ctx, 0, L, W, W + 0.12, 0, 0.3, '#17181c', 0.2);
@@ -371,6 +381,8 @@ export class MundoViagem {
 
   /** Beirada da pista de perto (baixa): a mureta, os postes de sinalização e os arbustos, andando com o mundo. */
   proximo(ctx: CanvasRenderingContext2D, v: ViagemInfo) {
+    // a viagem é minimalista (07/10): nada passa na frente da van
+    if (this.arte('van-casco')) return;
     const b = this.visivel(ctx);
     const passo = 4;
     const primeiro = Math.floor((b.x0 + this.pos) / passo) - 1;

@@ -33,9 +33,16 @@ se mexe**; fica nessa tela até o mestre decidir chegar. Dá para fazer cenas de
 - Tudo é desenhado **em código** por enquanto; a arte do Códex entra pelo `PROMPT-VIAGEM.txt` (a van cortada com as janelas
   vazadas, o banco, o painel, o asfalto, as árvores, os carros e 10 ilustrações).
 
+## A arte do Códex entrou (07/10)
+
+- **Casco da van** (`viagem-van.zip`): `client/public/arte/viagem/van-casco.png`, desenhado por `render/viagemMundo.ts` atrás das peças, com a base debaixo das rodas (o piso da van fica `PISO_NA_ARTE_M` = 0,45 m acima). A âncora sai da conta do gabarito (escala 1,586) e vem em `viagem.json`. Sem a arte, volta o desenho em código.
+- **Banco e painel**: importados por `scripts/3d/fichas/moveis-viagem.json` (`van_seat`, `van_dash`). O painel olha para trás (`VAN.giroPainel` = 6): o volante fica voltado para os agentes; as vans que já existiam foram viradas por `painelDaVanParaTras` (`seed.ts`).
+- **Mundo minimalista** (pedido do Felipe): o mundo anda a 5 casas/s (era 14), a pista só tem as faixas contínuas, uma árvore de vez em quando, um poste mais raro e um veículo (sedan ou caminhão) a cada ~190 casas na outra mão; nada passa na frente da van.
+- **Recortes**: `python scripts/3d/viagem_arte.py <pasta com os zips abertos>` gera `arte/viagem/*.png` e `viagem.json` (árvore, poste, sedan, caminhão e o casco) e copia as 10 ilustrações para `arte/viagem/ilustracoes/`.
+- **Painel de controle** (velocidade, hora, cenário, destino, Chegamos…): um cartão na coluna da esquerda, no lugar da planta.
+
 ## O que vem depois
 
-- A arte da van, do asfalto e dos veículos (pedido feito); trocar o desenho em código por ela.
 - O botão **Ilustração** (mostrar à mesa uma das 10 pinturas de cena por cima da tela) e a chuva.
 - O combate dentro da van (as celas e a cobertura já valem; falta o mapa tático dela).
 - Outros veículos e cenários (cidade, túnel).
