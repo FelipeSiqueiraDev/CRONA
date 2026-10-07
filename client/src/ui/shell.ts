@@ -302,6 +302,8 @@ export class Shell {
   private app: App;
   private campaign: CampaignState | null = null;
   private viagemPainel!: ViagemPainel;
+  /** a coluna da esquerda (na viagem a planta some e o painel da viagem ocupa o lugar dela) */
+  private mapColEl!: HTMLElement;
   private tokenWin: TokenWin;
   private hintEditor: HintEditor;
   private hintViewer: HintViewer;
@@ -575,7 +577,7 @@ export class Shell {
     this.placaEl = h('div', { class: 'board-placa' });
     this.estadoEl = h('div', { class: 'board-estado hidden' });
     const ferr = h('div', { class: 'board-ferr' }, this.ferramentas.el, centro);
-    this.board = h('main', { class: 'board' }, moldura, this.placeBar, zoom, this.placaEl, ferr, this.vistaEl, this.viagemPainel.el, this.tabOverlay, this.teclado.el);
+    this.board = h('main', { class: 'board' }, moldura, this.placeBar, zoom, this.placaEl, ferr, this.vistaEl, this.tabOverlay, this.teclado.el);
 
     // ================= direita =================
     const backboard = h('div', { class: 'backboard', 'aria-hidden': 'true' });
@@ -594,7 +596,8 @@ export class Shell {
     const giveScrap = h('span', { class: 'scrap scrap-give', 'aria-hidden': 'true' }, scribble());
     paperize(giveScrap, { kit: false, seed: 43, tone: '#c6b199', burn: 0.8, torn: 2.2, backs: [{ dx: -4, dy: 10, rot: -3, dh: -20 }] });
     // esquerda: tudo do mapa (planta, cômodo e objeto, entrega)
-    const mapCol = h('aside', { class: 'col-map' }, plan, paperclip('clip clip-sala'), this.salaEl, this.inspEl, this.giveWrap);
+    const mapCol = h('aside', { class: 'col-map' }, plan, paperclip('clip clip-sala'), this.salaEl, this.viagemPainel.el, this.inspEl, this.giveWrap);
+    this.mapColEl = mapCol;
 
     // ================= direita: controle do RPG =================
     this.rpgTabsEl = h('div', { class: 'rpg-tabs', role: 'tablist' });
@@ -763,6 +766,7 @@ export class Shell {
     this.marcarVista();
     this.ferramentas.atualizar();
     this.viagemPainel.atualizar();
+    this.mapColEl.classList.toggle('em-viagem', !!this.app.state.room?.viagem && !!this.app.state.room?.isOwner);
     const id = this.app.state.room?.id ?? null;
     if (id !== this.lastRoom) this.planFloor = null;
     if (id !== this.lastRoom && this.lastRoom !== null) this.sceneFade();

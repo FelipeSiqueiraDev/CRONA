@@ -155,9 +155,12 @@ export function abrirChegada(app: App) {
   setTimeout(() => busca.focus(), 50);
 }
 
-/** O painel de dentro da viagem (só o mestre): cenário, hora, velocidade, destino e o botão de chegar. */
+/**
+ * O painel de dentro da viagem (só o mestre): velocidade, hora, cenário, destino e o botão de chegar. Fica na coluna
+ * da esquerda, no lugar da planta (que na viagem não serve), e não por cima do tabuleiro.
+ */
 export class ViagemPainel {
-  readonly el = h('div', { class: 'vg-painel hidden' });
+  readonly el = h('section', { class: 'vg-painel hidden' });
   private sig = '';
 
   constructor(private app: App) {}
@@ -178,12 +181,13 @@ export class ViagemPainel {
     const destino = h('input', { class: 'fx-inp vg-destino', value: v.destino ?? '', maxlength: 60, placeholder: 'Destino (texto)', 'aria-label': 'Destino' }) as HTMLInputElement;
     destino.addEventListener('change', () => ajustar({ destino: destino.value.trim() }));
     destino.addEventListener('keydown', (e) => e.key === 'Enter' && destino.blur());
+    const secao = (nome: string, ...filhos: Node[]) => h('div', { class: 'vg-secao' }, h('small', null, nome), ...filhos);
     this.el.replaceChildren(
-      h('span', { class: 'vg-titulo' }, ic('correr'), h('b', null, 'VIAGEM')),
-      h('div', { class: 'vg-grupo', role: 'group', 'aria-label': 'Velocidade' }, ...VELOCIDADES_VIAGEM.map((x) => h('button', { class: `vg-bt${Math.abs(x.v - v.velocidade) < 0.01 ? ' on' : ''}`, type: 'button', onclick: () => (sfx.click(), ajustar({ velocidade: x.v })) }, x.nome))),
-      h('div', { class: 'vg-grupo', role: 'group', 'aria-label': 'Hora do dia' }, ...HORAS_VIAGEM.map((x) => h('button', { class: `vg-bt${x.id === v.hora ? ' on' : ''}`, type: 'button', onclick: () => (sfx.click(), ajustar({ hora: x.id })) }, x.nome))),
-      h('div', { class: 'vg-grupo', role: 'group', 'aria-label': 'Cenário' }, ...CENARIOS_VIAGEM.map((x) => h('button', { class: `vg-bt${x.id === v.cenario ? ' on' : ''}`, type: 'button', onclick: () => (sfx.click(), ajustar({ cenario: x.id })) }, x.nome))),
-      destino,
+      h('header', { class: 'vg-titulo' }, ic('correr'), h('b', null, 'VIAGEM')),
+      secao('Velocidade', h('div', { class: 'vg-grupo', role: 'group', 'aria-label': 'Velocidade' }, ...VELOCIDADES_VIAGEM.map((x) => h('button', { class: `vg-bt${Math.abs(x.v - v.velocidade) < 0.01 ? ' on' : ''}`, type: 'button', onclick: () => (sfx.click(), ajustar({ velocidade: x.v })) }, x.nome)))),
+      secao('Hora do dia', h('div', { class: 'vg-grupo', role: 'group', 'aria-label': 'Hora do dia' }, ...HORAS_VIAGEM.map((x) => h('button', { class: `vg-bt${x.id === v.hora ? ' on' : ''}`, type: 'button', onclick: () => (sfx.click(), ajustar({ hora: x.id })) }, x.nome)))),
+      secao('Cenário', h('div', { class: 'vg-grupo', role: 'group', 'aria-label': 'Cenário' }, ...CENARIOS_VIAGEM.map((x) => h('button', { class: `vg-bt${x.id === v.cenario ? ' on' : ''}`, type: 'button', onclick: () => (sfx.click(), ajustar({ cenario: x.id })) }, x.nome)))),
+      secao('Destino', destino),
       botao('Chegamos…', 'bandeira', 'forte', () => abrirChegada(this.app)),
     );
   }

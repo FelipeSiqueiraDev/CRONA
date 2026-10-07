@@ -3357,55 +3357,74 @@ html:not(.modo-ficha) .vg-cena small {
   font: 500 1.1rem / 1 var(--r-corpo);
   color: var(--r-texto-3);
 }
-/* o painel de dentro da viagem: uma barra embaixo do tabuleiro */
+/* o painel de dentro da viagem: um cartão na coluna da esquerda, no lugar da planta (que na viagem não serve) */
+html:not(.modo-ficha) .col-map.em-viagem > .p-plan,
+html:not(.modo-ficha) .col-map.em-viagem > .clip-sala {
+  display: none !important;
+}
 html:not(.modo-ficha) .vg-painel {
-  position: absolute;
-  left: 50%;
-  top: 11.6rem;
-  z-index: 6;
-  transform: translateX(-50%);
+  flex: none;
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  max-width: calc(100% - 2.4rem);
-  padding: 0.8rem 1.2rem;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 1.3rem 1.5rem 1.5rem;
   border: var(--h-borda) solid #a18873;
-  border-radius: 0.8rem;
-  background: rgba(5, 11, 20, 0.92);
-  box-shadow: 0 0.6rem 2rem rgba(0, 0, 0, 0.6);
+  border-radius: 1rem;
+  background: rgba(5, 11, 20, 0.94);
+  box-shadow:
+    inset 0 0 0 0.3rem rgba(5, 11, 20, 0.92),
+    inset 0 0 0 0.42rem rgba(161, 136, 115, 0.4),
+    0 0.9rem 2.2rem rgba(0, 0, 0, 0.45);
 }
 html:not(.modo-ficha) .vg-painel.hidden {
   display: none;
 }
 html:not(.modo-ficha) .vg-titulo {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font: 700 1.3rem / 1 var(--r-pixel);
+  gap: 0.8rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 0.2rem solid rgba(233, 169, 68, 0.55);
+  font: 700 1.5rem / 1 var(--r-pixel);
   color: var(--r-ouro-hi);
 }
 html:not(.modo-ficha) .vg-titulo .ic {
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.4rem;
+  height: 2.4rem;
+}
+html:not(.modo-ficha) .vg-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+html:not(.modo-ficha) .vg-secao > small {
+  font: 600 1.1rem / 1 var(--r-pixel);
+  letter-spacing: 0.06em;
+  color: var(--r-texto-3);
+  text-transform: uppercase;
 }
 html:not(.modo-ficha) .vg-grupo {
-  display: flex;
-  gap: 0.3rem;
-  padding: 0.3rem;
-  border: 0.15rem solid rgba(161, 136, 115, 0.38);
-  border-radius: 0.6rem;
-  background: rgba(5, 11, 20, 0.85);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+/* três botões (a hora do dia) numa fileira só */
+html:not(.modo-ficha) .vg-grupo:has(> :nth-child(3):last-child) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 html:not(.modo-ficha) .vg-bt {
+  min-height: 3.6rem;
   padding: 0.5rem 0.9rem;
-  border: 0;
-  border-radius: 0.45rem;
-  background: none;
-  color: var(--r-texto-3);
-  font: 600 1.1rem / 1 var(--r-pixel);
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.45);
+  border-radius: 0.6rem;
+  background: var(--h-campo);
+  color: var(--r-texto-2);
+  font: 600 1.25rem / 1 var(--r-pixel);
   cursor: pointer;
+  transition: border-color 0.2s;
+}
+html:not(.modo-ficha) .vg-bt:hover {
+  border-color: var(--r-ouro-hi);
 }
 html:not(.modo-ficha) .vg-bt:hover {
   color: var(--r-texto);
@@ -3415,7 +3434,12 @@ html:not(.modo-ficha) .vg-bt.on {
   color: var(--r-tinta-ouro);
 }
 html:not(.modo-ficha) .vg-destino {
-  width: 22rem;
+  width: 100%;
+}
+html:not(.modo-ficha) .vg-painel .fx-bt {
+  width: 100%;
+  justify-content: center;
+  min-height: 4.4rem;
 }
 
 /* as abas dos andares: uma fileira só, que rola de lado (a fazenda tem seis; a segunda fileira sumia atrás do mapa) */
