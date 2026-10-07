@@ -1091,7 +1091,7 @@ const CENAS: CenaSpec[] = [
       "Embaixo do celeiro, pedra molhada e o cheiro de ferro: de um lado os computadores ligados e os tanques com gente dentro, no meio o altar no estrado redondo, com o círculo de sangue e os crânios, e no fundo um corredor escuro.",
     layout: calaboucoPlan(),
     andar: CALABOUCO,
-    style: "selo",
+    style: "calabouco",
     darkness: 0.66,
     fog: 0.25,
     ambient: "#3a8a90",
@@ -1217,7 +1217,7 @@ const CENAS: CenaSpec[] = [
       "O corredor do fundo do calabouço: estreito, sem luz, a pedra suando. Um rastro de sangue vai até a porta do fim.",
     layout: planTop(3, 14, 1),
     andar: CALABOUCO,
-    style: "selo",
+    style: "calabouco",
     darkness: 0.86,
     fog: 0.45,
     light: "flicker",
@@ -1255,7 +1255,7 @@ const CENAS: CenaSpec[] = [
       "Uma sala pequena no fim do corredor, e tudo nela é sangue: o chão, as paredes, a mesa de metal no meio, o ralo entupido.",
     layout: plan(6, 5, 2),
     andar: CALABOUCO,
-    style: "selo",
+    style: "calabouco",
     darkness: 0.7,
     fog: 0.3,
     light: "flicker",
@@ -1500,5 +1500,22 @@ export function montarFazenda(db: Database): boolean {
     seedFazenda(db);
     return true;
   }
-  return rebuildFazenda(db);
+  return rebuildFazenda(db) || pisosDoCalabouco(db);
+}
+
+/**
+ * O calabouço ganhou o piso próprio (07/10, `piso-calabouco.png`): troca só o estilo das três cenas dele
+ * (era a pedra antiga), sem refazer nada do que o mestre mexeu nelas.
+ */
+function pisosDoCalabouco(db: Database): boolean {
+  let mudou = false;
+  for (const spec of CENAS) {
+    if (spec.style !== "calabouco") continue;
+    const room = db.rooms.find((r) => r.name === spec.name);
+    if (room && room.floorStyle === "selo") {
+      room.floorStyle = "calabouco";
+      mudou = true;
+    }
+  }
+  return mudou;
 }

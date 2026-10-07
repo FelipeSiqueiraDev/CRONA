@@ -1331,6 +1331,7 @@ export class RoomView {
     desenharMesa(ctx, map, info.floorStyle, pecas, v, {
       mostrarItem: esconde ? (it) => !this.itemOculto(it) : undefined,
       imagemChao: imagemDoMapa(info.mapa),
+      terreno: info.terreno,
       // no começo do caminho, o escuro da sala (como no isométrico); em cima, o mapa claro
       escuro: Math.min(0.5, info.darkness * 0.7) * (1 - passo(0.15, 1, t)),
       celas: celas?.casa,

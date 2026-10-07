@@ -40,6 +40,8 @@ const FLOORS: Record<FloorStyle, FloorLook> = {
   lavoura: { base: '#553823', alt: '#6c4a2c', grout: 'rgba(0,0,0,0)', kind: 'rows' },
   cascalho: { base: '#9a9384', grout: 'rgba(40,36,30,0.35)', kind: 'gravel' },
   selo: { base: '#3e3a36', grout: 'rgba(10,8,6,0.6)', kind: 'stone' },
+  pier: { base: '#6a5238', grout: 'rgba(20,12,6,0.6)', kind: 'plank' },
+  calabouco: { base: '#35363a', grout: 'rgba(8,8,10,0.6)', kind: 'stone' },
 };
 /** a água (casa vazia da planta com terreno 'a'): mais baixa que a margem */
 const AGUA = '#2f5f72';

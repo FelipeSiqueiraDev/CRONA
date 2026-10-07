@@ -106,5 +106,47 @@
   "parede": {
    "arquivo": "parede-selo.png"
   }
+ },
+ "grama": {
+  "piso": {
+   "arquivo": "piso-grama.png",
+   "casas": 4
+  }
+ },
+ "estrada": {
+  "piso": {
+   "arquivo": "piso-estrada.png",
+   "casas": 4
+  }
+ },
+ "lavoura": {
+  "piso": {
+   "arquivo": "piso-lavoura.png",
+   "casas": 4
+  }
+ },
+ "cascalho": {
+  "piso": {
+   "arquivo": "piso-cascalho.png",
+   "casas": 4
+  }
+ },
+ "terra": {
+  "piso": {
+   "arquivo": "piso-terra.png",
+   "casas": 4
+  }
+ },
+ "pier": {
+  "piso": {
+   "arquivo": "piso-pier.png",
+   "casas": 4
+  }
+ },
+ "calabouco": {
+  "piso": {
+   "arquivo": "piso-calabouco.png",
+   "casas": 4
+  }
  }
 }

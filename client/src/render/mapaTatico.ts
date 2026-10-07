@@ -1,4 +1,4 @@
-import { combate as cb, footprint, getFurni, M_POR_CASA, Z_PER_M, type FloorItem, type FloorStyle, type FurniDef, type RoomMap } from '@crona/shared';
+import { combate as cb, footprint, getFurni, M_POR_CASA, terrenoEm, Z_PER_M, type FloorItem, type FloorStyle, type FurniDef, type RoomMap } from '@crona/shared';
 import { contornoArea, type Casa } from '../room/combateGeo';
 import type { MarcasCombate } from './combateMarcas';
 import { imagemDeCima, imagemDoChao, tamanhoReal, chaveDaArte } from './furniArte';
@@ -251,7 +251,13 @@ export interface OpcoesMesa {
   mostrarItem?: (it: FloorItem) => boolean;
   /** mapa improvisado: a imagem no chão inteiro da sala, no lugar do piso */
   imagemChao?: CanvasImageSource | null;
+  /** ao ar livre: o chão de cada casa (grama, estrada, lavoura, píer...), uma letra por casa; a água é casa vazia */
+  terreno?: string;
 }
+
+/** A cor do chão enquanto a textura do estilo não chegou, e a água. */
+const COR_TERRENO: Partial<Record<FloorStyle, string>> = { grama: '#4d6a2e', estrada: '#86663f', lavoura: '#553823', cascalho: '#9a9384', terra: '#3a2e22', pier: '#6a5238', calabouco: '#35363a' };
+const COR_AGUA = '#2f5f72';
 
 /** O mapa tático parado, no enquadre e. */
 export function desenharTatico(ctx: CanvasRenderingContext2D, map: RoomMap, piso: FloorStyle | undefined, pecas: PecaTatica[], e: Enquadre, opcoes: OpcoesMesa = {}) {
@@ -275,11 +281,38 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
   ctx.setTransform(matrizNaAltura(v, 0));
   const pisoPath = new Path2D();
   for (let y = 0; y < map.height; y++) for (let x = 0; x < map.width; x++) if (chao(x, y)) pisoPath.rect(x, y, 1.002, 1.002);
-  const tex = texturaPiso(piso);
-  const padrao = tex?.img.complete && tex.img.naturalWidth ? ctx.createPattern(tex.img, 'repeat') : null;
-  if (padrao) padrao.setTransform(new DOMMatrix().scale(tex!.casas / tex!.img.naturalWidth));
-  ctx.fillStyle = padrao ?? '#4a4038';
-  ctx.fill(pisoPath);
+  const padraoDe = (estilo: FloorStyle | undefined): CanvasPattern | null => {
+    const t = texturaPiso(estilo);
+    const pat = t?.img.complete && t.img.naturalWidth ? ctx.createPattern(t.img, 'repeat') : null;
+    if (pat) pat.setTransform(new DOMMatrix().scale(t!.casas / t!.img.naturalWidth));
+    return pat;
+  };
+  const linhasTerreno = opcoes.terreno ? opcoes.terreno.replace(/\r/g, '').split('\n') : undefined;
+  if (linhasTerreno) {
+    // ao ar livre: cada casa com o chão dela (a textura de cima de cada estilo) e a água nas casas vazias
+    const porEstilo = new Map<FloorStyle | undefined, Path2D>();
+    const agua = new Path2D();
+    for (let y = 0; y < map.height; y++)
+      for (let x = 0; x < map.width; x++) {
+        const t = terrenoEm(linhasTerreno, x, y);
+        if (!chao(x, y)) {
+          if (t === 'agua') agua.rect(x, y, 1.002, 1.002);
+          continue;
+        }
+        const estilo = t && t !== 'agua' ? t : piso;
+        if (!porEstilo.has(estilo)) porEstilo.set(estilo, new Path2D());
+        porEstilo.get(estilo)!.rect(x, y, 1.002, 1.002);
+      }
+    ctx.fillStyle = COR_AGUA;
+    ctx.fill(agua);
+    for (const [estilo, path] of porEstilo) {
+      ctx.fillStyle = padraoDe(estilo) ?? (estilo ? COR_TERRENO[estilo] : undefined) ?? '#4a4038';
+      ctx.fill(path);
+    }
+  } else {
+    ctx.fillStyle = padraoDe(piso) ?? '#4a4038';
+    ctx.fill(pisoPath);
+  }
   if (opcoes.imagemChao) ctx.drawImage(opcoes.imagemChao, 0, 0, map.width, map.height);
   else {
     ctx.fillStyle = 'rgba(14, 11, 8, 0.32)';
