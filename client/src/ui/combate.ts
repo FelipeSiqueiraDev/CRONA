@@ -137,6 +137,22 @@ const PINTADO: Partial<Record<NomeIcone, string>> = {
   avancar: 'combate-passar-turno',
   girarE: 'combate-desfazer',
   ok: 'combate-confirmar',
+  ampulheta: 'combate-atrasar',
+  escudo: 'combate-preparar',
+  espadas: 'combate-atacar',
+  dados: 'combate-dado',
+  sol: 'clima-iluminacao',
+  vento: 'clima-nevoa',
+  montanha: 'clima-terreno',
+  caveira: 'estado-morrendo',
+  deitado: 'estado-caido',
+  coracao: 'pv',
+  estrela: 'combate-habilidade',
+  mochila: 'combate-item',
+  bota: 'combate-movimento',
+  reticencias: 'combate-outras',
+  pentagrama: 'estado-ritual',
+  gota: 'cond-sangrando',
 };
 const icPintado = (icone: NomeIcone, pintado = PINTADO[icone]) => (pintado ? arteOu([`/arte/icones/${pintado}.png`], ic(icone)) : ic(icone));
 
@@ -1109,7 +1125,7 @@ export class CombateScreen {
     if (!this.mudou('pend', [c && { ...c, registro: c.registro.slice(-16) }, this.assinaturaPecas(), this.assinaturaFichas(), this.atorId])) return;
     const itens: HTMLElement[] = [];
     const item = (icone: NomeIcone, cls: string, texto: Node | string, ...extra: (Node | null)[]) =>
-      h('div', { class: `cb-pend-item ${cls}` }, h('span', { class: 'cb-pend-ic' }, ic(icone)), h('p', null, texto, ...extra));
+      h('div', { class: `cb-pend-item ${cls}` }, h('span', { class: 'cb-pend-ic' }, icPintado(icone)), h('p', null, texto, ...extra));
     const quem = (nome: string, resto: string) => h('span', null, h('b', null, `${nome}: `), resto);
     if (!c) itens.push(item('espadas', 'neutro', 'Abra o combate na cena para montar a ordem de iniciativa.'));
     else if (c.fase === 'montando') {
@@ -1208,7 +1224,7 @@ export class CombateScreen {
     const ilum = cl.escuridao === 'total' ? 'escuridão (camuflagem total)' : cl.escuridao === 'camuflagem' ? 'baixa (camuflagem)' : 'normal';
     const nev = cl.nevoa === 'espessa' ? 'espessa (camuflagem total)' : cl.nevoa === 'camuflagem' ? 'neblina (camuflagem)' : 'nenhuma';
     const chip = (icone: NomeIcone, rotulo: string, valor: string, alerta: boolean, dica: string) =>
-      h('span', { class: 'cb-chip', title: dica }, ic(icone), h('span', null, `${rotulo}: `, h('b', { class: alerta ? 'alerta' : '' }, valor)));
+      h('span', { class: 'cb-chip', title: dica }, icPintado(icone), h('span', null, `${rotulo}: `, h('b', { class: alerta ? 'alerta' : '' }, valor)));
     this.tabClima.replaceChildren(
       chip('sol', 'Iluminação', ilum, cl.escuridao !== 'normal', 'Vem da escuridão da cena (☀ Clima da cena)'),
       chip('vento', 'Névoa', nev, cl.nevoa !== 'nenhuma', 'Vem da névoa da cena (☀ Clima da cena)'),
@@ -1480,8 +1496,9 @@ export class CombateScreen {
             h('div', { class: 'cb-recs' }, barra('PV', 'pv', vit?.pv, vit?.pvMax), barra('PE', 'pe', vit?.pe, vit?.peMax), barra('SAN', 'san', vit?.san, vit?.sanMax)),
             seletor,
           ),
-          h('span', { class: 'cb-caixa' }, h('small', null, 'Defesa'), h('b', null, calc ? String(calc.defesa) : am ? String(am.defesa) : '—')),
-          h('span', { class: 'cb-caixa' }, h('small', null, 'Desloc.'), h('b', null, calc ? `${String(calc.deslocamento).replace('.', ',')} m` : '—')),
+          // Defesa e Deslocamento como os números da rodada do celular: o ícone pintado, o número e o nome
+          h('span', { class: 'cb-caixa defesa' }, icPintado('escudo', 'defesa'), h('small', null, 'Defesa'), h('b', null, calc ? String(calc.defesa) : am ? String(am.defesa) : '—')),
+          h('span', { class: 'cb-caixa desloc' }, icPintado('bota', 'deslocamento'), h('small', null, 'Desloc.'), h('b', null, calc ? `${String(calc.deslocamento).replace('.', ',')} m` : '—')),
           h(
             'div',
             { class: 'cb-ator-turno' },
@@ -1546,7 +1563,7 @@ export class CombateScreen {
       h(
         'button',
         { class: 'cb-opcao', type: 'button', title: `${nome} (${NOME_QUAL[qual]})${pagina ? ` · ${pagina}` : ''}`, onclick: () => (sfx.click(), fn()) },
-        h('span', { class: 'cb-opcao-ic' }, ic(icone)),
+        h('span', { class: 'cb-opcao-ic' }, icPintado(icone)),
         h('span', { class: 'cb-opcao-txt' }, h('b', null, nome), h('small', null, detalhe)),
         h('span', { class: `cb-custo ${qual}` }, NOME_QUAL[qual]),
       );
@@ -1696,7 +1713,9 @@ export class CombateScreen {
           h('small', null, `machucado: abaixo de ${Math.ceil(vit.pvMax / 2)}`),
         )
       : h('div', { class: 'cb-alvo-pv' }, botao('Marcar PV', 'coracao', editarPv, 'cb-mini'));
-    const caixa = (rot: string, val: string) => h('span', { class: 'cb-caixa' }, h('small', null, rot), h('b', null, val));
+    // o ícone pintado de cada número do alvo (Defesa, as reações, os testes de resistência)
+    const pintadoDaCaixa = (rot: string) => (/^Defesa/.test(rot) ? 'defesa' : /^Bloqueio/.test(rot) ? 'protecao' : /^Esquiva/.test(rot) ? 'deslocamento' : 'resistencias');
+    const caixa = (rot: string, val: string) => h('span', { class: 'cb-caixa' }, icPintado('escudo', pintadoDaCaixa(rot)), h('small', null, rot), h('b', null, val));
     const res = (per: 'fortitude' | 'reflexos' | 'vontade', rot: string) => {
       const pc = calc?.pericias[per];
       const x = pc ? { dados: pc.dados, bonus: pc.bonus, penalidade: pc.penalidadeDados } : am?.[per];

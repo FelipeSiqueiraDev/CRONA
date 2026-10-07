@@ -1,0 +1,1638 @@
+/* =====================================================================
+   O HUD DO JOGADOR NAS TELAS DO MESTRE (06/10, noite)
+   A tela do celular (jogador.css) virou a referência do site inteiro: janela azul-noite com a
+   borda bege e a linha de dentro, título de ouro com a linha que corre, botão de borda e o de
+   ouro com o brilho, barra com riscos e reflexo, linha de lista com o cursor ▶ e os ícones
+   pintados do kit. As molduras pintadas do kit (metal, couro, placas) saem de cena: ficam só
+   os ícones, as casas do inventário e os retratos.
+   Vem depois de tudo (main.ts): kit.css, retro-auto.css e retro.css ficam por baixo.
+   No computador, 1rem = 10 px da referência (1672 × 941).
+   ===================================================================== */
+
+:root {
+  --h-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --h-borda: 0.2rem;
+  --h-raio: 0.8rem;
+  --h-campo: #060c16;
+  --h-linha-ouro: linear-gradient(90deg, #c97f2c, rgba(201, 127, 44, 0));
+  --h-janela-sombra:
+    inset 0 0 0 0.3rem rgba(5, 11, 20, 0.97),
+    inset 0 0 0 0.42rem rgba(161, 136, 115, 0.38),
+    0 0.9rem 2.2rem rgba(0, 0, 0, 0.55);
+  --h-ouro: linear-gradient(#f6cf6a 0%, #e9a944 46%, #c97f2c 100%);
+  --h-ouro-sombra:
+    inset 0 0.15rem 0 rgba(255, 240, 190, 0.75),
+    inset 0 -0.2rem 0 rgba(120, 60, 10, 0.55),
+    0 0.3rem 0.8rem rgba(0, 0, 0, 0.45);
+}
+
+/* ================================================================ animações
+   entrar (cada tela, ao aparecer), o brilho do ouro, o reflexo das barras, o cursor de menu,
+   a vez no combate e o anel do passo atual */
+@keyframes hud-entra {
+  from {
+    opacity: 0;
+    transform: translateY(1.4rem);
+  }
+}
+@keyframes hud-varre {
+  0% {
+    background-position:
+      170% 0,
+      0 0;
+  }
+  20%,
+  100% {
+    background-position:
+      -70% 0,
+      0 0;
+  }
+}
+@keyframes hud-reflexo {
+  0%,
+  74% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+@keyframes hud-cursor {
+  50% {
+    transform: translate(0.35rem, -50%);
+  }
+}
+@keyframes hud-vez {
+  50% {
+    box-shadow:
+      0 0 1.6rem rgba(255, 196, 90, 0.38),
+      inset 0 0 0 0.12rem rgba(255, 210, 122, 0.35);
+  }
+}
+@keyframes hud-anel {
+  50% {
+    box-shadow: 0 0 0 0.55rem rgba(233, 169, 68, 0.14), 0 0 1.2rem rgba(255, 196, 90, 0.5);
+  }
+}
+@keyframes hud-pulsa {
+  50% {
+    filter: brightness(1.45);
+  }
+}
+@keyframes hud-sobe {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+}
+
+/* ================================================================ as telas aparecem
+   (MAPA, COMBATE e FICHAS: cada painel sobe e acende, um depois do outro) */
+html:not(.modo-ficha) .shell:not(.aba-combate):not(.aba-fichas) :is(.col-map > .sheet, .col-rpg > .sheet, .bottom > .sheet, .board),
+html:not(.modo-ficha) .cb:not(.hidden) :is(.cb-p, .cb-tab),
+html:not(.modo-ficha) .fx:not(.hidden) .fx-sec {
+  animation: hud-entra 0.55s var(--h-ease) both;
+}
+html:not(.modo-ficha) .col-map > .sheet:nth-child(2),
+html:not(.modo-ficha) .cb-pend,
+html:not(.modo-ficha) .board {
+  animation-delay: 0.05s !important;
+}
+html:not(.modo-ficha) .col-map > .sheet:nth-child(3),
+html:not(.modo-ficha) .cb-tab,
+html:not(.modo-ficha) .col-rpg > .sheet {
+  animation-delay: 0.09s !important;
+}
+html:not(.modo-ficha) .bottom > .sheet:nth-child(1),
+html:not(.modo-ficha) .cb-res {
+  animation-delay: 0.13s !important;
+}
+html:not(.modo-ficha) .bottom > .sheet:nth-child(2),
+html:not(.modo-ficha) .cb-alvo {
+  animation-delay: 0.17s !important;
+}
+html:not(.modo-ficha) .bottom > .sheet:nth-child(3),
+html:not(.modo-ficha) .cb-reg {
+  animation-delay: 0.21s !important;
+}
+
+/* ================================================================ a barra do topo */
+html:not(.modo-ficha) .tb2 {
+  background:
+    radial-gradient(ellipse 40% 140% at 12% 0%, rgba(255, 176, 80, 0.1), transparent 70%),
+    linear-gradient(180deg, #0f1c31 0%, #070e1a 100%) !important;
+  border-bottom: var(--h-borda) solid #a18873;
+  box-shadow:
+    0 0.25rem 0 rgba(5, 11, 20, 0.95),
+    0 0.38rem 0 rgba(161, 136, 115, 0.28),
+    0 0.8rem 2rem rgba(0, 0, 0, 0.6) !important;
+}
+html:not(.modo-ficha) .tb2::after {
+  display: none;
+}
+html:not(.modo-ficha) .tb2-titulo {
+  font: 700 2.7rem / 1 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  letter-spacing: 0.06em !important;
+  text-shadow: var(--r-sombra-pixel);
+  border-bottom: 0 !important;
+  padding-bottom: 0.25rem !important;
+}
+html:not(.modo-ficha) .tb2-sub {
+  font: 500 1.25rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+  letter-spacing: 0.16em !important;
+}
+html:not(.modo-ficha) .tb2-emblema {
+  filter: drop-shadow(0 0 0.8rem rgba(255, 196, 90, 0.25)) drop-shadow(0 0.1rem 0.25rem rgba(0, 0, 0, 0.8));
+}
+html:not(.modo-ficha) .tb2-sep,
+html:not(.modo-ficha) .tb2-div {
+  width: 0.2rem !important;
+  background: linear-gradient(180deg, transparent, rgba(161, 136, 115, 0.5) 22%, rgba(161, 136, 115, 0.5) 78%, transparent) !important;
+}
+/* as abas: a janela pequena; a ligada acende de ouro, com o risco embaixo */
+html:not(.modo-ficha) .tb2-aba {
+  gap: 1.1rem;
+  height: 5.4rem !important;
+  padding: 0 2rem !important;
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.55) !important;
+  border-image: none !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(5, 11, 20, 0.92) !important;
+  box-shadow:
+    inset 0 0 0 0.25rem rgba(5, 11, 20, 0.92),
+    inset 0 0 0 0.36rem rgba(161, 136, 115, 0.2) !important;
+  font: 600 1.75rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+  letter-spacing: 0.08em !important;
+  text-shadow: none !important;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.3s,
+    transform 0.12s var(--h-ease);
+}
+html:not(.modo-ficha) .tb2-aba:hover {
+  border-color: var(--r-ouro) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .tb2-aba:active {
+  transform: translateY(0.1rem);
+}
+html:not(.modo-ficha) .tb2-aba.on {
+  border-color: var(--r-ouro-hi) !important;
+  background:
+    radial-gradient(ellipse 75% 100% at 50% 100%, rgba(233, 169, 68, 0.3), transparent 72%),
+    rgba(14, 26, 46, 0.96) !important;
+  color: var(--r-ouro-hi) !important;
+  text-shadow: var(--r-sombra-pixel) !important;
+}
+html:not(.modo-ficha) .tb2-aba.on::after {
+  content: '';
+  inset: auto 18% -0.62rem;
+  height: 0.28rem;
+  border-radius: 0.2rem;
+  background: var(--r-ouro-hi) !important;
+  box-shadow: 0 0 1.2rem var(--r-ouro);
+  animation: none;
+}
+html:not(.modo-ficha) .tb2-aba .arte-ic img {
+  width: 3.3rem;
+  height: 3.3rem;
+  filter: saturate(0.7) brightness(0.85) drop-shadow(0 0.15rem 0.2rem #000) !important;
+  transition:
+    transform 0.25s var(--h-ease),
+    filter 0.25s;
+}
+html:not(.modo-ficha) .tb2-aba.on .arte-ic img {
+  transform: translateY(-0.15rem) scale(1.1);
+  filter: drop-shadow(0 0 0.8rem rgba(255, 196, 90, 0.7)) drop-shadow(0 0.15rem 0.2rem #000) !important;
+}
+/* os botões de ícone (clima, configurações, registro) e o de sair */
+html:not(.modo-ficha) .tb2-bt {
+  width: 5rem !important;
+  height: 5rem !important;
+  border: var(--h-borda) solid #a18873 !important;
+  border-radius: var(--h-raio) !important;
+  background: var(--h-campo) !important;
+  box-shadow:
+    inset 0 0 0 0.25rem var(--h-campo),
+    inset 0 0 0 0.36rem rgba(161, 136, 115, 0.35) !important;
+  transition:
+    border-color 0.2s,
+    transform 0.12s var(--h-ease);
+}
+html:not(.modo-ficha) .tb2-bt:hover {
+  border-color: var(--r-ouro-hi) !important;
+  transform: translateY(-0.1rem);
+}
+html:not(.modo-ficha) .tb2-bt:active {
+  transform: scale(0.95);
+}
+html:not(.modo-ficha) .tb2-bt.sair {
+  border-color: #b4483b !important;
+}
+html:not(.modo-ficha) .tb2-bt.sair:hover {
+  border-color: #ff8a73 !important;
+}
+html:not(.modo-ficha) .tb2-bt .arte-ic img {
+  width: 2.9rem;
+  height: 2.9rem;
+}
+html:not(.modo-ficha) .tb2-local b {
+  font: 700 1.85rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .tb2-local span {
+  font: 500 1.15rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+  letter-spacing: 0.12em !important;
+}
+html:not(.modo-ficha) .tb2-op {
+  font-family: var(--r-pixel) !important;
+}
+
+/* ================================================================ as janelas */
+html:not(.modo-ficha) .papered,
+html:not(.modo-ficha) .cb-p {
+  background: linear-gradient(180deg, rgba(13, 24, 43, 0.97), rgba(5, 11, 20, 0.97) 42%) !important;
+  border: var(--h-borda) solid #a18873 !important;
+  border-radius: 0.9rem !important;
+  box-shadow: var(--h-janela-sombra) !important;
+  rotate: none;
+}
+html:not(.modo-ficha) .sheet,
+html:not(.modo-ficha) .p-quick {
+  transform: none;
+}
+
+/* ================================================================ os títulos
+   o ícone pintado, o nome de ouro e a linha que corre até o fim (o extra fica na ponta) */
+html:not(.modo-ficha) .p-title,
+html:not(.modo-ficha) .insp-cab {
+  display: flex !important;
+  align-items: center;
+  gap: 0.9rem !important;
+  font: 700 1.55rem / 1 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  letter-spacing: 0.06em !important;
+  text-shadow: var(--r-sombra-pixel);
+  -webkit-text-stroke: 0 !important;
+}
+html:not(.modo-ficha) .p-title::before {
+  content: '';
+  flex: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  background: var(--hud-ic, none) center / contain no-repeat;
+  filter: drop-shadow(0 0.15rem 0.2rem rgba(0, 0, 0, 0.7));
+}
+html:not(.modo-ficha) .p-title::after {
+  content: '';
+  flex: 1;
+  min-width: 1.2rem;
+  height: 0.2rem;
+  border-radius: 0.1rem;
+  background: var(--h-linha-ouro);
+  opacity: 0.75;
+}
+html:not(.modo-ficha) .p-title .losango {
+  display: none !important;
+}
+html:not(.modo-ficha) .p-title small {
+  order: 2;
+  font: 500 1.05rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+  letter-spacing: 0.08em;
+  text-shadow: none;
+}
+html:not(.modo-ficha) .p-plan {
+  --hud-ic: url('/arte/icones/topo-mapa.png');
+}
+html:not(.modo-ficha) .p-agentes {
+  --hud-ic: url('/arte/icones/titulo-identificacao.png');
+}
+html:not(.modo-ficha) .p-quick {
+  --hud-ic: url('/arte/icones/titulo-inventario.png');
+}
+html:not(.modo-ficha) .p-acoes {
+  --hud-ic: url('/arte/icones/combate-outras.png');
+}
+
+/* o título do COMBATE: o marcador vira o ícone pintado do painel */
+html:not(.modo-ficha) .cb-tit {
+  gap: 0.9rem !important;
+  border-bottom: 0 !important;
+}
+html:not(.modo-ficha) .cb-marca {
+  order: 0;
+  width: 2.7rem !important;
+  height: 2.7rem !important;
+  border-radius: 0 !important;
+  background: var(--hud-ic, none) center / contain no-repeat !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 0.15rem 0.2rem rgba(0, 0, 0, 0.7));
+}
+html:not(.modo-ficha) .cb-tit h3 {
+  order: 1;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+html:not(.modo-ficha) .cb-tit::after {
+  content: '';
+  order: 2;
+  flex: 1;
+  min-width: 1rem;
+  height: 0.2rem;
+  border-radius: 0.1rem;
+  background: var(--h-linha-ouro);
+  opacity: 0.75;
+}
+html:not(.modo-ficha) .cb-tit-extra {
+  order: 3;
+}
+html:not(.modo-ficha) .cb-ini {
+  --hud-ic: url('/arte/icones/combate-dado.png');
+}
+html:not(.modo-ficha) .cb-pend {
+  --hud-ic: url('/arte/icones/titulo-condicoes.png');
+}
+html:not(.modo-ficha) .cb-res {
+  --hud-ic: url('/arte/icones/combate-atacar.png');
+}
+html:not(.modo-ficha) .cb-alvo {
+  --hud-ic: url('/arte/icones/tabuleiro-alcance.png');
+}
+html:not(.modo-ficha) .cb-reg {
+  --hud-ic: url('/arte/icones/topo-registro.png');
+}
+/* o título da FICHAS: a linha de ouro depois do nome */
+html:not(.modo-ficha) .fx-tit {
+  gap: 0.9rem !important;
+  border-bottom: 0 !important;
+}
+html:not(.modo-ficha) .fx-tit h3 {
+  flex: 0 1 auto;
+}
+html:not(.modo-ficha) .fx-tit::after {
+  content: '';
+  order: 2;
+  flex: 1;
+  min-width: 1rem;
+  height: 0.2rem;
+  border-radius: 0.1rem;
+  background: var(--h-linha-ouro);
+  opacity: 0.75;
+}
+html:not(.modo-ficha) .fx-tit-extra {
+  order: 3;
+}
+html:not(.modo-ficha) .fx-tit-ic {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ================================================================ os botões
+   o de borda (cobre, com a linha de dentro), o de ouro (a ação principal, com o brilho que
+   corre) e o ligado (ferramenta ativa: borda e letra de ouro) */
+html:not(.modo-ficha) :is(.cb-bt, .acao, .board-vista .bv, .board-mesa .bv)::before {
+  display: none !important;
+}
+html:not(.modo-ficha) :is(.fx-bt, .cb-bt, .acao, .tool, .board-vista .bv, .board-mesa .bv, .add-item, .dbtn) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  border: var(--h-borda) solid #c08442 !important;
+  border-image: none !important;
+  border-radius: var(--h-raio) !important;
+  background: var(--h-campo) !important;
+  box-shadow:
+    inset 0 0 0 0.25rem var(--h-campo),
+    inset 0 0 0 0.36rem rgba(192, 132, 66, 0.36) !important;
+  color: var(--r-texto) !important;
+  font: 600 1.3rem / 1.1 var(--r-pixel) !important;
+  letter-spacing: 0.04em !important;
+  text-shadow: none !important;
+  white-space: nowrap;
+  opacity: 1;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.2s,
+    transform 0.12s var(--h-ease);
+}
+html:not(.modo-ficha) :is(.fx-bt, .cb-bt, .acao, .tool, .board-vista .bv, .board-mesa .bv, .add-item, .dbtn):not(:disabled):hover {
+  border-color: var(--r-ouro-hi) !important;
+  background: var(--r-noite-3) !important;
+  transform: translateY(-0.1rem);
+}
+html:not(.modo-ficha) :is(.fx-bt, .cb-bt, .acao, .tool, .board-vista .bv, .board-mesa .bv, .add-item, .dbtn):not(:disabled):active {
+  transform: translateY(0.05rem) scale(0.97);
+}
+html:not(.modo-ficha) :is(.fx-bt, .cb-bt, .acao, .tool, .add-item, .dbtn):disabled {
+  opacity: 0.4 !important;
+  color: var(--r-texto-2) !important;
+  cursor: default;
+}
+html:not(.modo-ficha) :is(.fx-bt, .cb-bt, .acao, .tool, .board-vista .bv, .board-mesa .bv) :is(.arte-ic, .ic) {
+  flex: none;
+  width: 2.1rem !important;
+  height: 2.1rem !important;
+  margin: 0 !important;
+}
+html:not(.modo-ficha) :is(.fx-bt, .cb-bt, .acao, .tool) .arte-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0.1rem 0.15rem rgba(0, 0, 0, 0.8)) !important;
+}
+/* o de ouro */
+html:not(.modo-ficha) :is(.fx-bt.forte, .cb-bt.forte, .tb2-bt.forte, .rq-pedir) {
+  border-color: #3a1e08 !important;
+  background:
+    linear-gradient(105deg, transparent 42%, rgba(255, 252, 235, 0.55) 50%, transparent 58%) no-repeat,
+    var(--h-ouro) !important;
+  background-size:
+    260% 100%,
+    100% 100% !important;
+  background-position:
+    170% 0,
+    0 0;
+  box-shadow: var(--h-ouro-sombra) !important;
+  color: var(--r-tinta-ouro) !important;
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.6) !important;
+  animation: hud-varre 6s 1.2s infinite;
+}
+html:not(.modo-ficha) :is(.fx-bt.forte, .cb-bt.forte, .rq-pedir):not(:disabled):hover {
+  filter: brightness(1.08);
+  background:
+    linear-gradient(105deg, transparent 42%, rgba(255, 252, 235, 0.55) 50%, transparent 58%) no-repeat,
+    var(--h-ouro) !important;
+  background-size:
+    260% 100%,
+    100% 100% !important;
+}
+html:not(.modo-ficha) :is(.fx-bt.forte, .cb-bt.forte) :is(span, .ic) {
+  color: var(--r-tinta-ouro) !important;
+}
+/* o de perigo */
+html:not(.modo-ficha) :is(.fx-bt.perigo, .cb-bt.perigo) {
+  border-color: #b4483b !important;
+  color: var(--r-perigo) !important;
+  box-shadow:
+    inset 0 0 0 0.25rem var(--h-campo),
+    inset 0 0 0 0.36rem rgba(180, 72, 59, 0.42) !important;
+}
+/* o ligado (ferramenta ativa, modo escolhido) */
+html:not(.modo-ficha) :is(.cb-ferr.on, .board-vista .bv.on, .board-mesa .bv.on, .acao.on, .fx-bt.on, .tool.on) {
+  border-color: var(--r-ouro-hi) !important;
+  background:
+    radial-gradient(ellipse 80% 110% at 50% 100%, rgba(233, 169, 68, 0.28), transparent 72%),
+    var(--r-noite-3) !important;
+  color: var(--r-ouro-hi) !important;
+  box-shadow:
+    inset 0 0 0 0.25rem rgba(20, 36, 64, 0.9),
+    inset 0 0 0 0.36rem rgba(255, 210, 122, 0.35),
+    0 0 1rem rgba(255, 196, 90, 0.25) !important;
+}
+/* as ferramentas em cima do tabuleiro: os botões menores */
+html:not(.modo-ficha) :is(.cb-ferr, .board-vista .bv, .board-mesa .bv) {
+  height: 3.5rem !important;
+  min-height: 0 !important;
+  padding: 0 1rem !important;
+  gap: 0.55rem;
+  font-size: 1.15rem !important;
+  background: rgba(5, 11, 20, 0.88) !important;
+  backdrop-filter: blur(0.3rem);
+}
+html:not(.modo-ficha) :is(.cb-ferr, .board-vista .bv, .board-mesa .bv) :is(.arte-ic, .ic) {
+  width: 1.9rem !important;
+  height: 1.9rem !important;
+}
+html:not(.modo-ficha) .board-vista,
+html:not(.modo-ficha) .board-mesa .bm-botoes {
+  gap: 0.5rem !important;
+}
+/* os botões pequenos (Sacar, Usar agora, Encerrar) */
+html:not(.modo-ficha) .cb-bt.cb-mini {
+  min-height: 2.6rem;
+  height: auto;
+  padding: 0.3rem 0.8rem !important;
+  font-size: 1.1rem !important;
+  box-shadow:
+    inset 0 0 0 0.2rem var(--h-campo),
+    inset 0 0 0 0.3rem rgba(192, 132, 66, 0.3) !important;
+}
+
+/* ================================================================ campos, seletores e marcadores */
+html:not(.modo-ficha) :is(.cb-inp, .fx-inp, .rq-busca-campo, select.cb-sel, .tool-sel, .cb-filtro, .vt-max) {
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.7) !important;
+  border-image: none !important;
+  border-radius: var(--h-raio) !important;
+  background-color: var(--h-campo) !important;
+  box-shadow: inset 0 0 0 0.15rem rgba(0, 0, 0, 0.6) !important;
+  color: var(--r-texto) !important;
+  caret-color: var(--r-ouro-hi);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+html:not(.modo-ficha) :is(.cb-inp, .fx-inp, .rq-busca-campo, select.cb-sel, .tool-sel, .cb-filtro, .vt-max):focus {
+  outline: none !important;
+  border-color: var(--r-ouro) !important;
+  box-shadow: 0 0 1.2rem rgba(226, 166, 74, 0.35) !important;
+}
+html:not(.modo-ficha) :is(select.cb-sel, .tool-sel, .cb-filtro) {
+  appearance: none;
+  padding-right: 3rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23ffd27a' stroke-width='2'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 1rem center !important;
+  background-size: 1.2rem !important;
+  font-family: var(--r-pixel) !important;
+}
+html:not(.modo-ficha) :is(select.cb-sel, .tool-sel, .cb-filtro) option {
+  background: #0b1526;
+  color: var(--r-texto);
+}
+html:not(.modo-ficha) :is(.cb, .fx, .fj, .rq, .ui) input[type='checkbox'] {
+  appearance: none;
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  border: 0.18rem solid rgba(161, 136, 115, 0.75) !important;
+  border-radius: 0.45rem !important;
+  background: var(--h-campo) !important;
+  box-shadow: inset 0 0 0 0.15rem rgba(0, 0, 0, 0.6);
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+html:not(.modo-ficha) :is(.cb, .fx, .fj, .rq, .ui) input[type='checkbox']:checked {
+  border-color: #3a1e08 !important;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.4 2.4 4.6-5' fill='none' stroke='%232b1606' stroke-width='2'/%3E%3C/svg%3E") center / 72% no-repeat,
+    var(--h-ouro) !important;
+  box-shadow: var(--h-ouro-sombra);
+}
+html:not(.modo-ficha) :is(.cb, .fx, .fj, .rq, .ui) input[type='radio'] {
+  appearance: none;
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  border: 0.18rem solid rgba(161, 136, 115, 0.75) !important;
+  border-radius: 50% !important;
+  background: var(--h-campo) !important;
+}
+html:not(.modo-ficha) :is(.cb, .fx, .fj, .rq, .ui) input[type='radio']:checked {
+  border-color: var(--r-ouro) !important;
+  background: radial-gradient(circle, #ffd27a 0 34%, #c97f2c 36% 46%, var(--h-campo) 48%) !important;
+}
+
+/* a rolagem das listas: o trilho escuro e o pegador de cobre */
+html:not(.modo-ficha) :is(.cb, .fx, .fj, .rq, .ui) ::-webkit-scrollbar {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+html:not(.modo-ficha) :is(.cb, .fx, .fj, .rq, .ui) ::-webkit-scrollbar-track {
+  border: 0 !important;
+  border-image: none !important;
+  border-radius: 0.5rem;
+  background: rgba(5, 11, 20, 0.7);
+}
+html:not(.modo-ficha) :is(.cb, .fx, .fj, .rq, .ui) ::-webkit-scrollbar-thumb {
+  border: 0.2rem solid rgba(5, 11, 20, 0.9) !important;
+  border-image: none !important;
+  border-radius: 0.5rem;
+  background: linear-gradient(180deg, #d79a52, #8a5a28);
+}
+
+/* a dica que segue o mouse */
+html:not(.modo-ficha) .fx-dica {
+  border: var(--h-borda) solid var(--r-ouro-lo) !important;
+  border-image: none !important;
+  border-radius: 0.6rem !important;
+  background: rgba(5, 11, 20, 0.97) !important;
+  box-shadow: 0 0.6rem 1.6rem rgba(0, 0, 0, 0.6) !important;
+  color: var(--r-texto) !important;
+  font-family: var(--r-corpo);
+}
+
+/* ================================================================ as barras (PV, PE, SAN)
+   o trilho fundo de borda bege, a tinta com o brilho de cima, os riscos de 10 em 10 e o reflexo
+   que passa de tempos em tempos */
+html:not(.modo-ficha) :is(.rp-bar, .cb-barra, .vt-bar) {
+  position: relative;
+  overflow: hidden;
+  border: 0.16rem solid rgba(161, 136, 115, 0.6) !important;
+  border-radius: 0.45rem !important;
+  background: #020509 !important;
+  box-shadow: inset 0 0.2rem 0.4rem rgba(0, 0, 0, 0.6) !important;
+  isolation: isolate;
+}
+html:not(.modo-ficha) :is(.rp-bar, .cb-barra, .vt-bar) > i {
+  z-index: 0;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0 22%, transparent 22% 70%, rgba(0, 0, 0, 0.28) 70%),
+    var(--h-cor, #f0503f) !important;
+  box-shadow: 0 0 1rem var(--h-cor, #f0503f) !important;
+  transition: width 0.55s var(--h-ease) !important;
+}
+html:not(.modo-ficha) :is(.rp-bar, .cb-barra, .vt-bar)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(2, 5, 9, 0.5) calc(10% - 1px) 10%);
+  pointer-events: none;
+}
+html:not(.modo-ficha) :is(.rp-bar, .cb-barra, .vt-bar)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: hud-reflexo 7s ease-in-out infinite;
+}
+html:not(.modo-ficha) :is(.rp-bar, .cb-barra, .vt-bar) > span,
+html:not(.modo-ficha) .vt-bar > em {
+  position: relative;
+  z-index: 3;
+  font: 700 1.2rem / 1 var(--r-pixel) !important;
+  color: #fff !important;
+  text-shadow: 0 0.12rem 0 rgba(0, 0, 0, 0.85) !important;
+  font-variant-numeric: tabular-nums;
+}
+html:not(.modo-ficha) :is(.rp-bar.pv, .cb-barra.pv, .vt.pv .vt-bar) {
+  --h-cor: #f0503f;
+}
+html:not(.modo-ficha) :is(.rp-bar.pe, .cb-barra.pe, .vt.pe .vt-bar) {
+  --h-cor: #f3a73d;
+}
+html:not(.modo-ficha) :is(.rp-bar.san, .cb-barra.san, .vt.san .vt-bar) {
+  --h-cor: #4f9bff;
+}
+html:not(.modo-ficha) .rp-l.pe .rp-bar::before,
+html:not(.modo-ficha) .cb-rec:nth-child(2) .cb-barra::before {
+  animation-delay: 2.3s;
+}
+html:not(.modo-ficha) .rp-l.san .rp-bar::before,
+html:not(.modo-ficha) .cb-rec:nth-child(3) .cb-barra::before {
+  animation-delay: 4.6s;
+}
+html:not(.modo-ficha) .vt.pv .vt-bar > i,
+html:not(.modo-ficha) .vt.pe .vt-bar > i,
+html:not(.modo-ficha) .vt.san .vt-bar > i {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0 22%, transparent 22% 70%, rgba(0, 0, 0, 0.28) 70%),
+    var(--h-cor) !important;
+}
+
+/* ================================================================ MAPA: o painel PLAYERS */
+html:not(.modo-ficha) .rpg-player {
+  margin: 0 0 0.8rem !important;
+  padding: 1rem 1rem 1rem !important;
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.5) !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(11, 21, 38, 0.9) !important;
+  box-shadow: inset 0 0 0 0.25rem rgba(11, 21, 38, 0.9), inset 0 0 0 0.36rem rgba(161, 136, 115, 0.16) !important;
+  transition:
+    border-color 0.2s,
+    transform 0.2s var(--h-ease);
+  animation: hud-sobe 0.45s var(--h-ease) both;
+}
+html:not(.modo-ficha) .rpg-player:nth-child(2) {
+  animation-delay: 0.05s;
+}
+html:not(.modo-ficha) .rpg-player:nth-child(3) {
+  animation-delay: 0.1s;
+}
+html:not(.modo-ficha) .rpg-player:nth-child(4) {
+  animation-delay: 0.15s;
+}
+html:not(.modo-ficha) .rpg-player:nth-child(5) {
+  animation-delay: 0.2s;
+}
+html:not(.modo-ficha) .rpg-player:hover {
+  border-color: rgba(233, 169, 68, 0.75) !important;
+}
+html:not(.modo-ficha) .rp-foto,
+html:not(.modo-ficha) .rpg-player:nth-child(even) .rp-foto {
+  transform: none !important;
+  padding: 0.2rem !important;
+  border: var(--h-borda) solid #a18873 !important;
+  border-radius: 0.6rem !important;
+  background: var(--h-campo) !important;
+  box-shadow: 0 0.3rem 0.7rem rgba(0, 0, 0, 0.45) !important;
+  transition: border-color 0.2s;
+}
+html:not(.modo-ficha) .rp-foto:hover {
+  border-color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .rp-foto canvas {
+  border-radius: 0.4rem;
+  object-position: 50% 15%;
+}
+html:not(.modo-ficha) .rp-nome b {
+  font: 700 1.45rem / 1.1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .rp-local {
+  font: 500 1.1rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) .rp-local .ic {
+  color: var(--r-ouro) !important;
+}
+html:not(.modo-ficha) .rp-l {
+  align-items: center;
+}
+html:not(.modo-ficha) .rp-l b {
+  font: 700 1.2rem / 1 var(--r-pixel) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) :is(.rp-q, .rp-mais) {
+  border: 0.15rem solid rgba(161, 136, 115, 0.45) !important;
+  border-radius: 0.45rem !important;
+  background: var(--h-campo) !important;
+  color: var(--r-texto) !important;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
+}
+html:not(.modo-ficha) :is(.rp-q, .rp-mais):hover {
+  border-color: var(--r-ouro) !important;
+}
+html:not(.modo-ficha) .rp-q:active {
+  transform: scale(0.92);
+}
+html:not(.modo-ficha) .rp-bar {
+  height: 2.1rem !important;
+}
+html:not(.modo-ficha) :is(.vt-cond, .cb-cond) {
+  border: 0.15rem solid rgba(255, 138, 115, 0.55) !important;
+  border-radius: 0.5rem !important;
+  background: rgba(180, 72, 59, 0.16) !important;
+  color: var(--r-perigo) !important;
+  font: 600 1.05rem / 1 var(--r-pixel) !important;
+}
+html:not(.modo-ficha) .vt-cond.mais {
+  border-color: rgba(161, 136, 115, 0.45) !important;
+  background: var(--h-campo) !important;
+  color: var(--r-texto-2) !important;
+}
+
+/* as abas do painel da direita e as da planta: o filtro do HUD */
+html:not(.modo-ficha) :is(.rpg-tabs, .itabs, .plan-tabs) {
+  gap: 0.4rem !important;
+  padding: 0.35rem !important;
+  border: 0.16rem solid rgba(161, 136, 115, 0.38) !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(5, 11, 20, 0.85) !important;
+}
+html:not(.modo-ficha) :is(.rpg-tabs .itab, .itabs .itab, .plan-tab) {
+  border: 0 !important;
+  border-radius: 0.55rem !important;
+  transition:
+    background 0.25s var(--h-ease),
+    color 0.2s !important;
+}
+html:not(.modo-ficha) :is(.rpg-tabs .itab, .itabs .itab, .plan-tab):not(.on):hover {
+  background: rgba(20, 36, 64, 0.9) !important;
+  color: var(--r-texto) !important;
+}
+
+/* ================================================================ MAPA: o tabuleiro */
+html:not(.modo-ficha) .board-moldura {
+  inset: -0.2rem !important;
+  border: var(--h-borda) solid #a18873 !important;
+  border-image: none !important;
+  border-radius: 1rem !important;
+  box-shadow:
+    inset 0 0 0 0.3rem rgba(5, 11, 20, 0.92),
+    inset 0 0 0 0.42rem rgba(161, 136, 115, 0.4),
+    inset 0 0 3.2rem rgba(0, 0, 0, 0.6),
+    0 0.9rem 2.2rem rgba(0, 0, 0, 0.5) !important;
+}
+html:not(.modo-ficha) .board-placa,
+html:not(.modo-ficha) .cb-tab-cena {
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.7) !important;
+  border-radius: 0.6rem !important;
+  background: rgba(5, 11, 20, 0.9) !important;
+  font: 700 1.3rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+}
+
+/* as casas do inventário rápido (as do kit, como a mochila do celular) e as AÇÕES */
+html:not(.modo-ficha) .qslot {
+  padding: 13%;
+  transition:
+    transform 0.15s var(--h-ease),
+    filter 0.2s;
+}
+html:not(.modo-ficha) .qslot:not(.empty):hover {
+  transform: translateY(-0.15rem);
+  filter: drop-shadow(0 0 0.6rem rgba(255, 196, 90, 0.4));
+}
+html:not(.modo-ficha) .qslot.empty {
+  opacity: 0.55;
+}
+html:not(.modo-ficha) .acao {
+  justify-content: flex-start !important;
+  width: 100%;
+  min-height: 3.6rem;
+  padding: 0 1.1rem !important;
+}
+html:not(.modo-ficha) .acao :is(.arte-ic, .ic) {
+  width: 2.3rem !important;
+  height: 2.3rem !important;
+}
+
+/* ================================================================ as cartas dos agentes (embaixo)
+   o retrato na janela pequena do HUD (borda bege e linha de dentro), o nome embaixo dele */
+html:not(.modo-ficha) .pcard {
+  rotate: none !important;
+  transform: none !important;
+}
+html:not(.modo-ficha) .pcard::before {
+  border: var(--h-borda) solid #a18873 !important;
+  border-image: none !important;
+  border-radius: 0.8rem;
+  box-shadow:
+    inset 0 0 0 0.25rem rgba(5, 11, 20, 0.95),
+    inset 0 0 0 0.36rem rgba(161, 136, 115, 0.35);
+  filter: none !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s;
+}
+html:not(.modo-ficha) .pcard:hover::before {
+  border-color: var(--r-ouro) !important;
+}
+html:not(.modo-ficha) .pcard.on::before {
+  border-color: var(--r-ouro-hi) !important;
+  box-shadow:
+    inset 0 0 0 0.25rem rgba(5, 11, 20, 0.95),
+    inset 0 0 0 0.36rem rgba(255, 210, 122, 0.45),
+    0 0 1.4rem rgba(255, 196, 90, 0.45);
+}
+html:not(.modo-ficha) .pcard .pc-photo {
+  aspect-ratio: 3 / 4;
+  padding: 0.45rem 0.45rem calc(var(--cw) * 0.27) !important;
+  border-radius: 0.8rem;
+  background: linear-gradient(180deg, #0b1526, #050b14) !important;
+}
+html:not(.modo-ficha) .pcard .pc-img {
+  border-radius: 0.45rem;
+  overflow: hidden;
+}
+html:not(.modo-ficha) .pcard .pc-name {
+  top: calc(var(--cw) * 4 / 3 - var(--cw) * 0.25) !important;
+  font-size: clamp(1rem, calc(var(--cw) * 0.15), 1.3rem) !important;
+}
+html:not(.modo-ficha) .pcard:hover .pc-photo {
+  transform: none;
+}
+html:not(.modo-ficha) .pcard.away .pc-photo {
+  filter: grayscale(0.6) brightness(0.7);
+}
+
+/* ================================================================ COMBATE */
+/* a ordem de iniciativa: as linhas do HUD; a da vez acende e ganha o cursor */
+html:not(.modo-ficha) .cb-ini-linha::before,
+html:not(.modo-ficha) .cb-ini-linha::after {
+  border: 0 !important;
+  border-image: none !important;
+  background: none !important;
+  animation: none !important;
+}
+html:not(.modo-ficha) .cb-ini-linha {
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.45) !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(11, 21, 38, 0.92) !important;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.15s var(--h-ease);
+  animation: hud-sobe 0.4s var(--h-ease) both;
+}
+html:not(.modo-ficha) .cb-ini-linha:hover {
+  border-color: rgba(233, 169, 68, 0.75) !important;
+  transform: translateX(0.2rem);
+}
+html:not(.modo-ficha) .cb-ini-linha.vez {
+  border-color: var(--r-ouro-hi) !important;
+  background: linear-gradient(90deg, rgba(233, 169, 68, 0.2), rgba(20, 36, 64, 0.96) 45%) !important;
+  animation:
+    hud-sobe 0.4s var(--h-ease) both,
+    hud-vez 2.4s ease-in-out 0.4s infinite;
+}
+html:not(.modo-ficha) .cb-ini-linha.agiu {
+  opacity: 0.62;
+}
+html:not(.modo-ficha) .cb-ini-linha .cb-num {
+  border: 0.16rem solid rgba(161, 136, 115, 0.6) !important;
+  border-radius: 0.5rem !important;
+  background: var(--h-campo) !important;
+  font: 700 1.6rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .cb-ini-linha.vez .cb-num {
+  border-color: #3a1e08 !important;
+  background: var(--h-ouro) !important;
+  color: var(--r-tinta-ouro) !important;
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.6);
+}
+html:not(.modo-ficha) .cb-ini-txt b {
+  font: 700 1.4rem / 1.1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .cb-suavez {
+  font: 700 1.1rem / 1 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  animation: hud-pulsa 1.6s ease-in-out infinite;
+}
+html:not(.modo-ficha) .cb-seta {
+  color: var(--r-ouro-hi) !important;
+  animation: hud-cursor 0.9s steps(2) infinite;
+  transform: translateY(-50%);
+  position: relative;
+  top: 50%;
+}
+html:not(.modo-ficha) .cb-ini-botoes {
+  gap: 0.6rem !important;
+}
+
+/* os passos da ação: a linha bege, as bolinhas; a atual com o anel de ouro, as feitas de ouro */
+html:not(.modo-ficha) .cb-passos::before {
+  height: 0.25rem !important;
+  background: rgba(161, 136, 115, 0.35) !important;
+}
+html:not(.modo-ficha) .cb-passos::after {
+  background: linear-gradient(90deg, #c97f2c, #ffd27a) !important;
+  box-shadow: 0 0 0.8rem rgba(255, 196, 90, 0.5);
+}
+html:not(.modo-ficha) .cb-passos li > span {
+  border: 0.18rem solid rgba(161, 136, 115, 0.6) !important;
+  border-radius: 50% !important;
+  background: var(--h-campo) !important;
+  font: 700 1.15rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+  text-shadow: none !important;
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    color 0.3s;
+}
+html:not(.modo-ficha) .cb-passos li.feito > span {
+  border-color: #3a1e08 !important;
+  background: var(--h-ouro) !important;
+  color: var(--r-tinta-ouro) !important;
+}
+html:not(.modo-ficha) .cb-passos li.atual > span {
+  border-color: var(--r-ouro-hi) !important;
+  background: var(--r-noite-3) !important;
+  color: var(--r-ouro-hi) !important;
+  animation: hud-anel 1.8s ease-in-out infinite;
+}
+html:not(.modo-ficha) .cb-passos li small {
+  font: 600 1.05rem / 1.1 var(--r-pixel) !important;
+}
+
+/* as abas das ações: o ícone pintado grande, como as abas do celular */
+html:not(.modo-ficha) .cb-abas {
+  gap: 0.5rem !important;
+}
+html:not(.modo-ficha) .cb-aba {
+  height: 4.2rem !important;
+  gap: 0.6rem;
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.45) !important;
+  border-image: none !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(11, 21, 38, 0.92) !important;
+  font: 600 1.2rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+  letter-spacing: 0.04em;
+  text-shadow: none !important;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.3s,
+    transform 0.12s var(--h-ease);
+}
+html:not(.modo-ficha) .cb-aba:hover {
+  border-color: var(--r-ouro) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .cb-aba:active {
+  transform: scale(0.97);
+}
+html:not(.modo-ficha) .cb-aba .arte-ic img,
+html:not(.modo-ficha) .cb-aba > .ic {
+  width: 2.9rem !important;
+  height: 2.9rem !important;
+  filter: saturate(0.65) brightness(0.85) drop-shadow(0 0.12rem 0.15rem #000) !important;
+  transition:
+    transform 0.25s var(--h-ease),
+    filter 0.25s;
+}
+html:not(.modo-ficha) .cb-aba.on {
+  border-color: var(--r-ouro-hi) !important;
+  background:
+    radial-gradient(ellipse 75% 100% at 50% 100%, rgba(233, 169, 68, 0.3), transparent 72%),
+    rgba(20, 36, 64, 0.96) !important;
+  color: var(--r-ouro-hi) !important;
+  text-shadow: var(--r-sombra-pixel) !important;
+}
+html:not(.modo-ficha) .cb-aba.on .arte-ic img,
+html:not(.modo-ficha) .cb-aba.on > .ic {
+  transform: translateY(-0.12rem) scale(1.12);
+  filter: drop-shadow(0 0 0.8rem rgba(255, 196, 90, 0.7)) drop-shadow(0 0.12rem 0.15rem #000) !important;
+}
+html:not(.modo-ficha) .cb-aba.on::after {
+  content: '';
+  inset: auto 20% -0.55rem !important;
+  height: 0.25rem;
+  border-radius: 0.2rem;
+  background: var(--r-ouro-hi) !important;
+  box-shadow: 0 0 1rem var(--r-ouro);
+  animation: none !important;
+}
+
+/* quem age: o retrato na janelinha, o nome, as barras, Defesa e Deslocamento como os números
+   da rodada do celular (o ícone pintado, o número grande e o nome) */
+html:not(.modo-ficha) .cb-foto {
+  border: var(--h-borda) solid #a18873 !important;
+  border-radius: 0.7rem !important;
+  background: var(--h-campo) !important;
+  box-shadow: 0 0.4rem 0.9rem rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden;
+}
+html:not(.modo-ficha) .cb-foto.alvo::after {
+  inset: 0 !important;
+  border: 0 !important;
+  border-image: none !important;
+  border-radius: 0.55rem;
+  box-shadow: inset 0 0 0 0.25rem rgba(5, 11, 20, 0.8), inset 0 0 0 0.36rem rgba(161, 136, 115, 0.35);
+}
+html:not(.modo-ficha) .cb-ator-nome b {
+  font: 700 1.75rem / 1 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .cb-ator-nome span {
+  font: 500 1.2rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+}
+html:not(.modo-ficha) .cb-rec > b {
+  font: 700 1.3rem / 1 var(--r-pixel) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .cb-rec:nth-child(1) > b {
+  color: #f0503f !important;
+}
+html:not(.modo-ficha) .cb-rec:nth-child(2) > b {
+  color: #f3a73d !important;
+}
+html:not(.modo-ficha) .cb-rec:nth-child(3) > b {
+  color: #4f9bff !important;
+}
+html:not(.modo-ficha) .cb-caixa {
+  display: grid !important;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  align-content: center;
+  gap: 0.25rem;
+  min-width: 6.4rem;
+  padding: 0.5rem 0.7rem !important;
+  border: 0.16rem solid rgba(161, 136, 115, 0.5) !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(11, 21, 38, 0.9) !important;
+  box-shadow: none !important;
+}
+html:not(.modo-ficha) .cb-caixa .arte-ic {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+html:not(.modo-ficha) .cb-caixa .arte-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+html:not(.modo-ficha) .cb-caixa b {
+  order: 2;
+  font: 700 1.9rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .cb-caixa small {
+  order: 3;
+  font: 500 1rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+  letter-spacing: 0.04em;
+}
+html:not(.modo-ficha) .cb-limite {
+  font: 600 1.15rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+}
+html:not(.modo-ficha) .cb-limite.alerta {
+  color: var(--r-perigo) !important;
+}
+/* os chips das ações do turno: livre (verde), usada (apagada) */
+html:not(.modo-ficha) .cb-acao-chip {
+  height: auto !important;
+  padding: 0.35rem 0.7rem !important;
+  border: 0.15rem solid rgba(121, 217, 143, 0.6) !important;
+  border-image: none !important;
+  border-radius: 0.5rem !important;
+  background: rgba(121, 217, 143, 0.12) !important;
+  font: 600 1.05rem / 1 var(--r-pixel) !important;
+  color: #9be3ab !important;
+}
+html:not(.modo-ficha) .cb-acao-chip.usado {
+  border-color: rgba(161, 136, 115, 0.4) !important;
+  background: rgba(5, 11, 20, 0.7) !important;
+  color: var(--r-texto-3) !important;
+  text-decoration: line-through;
+}
+
+/* as três colunas (arma, situação, rolagem) e o dano: as janelinhas de dentro */
+html:not(.modo-ficha) :is(.cb-col, .cb-dano) {
+  border: 0.16rem solid rgba(161, 136, 115, 0.38) !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(8, 16, 30, 0.85) !important;
+  box-shadow: none !important;
+}
+html:not(.modo-ficha) :is(.cb-col h4, .cb-dano h4) {
+  font: 700 1.3rem / 1 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  letter-spacing: 0.06em;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) :is(.cb-col h4, .cb-dano h4) > span {
+  color: var(--r-ouro) !important;
+}
+/* as armas e as opções: linhas do HUD; a escolhida com o cursor */
+html:not(.modo-ficha) .cb-arma::before {
+  display: none !important;
+}
+html:not(.modo-ficha) :is(.cb-arma, .cb-opcao, .cb-sit, .cb-pend-item) {
+  position: relative;
+  border: 0.16rem solid rgba(161, 136, 115, 0.4) !important;
+  border-image: none !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(11, 21, 38, 0.92) !important;
+  box-shadow: none !important;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.15s var(--h-ease);
+}
+html:not(.modo-ficha) :is(.cb-arma, .cb-opcao, .cb-sit):hover {
+  border-color: rgba(233, 169, 68, 0.75) !important;
+  transform: translateX(0.15rem);
+}
+html:not(.modo-ficha) :is(.cb-arma.on, .cb-sit.on) {
+  border-color: var(--r-ouro-hi) !important;
+  background: linear-gradient(90deg, rgba(233, 169, 68, 0.18), rgba(20, 36, 64, 0.96) 45%) !important;
+}
+html:not(.modo-ficha) .cb-arma.on::after {
+  content: '▶';
+  position: absolute;
+  left: 0.35rem;
+  top: 50%;
+  font: 700 1.1rem / 1 var(--r-pixel);
+  color: var(--r-ouro-hi);
+  text-shadow: var(--r-sombra-pixel);
+  transform: translateY(-50%);
+  animation: hud-cursor 0.9s steps(2) infinite;
+}
+html:not(.modo-ficha) :is(.cb-arma b, .cb-opcao-txt b) {
+  font: 700 1.3rem / 1.1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .cb-arma.on b {
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) :is(.cb-arma small, .cb-arma-txt small, .cb-opcao-txt small) {
+  font: 400 1.15rem / 1.3 var(--r-corpo) !important;
+  color: var(--r-texto-2) !important;
+}
+html:not(.modo-ficha) :is(.cb-sit-ic, .cb-opcao-ic, .cb-pend-ic) {
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+html:not(.modo-ficha) :is(.cb-sit-ic, .cb-opcao-ic, .cb-pend-ic) .arte-ic,
+html:not(.modo-ficha) :is(.cb-sit-ic, .cb-opcao-ic, .cb-pend-ic) .arte-ic img {
+  width: 2.4rem;
+  height: 2.4rem;
+  object-fit: contain;
+}
+html:not(.modo-ficha) .cb-opcao-ic {
+  width: 3.6rem;
+  height: 3.6rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.4);
+  border-radius: 0.6rem;
+  background: rgba(5, 11, 20, 0.8);
+}
+html:not(.modo-ficha) .cb-opcao-ic .arte-ic,
+html:not(.modo-ficha) .cb-opcao-ic .arte-ic img {
+  width: 2.8rem;
+  height: 2.8rem;
+}
+html:not(.modo-ficha) .cb-custo {
+  border-radius: 0.5rem !important;
+  font: 600 1.05rem / 1 var(--r-pixel) !important;
+}
+/* a caixa onde se digita o dado: o campo do login */
+html:not(.modo-ficha) .cb-caixa-dado::before {
+  display: none !important;
+}
+html:not(.modo-ficha) .cb-caixa-dado {
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.7) !important;
+  border-radius: var(--h-raio) !important;
+  background: var(--h-campo) !important;
+  font-family: var(--r-pixel);
+}
+html:not(.modo-ficha) .cb-caixa-dado input {
+  font: 700 2rem / 1 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+}
+
+/* os chips do clima embaixo do tabuleiro e o tabuleiro do combate */
+html:not(.modo-ficha) .cb-chip {
+  gap: 0.6rem;
+  padding: 0.4rem 1rem !important;
+  border: 0.16rem solid rgba(161, 136, 115, 0.55) !important;
+  border-image: none !important;
+  border-radius: 0.6rem !important;
+  background: rgba(5, 11, 20, 0.88) !important;
+  backdrop-filter: blur(0.3rem);
+  font: 500 1.15rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+}
+html:not(.modo-ficha) .cb-chip b {
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .cb-chip b.alerta {
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .cb-chip :is(.arte-ic, .ic) {
+  width: 2rem !important;
+  height: 2rem !important;
+}
+html:not(.modo-ficha) .cb-chip .arte-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+html:not(.modo-ficha) .cb-palco > .cb-tab {
+  margin: 0 !important;
+  border: var(--h-borda) solid #a18873 !important;
+  border-image: none !important;
+  border-radius: 1rem !important;
+  box-shadow:
+    inset 0 0 0 0.3rem rgba(5, 11, 20, 0.92),
+    inset 0 0 0 0.42rem rgba(161, 136, 115, 0.4),
+    inset 0 0 2.6rem rgba(0, 0, 0, 0.55),
+    0 0.9rem 2.2rem rgba(0, 0, 0, 0.45) !important;
+}
+
+/* o registro: as linhas, a rodada e o desfazer */
+html:not(.modo-ficha) .cb-reg-linha {
+  animation: hud-sobe 0.35s var(--h-ease) both;
+}
+html:not(.modo-ficha) .cb-reg-rodada {
+  font: 600 1.1rem / 1 var(--r-pixel) !important;
+  letter-spacing: 0.1em;
+}
+
+/* o carimbo do resultado: chega batendo */
+html:not(.modo-ficha) .cb-carimbo {
+  animation: hud-carimbo 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes hud-carimbo {
+  from {
+    opacity: 0;
+    transform: scale(1.6) rotate(-8deg);
+  }
+}
+
+/* ================================================================ FICHAS: os agentes da coluna */
+html:not(.modo-ficha) .fx-ag::before {
+  border: var(--h-borda) solid #a18873 !important;
+  border-image: none !important;
+  border-radius: 0.8rem;
+  box-shadow:
+    inset 0 0 0 0.25rem rgba(5, 11, 20, 0.95),
+    inset 0 0 0 0.36rem rgba(161, 136, 115, 0.35);
+}
+html:not(.modo-ficha) .fx-ag {
+  border-radius: 0.8rem !important;
+  background: linear-gradient(180deg, #0b1526, #050b14) !important;
+  transition: transform 0.2s var(--h-ease);
+}
+html:not(.modo-ficha) .fx-ag:hover {
+  transform: translateY(-0.15rem);
+}
+html:not(.modo-ficha) .fx-ag:hover::before {
+  border-color: var(--r-ouro) !important;
+}
+html:not(.modo-ficha) .fx-ag.on::before {
+  border-color: var(--r-ouro-hi) !important;
+  box-shadow:
+    inset 0 0 0 0.25rem rgba(5, 11, 20, 0.95),
+    inset 0 0 0 0.36rem rgba(255, 210, 122, 0.45),
+    0 0 1.4rem rgba(255, 196, 90, 0.45);
+}
+html:not(.modo-ficha) .fx-ag.on::after {
+  display: none;
+}
+
+/* ================================================================ movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  html:not(.modo-ficha) *,
+  html:not(.modo-ficha) *::before,
+  html:not(.modo-ficha) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ================================================================ ajustes da primeira passada */
+/* o título ocupa a largura toda (a linha de ouro corre até o fim) */
+html:not(.modo-ficha) :is(.p-title, .insp-cab) {
+  align-self: stretch;
+  width: auto;
+  max-width: none;
+  overflow: visible !important;
+}
+/* "NESTA CENA" / "OBJETO" / "PERSONAGEM": o ícone e a linha, como os outros títulos */
+html:not(.modo-ficha) .insp-cab {
+  padding-left: 0 !important;
+}
+html:not(.modo-ficha) .insp-cab::before {
+  content: '' !important;
+  position: static !important;
+  flex: none;
+  width: 2.6rem !important;
+  height: 2.6rem !important;
+  border-radius: 0 !important;
+  background: url('/arte/icones/busca.png') center / contain no-repeat !important;
+  filter: drop-shadow(0 0.15rem 0.2rem rgba(0, 0, 0, 0.7));
+}
+html:not(.modo-ficha) .insp-cab::after {
+  content: '';
+  flex: 1;
+  min-width: 1.2rem;
+  height: 0.2rem;
+  border-radius: 0.1rem;
+  background: var(--h-linha-ouro);
+  opacity: 0.75;
+}
+/* o nome da sala (cartão da sala) */
+html:not(.modo-ficha) .marca {
+  padding-left: 0 !important;
+  font: 700 1.8rem / 1.1 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .marca::before {
+  display: none !important;
+}
+/* as fotos (sala, objeto): a janelinha do HUD, reta */
+html:not(.modo-ficha) .polaroid {
+  transform: none !important;
+  rotate: none !important;
+  padding: 0.25rem !important;
+  border: var(--h-borda) solid #a18873 !important;
+  border-radius: 0.6rem !important;
+  background: var(--h-campo) !important;
+  box-shadow: 0 0.4rem 0.9rem rgba(0, 0, 0, 0.5) !important;
+}
+html:not(.modo-ficha) .polaroid .pol-photo {
+  border-radius: 0.4rem;
+  box-shadow: none !important;
+}
+html:not(.modo-ficha) .polaroid .pc-dot,
+html:not(.modo-ficha) .p-plan .tachinha,
+html:not(.modo-ficha) .scrap {
+  display: none !important;
+}
+/* a letra de mão do papel some: o texto de ajuda na condensada, discreto */
+html:not(.modo-ficha) :is(.hint, .empty, .ipane .empty, .insp-dica, .p-hint) {
+  font-family: var(--r-corpo) !important;
+  font-style: normal !important;
+  color: var(--r-texto-3) !important;
+}
+
+/* ================================================================ a PLANTA: a tela do minimapa */
+html:not(.modo-ficha) .p-plan .plan-canvas {
+  border: 0.16rem solid rgba(161, 136, 115, 0.45);
+  border-radius: 0.6rem;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 45%, rgba(40, 70, 120, 0.22), transparent 75%),
+    #050a12;
+  box-shadow: inset 0 0 1.6rem rgba(0, 0, 0, 0.7);
+}
+
+/* ================================================================ as cartas dos agentes, de novo:
+   o retrato na janelinha (borda bege, linha de dentro), o nome EMBAIXO dela e as três barrinhas */
+html:not(.modo-ficha) .pcard {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+  overflow: visible;
+}
+html:not(.modo-ficha) .pcard::before,
+html:not(.modo-ficha) .pcard::after {
+  display: none !important;
+}
+html:not(.modo-ficha) .pcard .pc-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5 !important;
+  padding: 0.25rem !important;
+  border: var(--h-borda) solid #a18873 !important;
+  border-radius: 0.7rem !important;
+  background: var(--h-campo) !important;
+  box-shadow:
+    inset 0 0 0 0.12rem rgba(5, 11, 20, 0.9),
+    0 0.45rem 1rem rgba(0, 0, 0, 0.5) !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s,
+    transform 0.2s var(--h-ease);
+}
+html:not(.modo-ficha) .pcard:hover .pc-photo {
+  border-color: var(--r-ouro) !important;
+  transform: translateY(-0.2rem);
+}
+html:not(.modo-ficha) .pcard.on .pc-photo {
+  border-color: var(--r-ouro-hi) !important;
+  box-shadow:
+    inset 0 0 0 0.12rem rgba(5, 11, 20, 0.9),
+    0 0 1.4rem rgba(255, 196, 90, 0.5) !important;
+}
+html:not(.modo-ficha) .pcard .pc-img {
+  border-radius: 0.45rem;
+}
+html:not(.modo-ficha) .pcard .pc-name {
+  position: static !important;
+  inset: auto !important;
+  top: auto !important;
+  height: auto !important;
+  display: block !important;
+  padding: 0 0.1rem !important;
+  font: 700 1.2rem / 1.1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-align: center;
+  text-shadow: var(--r-sombra-pixel);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html:not(.modo-ficha) .pcard.on .pc-name {
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .pcard .pc-vitals {
+  display: grid !important;
+  gap: 0.22rem !important;
+  margin: 0 !important;
+}
+html:not(.modo-ficha) .pcard .pcv {
+  display: block !important;
+}
+html:not(.modo-ficha) .pcard .pcv-bar {
+  position: relative;
+  display: block !important;
+  height: 0.5rem !important;
+  overflow: hidden;
+  border-radius: 0.2rem !important;
+  background: #020509 !important;
+  box-shadow: inset 0 0 0 0.08rem rgba(161, 136, 115, 0.45) !important;
+}
+html:not(.modo-ficha) .pcard .pcv-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--w, 0%) !important;
+  display: block;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0 30%, transparent 30%), var(--h-cor, #f0503f) !important;
+  transition: width 0.55s var(--h-ease);
+}
+html:not(.modo-ficha) .pcard .pcv.pv {
+  --h-cor: #f0503f;
+}
+html:not(.modo-ficha) .pcard .pcv.pe {
+  --h-cor: #f3a73d;
+}
+html:not(.modo-ficha) .pcard .pcv.san {
+  --h-cor: #4f9bff;
+}
+html:not(.modo-ficha) .p-agentes {
+  display: flex !important;
+  flex-direction: column;
+}
+html:not(.modo-ficha) .p-agentes .party {
+  flex: 1 !important;
+  align-items: center !important;
+}
+html:not(.modo-ficha) .p-plan .p-title {
+  flex: 1 1 100% !important;
+}
+/* o clipe de papel entre a planta e a sala sai; o X de fechar vira o botão quadrado do HUD */
+html:not(.modo-ficha) .clip {
+  display: none !important;
+}
+html:not(.modo-ficha) .insp-x {
+  display: grid;
+  place-items: center;
+  width: 3.2rem !important;
+  height: 3.2rem !important;
+  border: var(--h-borda) solid #a18873 !important;
+  border-radius: 0.6rem !important;
+  background: var(--h-campo) !important;
+  color: var(--r-texto) !important;
+  box-shadow: inset 0 0 0 0.2rem var(--h-campo), inset 0 0 0 0.3rem rgba(161, 136, 115, 0.35) !important;
+  transform: none !important;
+  transition: border-color 0.2s;
+}
+html:not(.modo-ficha) .insp-x:hover {
+  border-color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .insp-x .x-clip {
+  display: none !important;
+}
+html:not(.modo-ficha) .insp-x span {
+  font: 700 1.4rem / 1 var(--r-pixel);
+}
+html:not(.modo-ficha) .p-plan .p-title {
+  right: 2rem !important;
+}
+/* a carta do agente é "papered" (do tempo do papel): sem a janela em volta, só o retrato emoldurado */
+html:not(.modo-ficha) .pcard.papered {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+/* o nome do painel não encolhe (a linha é que some se faltar lugar) */
+html:not(.modo-ficha) :is(.cb-tit, .fx-tit) h3 {
+  flex: 0 0 auto !important;
+  overflow: visible !important;
+}
+html:not(.modo-ficha) :is(.cb-tit, .fx-tit)::after {
+  min-width: 0 !important;
+}
+/* Defesa e Deslocamento: o ícone ao lado, o número em cima do nome (cabe na altura da caixa) */
+html:not(.modo-ficha) .cb-caixa {
+  grid-template-columns: auto auto !important;
+  grid-template-rows: auto auto !important;
+  justify-items: start !important;
+  align-items: center;
+  column-gap: 0.55rem !important;
+  row-gap: 0.15rem !important;
+  min-width: 0 !important;
+  padding: 0.45rem 0.8rem !important;
+}
+html:not(.modo-ficha) .cb-caixa > .arte-ic,
+html:not(.modo-ficha) .cb-caixa > .ic {
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  width: 2.6rem !important;
+  height: 2.6rem !important;
+}
+html:not(.modo-ficha) .cb-caixa b {
+  grid-row: 1;
+  grid-column: 2;
+  font-size: 1.75rem !important;
+}
+html:not(.modo-ficha) .cb-caixa small {
+  grid-row: 2;
+  grid-column: 2;
+}
+/* texto corrido (as dicas e notas) na condensada, como no celular */
+html:not(.modo-ficha) :is(.cb-vazio, .cb-nota, .cb-col-pe, .cb-pend-item p, .cb-reg-linha, .sala-txt p, .fx-dica) {
+  font-family: var(--r-corpo) !important;
+  letter-spacing: 0 !important;
+}
+html:not(.modo-ficha) :is(.cb-vazio, .cb-nota, .cb-pend-item p, .cb-reg-linha) {
+  font-size: 1.3rem !important;
+  line-height: 1.4 !important;
+}

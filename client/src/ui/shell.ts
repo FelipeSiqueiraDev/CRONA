@@ -77,6 +77,8 @@ type InspTab = 'desc' | 'inter' | 'items';
 type Sel = { kind: 'floor' | 'wall'; item: FloorItem | WallItem } | null;
 
 const THUMB_KEY = 'crona.thumb.';
+/** Os botões das AÇÕES com o ícone pintado do kit (arte/icones/<nome>.png). */
+const PINTADO_ACAO: Record<string, string> = { lupa: 'busca', caixa: 'cadeado', mao: 'combate-item', trocar: 'carga' };
 const COLORS = ['#e3a94c', '#d83a2e', '#3f6fd8', '#f2efe6', '#6fdc8c', '#c78bff', '#3fe0c0', '#ff6fb0'];
 const INSP_TABS: InspTab[] = ['desc', 'inter', 'items'];
 
@@ -1254,8 +1256,22 @@ export class Shell {
     }
     const S = this.planScale;
     const O = this.planOrigin;
-    const granito = this.padraoGranito(ctx);
-    const TINTA = '#1d1a17';
+    // o minimapa do game (06/10): azul-noite com a grade, os cômodos em azul-escuro com as paredes
+    // beges, o cômodo de agora aceso de ouro, as portas marcadas, os nomes em pixel e as peças como
+    // pontos de luz na cor de cada um
+    const granito = '#13233d';
+    // a grade de 1,5 m (duas casas), de leve, no papel inteiro
+    ctx.save();
+    ctx.strokeStyle = 'rgba(161,136,115,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const passo = S * 2;
+    if (passo >= 4) {
+      for (let x = ((O.x % passo) + passo) % passo; x < cssW; x += passo) (ctx.moveTo(Math.round(x) + 0.5, 0), ctx.lineTo(Math.round(x) + 0.5, cssH));
+      for (let y = ((O.y % passo) + passo) % passo; y < cssH; y += passo) (ctx.moveTo(0, Math.round(y) + 0.5), ctx.lineTo(cssW, Math.round(y) + 0.5));
+    }
+    ctx.stroke();
+    ctx.restore();
     // de quem é cada casa do andar (na planta): parede entre dois cômodos é fina; a de fora, grossa
     const dono = new Map<string, number>();
     const formas = new Map<number, Path2D>();
@@ -1270,15 +1286,16 @@ export class Shell {
         }
       formas.set(s.id, forma);
     }
-    // a sombra do prédio no papel e a pedra (o andar inteiro é um prédio só, como na referência)
+    // a sombra do prédio e o chão dos cômodos
     ctx.save();
-    ctx.translate(1.4, 1.8);
-    ctx.fillStyle = 'rgba(46,34,24,0.26)';
-    for (const f of formas.values()) ctx.fill(f);
-    ctx.restore();
+    ctx.shadowColor = 'rgba(0,0,0,0.65)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 2;
     ctx.fillStyle = granito;
     for (const f of formas.values()) ctx.fill(f);
-    for (const { s, hm, raw, p, rot, porta } of parsed) {
+    ctx.restore();
+    const rotulos: { x: number; y: number; w: number; h: number; nome: string; atual: boolean }[] = [];
+    for (const { s, hm, raw, p, rot } of parsed) {
       const ox = O.x + p.x * S;
       const oy = O.y + p.y * S;
       const atual = s.id === cur;
@@ -1290,46 +1307,40 @@ export class Shell {
       }
       const forma = formas.get(s.id)!;
       const tile = (x: number, y: number) => dono.get(`${p.x + x},${p.y + y}`) === s.id;
-      // marcas escuras de móvel e de entulho, aqui e ali (a referência tem os quadradinhos)
-      ctx.fillStyle = 'rgba(42,38,34,0.55)';
-      for (let y = 0; y < hm.height; y++)
-        for (let x = 0; x < hm.width; x++) {
-          if (!tile(x, y) || !tile(x - 1, y) || !tile(x + 1, y) || !tile(x, y - 1) || !tile(x, y + 1)) continue;
-          const v = Math.sin((p.x + x) * 127.1 + (p.y + y) * 311.7) * 43758.5453;
-          if (v - Math.floor(v) < 0.045) ctx.fillRect(ox + (x + 0.2) * S, oy + (y + 0.3) * S, S * 0.6, S * 0.4);
-        }
-      // o cômodo atual: um véu vermelho (e, entrando, o lápis risca antes)
+      // o xadrez bem leve das casas (dá a escala, como o chão de um mapa de jogo)
+      if (S >= 4) {
+        ctx.fillStyle = 'rgba(255,255,255,0.028)';
+        for (let y = 0; y < hm.height; y++)
+          for (let x = 0; x < hm.width; x++) if (tile(x, y) && (p.x + x + p.y + y) % 2 === 0) ctx.fillRect(ox + x * S, oy + y * S, S, S);
+      }
+      // o cômodo de agora: o ouro acende (entrando, sobe aos poucos, com a varredura de luz)
       if (atual) {
         const anima = this.planHatch.room === s.id ? this.planHatch.t : 1;
         ctx.save();
         ctx.clip(forma);
-        ctx.fillStyle = `rgba(196,40,28,${(0.4 * Math.min(1, anima / 0.7)).toFixed(3)})`;
+        const g = ctx.createLinearGradient(ox, oy, ox, oy + rect.h);
+        g.addColorStop(0, `rgba(255,210,122,${(0.34 * anima).toFixed(3)})`);
+        g.addColorStop(1, `rgba(201,127,44,${(0.2 * anima).toFixed(3)})`);
+        ctx.fillStyle = g;
         ctx.fill(forma);
         if (anima < 1) {
-          const lines = this.hatchLines(rect);
-          const drawn = anima * lines.length;
-          ctx.strokeStyle = `rgba(150,28,20,${(0.8 * (1 - anima)).toFixed(3)})`;
-          ctx.lineWidth = 1.2;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          lines.forEach(([x0, y0, x1, y1], i) => {
-            if (i >= drawn) return;
-            const f = Math.min(1, drawn - i);
-            ctx.moveTo(x0, y0);
-            ctx.lineTo(x0 + (x1 - x0) * f, y0 + (y1 - y0) * f);
-          });
-          ctx.stroke();
+          const yv = oy + rect.h * anima;
+          const v = ctx.createLinearGradient(0, yv - 10, 0, yv + 2);
+          v.addColorStop(0, 'rgba(255,236,190,0)');
+          v.addColorStop(1, 'rgba(255,236,190,0.65)');
+          ctx.fillStyle = v;
+          ctx.fillRect(ox, yv - 10, rect.w, 12);
         }
         ctx.restore();
       } else if (s.id === this.planFade.room && this.planFade.t < 1) {
-        ctx.fillStyle = `rgba(190,36,26,${0.45 * (1 - this.planFade.t)})`;
+        ctx.fillStyle = `rgba(233,169,68,${0.3 * (1 - this.planFade.t)})`;
         ctx.fill(forma);
       }
       if (s.id === this.planHover) {
-        ctx.fillStyle = 'rgba(255,246,228,0.22)';
+        ctx.fillStyle = 'rgba(160,200,255,0.12)';
         ctx.fill(forma);
       }
-      // as paredes: fina entre dois cômodos, grossa por fora
+      // as paredes: fina entre dois cômodos, grossa por fora; limpas, como num mapa de jogo
       const fina: [number, number, number, number][] = [];
       const grossa: [number, number, number, number][] = [];
       const vizinho = (x: number, y: number) => dono.get(`${p.x + x},${p.y + y}`);
@@ -1349,50 +1360,77 @@ export class Shell {
             (v === undefined ? grossa : fina).push(seg);
           }
         }
-      // traço de nanquim: cada ponta desvia um pouco, sempre igual (as paredes que se encontram continuam emendadas)
-      const tremor = (x: number, y: number) => {
-        const v = Math.sin(Math.round(x * 10) * 12.9898 + Math.round(y * 10) * 78.233) * 43758.5453;
-        return (v - Math.floor(v) - 0.5) * 0.9;
-      };
-      const traco = (segs: [number, number, number, number][], cor: string, lw: number) => {
+      const traco = (segs: [number, number, number, number][], cor: string, lw: number, brilho = 0) => {
         if (!segs.length) return;
+        ctx.save();
         ctx.strokeStyle = cor;
         ctx.lineWidth = lw;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+        ctx.lineCap = 'square';
+        if (brilho) {
+          ctx.shadowColor = 'rgba(255,196,90,0.85)';
+          ctx.shadowBlur = brilho;
+        }
         ctx.beginPath();
-        for (const [a, b2, c2, d2] of segs) (ctx.moveTo(a + tremor(a, b2), b2 + tremor(b2, a)), ctx.lineTo(c2 + tremor(c2, d2), d2 + tremor(d2, c2)));
+        for (const [a, b2, c2, d2] of segs) (ctx.moveTo(a, b2), ctx.lineTo(c2, d2));
         ctx.stroke();
+        ctx.restore();
       };
-      traco(fina, 'rgba(30,26,22,0.7)', 1);
-      traco(grossa, '#1d1a17', Math.max(1.6, Math.min(2.4, S * 0.42)));
-      if (atual) traco([...fina, ...grossa], 'rgba(122,18,12,0.85)', 1.2);
-      // as portas: um tracinho escuro atravessando a parede
-      ctx.fillStyle = '#26201b';
+      traco(fina, 'rgba(161,136,115,0.45)', 1);
+      traco(grossa, '#a18873', Math.max(1.5, Math.min(2.4, S * 0.34)));
+      if (atual) traco([...fina, ...grossa], '#ffd27a', 1.6, 7);
+      // as portas: um tracinho de ouro atravessando a parede
+      ctx.fillStyle = atual ? '#fff0c8' : '#e9a944';
       for (const pt of s.portals) {
         const [px, py] = rot(pt.x, pt.y);
         if (!tile(px, py)) continue;
         const X = ox + px * S;
         const Y = oy + py * S;
-        const e = Math.max(1.6, S * 0.32);
+        const e = Math.max(1.6, S * 0.3);
         if (!tile(px, py - 1)) ctx.fillRect(X + S * 0.2, Y - e / 2, S * 0.6, e);
         else if (!tile(px, py + 1)) ctx.fillRect(X + S * 0.2, Y + S - e / 2, S * 0.6, e);
         else if (!tile(px - 1, py)) ctx.fillRect(X - e / 2, Y + S * 0.2, e, S * 0.6);
         else if (!tile(px + 1, py)) ctx.fillRect(X + S - e / 2, Y + S * 0.2, e, S * 0.6);
       }
+      rotulos.push({ x: ox, y: oy, w: rect.w, h: rect.h, nome: rect.name, atual });
       this.planRects.push(rect);
     }
-    // onde estão as peças: bolinhas na cor de cada um
+    // os nomes dos cômodos, em pixel, quando cabem (o de agora em ouro)
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const r of rotulos) {
+      const f = Math.max(7, Math.min(10.5, S * 1.15));
+      ctx.font = `600 ${f.toFixed(1)}px "Pixelify Sans", "Ubuntu Mono", monospace`;
+      let nome = r.nome;
+      if (ctx.measureText(nome).width > r.w - 4) nome = nome.split(/\s+/)[0];
+      if (ctx.measureText(nome).width > r.w - 4 || r.h < f + 4) continue;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(5,11,20,0.9)';
+      ctx.strokeText(nome, r.x + r.w / 2, r.y + r.h / 2);
+      ctx.fillStyle = r.atual ? '#ffd27a' : 'rgba(243,233,216,0.78)';
+      ctx.fillText(nome, r.x + r.w / 2, r.y + r.h / 2);
+    }
+    ctx.restore();
+    // onde estão as peças: pontos de luz na cor de cada um
     for (const { s, p, rot } of parsed)
       for (const u of s.users) {
         const pm = camp.party.find((q) => q.id === u.id);
         const [ux, uy] = rot(u.x, u.y);
+        const cx = O.x + (p.x + ux + 0.5) * S;
+        const cy = O.y + (p.y + uy + 0.5) * S;
+        const r = Math.max(2.4, Math.min(3.8, S * 0.42));
+        ctx.save();
+        ctx.shadowColor = pm?.color ?? '#fff';
+        ctx.shadowBlur = 7;
         ctx.beginPath();
-        ctx.arc(O.x + (p.x + ux + 0.5) * S, O.y + (p.y + uy + 0.5) * S, Math.max(2, Math.min(3.2, S * 0.36)), 0, Math.PI * 2);
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.fillStyle = pm?.color ?? '#fff';
         ctx.fill();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = '#f6efe2';
+        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.lineWidth = 1.3;
+        ctx.strokeStyle = '#050b14';
         ctx.stroke();
       }
   }
@@ -1447,7 +1485,7 @@ export class Shell {
   /** O lugar ao ar livre na planta: o terreno com cores de mapa e os prédios de pedra, com o nome. */
   private terrenoNaPlanta(ctx: CanvasRenderingContext2D, s: SceneInfo, raw: Heightmap, rot: (x: number, y: number) => [number, number], ox: number, oy: number, S: number, granito: CanvasPattern | string) {
     const linhas = (s.terreno ?? '').replace(/\r/g, '').split('\n');
-    const COR: Record<string, string> = { '.': '#a9ad7d', g: '#a9ad7d', t: '#d9c69c', l: '#b38c62', p: '#cfc8b8', d: '#b99b70', m: '#a67d55', a: '#8fb2bd' };
+    const COR: Record<string, string> = { '.': '#1d3426', g: '#1d3426', t: '#3a3123', l: '#34402a', p: '#2b3242', d: '#3c3427', m: '#362b20', a: '#12304d' };
     for (let y = 0; y < raw.height; y++)
       for (let x = 0; x < raw.width; x++) {
         const ch = linhas[y]?.[x] ?? '.';
@@ -1460,8 +1498,8 @@ export class Shell {
     // a borda do lugar
     const largura = (rot(raw.width - 1, raw.height - 1)[0] === raw.width - 1 ? raw.width : raw.height) * S;
     const altura = (rot(raw.width - 1, raw.height - 1)[0] === raw.width - 1 ? raw.height : raw.width) * S;
-    ctx.strokeStyle = s.id === this.app.state.room?.id ? '#b22a20' : '#1d1a17';
-    ctx.lineWidth = s.id === this.app.state.room?.id ? 2.2 : 1.4;
+    ctx.strokeStyle = s.id === this.app.state.room?.id ? '#ffd27a' : '#a18873';
+    ctx.lineWidth = s.id === this.app.state.room?.id ? 2 : 1.4;
     ctx.strokeRect(ox, oy, largura, altura);
     // os prédios
     for (const m of s.marcos ?? []) {
@@ -1471,18 +1509,18 @@ export class Shell {
       const y0 = oy + Math.min(ay, by) * S;
       const w = (Math.abs(bx - ax) + 1) * S;
       const h = (Math.abs(by - ay) + 1) * S;
-      ctx.fillStyle = 'rgba(52,40,28,0.25)';
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
       ctx.fillRect(x0 + 1.2, y0 + 1.4, w, h);
       ctx.fillStyle = granito;
       ctx.fillRect(x0, y0, w, h);
-      ctx.strokeStyle = '#1d1a17';
+      ctx.strokeStyle = '#a18873';
       ctx.lineWidth = 1.6;
       ctx.strokeRect(x0, y0, w, h);
       const f = Math.min(8.5, h * 0.42, (w / Math.max(4, m.nome.length)) * 1.8);
       if (f >= 5) {
         ctx.save();
-        ctx.font = `600 ${f.toFixed(1)}px "Ubuntu Mono", monospace`;
-        ctx.fillStyle = '#efe6d1';
+        ctx.font = `600 ${f.toFixed(1)}px "Pixelify Sans", "Ubuntu Mono", monospace`;
+        ctx.fillStyle = '#f3e9d8';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(m.nome, x0 + w / 2, y0 + h / 2);
@@ -2504,7 +2542,8 @@ export class Shell {
               this.renderAcoes();
             },
           },
-          ic(a.icone),
+          // o ícone pintado do kit quando há um parecido (o resto fica com o de linha)
+          PINTADO_ACAO[a.icone] ? arteOu([`/arte/icones/${PINTADO_ACAO[a.icone]}.png`], ic(a.icone as NomeIcone)) : ic(a.icone as NomeIcone),
           h('span', null, a.rotulo),
         ),
       ),

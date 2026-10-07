@@ -11,7 +11,7 @@ import type { regras } from '@crona/shared';
 import type { Cobertura } from '../room/combateGeo';
 import { h } from './dom';
 import { textoTeste } from './fichaRegras';
-import { ic, type NomeIcone } from './icons';
+import { arteOu, ic, type NomeIcone } from './icons';
 import { sfx } from './sfx';
 
 type TipoDano = regras.TipoDano;
@@ -105,6 +105,25 @@ interface Estado {
   /** soma do dano a mais de outro tipo */
   somaExtra: number | null;
 }
+
+/** O ícone pintado do kit de cada situação que tem um parecido (arte/icones/<nome>.png); as outras ficam com o de linha. */
+const PINTADO_SIT: Partial<Record<cb.SituacaoId, string>> = {
+  cobertura: 'defesa',
+  camuflagem: 'clima-iluminacao',
+  camuflagemTotal: 'clima-nevoa',
+  alcanceDobro: 'tabuleiro-medir',
+  emCorpoACorpo: 'combate-manobra',
+  flanqueando: 'combate-atacar',
+  elevado: 'clima-terreno',
+  investida: 'combate-movimento',
+  alvoCaido: 'estado-caido',
+  atacanteCaido: 'estado-caido',
+};
+const icSit = (id: cb.SituacaoId) => {
+  const linha = ic(ICONE_SIT[id] ?? 'alerta');
+  const pintado = PINTADO_SIT[id];
+  return pintado ? arteOu([`/arte/icones/${pintado}.png`], linha) : linha;
+};
 
 const ICONE_SIT: Partial<Record<cb.SituacaoId, NomeIcone>> = {
   cobertura: 'escudo',
@@ -423,7 +442,7 @@ export class ResolucaoAtaque {
       return h(
         'label',
         { class: `cb-sit${on ? ' on' : ''}`, title: `${s.nome}: ${s.efeito} (LR p. ${s.pagina})${auto ? ' · visto no tabuleiro' : ''}` },
-        h('span', { class: 'cb-sit-ic' }, ic(ICONE_SIT[id] ?? 'alerta')),
+        h('span', { class: 'cb-sit-ic' }, icSit(id)),
         h('span', { class: 'cb-sit-txt' }, `${texto}: ${efeito}`),
         auto ? h('i', { class: 'cb-visto', title: 'Visto no tabuleiro' }, ic('olho')) : h('i', { class: 'cb-visto vazio' }),
         h('input', {

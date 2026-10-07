@@ -32,3 +32,12 @@ window.__zoomBoard = (fx, fy, fw, fh, ms = 8000) => {
   setTimeout(() => o.remove(), ms);
   return 1;
 };
+//   __quad(x, y, ms)              amplia 2× a região da tela a partir de (x, y) por alguns segundos
+window.__quad = (x, y, ms = 6000) => {
+  const s = document.querySelector('.shell');
+  s.style.transformOrigin = '0 0';
+  s.style.transform = `scale(2) translate(${-x}px,${-y}px)`;
+  clearTimeout(window.__qt);
+  window.__qt = setTimeout(() => (s.style.transform = ''), ms);
+  return 1;
+};
