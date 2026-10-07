@@ -53,6 +53,10 @@ ANIMACOES = {
     'guardar': (5, 'pe'),
     'cair': (5, 'livre'),
     'caido': (1, 'livre'),
+    'agachar': (4, 'livre'),
+    'abaixado': (4, 'livre'),
+    'furtivo': (8, 'livre'),
+    'cobertura': (5, 'livre'),
 }
 
 # o que conferir de olho: a arma e a mão de cada agente, por estado e direção (D/E = do personagem)
