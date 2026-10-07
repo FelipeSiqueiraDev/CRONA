@@ -310,6 +310,24 @@ html.modo-ficha .fj:not(.rq) .arte-ic img {
   color: var(--c-texto-3);
   font-variant-numeric: tabular-nums;
 }
+/* tudo numa linha só, qualquer que seja o número (antes quebrava a linha a partir de 10) */
+.jg-vital-topo {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.jg-vital-n {
+  flex: none;
+  white-space: nowrap;
+}
+.jg-vital-n small {
+  font: inherit;
+}
+.jg-vital-n strong {
+  text-align: right;
+}
+.jg-vital-n.n3 strong {
+  font-size: calc(var(--t-numero) * 0.82);
+}
 .jg-vital-n strong {
   display: inline-block;
   font: 700 var(--t-numero) / 1 var(--f-pixel);

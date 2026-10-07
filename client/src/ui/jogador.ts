@@ -335,7 +335,13 @@ export class TelaJogador {
       return h(
         'div',
         { class: `jg-vital ${k}${mudou}${pct <= 25 ? ' baixo' : ''}` },
-        h('div', { class: 'jg-vital-topo' }, h('b', null, rotulo), h('span', { class: 'jg-vital-n' }, h('strong', null, String(atual)), `/${max}`)),
+        // o número reserva a largura dos dígitos do máximo e fica numa linha só: de 9 para 10 nada muda de lugar
+        h(
+          'div',
+          { class: 'jg-vital-topo' },
+          h('b', null, rotulo),
+          h('span', { class: `jg-vital-n${String(max).length >= 3 ? ' n3' : ''}` }, h('strong', { style: `min-width:${Math.max(2, String(max).length)}ch` }, String(atual)), h('small', null, `/${max}`)),
+        ),
         h('div', { class: 'jg-barra' }, rastro, tinta, h('i', { class: 'jg-brilho' })),
         h(
           'div',
