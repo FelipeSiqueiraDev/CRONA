@@ -139,6 +139,48 @@ Tudo em [`FERRAMENTAS-DA-MESA.md`](FERRAMENTAS-DA-MESA.md). No canto de cima do 
 - O Docker com teto de 3 GB e devolvendo a memória (`%USERPROFILE%\.wslconfig`): vale depois de reiniciar o PC ou o Docker.
 - Testado: pelo link e pela rede entra como jogador; neste PC, como mestre; de fora, o mestre entra pela conta "Felipe".
 
+## Fila do Felipe (07/10, tarde): o que ainda falta da lista grande
+
+Feito em 07/10 (commits 2130f57, 360264c e 03da242):
+- **Painel PLAYERS:** o + e o − valem para o agente de outra cena.
+- **Enfermaria:** a cortina do leito tem o lado de dentro todo de chão (dá para andar em volta do
+  leito); o soro ficou do outro lado da cama (SEDE_REV 47).
+- **Peças vazadas:** o clique dentro anda até a casa; o braço da mesa em U fica na frente da cadeira.
+- **Item no chão:** deitado no piso, com a sombra colada nele.
+- **Mapa improvisado:** dá para apagar ("Apagar este mapa", no cartão da sala).
+- **Retratos:** centrados no rosto.
+- **Cartas e seletor da ITENS:** a cor e o sigilo do elemento de cada agente.
+- **Casas de item:** uma moldura só.
+- **Ícones:** os contadores da mochila pintados; o lápis e o Apontar pintados.
+- **ITEM SELECIONADO:** os nomes inteiros nos botões.
+- **Combate:** passo a passo.
+- **Interlúdio:** redesenhado.
+
+Os pedidos de arte novos (na pasta BASE):
+- `PROMPT-TECNOLOGIA-CHEIA-E-ENFERMARIA.txt`: o posto da enfermaria inteiro em L; a sala de
+  tecnologia cheia (cadeira gamer roxa, telão do C.R.I.S, TV com DERROTA, torre de tubos, bancada de
+  eletrônica, mesa holográfica, frigobar e as peças antigas que não chegaram).
+- `PROMPT-ICONES-E-LOGO.txt`: as situações do ataque, agachar e cobertura, mão livre, chave, os
+  modos do objeto, o Interlúdio e a logo do CRONA.
+- Os gabaritos estão em `gabaritos/pedidos/lote-07-10/`.
+
+Ainda falta (pedido do Felipe):
+- **Planta:** redesenhar o desenho (legível, menos apertado).
+- **Tabuleiro:** ganhar altura (menos botões em volta).
+- **Painel do objeto em três momentos:** mexer (mover, girar), configurar (documento, descrição,
+  tranca) e jogar (o agente vai lá e usa).
+- **Alvo do combate:** menos apertado.
+- **Tela do jogador no celular:** os retratos no "Jogo".
+- **Altura dos móveis e escombros:** a cobertura parcial ou total nas contas do ataque, e o agente
+  agachado (furtivo) e se protegendo (animações; entram no pacote do Códex dos personagens).
+- **Quando a arte chegar:**
+  - montar a sala de tecnologia cheia e o posto da enfermaria (tirar as duas bancadas e a mesa do
+    PC);
+  - trocar os ícones;
+  - escolher a logo.
+- **Bug visto no teste:** "Descartar" na aba ITENS largou o item do Tepes (no Laboratório) no chão
+  da Enfermaria, a cena aberta pelo mestre. Conferir em que cena o `largar` põe a pilha.
+
 ## Esperando o Códex (07/10, manhã)
 
 - **Armados dos quatro (tabuleiro):** só rascunhos em `C:\Users\felip\Documents\Codex\2026-10-04\leia-o-prompt-personagens-txt-na\outputs\continuacao-06-10\armados\` (`*-oito-direcoes-armad*-rascunho.png`), reprovados pelo próprio Códex por causa das mãos (a revisão está em `Personagens/revisao-maos-07-10/` na pasta da arte; NÃO importar). O gerador volta às 14h50 de 07/10. **Decidido pelo Felipe:** esperar a versão certa (`personagens-armados.zip`); quando chegar, importar com `npm run arte:poses -- <folha> <nome> --estado armado --hd` e conferir mão por mão (direita/esquerda de cada direção, como na revisão).
