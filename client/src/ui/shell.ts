@@ -1238,6 +1238,8 @@ export class Shell {
           label(f),
         ),
       );
+    // muitos andares: uma fileira só que rola de lado, e a aba de agora fica à vista
+    requestAnimationFrame(() => this.planTabs.querySelector<HTMLElement>('.plan-tab.on')?.scrollIntoView({ inline: 'center', block: 'nearest' }));
   }
 
   /**

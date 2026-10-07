@@ -2889,55 +2889,7 @@ html:not(.modo-ficha) .plan-ampliar .ic {
   }
 }
 
-/* ================================================================ mais altura para o tabuleiro (07/10) */
-/* a fileira de baixo mais baixa: as cartas menores, o inventário numa linha só, as ações 2 × 2 */
-html:not(.modo-ficha) .shell .board {
-  bottom: 17.6rem !important;
-  transition: bottom 0.35s var(--h-ease);
-}
-html:not(.modo-ficha) .shell .bottom {
-  height: 15.6rem !important;
-  transition:
-    transform 0.35s var(--h-ease),
-    opacity 0.25s;
-}
-html:not(.modo-ficha) .shell .bottom > .sheet {
-  padding: 1.1rem 1.2rem 0.9rem !important;
-}
-html:not(.modo-ficha) .p-agentes .party {
-  margin-top: 0.7rem !important;
-  --cw: min(6.6rem, calc((33rem - (var(--n, 4) - 1) * 1rem) / var(--n, 4))) !important;
-}
-html:not(.modo-ficha) .pcard .pc-vitals {
-  gap: 0.15rem !important;
-}
-html:not(.modo-ficha) .shell .quick-slots {
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-  grid-auto-rows: auto !important;
-  gap: 0.5rem !important;
-  margin-top: 0.9rem !important;
-}
-html:not(.modo-ficha) .quick-slots .qslot {
-  width: auto !important;
-  height: auto !important;
-  aspect-ratio: 1;
-}
-html:not(.modo-ficha) .shell .acoes {
-  grid-template-columns: 1fr 1fr !important;
-  gap: 0.5rem !important;
-  margin-top: 0.9rem !important;
-}
-html:not(.modo-ficha) .shell .acao {
-  min-height: 0 !important;
-  height: 4.2rem !important;
-  padding: 0 0.7rem !important;
-  gap: 0.5rem !important;
-  font-size: 1.1rem !important;
-}
-html:not(.modo-ficha) .shell .acao :is(.arte-ic, .ic) {
-  width: 2rem !important;
-  height: 2rem !important;
-}
+/* ================================================================ AMPLIAR o tabuleiro do MAPA (opcional) */
 /* tabuleiro na altura toda: a fileira de baixo desce e some */
 html:not(.modo-ficha) .shell.foco-tabuleiro .board {
   bottom: 1rem !important;
@@ -2955,13 +2907,7 @@ html:not(.modo-ficha) .bv-foco svg.ic {
   width: 1.8rem;
   height: 1.8rem;
 }
-/* na fileira baixa, o retrato da carta fica quadrado (o rosto já vem centrado) */
-html:not(.modo-ficha) .shell .bottom .pcard .pc-photo {
-  aspect-ratio: 1 / 1 !important;
-}
-html:not(.modo-ficha) .shell .bottom .pcard {
-  gap: 0.3rem !important;
-}
+
 
 /* ================================================================ o painel do objeto em três momentos */
 html:not(.modo-ficha) .obj-modos {
@@ -3456,4 +3402,36 @@ html:not(.modo-ficha) .vg-bt.on {
 }
 html:not(.modo-ficha) .vg-destino {
   width: 22rem;
+}
+
+/* as abas dos andares: uma fileira só, que rola de lado (a fazenda tem seis; a segunda fileira sumia atrás do mapa) */
+html:not(.modo-ficha) .p-plan .plan-tabs {
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  right: 5.8rem !important;
+}
+html:not(.modo-ficha) .p-plan .plan-tabs::-webkit-scrollbar {
+  display: none;
+}
+html:not(.modo-ficha) .p-plan .plan-tab,
+html:not(.modo-ficha) .p-plan .plan-tabs.muitas .plan-tab {
+  flex: none !important;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  scroll-snap-align: center;
+}
+
+/* ================================================================ COMBATE: mais altura para o tabuleiro (07/10) */
+/* o mapa de batalha era o que mais apertava: o tabuleiro ganha 9 rem de altura e a resolução, que agora mostra um passo
+   por vez, perde o mesmo tanto */
+html:not(.modo-ficha) .cb-palco > .cb-tab {
+  height: 46.4rem !important;
+}
+html:not(.modo-ficha) .cb-palco > .cb-res {
+  top: 56rem !important;
+  height: 37.2rem !important;
 }
