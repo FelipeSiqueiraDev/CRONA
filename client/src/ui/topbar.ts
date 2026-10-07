@@ -236,8 +236,11 @@ export class TopBar {
   }
 
   setMarca(titulo: string, sub: string) {
-    this.titulo.textContent = titulo.toUpperCase();
-    this.sub.textContent = sub.toUpperCase();
+    // só troca o texto se mudou (trocar à toa recria o nó e o topo pisca)
+    const t = titulo.toUpperCase();
+    const u = sub.toUpperCase();
+    if (this.titulo.textContent !== t) this.titulo.textContent = t;
+    if (this.sub.textContent !== u) this.sub.textContent = u;
   }
 
   /** "OPERAÇÃO / FULGOR": null esconde. */
@@ -250,7 +253,9 @@ export class TopBar {
 
   setLocal(titulo: string | null, sub = '') {
     this.localBox.classList.toggle('hidden', !titulo);
-    this.localT.textContent = (titulo ?? '').toUpperCase();
-    this.localS.textContent = sub.toUpperCase();
+    const lt = (titulo ?? '').toUpperCase();
+    const ls = sub.toUpperCase();
+    if (this.localT.textContent !== lt) this.localT.textContent = lt;
+    if (this.localS.textContent !== ls) this.localS.textContent = ls;
   }
 }

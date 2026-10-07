@@ -207,6 +207,13 @@ function custoPoder(p: regras.PoderObtido, f: regras.Ficha): number | undefined 
   return undefined;
 }
 
+/** Resumo curto de um texto (para saber se uma ficha mudou sem guardar o texto inteiro). */
+function hashTexto(t: string): string {
+  let h = 5381;
+  for (let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0;
+  return `${t.length}:${h}`;
+}
+
 export class CombateScreen {
   readonly el: HTMLElement;
   /** onde o tabuleiro aparece (a tela MAPA usa este retângulo como janela do canvas) */
@@ -217,6 +224,8 @@ export class CombateScreen {
   private ameacas: Record<string, cb.FichaAmeaca> = {};
   private fichas: FichaSalva[] = [];
   private calcCache = new Map<string, Calc | null>();
+  /** o que cada ficha tem de seu (sem PV, PE e SAN de agora): só isso refaz a tela */
+  private fichaHash = new Map<number, string>();
   private alvoId: number | null = null;
   private atorId: number | null = null;
   private aba: Aba = 'atacar';
@@ -369,6 +378,12 @@ export class CombateScreen {
 
   setFichas(lista: FichaSalva[]) {
     this.fichas = lista;
+    // o servidor espelha PV, PE e SAN na ficha a cada ponto: isso não muda nada do que a tela mostra de ficha
+    // (os números vêm da peça e se acertam no lugar), então só se refaz quando o resto da ficha mudou
+    const novo = new Map(lista.map((f) => [f.id, hashTexto(JSON.stringify({ ...f, atual: undefined, atualizadaEm: undefined }))]));
+    const igual = novo.size === this.fichaHash.size && [...novo].every(([id, h]) => this.fichaHash.get(id) === h);
+    this.fichaHash = novo;
+    if (igual) return;
     this.calcCache.clear();
     this.sigs.clear();
     this.render();
@@ -393,7 +408,7 @@ export class CombateScreen {
   private calcDe(id: number): Calc | null {
     const f = this.fichaDe(id);
     if (!f) return null;
-    const k = `${f.id}:${f.atualizadaEm}`;
+    const k = `${f.id}:${this.fichaHash.get(f.id) ?? f.atualizadaEm}`;
     if (!this.calcCache.has(k)) {
       let c: Calc | null = null;
       try {
@@ -1005,16 +1020,49 @@ export class CombateScreen {
     this.renderRes();
     this.renderAlvo();
     this.renderReg();
+    this.patchVitais();
     this.atualizarMarcas();
   }
 
   /** O que muda o desenho de uma peça (sem a posição no tabuleiro). */
+  /**
+   * O que muda o desenho de uma peça. PV e SAN de agora ficam de fora: se acertam no lugar (`patchVitais`);
+   * refazer o painel a cada ponto de vida piscava a tela inteira. Entram só o que muda o desenho: as condições
+   * (machucado, morrendo…), o PE (limita ritual e habilidade), os máximos e PV zerado.
+   */
   private assinaturaPecas() {
-    return (this.sessao?.characters ?? []).map((c) => [c.id, c.name, c.sceneId, c.look.charId, c.vitals, !!this.app.view?.users.get(-c.id)?.agachado]);
+    return (this.sessao?.characters ?? []).map((c) => {
+      const v = c.vitals;
+      return [c.id, c.name, c.sceneId, c.look.charId, vitalConditions(v), v?.pe ?? null, v?.pvMax ?? null, v?.peMax ?? null, v?.sanMax ?? null, (v?.pv ?? 1) <= 0, !!this.app.view?.users.get(-c.id)?.agachado];
+    });
   }
 
   private assinaturaFichas() {
-    return this.fichas.map((f) => [f.id, f.personagem, f.atualizadaEm]);
+    return this.fichas.map((f) => [f.id, f.personagem, this.fichaHash.get(f.id) ?? f.atualizadaEm]);
+  }
+
+  /** Acerta no lugar os números de PV, PE e SAN que a tela mostra (o agente da vez e o alvo). */
+  private patchVitais() {
+    const poe = (el: HTMLElement | null, texto: string) => {
+      if (el && el.textContent !== texto) el.textContent = texto;
+    };
+    this.el.querySelectorAll<HTMLElement>('.cb-rec[data-vid]').forEach((r) => {
+      const v = this.vitais(Number(r.dataset.vid));
+      const k = r.dataset.vk as 'pv' | 'pe' | 'san' | undefined;
+      if (!v || !k) return;
+      const a = v[k];
+      const m = v[`${k}Max` as const];
+      poe(r.querySelector('strong'), String(a));
+      poe(r.querySelector('small'), `/${m}`);
+      r.querySelector<HTMLElement>('.cb-barra')?.style.setProperty('--p', String(m ? Math.max(0, Math.min(1, a / m)) : 0));
+    });
+    this.el.querySelectorAll<HTMLElement>('.cb-alvo-pv[data-vid]').forEach((r) => {
+      const v = this.vitais(Number(r.dataset.vid));
+      if (!v) return;
+      poe(r.querySelector('strong'), String(v.pv));
+      poe(r.querySelector('small'), `/${v.pvMax}`);
+      r.querySelector<HTMLElement>('.cb-barra')?.style.setProperty('--p', String(v.pvMax ? Math.max(0, Math.min(1, v.pv / v.pvMax)) : 0));
+    });
   }
 
   // ---------------------------------------------------------------- iniciativa
@@ -1463,7 +1511,7 @@ export class CombateScreen {
     const barra = (rot: string, cls: string, a?: number, m?: number) =>
       h(
         'span',
-        { class: `cb-rec ${cls}` },
+        { class: `cb-rec ${cls}`, 'data-vid': String(ator.id), 'data-vk': cls },
         h('span', { class: 'cb-rec-topo' }, h('b', null, rot), h('span', { class: 'cb-rec-n' }, h('strong', null, a !== undefined ? String(a) : '—'), m ? h('small', null, `/${m}`) : null)),
         h('span', { class: `cb-barra ${cls}`, style: `--p:${a !== undefined && m ? Math.max(0, Math.min(1, a / m)) : 0}` }, h('i')),
       );
@@ -1769,7 +1817,7 @@ export class CombateScreen {
     const pv = vit
       ? h(
           'div',
-          { class: 'cb-alvo-pv' },
+          { class: 'cb-alvo-pv', 'data-vid': String(ch.id) },
           h('span', { class: 'cb-rec-topo' }, h('b', null, 'PV'), h('span', { class: 'cb-rec-n' }, h('strong', null, String(vit.pv)), h('small', null, `/${vit.pvMax}`))),
           h('button', { class: 'cb-barra pv', type: 'button', title: 'Mudar PV', style: `--p:${vit.pvMax ? Math.max(0, Math.min(1, vit.pv / vit.pvMax)) : 0}`, onclick: editarPv }, h('i')),
           h('span', { class: 'cb-machucado' }, h('i')),

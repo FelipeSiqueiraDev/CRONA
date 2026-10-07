@@ -279,6 +279,9 @@ interface Slot {
 }
 
 /** Tela MAPA, fiel ao layout de referência, com as interações animadas. */
+/** Bloco de PV, PE e SAN que se acerta no lugar (sem ser refeito). */
+type VitaisVivos = HTMLElement & { atualizar?: (p: PartyMember) => void };
+
 export class Shell {
   readonly el: HTMLElement;
   readonly board: HTMLElement;
@@ -357,6 +360,10 @@ export class Shell {
   private rpgTabsEl!: HTMLElement;
   private rpgBody!: HTMLElement;
   private rpgSig = '';
+  /** os números (PV, PE, SAN) da última passada: só eles mudando se acertam no lugar, sem refazer as cartas */
+  private rpgVit = '';
+  private rpgTabsDe: RpgTab | null = null;
+  private fichasMapaSig = '';
   private objEl: HTMLElement;
   private objPlus: HTMLElement;
   private objRows = new Map<number, ObjRow>();
@@ -1126,29 +1133,43 @@ export class Shell {
   /** Abas da direita e o conteúdo da aba aberta (PLAYERS: a ficha de cada um). */
   private renderRpg(force = false) {
     const party = this.campaign?.party ?? [];
-    const sig = JSON.stringify([this.rpgTab, this.gm, party.map((p) => [p.id, p.name, p.color, p.vitals ?? null, p.roomId, p.look?.charId ?? null, !!p.armed])]);
-    if (!force && sig === this.rpgSig) return;
+    // a estrutura (o que obriga a refazer as cartas) fica separada dos números (PV, PE, SAN): os números se
+    // acertam no lugar. Refazer tudo a cada ponto de vida piscava o painel inteiro.
+    const sig = JSON.stringify([this.rpgTab, this.gm, party.map((p) => [p.id, p.name, p.color, p.roomId, p.look?.charId ?? null, !!p.armed, vitalConditions(p.vitals).machucado])]);
+    const vit = JSON.stringify(party.map((p) => [p.id, p.vitals ?? null]));
+    if (!force && sig === this.rpgSig) {
+      if (vit !== this.rpgVit) {
+        this.rpgVit = vit;
+        for (const p of party) this.rpgBody.querySelector<VitaisVivos>(`.rpg-player[data-id="${p.id}"] .rp-vit`)?.atualizar?.(p);
+      }
+      return;
+    }
     this.rpgSig = sig;
-    clear(this.rpgTabsEl).append(
-      ...RPG_TABS.map((t) =>
-        h(
-          'button',
-          {
-            class: `itab${t === this.rpgTab ? ' on' : ''}`,
-            role: 'tab',
-            'aria-selected': String(t === this.rpgTab),
-            onclick: () => {
-              if (t === this.rpgTab) return;
-              sfx.paper();
-              this.rpgTab = t;
-              this.renderRpg(true);
+    this.rpgVit = vit;
+    // as abas só se refazem quando a aba muda
+    if (this.rpgTabsDe !== this.rpgTab || !this.rpgTabsEl.childElementCount) {
+      this.rpgTabsDe = this.rpgTab;
+      clear(this.rpgTabsEl).append(
+        ...RPG_TABS.map((t) =>
+          h(
+            'button',
+            {
+              class: `itab${t === this.rpgTab ? ' on' : ''}`,
+              role: 'tab',
+              'aria-selected': String(t === this.rpgTab),
+              onclick: () => {
+                if (t === this.rpgTab) return;
+                sfx.paper();
+                this.rpgTab = t;
+                this.renderRpg(true);
+              },
             },
-          },
-          h('span', null, t),
-          t === this.rpgTab ? tabRing() : null,
+            h('span', null, t),
+            t === this.rpgTab ? tabRing() : null,
+          ),
         ),
-      ),
-    );
+      );
+    }
     const body = clear(this.rpgBody);
     if (this.rpgTab === 'ITENS') {
       this.abaItens.render(body, party, this.fichasMapa, this.gm);
@@ -1171,7 +1192,7 @@ export class Shell {
       const here = p.roomId === cur;
       const card = h(
         'div',
-        { class: 'rpg-player', style: `--c:${p.color}` },
+        { class: 'rpg-player', style: `--c:${p.color}`, 'data-id': String(id) },
         h(
           'button',
           { class: 'rp-foto', title: here ? 'Comandar' : `Ir para ${this.sceneName(p.roomId)}`, onclick: () => this.pickCard(id) },
@@ -1205,6 +1226,9 @@ export class Shell {
 
   setFichasMapa(lista: FichaSalva[]) {
     this.fichasMapa = lista;
+    const fs = JSON.stringify(lista.map((f) => [f.id, f.atualizadaEm]));
+    if (fs === this.fichasMapaSig) return;
+    this.fichasMapaSig = fs;
     // as cartas dos agentes vestem o elemento de cada um (o tema da ficha)
     for (const [id, c] of this.cards) c.el.dataset.tema = this.temaDe(this.campaign?.party.find((x) => x.id === id));
     // a mochila (ITENS) e as condições marcadas (PLAYERS) vêm das fichas
@@ -1871,7 +1895,7 @@ export class Shell {
   private inspState() {
     const view = this.app.view;
     const sel = view.selection;
-    const party = (this.campaign?.party ?? []).map((p) => [p.id, p.name, p.color, p.load, p.capacity, p.look, !!p.armed, p.vitals ?? null]);
+    const party = (this.campaign?.party ?? []).map((p) => [p.id, p.name, p.color, p.load, p.capacity, p.look, !!p.armed, vitalConditions(p.vitals).machucado, breathMode(vitalConditions(p.vitals))]);
     let data: unknown = null;
     if (sel?.kind === 'user') {
       const u = view.users.get(sel.id);
@@ -1890,7 +1914,12 @@ export class Shell {
     const key = sel ? `${sel.kind}${sel.id}` : `none${this.app.state.room?.id ?? 0}`;
     const fresh = key !== this.inspKey;
     const sig = this.inspState();
-    if (!force && !fresh && sig === this.inspSig) return;
+    if (!force && !fresh && sig === this.inspSig) {
+      // só os números do agente mudaram: acerta no lugar, sem refazer o cartão (o retrato não reinicia)
+      const q = sel?.kind === 'user' ? this.campaign?.party.find((x) => x.id === sel.id) : undefined;
+      if (q) this.inspBody.querySelector<VitaisVivos>('.vitals')?.atualizar?.(q);
+      return;
+    }
     this.inspSig = sig;
     const prevTab = this.inspTab;
     if (fresh) {
@@ -2647,6 +2676,21 @@ export class Shell {
     const v = p.vitals ?? DEFAULT_VITALS;
     const c = vitalConditions(p.vitals);
     const low: Record<VitalKey, boolean> = { pv: c.machucado, pe: c.cansado, san: c.perturbado };
+    // já tem as três barrinhas: acerta no lugar (recriar a cada ponto de vida piscava a carta)
+    const feitas = el.querySelectorAll<HTMLElement>(':scope > .pcv');
+    if (feitas.length === VITAL_KEYS.length) {
+      VITAL_KEYS.forEach((k, i) => {
+        const cur = v[k];
+        const max = v[`${k}Max`];
+        const row = feitas[i];
+        row.className = `pcv ${k}${low[k] ? ' low' : ''}${cur <= 0 ? ' zero' : ''}`;
+        row.title = `${VITAL_NAME[k]}: ${cur} de ${max}`;
+        row.querySelector<HTMLElement>('.pcv-bar > i')?.style.setProperty('--w', `${Math.max(0, Math.min(100, (cur / max) * 100))}%`);
+        const em = row.querySelector('em');
+        if (em && em.textContent !== String(cur)) em.textContent = String(cur);
+      });
+      return;
+    }
     const rows = VITAL_KEYS.map((k) => {
       const cur = v[k];
       const max = v[`${k}Max`];
@@ -2664,13 +2708,13 @@ export class Shell {
 
   /** Ficha no inspetor do personagem: PV, PE e SAN com − e + (Shift = de 5 em 5) e o total editável. */
   private vitalsPanel(id: number, p: PartyMember) {
-    const v = p.vitals ?? DEFAULT_VITALS;
     const net = this.app.net;
-    const c = vitalConditions(p.vitals);
-    const wrap = h('div', { class: 'vitals' });
+    const wrap = h('div', { class: 'vitals' }) as VitaisVivos;
+    const linhas: { k: VitalKey; n: HTMLElement; fill: HTMLElement; total: HTMLElement }[] = [];
+    const v0 = p.vitals ?? DEFAULT_VITALS;
     for (const k of VITAL_KEYS) {
-      const cur = v[k];
-      const max = v[`${k}Max`];
+      const cur = v0[k];
+      const max = v0[`${k}Max`];
       const change = (delta: number) => (e: MouseEvent) => {
         sfx.click();
         net.send({ t: 'vitals', tokenId: id, key: k, delta: e.shiftKey ? delta * 5 : delta });
@@ -2681,32 +2725,64 @@ export class Shell {
         if (Number.isFinite(n) && n >= 1) net.send({ t: 'vitals', tokenId: id, key: k, max: n });
       });
       const w = Math.max(0, Math.min(100, (cur / max) * 100));
+      const n = h('strong', { class: 'vt-n' }, String(cur));
+      const fill = h('i', { style: `--w:${w}%` });
+      const maxFixo = h('span', null, String(max));
       wrap.append(
         h(
           'div',
           { class: `vt ${k}` },
           h('b', { class: 'vt-k', title: VITAL_NAME[k] }, VITAL_LABEL[k]),
           this.gm ? h('button', { class: 'vt-btn', title: `Tirar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Tirar ${VITAL_NAME[k]}`, onclick: change(-1) }, '−') : null,
-          h('strong', { class: 'vt-n' }, String(cur)),
-          h('span', { class: 'vt-bar' }, h('i', { style: `--w:${w}%` })),
-          this.gm ? total : h('span', null, String(max)),
+          n,
+          h('span', { class: 'vt-bar' }, fill),
+          this.gm ? total : maxFixo,
           this.gm ? h('button', { class: 'vt-btn', title: `Dar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Dar ${VITAL_NAME[k]}`, onclick: change(1) }, '+') : null,
         ),
       );
+      linhas.push({ k, n, fill, total: this.gm ? total : maxFixo });
     }
-    const labels = conditionLabels(c);
-    if (labels.length) wrap.append(h('div', { class: 'vt-conds' }, ...labels.map((l) => h('span', { class: 'vt-cond' }, l))));
+    // as condições que saem pelo PV e pela SAN: o bloco só se refaz quando elas mudam
+    const conds = h('div', { style: 'display:contents' });
+    let chave = '';
+    const pintaConds = (q: PartyMember) => {
+      const labels = conditionLabels(vitalConditions(q.vitals));
+      const k = JSON.stringify(labels);
+      if (k === chave) return;
+      chave = k;
+      conds.replaceChildren(...(labels.length ? [h('div', { class: 'vt-conds' }, ...labels.map((l) => h('span', { class: 'vt-cond' }, l)))] : []));
+    };
+    pintaConds(p);
+    wrap.append(conds);
+    // acerta os números e as barras no lugar (nada é recriado: a tela não pisca)
+    wrap.atualizar = (q) => {
+      const v = q.vitals ?? DEFAULT_VITALS;
+      for (const l of linhas) {
+        const cur = v[l.k];
+        const max = v[`${l.k}Max`];
+        const t = String(cur);
+        if (l.n.textContent !== t) l.n.textContent = t;
+        l.fill.style.setProperty('--w', `${Math.max(0, Math.min(100, (cur / max) * 100))}%`);
+        if (l.total instanceof HTMLInputElement) {
+          if (document.activeElement !== l.total) l.total.value = String(max);
+        } else if (l.total.textContent !== String(max)) l.total.textContent = String(max);
+      }
+      pintaConds(q);
+    };
     return wrap;
   }
 
   /** Barras da carta de PLAYERS: PV, PE e SAN com − e + (Shift: de 5 em 5); clicar na barra muda o total. */
   private vitaisCarta(id: number, p: PartyMember) {
-    const v = p.vitals ?? DEFAULT_VITALS;
     const net = this.app.net;
-    const wrap = h('div', { class: 'rp-vit' });
+    // o agente de agora: os botões e o total leem daqui, para a carta mudar sem ser refeita
+    const atual = { p };
+    const wrap = h('div', { class: 'rp-vit' }) as VitaisVivos;
+    const linhas: { k: VitalKey; num: HTMLElement; max: HTMLElement; barra: HTMLElement; fill: HTMLElement }[] = [];
+    const v0 = p.vitals ?? DEFAULT_VITALS;
     for (const k of VITAL_KEYS) {
-      const cur = v[k];
-      const max = v[`${k}Max`];
+      const cur = v0[k];
+      const max = v0[`${k}Max`];
       const w = Math.max(0, Math.min(100, (cur / max) * 100));
       const change = (delta: number) => (e: MouseEvent) => {
         sfx.click();
@@ -2714,38 +2790,72 @@ export class Shell {
       };
       const total = async () => {
         if (!this.gm) return;
-        const r = await promptNote(`${VITAL_NAME[k].toUpperCase()} DE ${p.name.toUpperCase()}`, [{ label: 'Total', value: String(max), max: 3 }]);
+        const m = (atual.p.vitals ?? DEFAULT_VITALS)[`${k}Max`];
+        const r = await promptNote(`${VITAL_NAME[k].toUpperCase()} DE ${atual.p.name.toUpperCase()}`, [{ label: 'Total', value: String(m), max: 3 }]);
         const n = r ? Number(r[0]) : NaN;
         if (Number.isFinite(n) && n >= 1) net.send({ t: 'vitals', tokenId: id, key: k, max: n });
       };
+      const num = h('strong', null, String(cur));
+      const maxEl = h('small', null, `/${max}`);
+      const fill = h('i', { style: `width:${w}%` });
+      const barra = h('button', { class: `rp-bar ${k}`, title: this.gm ? 'Clique para mudar o total' : VITAL_NAME[k], 'aria-label': `${VITAL_NAME[k]} ${cur} de ${max}`, onclick: () => void total() }, fill);
       wrap.append(
         h(
           'div',
           { class: `rp-l ${k}` },
           h('b', { title: VITAL_NAME[k] }, VITAL_LABEL[k]),
           // o número fora da barra, como no celular
-          h('span', { class: 'rp-n' }, h('strong', null, String(cur)), h('small', null, `/${max}`)),
+          h('span', { class: 'rp-n' }, num, maxEl),
           this.gm ? h('button', { class: 'rp-q', title: `Tirar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Tirar ${VITAL_NAME[k]}`, onclick: change(-1) }, ic('menos')) : h('span'),
-          h('button', { class: `rp-bar ${k}`, title: this.gm ? 'Clique para mudar o total' : VITAL_NAME[k], 'aria-label': `${VITAL_NAME[k]} ${cur} de ${max}`, onclick: () => void total() }, h('i', { style: `width:${w}%` })),
+          barra,
           this.gm ? h('button', { class: 'rp-q', title: `Dar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Dar ${VITAL_NAME[k]}`, onclick: change(1) }, ic('mais')) : h('span'),
         ),
       );
+      linhas.push({ k, num, max: maxEl, barra, fill });
     }
     // as condições do agente: as que saem sozinhas pelo PV e pela SAN e as que o mestre marca (na ficha).
-    // Ficam aqui e no celular do jogador; a FICHAS do mestre é só a das regras.
-    const labels = conditionLabels(vitalConditions(p.vitals));
-    const ficha = this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === p.look?.charId);
-    const marcadas = (ficha?.condicoes ?? []).map((c) => regras.catalogo.condicao(c)?.nome ?? c);
-    if (labels.length || marcadas.length || (this.gm && ficha))
-      wrap.append(
-        h(
-          'div',
-          { class: 'vt-conds' },
-          ...labels.map((l) => h('span', { class: 'vt-cond' }, l)),
-          ...marcadas.map((l) => h('span', { class: 'vt-cond marcada' }, l)),
-          this.gm && ficha ? h('button', { class: 'vt-cond mais', type: 'button', title: 'Condições', 'aria-label': `Condições de ${p.name}`, onclick: () => this.escolherCondicoes(ficha) }, ic('mais'), marcadas.length ? null : h('span', null, 'Condição')) : null,
-        ),
+    // Ficam aqui e no celular do jogador; a FICHAS do mestre é só a das regras. O bloco só se refaz quando elas mudam.
+    const conds = h('div', { style: 'display:contents' });
+    let chave = '';
+    const pintaConds = (q: PartyMember) => {
+      const labels = conditionLabels(vitalConditions(q.vitals));
+      const ficha = this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === q.look?.charId);
+      const marcadas = (ficha?.condicoes ?? []).map((c) => regras.catalogo.condicao(c)?.nome ?? c);
+      const k = JSON.stringify([labels, marcadas, !!ficha, this.gm]);
+      if (k === chave) return;
+      chave = k;
+      conds.replaceChildren(
+        ...(labels.length || marcadas.length || (this.gm && ficha)
+          ? [
+              h(
+                'div',
+                { class: 'vt-conds' },
+                ...labels.map((l) => h('span', { class: 'vt-cond' }, l)),
+                ...marcadas.map((l) => h('span', { class: 'vt-cond marcada' }, l)),
+                this.gm && ficha ? h('button', { class: 'vt-cond mais', type: 'button', title: 'Condições', 'aria-label': `Condições de ${q.name}`, onclick: () => this.escolherCondicoes(ficha) }, ic('mais'), marcadas.length ? null : h('span', null, 'Condição')) : null,
+              ),
+            ]
+          : []),
       );
+    };
+    pintaConds(p);
+    wrap.append(conds);
+    // acerta os números e as barras no lugar (nada é recriado: o painel não pisca)
+    wrap.atualizar = (q) => {
+      atual.p = q;
+      const v = q.vitals ?? DEFAULT_VITALS;
+      for (const l of linhas) {
+        const cur = v[l.k];
+        const max = v[`${l.k}Max`];
+        const t = String(cur);
+        if (l.num.textContent !== t) l.num.textContent = t;
+        const mt = `/${max}`;
+        if (l.max.textContent !== mt) l.max.textContent = mt;
+        l.fill.style.width = `${Math.max(0, Math.min(100, (cur / max) * 100))}%`;
+        l.barra.setAttribute('aria-label', `${VITAL_NAME[l.k]} ${cur} de ${max}`);
+      }
+      pintaConds(q);
+    };
     return wrap;
   }
 
@@ -2943,13 +3053,15 @@ export class Shell {
         paperize(c.el, { kit: false, seed: 60 + i * 3, tone: '#cfb99f', burn: 0.72, stripe: p.color, torn: 1.8, backs: [{ dx: 3, dy: 3, rot: 1.8 }, { dx: -3, dy: 5, rot: -1.3 }], pad: 22 });
       }
       // na carta cabe o nome curto (como na referência: Catarina, Alosi)
-      c.name.textContent = p.name.split(/\s+/)[0];
-      c.name.title = p.name;
+      const curto = p.name.split(/\s+/)[0];
+      if (c.name.textContent !== curto) c.name.textContent = curto;
+      if (c.name.title !== p.name) c.name.title = p.name;
       const here = p.roomId === cur;
       const wasOn = c.el.classList.contains('on');
       c.el.classList.toggle('on', view.myId === id);
       c.el.classList.toggle('away', !here);
-      c.away.textContent = here ? '' : this.sceneName(p.roomId);
+      const longe = here ? '' : this.sceneName(p.roomId);
+      if (c.away.textContent !== longe) c.away.textContent = longe;
       c.away.classList.toggle('hidden', here);
       c.el.title = here ? `${p.name} (tecla ${i + 1})` : `${p.name} — em ${this.sceneName(p.roomId)}`;
       if (!wasOn && view.myId === id && this.cards.size && performance.now() - this.shownAt > 1500) bump(c.el, 1.04, 0.8);
