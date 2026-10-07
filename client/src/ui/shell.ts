@@ -1483,7 +1483,9 @@ export class Shell {
     const fonte = grande ? 15 : 10;
     ctx.font = `600 ${fonte}px "Pixelify Sans", "Ubuntu Mono", monospace`;
     const postas: { x0: number; y0: number; x1: number; y1: number }[] = [];
-    const ordem = [...rotulos].sort((a, b) => Number(b.atual) - Number(a.atual) || b.w * b.h - a.w * a.h);
+    // a ordem NÃO depende do cômodo de agora (07/10): o atual passava na frente e empurrava o nome dos outros para
+    // o cômodo do lado. Do maior para o menor, e o desempate pela posição, o nome de cada cômodo fica sempre no mesmo lugar.
+    const ordem = [...rotulos].sort((a, b) => b.w * b.h - a.w * a.h || a.y - b.y || a.x - b.x);
     for (const r of ordem) {
       // o nome curto é a palavra que distingue: "Sala de Tecnologia" vira Tecnologia, e não Sala
       const curto = r.nome.replace(/^(sala|câmara|quarto|área)\s+(de|da|do|dos|das)\s+/i, '').split(/\s+/)[0];
@@ -1503,6 +1505,8 @@ export class Shell {
       let px = cx;
       let py = cy;
       for (const [dx, dy] of [[0, 0], [0, -hh], [0, hh], [0, -hh * 2], [0, hh * 2], [-w * 0.6, 0], [w * 0.6, 0]]) {
+        // o nome fica DENTRO do próprio cômodo (o centro dele): fora, ia parar no cômodo do lado
+        if (cx + dx < r.x || cx + dx > r.x + r.w || cy + dy < r.y || cy + dy > r.y + r.h) continue;
         lugar = livre(cx + dx, cy + dy);
         if (lugar) {
           px = cx + dx;

@@ -40,6 +40,7 @@ import { iso, unIso } from '../render/iso';
 import { MarcasMesa } from '../render/marcasMesa';
 import { NevoaMesa } from '../render/nevoaMesa';
 import { imagemDoMapa } from '../render/mapaImagem';
+import { desenharItemNoChao } from '../render/itemNoChao';
 import { cameraVoo, casaNoPonto, desenharMesa, enquadrar, marcasNoChao, marcasPorCima, matrizNaAltura, passo, projetar, type CameraVoo, type Enquadre, type PecaTatica } from '../render/mapaTatico';
 import { portraitCanvas } from '../render/portrait';
 import { hash, hexToRgb, rgba } from '../render/color';
@@ -1793,50 +1794,20 @@ export class RoomView {
           const z = real.z;
           const box: WBox = { x0: real.x, x1: real.x + 1, y0: real.y, y1: real.y + 1, z0: z, z1: z + 0.2 };
           const [cx, cy] = iso(real.x + 0.5, real.y + 0.5, z);
-          // deitados no chão, na perspectiva da casa (o eixo da imagem vira os eixos do piso), um pouco
-          // girados e espalhados; a sombra é a silhueta de cada um, colada embaixo dele
-          const pos = imgs.map((img, i) => ({ img, ox: [0, -0.22, 0.2][i], oy: [0, 0.18, -0.2][i], giro: hash(real.id, i) * Math.PI * 2 }));
-          const deitar = (img: HTMLImageElement, ox: number, oy: number, giro: number, dx = 0, dy = 0) => {
-            const k = 1.0 / Math.max(img.naturalWidth, img.naturalHeight);
-            const c = Math.cos(giro) * k;
-            const sn = Math.sin(giro) * k;
-            const [px, py] = iso(real.x + 0.5 + ox, real.y + 0.5 + oy, z);
-            // a imagem (u, v) gira no piso e vai para a tela pelos eixos da casa: +x = (32, 16), +y = (-32, 16)
-            const ux = c * 32 - sn * 32;
-            const uy = c * 16 + sn * 16;
-            const vx = -sn * 32 + c * -32;
-            const vy = -sn * 16 + c * 16;
-            ctx.save();
-            ctx.transform(ux, uy, vx, vy, px + dx, py + dy);
-            ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
-            ctx.restore();
-          };
+          // como o drop de um jogo (07/10): o ícone pintado de pé e um pouco inclinado, com sombra, brilho quente
+          // no chão e balanço leve (render/itemNoChao.ts). Deitá-lo na perspectiva do piso (2:1) o esmagava.
+          const pos = imgs.map((img, i) => ({ img, ox: [0, -0.24, 0.22][i], oy: [0, 0.2, -0.2][i], semente: hash(real.id, i) }));
           drawables.push({
             box,
-            sx0: cx - 34,
-            sx1: cx + 34,
-            sy0: cy - 22,
+            sx0: cx - 56,
+            sx1: cx + 56,
+            sy0: cy - 72,
             sy1: cy + 20,
             draw: () => {
-              // o chão escurece de leve em volta (o que está deitado tapa a luz) e cada item tem a sombra dele
-              const amb = ctx.createRadialGradient(cx, cy, 0, cx, cy, 26);
-              amb.addColorStop(0, 'rgba(0,0,0,0.22)');
-              amb.addColorStop(1, 'rgba(0,0,0,0)');
-              ctx.save();
-              ctx.translate(cx, cy);
-              ctx.scale(1, 0.5);
-              ctx.fillStyle = amb;
-              ctx.beginPath();
-              ctx.arc(0, 0, 26, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.restore();
-              for (const { img, ox, oy, giro } of [...pos].reverse()) {
-                ctx.save();
-                ctx.filter = 'brightness(0) blur(0.6px)';
-                ctx.globalAlpha = 0.55;
-                deitar(img, ox, oy, giro, 0.8, 1.6);
-                ctx.restore();
-                deitar(img, ox, oy, giro);
+              // os do fundo primeiro: o de trás não tapa o da frente
+              for (const { img, ox, oy, semente } of [...pos].sort((a, b) => a.ox + a.oy - (b.ox + b.oy))) {
+                const [px, py] = iso(real.x + 0.5 + ox, real.y + 0.5 + oy, z);
+                desenharItemNoChao(ctx, img, px, py, imgs.length > 1 ? 58 : 72, semente);
               }
             },
           });

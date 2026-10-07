@@ -1,4 +1,6 @@
-import { combate as cb, footprint, getFurni, M_POR_CASA, terrenoEm, Z_PER_M, type FloorItem, type FloorStyle, type FurniDef, type RoomMap } from '@crona/shared';
+import { combate as cb, footprint, getFurni, M_POR_CASA, PILHA_CHAO, regras, terrenoEm, Z_PER_M, type FloorItem, type FloorStyle, type FurniDef, type RoomMap } from '@crona/shared';
+import { imagemDoMapa } from './mapaImagem';
+import { desenharItemNoChao } from './itemNoChao';
 import { contornoArea, type Casa } from '../room/combateGeo';
 import type { MarcasCombate } from './combateMarcas';
 import { imagemDeCima, imagemDoChao, tamanhoReal, chaveDaArte } from './furniArte';
@@ -346,6 +348,11 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
   for (const { it, def } of itens) {
     if (def.flat || def.kind === 'portal' || /lamp|lampada|fluorescent|luz/.test(def.kind)) continue;
     const fp = footprint(def, it.rot);
+    // o que alguém largou no chão: o ícone pintado do item, e não a vista de cima literal (07/10)
+    if (it.defId === PILHA_CHAO && it.loot?.length) {
+      blocos.push({ prof: prof(it.x + 0.5, it.y + 0.5), z: it.z ?? 0, desenhar: () => desenharItemLargado(ctx, v, it, () => desenharMovel(ctx, v, it, def)) });
+      continue;
+    }
     blocos.push({ prof: prof(it.x + fp.sx / 2, it.y + fp.sy / 2), z: it.z ?? 0, desenhar: () => desenharMovel(ctx, v, it, def) });
   }
   for (const p of paredes(map)) blocos.push({ prof: prof((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2) - (p.fundo ? 100 : 0), z: 0, desenhar: () => desenharParede(ctx, v, p, piso) });
@@ -385,6 +392,33 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
 
 // ---------------------------------------------------------------------------
 // as peças do desenho
+
+/**
+ * O que alguém largou no chão, visto de cima: o ícone pintado de cada item (até 3), de pé na tela, com uma sombra
+ * achatada embaixo. Não precisa ser a vista de cima literal: o ícone destaca o item e mostra que alguém o deixou
+ * ali. Enquanto a imagem não chega, `semArte` desenha o volume de sempre.
+ */
+function desenharItemLargado(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorItem, semArte: () => void) {
+  const imgs = (it.loot ?? [])
+    .slice(0, 3)
+    .map((l) => imagemDoMapa(`/arte/itens/pintados/${l.item?.id ?? regras.slug(l.name)}.png`))
+    .filter((x): x is HTMLImageElement => !!x);
+  if (!imgs.length) return semArte();
+  const desloca = [
+    [0, 0],
+    [-0.24, 0.2],
+    [0.22, -0.2],
+  ];
+  const lado = v.escala * (imgs.length > 1 ? 0.95 : 1.15);
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  imgs.forEach((img, i) => {
+    const [sx, sy] = projetar(v, it.x + 0.5 + desloca[i][0], it.y + 0.5 + desloca[i][1], it.z ?? 0);
+    // o mesmo desenho do isométrico (de pé, sombra, brilho e balanço); a semente vem do item
+    desenharItemNoChao(ctx, img, sx, sy + lado * 0.18, lado, (it.id * 0.6180339 + i * 0.31) % 1);
+  });
+  ctx.restore();
+}
 
 /** Tapete, rosa dos ventos, mancha: a arte vista de cima deitada na pegada (em casas); sem arte, uma marca na cor dele. */
 function desenharTapete(ctx: CanvasRenderingContext2D, it: FloorItem, def: FurniDef) {
