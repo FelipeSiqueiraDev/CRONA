@@ -164,11 +164,12 @@ Os pedidos de arte novos (na pasta BASE):
   modos do objeto, o Interlúdio e a logo do CRONA.
 - Os gabaritos estão em `gabaritos/pedidos/lote-07-10/`.
 
+Feito depois (commit 9f756c0):
+- **Planta:** a cor do piso em cada cômodo, os nomes em plaquinhas e a planta grande (lupa ou M).
+- **Tabuleiro mais alto:** a fileira de baixo mais baixa, e o AMPLIAR esconde a fileira.
+- **Painel do objeto em três momentos:** Jogar, Configurar e Mexer.
+
 Ainda falta (pedido do Felipe):
-- **Planta:** redesenhar o desenho (legível, menos apertado).
-- **Tabuleiro:** ganhar altura (menos botões em volta).
-- **Painel do objeto em três momentos:** mexer (mover, girar), configurar (documento, descrição,
-  tranca) e jogar (o agente vai lá e usa).
 - **Alvo do combate:** menos apertado.
 - **Tela do jogador no celular:** os retratos no "Jogo".
 - **Altura dos móveis e escombros:** a cobertura parcial ou total nas contas do ataque, e o agente
