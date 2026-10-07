@@ -465,7 +465,7 @@ export class FichasScreen {
           'button',
           { class: `fx-ag${on ? ' on' : ''}`, type: 'button', title: fs.nome, onclick: () => fs.id && this.selecionar(fs.id) },
           h('span', { class: 'fx-ag-foto' }, foto),
-          h('span', { class: 'fx-ag-placa' }, h('span', { class: `fx-ag-nome${fs.nome.length > 14 ? ' longo' : ''}` }, fs.nome), h('span', { class: 'fx-ag-info' }, `NEX ${fs.ficha.nex}% · ${CLASSE_NOME(fs.ficha.classe)}`)),
+          h('span', { class: 'fx-ag-placa' }, h('span', { class: 'fx-ag-nome', title: fs.nome }, fs.nome.split(/\s+/)[0]), h('span', { class: 'fx-ag-info' }, `NEX ${fs.ficha.nex}% · ${CLASSE_NOME(fs.ficha.classe)}`)),
           h('span', { class: 'fx-ag-pv' }, h('i', { style: `width:${Math.round((v.pv / Math.max(1, v.pvMax)) * 100)}%` })),
           pend ? h('span', { class: 'fx-ag-pend', title: `${pend} pendência${pend > 1 ? 's' : ''}` }, String(pend)) : null,
         ),
@@ -1031,15 +1031,19 @@ export class FichasScreen {
   private renderPod(fs: FichaSalva, c: Calc) {
     const f = fs.ficha;
     const corpo = this.corpoDe(this.pPod);
+    // o ícone pintado de cada grupo (os mesmos dos filtros do celular: classe, trilha, origem, paranormal)
+    const PINTADO_GRUPO: Partial<Record<NomeIcone, string>> = { ficha: 'poder-origem', estrela: 'poder-classe', pino: 'poder-trilha', olho: 'poder-paranormal' };
     const grupo = (titulo: string, itens: regras.PoderObtido[], icone: NomeIcone) => {
       if (!itens.length) return null;
+      const pint = PINTADO_GRUPO[icone];
+      const icp = () => (pint ? arteOu([`/arte/icones/${pint}.png`], ic(icone)) : ic(icone));
       return h(
         'div',
         { class: 'fx-pg' },
         h('h4', null, titulo),
         ...itens.map((p) => {
           const info = infoPoder(p);
-          return h('div', { class: 'fx-pi', 'data-dica': info }, h('span', { class: 'fx-pi-ic' }, ic(icone)), h('span', { class: 'fx-pi-n' }, p.nome, p.escolha ? h('small', null, ` ${textoValor(p.escolha)}`) : null));
+          return h('div', { class: 'fx-pi', 'data-dica': info }, h('span', { class: 'fx-pi-ic' }, icp()), h('span', { class: 'fx-pi-n' }, p.nome, p.escolha ? h('small', null, ` ${textoValor(p.escolha)}`) : null));
         }),
       );
     };

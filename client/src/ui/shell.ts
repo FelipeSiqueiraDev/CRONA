@@ -308,6 +308,8 @@ export class Shell {
   private activeScene: number | null = null;
   private peeked = new Set<number>();
   private planCanvas: HTMLCanvasElement;
+  /** o "você está aqui" do minimapa: o contorno de ouro e a setinha em cima do cômodo de agora */
+  private planAqui = h('span', { class: 'plan-aqui hidden', 'aria-hidden': 'true' }, h('i'));
   /** andar que a planta está mostrando agora */
   private planShown = '';
   /** a arte do alfinete (interface/alfinete.png), quando existe */
@@ -456,7 +458,7 @@ export class Shell {
       <path d="M32 11 36 30 32 34 28 30Z" fill="#2a241f"/><path d="M32 57 36 38 32 34 28 38Z" fill="#fff8" /><path d="M9 34 28 30 32 34 28 38Z" fill="#fff8"/><path d="M55 34 36 30 32 34 36 38Z" fill="#2a241f"/>
       <path d="M32 11 32 57M9 34 55 34" stroke-width="0.6"/><text x="32" y="8" text-anchor="middle" font-size="8" font-family="Courier Prime, monospace" font-weight="700" fill="#2a241f" stroke="none">N</text></svg>`);
     void rosa;
-    const plan = h('section', { class: 'sheet p-plan wide' }, h('h3', { class: 'p-title' }, this.planTitle), this.planTabs, this.planCanvas, h('span', { class: 'tachinha', 'aria-hidden': 'true' }));
+    const plan = h('section', { class: 'sheet p-plan wide' }, h('h3', { class: 'p-title' }, this.planTitle), this.planTabs, this.planCanvas, this.planAqui, h('span', { class: 'tachinha', 'aria-hidden': 'true' }));
     void existeArte('/arte/interface/alfinete.png').then((ok) => {
       if (!ok) return;
       const im = new Image();
@@ -1302,6 +1304,7 @@ export class Shell {
       const rect = { id: s.id, x: ox, y: oy, w: hm.width * S, h: hm.height * S, name: s.name.split('·').pop()!.trim() };
       if (s.aberto) {
         this.terrenoNaPlanta(ctx, s, raw, rot, ox, oy, S, granito);
+        rotulos.push({ x: ox, y: oy, w: rect.w, h: rect.h, nome: rect.name, atual });
         this.planRects.push(rect);
         continue;
       }
@@ -1411,6 +1414,10 @@ export class Shell {
       ctx.fillText(nome, r.x + r.w / 2, r.y + r.h / 2);
     }
     ctx.restore();
+    // o "você está aqui": o contorno pulsando e a setinha (CSS) em cima do cômodo de agora
+    const aqui = this.planRects.find((q) => q.id === cur);
+    this.planAqui.classList.toggle('hidden', !aqui);
+    if (aqui) Object.assign(this.planAqui.style, { left: `${c.offsetLeft + aqui.x}px`, top: `${c.offsetTop + aqui.y}px`, width: `${aqui.w}px`, height: `${aqui.h}px` });
     // onde estão as peças: pontos de luz na cor de cada um
     for (const { s, p, rot } of parsed)
       for (const u of s.users) {
@@ -2363,7 +2370,8 @@ export class Shell {
           { class: `vt ${k}` },
           h('b', { class: 'vt-k', title: VITAL_NAME[k] }, VITAL_LABEL[k]),
           this.gm ? h('button', { class: 'vt-btn', title: `Tirar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Tirar ${VITAL_NAME[k]}`, onclick: change(-1) }, '−') : null,
-          h('span', { class: 'vt-bar' }, h('i', { style: `--w:${w}%` }), h('em', null, `${cur} / `)),
+          h('strong', { class: 'vt-n' }, String(cur)),
+          h('span', { class: 'vt-bar' }, h('i', { style: `--w:${w}%` })),
           this.gm ? total : h('span', null, String(max)),
           this.gm ? h('button', { class: 'vt-btn', title: `Dar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Dar ${VITAL_NAME[k]}`, onclick: change(1) }, '+') : null,
         ),
@@ -2398,8 +2406,10 @@ export class Shell {
           'div',
           { class: `rp-l ${k}` },
           h('b', { title: VITAL_NAME[k] }, VITAL_LABEL[k]),
+          // o número fora da barra, como no celular
+          h('span', { class: 'rp-n' }, h('strong', null, String(cur)), h('small', null, `/${max}`)),
           this.gm ? h('button', { class: 'rp-q', title: `Tirar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Tirar ${VITAL_NAME[k]}`, onclick: change(-1) }, ic('menos')) : h('span'),
-          h('button', { class: `rp-bar ${k}`, title: this.gm ? 'Clique para mudar o total' : VITAL_NAME[k], onclick: () => void total() }, h('i', { style: `width:${w}%` }), h('span', null, `${cur} / ${max}`)),
+          h('button', { class: `rp-bar ${k}`, title: this.gm ? 'Clique para mudar o total' : VITAL_NAME[k], 'aria-label': `${VITAL_NAME[k]} ${cur} de ${max}`, onclick: () => void total() }, h('i', { style: `width:${w}%` })),
           this.gm ? h('button', { class: 'rp-q', title: `Dar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Dar ${VITAL_NAME[k]}`, onclick: change(1) }, ic('mais')) : h('span'),
         ),
       );

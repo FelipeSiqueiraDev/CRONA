@@ -504,6 +504,7 @@ export class CombateScreen {
     {
       // a arma na mão primeiro (e o desarmado); a da mochila por último, para sacar
       return [...calc.ataques].sort((x, y) => Number(y.naMao) - Number(x.naMao)).map((a) => ({
+        item: a.item,
         naMao: a.naMao,
         ...(a.uid !== undefined ? { uid: a.uid } : {}),
         nome: a.nome,
@@ -1419,12 +1420,13 @@ export class CombateScreen {
     const f = this.fichaDe(ator.id);
     const am = this.ameacaDe(ator.id);
     const vit = this.vitais(ator.id);
+    // como no celular: a sigla e o número grande em cima, a barra sozinha embaixo (sem texto dentro)
     const barra = (rot: string, cls: string, a?: number, m?: number) =>
       h(
         'span',
-        { class: 'cb-rec' },
-        h('b', null, rot),
-        h('span', { class: `cb-barra ${cls}`, style: `--p:${a !== undefined && m ? Math.max(0, Math.min(1, a / m)) : 0}` }, h('i'), h('span', null, a !== undefined && m ? `${a} / ${m}` : '—')),
+        { class: `cb-rec ${cls}` },
+        h('span', { class: 'cb-rec-topo' }, h('b', null, rot), h('span', { class: 'cb-rec-n' }, h('strong', null, a !== undefined ? String(a) : '—'), m ? h('small', null, `/${m}`) : null)),
+        h('span', { class: `cb-barra ${cls}`, style: `--p:${a !== undefined && m ? Math.max(0, Math.min(1, a / m)) : 0}` }, h('i')),
       );
     const ac = cb.acoesDe(c, ator.id);
     const chipAc = (qual: 'padrao' | 'movimento', rot: string) => {
@@ -1703,12 +1705,8 @@ export class CombateScreen {
       ? h(
           'div',
           { class: 'cb-alvo-pv' },
-          h(
-            'button',
-            { class: 'cb-barra pv', type: 'button', title: 'Mudar PV', style: `--p:${vit.pvMax ? Math.max(0, Math.min(1, vit.pv / vit.pvMax)) : 0}`, onclick: editarPv },
-            h('i'),
-            h('span', null, `${vit.pv} / ${vit.pvMax}`),
-          ),
+          h('span', { class: 'cb-rec-topo' }, h('b', null, 'PV'), h('span', { class: 'cb-rec-n' }, h('strong', null, String(vit.pv)), h('small', null, `/${vit.pvMax}`))),
+          h('button', { class: 'cb-barra pv', type: 'button', title: 'Mudar PV', style: `--p:${vit.pvMax ? Math.max(0, Math.min(1, vit.pv / vit.pvMax)) : 0}`, onclick: editarPv }, h('i')),
           h('span', { class: 'cb-machucado' }, h('i')),
           h('small', null, `machucado: abaixo de ${Math.ceil(vit.pvMax / 2)}`),
         )

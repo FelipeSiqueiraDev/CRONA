@@ -1636,3 +1636,645 @@ html:not(.modo-ficha) :is(.cb-vazio, .cb-nota, .cb-pend-item p, .cb-reg-linha) {
   font-size: 1.3rem !important;
   line-height: 1.4 !important;
 }
+
+/* =====================================================================
+   SEGUNDA PASSADA (07/10): os detalhes, comparando com o celular página por página
+   ===================================================================== */
+
+/* ---------------------------------------------------------------- PV, PE, SAN como no celular:
+   a sigla na cor e o número grande em cima, a barra sozinha embaixo, sem texto dentro */
+html:not(.modo-ficha) .cb-recs {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem !important;
+  width: 100%;
+  max-width: 34rem;
+}
+html:not(.modo-ficha) .cb-rec {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch !important;
+  gap: 0.35rem !important;
+  min-width: 0;
+}
+html:not(.modo-ficha) :is(.cb-rec-topo) {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+html:not(.modo-ficha) .cb-rec-topo b {
+  font: 700 1.25rem / 1 var(--r-pixel) !important;
+  letter-spacing: 0.06em;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .cb-rec.pv .cb-rec-topo b,
+html:not(.modo-ficha) .cb-alvo-pv .cb-rec-topo b {
+  color: #f0503f !important;
+}
+html:not(.modo-ficha) .cb-rec.pe .cb-rec-topo b {
+  color: #f3a73d !important;
+}
+html:not(.modo-ficha) .cb-rec.san .cb-rec-topo b {
+  color: #4f9bff !important;
+}
+html:not(.modo-ficha) :is(.cb-rec-n, .rp-n) {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  font-variant-numeric: tabular-nums;
+}
+html:not(.modo-ficha) :is(.cb-rec-n, .rp-n) strong {
+  font: 700 1.75rem / 1 var(--r-pixel);
+  color: var(--r-texto);
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) :is(.cb-rec-n, .rp-n) small {
+  font: 600 1.05rem / 1 var(--r-pixel);
+  color: var(--r-texto-3);
+}
+html:not(.modo-ficha) .cb-ator .cb-barra,
+html:not(.modo-ficha) .cb-rec .cb-barra {
+  width: 100% !important;
+  height: 1rem !important;
+}
+html:not(.modo-ficha) .cb-barra > span {
+  display: none !important;
+}
+/* o PV do alvo: o número em cima, a barra mais grossa (clica para mudar) */
+html:not(.modo-ficha) .cb-alvo-pv .cb-rec-n strong {
+  font-size: 2.2rem;
+}
+html:not(.modo-ficha) .cb-alvo-pv .cb-barra {
+  height: 1.4rem !important;
+  cursor: pointer;
+}
+html:not(.modo-ficha) .cb-machucado {
+  height: 0.5rem !important;
+  border-radius: 0.25rem !important;
+  background: linear-gradient(90deg, rgba(243, 167, 61, 0.85) 50%, rgba(161, 136, 115, 0.3) 50%) !important;
+}
+html:not(.modo-ficha) .cb-machucado > i {
+  background: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .cb-alvo-pv small {
+  font: 500 1.1rem / 1.2 var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+}
+/* o cabeçalho de quem age: as barras não passam por cima da Defesa e do Deslocamento */
+html:not(.modo-ficha) .cb-ator-linha {
+  align-items: stretch !important;
+  gap: 0.9rem !important;
+}
+html:not(.modo-ficha) .cb-ator-meio {
+  justify-content: center;
+  gap: 0.75rem !important;
+  overflow: hidden;
+}
+html:not(.modo-ficha) .cb-ator-linha > .cb-caixa {
+  flex: none;
+  align-self: center;
+}
+html:not(.modo-ficha) .cb-ator-turno {
+  justify-content: center;
+}
+html:not(.modo-ficha) .cb-foto.grande {
+  width: 9.6rem !important;
+  height: 9.6rem !important;
+}
+
+/* ---------------------------------------------------------------- PLAYERS: sigla, número, − barra + */
+html:not(.modo-ficha) .rp-l {
+  display: grid !important;
+  grid-template-columns: 3.4rem 5.4rem 2.4rem minmax(0, 1fr) 2.4rem !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+html:not(.modo-ficha) .rp-n strong {
+  font-size: 1.45rem;
+}
+html:not(.modo-ficha) .rp-n small {
+  font-size: 0.95rem;
+}
+html:not(.modo-ficha) .rp-bar {
+  height: 1.2rem !important;
+  padding: 0 !important;
+}
+html:not(.modo-ficha) .rp-bar > span {
+  display: none !important;
+}
+html:not(.modo-ficha) .rp-q {
+  width: 2.4rem !important;
+  height: 2.4rem !important;
+  display: grid !important;
+  place-items: center;
+  padding: 0 !important;
+}
+html:not(.modo-ficha) .rp-q .ic {
+  width: 1.3rem !important;
+  height: 1.3rem !important;
+}
+
+/* ---------------------------------------------------------------- o painel do personagem (inspetor) */
+html:not(.modo-ficha) .vt {
+  grid-template-columns: 3.4rem 2.8rem 3.6rem minmax(0, 1fr) 4.4rem 2.8rem !important;
+}
+html:not(.modo-ficha) .vt-n {
+  font: 700 1.6rem / 1 var(--r-pixel);
+  color: var(--r-texto);
+  text-align: center;
+  text-shadow: var(--r-sombra-pixel);
+  font-variant-numeric: tabular-nums;
+}
+html:not(.modo-ficha) .vt-bar {
+  height: 1.3rem !important;
+}
+html:not(.modo-ficha) .vt-bar > em {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------------- as armas: a arte pintada na casa
+   (como a aba Ataques do celular) */
+html:not(.modo-ficha) .cb-arma {
+  gap: 1rem !important;
+  min-height: 5.6rem !important;
+  padding: 0.55rem 0.8rem 0.55rem 0.55rem !important;
+}
+html:not(.modo-ficha) .cb-arma-ic {
+  width: 4.6rem !important;
+  height: 4.6rem !important;
+  padding: 0.6rem;
+  border: 0 !important;
+  background: var(--ui-fichas-casa-item-normal, var(--r-noite-2)) center / 100% 100% no-repeat !important;
+}
+html:not(.modo-ficha) .cb-arma.on .cb-arma-ic {
+  background-image: var(--ui-fichas-casa-item-escolhida, var(--ui-fichas-casa-item-foco)) !important;
+}
+html:not(.modo-ficha) .cb-arma-ic :is(.arte-ic, .ic),
+html:not(.modo-ficha) .cb-arma-ic .arte-ic img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+html:not(.modo-ficha) .cb-arma.on::after {
+  left: -1.6rem;
+}
+html:not(.modo-ficha) .cb-col-arma .cb-col-lista {
+  padding-left: 1.4rem;
+}
+html:not(.modo-ficha) .cb-arma.fora {
+  opacity: 0.75;
+}
+html:not(.modo-ficha) .cb-sacar {
+  padding: 0.35rem 0.8rem !important;
+  border: 0.16rem solid #c08442 !important;
+  border-radius: 0.5rem !important;
+  background: var(--h-campo) !important;
+  font: 600 1.1rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+}
+
+/* ---------------------------------------------------------------- as abas das ações: o ícone em cima
+   do nome, como a barra de baixo do celular (as sete cabem inteiras) */
+html:not(.modo-ficha) .cb-aba {
+  flex-direction: column !important;
+  justify-content: center;
+  height: auto !important;
+  min-height: 5.6rem;
+  padding: 0.45rem 0.2rem 0.4rem !important;
+  gap: 0.35rem !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0.03em !important;
+}
+html:not(.modo-ficha) .cb-aba .arte-ic img,
+html:not(.modo-ficha) .cb-aba > .ic {
+  width: 2.8rem !important;
+  height: 2.8rem !important;
+}
+html:not(.modo-ficha) .cb-aba > span:last-child {
+  white-space: nowrap;
+}
+/* Atrasar, Preparar, Passar turno: o ícone em cima do nome (cabem inteiros) */
+html:not(.modo-ficha) .cb-ini-botoes {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0.6rem !important;
+}
+html:not(.modo-ficha) .cb-ini-botoes .cb-bt {
+  flex-direction: column;
+  height: auto !important;
+  min-height: 5.2rem;
+  padding: 0.5rem 0.3rem !important;
+  gap: 0.35rem !important;
+  font-size: 1.1rem !important;
+  white-space: nowrap;
+}
+html:not(.modo-ficha) .cb-ini-botoes .cb-bt :is(.arte-ic, .ic) {
+  width: 2.4rem !important;
+  height: 2.4rem !important;
+}
+/* o alvo: as caixas centradas, o número que não estoura; as notas na condensada */
+html:not(.modo-ficha) .cb-caixa {
+  justify-content: center !important;
+}
+html:not(.modo-ficha) .cb-alvo .cb-caixa b {
+  font-size: 1.45rem !important;
+  white-space: nowrap;
+}
+html:not(.modo-ficha) .cb-alvo .cb-caixa > :is(.arte-ic, .ic) {
+  width: 2.1rem !important;
+  height: 2.1rem !important;
+}
+html:not(.modo-ficha) .cb-alvo .cb-caixa {
+  padding: 0.45rem 0.5rem !important;
+  column-gap: 0.4rem !important;
+}
+html:not(.modo-ficha) .cb-alvo-nota {
+  font: 400 1.25rem / 1.4 var(--r-corpo) !important;
+  color: var(--r-texto-2) !important;
+}
+html:not(.modo-ficha) .cb-alvo-nota.aviso {
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .cb-alvo-nota b {
+  font-family: var(--r-pixel);
+  color: var(--r-texto);
+}
+html:not(.modo-ficha) .cb-alvo-id > b {
+  font: 700 1.8rem / 1.1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .cb-alvo-id > small {
+  font: 500 1.1rem / 1.25 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+}
+
+/* o "você está aqui" do minimapa */
+html:not(.modo-ficha) .plan-aqui {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  border: 0.18rem solid #ffd27a;
+  border-radius: 0.25rem;
+  box-shadow: 0 0 0.8rem rgba(255, 196, 90, 0.6);
+  animation: plan-pulsa 1.8s ease-in-out infinite;
+}
+html:not(.modo-ficha) .plan-aqui > i {
+  position: absolute;
+  left: 50%;
+  top: -1.7rem;
+  width: 0;
+  height: 0;
+  border: 0.55rem solid transparent;
+  border-top: 0.8rem solid #ffd27a;
+  filter: drop-shadow(0 0.12rem 0.1rem rgba(0, 0, 0, 0.9));
+  transform: translateX(-50%);
+  animation: plan-seta 1s ease-in-out infinite;
+}
+@keyframes plan-pulsa {
+  50% {
+    border-color: #fff0c8;
+    box-shadow: 0 0 1.6rem rgba(255, 196, 90, 0.9);
+  }
+}
+@keyframes plan-seta {
+  50% {
+    transform: translate(-50%, -0.35rem);
+  }
+}
+html:not(.modo-ficha) .insp-cab::before {
+  display: block !important;
+}
+html:not(.modo-ficha) .insp-tip {
+  font: 400 1.25rem / 1.45 var(--r-corpo) !important;
+  font-style: normal !important;
+  color: var(--r-texto-3) !important;
+}
+/* o inventário rápido: as casas quadradas, como a mochila do celular */
+html:not(.modo-ficha) .quick-slots {
+  grid-template-columns: repeat(3, 6.6rem) !important;
+  justify-content: center;
+  align-content: center;
+  gap: 1rem !important;
+  flex: 1;
+}
+html:not(.modo-ficha) .qslot {
+  width: 6.6rem !important;
+  height: 6.6rem !important;
+  aspect-ratio: 1;
+}
+/* FICHAS: o nome do agente da coluna em pixel, inteiro (o primeiro nome) */
+html:not(.modo-ficha) .fx-ag-nome {
+  font: 700 1.3rem / 1.1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .fx-ag.on .fx-ag-nome {
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .fx-ag-info {
+  font: 500 0.95rem / 1.1 var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+}
+/* a identificação: o nome do campo na condensada miúda, o valor em pixel */
+html:not(.modo-ficha) .fx-id-l {
+  font: 400 1.15rem / 1.2 var(--r-corpo) !important;
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) :is(.fx-id-v, .fx-id-v strong, .fx-id-v span) {
+  font-family: var(--r-pixel) !important;
+  font-weight: 600 !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) :is(.fx-id-v, .fx-id-v span) {
+  font-family: var(--r-corpo) !important;
+  font-weight: 700 !important;
+}
+html:not(.modo-ficha) .fx-id-v strong {
+  font-family: var(--r-pixel) !important;
+  font-size: 1.45rem !important;
+}
+/* os números derivados (Defesa, Deslocamento, Proteção, Resistências): a faixa do celular,
+   sem a placa de metal do kit */
+html:not(.modo-ficha) .fx-dv::before {
+  display: none !important;
+}
+html:not(.modo-ficha) .fx-dv {
+  gap: 0.7rem !important;
+  padding: 0.6rem 0.8rem !important;
+  border: 0.16rem solid rgba(161, 136, 115, 0.45) !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(11, 21, 38, 0.92) !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s;
+}
+html:not(.modo-ficha) .fx-dv:hover {
+  border-color: rgba(233, 169, 68, 0.75) !important;
+}
+html:not(.modo-ficha) .fx-dv-ic,
+html:not(.modo-ficha) .fx-dv-ic :is(.arte-ic, img, .ic) {
+  width: 3rem !important;
+  height: 3rem !important;
+  object-fit: contain;
+}
+html:not(.modo-ficha) .fx-dv-t {
+  align-items: flex-start !important;
+  gap: 0.25rem;
+}
+html:not(.modo-ficha) .fx-dv-r {
+  order: 2;
+  font: 500 1rem / 1 var(--r-pixel) !important;
+  letter-spacing: 0.04em !important;
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) .fx-dv-v {
+  order: 1;
+  font: 700 2.1rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+  white-space: nowrap;
+}
+html:not(.modo-ficha) .fx-dv-l {
+  font: 600 1.2rem / 1.2 var(--r-corpo) !important;
+  color: var(--r-texto) !important;
+}
+/* FICHAS: os itens da tabela como as linhas do HUD (sem a placa de metal do kit) */
+html:not(.modo-ficha) .fx-equip .fx-tab-l::before {
+  border: 0 !important;
+  border-image: none !important;
+  inset: 0.1rem 0 !important;
+  border-radius: 0.5rem;
+  background: rgba(11, 21, 38, 0.92);
+  box-shadow: inset 0 0 0 0.14rem rgba(161, 136, 115, 0.35);
+  transition: box-shadow 0.2s;
+}
+html:not(.modo-ficha) .fx-equip .fx-tab-l:hover::before {
+  box-shadow: inset 0 0 0 0.14rem rgba(233, 169, 68, 0.75);
+}
+/* as casas da mochila da ficha: quadradas, a arte com folga (como no celular) */
+html:not(.modo-ficha) .fx-sl-grade {
+  grid-template-columns: repeat(auto-fill, 6.2rem) !important;
+  grid-auto-rows: 6.2rem !important;
+  justify-content: center;
+  gap: 0.8rem !important;
+}
+html:not(.modo-ficha) .fx-sl {
+  width: 6.2rem !important;
+  height: 6.2rem !important;
+  aspect-ratio: 1;
+  padding: 13% !important;
+  transition:
+    transform 0.15s var(--h-ease),
+    filter 0.2s;
+}
+html:not(.modo-ficha) .fx-sl:not(:disabled):hover {
+  transform: translateY(-0.15rem);
+  filter: drop-shadow(0 0 0.6rem rgba(255, 196, 90, 0.4));
+}
+html:not(.modo-ficha) .fx-sl :is(.arte-ic, img) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+html:not(.modo-ficha) .fx-sl-esp {
+  font: 700 1rem / 1 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+/* as abas da ficha (Poderes, Rituais...): sem a aba pintada do kit (vinha vermelha, sem letra) */
+html:not(.modo-ficha) .fx-g-aba {
+  border: 0.16rem solid rgba(161, 136, 115, 0.45) !important;
+  border-image: none !important;
+  border-radius: 0.6rem !important;
+  background: rgba(11, 21, 38, 0.92) !important;
+  font: 600 1.15rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.25s;
+}
+html:not(.modo-ficha) .fx-g-aba:not(.on):hover {
+  border-color: var(--r-ouro) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .fx-g-aba.on {
+  border-color: #3a1e08 !important;
+  background: var(--h-ouro) !important;
+  color: var(--r-tinta-ouro) !important;
+  box-shadow: inset 0 0.12rem 0 rgba(255, 240, 190, 0.7), inset 0 -0.15rem 0 rgba(120, 60, 10, 0.5) !important;
+}
+html:not(.modo-ficha) .fx-g-aba {
+  padding: 0 1rem !important;
+  height: 3.2rem !important;
+}
+/* FICHAS: os poderes como as linhas do celular (ícone pintado na caixinha, nome em pixel) */
+html:not(.modo-ficha) .fx-pg h4 {
+  font: 700 1.3rem / 1.2 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  letter-spacing: 0.04em;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .fx-pi {
+  gap: 0.8rem !important;
+  min-height: 3.6rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.4rem !important;
+  border: 0.16rem solid rgba(161, 136, 115, 0.4) !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(11, 21, 38, 0.92) !important;
+  box-shadow: none !important;
+  transition:
+    border-color 0.2s,
+    transform 0.15s var(--h-ease);
+}
+html:not(.modo-ficha) .fx-pi:hover {
+  border-color: rgba(233, 169, 68, 0.75) !important;
+  transform: translateX(0.15rem);
+}
+html:not(.modo-ficha) .fx-pi-ic {
+  width: 2.8rem !important;
+  height: 2.8rem !important;
+  border: 0.14rem solid rgba(161, 136, 115, 0.4) !important;
+  border-radius: 0.5rem !important;
+  background: rgba(5, 11, 20, 0.85) !important;
+  display: grid;
+  place-items: center;
+}
+html:not(.modo-ficha) .fx-pi-ic :is(.arte-ic, img, .ic) {
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  object-fit: contain;
+}
+html:not(.modo-ficha) .fx-pi-n {
+  font: 600 1.25rem / 1.2 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .fx-pi-n small {
+  font: 400 1.1rem / 1.2 var(--r-corpo) !important;
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) .fx-corpo-p {
+  background: rgba(5, 11, 20, 0.55) !important;
+  border: 0.14rem solid rgba(161, 136, 115, 0.3) !important;
+  border-radius: var(--h-raio) !important;
+  box-shadow: inset 0 0.4rem 1.2rem rgba(0, 0, 0, 0.45) !important;
+}
+/* as abas das anotações e das janelas: o filtro do HUD */
+html:not(.modo-ficha) :is(.fx-nt-aba, .fj-aba) {
+  border: 0.16rem solid rgba(161, 136, 115, 0.45) !important;
+  border-radius: 0.6rem !important;
+  background: rgba(11, 21, 38, 0.92) !important;
+  font: 600 1.2rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+  transition:
+    border-color 0.2s,
+    background 0.25s,
+    color 0.2s;
+}
+html:not(.modo-ficha) :is(.fx-nt-aba, .fj-aba):not(.on):hover {
+  border-color: var(--r-ouro) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) :is(.fx-nt-aba.on, .fj-aba.on) {
+  border-color: #3a1e08 !important;
+  background: var(--h-ouro) !important;
+  color: var(--r-tinta-ouro) !important;
+  box-shadow: inset 0 0.12rem 0 rgba(255, 240, 190, 0.7), inset 0 -0.15rem 0 rgba(120, 60, 10, 0.5) !important;
+}
+/* a janela: o X de fechar na ponta, depois da linha de ouro */
+html:not(.modo-ficha) .fx-tit .fj-x {
+  order: 4;
+  flex: none;
+  margin-left: 0.6rem;
+}
+html:not(.modo-ficha) .fx-tit .fx-tit-ic {
+  order: 0;
+}
+html:not(.modo-ficha) .fx-tit h3 {
+  order: 1;
+}
+
+/* ---------------------------------------------------------------- a REQUISIÇÃO no computador
+   as seções como as linhas do HUD (sem a aba pintada do kit), os cartões azul-noite com a arte
+   do item na casa, a vaga e a carga no padrão */
+html:not(.modo-ficha) .rq-secao {
+  border: 0.16rem solid rgba(161, 136, 115, 0.4) !important;
+  border-image: none !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(11, 21, 38, 0.92) !important;
+  color: var(--r-texto-2) !important;
+  transition:
+    border-color 0.2s,
+    transform 0.15s var(--h-ease);
+}
+html:not(.modo-ficha) .rq-secao:not(.on):hover {
+  border-color: rgba(233, 169, 68, 0.75) !important;
+  transform: translateX(0.15rem);
+}
+html:not(.modo-ficha) .rq-secao small {
+  font-family: var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) .rq-card {
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.45) !important;
+  border-radius: var(--h-raio) !important;
+  background: rgba(11, 21, 38, 0.92) !important;
+  box-shadow: 0 0.4rem 0.9rem rgba(0, 0, 0, 0.45) !important;
+}
+html:not(.modo-ficha) .rq-card:hover {
+  border-color: var(--r-ouro) !important;
+}
+html:not(.modo-ficha) .rq-card.on {
+  border-color: var(--r-ouro-hi) !important;
+  background: linear-gradient(180deg, rgba(233, 169, 68, 0.16), rgba(20, 36, 64, 0.96) 55%) !important;
+  box-shadow: 0 0 1.4rem rgba(255, 196, 90, 0.35) !important;
+}
+html:not(.modo-ficha) .rq-card .rq-arte {
+  padding: 1rem;
+  border-radius: 0 !important;
+  background: var(--ui-fichas-casa-item-normal, var(--r-noite-2)) center / 100% 100% no-repeat !important;
+  box-shadow: none !important;
+}
+html:not(.modo-ficha) .rq-card.on .rq-arte {
+  background-image: var(--ui-fichas-casa-item-escolhida, var(--ui-fichas-casa-item-foco)) !important;
+}
+html:not(.modo-ficha) .rq-card .rq-nome {
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .rq-card small,
+html:not(.modo-ficha) .rq-card .rq-sub {
+  font-family: var(--r-corpo) !important;
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) .rq-vaga {
+  border: 0.16rem solid rgba(161, 136, 115, 0.5) !important;
+  border-image: none !important;
+  border-radius: 0.5rem !important;
+  background: var(--h-campo) !important;
+  font-family: var(--r-pixel) !important;
+}
+html:not(.modo-ficha) .rq-carga-barra {
+  height: 1.4rem !important;
+  border: 0.16rem solid rgba(161, 136, 115, 0.6) !important;
+  border-image: none !important;
+  border-radius: 0.45rem !important;
+  background: #020509 !important;
+  overflow: hidden;
+}
+html:not(.modo-ficha) .rq-carga-barra i {
+  top: 0 !important;
+  bottom: 0 !important;
+}
+html:not(.modo-ficha) .rq-carga-cheia {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0 22%, transparent 22% 70%, rgba(0, 0, 0, 0.28) 70%),
+    #f3a73d !important;
+}
+html:not(.modo-ficha) .rq-det-arte {
+  border-image: none !important;
+  border: 0 !important;
+  background: var(--ui-fichas-casa-item-normal, var(--r-noite-2)) center / 100% 100% no-repeat !important;
+}

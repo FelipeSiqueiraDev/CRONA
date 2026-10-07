@@ -12,12 +12,15 @@ import type { Cobertura } from '../room/combateGeo';
 import { h } from './dom';
 import { textoTeste } from './fichaRegras';
 import { arteOu, ic, type NomeIcone } from './icons';
+import { arteDoItem } from './arteItem';
 import { sfx } from './sfx';
 
 type TipoDano = regras.TipoDano;
 
 /** Um ataque que quem age pode fazer (da ficha do agente ou da ficha rápida da ameaça). */
 export interface ArmaOpcao {
+  /** o item do catálogo (a arte pintada dele); sem ele (ameaça), o ícone do ataque */
+  item?: string;
   nome: string;
   pericia: 'luta' | 'pontaria';
   /** d20 do atributo e os ganhos */
@@ -119,6 +122,12 @@ const PINTADO_SIT: Partial<Record<cb.SituacaoId, string>> = {
   alvoCaido: 'estado-caido',
   atacanteCaido: 'estado-caido',
 };
+/** A arte da arma, como na aba Ataques do celular: a pintada do item; o desarmado é o punho; a da ameaça, o ataque. */
+const arteArma = (a: ArmaOpcao) =>
+  a.item && a.item !== 'ataque-desarmado'
+    ? arteDoItem({ id: a.item, tipo: 'arma', nome: a.nome }, a.pericia === 'pontaria' ? 'pistola' : 'faca', 'arte-ic')
+    : arteOu([a.item ? '/arte/icones/for.png' : '/arte/icones/combate-atacar.png'], ic(a.item ? 'punho' : 'espadas'));
+
 const icSit = (id: cb.SituacaoId) => {
   const linha = ic(ICONE_SIT[id] ?? 'alerta');
   const pintado = PINTADO_SIT[id];
@@ -327,7 +336,7 @@ export class ResolucaoAtaque {
           h(
             'div',
             { class: 'cb-arma fora' },
-            h('span', { class: 'cb-arma-ic' }, ic(a.pericia === 'pontaria' ? 'pistola' : 'faca')),
+            h('span', { class: 'cb-arma-ic' }, arteArma(a)),
             h('span', { class: 'cb-arma-txt' }, h('b', null, a.nome), h('small', null, `na mochila · ${a.dano}`)),
             x.sacar && a.uid !== undefined
               ? h(
@@ -358,7 +367,7 @@ export class ResolucaoAtaque {
             x.mudou();
           },
         },
-        h('span', { class: 'cb-arma-ic' }, ic(a.pericia === 'pontaria' ? 'pistola' : a.nome.toLowerCase().includes('desarmado') ? 'punho' : 'faca')),
+        h('span', { class: 'cb-arma-ic' }, arteArma(a)),
         i === this.e.arma
           ? h(
               'span',
@@ -404,7 +413,7 @@ export class ResolucaoAtaque {
           x.mudou();
         },
       },
-      h('span', { class: 'cb-arma-ic' }, ic('estrela')),
+      h('span', { class: 'cb-arma-ic' }, arteOu(['/arte/icones/combate-habilidade.png'], ic('estrela'))),
       h(
         'span',
         { class: 'cb-arma-txt' },
