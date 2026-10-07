@@ -83,6 +83,46 @@ function quando(iso: string): string {
 }
 
 /** O ícone pintado do kit (arte/icones/<nome>.png), com o de linha enquanto não chega. */
+/**
+ * Os atributos, no mesmo jeito dos números: o ícone, o valor (quantos d20 rola, LR p. 11) e o nome.
+ * Com `dica`, o toque passa o brilho e diz só os dados ("4D20"; com 0 ou menos, rola dois e fica o
+ * menor). Sem `dica` (dentro de um cartão que já é botão, na ficha), é só a faixa.
+ */
+export function faixaAtributos(atributos: Record<regras.AtributoId, number>, dica = true): HTMLElement {
+  const atr = (a: regras.AtributoId, i: number) => {
+    const v = atributos[a];
+    const dados = v > 0 ? `${v}D20` : '2D20';
+    const rola = v > 0 ? `rola ${v}d20, fica o maior` : 'rola 2d20, fica o menor';
+    const el = h(
+      dica ? 'button' : 'div',
+      {
+        class: `jg-num jg-atr a-${a}`,
+        style: `--i:${i}`,
+        type: dica ? 'button' : undefined,
+        'aria-label': `${regras.NOME_ATRIBUTO[a]} ${v}: ${rola}`,
+        onclick: dica
+          ? () => {
+              sfx.click();
+              el.classList.remove('rola');
+              void el.offsetWidth;
+              el.classList.add('rola');
+              el.querySelector('.jg-atr-dica')?.remove();
+              const d = h('span', { class: 'jg-atr-dica' }, h('b', null, dados), v > 0 ? null : h('small', null, 'fica com o menor'));
+              el.append(d);
+              window.setTimeout(() => d.remove(), 2600);
+            }
+          : undefined,
+      },
+      h('span', { class: 'jg-atr-brilho', 'aria-hidden': 'true' }),
+      h('span', { class: 'jg-num-ic' }, pintado(a, 'pulso')),
+      h('b', null, String(v)),
+      h('span', { class: 'jg-num-n' }, regras.NOME_ATRIBUTO[a]),
+    ) as HTMLElement;
+    return el;
+  };
+  return h('div', { class: 'jg-numeros jg-atrs' }, ...(['agi', 'for', 'int', 'pre', 'vig'] as const).map(atr));
+}
+
 const pintado = (nome: string | string[] | undefined, icone: NomeIcone) =>
   nome ? arteOu((Array.isArray(nome) ? nome : [nome]).map((n) => `/arte/icones/${n}.png`), ic(icone)) : ic(icone);
 /** Os ícones pintados que ainda vão chegar (o pedido ao Códex), com o mais parecido de hoje enquanto isso. */
@@ -366,35 +406,6 @@ export class TelaJogador {
   private abaAgente(): Node[] {
     const fs = this.fs!;
     const c = this.calc!;
-    // os atributos, no mesmo jeito dos números: o ícone, o valor (quantos d20 rola, LR p. 11) e o nome; o toque diz o que rola
-    const atr = (a: regras.AtributoId) => {
-      const v = c.atributos[a];
-      // a dica: só os dados ("4D20"); com 0 (ou menos), rola dois e fica o menor (LR p. 11)
-      const dados = v > 0 ? `${v}D20` : '2D20';
-      const rola = v > 0 ? `rola ${v}d20, fica o maior` : 'rola 2d20, fica o menor';
-      const el: HTMLButtonElement = h(
-        'button',
-        {
-          class: `jg-num jg-atr a-${a}`,
-          type: 'button',
-          'aria-label': `${regras.NOME_ATRIBUTO[a]} ${v}: ${rola}`,
-          onclick: () => {
-            sfx.click();
-            el.classList.remove('rola');
-            void el.offsetWidth;
-            el.classList.add('rola');
-            el.querySelector('.jg-atr-dica')?.remove();
-            const dica = h('span', { class: 'jg-atr-dica' }, h('b', null, dados), v > 0 ? null : h('small', null, 'fica com o menor'));
-            el.append(dica);
-            window.setTimeout(() => dica.remove(), 2600);
-          },
-        },
-        h('span', { class: 'jg-num-ic' }, pintado(a, 'pulso')),
-        h('b', null, String(v)),
-        h('span', null, regras.NOME_ATRIBUTO[a]),
-      ) as HTMLButtonElement;
-      return el;
-    };
     const armado = regras.armado(fs.ficha.inventario);
     const armas = fs.ficha.inventario.filter((it) => it.tipo === 'arma' && regras.maosDoItem(it) > 0 && it.uid);
     const naMao = fs.ficha.inventario.filter((it) => it.tipo === 'arma' && regras.lugarDoItem(it) === 'mao');
@@ -415,7 +426,7 @@ export class TelaJogador {
       h('span', { class: 'jg-armado-op arm' }, pintado(IC.armado, 'pistola'), 'Armado'),
     );
     return [
-      h('div', { class: 'jg-numeros jg-atrs' }, ...(['agi', 'for', 'int', 'pre', 'vig'] as const).map(atr)),
+      faixaAtributos(c.atributos),
       this.numeros,
       trocar,
       h('p', { class: 'jg-nota-armado' }, armado ? `Na mão: ${naMao.map((x) => regras.nomeDoItem(x)).join(', ')}.` : armas.length ? 'A arma fica guardada; Armado saca a primeira da mochila.' : 'Sem arma na mochila.'),
