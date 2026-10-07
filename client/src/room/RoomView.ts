@@ -486,8 +486,9 @@ export class RoomView {
     if (!this.map) return;
     const b = roomBounds(this.map, !!this.info?.aberto);
     const f = this.frame_();
-    // a Viagem: a van num pedaço do quadro, para o mundo passando aparecer em volta
-    const k = this.info?.viagem ? 2.2 : 1;
+    // a Viagem: a cena é só a van (o mundo passa por fora, como ilustração de um momento): a van enche o quadro,
+    // com só uma faixa de mundo em volta (antes 2,2: a van ficava pequena num mapa enorme)
+    const k = this.info?.viagem ? 1.3 : 1;
     const bw = (b.maxX - b.minX) * k + 16;
     const bh = (b.maxY - b.minY) * k + 16;
     const availW = f.w;
