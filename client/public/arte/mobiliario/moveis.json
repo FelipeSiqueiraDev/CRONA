@@ -4624,24 +4624,24 @@
   "escala": 0.5,
   "parede": {
    "r": {
-    "arquivo": "cage_lamp/parede-r.png",
-    "ax": 17.0,
-    "ay": 22.8
-   },
-   "l": {
     "arquivo": "cage_lamp/parede-l.png",
     "ax": 17.0,
     "ay": 24.0
    },
-   "r-1": {
-    "arquivo": "cage_lamp/parede-r-1.png",
+   "l": {
+    "arquivo": "cage_lamp/parede-r.png",
     "ax": 17.0,
     "ay": 22.8
    },
-   "l-1": {
+   "r-1": {
     "arquivo": "cage_lamp/parede-l-1.png",
     "ax": 17.0,
     "ay": 24.0
+   },
+   "l-1": {
+    "arquivo": "cage_lamp/parede-r-1.png",
+    "ax": 17.0,
+    "ay": 22.8
    }
   }
  },

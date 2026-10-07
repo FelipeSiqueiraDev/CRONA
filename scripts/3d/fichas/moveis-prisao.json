@@ -12,7 +12,7 @@
     {"def": "tally_marks", "folha": "client/public/arte/mobiliario/folhas/marcas-contagem.png", "real": [0.5, 0.01, 0.4], "caixas": [[193, 192, 857, 694], [981, 198, 1640, 723]], "parede": {"r": [0, 0.5, 0.5], "l": [1, 0.5, 0.5]}},
     {"def": "tally_marks~b", "folha": "client/public/arte/mobiliario/folhas/marcas-contagem-b.png", "real": [0.5, 0.01, 0.4], "caixas": [[193, 192, 857, 694], [981, 198, 1640, 723]], "parede": {"r": [0, 0.5, 0.5], "l": [1, 0.5, 0.5]}},
     {"def": "tally_marks~c", "folha": "client/public/arte/mobiliario/folhas/marcas-contagem-c.png", "real": [0.5, 0.01, 0.4], "caixas": [[193, 192, 857, 694], [981, 198, 1640, 723]], "parede": {"r": [0, 0.5, 0.5], "l": [1, 0.5, 0.5]}},
-    {"def": "cage_lamp", "folha": "client/public/arte/mobiliario/folhas/luminaria-grade.png", "real": [0.25, 0.15, 0.3], "parede": {"r": [0, 0.5, 0.4], "l": [1, 0.5, 0.4], "r-1": [2, 0.5, 0.4], "l-1": [3, 0.5, 0.4]}},
+    {"def": "cage_lamp", "folha": "client/public/arte/mobiliario/folhas/luminaria-grade.png", "real": [0.25, 0.15, 0.3], "parede": {"r": [1, 0.5, 0.4], "l": [0, 0.5, 0.4], "r-1": [3, 0.5, 0.4], "l-1": [2, 0.5, 0.4]}},
     {"def": "drain", "folha": "client/public/arte/mobiliario/folhas/ralo-redondo.png", "W": 1, "D": 1, "chao": true}
   ]
 }

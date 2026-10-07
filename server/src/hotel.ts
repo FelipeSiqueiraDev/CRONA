@@ -63,7 +63,7 @@ import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSes
 import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type UserData } from './db';
 import { RoomInstance, type Client, type HotelApi } from './roomInstance';
 import { refreshPortraits } from './portraits';
-import { seedDb, SYSTEM_OWNER, upgradeDb } from './seed';
+import { limparSalasDeExemplo, seedDb, SYSTEM_OWNER, upgradeDb } from './seed';
 
 const NAME_RE = /^[\p{L}\p{N}_\-. ]+$/u;
 const STARTER: string[] = ['chair_wood', 'table_small', 'candles', 'crate_wood', 'plant'];
@@ -157,6 +157,8 @@ export class Hotel implements HotelApi {
     const loaded = opts.db ? null : loadDb();
     this.db = opts.db ?? loaded ?? seedDb();
     let dirty = upgradeDb(this.db) || (!loaded && !opts.db);
+    // só em banco guardado (os testes montam o deles): tira as salas de exemplo antigas, uma vez
+    if (loaded && limparSalasDeExemplo(this.db)) dirty = true;
     if (!this.db.gmKey) {
       this.db.gmKey = crypto.randomBytes(9).toString('base64url');
       dirty = true;

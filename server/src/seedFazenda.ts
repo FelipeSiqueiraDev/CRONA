@@ -1494,6 +1494,22 @@ export function rebuildFazenda(db: Database): boolean {
   return true;
 }
 
+/** Repõe na porteira os agentes que faltam na fazenda (depois da limpeza das salas de exemplo, que levou as peças). */
+export function reporAgentesDaFazenda(db: Database): boolean {
+  const spec = CENAS.find((s) => s.grupo);
+  const porteira = spec ? db.rooms.find((r) => r.name === spec.name) : undefined;
+  if (!spec || !porteira) return false;
+  const nomes = new Set(
+    db.rooms.filter((r) => r.name.startsWith(FAZENDA)).flatMap((r) => (r.tokens ?? []).map((t) => t.name)),
+  );
+  const charIdOf = (name: string) =>
+    db.characters.find((c) => c.name.toLowerCase() === name.toLowerCase())?.id ?? null;
+  const faltam = partyTokens(db, charIdOf, spec.grupo).filter((t) => !nomes.has(t.name));
+  if (!faltam.length) return false;
+  porteira.tokens = [...(porteira.tokens ?? []), ...faltam];
+  return true;
+}
+
 /** Monta a fazenda se ainda não existe; se existe, refaz quando a montagem mudou. */
 export function montarFazenda(db: Database): boolean {
   if (!db.rooms.some((r) => r.name.startsWith(FAZENDA))) {

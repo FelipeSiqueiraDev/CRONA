@@ -17,8 +17,8 @@ import {
   type WallItem,
 } from '@crona/shared';
 import type { Database, RoomData, TokenData } from './db';
-import { montarFazenda } from './seedFazenda';
-import { coresDosAgentes, rebuildSede, seedSede, temasDosAgentes } from './seedSede';
+import { FAZENDA, montarFazenda, reporAgentesDaFazenda } from './seedFazenda';
+import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgentes } from './seedSede';
 
 export const SYSTEM_OWNER = 'CRONA';
 
@@ -641,6 +641,40 @@ function liftWallItems(r: RoomData) {
 }
 
 /** Aplica conteúdo novo em bancos antigos sem apagar nada. */
+/**
+ * Fica só a Sede (o bar e o subsolo) e a Fazenda (07/10, pedido do Felipe: "exclui tudo que não seja a base da Ordem,
+ * o bar e o subsolo completo, e a Fazenda"). Tira as salas e as campanhas de exemplo (a Base da Ordem antiga, o
+ * Saguão, a Sala de Interrogatório, a Casa Abandonada, a Mansão Alvarez e a Viagem delas) e repõe os quatro agentes
+ * no bar e na porteira se a limpeza os levou. Roda uma vez (`db.limpezaExemplos`). As fichas não se mexem.
+ */
+export function limparSalasDeExemplo(db: Database): boolean {
+  if (db.limpezaExemplos) return false;
+  // só quando a Sede e a Fazenda existem (um banco novo ainda vai montá-las)
+  if (!db.rooms.some((r) => r.name.startsWith(SEDE)) || !db.rooms.some((r) => r.name.startsWith(FAZENDA))) return false;
+  const ids = new Set(db.rooms.filter((r) => !r.name.startsWith(SEDE) && !r.name.startsWith(FAZENDA)).map((r) => r.id));
+  if (ids.size) {
+    db.rooms = db.rooms.filter((r) => !ids.has(r.id));
+    if (db.campaigns) for (const k of Object.keys(db.campaigns)) if (ids.has(Number(k))) delete db.campaigns[k];
+    const bar = db.rooms.find((r) => r.name === SEDE + 'Bar');
+    if (db.home !== undefined && ids.has(db.home)) {
+      if (bar) db.home = bar.id;
+      else delete db.home;
+    }
+    if (db.liveScene !== undefined && ids.has(db.liveScene)) delete db.liveScene;
+  }
+  // os agentes que ficaram sem lugar na Sede voltam para o bar
+  const bar = db.rooms.find((r) => r.name === SEDE + 'Bar');
+  if (bar) {
+    const nomes = new Set(db.rooms.filter((r) => r.name.startsWith(SEDE)).flatMap((r) => (r.tokens ?? []).map((t) => t.name)));
+    const charIdOf = (name: string) => db.characters.find((c) => c.name.toLowerCase() === name.toLowerCase())?.id ?? null;
+    const faltam = partyTokens(db, charIdOf).filter((t) => !nomes.has(t.name));
+    if (faltam.length) bar.tokens = [...(bar.tokens ?? []), ...faltam];
+  }
+  reporAgentesDaFazenda(db);
+  db.limpezaExemplos = true;
+  return true;
+}
+
 export function upgradeDb(db: Database): boolean {
   const v = db.seedVersion ?? 1;
   // a Sede e a fazenda mudam de montagem sem esperar versão nova do banco
