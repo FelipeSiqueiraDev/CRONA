@@ -12,6 +12,8 @@ import './ui/requisicao.css';
 import './ui/entrada.css';
 import './ui/kit.css';
 import './ui/jogador.css';
+import './ui/retro-auto.css';
+import './ui/retro.css';
 import { anyFurniName, getFurni, getWallFurni, portraitState, vitalConditions, type ServerMsg } from '@crona/shared';
 import { Net } from './net';
 import { clearIconCache } from './render/bubbles';

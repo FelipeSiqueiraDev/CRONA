@@ -369,6 +369,8 @@ export class TelaJogador {
     // os atributos, no mesmo jeito dos números: o ícone, o valor (quantos d20 rola, LR p. 11) e o nome; o toque diz o que rola
     const atr = (a: regras.AtributoId) => {
       const v = c.atributos[a];
+      // a dica: só os dados ("4D20"); com 0 (ou menos), rola dois e fica o menor (LR p. 11)
+      const dados = v > 0 ? `${v}D20` : '2D20';
       const rola = v > 0 ? `rola ${v}d20, fica o maior` : 'rola 2d20, fica o menor';
       const el: HTMLButtonElement = h(
         'button',
@@ -382,7 +384,7 @@ export class TelaJogador {
             void el.offsetWidth;
             el.classList.add('rola');
             el.querySelector('.jg-atr-dica')?.remove();
-            const dica = h('span', { class: 'jg-atr-dica' }, h('b', null, regras.NOME_ATRIBUTO[a]), rola);
+            const dica = h('span', { class: 'jg-atr-dica' }, h('b', null, dados), v > 0 ? null : h('small', null, 'fica com o menor'));
             el.append(dica);
             window.setTimeout(() => dica.remove(), 2600);
           },

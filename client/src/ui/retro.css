@@ -1,0 +1,505 @@
+/* =====================================================================
+   O VISUAL "JOGO RETRÔ" NO SITE INTEIRO (06/10)
+   A mesma linguagem da tela do jogador e da entrada (PRODUCT.md): janela azul-noite com borda
+   bege e a linha de dentro, ouro do login, Pixelify Sans (com os números da Silkscreen) na
+   interface, Roboto Condensed no texto corrido. Esta camada vem por último e veste as telas do
+   mestre (MAPA, COMBATE, FICHAS, ITENS), as janelas e a mesa. O jogador (html.modo-ficha) tem a
+   própria folha (jogador.css).
+   No computador, 1rem = 10 px da referência (1672 × 941).
+   ===================================================================== */
+
+:root {
+  --r-noite: #050b14;
+  --r-noite-2: #0b1526;
+  --r-noite-3: #142440;
+  --r-campo: #060c16;
+  --r-borda: #a18873;
+  --r-borda-2: rgba(161, 136, 115, 0.38);
+  --r-ouro: #e9a944;
+  --r-ouro-hi: #ffd27a;
+  --r-ouro-lo: #c97f2c;
+  --r-tinta-ouro: #2b1606;
+  --r-texto: #f3e9d8;
+  --r-texto-2: #cdbfa9;
+  --r-texto-3: #a3978a;
+  --r-perigo: #ff8a73;
+  --r-ok: #79d98f;
+  --r-sombra-pixel: 0 0.15rem 0 #1b0d03;
+  --r-pixel: 'Pixel Numeros', 'Pixelify Sans', 'Ubuntu Mono', monospace;
+  --r-corpo: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  --r-janela-sombra:
+    inset 0 0 0 0.25rem rgba(5, 11, 20, 0.95),
+    inset 0 0 0 0.35rem rgba(161, 136, 115, 0.38),
+    0 0.6rem 1.6rem rgba(0, 0, 0, 0.55);
+}
+
+/* as fontes do site: títulos e números na pixel; o texto corrido na condensada
+   (a máquina de escrever fica só nos documentos, que são papel de verdade) */
+html:not(.modo-ficha) {
+  /* a paleta antiga (roxo-escuro) do style.css passa para o azul-noite */
+  --bg: #050b14;
+  --panel: #0b1526;
+  --panel-2: #0e1a2e;
+  --panel-3: #142440;
+  --line: rgba(161, 136, 115, 0.38);
+  --line-2: #a18873;
+  --text: #f3e9d8;
+  --muted: #a3978a;
+  --font: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  --font-title: var(--r-pixel);
+  --f-titulo: var(--r-pixel);
+  --f-maquina: var(--r-corpo);
+}
+html:not(.modo-ficha) [class^='doc-'],
+html:not(.modo-ficha) [class*=' doc-'] {
+  --f-maquina: 'Courier Prime', 'Courier New', monospace;
+}
+
+/* ---------------------------------------------------------------- o fundo do site */
+html:not(.modo-ficha) body {
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(255, 176, 80, 0.12), transparent 70%),
+    linear-gradient(180deg, #0a1322 0%, #070e1a 45%, #04080f 100%);
+}
+
+/* ---------------------------------------------------------------- o papel vira a janela */
+html:not(.modo-ficha) .papered > .kit-papel,
+html:not(.modo-ficha) .papered > .paper-cv {
+  display: none !important;
+}
+html:not(.modo-ficha) .papered {
+  background: rgba(5, 11, 20, 0.94) !important;
+  border: 0.18rem solid var(--r-borda) !important;
+  border-radius: 0.6rem !important;
+  box-shadow: var(--r-janela-sombra) !important;
+  color: var(--r-texto);
+}
+
+/* ---------------------------------------------------------------- botões e campos */
+html:not(.modo-ficha) .fx-bt {
+  border: 0.18rem solid #c08442 !important;
+  border-radius: 0.5rem;
+  background: var(--r-campo) !important;
+  box-shadow: inset 0 0 0 0.25rem var(--r-campo), inset 0 0 0 0.35rem rgba(192, 132, 66, 0.4) !important;
+  color: var(--r-texto) !important;
+  font-family: var(--r-pixel) !important;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-shadow: none !important;
+}
+html:not(.modo-ficha) .fx-bt::before {
+  display: none !important;
+}
+html:not(.modo-ficha) .fx-bt.forte {
+  border-color: #3a1e08 !important;
+  background:
+    linear-gradient(105deg, transparent 42%, rgba(255, 252, 235, 0.5) 50%, transparent 58%) no-repeat,
+    linear-gradient(#f6cf6a 0%, #e9a944 46%, #c97f2c 100%) !important;
+  background-size:
+    260% 100%,
+    100% 100% !important;
+  background-position:
+    170% 0,
+    0 0;
+  box-shadow:
+    inset 0 0.15rem 0 rgba(255, 240, 190, 0.75),
+    inset 0 -0.2rem 0 rgba(120, 60, 10, 0.55),
+    0 0.3rem 0.7rem rgba(0, 0, 0, 0.45) !important;
+  color: var(--r-tinta-ouro) !important;
+  animation: r-varre 6s 1.2s infinite;
+}
+html:not(.modo-ficha) .fx-bt.perigo {
+  border-color: #b4483b !important;
+  color: var(--r-perigo) !important;
+}
+@keyframes r-varre {
+  0% {
+    background-position:
+      170% 0,
+      0 0;
+  }
+  20%,
+  100% {
+    background-position:
+      -70% 0,
+      0 0;
+  }
+}
+html:not(.modo-ficha) .fx-inp {
+  border: 0.18rem solid var(--r-borda) !important;
+  border-radius: 0.6rem;
+  background: var(--r-campo) !important;
+  color: var(--r-texto) !important;
+  font-family: var(--r-corpo);
+  caret-color: var(--r-ouro-hi);
+}
+html:not(.modo-ficha) .fx-inp:focus {
+  border-color: var(--r-ouro) !important;
+  box-shadow: 0 0 1rem rgba(226, 166, 74, 0.35);
+  outline: none;
+}
+
+/* ---------------------------------------------------------------- as janelas (fichaModal e Win) */
+html:not(.modo-ficha) .fj-fundo {
+  background: radial-gradient(ellipse at center, rgba(5, 11, 20, 0.5), rgba(2, 5, 9, 0.84)) !important;
+  backdrop-filter: blur(0.5rem);
+}
+html:not(.modo-ficha) .fj:not(.rq) {
+  background: rgba(5, 11, 20, 0.96) !important;
+  border: 0.18rem solid var(--r-borda);
+  border-radius: 0.8rem;
+  box-shadow: var(--r-janela-sombra), 0 2rem 5rem rgba(0, 0, 0, 0.7) !important;
+  color: var(--r-texto);
+  padding: 0;
+}
+html:not(.modo-ficha) .fj:not(.rq) > .kit-papel,
+html:not(.modo-ficha) .fj:not(.rq) > .paper-cv {
+  display: none !important;
+}
+html:not(.modo-ficha) .fj > .fx-tit {
+  padding: 1.4rem 1.8rem 1rem;
+  border-bottom: 0.12rem solid var(--r-borda-2);
+}
+html:not(.modo-ficha) .fj .fx-tit h3 {
+  font-family: var(--r-pixel) !important;
+  font-weight: 700;
+  color: var(--r-ouro-hi) !important;
+  letter-spacing: 0.03em;
+  text-shadow: var(--r-sombra-pixel);
+  text-transform: none;
+}
+html:not(.modo-ficha) .fj .fx-tit-ic {
+  color: var(--r-ouro);
+  background: none;
+  box-shadow: none;
+}
+html:not(.modo-ficha) .fj .fj-x {
+  width: 3.6rem;
+  height: 3.6rem;
+  border: 0.18rem solid var(--r-borda);
+  border-radius: 0.5rem;
+  background: var(--r-campo);
+  color: var(--r-texto);
+}
+html:not(.modo-ficha) .fj .fj-corpo {
+  padding: 1.4rem 1.8rem;
+  color: var(--r-texto);
+}
+html:not(.modo-ficha) .fj .fj-rodape {
+  padding: 1rem 1.8rem 1.4rem;
+  border-top: 0.12rem solid var(--r-borda-2);
+}
+html:not(.modo-ficha) .fj .fj-dica,
+html:not(.modo-ficha) .fj .fj-texto {
+  color: var(--r-texto-2) !important;
+}
+html:not(.modo-ficha) .fj .fj-sub {
+  font-family: var(--r-pixel);
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .fj .fo {
+  border: 0.12rem solid var(--r-borda-2) !important;
+  border-radius: 0.5rem;
+  background: var(--r-noite-2) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .fj .fo.on {
+  border-color: var(--r-ouro) !important;
+  background: var(--r-noite-3) !important;
+}
+html:not(.modo-ficha) .fj .fo-nome {
+  font-family: var(--r-pixel);
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .fj .fo-resumo,
+html:not(.modo-ficha) .fj .fo-nome small {
+  color: var(--r-texto-2) !important;
+}
+html:not(.modo-ficha) .fj .fo-motivos {
+  color: var(--r-perigo) !important;
+}
+html:not(.modo-ficha) .fj .fo-avisos {
+  color: #f6cf7d !important;
+}
+html:not(.modo-ficha) .fj .fo-marca {
+  border-color: var(--r-borda) !important;
+  background: var(--r-campo) !important;
+  color: var(--r-tinta-ouro) !important;
+}
+html:not(.modo-ficha) .fj .fo.on .fo-marca {
+  background: linear-gradient(#f6cf6a, #c97f2c) !important;
+}
+html:not(.modo-ficha) .fj .fj-chip {
+  border-color: var(--r-borda-2) !important;
+  background: var(--r-noite-2) !important;
+  color: var(--r-texto-2) !important;
+  font-family: var(--r-pixel);
+}
+html:not(.modo-ficha) .fj .fj-chip.on {
+  border-color: #3a1e08 !important;
+  background: linear-gradient(#f6cf6a, #c97f2c) !important;
+  color: var(--r-tinta-ouro) !important;
+}
+
+/* ---------------------------------------------------------------- movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  html:not(.modo-ficha) .fx-bt.forte {
+    animation: none;
+  }
+}
+
+/* =====================================================================
+   MAPA (shell.ts, mapa.css)
+   ===================================================================== */
+html:not(.modo-ficha) {
+  --ink: #f3e9d8;
+  --ink-2: #cdbfa9;
+  --ink-3: #a3978a;
+}
+/* os títulos dos painéis: a fonte do login, em ouro, com a sombra de pixel */
+html:not(.modo-ficha) .p-title,
+html:not(.modo-ficha) .p-title span,
+html:not(.modo-ficha) .marca,
+html:not(.modo-ficha) .insp-cab {
+  font-family: var(--r-pixel) !important;
+  font-weight: 700 !important;
+  color: var(--r-ouro-hi) !important;
+  letter-spacing: 0.05em;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .marca::before,
+html:not(.modo-ficha) .insp-cab::before {
+  display: none;
+}
+html:not(.modo-ficha) .marca,
+html:not(.modo-ficha) .insp-cab {
+  padding-left: 0;
+}
+html:not(.modo-ficha) .p-title small,
+html:not(.modo-ficha) .p-title em {
+  color: var(--r-texto-3) !important;
+  text-shadow: none;
+}
+html:not(.modo-ficha) .sala-txt p {
+  color: var(--r-texto-2) !important;
+  font-family: var(--r-corpo);
+}
+html:not(.modo-ficha) .sala-chips span {
+  border: 0.12rem solid var(--r-borda-2) !important;
+  border-radius: 1rem;
+  background: var(--r-noite-2) !important;
+  color: var(--r-texto-2) !important;
+  font-family: var(--r-pixel) !important;
+}
+/* as abas da planta e as do painel da direita: o filtro segmentado de ouro */
+html:not(.modo-ficha) .plan-tab,
+html:not(.modo-ficha) .itab {
+  font-family: var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+  background: none !important;
+}
+html:not(.modo-ficha) .plan-tab + .plan-tab::before,
+html:not(.modo-ficha) .plan-tab.on::after {
+  display: none;
+}
+html:not(.modo-ficha) .plan-tab.on,
+html:not(.modo-ficha) .itab.on {
+  border-radius: 0.5rem;
+  background: linear-gradient(#f6cf6a, #e9a944 50%, #c97f2c) !important;
+  color: var(--r-tinta-ouro) !important;
+  box-shadow: inset 0 0.12rem 0 rgba(255, 240, 190, 0.7), inset 0 -0.15rem 0 rgba(120, 60, 10, 0.5) !important;
+}
+html:not(.modo-ficha) .itab.on span,
+html:not(.modo-ficha) .itab span {
+  color: inherit !important;
+}
+/* os agentes (painel da direita) */
+html:not(.modo-ficha) .rp-nome,
+html:not(.modo-ficha) .rp-nome b {
+  font-family: var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .rp-nome span,
+html:not(.modo-ficha) .rp-nome small {
+  color: var(--r-texto-3) !important;
+  font-family: var(--r-corpo);
+}
+html:not(.modo-ficha) .rp-l b {
+  font-family: var(--r-pixel) !important;
+  letter-spacing: 0.05em;
+}
+html:not(.modo-ficha) .rp-l.pv b {
+  color: #f0503f !important;
+}
+html:not(.modo-ficha) .rp-l.pe b {
+  color: #f3a73d !important;
+}
+html:not(.modo-ficha) .rp-l.san b {
+  color: #4f9bff !important;
+}
+html:not(.modo-ficha) .vt-cond {
+  color: var(--r-texto-2) !important;
+  font-family: var(--r-pixel);
+}
+/* as cartas do grupo */
+html:not(.modo-ficha) .pc-name {
+  font-family: var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+}
+/* os cartões de objeto ("Nesta cena", achados): a fileira da lista do jogador */
+html:not(.modo-ficha) .icard {
+  background: var(--r-noite-2) !important;
+  border: 0.14rem solid var(--r-borda-2) !important;
+  border-radius: 0.5rem;
+  box-shadow: none !important;
+  color: var(--r-texto);
+}
+html:not(.modo-ficha) .icard.link:hover,
+html:not(.modo-ficha) .icard.sel {
+  border-color: var(--r-ouro) !important;
+  background: var(--r-noite-3) !important;
+}
+html:not(.modo-ficha) .ic-text b {
+  font-family: var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  -webkit-text-stroke: 0 !important;
+}
+html:not(.modo-ficha) .ic-text small {
+  color: var(--r-texto-3) !important;
+  font-family: var(--r-corpo) !important;
+}
+html:not(.modo-ficha) .ipane {
+  background: transparent !important;
+}
+
+/* =====================================================================
+   COMBATE: os painéis já viram janela; aqui a tinta escura do papel vira a clara
+   ===================================================================== */
+html:not(.modo-ficha) .cb-p {
+  --ink: #f3e9d8;
+  --ink-2: #cdbfa9;
+  --ink-3: #a3978a;
+  --papel-linha: rgba(161, 136, 115, 0.38);
+  color: var(--r-texto);
+}
+html:not(.modo-ficha) .cb-tit h3 {
+  font-family: var(--r-pixel) !important;
+  font-variation-settings: normal;
+  font-size: 1.7rem;
+  color: var(--r-ouro-hi) !important;
+  text-shadow: var(--r-sombra-pixel);
+  letter-spacing: 0.04em;
+}
+html:not(.modo-ficha) .cb-marca {
+  background: linear-gradient(180deg, #ffd27a, #c97f2c);
+  box-shadow: 0 0 0.4rem rgba(255, 196, 90, 0.4);
+}
+html:not(.modo-ficha) .cb-ini-sub,
+html:not(.modo-ficha) .cb-ini-sub > span,
+html:not(.modo-ficha) .cb-caixa small,
+html:not(.modo-ficha) .cb-arma-txt small,
+html:not(.modo-ficha) .cb-p li small,
+html:not(.modo-ficha) .cb-reg-rodada,
+html:not(.modo-ficha) .cb-vazio {
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) .cb-passos li.feito small,
+html:not(.modo-ficha) .cb-passos li.atual small {
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .cb-longe,
+html:not(.modo-ficha) .cb-reg-linha.t-estado span,
+html:not(.modo-ficha) .cb-reg-destaque {
+  color: var(--r-perigo) !important;
+}
+html:not(.modo-ficha) .cb-reg-rodada::before,
+html:not(.modo-ficha) .cb-reg-rodada::after {
+  background: var(--r-borda-2) !important;
+}
+
+/* =====================================================================
+   FICHAS (mestre): a tinta vem do retro-auto.css; aqui os títulos de ouro
+   ===================================================================== */
+html:not(.modo-ficha) .fx-tit h3 {
+  font-family: var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  text-shadow: var(--r-sombra-pixel);
+  letter-spacing: 0.04em;
+}
+html:not(.modo-ficha) .fx-g-aba {
+  font-family: var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+}
+html:not(.modo-ficha) .fx-g-aba.on {
+  border-color: #3a1e08 !important;
+  background: linear-gradient(#f6cf6a, #e9a944 50%, #c97f2c) !important;
+  color: var(--r-tinta-ouro) !important;
+  box-shadow: inset 0 0.12rem 0 rgba(255, 240, 190, 0.7), inset 0 -0.15rem 0 rgba(120, 60, 10, 0.5) !important;
+}
+/* os passos do editor de agente: a lista do jogador, com o atual em ouro */
+html:not(.modo-ficha) .cr-passo {
+  border: 0.14rem solid var(--r-borda-2) !important;
+  border-radius: 0.5rem;
+  background: var(--r-noite-2) !important;
+  color: var(--r-texto) !important;
+  font-family: var(--r-pixel) !important;
+}
+html:not(.modo-ficha) .cr-passo:hover {
+  border-color: var(--r-ouro) !important;
+}
+html:not(.modo-ficha) .cr-passo.on {
+  border-color: #3a1e08 !important;
+  background: linear-gradient(#f6cf6a, #e9a944 50%, #c97f2c) !important;
+  color: var(--r-tinta-ouro) !important;
+}
+html:not(.modo-ficha) .cr-passo.on .ic,
+html:not(.modo-ficha) .cr-passo.on span {
+  color: var(--r-tinta-ouro) !important;
+}
+
+/* =====================================================================
+   REQUISIÇÃO (computador): o mesmo ouro do celular nas escolhas
+   ===================================================================== */
+html:not(.modo-ficha) .rq-secao,
+html:not(.modo-ficha) .rq-chip,
+html:not(.modo-ficha) .rq-card .rq-nome,
+html:not(.modo-ficha) .rq-det-nome {
+  font-family: var(--r-pixel) !important;
+}
+html:not(.modo-ficha) .rq-secao.on {
+  border-image: none !important;
+  border: 0 !important;
+  background: linear-gradient(#f6cf6a, #e9a944 50%, #c97f2c) !important;
+  color: var(--r-tinta-ouro) !important;
+  box-shadow: inset 0 0.12rem 0 rgba(255, 240, 190, 0.7), inset 0 -0.15rem 0 rgba(120, 60, 10, 0.5) !important;
+  filter: none !important;
+}
+html:not(.modo-ficha) .rq-secao.on small,
+html:not(.modo-ficha) .rq-tem {
+  color: var(--r-tinta-ouro) !important;
+}
+html:not(.modo-ficha) .rq-chip.on {
+  border-color: #3a1e08 !important;
+  background: linear-gradient(#f6cf6a, #c97f2c) !important;
+  color: var(--r-tinta-ouro) !important;
+}
+html:not(.modo-ficha) .rq-card.on .rq-nome {
+  color: var(--r-ouro-hi) !important;
+}
+
+/* as janelas de lista (Todas as cenas e afins): o poço vira a janela, a fileira atual em ouro */
+html:not(.modo-ficha) .win-poco {
+  background: rgba(5, 11, 20, 0.6) !important;
+  box-shadow: inset 0 0 0 0.12rem var(--r-borda-2) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .room-row b {
+  font-family: var(--r-pixel);
+  font-weight: 600;
+}
+html:not(.modo-ficha) .room-row.here {
+  border-color: var(--r-ouro) !important;
+  box-shadow: inset 0 0 0 0.1rem rgba(233, 169, 68, 0.35) !important;
+  background: var(--r-noite-3) !important;
+}

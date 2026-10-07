@@ -1886,7 +1886,8 @@ button.fx-tab-l:hover {
 .fj-fundo {
   position: fixed;
   inset: 0;
-  z-index: 70;
+  /* todas as janelas na mesma camada: a aberta por último fica por cima (a confirmação sobre o item) */
+  z-index: 90;
   display: grid;
   place-items: center;
   background: rgba(5, 5, 6, 0.62);

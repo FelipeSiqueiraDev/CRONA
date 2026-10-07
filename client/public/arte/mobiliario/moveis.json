@@ -5012,7 +5012,16 @@
    2.0,
    0.7,
    0.9
-  ]
+  ],
+  "cima": {
+   "arquivo": "gun_table~b/cima.png",
+   "caixa": [
+    21,
+    4,
+    362,
+    123
+   ]
+  }
  },
  "gun_table~c": {
   "escala": 0.5,
@@ -5042,7 +5051,16 @@
    2.0,
    0.7,
    0.9
-  ]
+  ],
+  "cima": {
+   "arquivo": "gun_table~c/cima.png",
+   "caixa": [
+    21,
+    4,
+    362,
+    123
+   ]
+  }
  },
  "weapon_rack~b": {
   "escala": 0.5,
@@ -5073,7 +5091,16 @@
    0.5,
    2.0
   ],
-  "encosta": true
+  "encosta": true,
+  "cima": {
+   "arquivo": "weapon_rack~b/cima.png",
+   "caixa": [
+    0,
+    21,
+    256,
+    106
+   ]
+  }
  },
  "weapon_rack~c": {
   "escala": 0.5,
@@ -5104,7 +5131,16 @@
    0.5,
    2.0
   ],
-  "encosta": true
+  "encosta": true,
+  "cima": {
+   "arquivo": "weapon_rack~c/cima.png",
+   "caixa": [
+    0,
+    21,
+    256,
+    106
+   ]
+  }
  },
  "locker_ammo~b": {
   "escala": 0.5,
@@ -5161,7 +5197,27 @@
    0.5,
    1.9
   ],
-  "encosta": true
+  "encosta": true,
+  "cimaEstados": {
+   "1": {
+    "arquivo": "locker_ammo~b/cima-1.png",
+    "caixa": [
+     13,
+     21,
+     115,
+     106
+    ]
+   }
+  },
+  "cima": {
+   "arquivo": "locker_ammo~b/cima.png",
+   "caixa": [
+    13,
+    21,
+    115,
+    106
+   ]
+  }
  },
  "locker_ammo~c": {
   "escala": 0.5,
@@ -5218,7 +5274,27 @@
    0.5,
    1.9
   ],
-  "encosta": true
+  "encosta": true,
+  "cimaEstados": {
+   "1": {
+    "arquivo": "locker_ammo~c/cima-1.png",
+    "caixa": [
+     13,
+     21,
+     115,
+     106
+    ]
+   }
+  },
+  "cima": {
+   "arquivo": "locker_ammo~c/cima.png",
+   "caixa": [
+    13,
+    21,
+    115,
+    106
+   ]
+  }
  },
  "bar_shelf~b": {
   "escala": 0.5,
@@ -5249,7 +5325,16 @@
    0.4,
    2.0
   ],
-  "encosta": true
+  "encosta": true,
+  "cima": {
+   "arquivo": "bar_shelf~b/cima.png",
+   "caixa": [
+    0,
+    26,
+    256,
+    101
+   ]
+  }
  },
  "bar_shelf~c": {
   "escala": 0.5,
@@ -5280,7 +5365,16 @@
    0.4,
    2.0
   ],
-  "encosta": true
+  "encosta": true,
+  "cima": {
+   "arquivo": "bar_shelf~c/cima.png",
+   "caixa": [
+    0,
+    26,
+    256,
+    101
+   ]
+  }
  },
  "plant~b": {
   "escala": 0.5,
@@ -5310,7 +5404,16 @@
    0.5,
    0.5,
    1.1
-  ]
+  ],
+  "cima": {
+   "arquivo": "plant~b/cima.png",
+   "caixa": [
+    21,
+    21,
+    106,
+    106
+   ]
+  }
  },
  "plant~c": {
   "escala": 0.5,
@@ -5340,7 +5443,16 @@
    0.5,
    0.5,
    1.1
-  ]
+  ],
+  "cima": {
+   "arquivo": "plant~c/cima.png",
+   "caixa": [
+    21,
+    21,
+    106,
+    106
+   ]
+  }
  },
  "lab_bench~b": {
   "escala": 0.5,
@@ -5370,7 +5482,16 @@
    1.5,
    0.6,
    0.92
-  ]
+  ],
+  "cima": {
+   "arquivo": "lab_bench~b/cima.png",
+   "caixa": [
+    0,
+    13,
+    256,
+    115
+   ]
+  }
  },
  "lab_bench~c": {
   "escala": 0.5,
@@ -5400,7 +5521,16 @@
    1.5,
    0.6,
    0.92
-  ]
+  ],
+  "cima": {
+   "arquivo": "lab_bench~c/cima.png",
+   "caixa": [
+    0,
+    13,
+    256,
+    115
+   ]
+  }
  },
  "cabinet_file~b": {
   "escala": 0.5,
@@ -5431,7 +5561,16 @@
    0.65,
    1.35
   ],
-  "encosta": true
+  "encosta": true,
+  "cima": {
+   "arquivo": "cabinet_file~b/cima.png",
+   "caixa": [
+    21,
+    8,
+    106,
+    119
+   ]
+  }
  },
  "cabinet_file~c": {
   "escala": 0.5,
@@ -5462,7 +5601,16 @@
    0.65,
    1.35
   ],
-  "encosta": true
+  "encosta": true,
+  "cima": {
+   "arquivo": "cabinet_file~c/cima.png",
+   "caixa": [
+    21,
+    8,
+    106,
+    119
+   ]
+  }
  },
  "tally_marks~b": {
   "escala": 0.5,
@@ -5522,7 +5670,16 @@
    2.25,
    0.95,
    0.78
-  ]
+  ],
+  "cima": {
+   "arquivo": "table_work~b/cima.png",
+   "caixa": [
+    0,
+    47,
+    384,
+    209
+   ]
+  }
  },
  "table_work~c": {
   "escala": 0.5,
@@ -5552,7 +5709,16 @@
    2.25,
    0.95,
    0.78
-  ]
+  ],
+  "cima": {
+   "arquivo": "table_work~c/cima.png",
+   "caixa": [
+    0,
+    47,
+    384,
+    209
+   ]
+  }
  },
  "board_investigation~b": {
   "escala": 0.5,
@@ -5660,7 +5826,16 @@
    1.5,
    0.7,
    1.2
-  ]
+  ],
+  "cima": {
+   "arquivo": "console~b/cima.png",
+   "caixa": [
+    0,
+    4,
+    256,
+    123
+   ]
+  }
  },
  "console~c": {
   "escala": 0.5,
@@ -5738,7 +5913,16 @@
    1.5,
    0.7,
    1.2
-  ]
+  ],
+  "cima": {
+   "arquivo": "console~c/cima.png",
+   "caixa": [
+    0,
+    4,
+    256,
+    123
+   ]
+  }
  },
  "hospital_bed~b": {
   "escala": 0.5,

@@ -50,7 +50,7 @@ html.modo-ficha {
   --raio: calc(var(--u) * 1.6);
   --borda: calc(var(--u) * 0.55);
   --sombra-pixel: 0 calc(var(--u) * 0.55) 0 #1b0d03;
-  --f-pixel: 'Pixelify Sans', 'Ubuntu Mono', monospace;
+  --f-pixel: 'Pixel Numeros', 'Pixelify Sans', 'Ubuntu Mono', monospace;
   --f-corpo: 'Roboto Condensed', 'Arial Narrow', sans-serif;
   --f-doc: 'Courier Prime', 'Courier New', monospace;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -1037,9 +1037,10 @@ html.modo-ficha .fj:not(.rq) .fx-inp:focus {
   align-items: center;
   gap: calc(var(--u) * 0.6);
   width: max-content;
+  min-width: calc(var(--u) * 22);
   max-width: calc(var(--u) * 40);
-  padding: var(--s1) var(--s2);
-  border: calc(var(--u) * 0.45) solid var(--c-ouro);
+  padding: var(--s2) var(--s4);
+  border: var(--borda) solid var(--c-ouro);
   border-radius: var(--raio);
   background: rgba(5, 11, 20, 0.97);
   box-shadow: 0 calc(var(--u) * 1) calc(var(--u) * 3) rgba(0, 0, 0, 0.6);
@@ -1063,9 +1064,15 @@ html.modo-ficha .fj:not(.rq) .fx-inp:focus {
   animation-name: jg-dica-canto;
 }
 .jg-atr-dica b {
-  font: 700 var(--t-rotulo) / 1 var(--f-pixel);
+  font: 700 var(--t-titulo) / 1 var(--f-pixel);
   color: var(--c-ouro-hi);
-  text-shadow: none;
+  letter-spacing: 0.04em;
+  text-shadow: var(--sombra-pixel);
+}
+.jg-atr-dica small {
+  font: 600 var(--t-mini) / 1.1 var(--f-pixel);
+  color: var(--c-perigo);
+  white-space: nowrap;
 }
 @keyframes jg-dica {
   0% {
