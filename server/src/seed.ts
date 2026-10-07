@@ -5,6 +5,7 @@ import {
   getWallFurni,
   parseHeightmap,
   RoomMap,
+  VAN,
   WALL_HEIGHT,
   Z_PER_M,
   Z_PX,
@@ -675,6 +676,19 @@ export function limparSalasDeExemplo(db: Database): boolean {
   return true;
 }
 
+/** O painel da van olhava para a frente (07/10): vira para os bancos, nas vans que já existem. */
+function painelDaVanParaTras(db: Database): boolean {
+  let mudou = false;
+  for (const r of db.rooms)
+    if (r.viagem)
+      for (const it of r.items)
+        if (it.defId === 'van_dash' && it.rot !== VAN.giroPainel) {
+          it.rot = VAN.giroPainel;
+          mudou = true;
+        }
+  return mudou;
+}
+
 export function upgradeDb(db: Database): boolean {
   const v = db.seedVersion ?? 1;
   // a Sede e a fazenda mudam de montagem sem esperar versão nova do banco
@@ -683,7 +697,8 @@ export function upgradeDb(db: Database): boolean {
     const fazenda = montarFazenda(db);
     const cores = coresDosAgentes(db);
     const temas = temasDosAgentes(db);
-    return sede || fazenda || cores || temas;
+    const van = painelDaVanParaTras(db);
+    return sede || fazenda || cores || temas || van;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';

@@ -45,6 +45,8 @@ export const VAN = {
   largura: 3,
   /** a frente aponta para +x (giro 2 do mobi) */
   giroBanco: 2,
+  /** o painel da frente olha para trás (-x), para os bancos */
+  giroPainel: 6,
 } as const;
 
 export interface BancoVan {
@@ -72,7 +74,8 @@ export function moveisDaVan(): { defId: string; x: number; y: number; rot: numbe
   return [
     ...BANCOS_VAN.map((b) => ({ defId: 'van_seat', x: b.x, y: b.y, rot })),
     { defId: 'van_console', x: 6, y: 1, rot },
-    { defId: 'van_dash', x: 7, y: 0, rot },
+    // o painel olha para trás, para quem senta (o volante e os mostradores viram para os agentes)
+    { defId: 'van_dash', x: 7, y: 0, rot: VAN.giroPainel },
   ];
 }
 
