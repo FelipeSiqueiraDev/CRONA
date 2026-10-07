@@ -1,0 +1,8 @@
+{
+  "destino": "client/public/arte/mobiliario",
+  "escala": 0.5,
+  "limpar": 56,
+  "moveis": [
+    {"def": "clock", "folha": "client/public/arte/mobiliario/folhas/relogio-isometrico.png", "real": [0.36, 0.06, 0.36], "inclina": {"r": 0.26, "l": -0.28}, "parede": {"r": [0, 0.55, 0.5], "l": [1, 0.45, 0.5]}}
+  ]
+}

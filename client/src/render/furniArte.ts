@@ -44,6 +44,8 @@ export interface MovelArte {
   chao?: { arquivo: string };
   /** item de parede: a vista presa na parede da direita ('r') e na da esquerda ('l'), e os outros estados ('r-1'...); a âncora é o ponto de encosto */
   parede?: Record<string, VistaArte>;
+  /** item de parede redondo (o relógio): a inclinação das bordas que a arte trouxe, por parede; o jogo inclina a diferença até a da parede */
+  inclina?: Record<string, number>;
   /**
    * tela acesa: o brilho em cada giro que mostra a tela, em pixels da imagem. modo 'cores'
    * (o fliperama: troca de cor a cada ms), 'pulso' (o monitor do leito: bate como um
@@ -327,7 +329,7 @@ export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: stri
   // o gerador desenha o quadro um pouco torto (mais deitado que a parede): inclina na vertical, em volta
   // do ponto de encosto, até as bordas seguirem a parede; a medida é a da vista do estado 0
   const base = a.parede[parede] ? pronta(a.parede[parede].arquivo) : null;
-  const med = inclinacaoDoDesenho((base ?? img).normal);
+  const med = a.inclina?.[parede] ?? inclinacaoDoDesenho((base ?? img).normal);
   const alvo = parede === 'r' ? 0.5 : -0.5;
   const torto = med !== null && Math.abs(alvo - med) >= 0.04 ? alvo - med : 0;
   ctx.save();

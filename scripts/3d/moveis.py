@@ -1167,6 +1167,9 @@ def parede(m, folha, caixas, destino, escala):
     os.makedirs(pasta, exist_ok=True)
     w, d, _ = m['real']
     ent = {'escala': escala, 'parede': {}}
+    if m.get('inclina'):
+        # a inclinação das bordas que a arte trouxe, por parede: o jogo inclina a diferença até a da parede (o relógio redondo)
+        ent['inclina'] = m['inclina']
     imgs = []
     for chave, (pedaco, fx, fy) in m['parede'].items():
         rec = recortar(folha, caixas, pedaco)

@@ -1182,6 +1182,10 @@
  },
  "clock": {
   "escala": 0.5,
+  "inclina": {
+   "r": 0.26,
+   "l": -0.28
+  },
   "parede": {
    "r": {
     "arquivo": "clock/parede-r.png",
@@ -1191,7 +1195,7 @@
    "l": {
     "arquivo": "clock/parede-l.png",
     "ax": 16.2,
-    "ay": 21.5
+    "ay": 21.0
    }
   }
  },
