@@ -227,7 +227,7 @@ export class ResolucaoAtaque {
     const dist = !!arma?.faixa;
     const t = x.tab;
     if (t && x.alvo) {
-      if (t.cobertura.tipo !== 'nenhuma') out.set('cobertura', `Cobertura (${t.cobertura.nome ?? 'obstáculo'})`);
+      if (t.cobertura.tipo !== 'nenhuma') out.set('cobertura', `${t.cobertura.tipo === 'total' ? 'Cobertura total' : 'Cobertura'} (${t.cobertura.nome ?? 'obstáculo'})`);
       if (dist && t.metros !== null && arma?.faixa) {
         const m = cb.METROS_FAIXA[arma.faixa];
         if (t.metros > m && t.metros <= 2 * m) out.set('alcanceDobro', `Além do alcance ${cb.NOME_FAIXA[arma.faixa]}`);

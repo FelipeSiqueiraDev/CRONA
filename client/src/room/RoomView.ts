@@ -89,6 +89,8 @@ export interface ClientUser {
   headDir: number;
   sit: 0 | 1 | 2;
   dance: boolean;
+  /** de cócoras: a peça se mostra mais baixa (até chegar a animação própria) */
+  agachado?: boolean;
   anim: { fx: number; fy: number; fz: number; tx: number; ty: number; tz: number; start: number } | null;
   waveUntil: number;
   phase: number;
@@ -638,6 +640,7 @@ export class RoomView {
       headDir: u.headDir,
       sit: u.sit,
       dance: u.dance,
+      agachado: u.agachado,
       anim: u.mv ? { fx: u.x, fy: u.y, fz: u.z, tx: u.mv.x, ty: u.mv.y, tz: u.mv.z, start: performance.now() } : null,
       waveUntil: 0,
       phase: Math.random() * 10,
@@ -2062,6 +2065,19 @@ export class RoomView {
               ctx.ellipse(sx, sy, arx * pulse, ary * pulse, 0, 0, Math.PI * 2);
               ctx.stroke();
             }
+            // de cócoras: duas setas para baixo embaixo do anel
+            if (u.agachado) {
+              ctx.strokeStyle = rgba(corBase, 0.95);
+              ctx.lineWidth = 1.6;
+              ctx.lineCap = 'round';
+              for (const dy of [ary + 4, ary + 8]) {
+                ctx.beginPath();
+                ctx.moveTo(sx - 5, sy + dy);
+                ctx.lineTo(sx, sy + dy + 3.5);
+                ctx.lineTo(sx + 5, sy + dy);
+                ctx.stroke();
+              }
+            }
             if (isSel || active) {
               ctx.lineWidth = 1;
               ctx.strokeStyle = 'rgba(255,255,255,0.38)';
@@ -2087,10 +2103,10 @@ export class RoomView {
           // numa cela fechada, a peça fica no escuro com ela
           const eCela = escuroEm(celas, cx, cy);
           if (eCela > 0.01) ctx.filter = `brightness(${(1 - 0.78 * eCela).toFixed(3)})`;
-          // a pessoa na escala do tabuleiro, a partir dos pés
+          // a pessoa na escala do tabuleiro, a partir dos pés (de cócoras, mais baixa)
           ctx.save();
           ctx.translate(sx, sy);
-          ctx.scale(ESCALA_ARTE_PESSOA, ESCALA_ARTE_PESSOA);
+          ctx.scale(ESCALA_ARTE_PESSOA, ESCALA_ARTE_PESSOA * (u.agachado ? 0.72 : 1));
           ctx.translate(-sx, -sy);
           const dance = u.dance ? -Math.abs(Math.sin((now * Math.PI) / 320 + u.phase)) * 4 : 0;
           // giro: afina de lado e volta, com um pulinho, a partir dos pés

@@ -264,6 +264,8 @@ export interface UserInfo extends UserStatus {
   look: AvatarLook;
   /** cor da peça (anel/retrato) */
   color?: string;
+  /** de cócoras (furtivo, atrás de um móvel): o corpo tem 1,0 m e não 1,8 m para a cobertura */
+  agachado?: boolean;
 }
 
 export interface RoomSummary {
@@ -422,7 +424,7 @@ export type ClientMsg =
   | { t: 'sendTo'; userId: number | 'all'; roomId: number }
   | { t: 'tokenAdd'; name: string; look: AvatarLook; color?: string; capacity?: number }
   /** armed/hurt = estado do retrato (com arma, machucado) */
-  | { t: 'tokenEdit'; tokenId: number; name?: string; look?: AvatarLook; color?: string; capacity?: number; armed?: boolean; hurt?: boolean }
+  | { t: 'tokenEdit'; tokenId: number; name?: string; look?: AvatarLook; color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean }
   | { t: 'tokenRemove'; tokenId: number }
   | { t: 'tokenWalk'; tokenId: number; x: number; y: number }
   | { t: 'tokenFace'; tokenId: number; dir: number }

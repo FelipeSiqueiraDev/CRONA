@@ -155,7 +155,7 @@ interface RoomUser {
   /** chegou por esta passagem: não teleporta até sair do tile */
   arrivedAt: Point | null;
   /** cor, limite de carga, estado do retrato e ficha (PV/PE/SAN) da peça */
-  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; vitals?: Vitals };
+  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; vitals?: Vitals };
 }
 
 const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v);
@@ -282,7 +282,7 @@ export class RoomInstance {
       // nasce "chegando": em cima de uma passagem, só atravessa depois de sair dela e voltar
       // (sem isso, a peça salva em cima de uma porta trocava de cena a cada reinício)
       arrivedAt: { x: sx, y: sy },
-      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, vitals: sanitizeVitals(t.vitals) },
+      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, agachado: t.agachado, vitals: sanitizeVitals(t.vitals) },
     };
     this.users.set(u.client.id, u);
     this.settle(u);
@@ -387,6 +387,7 @@ export class RoomInstance {
     const t: TokenData = { id: -u.client.id, name: u.client.name ?? '?', look: u.client.look, x: u.x, y: u.y, dir: u.dir, color: u.meta?.color, capacity: u.meta?.capacity };
     if (u.meta?.armed) t.armed = true;
     if (u.meta?.hurt) t.hurt = true;
+    if (u.meta?.agachado) t.agachado = true;
     if (u.meta?.vitals) t.vitals = u.meta.vitals;
     return t;
   }
@@ -485,7 +486,7 @@ export class RoomInstance {
   }
 
   private userInfo(u: RoomUser): UserInfo {
-    return { ...this.status(u), name: u.client.name ?? '?', look: u.client.look, color: u.meta?.color };
+    return { ...this.status(u), name: u.client.name ?? '?', look: u.client.look, color: u.meta?.color, ...(u.meta?.agachado ? { agachado: true } : {}) };
   }
 
   private status(u: RoomUser): UserStatus {
@@ -1190,6 +1191,14 @@ export class RoomInstance {
         // com ficha, o Armado vem da mão: a ficha empunha ou guarda a arma
         if (typeof m.armed === 'boolean' && !this.hotel.armarPelaPeca(u.client.look?.charId, m.armed, c)) u.meta.armed = m.armed;
         if (typeof m.hurt === 'boolean') u.meta.hurt = m.hurt;
+        if (typeof m.agachado === 'boolean') {
+          u.meta.agachado = m.agachado;
+          this.broadcast({ t: 'userLeave', id: u.client.id });
+          this.broadcast({ t: 'userJoin', user: this.userInfo(u) });
+          this.hotel.log(this.data.id, 'user', `${u.client.name ?? '?'} ${m.agachado ? 'se agachou' : 'se levantou'}.`);
+          this.saveTokens();
+          break;
+        }
         // só o estado do retrato mudou: o tabuleiro não precisa redesenhar a peça
         if (!name && !m.look && m.color === undefined && m.capacity === undefined) {
           this.saveTokens();

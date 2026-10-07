@@ -3115,3 +3115,95 @@ html:not(.modo-ficha) .obj-config .ic-del:hover {
   opacity: 1 !important;
   color: #ff8a78;
 }
+
+/* ================================================================ o ALVO, mais folgado (07/10) */
+/* o retrato menor ao lado do nome; a vida na largura toda; as resistências em linhas legíveis */
+html:not(.modo-ficha) .cb-alvo-topo {
+  align-items: center;
+  gap: 1.2rem !important;
+}
+html:not(.modo-ficha) .cb-alvo-topo .cb-foto.alvo {
+  width: 9rem !important;
+  height: 9rem !important;
+  flex: none;
+}
+html:not(.modo-ficha) .cb-alvo-topo .cb-foto.alvo canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+html:not(.modo-ficha) .cb-alvo-id {
+  padding-top: 0 !important;
+  justify-content: center;
+}
+html:not(.modo-ficha) .cb-alvo-linha.lista {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0 !important;
+  padding: 0.2rem 1rem;
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.4);
+  border-radius: 0.6rem;
+  background: rgba(5, 11, 20, 0.55);
+}
+html:not(.modo-ficha) .cb-alvo-linha.lista .cb-caixa {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.9rem !important;
+  height: 3.6rem !important;
+  min-height: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+html:not(.modo-ficha) .cb-alvo-linha.lista .cb-caixa + .cb-caixa {
+  border-top: 0.12rem solid rgba(161, 136, 115, 0.25) !important;
+}
+html:not(.modo-ficha) .cb-alvo-linha.lista .cb-caixa small {
+  flex: 1;
+  font: 600 1.25rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto-2) !important;
+  text-align: left;
+}
+html:not(.modo-ficha) .cb-alvo-linha.lista .cb-caixa b {
+  font: 700 1.5rem / 1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-align: right;
+}
+/* Defesa, Esquiva e Bloqueio: cada caixa com o ícone e o número, sem cortar o nome */
+html:not(.modo-ficha) .cb-alvo-linha.um {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)) !important;
+}
+html:not(.modo-ficha) .cb-alvo-linha.um .cb-caixa small {
+  font-size: 1.15rem !important;
+}
+html:not(.modo-ficha) .cb-alvo-pv {
+  width: 100%;
+}
+html:not(.modo-ficha) .cb-alvo-linha.lista .cb-caixa > :is(.arte-ic, .ic) {
+  order: 0;
+}
+html:not(.modo-ficha) .cb-alvo-linha.lista .cb-caixa small {
+  order: 1;
+}
+html:not(.modo-ficha) .cb-alvo-linha.lista .cb-caixa b {
+  order: 2;
+}
+html:not(.modo-ficha) .cb-alvo-linha.lista .cb-caixa {
+  height: 3.2rem !important;
+}
+html:not(.modo-ficha) .cb-alvo-topo .cb-foto.alvo {
+  width: 7.6rem !important;
+  height: 7.6rem !important;
+}
+html:not(.modo-ficha) .cb-acao-chip.postura {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+html:not(.modo-ficha) .cb-acao-chip.postura :is(.arte-ic, .ic) {
+  width: 1.6rem;
+  height: 1.6rem;
+}

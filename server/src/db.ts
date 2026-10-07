@@ -60,6 +60,8 @@ export interface TokenData {
   /** estado do retrato: com a arma, machucado */
   armed?: boolean;
   hurt?: boolean;
+  /** de cócoras (furtivo ou atrás de um móvel) */
+  agachado?: boolean;
   /** PV, PE e SAN (atual e total) */
   vitals?: Vitals;
 }

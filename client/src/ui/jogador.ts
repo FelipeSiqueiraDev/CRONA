@@ -283,7 +283,7 @@ export class TelaJogador {
       : [h('span', { class: 'jg-chip ok' }, 'Normal')];
     if (regras.armado(f.inventario)) chips.push(h('span', { class: 'jg-chip arma' }, 'Armado'));
     this.perfil.replaceChildren(
-      h('div', { class: 'jg-foto' }, look ? portraitCanvas(look, 120) : ic('pessoa')),
+      h('div', { class: 'jg-foto' }, look ? portraitCanvas(look, 200, { armed: regras.armado(f.inventario), hurt: !!auto?.machucado }) : ic('pessoa')),
       h(
         'div',
         { class: 'jg-quem' },

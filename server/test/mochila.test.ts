@@ -129,6 +129,16 @@ describe('mochila: um inventário só', () => {
     assert.ok(ficha('D.Tepes').ficha.inventario.some((x) => x.uid === faca.id && x.achado));
   });
 
+  test('largar vale para a cena onde o personagem está, mesmo com o mestre olhando outra', () => {
+    const faca = dar('D.Tepes', { item: { tipo: 'arma', id: 'faca' } });
+    const outra = hotel.db.rooms.find((x) => x.id !== sala && hotel.rooms.get(x.id) && x.name.startsWith('Mansão Alvarez'))!.id;
+    const tokenId = personagem('D.Tepes').id;
+    hotel.moveToken(hotel.rooms.get(sala)!, -tokenId, outra);
+    gm.send({ t: 'mochila', fichaId: ficha('D.Tepes').id, uid: faca.id, acao: 'largar' });
+    assert.ok(!hotel.rooms.get(sala)!.map.allItems().some((it) => it.defId === PILHA_CHAO), 'não largou na cena do mestre');
+    assert.ok(hotel.rooms.get(outra)!.map.allItems().some((it) => it.defId === PILHA_CHAO), `largou onde o Tepes está (erro: ${gm.last('error')?.msg})`);
+  });
+
   test('não passa do dobro da carga (LR p. 53); usar gasta o consumível', () => {
     dar('D.Tepes', { name: 'Caixote', espacos: 10 });
     dar('D.Tepes', { name: 'Outro caixote', espacos: 10 });

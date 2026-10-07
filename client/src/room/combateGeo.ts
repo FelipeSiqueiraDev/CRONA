@@ -11,9 +11,16 @@ export interface Casa {
   y: number;
 }
 
-/** Mobi de 0,8 m ou mais dá cobertura; de 1,8 m ou mais conta como parede (DC-11). */
-const COBRE = 0.8 * Z_PER_M;
-const PAREDE = 1.8 * Z_PER_M;
+/**
+ * A cobertura pela altura (DC-11, revisto em 07/10, DC-24): o corpo do alvo tem 1,8 m em pé e 1,0 m
+ * agachado. Um mobi (ou escombro) com 44% do corpo dele ou mais (0,8 m em pé, 0,45 m agachado) dá
+ * cobertura (+5); com a altura do corpo inteiro ou mais, tapa tudo (cobertura total). O mestre corrige
+ * na chave da tela.
+ */
+export const ALTURA_EM_PE = 1.8;
+export const ALTURA_AGACHADO = 1.0;
+const FRACAO_COBRE = 0.44;
+const fmtM = (m: number) => `${(Math.round(m * 100) / 100).toLocaleString('pt-BR')} m`;
 
 export type TipoCobertura = 'nenhuma' | 'cobertura' | 'total';
 
@@ -23,6 +30,8 @@ export interface Cobertura {
   casa?: Casa;
   /** o que cobre: "mesa", "outro ser", "parede" */
   nome?: string;
+  /** a altura do que cobre, em metros (mobi e escombro) */
+  altura?: number;
 }
 
 const mesma = (a: Casa, b: Casa) => a.x === b.x && a.y === b.y;
@@ -52,7 +61,10 @@ export function casasNaReta(a: Casa, b: Casa): Casa[] {
  * as retas dos cantos (p. 89); aqui fica a reta do meio, e o mestre corrige a
  * chave na tela.
  */
-export function cobertura(map: RoomMap, a: Casa, b: Casa, outras: Casa[]): Cobertura {
+export function cobertura(map: RoomMap, a: Casa, b: Casa, outras: Casa[], agachado = false): Cobertura {
+  const corpo = agachado ? ALTURA_AGACHADO : ALTURA_EM_PE;
+  const COBRE = corpo * FRACAO_COBRE * Z_PER_M;
+  const PAREDE = corpo * Z_PER_M;
   let achou: Cobertura = { tipo: 'nenhuma' };
   for (const c of casasNaReta(a, b)) {
     const piso = map.floorHeight(c.x, c.y);
@@ -66,8 +78,11 @@ export function cobertura(map: RoomMap, a: Casa, b: Casa, outras: Casa[]): Cober
         return { tipo: 'total', casa: c, nome: def.name.toLowerCase() };
       }
       const alto = it.z - piso + def.height;
-      if (alto >= COBRE && achou.tipo === 'nenhuma') achou = { tipo: 'cobertura', casa: c, nome: def.name.toLowerCase() };
-      if (alto >= PAREDE) return { tipo: 'cobertura', casa: c, nome: def.name.toLowerCase() };
+      const metros = alto / Z_PER_M;
+      const nome = `${def.name.toLowerCase()} (${fmtM(metros)})`;
+      // tapa o corpo todo: o alvo não pode ser atingido por aí
+      if (alto >= PAREDE) return { tipo: 'total', casa: c, nome, altura: metros };
+      if (alto >= COBRE && achou.tipo === 'nenhuma') achou = { tipo: 'cobertura', casa: c, nome, altura: metros };
     }
     if (achou.tipo === 'nenhuma' && outras.some((o) => mesma(o, c))) achou = { tipo: 'cobertura', casa: c, nome: 'outro ser' };
   }

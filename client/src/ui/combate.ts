@@ -134,6 +134,7 @@ const PAGINA_MANOBRA = [0, 0, 1, 2, 3, 3];
 const PAGINA_RITUAL = [0, 0, 1, 1, 2, 3, 3];
 
 const PINTADO: Partial<Record<NomeIcone, string>> = {
+  agachar: 'agachar',
   mira: 'tabuleiro-alcance',
   regua: 'tabuleiro-medir',
   area: 'tabuleiro-area',
@@ -566,7 +567,7 @@ export class CombateScreen {
     return {
       metros: cb.metrosDe(cb.distanciaCasas(a, b)),
       adjacente: cb.adjacente(a, b),
-      cobertura: coberturaEntre(map, a, b, outras),
+      cobertura: coberturaEntre(map, a, b, outras, !!this.app.view.users.get(-alvo.id)?.agachado),
       elevado: elevado(map, a, b),
       flanqueia: flanqueia(
         a,
@@ -924,7 +925,7 @@ export class CombateScreen {
             const fora = arma ? (arma.faixa ? t.metros > limite! : !t.adjacente) : false;
             m.linha = { de: -ator.id, ate: -x.alvo.p.id, rotulo: `${cb.textoMetros(t.metros)} · ${t.adjacente ? 'adjacente' : f ? cb.NOME_FAIXA[f] : 'além'}`, fora };
             if (t.cobertura.tipo !== 'nenhuma' && t.cobertura.casa)
-              m.cobertura = { casa: t.cobertura.casa, rotulo: t.cobertura.tipo === 'total' ? 'cobertura total' : 'cobertura +5', total: t.cobertura.tipo === 'total' };
+              m.cobertura = { casa: t.cobertura.casa, rotulo: `${t.cobertura.tipo === 'total' ? 'cobertura total' : 'cobertura +5'}${t.cobertura.nome ? ` · ${t.cobertura.nome}` : ''}`, total: t.cobertura.tipo === 'total' };
           }
         }
       } else if (ator && this.aba === 'manobra') {
@@ -1009,7 +1010,7 @@ export class CombateScreen {
 
   /** O que muda o desenho de uma peça (sem a posição no tabuleiro). */
   private assinaturaPecas() {
-    return (this.sessao?.characters ?? []).map((c) => [c.id, c.name, c.sceneId, c.look.charId, c.vitals]);
+    return (this.sessao?.characters ?? []).map((c) => [c.id, c.name, c.sceneId, c.look.charId, c.vitals, !!this.app.view?.users.get(-c.id)?.agachado]);
   }
 
   private assinaturaFichas() {
@@ -1481,6 +1482,21 @@ export class CombateScreen {
         `${rot}: ${texto}`,
       );
     };
+    // a postura: de cócoras o corpo tem 1,0 m e não 1,8 m, e um móvel mais baixo já tapa tudo (cobertura)
+    const pecaAtor = this.app.view?.users.get(-ator.id);
+    const postura = pecaAtor
+      ? h(
+          'button',
+          {
+            class: `cb-acao-chip postura ${pecaAtor.agachado ? 'usado' : 'livre'}`,
+            type: 'button',
+            title: pecaAtor.agachado ? 'Levantar: o corpo volta a 1,8 m' : 'Agachar (furtivo, atrás de um móvel): o corpo fica com 1,0 m e um móvel baixo já dá cobertura',
+            onclick: () => (sfx.click(), this.app.net.send({ t: 'tokenEdit', tokenId: -ator.id, agachado: !pecaAtor.agachado })),
+          },
+          icPintado('agachar'),
+          h('span', null, pecaAtor.agachado ? 'Agachado' : 'Em pé'),
+        )
+      : null;
     const reacao = h(
       'button',
       {
@@ -1543,7 +1559,7 @@ export class CombateScreen {
             'div',
             { class: 'cb-ator-turno' },
             h('span', { class: `cb-limite${limite !== undefined && gasto > limite ? ' alerta' : ''}` }, `Limite de PE: ${limite ?? '—'} · gasto: ${gasto}`),
-            h('div', { class: 'cb-acoes-chips' }, chipAc('padrao', 'Padrão'), chipAc('movimento', 'Movimento'), reacao),
+            h('div', { class: 'cb-acoes-chips' }, chipAc('padrao', 'Padrão'), chipAc('movimento', 'Movimento'), reacao, postura),
           ),
         ),
         this.abas(),
@@ -1835,11 +1851,13 @@ export class CombateScreen {
         'div',
         { class: 'cb-alvo-topo' },
         h('span', { class: 'cb-foto alvo' }, this.retrato(ch.id, 132)),
-        h('div', { class: 'cb-alvo-id' }, h('b', null, ch.name), h('small', null, c && !noCombate && c.fase !== 'montando' ? `${tipo} · fora do combate` : tipo), pv),
+        h('div', { class: 'cb-alvo-id' }, h('b', null, ch.name), h('small', null, c && !noCombate && c.fase !== 'montando' ? `${tipo} · fora do combate` : tipo)),
       ),
+      // a vida na largura toda, embaixo do retrato (ao lado dele ficava espremida)
+      pv,
       naoLetal ?? '',
       linhaDefesa,
-      h('div', { class: 'cb-alvo-linha tres' }, res('fortitude', 'Fortitude'), res('reflexos', 'Reflexos'), res('vontade', 'Vontade')),
+      h('div', { class: 'cb-alvo-linha tres lista' }, res('fortitude', 'Fortitude'), res('reflexos', 'Reflexos'), res('vontade', 'Vontade')),
       rdTexto ? h('small', { class: 'cb-alvo-nota rd' }, h('b', null, 'RD '), rdTexto) : '',
       // imunidades, vulnerabilidades e presença perturbadora numa linha só
       am && (am.imunidades.length || am.vulnerabilidades.length || am.presenca)

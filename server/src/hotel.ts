@@ -420,6 +420,8 @@ export class Hotel implements HotelApi {
   private salaDoPersonagem(personagem: number | null | undefined, prefere?: RoomInstance | null): RoomInstance | undefined {
     if (!personagem) return undefined;
     if (prefere?.temPersonagem(personagem)) return prefere;
+    // cada campanha tem a sua peça do mesmo personagem: primeiro a campanha de quem está olhando
+    if (prefere) for (const id of this.sceneGroup(prefere.data.id)) if (this.rooms.get(id)?.temPersonagem(personagem)) return this.rooms.get(id);
     return [...this.rooms.values()].find((r) => r.temPersonagem(personagem));
   }
 
