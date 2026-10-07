@@ -387,6 +387,12 @@ Para pôr no jogo: `python scripts/3d/cima.py <pasta com as PNGs>`. Cada móvel 
 
 A lista dos cômodos e dos móveis de cada um está em [`SEDE-DA-ORDEM.md`](SEDE-DA-ORDEM.md); o que falta desenhar, folha por folha, no [`CHECKLIST-ARTE.md`](CHECKLIST-ARTE.md).
 
+## 6. Tela de entrada: os três temas (decidido em 07/10)
+
+A tela de entrada tem três imagens inteiras, uma por tema (fantasia, horror, cyberpunk), no computador (1672×941) e no celular (941×1672). O Códex **edita a imagem de hoje** a partir das bases (`node scripts/entrada-fundos.mjs bases <pasta>`, 1536×1024 e 1024×1536): mesmo enquadramento, mesma câmera, mesmo painel; muda o que está na mesa, a luz e a vista da janela. Todas de noite, com o céu limpo (o jogo faz o dia e o clima). As miniaturas são pintadas na cena, no ângulo da mesa, com a sombra e a luz da vela, no estilo das do lote 1 de 07/10. O script encaixa (`encaixar <imagem> <tema> <tela>`) em `client/public/arte/login/fundo-<tela>-<tema>.webp`, recolocando o painel de hoje por cima. O pedido pronto é o [`PROMPT-ENTRADA.txt`](PROMPT-ENTRADA.txt); como a tela usa as imagens, em [`TELA-ENTRADA.md`](TELA-ENTRADA.md). Genérico sempre: nada dos agentes da campanha, nada de marcas de jogos reais.
+
+(Testados e recusados em 07/10: os remendos e o kit em camadas, com peças separadas montadas pelo jogo.)
+
 ## Como entregar
 
 1. Trabalhe numa branch `codex/arte-<assunto>` (ex.: `codex/arte-personagens`).

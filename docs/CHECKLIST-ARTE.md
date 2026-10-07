@@ -117,6 +117,15 @@ Nada novo: usa os retratos, os ícones e as folhas da FICHAS. Os cartões de res
 
 ---
 
+## 6. Tela de entrada (07/10)
+
+Três imagens inteiras, uma por tema (fantasia, horror, cyberpunk), cada uma no computador e no celular: a tela de hoje editada, com outra mesa, outra luz e outra vista na janela, e as miniaturas pintadas na cena. O pedido pronto é o [`PROMPT-ENTRADA.txt`](PROMPT-ENTRADA.txt); como a tela usa, em [`TELA-ENTRADA.md`](TELA-ENTRADA.md#as-imagens-dos-temas).
+
+- [x] ✱ fantasia (computador / celular), entregue em 07/10
+- [x] ✱ horror (computador / celular), entregue em 07/10
+- [x] ✱ cyberpunk (computador / celular), entregue em 07/10
+- [x] as seis cidades da janela (normal e com neve), entregues em 07/10
+
 ## O tabuleiro (revisto em 02/10)
 
 - [ ] ✱ **Catarina nas 8 direções** (`PROMPT-PERSONAGENS.txt`, Parte 0): entregue em 04/10 (`personagens-teste.zip`) e já convertida para o tabuleiro (`personagens/catarina/tabuleiro-32bits/`). **Esperando a aprovação do Felipe** (perto da Alosi, ela ficou com umas 6 cabeças de altura em vez de 7).

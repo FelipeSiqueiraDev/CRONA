@@ -1,0 +1,169 @@
+PEDIDO DE ARTE — TELA DE ENTRADA DO CRONA: TRÊS TEMAS E AS CIDADES LÁ FORA (07/10)
+================================================================
+
+A tela de entrada continua sendo UMA imagem inteira, igual à de hoje. O que muda: em vez de uma
+imagem só, três, uma por tema — FANTASIA, HORROR e CYBERPUNK —, cada uma no computador e no
+celular (seis imagens). É sempre a MESMA sala, o MESMO enquadramento e o MESMO painel do CRONA; o
+que muda é o que está na mesa, a luz e a vista pela janela.
+
+As miniaturas que o Felipe adorou (lote 1: miniaturas-herois-fantasia.png e
+miniaturas-monstros-fantasia.png) são a referência de estilo das miniaturas: pintadas à mão, base
+redonda preta. Mas agora elas são PINTADAS DENTRO DA CENA, não coladas por cima: no ângulo da mesa,
+com sombra no mapa e iluminadas pela luz da cena. Nada de recorte com cara de figurinha.
+
+O que o jogo já faz sozinho, por cima de qualquer uma das três: o dia e a noite, a chuva, a neve,
+a neblina, o relâmpago, a vela tremendo, a poeira no ar, os brilhos do emblema e a música. Por
+isso a sala vem de NOITE, à luz da vela, e os VIDROS DA JANELA vêm em MAGENTA PURO (#FF00FF): o
+jogo põe ali o céu da hora e do clima e, atrás dele, a cidade do tema (a parte 2 deste pedido).
+
+
+-------------------------------------------------------------------------------------------------
+COMO PEDIR
+-------------------------------------------------------------------------------------------------
+
+Uma imagem por vez. Anexe:
+  1) a BASE (a imagem a editar): base-computador.png (1536×1024) ou base-celular.png (1024×1536).
+     Saem de: node scripts/entrada-fundos.mjs bases <pasta>
+  2) a referência das miniaturas: miniaturas-herois-fantasia.png e miniaturas-monstros-fantasia.png
+Cole o BLOCO DE EDIÇÃO e depois o pedido do tema. Devolva a imagem no MESMO tamanho da base.
+
+Encaixe (o Claude faz): node scripts/entrada-fundos.mjs encaixar <imagem> <tema> <computador|celular>
+
+
+-------------------------------------------------------------------------------------------------
+BLOCO DE EDIÇÃO (cole no começo de todo pedido)
+-------------------------------------------------------------------------------------------------
+
+Edite a imagem anexada como BASE (a tela de entrada de um app de RPG de mesa, em pixel art). É uma
+EDIÇÃO: devolva a mesma imagem, do mesmo tamanho, com o mesmo enquadramento, a mesma câmera, o
+mesmo ângulo e a mesma perspectiva. Ficam EXATAMENTE onde estão e do mesmo tamanho: o painel do
+CRONA (moldura, emblema, título, campos, botões e textos), a estante e os livros, a janela e a
+moldura dela, a mesa e o pano da frente. As faixas da borda da base (repetidas, borradas) são sobra:
+continue a cena nelas com naturalidade.
+Estilo: o mesmo pixel art pintado da base, pixels grandes e nítidos, sem suavizar, sem desfoque.
+Luz: noite, a luz quente da vela iluminando a mesa (a não ser que o tema diga outra cor), um pouco
+de luar azulado vindo da janela. Os VIDROS DA JANELA: MAGENTA PURO chapado (#FF00FF), sem nada
+atrás (sem céu, sem cidade, sem reflexo); a moldura e os caixilhos continuam desenhados.
+Miniaturas: no estilo das miniaturas de referência anexadas (resina pintada à mão, cores vivas,
+base redonda preta), mas PINTADAS NA CENA: em pé em cima do mapa, vistas do mesmo ângulo alto da
+mesa, a base achatada no papel, a sombra caindo no mapa para o lado oposto à vela, o brilho da vela
+nelas. Do tamanho das duas miniaturas de estanho da base, ou um pouco maiores; o monstro, maior.
+Sem texto, sem letras, sem números legíveis, sem logotipo, sem marca d'água. Tudo genérico, criado
+por você: nada de personagens, símbolos ou marcas de jogos reais (nada de D&D, Cyberpunk 2077,
+Shadowrun, Call of Cthulhu, Ordem Paranormal).
+
+
+=================================================================================================
+PARTE 1 — A SALA DE CADA TEMA
+=================================================================================================
+
+-------------------------------------------------------------------------------------------------
+1) FANTASIA — fundo-fantasia-computador.png (FEITA em 07/10) e fundo-fantasia-celular.png
+-------------------------------------------------------------------------------------------------
+
+A mesa de hoje, só que mais viva. Troque as duas miniaturas de estanho por miniaturas pintadas: um
+grupo de heróis — uma elfa arqueira, um anão com machado e um mago de manto azul — de um lado do
+mapa, encarando do outro lado um pequeno bando de orcs verdes com machados e escudos e, atrás
+deles, um dragão vermelho de asas abertas (o maior, pousado sobre as montanhas do mapa). Os dados
+continuam, de obsidiana com marcas douradas. O resto fica como está (a vela, a caneca com café, os
+livros, a bússola, as moedas, a pena, a vista do castelo na janela).
+
+-------------------------------------------------------------------------------------------------
+2) HORROR — fundo-horror-computador.png e fundo-horror-celular.png
+-------------------------------------------------------------------------------------------------
+
+A mesma sala, num clima de horror cósmico, sem sangue.
+- O mapa: uma carta náutica velha e amarelada de uma ilha meio afundada, com linhas de
+  profundidade, um farol e anotações em tinta borradas (rabiscos, nada legível).
+- As miniaturas: três investigadores dos anos 1920 — um detetive de sobretudo com lanterna, uma
+  ocultista com um livro e um marinheiro com arpão — diante de uma criatura enorme de tentáculos
+  verde-escura, saindo do mar do mapa (o maior), com olhos amarelados.
+- Os dados: verde jade com marcas douradas.
+- A vela: num castiçal de crânio, com a chama de um verde pálido; a luz na mesa fica levemente
+  esverdeada.
+- A caneca: no mesmo lugar e do mesmo tamanho, uma xícara de porcelana antiga com chá escuro.
+- O livro grande da frente: couro escuro com fechos de ferro e um olho fechado entalhado na capa.
+- A janela: vidros em magenta, como no bloco (a vila de pescadores é a cidade da parte 2).
+
+-------------------------------------------------------------------------------------------------
+3) CYBERPUNK — fundo-cyberpunk-computador.png e fundo-cyberpunk-celular.png
+-------------------------------------------------------------------------------------------------
+
+A mesma sala, virada num quarto de jogador no futuro, com neon. A sala continua de madeira, mas
+com cabos, adesivos e luz de neon.
+- O mapa: um mapa holográfico projetado em cima da mesa — uma grade de cidade em azul-ciano
+  brilhante, com prédios em linhas de luz e pontos piscando —, saindo de um pequeno projetor
+  redondo no canto.
+- As miniaturas: uma netrunner com cabos na nuca e óculos de realidade aumentada, um samurai de rua
+  com katana de lâmina luminosa e um ciborgue com braço mecânico — diante de um robô de combate
+  grande, de pernas de metal e olhos vermelhos (o maior), com dois drones pequenos voando em volta.
+- Os dados: acrílico translúcido, uns ciano e outros magenta, com as marcas acesas.
+- A luz: no lugar da vela, um abajur de neon rosa-magenta no mesmo lugar e do mesmo tamanho da
+  vela; a luz na mesa fica rosa e ciano (o ciano vem do mapa holográfico).
+- A caneca: no mesmo lugar e do mesmo tamanho, uma caneca de metal com café quente.
+- O livro grande da frente: um tablet grosso, de capa de metal arranhada, com uma tela apagada.
+- A janela: vidros em magenta, como no bloco (a cidade de neon é a da parte 2).
+
+
+-------------------------------------------------------------------------------------------------
+NO CELULAR
+-------------------------------------------------------------------------------------------------
+
+Os mesmos três temas, na base do celular (base-celular.png): a vela (ou o abajur) fica em cima, à
+esquerda; a janela em cima, à direita; a caneca à direita; o mapa com as miniaturas e os dados
+embaixo, abaixo do painel. Mesmas regras do bloco de edição.
+
+
+=================================================================================================
+PARTE 2 — AS CIDADES LÁ FORA (o que se vê pela janela)
+=================================================================================================
+
+A cidade de cada tema fica ATRÁS dos vidros em magenta, e o jogo faz o resto: o céu da hora (dia,
+entardecer, noite com lua e estrelas), as nuvens, a chuva, a neblina, os relâmpagos e os pássaros.
+Por isso a cidade vem com LUZ NEUTRA (dia nublado) e o céu em magenta: o jogo escurece de noite e
+acende as janelas. O que o jogo NÃO consegue fazer é a neve parada nos telhados: por isso cada
+cidade vem também numa versão com neve.
+
+Referência de formato e de estilo: paisagem-fantasia.png (lote 1), que já está no jogo.
+
+BLOCO DA CIDADE (cole no começo de cada pedido):
+
+  Pixel art pintada de alta qualidade, igual à referência anexada: pixels grandes e nítidos, sem
+  suavizar, sem desfoque. 1536×1024, imagem cheia. É a vista de uma janela alta: uma cidade em
+  camadas de profundidade (o que está longe, mais claro e azulado), sem moldura de janela, sem
+  sala, sem gente em primeiro plano.
+  O CÉU INTEIRO em MAGENTA PURO chapado (#FF00FF): sem nuvens, sem sol, sem lua, sem estrelas.
+  As JANELAS acesas das casas e prédios em VERDE PURO chapado (#00FF00), cada uma um retângulo
+  pequeno: o jogo acende de noite e apaga de dia.
+  LUZ NEUTRA de dia nublado: nada escurecido, nada alaranjado, sem sombras compridas.
+  ONDE FICA O QUE IMPORTA: na tela, a janela mostra uma faixa da cidade. O horizonte (a linha
+  onde a cidade encosta no céu) fica perto de 40% da altura da imagem, e o ponto mais marcante (a
+  torre, o farol, o prédio mais alto) sobe até uns 22% da altura, entre 40% e 80% da largura.
+  Abaixo de 60% da altura quase não aparece: pode ser só telhado e árvore.
+  Sem texto, sem letras, sem números legíveis, sem logotipo. Tudo genérico, criado por você.
+
+A VERSÃO COM NEVE: anexe a cidade já pronta e peça a MESMA imagem, idêntica (mesmo enquadramento,
+mesmas casas no mesmo lugar, mesmo céu magenta, mesmas janelas verdes), só que com neve: telhados
+brancos, neve acumulada nas árvores, nas muralhas, nos parapeitos e no chão, pingentes de gelo
+nos beirais. Sem neve caindo (o jogo faz os flocos).
+
+Os pedidos:
+
+a) paisagem-fantasia-neve.png — a paisagem-fantasia.png do lote 1, com neve (só a versão com neve:
+   a normal já está no jogo).
+
+b) paisagem-horror.png — uma vila de pescadores velha numa encosta junto ao mar: casas tortas de
+   madeira e pedra, telhados íngremes, uma igreja de torre pontuda, um cais, barcos parados e, no
+   alto de um rochedo à direita, um FAROL. A LÂMPADA DO FAROL em AMARELO PURO chapado (#FFFF00),
+   uma mancha redonda do tamanho de uma janela grande: o jogo acende e faz o facho girar de noite.
+   O mar escuro e parado embaixo. Clima de horror cósmico, sem monstro à vista.
+   paisagem-horror-neve.png — a mesma, com neve.
+
+c) paisagem-cyberpunk.png — uma megacidade: prédios muito altos e escalonados, antenas, caixas
+   d'água, passarelas, um trem elevado atravessando entre os prédios, e LETREIROS DE NEON nas
+   fachadas (placas retangulares e verticais, de vários tamanhos, sem letras): os letreiros em
+   CIANO PURO chapado (#00FFFF) — o jogo acende em rosa e ciano e faz piscar. As janelas em verde
+   puro, como no bloco.
+   paisagem-cyberpunk-neve.png — a mesma, com neve.
+
+Encaixe (o Claude faz): node scripts/entrada-fundos.mjs paisagem <imagem> <tema> [neve]

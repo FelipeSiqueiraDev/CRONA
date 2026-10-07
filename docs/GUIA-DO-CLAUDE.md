@@ -18,6 +18,7 @@ Este guia é para o Claude que pega o CRONA do zero, numa conversa nova ou noutr
    | Fazenda | [`FAZENDA.md`](FAZENDA.md) |
    | Personagens no tabuleiro | [`PERSONAGENS-3D.md`](PERSONAGENS-3D.md) |
    | Ferramentas da mesa (apontar, desenhar, névoa, mapa improvisado) | [`FERRAMENTAS-DA-MESA.md`](FERRAMENTAS-DA-MESA.md) |
+   | Tela de entrada (o fundo vivo) | [`TELA-ENTRADA.md`](TELA-ENTRADA.md) |
    | Formato da arte | [`ARTE.md`](ARTE.md) |
    | O que falta desenhar | [`CHECKLIST-ARTE.md`](CHECKLIST-ARTE.md) |
 3. **A memória.** Se existir, leia `%USERPROFILE%\.claude\projects\F--Dhellow-CRONA-projeto\memory\MEMORY.md` (a pasta do projeto desde 05/10; a memória antiga, de quando o projeto ficava no OneDrive, foi copiada para lá) e os arquivos dela, que têm mais detalhes de cada combinado. As conversas antigas (`*.jsonl`) ficam na mesma pasta, e as imagens que o Felipe mandou no meio de uma resposta estão nelas em base64.
