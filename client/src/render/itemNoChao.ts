@@ -63,14 +63,16 @@ export function desenharItemNoChao(ctx: CanvasRenderingContext2D, img: HTMLImage
   ctx.fill();
   ctx.restore();
 
-  // a sombra segue a forma do objeto: a silhueta do próprio ícone, achatada contra o chão e centrada em G (dentro do
-  // brilho, por cima dele), um pouco para a direita (a luz vem de cima à esquerda); mais fraca quando o ícone sobe
+  // a sombra segue a forma do objeto: a silhueta do próprio ícone, na MESMA direção dele (uma cópia paralela, logo
+  // embaixo, centrada em G, dentro do brilho e por cima dele); o ícone é um objeto deitado visto em três quartos, então
+  // espelhar ou inclinar a silhueta viraria o sentido; mais fraca quando o ícone sobe no balanço
   const sil = silhueta(img);
   const sw = sil.width * k;
   const sh = sil.height * k;
   ctx.save();
-  ctx.translate(gx + lado * 0.05, gy + lado * 0.02);
-  ctx.transform(1, 0, -0.1, -0.3, 0, 0);
+  ctx.translate(gx + lado * 0.04, gy - h * 0.1);
+  ctx.rotate(inclina);
+  ctx.scale(1, 0.9);
   ctx.globalAlpha = 0.58 - onda * 0.07;
   ctx.drawImage(sil, -sw / 2, -sh / 2, sw, sh);
   ctx.restore();
