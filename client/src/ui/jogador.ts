@@ -21,7 +21,7 @@ import {
   type NotaDiario,
   type TipoDocumento,
 } from '@crona/shared';
-import { portraitCanvas } from '../render/portrait';
+import { breathMode, livePortrait } from '../render/portrait';
 import { sprites } from '../render/sprites';
 import type { App } from './app';
 import { arteDoItem } from './arteItem';
@@ -148,6 +148,8 @@ export class TelaJogador {
   /** onde cada barra estava (para animar a mudança) */
   private pctAntes: Partial<Record<'pv' | 'pe' | 'san', number>> = {};
   private retratoTimer = 0;
+  /** o retrato vivo (respira e pisca): o mesmo elemento enquanto nada nele muda, para o fôlego não reiniciar a cada toque na ficha */
+  private fotoViva: { chave: string; el: HTMLElement } | null = null;
   // o que fica escolhido em cada aba
   private filtroPoder: FiltroPoder = 'classe';
   private poderSel: string | null = null;
@@ -260,6 +262,16 @@ export class TelaJogador {
     };
   }
 
+  /** A foto que respira e pisca, no ritmo da ficha (machucado, perturbado, cansado, morrendo). Só se refaz se algo nela mudar. */
+  private retratoVivo(look: NonNullable<ReturnType<typeof lookDe>>, armado: boolean, cond: ReturnType<typeof vitalConditions> | null): HTMLElement {
+    const modo = cond ? breathMode(cond) : 'calm';
+    const chave = JSON.stringify([look.charId, armado, !!cond?.machucado, modo, !!sprites.def(look.charId!)]);
+    if (this.fotoViva?.chave === chave) return this.fotoViva.el;
+    const el = livePortrait(look, 220, { dir: 2, armed: armado, hurt: !!cond?.machucado, breath: modo });
+    this.fotoViva = { chave, el };
+    return el;
+  }
+
   private renderPerfil() {
     const fs = this.fs!;
     const f = fs.ficha;
@@ -283,7 +295,7 @@ export class TelaJogador {
       : [h('span', { class: 'jg-chip ok' }, 'Normal')];
     if (regras.armado(f.inventario)) chips.push(h('span', { class: 'jg-chip arma' }, 'Armado'));
     this.perfil.replaceChildren(
-      h('div', { class: 'jg-foto' }, look ? portraitCanvas(look, 200, { armed: regras.armado(f.inventario), hurt: !!auto?.machucado }) : ic('pessoa')),
+      h('div', { class: 'jg-foto' }, look ? this.retratoVivo(look, regras.armado(f.inventario), auto) : ic('pessoa')),
       h(
         'div',
         { class: 'jg-quem' },
