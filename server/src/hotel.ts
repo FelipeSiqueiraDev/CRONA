@@ -99,6 +99,7 @@ const GM_ONLY = new Set([
   'marca',
   'nevoa',
   'mapaImprovisado',
+  'mapaApagar',
   'setLink',
   'unlock',
   'relock',
@@ -906,6 +907,10 @@ export class Hotel implements HotelApi {
   }
 
   /** PV/PE/SAN de uma peça mudou no tabuleiro: a ficha ligada ao personagem acompanha. */
+  vitalEmOutraCena(roomId: number, userId: number, m: Record<string, unknown>) {
+    for (const id of this.sceneGroup(roomId)) if (id !== roomId && this.rooms.get(id)?.mudarVital(userId, m)) return;
+  }
+
   vitaisDaPeca(personagem: number | null | undefined, v: Vitals) {
     if (!personagem) return;
     const f = (this.db.fichas ?? []).find((x) => x.personagem === personagem);
@@ -1544,6 +1549,9 @@ export class Hotel implements HotelApi {
       case 'mapaImprovisado':
         this.mapaImprovisado(c, m);
         return;
+      case 'mapaApagar':
+        this.mapaApagar(c, m);
+        return;
       case 'join': {
         const room = typeof m.roomId === 'number' ? this.rooms.get(m.roomId) : undefined;
         if (!room) return c.send({ t: 'error', msg: 'Quarto não encontrado.' });
@@ -1800,6 +1808,35 @@ export class Hotel implements HotelApi {
     this.save();
     this.roomChanged();
     this.enter(c, nova);
+  }
+
+  /** Apaga um mapa improvisado: as peças e quem estava nele voltam para a cena ligada pela Entrada. */
+  private mapaApagar(c: Client, m: Record<string, unknown>) {
+    const r = isInt(m.roomId) ? this.rooms.get(m.roomId) : undefined;
+    if (!r?.data.mapa) return c.send({ t: 'error', msg: 'Só um mapa improvisado pode ser apagado.' });
+    const id = r.data.id;
+    const volta = r.data.items.find((it) => it.defId === 'entrada' && it.link !== undefined)?.link;
+    const destino = (volta !== undefined && volta !== id ? this.rooms.get(volta) : undefined) ?? this.rooms.get(this.sceneGroup(id).find((x) => x !== id) ?? -1);
+    if (!destino) return c.send({ t: 'error', msg: 'O mapa não está ligado a nenhuma cena.' });
+    for (const t of r.tokenList()) this.moveToken(r, t.id, destino.data.id);
+    for (const o of this.clients.values())
+      if (o.room === r) {
+        r.leave(o);
+        destino.join(o);
+      }
+    this.rooms.delete(id);
+    this.db.rooms = this.db.rooms.filter((x) => x.id !== id);
+    for (const x of this.db.rooms) for (const it of x.items) if (it.link === id) delete it.link;
+    for (const camp of Object.values(this.db.campaigns ?? {})) {
+      if (camp.currentSceneId === id) camp.currentSceneId = destino.data.id;
+      delete camp.layout[id];
+    }
+    if (this.db.liveScene === id) this.db.liveScene = destino.data.id;
+    if (this.db.home === id) delete this.db.home;
+    this.log(destino.data.id, 'scene', `Mapa improvisado apagado: ${sceneShortName(r.data.name)}.`);
+    this.save();
+    this.roomChanged();
+    if (c.room !== destino) this.enter(c, destino);
   }
 
   // ---------- personagens ----------

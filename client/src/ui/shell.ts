@@ -2468,7 +2468,7 @@ export class Shell {
     const cena = this.campaign?.scenes.find((x) => x.id === r?.id);
     const url = r ? loadThumb(r.id) : null;
     const nome = (r?.name.split('·').pop()?.trim() ?? 'Cena').toUpperCase();
-    const sig = JSON.stringify([r?.id, r?.name, r?.description, cena?.floor, r?.area, !!url, this.campaign?.scenes.length]);
+    const sig = JSON.stringify([r?.id, r?.name, r?.description, cena?.floor, r?.area, !!url, this.campaign?.scenes.length, r?.mapa, this.gm]);
     if (sig === this.salaSig) return;
     this.salaSig = sig;
     clear(this.salaCorpo).append(
@@ -2479,8 +2479,17 @@ export class Shell {
         h('h3', { class: 'marca' }, nome),
         h('p', null, r?.description || 'Clique num objeto do cenário para ver descrição, interações e itens.'),
         h('div', { class: 'sala-chips' }, h('span', null, ic('pino'), (cena?.floor ?? 'Andar único').toUpperCase()), h('span', null, ic('camadas'), r?.area ? r.area.toUpperCase() : `${this.campaign?.scenes.length ?? 1} CÔMODOS`)),
+        // o mapa improvisado (a imagem que o mestre subiu) se apaga daqui; quem estiver nele volta
+        r?.mapa && this.gm
+          ? h('button', { class: 'sala-apagar', type: 'button', onclick: () => void this.apagarMapa(r.id, nome) }, ic('lixo'), h('span', null, 'Apagar este mapa'))
+          : null,
       ),
     );
+  }
+
+  private async apagarMapa(roomId: number, nome: string) {
+    if (!(await askNote('Apagar o mapa', `O mapa improvisado "${nome}" some, e quem estiver nele volta para a cena ligada.`, 'Apagar', true))) return;
+    this.app.net.send({ t: 'mapaApagar', roomId });
   }
 
   /** AÇÕES sobre o objeto escolhido: examinar, abrir, usar e entregar. */

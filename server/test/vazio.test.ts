@@ -35,12 +35,13 @@ describe('peças com o meio vazio', () => {
     assert.equal(map.tilesFor('desk_u', 1, 0, 4).length, 24 - 12);
   });
 
-  test('a cortina do leito: o leito cabe dentro; fechada ninguém passa, aberta passa', () => {
+  test('a cortina do leito: o leito cabe dentro, dá para andar em volta; a frente fechada não passa, aberta passa', () => {
     const cortina: FloorItem = { id: 1, defId: 'bed_curtain', x: 0, y: 0, z: 0, rot: 4, state: 0 };
     const map = new RoomMap(sala(), porta, [cortina]);
     assert.equal(map.canPlace('hospital_bed', 1, 0, 4).ok, true);
-    assert.equal(map.walkState(0, 2), 'blocked');
+    for (const [x, y] of [[0, 0], [0, 1], [0, 2], [2, 0], [2, 1], [2, 2]]) assert.equal(map.walkState(x, y), 'walk');
+    assert.equal(map.walkState(1, 3), 'blocked');
     const aberta = new RoomMap(sala(), porta, [{ ...cortina, state: 1 }]);
-    assert.equal(aberta.walkState(0, 2), 'walk');
+    assert.equal(aberta.walkState(1, 3), 'walk');
   });
 });

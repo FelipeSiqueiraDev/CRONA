@@ -1562,6 +1562,9 @@ html:not(.modo-ficha) .clip {
 html:not(.modo-ficha) .insp-x {
   display: grid;
   place-items: center;
+  /* na linha do título, centrado com ele, e com a mesma folga da borda que o resto do painel */
+  top: 1.1rem !important;
+  right: 1.2rem !important;
   width: 3.2rem !important;
   height: 3.2rem !important;
   border: var(--h-borda) solid #a18873 !important;
@@ -1577,6 +1580,10 @@ html:not(.modo-ficha) .insp-x:hover {
 }
 html:not(.modo-ficha) .insp-x .x-clip {
   display: none !important;
+}
+/* a linha de ouro do título acaba antes do X */
+html:not(.modo-ficha) .p-insp .insp-cab {
+  padding-right: 4.8rem !important;
 }
 html:not(.modo-ficha) .insp-x span {
   font: 700 1.4rem / 1 var(--r-pixel);
@@ -2277,4 +2284,52 @@ html:not(.modo-ficha) .rq-det-arte {
   border-image: none !important;
   border: 0 !important;
   background: var(--ui-fichas-casa-item-normal, var(--r-noite-2)) center / 100% 100% no-repeat !important;
+}
+
+/* o mapa improvisado se apaga pelo cartão da sala */
+html:not(.modo-ficha) .sala-apagar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+  padding: 0.5rem 1rem;
+  border: 0.15rem solid rgba(214, 84, 70, 0.7);
+  border-radius: 0.5rem;
+  background: rgba(60, 14, 12, 0.55);
+  color: #f0b8ae;
+  font: 600 1.15rem / 1 var(--r-pixel);
+  cursor: pointer;
+}
+html:not(.modo-ficha) .sala-apagar:hover {
+  border-color: #ff8a78;
+  color: #ffd8d0;
+}
+html:not(.modo-ficha) .sala-apagar svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* o total de PV/PE/SAN no painel do personagem: o número grande e legível, sem as setinhas do campo */
+html:not(.modo-ficha) .vt-max {
+  height: 2.6rem !important;
+  padding: 0 0.2rem !important;
+  font: 700 1.5rem / 1 var(--r-pixel) !important;
+  color: var(--r-ouro-hi) !important;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+html:not(.modo-ficha) .vt-max::-webkit-outer-spin-button,
+html:not(.modo-ficha) .vt-max::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* onde estamos (a sede e o andar): centrado entre os dois traços, com folga dos dois lados */
+html:not(.modo-ficha) .tb2-local {
+  left: 113.2rem !important;
+  width: 20rem;
+  align-items: center;
+  text-align: center;
 }

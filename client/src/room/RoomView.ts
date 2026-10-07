@@ -2,6 +2,7 @@ import {
   DEFAULT_PARTICLE_LEVEL,
   footprint,
   getFurni,
+  ocupa,
   PILHA_CHAO,
   regras as regrasShared,
   getWallFurni,
@@ -1061,7 +1062,11 @@ export class RoomView {
     const def = it ? getFurni(it.defId) : undefined;
     if (!it || !def || def.walkable || def.sit) return false;
     const fp = footprint(def, it.rot);
-    const naBase = tile.x >= it.x && tile.y >= it.y && tile.x < it.x + fp.sx && tile.y < it.y + fp.sy;
+    const dx = tile.x - it.x;
+    const dy = tile.y - it.y;
+    const naPegada = dx >= 0 && dy >= 0 && dx < fp.sx && dy < fp.sy;
+    // a peça vazada (a cortina do leito, a mesa em U): a casa de dentro é chão, e a da cortina aberta também
+    const naBase = naPegada && (!def.vazio?.length || (ocupa(def, it.rot, dx, dy) && map.walkState(tile.x, tile.y) === 'blocked'));
     return !naBase && map.walkState(tile.x, tile.y) !== 'blocked';
   }
 
@@ -1704,6 +1709,26 @@ export class RoomView {
           const faces: [number, number][][] = [];
           if (!aberto(ladoY1)) faces.push([iso(B.x0, B.y1, B.z0), iso(B.x1, B.y1, B.z0), iso(B.x1, B.y1, B.z1), iso(B.x0, B.y1, B.z1)]);
           if (!aberto(ladoX1)) faces.push([iso(B.x1, B.y0, B.z0), iso(B.x1, B.y1, B.z0), iso(B.x1, B.y1, B.z1), iso(B.x1, B.y0, B.z1)]);
+          // a parte grossa de perto (o braço da mesa em U: a casa inteira, com o tampo e o que está em
+          // cima dele) também fica na frente de quem está dentro. É a casa ocupada da coluna ou da fileira
+          // de perto que tem uma casa vazia antes dela, na mesma fileira ou na mesma coluna.
+          const vaz = (dx: number, dy: number) => !ocupa(def, rot, dx, dy);
+          const zTopo = B.z1 + 0.45 * Z_PER_M;
+          for (let dy = 0; dy < fp.sy; dy++)
+            for (let dx = 0; dx < fp.sx; dx++) {
+              if (vaz(dx, dy) || (dx !== fp.sx - 1 && dy !== fp.sy - 1)) continue;
+              let antes = false;
+              for (let k = 0; k < dx && !antes; k++) antes = vaz(k, dy);
+              for (let k = 0; k < dy && !antes; k++) antes = vaz(dx, k);
+              if (antes) faces.push(boxSilhouette({ x0: B.x0 + dx, x1: B.x0 + dx + 1, y0: B.y0 + dy, y1: B.y0 + dy + 1, z0: B.z0, z1: zTopo }));
+            }
+          // todas no mesmo sentido, para o recorte ser a união delas (no nonzero, sentidos opostos se anulam)
+          for (let i = 0; i < faces.length; i++) {
+            const f = faces[i];
+            let area = 0;
+            for (let k = 0; k < f.length; k++) area += f[k][0] * f[(k + 1) % f.length][1] - f[(k + 1) % f.length][0] * f[k][1];
+            if (area < 0) faces[i] = [...f].reverse();
+          }
           drawables.push({
             box: { x0: B.x1, x1: B.x1 + e, y0: B.y1, y1: B.y1 + e, z0: B.z0, z1: B.z1 },
             sx0: d.sx0,
@@ -1749,28 +1774,51 @@ export class RoomView {
           const z = real.z;
           const box: WBox = { x0: real.x, x1: real.x + 1, y0: real.y, y1: real.y + 1, z0: z, z1: z + 0.2 };
           const [cx, cy] = iso(real.x + 0.5, real.y + 0.5, z);
-          const T = 34;
+          // deitados no chão, na perspectiva da casa (o eixo da imagem vira os eixos do piso), um pouco
+          // girados e espalhados; a sombra é a silhueta de cada um, colada embaixo dele
+          const pos = imgs.map((img, i) => ({ img, ox: [0, -0.22, 0.2][i], oy: [0, 0.18, -0.2][i], giro: hash(real.id, i) * Math.PI * 2 }));
+          const deitar = (img: HTMLImageElement, ox: number, oy: number, giro: number, dx = 0, dy = 0) => {
+            const k = 1.0 / Math.max(img.naturalWidth, img.naturalHeight);
+            const c = Math.cos(giro) * k;
+            const sn = Math.sin(giro) * k;
+            const [px, py] = iso(real.x + 0.5 + ox, real.y + 0.5 + oy, z);
+            // a imagem (u, v) gira no piso e vai para a tela pelos eixos da casa: +x = (32, 16), +y = (-32, 16)
+            const ux = c * 32 - sn * 32;
+            const uy = c * 16 + sn * 16;
+            const vx = -sn * 32 + c * -32;
+            const vy = -sn * 16 + c * 16;
+            ctx.save();
+            ctx.transform(ux, uy, vx, vy, px + dx, py + dy);
+            ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+            ctx.restore();
+          };
           drawables.push({
             box,
-            sx0: cx - T,
-            sx1: cx + T,
-            sy0: cy - T - 6,
-            sy1: cy + 8,
+            sx0: cx - 34,
+            sx1: cx + 34,
+            sy0: cy - 22,
+            sy1: cy + 20,
             draw: () => {
-              // a sombra no chão e os itens um pouco espalhados, o primeiro na frente
-              ctx.fillStyle = 'rgba(0,0,0,0.35)';
+              // o chão escurece de leve em volta (o que está deitado tapa a luz) e cada item tem a sombra dele
+              const amb = ctx.createRadialGradient(cx, cy, 0, cx, cy, 26);
+              amb.addColorStop(0, 'rgba(0,0,0,0.22)');
+              amb.addColorStop(1, 'rgba(0,0,0,0)');
+              ctx.save();
+              ctx.translate(cx, cy);
+              ctx.scale(1, 0.5);
+              ctx.fillStyle = amb;
               ctx.beginPath();
-              ctx.ellipse(cx, cy + 2, T * 0.7, T * 0.28, 0, 0, Math.PI * 2);
+              ctx.arc(0, 0, 26, 0, Math.PI * 2);
               ctx.fill();
-              imgs
-                .map((img, i) => ({ img, dx: [0, -14, 13][i], dy: [0, -6, -8][i] }))
-                .reverse()
-                .forEach(({ img, dx, dy }) => {
-                  const k = T / Math.max(img.naturalWidth, img.naturalHeight);
-                  const w = img.naturalWidth * k;
-                  const h = img.naturalHeight * k;
-                  ctx.drawImage(img, cx + dx - w / 2, cy + dy - h + 6, w, h);
-                });
+              ctx.restore();
+              for (const { img, ox, oy, giro } of [...pos].reverse()) {
+                ctx.save();
+                ctx.filter = 'brightness(0) blur(0.6px)';
+                ctx.globalAlpha = 0.55;
+                deitar(img, ox, oy, giro, 0.8, 1.6);
+                ctx.restore();
+                deitar(img, ox, oy, giro);
+              }
             },
           });
           continue;

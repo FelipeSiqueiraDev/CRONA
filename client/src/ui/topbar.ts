@@ -217,9 +217,9 @@ export class TopBar {
       h('span', { class: 'tb2-sep', style: 'left:36.5rem', 'aria-hidden': 'true' }),
       abas,
       this.op,
-      h('span', { class: 'tb2-sep', style: 'left:115.8rem', 'aria-hidden': 'true' }),
+      h('span', { class: 'tb2-sep', style: 'left:113.2rem', 'aria-hidden': 'true' }),
       this.localBox,
-      h('span', { class: 'tb2-sep', style: 'left:131rem', 'aria-hidden': 'true' }),
+      h('span', { class: 'tb2-sep', style: 'left:133.2rem', 'aria-hidden': 'true' }),
       botoes,
     );
     this.el = h('header', { class: 'tb2' }, inner);

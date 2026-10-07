@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 46;
+export const SEDE_REV = 47;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -711,14 +711,16 @@ const ROOMS: RoomSpec[] = [
     floor: [
       ['portal', 17, 1, 4],
       // seis cubículos, como na ala médica da série: três em cima (a cabeceira na parede) e três
-      // embaixo; cada leito dentro da sua cortina (a de cima aberta, a de baixo fechada), com o soro
+      // embaixo; cada leito dentro da sua cortina (a de cima aberta, a de baixo fechada), com o soro.
+      // O soro fica do lado de lá da cama (o da esquerda, longe da câmera), para a cama aparecer e o lado
+      // de cá ficar livre para alguém parar junto do leito (revisto em 07/10)
       ...[1, 5, 9].flatMap((x) => [
         ['bed_curtain', x - 1, 1, 4, undefined, 1] as FloorSeed,
         ['hospital_bed', x, 1, 4] as FloorSeed,
-        ['iv_stand', x + 1, 1, 0] as FloorSeed,
+        ['iv_stand', x - 1, 1, 0] as FloorSeed,
         ['bed_curtain', x - 1, 10, 0, undefined, x === 5 ? 0 : 1] as FloorSeed,
         ['hospital_bed', x, 11, 0] as FloorSeed,
-        ['iv_stand', x + 1, 13, 0] as FloorSeed,
+        ['iv_stand', x - 1, 13, 0] as FloorSeed,
       ]),
       // os remédios num canto só: os armários na parede do fundo, ao lado da porta, e a pia
       ['medical_cabinet', 13, 1, 4],

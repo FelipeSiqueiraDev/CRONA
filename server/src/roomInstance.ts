@@ -127,6 +127,8 @@ export interface HotelApi {
   vitalChanged(roomId: number, tokenId: number, name: string, key: VitalKey, from: number, to: number, max: number): void;
   /** PV/PE/SAN de uma peça mudou: a ficha ligada ao personagem acompanha */
   vitaisDaPeca(personagem: number | null | undefined, v: Vitals): void;
+  /** o + e o − do painel PLAYERS para uma peça que está em outra cena da campanha */
+  vitalEmOutraCena(roomId: number, userId: number, m: Record<string, unknown>): void;
   /** peça nova (ou com outra folha): sem PV/PE/SAN, pega os da ficha ligada ao personagem */
   vitaisDaFicha(personagem: number | null | undefined): void;
   /** item do cenário entregue a uma peça: com ficha, vai para a mochila. true = levou; texto = por que não */
@@ -1160,7 +1162,11 @@ export class RoomInstance {
       return;
     }
     const u = isInt(m.tokenId) ? this.users.get(m.tokenId) : undefined;
-    if (!u) return;
+    if (!u) {
+      // o painel PLAYERS mostra os agentes de todas as cenas: o PV de quem está em outra vai para lá
+      if (m.t === 'vitals' && isInt(m.tokenId)) this.hotel.vitalEmOutraCena(this.data.id, m.tokenId, m);
+      return;
+    }
     switch (m.t) {
       case 'tokenWalk':
         if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) u.goal = { x: m.x, y: m.y };
@@ -1201,20 +1207,27 @@ export class RoomInstance {
       case 'tokenScene':
         if (isInt(m.roomId) && m.roomId !== this.data.id && this.hotel.roomExists(m.roomId)) this.hotel.moveToken(this, u.client.id, m.roomId);
         break;
-      case 'vitals': {
-        if (!VITAL_KEYS.includes(m.key as VitalKey)) return;
-        const key = m.key as VitalKey;
-        u.meta ??= {};
-        const before = u.meta.vitals ?? DEFAULT_VITALS;
-        const change = { delta: isNum(m.delta) ? m.delta : undefined, value: isNum(m.value) ? m.value : undefined, max: isNum(m.max) ? m.max : undefined };
-        const after = applyVital(before, key, change);
-        u.meta.vitals = after;
-        if (after[key] !== before[key]) this.hotel.vitalChanged(this.data.id, -u.client.id, u.client.name ?? '?', key, before[key], after[key], after[`${key}Max`]);
-        this.hotel.vitaisDaPeca(u.client.look?.charId, after);
-        this.saveTokens();
+      case 'vitals':
+        this.mudarVital(u.client.id, m);
         break;
-      }
     }
+  }
+
+  /** PV, PE ou SAN de uma peça desta cena (o + e o −, ou o total). Falso se a peça não está aqui. */
+  mudarVital(userId: number, m: Record<string, unknown>): boolean {
+    const u = this.users.get(userId);
+    if (!u) return false;
+    if (!VITAL_KEYS.includes(m.key as VitalKey)) return true;
+    const key = m.key as VitalKey;
+    u.meta ??= {};
+    const before = u.meta.vitals ?? DEFAULT_VITALS;
+    const change = { delta: isNum(m.delta) ? m.delta : undefined, value: isNum(m.value) ? m.value : undefined, max: isNum(m.max) ? m.max : undefined };
+    const after = applyVital(before, key, change);
+    u.meta.vitals = after;
+    if (after[key] !== before[key]) this.hotel.vitalChanged(this.data.id, -u.client.id, u.client.name ?? '?', key, before[key], after[key], after[`${key}Max`]);
+    this.hotel.vitaisDaPeca(u.client.look?.charId, after);
+    this.saveTokens();
+    return true;
   }
 
   /** Itens dentro do mobi e interações (só mestre/construtor). */
