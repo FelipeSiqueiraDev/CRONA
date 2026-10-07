@@ -139,6 +139,12 @@ Tudo em [`FERRAMENTAS-DA-MESA.md`](FERRAMENTAS-DA-MESA.md). No canto de cima do 
 - O Docker com teto de 3 GB e devolvendo a memória (`%USERPROFILE%\.wslconfig`): vale depois de reiniciar o PC ou o Docker.
 - Testado: pelo link e pela rede entra como jogador; neste PC, como mestre; de fora, o mestre entra pela conta "Felipe".
 
+## Esperando o Códex (07/10, manhã)
+
+- **Armados dos quatro (tabuleiro):** só rascunhos em `C:\Users\felip\Documents\Codex\2026-10-04\leia-o-prompt-personagens-txt-na\outputs\continuacao-06-10\armados\` (`*-oito-direcoes-armad*-rascunho.png`), reprovados pelo próprio Códex por causa das mãos (a revisão está em `Personagens/revisao-maos-07-10/` na pasta da arte; NÃO importar). O gerador volta às 14h50 de 07/10. **Decidido pelo Felipe:** esperar a versão certa (`personagens-armados.zip`); quando chegar, importar com `npm run arte:poses -- <folha> <nome> --estado armado --hd` e conferir mão por mão (direita/esquerda de cada direção, como na revisão).
+- **Catarina desarmada corrigida** (katana em S, SW e NW): importada em 07/10.
+- **Tela de entrada temática** (outra sessão pediu; o prompt está na branch `claude/zen-ramanujan-ko8p7n`, que não está neste PC): salas fantasia, cyberpunk, horror e vazia (computador e celular), paisagem atrás das janelas magenta, mapa, miniaturas de heróis e monstros, dados de obsidiana e objetos da mesa, em `C:\Users\felip\Documents\Codex\2026-10-06\ami\outputs\` (`CRONA-entrada-lote-1-previa.zip`, `CRONA-salas-continuacao.zip`, `crona-entrada-background\`). Faltam 5 paisagens (depois das 14h50). **Decidido pelo Felipe:** só mexer na tela de login quando todas as imagens estiverem prontas.
+
 ## Feito em 06/10 (noite): o visual do HUD no site inteiro e as peças inteiras
 
 - **O visual do celular nas telas do mestre** (`client/src/ui/hud.css`, carregado por último em `main.ts`; por baixo ficam `retro-auto.css`, gerado por `scripts/dev/retro-gerar.mjs`, e `retro.css`). As molduras pintadas do kit (metal, couro, placas) saíram; ficaram os ícones pintados, as casas do inventário e os retratos. Janela azul-noite com borda bege, título com ícone e a linha de ouro, botão de borda e o de ouro com o brilho, barras com riscos e reflexo, linhas com o cursor ▶, abas com o ícone grande. Animações: os painéis sobem ao trocar de tela, a vez no combate pulsa, o passo atual tem o anel, o carimbo bate. Nada mais é girado (as fotos "polaroide" acabaram).
