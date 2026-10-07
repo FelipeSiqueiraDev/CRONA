@@ -44,14 +44,18 @@ export function desenharItemNoChao(ctx: CanvasRenderingContext2D, img: HTMLImage
   const h = img.naturalHeight * k;
   const inclina = (semente - 0.5) * 0.34;
 
+  // o brilho e a sombra ficam no MESMO ponto do chão (G): a sombra por cima do brilho, e não um de cada lado
+  const gx = sx;
+  const gy = sy + h * 0.1;
+
   // o brilho quente no chão: uma elipse achatada que pulsa
   ctx.save();
-  ctx.translate(sx, sy);
+  ctx.translate(gx, gy);
   ctx.scale(1, 0.5);
-  const r = lado * 0.66;
+  const r = lado * 0.7;
   const g = ctx.createRadialGradient(0, 0, lado * 0.04, 0, 0, r);
-  g.addColorStop(0, `rgba(255, 216, 132, ${(0.5 * pulso).toFixed(3)})`);
-  g.addColorStop(0.5, `rgba(255, 190, 92, ${(0.2 * pulso).toFixed(3)})`);
+  g.addColorStop(0, `rgba(255, 216, 132, ${(0.55 * pulso).toFixed(3)})`);
+  g.addColorStop(0.55, `rgba(255, 190, 92, ${(0.22 * pulso).toFixed(3)})`);
   g.addColorStop(1, 'rgba(255, 190, 92, 0)');
   ctx.fillStyle = g;
   ctx.beginPath();
@@ -59,24 +63,16 @@ export function desenharItemNoChao(ctx: CanvasRenderingContext2D, img: HTMLImage
   ctx.fill();
   ctx.restore();
 
-  // a sombra segue a forma do objeto: a silhueta do próprio ícone, achatada e projetada no chão (para baixo e para
-  // a direita, a luz vem de cima à esquerda), e mais fraca quando o ícone sobe no balanço
+  // a sombra segue a forma do objeto: a silhueta do próprio ícone, achatada contra o chão e centrada em G (dentro do
+  // brilho, por cima dele), um pouco para a direita (a luz vem de cima à esquerda); mais fraca quando o ícone sobe
   const sil = silhueta(img);
-  const pad = SOMBRA_PAD * k;
+  const sw = sil.width * k;
+  const sh = sil.height * k;
   ctx.save();
-  ctx.translate(sx + lado * 0.02, sy + h * 0.14);
-  ctx.transform(1, 0, -0.22, -0.24, 0, 0);
-  ctx.globalAlpha = 0.5 - onda * 0.07;
-  ctx.drawImage(sil, -(sil.width * k) / 2, -(h + pad), sil.width * k, sil.height * k);
-  ctx.restore();
-  // um toque de sombra colado embaixo, para o ícone não flutuar
-  ctx.save();
-  ctx.translate(sx, sy + h * 0.1);
-  ctx.scale(1, 0.4);
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
-  ctx.beginPath();
-  ctx.arc(0, 0, Math.max(w, h) * 0.22, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.translate(gx + lado * 0.05, gy + lado * 0.02);
+  ctx.transform(1, 0, -0.1, -0.3, 0, 0);
+  ctx.globalAlpha = 0.58 - onda * 0.07;
+  ctx.drawImage(sil, -sw / 2, -sh / 2, sw, sh);
   ctx.restore();
 
   // o ícone: apoiado no chão, inclinado, com um contorno de luz suave (o destaque)
