@@ -243,18 +243,6 @@ describe('itens', () => {
     assert.notEqual(seen.name, 'Fundo falso');
     assert.ok(!theirs.items.some((i) => i.name === 'Bilhete'));
   });
-
-  test('levaram tudo: o móvel passa a "vazio" (arte vazia); com item de novo, deixa de ser', () => {
-    const desk = gm.session().objects.find((o) => o.name === 'Escrivaninha')!;
-    const item = () => [...hotel.rooms.values()].flatMap((r) => r.map.allItems()).find((i) => i.id === desk.id)!;
-    gm.send({ t: 'lootAdd', itemId: desk.id, name: 'Bilhete', espacos: 0, kind: 'letter' });
-    assert.notEqual(item().vazio, true);
-    for (const l of [...(item().loot ?? [])]) gm.send({ t: 'lootRemove', itemId: desk.id, lootId: l.id });
-    assert.equal(item().loot, undefined);
-    assert.equal(item().vazio, true);
-    gm.send({ t: 'lootAdd', itemId: desk.id, name: 'Outro', espacos: 0, kind: 'letter' });
-    assert.notEqual(item().vazio, true);
-  });
 });
 
 describe('objetivos', () => {

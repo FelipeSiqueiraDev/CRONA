@@ -1343,14 +1343,8 @@ export class RoomInstance {
       return;
     }
     const next: FloorItem | WallItem = { ...it };
-    if (loot.length) {
-      next.loot = loot;
-      delete next.vazio;
-    } else {
-      delete next.loot;
-      // levaram tudo: o móvel passa a mostrar a arte VAZIA (a mesa sem a pistola, a estante sem os livros)
-      if (it.loot?.length) next.vazio = true;
-    }
+    if (loot.length) next.loot = loot;
+    else delete next.loot;
     if (actions.length) next.actions = actions;
     else delete next.actions;
     if (floor) {
@@ -1386,10 +1380,7 @@ export class RoomInstance {
       const fica = loot.filter((l) => !vao.includes(l));
       const next = { ...it };
       if (fica.length) next.loot = fica;
-      else {
-        delete next.loot;
-        next.vazio = true;
-      }
+      else delete next.loot;
       return next;
     };
     for (const it of this.map.allItems()) {
@@ -1429,10 +1420,7 @@ export class RoomInstance {
       } else {
         const next: FloorItem = { ...it };
         if (fica.length) next.loot = fica;
-        else {
-          delete next.loot;
-          next.vazio = true;
-        }
+        else delete next.loot;
         this.map.updateItem(next);
         this.broadcastFloor('itemUpdate', next);
       }

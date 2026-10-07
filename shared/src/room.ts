@@ -112,7 +112,7 @@ export interface FloorItem {
   loot?: Loot[];
   /** interações com teste (DT) */
   actions?: ItemAction[];
-  /** levaram tudo o que tinha dentro/em cima: o móvel mostra a arte VAZIA ("<defId>!vazio"), se houver */
+  /** o móvel mostra a arte VAZIA ("<defId>!vazio"), se houver: para lugares abandonados. Nada liga isso sozinho (ainda não há botão do mestre) */
   vazio?: boolean;
   /** fechadura com senha (passagem secreta) */
   lock?: ItemLock;

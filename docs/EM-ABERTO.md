@@ -209,9 +209,9 @@ Ainda falta (pedido do Felipe):
 - **Brinquedos do Quarto das Crianças:** 6 pilhas "Itens no Chão" (Ursinho, Boneca de Pano, Blocos de Montar, Cavalinho de
   Balanço, Carrinho, Casinha de Brinquedo) que os jogadores pegam (`chao` no `CenaSpec`). Sem ícone próprio: cai no ícone do
   tipo até o Códex entregar (`arte/itens/pintados/<slug do nome>.png`, Parte D do `PROMPT-MOVEIS-VAZIOS.txt`, com variações).
-- **Móvel vazio:** o item ganhou `vazio` (quando o último item é levado: `editItemRpg`, `tirarItensComDono`, `retirarLoot`; some se
-  entra item de novo) e a arte procura `<defId>!vazio` (`chaveDaArte`, isométrico, parede e vista de cima). **Falta a arte:**
-  Parte A do `PROMPT-MOVEIS-VAZIOS.txt`; ao chegar, entra pelas fichas do `moveis.py` com `"def": "<defId>!vazio"`.
+- **Móvel vazio (só para lugares abandonados):** o item tem o campo `vazio` e a arte procura `<defId>!vazio` (`chaveDaArte`,
+  isométrico, parede e vista de cima), mas NADA liga isso sozinho (decisão do Felipe, 07/10: não trocar quando levam os itens).
+  Falta o botão do mestre "Abandonado/Vazio" no painel do objeto e a arte (Parte A do `PROMPT-MOVEIS-VAZIOS.txt`, baixa prioridade).
 - **Pedidos novos de arte (Lote 3C, `PROMPT-MOVEIS-VAZIOS.txt`):** o beliche + cores das camas, as gêmeas vazias, 12 quadros
   genéricos de fazenda (viram `painting~d`... pelo sorteio) e os ícones dos brinquedos.
 
