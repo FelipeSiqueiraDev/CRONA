@@ -57,6 +57,7 @@ ANIMACOES = {
     'abaixado': (4, 'livre'),
     'furtivo': (8, 'livre'),
     'cobertura': (5, 'livre'),
+    'escalada': (8, 'livre'),
 }
 
 # o que conferir de olho: a arma e a mão de cada agente, por estado e direção (D/E = do personagem)
@@ -140,6 +141,13 @@ def pes(m):
     y1 = ys.max()
     h = y1 - ys.min() + 1
     cols = np.nonzero(m[y1 - int(h * 0.10):y1 + 1].any(axis=0))[0]
+    # a ponta fina da espada (ou do cabo) que chega perto do chão não é um pé: some o grupo de colunas
+    # com pouquíssima massa perto da maior bota (uma bota tem milhares de pixels na faixa; a lâmina, centenas)
+    if len(cols) >= 2:
+        faixa = m[y1 - int(h * 0.10):y1 + 1]
+        grupos = np.split(cols, np.nonzero(np.diff(cols) > 3)[0] + 1)
+        massa = [int(faixa[:, g.min():g.max() + 1].sum()) for g in grupos]
+        cols = np.concatenate([g for g, ms in zip(grupos, massa) if ms >= 0.2 * max(massa)])
     if len(cols) < 2:
         return float((xs.min() + xs.max()) / 2), float(y1), False
     vaos = np.diff(cols)

@@ -157,7 +157,7 @@ interface RoomUser {
   /** chegou por esta passagem: não teleporta até sair do tile */
   arrivedAt: Point | null;
   /** cor, limite de carga, estado do retrato e ficha (PV/PE/SAN) da peça */
-  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; vitals?: Vitals };
+  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; alto?: boolean; vitals?: Vitals };
 }
 
 const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v);
@@ -284,7 +284,7 @@ export class RoomInstance {
       // nasce "chegando": em cima de uma passagem, só atravessa depois de sair dela e voltar
       // (sem isso, a peça salva em cima de uma porta trocava de cena a cada reinício)
       arrivedAt: { x: sx, y: sy },
-      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, agachado: t.agachado, vitals: sanitizeVitals(t.vitals) },
+      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, agachado: t.agachado, alto: t.alto, vitals: sanitizeVitals(t.vitals) },
     };
     this.users.set(u.client.id, u);
     this.settle(u);
@@ -390,6 +390,7 @@ export class RoomInstance {
     if (u.meta?.armed) t.armed = true;
     if (u.meta?.hurt) t.hurt = true;
     if (u.meta?.agachado) t.agachado = true;
+    if (u.meta?.alto) t.alto = true;
     if (u.meta?.vitals) t.vitals = u.meta.vitals;
     return t;
   }
@@ -489,7 +490,7 @@ export class RoomInstance {
   }
 
   private userInfo(u: RoomUser): UserInfo {
-    return { ...this.status(u), name: u.client.name ?? '?', look: u.client.look, color: u.meta?.color, ...(u.meta?.agachado ? { agachado: true } : {}) };
+    return { ...this.status(u), name: u.client.name ?? '?', look: u.client.look, color: u.meta?.color, ...(u.meta?.agachado ? { agachado: true } : {}), ...(u.meta?.alto ? { alto: true } : {}) };
   }
 
   private status(u: RoomUser): UserStatus {
@@ -560,7 +561,9 @@ export class RoomInstance {
   }
 
   private settle(u: RoomUser) {
-    const z = this.map.standHeight(u.x, u.y);
+    // fora do beliche, ninguém fica "na cama de cima"
+    if (u.meta?.alto && !this.map.leitoItem(u.x, u.y)) u.meta.alto = false;
+    const z = this.map.standHeight(u.x, u.y, !!u.meta?.alto);
     if (z !== u.z) {
       u.z = z;
       u.dirty = true;
@@ -599,6 +602,7 @@ export class RoomInstance {
             u.dir = u.headDir = directionTo(u, step);
             u.next = step;
             u.sit = 0;
+            if (u.meta?.alto) u.meta.alto = false;
             u.headResetAt = 0;
             u.dirty = true;
           }
@@ -1194,6 +1198,18 @@ export class RoomInstance {
         // com ficha, o Armado vem da mão: a ficha empunha ou guarda a arma
         if (typeof m.armed === 'boolean' && !this.hotel.armarPelaPeca(u.client.look?.charId, m.armed, c)) u.meta.armed = m.armed;
         if (typeof m.hurt === 'boolean') u.meta.hurt = m.hurt;
+        // a escalada: da cama de baixo para a de cima do beliche (e de volta); a peça sobe de uma altura para a outra
+        if (typeof m.alto === 'boolean' && !!u.meta.alto !== m.alto) {
+          if (m.alto && !this.map.leitoItem(u.x, u.y)) return this.err(c, 'Fique em cima de um beliche para subir.');
+          const de = u.z;
+          u.meta.alto = m.alto;
+          this.settle(u);
+          this.broadcast({ t: 'userLeave', id: u.client.id });
+          this.broadcast({ t: 'userJoin', user: { ...this.userInfo(u), z: de, mv: { x: u.x, y: u.y, z: u.z } } });
+          this.hotel.log(this.data.id, 'user', `${u.client.name ?? '?'} ${m.alto ? 'subiu para a cama de cima' : 'desceu para a cama de baixo'}.`);
+          this.saveTokens();
+          break;
+        }
         if (typeof m.agachado === 'boolean') {
           u.meta.agachado = m.agachado;
           this.broadcast({ t: 'userLeave', id: u.client.id });
@@ -1327,8 +1343,14 @@ export class RoomInstance {
       return;
     }
     const next: FloorItem | WallItem = { ...it };
-    if (loot.length) next.loot = loot;
-    else delete next.loot;
+    if (loot.length) {
+      next.loot = loot;
+      delete next.vazio;
+    } else {
+      delete next.loot;
+      // levaram tudo: o móvel passa a mostrar a arte VAZIA (a mesa sem a pistola, a estante sem os livros)
+      if (it.loot?.length) next.vazio = true;
+    }
     if (actions.length) next.actions = actions;
     else delete next.actions;
     if (floor) {
@@ -1364,7 +1386,10 @@ export class RoomInstance {
       const fica = loot.filter((l) => !vao.includes(l));
       const next = { ...it };
       if (fica.length) next.loot = fica;
-      else delete next.loot;
+      else {
+        delete next.loot;
+        next.vazio = true;
+      }
       return next;
     };
     for (const it of this.map.allItems()) {
@@ -1404,7 +1429,10 @@ export class RoomInstance {
       } else {
         const next: FloorItem = { ...it };
         if (fica.length) next.loot = fica;
-        else delete next.loot;
+        else {
+          delete next.loot;
+          next.vazio = true;
+        }
         this.map.updateItem(next);
         this.broadcastFloor('itemUpdate', next);
       }

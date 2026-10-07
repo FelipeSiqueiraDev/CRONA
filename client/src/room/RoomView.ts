@@ -93,6 +93,8 @@ export interface ClientUser {
   dance: boolean;
   /** de cócoras: a peça se mostra mais baixa (até chegar a animação própria) */
   agachado?: boolean;
+  /** na cama de cima do beliche */
+  alto?: boolean;
   anim: { fx: number; fy: number; fz: number; tx: number; ty: number; tz: number; start: number } | null;
   waveUntil: number;
   phase: number;
@@ -648,6 +650,7 @@ export class RoomView {
       sit: u.sit,
       dance: u.dance,
       agachado: u.agachado,
+      alto: u.alto,
       anim: u.mv ? { fx: u.x, fy: u.y, fz: u.z, tx: u.mv.x, ty: u.mv.y, tz: u.mv.z, start: performance.now() } : null,
       waveUntil: 0,
       phase: Math.random() * 10,
@@ -681,6 +684,8 @@ export class RoomView {
       u.anim = { fx: f.x, fy: f.y, fz: f.z, tx: s.mv.x, ty: s.mv.y, tz: s.mv.z, start: now };
     } else if (u.anim && !(u.anim.tx === s.x && u.anim.ty === s.y)) u.anim = null;
     else if (u.anim) u.anim.tz = s.z;
+    // saiu do lugar: já não está na cama de cima
+    if (u.x !== s.x || u.y !== s.y) u.alto = false;
     // virou sem sair do lugar: efeito de giro
     if (!s.mv && !u.anim && s.dir !== u.dir) u.turnAt = now;
     u.x = s.x;
@@ -1230,7 +1235,7 @@ export class RoomView {
     return null;
   }
 
-  private drawWallItem(it: { id: number; wall: 'l' | 'r'; plane: number; pos: number; z: number; state: number; escala?: number }, def: WallFurniDef, t: number, lights: Light[], alpha: number, outline: string | null) {
+  private drawWallItem(it: { id: number; wall: 'l' | 'r'; plane: number; pos: number; z: number; state: number; escala?: number; vazio?: boolean }, def: WallFurniDef, t: number, lights: Light[], alpha: number, outline: string | null) {
     const ctx = this.ctx;
     const { ox, oy, k } = this.wallXform(it.wall, it.plane, it.pos, it.z, def);
     ctx.save();
@@ -1245,7 +1250,7 @@ export class RoomView {
       ctx.scale(e, e);
       ctx.translate(-px, -py);
     }
-    const comArte = desenharParedeComArte(ctx, def.id, it.wall, it.state, px, py, it.id);
+    const comArte = desenharParedeComArte(ctx, def.id, it.wall, it.state, px, py, it.id, it.vazio);
     ctx.transform(1, k, 0, 1, ox, oy);
     if (!comArte) drawWallFurni(ctx, def, it.state, it.id, t);
     if (outline) {
@@ -1654,11 +1659,11 @@ export class RoomView {
     }
     // o que cai fora da tela não é desenhado (a fazenda tem centenas de mobis); a luz deles continua valendo
     const vista = { x0: -this.cam.x / z - 120, y0: -this.cam.y / z - 200, x1: (this.vw - this.cam.x) / z + 120, y1: (this.vh - this.cam.y) / z + 120 };
-    const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number }, alpha: number, selected: boolean, ghost: boolean) => {
+    const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number; vazio?: boolean }, alpha: number, selected: boolean, ghost: boolean) => {
       const def = getFurni(it.defId);
       if (!def) return;
       const base = furniVisual(def, it.state, it.id);
-      const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1) ?? base;
+      const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio) ?? base;
       m.set(it.rot, def.width, def.depth, it.x, it.y, it.z);
       const floorH = map.floorHeight(it.x, it.y) ?? 0;
       const flat = !!def.flat && it.z <= floorH + 0.05 && !ghost;

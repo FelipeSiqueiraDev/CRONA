@@ -51,6 +51,11 @@ export interface FurniDef {
   height: number;
   walkable?: boolean;
   sit?: boolean;
+  /**
+   * Camas de andares (beliche): a altura, em metros, de cada uma onde a peça fica deitada ou sentada, de baixo para
+   * cima. Quem pisa na casa fica na primeira; o mestre põe a peça na de cima ("Na cama de cima").
+   */
+  leitos?: number[];
   stackable?: boolean;
   /** decalque plano (sangue, sigilo, papéis) */
   flat?: boolean;
@@ -302,6 +307,7 @@ const FURNI_METERS: FurniDef[] = [
   // ---------- Casa ----------
   { id: 'cama_casal', name: 'Cama de Casal', category: 'casa', kind: 'bed', width: 2, depth: 3, height: 0.55, rotations: ALL, colors: ['#7a2e2a', '#4a3020', '#e2dccc'] },
   { id: 'cama_solteiro', name: 'Cama de Solteiro', category: 'casa', kind: 'bed', width: 1, depth: 3, height: 0.55, rotations: ALL, colors: ['#3e5a7a', '#5a3a24', '#e2dccc'] },
+  { id: 'beliche', name: 'Beliche', category: 'casa', kind: 'beliche', width: 1, depth: 3, height: 1.85, sit: true, leitos: [0.55, 1.52], rotations: ALL, colors: ['#3e5a7a', '#5a3a24', '#e2dccc'], desc: 'Duas camas de solteiro empilhadas, com a escadinha no pé. A peça fica na de baixo; para a de cima, "Na cama de cima" (a escalada).' },
   { id: 'guarda_roupa', name: 'Guarda-roupa', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 2.0, rotations: ALL, colors: ['#5a3a24', '#c9a86a'] },
   { id: 'comoda', name: 'Cômoda', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#6a4428', '#c9a86a'] },
   { id: 'armario_cozinha', name: 'Armário de Cozinha', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 1.9, rotations: ALL, colors: ['#e2d6bc', '#5a4a3a'] },
@@ -360,7 +366,7 @@ export const toUnits = (m: number) => Math.round(m * Z_PER_M * 100) / 100;
 /** A pilha do que alguém largou no chão (docs/REGRAS.md, Mochila). */
 export const PILHA_CHAO = 'pilha_chao';
 
-export const FURNI_LIST: FurniDef[] = FURNI_METERS.map((d) => ({ ...d, height: toUnits(d.height) }));
+export const FURNI_LIST: FurniDef[] = FURNI_METERS.map((d) => ({ ...d, height: toUnits(d.height), ...(d.leitos ? { leitos: d.leitos.map(toUnits) } : {}) }));
 
 export const FURNI: Record<string, FurniDef> = Object.fromEntries(FURNI_LIST.map((d) => [d.id, d]));
 export const WALL_FURNI: Record<string, WallFurniDef> = Object.fromEntries(WALL_FURNI_LIST.map((d) => [d.id, d]));

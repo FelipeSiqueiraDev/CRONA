@@ -179,9 +179,9 @@ describe("Fazenda Olhos de Águia", () => {
     assert.equal(m?.roomId, hall.data.id);
     // chega na porta da frente do hall (embaixo), e sai por ela de volta para a frente da casa
     const t = hall.tokensLive().find((x) => x.name === tk.name)!;
-    assert.equal(t.token.tile.y, 12);
+    assert.equal(t.token.tile.y, 11);
+    andar(hall, tk.id, 3, 10);
     andar(hall, tk.id, 3, 11);
-    andar(hall, tk.id, 3, 12);
     assert.ok(fora.hasToken(-tk.id), "voltou para fora");
     const v = fora.tokensLive().find((x) => x.name === tk.name)!;
     assert.ok(
@@ -195,7 +195,7 @@ describe("Fazenda Olhos de Águia", () => {
     const corredor = cena("Corredor de Cima");
     const tk = cena("Olhos de Águia").tokenList()[0];
     hotel.moveToken(cena("Olhos de Águia"), tk.id, hall.data.id);
-    andar(hall, tk.id, 4, 2);
+    andar(hall, tk.id, 3, 2);
     assert.ok(corredor.hasToken(-tk.id), "subiu");
     // chega na frente do vão da escada, virado para o corredor
     const vao = corredor.map
@@ -208,9 +208,40 @@ describe("Fazenda Olhos de Águia", () => {
     const h = hall.tokensLive().find((x) => x.name === tk.name)!;
     assert.deepEqual(
       [h.token.tile.x, h.token.tile.y],
-      [4, 3],
+      [3, 3],
       "no pé da escada do hall",
     );
+  });
+
+  test("o beliche: a peça fica na cama de baixo e a escalada leva para a de cima e de volta", () => {
+    const fora = cena("Olhos de Águia");
+    const quarto = cena("Quarto das Crianças");
+    const tk = fora.tokenList()[0];
+    hotel.moveToken(fora, tk.id, quarto.data.id);
+    const beliche = quarto.map.allItems().find((i) => i.defId === "beliche")!;
+    const [baixo, cima] = getFurni("beliche")!.leitos!;
+    gm.send({ t: "join", roomId: quarto.data.id });
+    andar(quarto, tk.id, beliche.x, beliche.y + 1);
+    const eu = () =>
+      (
+        quarto as unknown as {
+          users: Map<number, { z: number; meta?: { alto?: boolean } }>;
+        }
+      ).users.get(tk.id)!;
+    assert.equal(eu().z, beliche.z + baixo, "na cama de baixo");
+    gm.send({ t: "tokenEdit", tokenId: tk.id, alto: true });
+    assert.equal(eu().meta?.alto, true);
+    assert.equal(eu().z, beliche.z + cima, "subiu para a cama de cima");
+    gm.send({ t: "tokenEdit", tokenId: tk.id, alto: false });
+    assert.equal(eu().z, beliche.z + baixo, "desceu");
+    // andando para longe, sai da cama de cima sozinha e pisa no chão
+    gm.send({ t: "tokenEdit", tokenId: tk.id, alto: true });
+    andar(quarto, tk.id, 2, 3);
+    assert.notEqual(eu().meta?.alto, true);
+    assert.equal(eu().z, quarto.map.standHeight(2, 3));
+    // fora de um beliche, "Na cama de cima" não faz nada
+    gm.send({ t: "tokenEdit", tokenId: tk.id, alto: true });
+    assert.notEqual(eu().meta?.alto, true);
   });
 
   test("pela porteira aberta sai para os arredores; fechada, ninguém passa", () => {

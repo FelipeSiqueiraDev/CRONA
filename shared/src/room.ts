@@ -112,6 +112,8 @@ export interface FloorItem {
   loot?: Loot[];
   /** interações com teste (DT) */
   actions?: ItemAction[];
+  /** levaram tudo o que tinha dentro/em cima: o móvel mostra a arte VAZIA ("<defId>!vazio"), se houver */
+  vazio?: boolean;
   /** fechadura com senha (passagem secreta) */
   lock?: ItemLock;
   /** tamanho do desenho (quadro na parede, tapete no chão), 1 = o do catálogo; o mestre muda no painel do objeto */
@@ -132,6 +134,8 @@ export interface WallItem {
   hint?: Hint;
   loot?: Loot[];
   actions?: ItemAction[];
+  /** levaram tudo: mostra a arte vazia, se houver */
+  vazio?: boolean;
   /** tamanho do desenho (quadro na parede, tapete no chão), 1 = o do catálogo; o mestre muda no painel do objeto */
   escala?: number;
 }
@@ -263,8 +267,13 @@ export class RoomMap {
     return sit ? 'sit' : 'walk';
   }
 
-  /** Altura em que um avatar fica no tile (piso, tapete ou assento). */
-  standHeight(x: number, y: number): number {
+  /** O mobi de camas de andares (beliche) neste tile, se houver. */
+  leitoItem(x: number, y: number): FloorItem | undefined {
+    return this.itemsAt(x, y).find((it) => getFurni(it.defId)?.leitos?.length);
+  }
+
+  /** Altura em que um avatar fica no tile (piso, tapete ou assento; no beliche, a cama de baixo ou, com `alto`, a de cima). */
+  standHeight(x: number, y: number, alto = false): number {
     const f = this.floorHeight(x, y) ?? 0;
     const cell = this.itemsAt(x, y);
     if (!cell.length) return f;
@@ -274,7 +283,7 @@ export class RoomMap {
       const def = getFurni(it.defId);
       if (!def) continue;
       const t = it.z + def.height;
-      if (def.sit) seat = t;
+      if (def.sit) seat = def.leitos?.length ? it.z + def.leitos[alto ? def.leitos.length - 1 : 0] : t;
       if (t > top) top = t;
     }
     return seat ?? top;

@@ -192,6 +192,29 @@ Ainda falta (pedido do Felipe):
   - trocar os ícones;
   - escolher a logo.
 
+## Fazenda: o casarão do desenho, beliches e móveis vazios (07/10, noite)
+
+- **Portas na parede do desenho:** `plan.r` em `seedFazenda.ts` agora ESPELHA a sala (r 1 e 3 giram um quarto): a porta
+  cai na parede oposta, como no desenho, mas o que estava no fundo (a parede de cima) continua no fundo, sem móvel alto na
+  frente. Hall, Cozinha e Sala de Jantar foram refeitos no quadro do desenho (cozinha a oeste do hall, jantar a leste,
+  corredor de cima: Q1 e Q2 a oeste, Q3 e principal a leste). FAZENDA_REV 16. A escala (2 a 3 casas por quadradinho da
+  régua da cama) o Felipe não respondeu: ficou o meio-termo (a sala pelo móvel + 1 casa de folga).
+- **Escrivaninha** (`desk_wood`, 2 × 1, com abajur) no lugar da mesinha de 1 casa nos Quartos 1 e 3.
+- **Beliche** (`beliche`, 1 × 3, 1,85 m; só desenho por código até a arte): os 3 do Quarto das Crianças. A cama de cima é um
+  degrau mais alta e os postes passam só um pouco dela. **Escalada:** o painel do personagem ganhou "Na cama de cima" (só
+  aparece em cima de um beliche); a peça sobe de 0,55 m para 1,52 m (`leitos` no `furni.ts`, `standHeight(x, y, alto)`,
+  `tokenEdit.alto`) e sai sozinha da cama de cima ao andar. **Falta:** a animação `escalada` (pedida no pacote do Códex dos
+  personagens: etapa 10, `LEIA-PRIMEIRO.md` 9.9) e o jogo tocá-la (hoje é o andar parado), e o personagem DEITADO na cama de baixo
+  (hoje senta; o pedido de arte já exige o colchão livre).
+- **Brinquedos do Quarto das Crianças:** 6 pilhas "Itens no Chão" (Ursinho, Boneca de Pano, Blocos de Montar, Cavalinho de
+  Balanço, Carrinho, Casinha de Brinquedo) que os jogadores pegam (`chao` no `CenaSpec`). Sem ícone próprio: cai no ícone do
+  tipo até o Códex entregar (`arte/itens/pintados/<slug do nome>.png`, Parte D do `PROMPT-MOVEIS-VAZIOS.txt`, com variações).
+- **Móvel vazio:** o item ganhou `vazio` (quando o último item é levado: `editItemRpg`, `tirarItensComDono`, `retirarLoot`; some se
+  entra item de novo) e a arte procura `<defId>!vazio` (`chaveDaArte`, isométrico, parede e vista de cima). **Falta a arte:**
+  Parte A do `PROMPT-MOVEIS-VAZIOS.txt`; ao chegar, entra pelas fichas do `moveis.py` com `"def": "<defId>!vazio"`.
+- **Pedidos novos de arte (Lote 3C, `PROMPT-MOVEIS-VAZIOS.txt`):** o beliche + cores das camas, as gêmeas vazias, 12 quadros
+  genéricos de fazenda (viram `painting~d`... pelo sorteio) e os ícones dos brinquedos.
+
 ## Esperando o Códex (07/10, manhã)
 
 - **Armados dos quatro (tabuleiro):** só rascunhos em `C:\Users\felip\Documents\Codex\2026-10-04\leia-o-prompt-personagens-txt-na\outputs\continuacao-06-10\armados\` (`*-oito-direcoes-armad*-rascunho.png`), reprovados pelo próprio Códex por causa das mãos (a revisão está em `Personagens/revisao-maos-07-10/` na pasta da arte; NÃO importar). O gerador volta às 14h50 de 07/10. **Decidido pelo Felipe:** esperar a versão certa (`personagens-armados.zip`); quando chegar, importar com `npm run arte:poses -- <folha> <nome> --estado armado --hd` e conferir mão por mão (direita/esquerda de cada direção, como na revisão).

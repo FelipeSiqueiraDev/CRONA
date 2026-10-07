@@ -2597,6 +2597,9 @@ export class Shell {
         h('button', { class: 'tool', title: 'Girar para a esquerda (Q)', onclick: () => this.turnToken(id, false) }, '↺ Girar'),
         h('button', { class: 'tool', title: 'Girar para a direita (E)', onclick: () => this.turnToken(id, true) }, 'Girar ↻'),
         this.stateTool('Armado', !!p?.armed, ficha ? 'Vem da mão: empunha a arma da mochila ou guarda as armas' : 'Com a arma na mão (retrato armado)', () => net.send({ t: 'tokenEdit', tokenId: id, armed: !p?.armed })),
+        ...(map?.leitoItem(u.x, u.y)
+          ? [this.stateTool('Na cama de cima', !!u.alto, 'Escalar o beliche: sobe pela escadinha para a cama de cima (e desce de volta)', () => net.send({ t: 'tokenEdit', tokenId: id, alto: !u.alto }))]
+          : []),
         this.stateTool('Agachado', !!u.agachado, 'De cócoras (furtivo, atrás de um móvel): o corpo tem 1,0 m e um móvel mais baixo já dá cobertura', () => net.send({ t: 'tokenEdit', tokenId: id, agachado: !u.agachado })),
         tool('Editar', () => this.tokenWin.open({ id, name: u.name, look: u.look, color, capacity: p?.capacity ?? 10 })),
         tool('Remover', async () => (await askNote(`TIRAR ${u.name.toUpperCase()}?`, `${u.name} sai do tabuleiro. Os itens que carrega continuam registrados.`, 'Tirar do tabuleiro', true)) && net.send({ t: 'tokenRemove', tokenId: id })),

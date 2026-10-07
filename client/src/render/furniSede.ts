@@ -423,6 +423,46 @@ export const SEDE_BUILDERS: Record<string, Builder> = {
     ]);
   },
 
+  /** Beliche: duas camas de solteiro empilhadas, quatro postes, a escadinha no pé e a cabeceira no fundo. */
+  beliche(def) {
+    const [blanket, frame, sheet] = def.colors;
+    const D = def.depth;
+    const W = def.width;
+    const H = def.height;
+    const post = (u0: number, u1: number, v0: number, v1: number): LBox => [u0, u1, v0, v1, 0, H];
+    const posts: LBox[] = [
+      post(0.02, 0.1, 0.03, 0.12),
+      post(D - 0.1, D - 0.02, 0.03, 0.12),
+      post(0.02, 0.1, W - 0.12, W - 0.03),
+      post(D - 0.1, D - 0.02, W - 0.12, W - 0.03),
+    ];
+    // cada cama: estrado, colchão, travesseiro e cobertor; a de baixo perto do chão, a de cima um degrau (0,3 m) mais alta
+    // do que a conta de uma cama de beliche comum; os postes passam só um pouco da cama de cima, não vão até o teto
+    const cama = (z: number, cor: string): FNode[] => {
+      const base: LBox = [0.04, D - 0.04, 0.04, W - 0.04, z, z + 0.1];
+      const colchao: LBox = [0.1, D - 0.07, 0.07, W - 0.07, z + 0.1, z + 0.26];
+      const trav: LBox = [0.16, 0.62, 0.14, W - 0.14, z + 0.26, z + 0.36];
+      const manta: LBox = [0.8, D - 0.05, 0.05, W - 0.05, z + 0.1, z + 0.31];
+      return [
+        B(base, frame, { edge: 0.15 }),
+        B(colchao, sheet, { edge: 0.2 }),
+        B(trav, shade(sheet, 0.1), { edge: 0.3 }),
+        B(manta, cor, { edge: 0.2 }),
+      ];
+    };
+    // a grade de proteção da cama de cima e a escadinha no pé, do lado de fora
+    const grade: LBox = [0.1, D - 0.1, W - 0.1, W - 0.06, 1.4, 1.58];
+    const degraus: LBox[] = [0.3, 0.64, 0.98, 1.32].map((z): LBox => [D - 0.06, D + 0.02, 0.2, W - 0.2, z, z + 0.05]);
+    return V([
+      B([0.01, 0.08, 0.02, W - 0.02, 0, H], frame, { edge: 0.25 }),
+      ...posts.map((b) => B(b, frame)),
+      ...cama(0.28, blanket),
+      ...cama(1.28, shade(blanket, -0.12)),
+      B(grade, frame, { edge: 0.2 }),
+      ...degraus.map((b) => B(b, shade(frame, 0.12), { edge: 0.2 })),
+    ]);
+  },
+
   nightstand(def) {
     const [wood, brass] = def.colors;
     const b: LBox = [0.14, 0.86, 0.14, 0.86, 0, 0.56];

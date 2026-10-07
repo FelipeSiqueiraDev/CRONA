@@ -1,16 +1,19 @@
 import {
+  footprint,
   getFurni,
   parseHeightmap,
+  PILHA_CHAO,
   RoomMap,
   type Door,
   type FloorStyle,
   type Hint,
   type LightMode,
+  type Loot,
   type ParticleKind,
 } from "@crona/shared";
 import type { Database, RoomData } from "./db";
 import { buildRoom, plan, type FloorSeed, type WallSeed } from "./seed";
-import { partyTokens, planTop } from "./seedSede";
+import { partyTokens, planRight, planTop } from "./seedSede";
 
 /**
  * Fazenda Olhos de Águia, a primeira missão grande: o mundo aberto da fazenda (anda-se
@@ -27,7 +30,7 @@ import { partyTokens, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 11;
+export const FAZENDA_REV = 16;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -521,6 +524,8 @@ interface CenaSpec {
   plan: { x: number; y: number; r?: number };
   /** peças que começam aqui: [x, y, direção] de cada agente */
   grupo?: [number, number, number][];
+  /** itens largados no chão (a pilha "Itens no Chão", que os jogadores pegam): [x, y, nome, espaços, tipo] */
+  chao?: [number, number, string, number, Loot["kind"]][];
 }
 
 /** Ao ar livre: a planta inteira do terreno e a "porta" (onde nasce quem chega sem passagem) dentro dela. */
@@ -555,7 +560,100 @@ function calaboucoPlan(): { heightmap: string; door: Door } {
   return { heightmap: rows.join("\n"), door: { x: 9, y: 0, dir: 4 } };
 }
 
-const CENAS: CenaSpec[] = [
+/**
+ * Põe a sala no quadro do DESENHO (`plan.r`: 1 e 3 giram um quarto de volta, 2 espelha): a porta cai na parede onde o
+ * desenho a põe (antes a sala só girava na planta, e no tabuleiro a porta ficava na parede oposta). Os móveis, as
+ * passagens, o grupo e a porta andam junto. Os quadros de parede que caem numa parede da
+ * frente (que não aparece) vão para uma parede de trás, em outro ponto.
+ */
+function giraSala(spec: CenaSpec): CenaSpec {
+  const k = (((spec.plan.r ?? 0) % 4) + 4) % 4;
+  if (!k) return spec;
+  // meia-volta (r = 2): ESPELHA a sala (x vira o oposto). A porta cai na parede oposta, mas o que estava encostado no
+  // fundo (a parede de cima, que aparece) continua no fundo, e nada fica escondido atrás de um móvel alto na frente.
+  const espelho = k === 2;
+  const linhas = spec.layout.heightmap.split("\n");
+  const H = linhas.length;
+  const W = linhas[0].length;
+  const [W2, H2] = k % 2 ? [H, W] : [W, H];
+  const pt = (x: number, y: number): [number, number] => (espelho ? [W - 1 - x, y] : giraPt(W, H, k, x, y));
+  const girar = (r: number) => (espelho ? (r === 2 ? 6 : r === 6 ? 2 : r) : (r + 2 * k) % 8);
+  const grade = Array.from({ length: H2 }, () => Array<string>(W2).fill("x"));
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      const [nx, ny] = pt(x, y);
+      grade[ny][nx] = linhas[y][x];
+    }
+  const heightmap = grade.map((l) => l.join("")).join("\n");
+  const [dx, dy] = pt(spec.layout.door.x, spec.layout.door.y);
+  const door = { x: dx, y: dy, dir: girar(spec.layout.door.dir) };
+  const floor = spec.floor.map((f) => {
+    const [id, x, y, rot, ...resto] = f;
+    const d = getFurni(id);
+    const fp = d ? footprint(d, rot) : { sx: 1, sy: 1 };
+    const [ax, ay] = pt(x, y);
+    const [bx, by] = pt(x + fp.sx - 1, y + fp.sy - 1);
+    return [id, Math.min(ax, bx), Math.min(ay, by), girar(rot), ...resto] as FloorSeed;
+  });
+  // onde ficam as paredes de trás (a do norte, 'r', e a do oeste, 'l') no quadro novo
+  const chao = (x: number, y: number) => grade[y]?.[x] !== undefined && grade[y][x] !== "x";
+  let planoN = 0;
+  while (planoN < H2 && grade[planoN].filter((c) => c !== "x").length < 2) planoN++;
+  let planoO = 0;
+  while (planoO < W2 && grade.filter((l) => l[planoO] !== "x").length < 2) planoO++;
+  const xs = grade[planoN].map((c, x) => (c !== "x" ? x : -1)).filter((x) => x >= 0);
+  const ys = grade.map((l, y) => (l[planoO] !== "x" ? y : -1)).filter((y) => y >= 0);
+  const portais = floor.filter((f) => f[0] === "portal" || f[0].startsWith("stairs") || f[0] === "escada_desce");
+  const livre = (lado: "r" | "l", pos: number) =>
+    !portais.some(([, x, y]) => (lado === "r" ? y === planoN && Math.abs(x + 0.5 - pos) < 1.2 : x === planoO && Math.abs(y + 0.5 - pos) < 1.2));
+  const wall: WallSeed[] = [];
+  const perdidos: WallSeed[] = [];
+  for (const w of spec.wall ?? []) {
+    const [id, lado, , pos, z, ...resto] = w;
+    // o lado novo: o norte ('r') e o oeste ('l') giram junto; só os que sobram no norte ou no oeste aparecem
+    const nova = espelho ? (lado === "r" ? "r" : "x") : lado === "r" ? (["r", "x", "x", "l"] as const)[k] : (["l", "r", "x", "x"] as const)[k];
+    if (nova === "x") {
+      perdidos.push(w);
+      continue;
+    }
+    // a posição ao longo da parede nova (contínua, no sentido do giro)
+    const p = espelho ? W - pos : k === 1 ? H - pos : k === 3 ? W - pos : pos;
+    wall.push([id, nova, nova === "r" ? planoN : planoO, p, z, ...resto] as WallSeed);
+  }
+  // o que caiu numa parede da frente: vai para uma parede de trás, num ponto livre
+  const lugares: [("r" | "l"), number][] = [];
+  for (const f of [0.5, 0.25, 0.75, 0.15, 0.85, 0.4, 0.6]) {
+    if (xs.length) lugares.push(["r", xs[0] + (xs[xs.length - 1] - xs[0] + 1) * f]);
+    if (ys.length) lugares.push(["l", ys[0] + (ys[ys.length - 1] - ys[0] + 1) * f]);
+  }
+  const usados: [("r" | "l"), number][] = wall.map((w) => [w[1], w[3]] as [("r" | "l"), number]);
+  for (const w of perdidos) {
+    const [id, , , , z, ...resto] = w;
+    const l = lugares.find(([lado, pos]) => livre(lado, pos) && !usados.some(([a, b]) => a === lado && Math.abs(b - pos) < 1.6));
+    if (!l) continue;
+    usados.push(l);
+    wall.push([id, l[0], l[0] === "r" ? planoN : planoO, l[1], z, ...resto] as WallSeed);
+  }
+  void chao;
+  return {
+    ...spec,
+    layout: { heightmap, door },
+    floor,
+    wall,
+    links: spec.links.map(([x, y, para]) => {
+      const [nx, ny] = pt(x, y);
+      return [nx, ny, para] as [number, number, string];
+    }),
+    chao: spec.chao?.map(([x, y, ...resto]) => [...pt(x, y), ...resto] as [number, number, string, number, Loot["kind"]]),
+    grupo: spec.grupo?.map(([x, y, d]) => {
+      const [nx, ny] = pt(x, y);
+      return [nx, ny, girar(d)] as [number, number, number];
+    }),
+    plan: { x: spec.plan.x, y: spec.plan.y },
+  };
+}
+
+const CENAS_BRUTAS: CenaSpec[] = [
   // ------------------------------------------------------------ fora
   {
     key: "fazenda",
@@ -610,126 +708,122 @@ const CENAS: CenaSpec[] = [
     key: "hall",
     name: FAZENDA + "Hall do Casarão",
     description:
-      "O hall de entrada, com a escada para o andar de cima e as portas para a cozinha, a sala de jantar, o banheiro, o quarto das crianças e o escritório.",
-    layout: planTop(9, 12, 4),
+      "O hall de entrada, com a escada para o andar de cima e as portas: a cozinha, o banheiro e o quarto das crianças do lado de lá; a sala de jantar e o escritório do outro.",
+    layout: planTop(7, 11, 3),
     andar: CASA,
     style: "taco",
     darkness: 0.35,
     ambient: "#c08a50",
     particles: ["dust"],
     floor: [
-      ["stairs_up", 4, 1, 4],
-      ["portal", 2, 1, 4],
-      ["portal", 6, 1, 4],
-      ["portal", 0, 2, 2],
-      ["portal", 0, 8, 2],
-      ["portal", 8, 7, 6],
-      ["portal", 3, 12, 0],
-      ["portal", 4, 12, 0],
-      ["rug_ornate", 3, 6, 0],
-      ["table_round", 3, 7, 0],
-      ["plant", 3, 7, 0],
+      ["stairs_up", 3, 1, 4],
+      // o lado oeste (a parede que aparece): a cozinha, o banheiro e o quarto das crianças
+      ["portal", 0, 3, 2],
+      ["portal", 0, 6, 2],
+      ["portal", 0, 9, 2],
+      // o lado leste (a da frente, que não aparece): a sala de jantar e o escritório
+      ["portal", 6, 3, 6],
+      ["portal", 6, 8, 6],
+      // a porta da frente, dupla, na parede de baixo
+      ["portal", 2, 11, 0],
+      ["portal", 3, 11, 0],
+      ["rug_worn", 2, 5, 0],
       ["bench", 1, 4, 2],
-      ["sideboard", 7, 3, 6],
+      ["sideboard", 5, 5, 6],
       ["armchair", 1, 10, 2],
-      ["plant", 1, 11, 0],
-      ["plant", 8, 11, 0],
-      ...lamps([4, 5], [4, 9]),
+      ["plant", 1, 1, 0],
+      ["plant", 5, 1, 0],
+      ["plant", 5, 10, 0],
+      ...lamps([3, 5], [3, 9]),
     ],
     wall: [
-      ["painting", "r", 1, 7.6, 2.54],
-      ["clock", "l", 0, 5.0, 3.45],
-      ["sconce", "l", 0, 3.6, 2.9],
-      ["sconce", "l", 0, 6.6, 2.9],
+      ["painting", "r", 1, 5.5, 2.54],
+      ["clock", "r", 1, 1.4, 3.45],
+      ["sconce", "l", 0, 4.5, 2.9],
+      ["sconce", "l", 0, 7.5, 2.9],
     ],
     links: [
-      [4, 1, "corredor"],
-      [2, 1, "cozinha"],
-      [6, 1, "jantar"],
-      [0, 2, "banheiro"],
-      [0, 8, "criancas"],
-      [8, 7, "escritorio"],
-      [3, 12, "fazenda"],
-      [4, 12, "fazenda"],
+      [3, 1, "corredor"],
+      [0, 3, "cozinha"],
+      [0, 6, "banheiro"],
+      [0, 9, "criancas"],
+      [6, 3, "jantar"],
+      [6, 8, "escritorio"],
+      [2, 11, "fazenda"],
+      [3, 11, "fazenda"],
     ],
-    plan: { x: 9, y: 7 },
+    plan: { x: 12, y: 3 },
   },
   {
     key: "cozinha",
     name: FAZENDA + "Cozinha",
     description:
-      "A cozinha de fazenda: fogão a lenha, a pia, os armários e a mesa comprida onde a família come.",
-    layout: planTop(14, 7, 2),
+      "A cozinha de fazenda: fogão a lenha, a pia, os armários e a mesa onde a família come. A porta dá para o hall, a leste.",
+    layout: planRight(10, 6, 3),
     andar: CASA,
     style: "ladrilho",
     darkness: 0.35,
     ambient: "#c08a50",
     particles: ["dust", "smoke"],
     floor: [
-      ["portal", 2, 1, 4],
-      ["portal", 0, 4, 2],
-      ["fogao_lenha", 5, 1, 4, undefined, 1],
-      ["pia_cozinha", 8, 1, 4],
-      ["armario_cozinha", 11, 1, 4],
+      ["portal", 9, 3, 6],
+      ["armario_cozinha", 0, 0, 4],
+      ["fogao_lenha", 2, 0, 4, undefined, 1],
+      ["pia_cozinha", 4, 0, 4],
+      ["armario_cozinha", 6, 0, 4],
       ["armario_cozinha", 0, 1, 2],
-      ["barrel", 0, 6, 0],
-      ["crate_wood", 0, 7, 0],
-      ["mesa_cozinha", 5, 4, 0],
-      ["chair_wood", 4, 4, 2],
-      ["chair_wood", 4, 5, 2],
-      ["chair_wood", 8, 4, 6],
-      ["chair_wood", 8, 5, 6],
-      ["chair_wood", 6, 6, 0],
-      ["mug", 6, 4, 0],
-      ["plant", 13, 7, 0],
-      ...lamps([6, 3], [10, 5]),
+      ["crate_wood", 0, 4, 0],
+      ["barrel", 0, 5, 0],
+      ["mesa_cozinha", 4, 3, 0],
+      ["chair_wood", 3, 3, 2],
+      ["chair_wood", 3, 4, 2],
+      ["chair_wood", 7, 3, 6],
+      ["chair_wood", 7, 4, 6],
+      ["chair_wood", 5, 2, 4],
+      ["chair_wood", 5, 5, 0],
+      ["mug", 5, 3, 0],
+      ["plant", 9, 5, 0],
+      ...lamps([4, 2], [8, 2]),
     ],
     wall: [
-      ["shelf_wall", "r", 1, 10.5, 2.99],
-      ["clock", "l", 0, 6.5, 3.45],
+      ["shelf_wall", "r", 0, 8.5, 2.99],
+      ["clock", "l", 0, 4.5, 3.45],
     ],
-    links: [
-      [2, 1, "hall"],
-      [0, 4, "jantar"],
-    ],
-    plan: { x: 0, y: 0, r: 2 },
+    links: [[9, 3, "hall"]],
+    plan: { x: 0, y: 0 },
   },
   {
     key: "jantar",
     name: FAZENDA + "Sala de Jantar",
     description:
-      "A mesa grande de madeira com as cadeiras em volta, o aparador e a cristaleira.",
-    layout: plan(7, 14, 1),
+      "A mesa grande de madeira com as cadeiras em volta, o aparador e a cristaleira. A porta dá para o hall, a oeste.",
+    layout: plan(7, 8, 3),
     andar: CASA,
     style: "taco",
     darkness: 0.38,
     ambient: "#c08a50",
     floor: [
-      ["portal", 1, 1, 2],
-      ["portal", 4, 0, 4],
-      ["mesa_jantar", 3, 5, 2],
-      ["candelabra", 3, 6, 0],
-      ...[5, 6, 7, 8].map((y): FloorSeed => ["chair_wood", 2, y, 2]),
-      ...[5, 6, 7, 8].map((y): FloorSeed => ["chair_wood", 5, y, 6]),
-      ["chair_wood", 3, 4, 4],
-      ["chair_wood", 4, 9, 0],
-      ["sideboard", 7, 3, 6],
-      ["armario_cozinha", 1, 10, 2],
-      ["plant", 1, 13, 0],
-      ["plant", 7, 0, 0],
-      ...lamps([6, 4], [6, 9]),
+      ["portal", 1, 3, 2],
+      ["mesa_jantar", 4, 2, 2],
+      ["candelabra", 4, 3, 0],
+      ...[2, 3, 4, 5].map((y): FloorSeed => ["chair_wood", 3, y, 2]),
+      ...[2, 3, 4, 5].map((y): FloorSeed => ["chair_wood", 6, y, 6]),
+      ["chair_wood", 4, 1, 4],
+      ["chair_wood", 4, 6, 0],
+      ["sideboard", 6, 0, 4],
+      ["armario_cozinha", 1, 0, 4],
+      ["plant", 7, 7, 0],
+      ["plant", 1, 7, 0],
+      ...lamps([2, 5], [5, 6]),
     ],
     wall: [
-      ["painting", "l", 1, 7.0, 2.54],
-      ["sconce", "l", 1, 4.5, 2.9],
-      ["sconce", "l", 1, 9.5, 2.9],
-      ["clock", "r", 0, 2.0, 3.45],
+      ["painting", "l", 1, 5.5, 2.54],
+      ["sconce", "l", 1, 1.6, 2.9],
+      ["sconce", "l", 1, 6.4, 2.9],
+      ["clock", "r", 0, 4.5, 3.45],
     ],
-    links: [
-      [1, 1, "hall"],
-      [4, 0, "cozinha"],
-    ],
-    plan: { x: 14, y: 0, r: 3 },
+    links: [[1, 3, "hall"]],
+    plan: { x: 21, y: 0 },
   },
   {
     key: "banheiro",
@@ -754,7 +848,7 @@ const CENAS: CenaSpec[] = [
     key: "criancas",
     name: FAZENDA + "Quarto das Crianças",
     description:
-      "Três camas de solteiro lado a lado, os brinquedos num caixote e o tapete gasto.",
+      "Três beliches lado a lado, o tapete gasto e brinquedo por todo lado: ursinhos, blocos, um cavalinho de balanço e uma casinha de brinquedo.",
     layout: plan(8, 6, 3),
     andar: CASA,
     style: "taco",
@@ -762,9 +856,9 @@ const CENAS: CenaSpec[] = [
     ambient: "#c08a50",
     floor: [
       ["portal", 1, 3, 2],
-      ["cama_solteiro", 3, 0, 4],
-      ["cama_solteiro", 5, 0, 4],
-      ["cama_solteiro", 7, 0, 4],
+      ["beliche", 3, 0, 4],
+      ["beliche", 5, 0, 4],
+      ["beliche", 7, 0, 4],
       ["nightstand", 4, 0, 4],
       ["nightstand", 6, 0, 4],
       ["rug_worn", 3, 3, 0],
@@ -773,6 +867,15 @@ const CENAS: CenaSpec[] = [
       ...lamps([5, 3]),
     ],
     wall: [["painting", "r", 0, 2.2, 2.63]],
+    // os brinquedos espalhados pelo chão: itens que os jogadores podem pegar
+    chao: [
+      [1, 0, "Casinha de Brinquedo", 2, "misc"],
+      [2, 1, "Ursinho de Pelúcia", 1, "misc"],
+      [6, 2, "Boneca de Pano", 0.5, "misc"],
+      [6, 4, "Blocos de Montar", 1, "misc"],
+      [7, 4, "Cavalinho de Balanço", 2, "misc"],
+      [2, 5, "Carrinho de Brinquedo", 0.5, "misc"],
+    ],
     links: [[1, 3, "hall"]],
     plan: { x: 0, y: 11, r: 2 },
   },
@@ -807,7 +910,7 @@ const CENAS: CenaSpec[] = [
       ["sconce", "l", 1, 6.5, 2.9],
     ],
     links: [[1, 4, "hall"]],
-    plan: { x: 18, y: 7 },
+    plan: { x: 20, y: 9 },
   },
   // ------------------------------------------------------------ casarão, 2º andar
   {
@@ -839,13 +942,13 @@ const CENAS: CenaSpec[] = [
     ],
     links: [
       [2, 1, "banheiro2"],
-      [0, 2, "principal"],
+      [0, 2, "quarto1"],
       [0, 7, "quarto2"],
-      [4, 2, "quarto1"],
-      [4, 7, "quarto3"],
+      [4, 2, "quarto3"],
+      [4, 7, "principal"],
       [2, 8, "hall"],
     ],
-    plan: { x: 11, y: 5 },
+    plan: { x: 12, y: 6 },
   },
   {
     key: "principal",
@@ -875,7 +978,7 @@ const CENAS: CenaSpec[] = [
       ["mirror", "l", 1, 4.5, 2.18],
     ],
     links: [[1, 1, "corredor"]],
-    plan: { x: 0, y: 0, r: 2 },
+    plan: { x: 20, y: 8 },
   },
   {
     key: "banheiro2",
@@ -896,7 +999,7 @@ const CENAS: CenaSpec[] = [
     ],
     wall: [["mirror", "r", 1, 3.5, 2.72]],
     links: [[2, 1, "corredor"]],
-    plan: { x: 11, y: 0, r: 2 },
+    plan: { x: 12, y: 0, r: 2 },
   },
   {
     key: "quarto1",
@@ -913,13 +1016,14 @@ const CENAS: CenaSpec[] = [
       ["nightstand", 5, 0, 4],
       ["rug_worn", 3, 1, 0],
       ["guarda_roupa", 8, 2, 6],
-      ["table_small", 8, 5, 0],
-      ["chair_wood", 7, 5, 2],
+      ["desk_wood", 8, 4, 6],
+      ["desk_lamp", 8, 5, 6],
+      ["chair_wood", 7, 4, 2],
       ...lamps([4, 3]),
     ],
     wall: [["painting", "r", 0, 3.5, 2.63]],
     links: [[1, 4, "corredor"]],
-    plan: { x: 16, y: 0 },
+    plan: { x: 1, y: 1, r: 2 },
   },
   {
     key: "quarto2",
@@ -942,12 +1046,12 @@ const CENAS: CenaSpec[] = [
     ],
     wall: [["painting", "r", 0, 2.5, 2.63]],
     links: [[1, 3, "corredor"]],
-    plan: { x: 0, y: 8, r: 2 },
+    plan: { x: 1, y: 8, r: 2 },
   },
   {
     key: "quarto3",
     name: FAZENDA + "Quarto 3",
-    description: "Quarto de solteiro, a cama de colcha amarela e uma mesinha.",
+    description: "Quarto de solteiro, a cama de colcha amarela e a escrivaninha.",
     layout: plan(8, 6, 2),
     andar: CASA2,
     style: "taco",
@@ -958,13 +1062,14 @@ const CENAS: CenaSpec[] = [
       ["cama_solteiro", 6, 0, 4],
       ["nightstand", 7, 0, 4],
       ["rug_worn", 3, 3, 0],
-      ["guarda_roupa", 8, 3, 6],
-      ["table_small", 8, 5, 0],
-      ["chair_wood", 7, 5, 2],
+      ["guarda_roupa", 8, 1, 6],
+      ["desk_wood", 8, 3, 6],
+      ["desk_lamp", 8, 4, 6],
+      ["chair_wood", 7, 3, 2],
       ...lamps([5, 3]),
     ],
     links: [[1, 2, "corredor"]],
-    plan: { x: 16, y: 8 },
+    plan: { x: 20, y: 1 },
   },
   // ------------------------------------------------------------ casa de mantimentos e celeiro
   {
@@ -1305,6 +1410,9 @@ const CENAS: CenaSpec[] = [
   },
 ];
 
+/** As cenas como o desenho as põe: as salas com `plan.r` giram para a porta cair na parede do desenho. */
+const CENAS: CenaSpec[] = CENAS_BRUTAS.map(giraSala);
+
 // ------------------------------------------------------------------ montagem
 
 /** O giro da planta (como na tela MAPA): onde a casa (x, y) do cômodo cai. */
@@ -1384,21 +1492,33 @@ function ligar(built: Map<string, RoomData>) {
         )
         .pop()
     : undefined;
-  if (feno)
-    feno.lock = { open: false, slide: { dx: 0, dy: -1 }, semSenha: true };
+  if (feno) {
+    // o fardo sai "para trás" (dy -1); se a sala girou (`plan.r` 1 ou 3), o empurrão gira junto (o espelho, r 2, não muda o eixo y)
+    const k = ((CENAS_BRUTAS.find((c) => c.key === "celeiro")?.plan.r ?? 0) % 4 + 4) % 4;
+    const slide = [{ dx: 0, dy: -1 }, { dx: 1, dy: 0 }, { dx: 0, dy: -1 }, { dx: -1, dy: 0 }][k];
+    feno.lock = { open: false, slide, semSenha: true };
+  }
   else console.warn("[seed] Fazenda: o feno do alçapão não coube");
 }
 
-const montar = (db: Database, spec: CenaSpec) =>
-  buildRoom(
+const montar = (db: Database, spec: CenaSpec) => {
+  const chao = spec.chao ?? [];
+  const room = buildRoom(
     db,
     spec.name,
     spec.description,
     spec.layout,
-    spec.floor,
+    [...spec.floor, ...chao.map(([x, y]): FloorSeed => [PILHA_CHAO, x, y, 0])],
     spec.wall ?? [],
     spec.darkness,
   );
+  // cada pilha leva o item que ficou ali, visível para todos
+  for (const [x, y, name, espacos, kind] of chao) {
+    const pilha = room.items.find((i) => i.defId === PILHA_CHAO && i.x === x && i.y === y && !i.loot);
+    if (pilha) pilha.loot = [{ id: db.nextItemId++, name, espacos, kind, revealed: true }];
+  }
+  return room;
+};
 
 /** Monta a fazenda inteira (fora, arredores e os interiores) e a campanha dela. */
 export function seedFazenda(db: Database) {

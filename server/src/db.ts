@@ -64,6 +64,8 @@ export interface TokenData {
   hurt?: boolean;
   /** de cócoras (furtivo ou atrás de um móvel) */
   agachado?: boolean;
+  /** na cama de cima do beliche */
+  alto?: boolean;
   /** PV, PE e SAN (atual e total) */
   vitals?: Vitals;
 }

@@ -512,7 +512,7 @@ function desenharMovel(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorIte
   const cor = misturar(clarear(corBase, 0.18), tapa ? '#15110d' : cobre ? '#2a231c' : '#6a5a48', tapa ? 0.5 : cobre ? 0.3 : 0.2);
   const { path, pts, r, planta, mesa } = formaDoMovel(it, def);
   // o modelo que a peça sorteou (a variação b ou c tem a vista de cima dela)
-  const arte = imagemDeCima(chaveDaArte(def.id, it.id), it.state) ?? imagemDeCima(def.id, it.state);
+  const arte = imagemDeCima(chaveDaArte(def.id, it.id, undefined, it.vazio), it.state) ?? imagemDeCima(def.id, it.state);
   // a sombra no chão, para baixo e à direita, do tamanho da altura (com arte, a silhueta dela)
   if (base <= 0.01) {
     const s = Math.min(0.42, 0.06 + (alto / Z_PER_M) * 0.13);
