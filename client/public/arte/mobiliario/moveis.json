@@ -6478,5 +6478,65 @@
     ]
    }
   }
+ },
+ "van_seat": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "van_seat/giro-4.png",
+    "ax": 53.0,
+    "ay": 183.6
+   },
+   "6": {
+    "arquivo": "van_seat/giro-6.png",
+    "ax": 53.0,
+    "ay": 183.6
+   },
+   "0": {
+    "arquivo": "van_seat/giro-0.png",
+    "ax": 53.0,
+    "ay": 183.6
+   },
+   "2": {
+    "arquivo": "van_seat/giro-2.png",
+    "ax": 53.0,
+    "ay": 183.6
+   }
+  },
+  "real": [
+   0.62,
+   0.62,
+   1.2
+  ]
+ },
+ "van_dash": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "van_dash/giro-4.png",
+    "ax": 190.0,
+    "ay": 226.0
+   },
+   "6": {
+    "arquivo": "van_dash/giro-6.png",
+    "ax": 62.0,
+    "ay": 226.0
+   },
+   "0": {
+    "arquivo": "van_dash/giro-0.png",
+    "ax": 190.0,
+    "ay": 226.0
+   },
+   "2": {
+    "arquivo": "van_dash/giro-2.png",
+    "ax": 62.0,
+    "ay": 226.0
+   }
+  },
+  "real": [
+   2.25,
+   0.7,
+   0.95
+  ]
  }
 }

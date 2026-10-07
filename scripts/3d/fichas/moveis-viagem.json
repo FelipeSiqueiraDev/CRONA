@@ -1,0 +1,9 @@
+{
+  "destino": "client/public/arte/mobiliario",
+  "escala": 0.5,
+  "limpar": 56,
+  "moveis": [
+    {"def": "van_seat", "folha": "client/public/arte/mobiliario/folhas/van-banco.png", "real": [0.62, 0.62, 1.2], "como_esta": true, "altura": "todas", "giros": {"4": 0, "6": 1, "0": 2, "2": 3}},
+    {"def": "van_dash", "folha": "client/public/arte/mobiliario/folhas/van-painel.png", "W": 3, "D": 1, "real": [2.25, 0.7, 0.95], "como_esta": true, "altura": "todas", "giros": {"4": 0, "6": 1, "0": 2, "2": 3}}
+  ]
+}
