@@ -1562,9 +1562,11 @@ html:not(.modo-ficha) .clip {
 html:not(.modo-ficha) .insp-x {
   display: grid;
   place-items: center;
+  /* o padding de baixo vinha do clipe de papel e empurrava o X para cima */
+  padding: 0 !important;
   /* na linha do título, centrado com ele, e com a mesma folga da borda que o resto do painel */
   top: 1.1rem !important;
-  right: 1.2rem !important;
+  right: 1.1rem !important;
   width: 3.2rem !important;
   height: 3.2rem !important;
   border: var(--h-borda) solid #a18873 !important;
@@ -1585,8 +1587,11 @@ html:not(.modo-ficha) .insp-x .x-clip {
 html:not(.modo-ficha) .p-insp .insp-cab {
   padding-right: 4.8rem !important;
 }
-html:not(.modo-ficha) .insp-x span {
-  font: 700 1.4rem / 1 var(--r-pixel);
+/* o X é um ícone desenhado (o caractere de texto ficava 0,4 rem acima do centro) */
+html:not(.modo-ficha) .insp-x .ic {
+  width: 1.6rem;
+  height: 1.6rem;
+  display: block;
 }
 html:not(.modo-ficha) .p-plan .p-title {
   right: 2rem !important;
@@ -2197,7 +2202,7 @@ html:not(.modo-ficha) .fj:not(.rq) > .fx-tit {
   min-height: 5.6rem;
   box-sizing: border-box;
   margin: 0;
-  padding: 1rem 1.2rem 1rem 1.8rem;
+  padding: 1rem 1rem 1rem 1.8rem;
 }
 /* a janela: o X de fechar na ponta, depois da linha de ouro */
 html:not(.modo-ficha) .fx-tit .fj-x {

@@ -579,7 +579,7 @@ export class Shell {
 
     // ================= direita =================
     const backboard = h('div', { class: 'backboard', 'aria-hidden': 'true' });
-    this.closeTag = h('button', { class: 'insp-x hidden', title: 'Fechar', 'aria-label': 'Fechar', onclick: () => (sfx.click(), app.view.select(null)) }, paperclip('x-clip'), h('span', null, '✕'));
+    this.closeTag = h('button', { class: 'insp-x hidden', title: 'Fechar', 'aria-label': 'Fechar', onclick: () => (sfx.click(), app.view.select(null)) }, paperclip('x-clip'), ic('fechar'));
     this.inspBody = h('div', { class: 'insp-body' });
     this.inspCab = h('h3', { class: 'insp-cab' }, 'NESTA CENA');
     this.inspEl = h('section', { class: 'sheet p-insp' }, this.closeTag, this.inspCab, this.inspBody);
