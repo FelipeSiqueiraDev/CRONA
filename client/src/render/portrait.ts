@@ -79,6 +79,30 @@ function loadArt(url: string): Promise<Art | null> {
               n++;
             }
         const cx = n ? sum / n : W / 2;
+        // o rosto: a pele entre o alto da cabeça e o queixo. O recorte fecha nele, com os olhos um pouco
+        // acima do meio, e não no topo do cabelo (o cabelo volumoso puxava o retrato para o canto)
+        let px = 0;
+        let py = 0;
+        let pn = 0;
+        for (let y = Math.round(y0 + fh * 0.08); y < y0 + fh * 0.42; y += 2)
+          for (let x = 0; x < W; x += 2) {
+            const i = (y * W + x) * 4;
+            const r = d[i];
+            const g = d[i + 1];
+            const b = d[i + 2];
+            if (d[i + 3] > 200 && r > 110 && r > g && g > b && r - b > 35 && r - g < 90) {
+              px += x;
+              py += y;
+              pn++;
+            }
+          }
+        if (pn > 200) {
+          const ch = Math.min(fh * 0.5, W);
+          const fx = px / pn;
+          const fy = py / pn;
+          res({ img, crop: { x: fx - ch / 2, y: fy - ch * 0.46, w: ch, h: ch } });
+          return;
+        }
         const ch = fh * 0.6;
         res({ img, crop: { x: cx - ch / 2, y: y0 - fh * 0.03, w: ch, h: ch } });
       };

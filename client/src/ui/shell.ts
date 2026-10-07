@@ -1159,6 +1159,8 @@ export class Shell {
 
   setFichasMapa(lista: FichaSalva[]) {
     this.fichasMapa = lista;
+    // as cartas dos agentes vestem o elemento de cada um (o tema da ficha)
+    for (const [id, c] of this.cards) c.el.dataset.tema = this.temaDe(this.campaign?.party.find((x) => x.id === id));
     // a mochila (ITENS) e as condições marcadas (PLAYERS) vêm das fichas
     this.renderRpg(true);
   }
@@ -2651,6 +2653,11 @@ export class Shell {
     }
   }
 
+  /** O elemento do agente (o tema da ficha dele): Sangue, Morte, Conhecimento, Energia ou a Ordem. */
+  private temaDe(p: PartyMember | undefined): string {
+    return this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === p?.look?.charId)?.tema ?? 'ordem';
+  }
+
   private makeCard(p: PartyMember, i: number): Card {
     const id = p.id ?? 0;
     const img = h('span', { class: 'pc-img' }, this.livePortrait(p.look, this.cardPortraitSize(), p));
@@ -2664,6 +2671,7 @@ export class Shell {
       {
         class: 'pcard',
         style: `--c:${p.color};--r:${[-1.2, 0.8, -0.5, 1.1, -0.9, 0.6][i % 6]}deg`,
+        'data-tema': this.temaDe(p),
         'data-token': String(id),
         onclick: () => this.pickCard(id),
       },

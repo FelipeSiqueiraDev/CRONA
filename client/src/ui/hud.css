@@ -453,7 +453,7 @@ html:not(.modo-ficha) :is(.fx-bt, .cb-bt, .acao, .tool) .arte-ic img {
   filter: drop-shadow(0 0.1rem 0.15rem rgba(0, 0, 0, 0.8)) !important;
 }
 /* o de ouro */
-html:not(.modo-ficha) :is(.fx-bt.forte, .cb-bt.forte, .tb2-bt.forte, .rq-pedir) {
+html:not(.modo-ficha) :is(.fx-bt.forte, .cb-bt.forte, .tb2-bt.forte, .rq-pedir, .rpg-body .it-bt.forte) {
   border-color: #3a1e08 !important;
   background:
     linear-gradient(105deg, transparent 42%, rgba(255, 252, 235, 0.55) 50%, transparent 58%) no-repeat,
@@ -2332,4 +2332,190 @@ html:not(.modo-ficha) .tb2-local {
   width: 20rem;
   align-items: center;
   text-align: center;
+}
+
+/* uma moldura só para as casas de item (a do Códex): a vazia é a mesma, apagada, e não a outra arte */
+html:not(.modo-ficha) .qslot.empty,
+html:not(.modo-ficha) .fx-sl.vazio,
+html:not(.modo-ficha) .fx-sl:disabled {
+  background: var(--ui-fichas-casa-item-normal, var(--r-noite-2)) center / 100% 100% no-repeat !important;
+  opacity: 0.42;
+  filter: saturate(0.6);
+}
+html:not(.modo-ficha) .rpg-body .it-slot .it-arte {
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 14%;
+  background: var(--ui-fichas-casa-item-normal, var(--r-noite-2)) center / 100% 100% no-repeat !important;
+  box-shadow: none !important;
+}
+html:not(.modo-ficha) .rpg-body .it-slot:hover .it-arte {
+  background-image: var(--ui-fichas-casa-item-foco, var(--ui-fichas-casa-item-normal)) !important;
+}
+html:not(.modo-ficha) .rpg-body .it-slot.on .it-arte {
+  background-image: var(--ui-fichas-casa-item-escolhida, var(--ui-fichas-casa-item-normal)) !important;
+  filter: drop-shadow(0 0 0.7rem rgba(255, 196, 90, 0.45));
+}
+html:not(.modo-ficha) .rpg-body .it-slot.vazio .it-arte {
+  opacity: 0.55;
+  color: #c9b48a !important;
+}
+html:not(.modo-ficha) .rpg-body .it-slot.vazio .it-nome {
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) .rpg-body .it-slot .it-nome {
+  font: 600 1.05rem / 1.15 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+}
+
+/* ================================================================ o elemento de cada agente */
+/* a cor e o sigilo do elemento (o tema da ficha): Sangue, Morte, Conhecimento e Energia */
+html:not(.modo-ficha) [data-tema] {
+  --el: #c9a46a;
+  --el-hi: #ffd27a;
+  --el-ic: none;
+}
+html:not(.modo-ficha) [data-tema='sangue'] {
+  --el: #b3261e;
+  --el-hi: #ff5a4a;
+  --el-ic: url('/arte/icones/sigilo-sangue.png');
+}
+html:not(.modo-ficha) [data-tema='morte'] {
+  --el: #6f6a78;
+  --el-hi: #c8c2d6;
+  --el-ic: url('/arte/icones/sigilo-morte.png');
+}
+html:not(.modo-ficha) [data-tema='conhecimento'] {
+  --el: #b8862a;
+  --el-hi: #ffd24a;
+  --el-ic: url('/arte/icones/sigilo-conhecimento.png');
+}
+html:not(.modo-ficha) [data-tema='energia'] {
+  --el: #7a3fd0;
+  --el-hi: #c38bff;
+  --el-ic: url('/arte/icones/sigilo-energia.png');
+}
+
+/* as cartas do grupo (AGENTES): a moldura na cor do elemento, o sigilo no canto, o brilho dele na escolhida */
+html:not(.modo-ficha) .pcard .pc-photo {
+  border-color: color-mix(in srgb, var(--el) 70%, #a18873) !important;
+}
+html:not(.modo-ficha) .pcard .pc-photo::after {
+  content: '';
+  position: absolute;
+  right: -0.5rem;
+  top: -0.5rem;
+  z-index: 3;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background:
+    var(--el-ic) center / 78% no-repeat,
+    radial-gradient(circle, rgba(5, 11, 20, 0.96) 58%, color-mix(in srgb, var(--el) 80%, transparent) 60% 70%, transparent 72%);
+  filter: drop-shadow(0 0.15rem 0.3rem rgba(0, 0, 0, 0.7));
+  opacity: 0.85;
+  transition:
+    opacity 0.2s,
+    transform 0.25s var(--h-ease);
+}
+html:not(.modo-ficha) .pcard[data-tema='ordem'] .pc-photo::after {
+  display: none;
+}
+html:not(.modo-ficha) .pcard:hover .pc-photo,
+html:not(.modo-ficha) .pcard.on .pc-photo {
+  border-color: var(--el-hi) !important;
+}
+html:not(.modo-ficha) .pcard.on .pc-photo {
+  box-shadow:
+    inset 0 0 0 0.12rem rgba(5, 11, 20, 0.9),
+    0 0 1.5rem color-mix(in srgb, var(--el-hi) 55%, transparent) !important;
+}
+html:not(.modo-ficha) .pcard.on .pc-photo::after {
+  opacity: 1;
+  transform: scale(1.12) rotate(-8deg);
+}
+html:not(.modo-ficha) .pcard.on .pc-name {
+  color: var(--el-hi) !important;
+}
+
+/* o seletor de agente da aba ITENS: o retrato inteiro na carta, a cor do elemento (sem o bloco vermelho) */
+html:not(.modo-ficha) .rpg-body .it-ag {
+  position: relative;
+  height: 5.2rem !important;
+  padding: 0.2rem !important;
+  border: 0.16rem solid color-mix(in srgb, var(--el) 55%, #3a3328) !important;
+  border-radius: 0.6rem !important;
+  background: var(--h-campo) !important;
+  box-shadow: inset 0 0 0 0.1rem rgba(5, 11, 20, 0.9) !important;
+  opacity: 0.72;
+  transition:
+    opacity 0.2s,
+    border-color 0.2s,
+    box-shadow 0.25s;
+}
+html:not(.modo-ficha) .rpg-body .it-ag canvas {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0.4rem;
+}
+html:not(.modo-ficha) .rpg-body .it-ag::after {
+  content: '';
+  position: absolute;
+  right: -0.4rem;
+  bottom: -0.4rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  background:
+    var(--el-ic) center / 78% no-repeat,
+    radial-gradient(circle, rgba(5, 11, 20, 0.96) 58%, color-mix(in srgb, var(--el) 80%, transparent) 60% 70%, transparent 72%);
+}
+html:not(.modo-ficha) .rpg-body .it-ag[data-tema='ordem']::after {
+  display: none;
+}
+html:not(.modo-ficha) .rpg-body .it-ag:hover {
+  opacity: 1;
+  border-color: var(--el-hi) !important;
+}
+html:not(.modo-ficha) .rpg-body .it-ag.on {
+  opacity: 1;
+  border-color: var(--el-hi) !important;
+  background: var(--h-campo) !important;
+  box-shadow:
+    inset 0 0 0 0.1rem rgba(5, 11, 20, 0.9),
+    0 0 1.2rem color-mix(in srgb, var(--el-hi) 50%, transparent) !important;
+}
+
+/* os contadores do topo da mochila: o ícone pintado maior */
+html:not(.modo-ficha) .it-tipo-ic :is(.arte-ic, .arte-ic img) {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+/* ITEM SELECIONADO: a ação principal na largura toda e as outras em duas colunas, com o nome inteiro */
+html:not(.modo-ficha) .it-acoes {
+  grid-template-columns: 1fr 1fr !important;
+  gap: 0.5rem !important;
+}
+html:not(.modo-ficha) .it-acoes .it-bt.forte {
+  grid-column: 1 / -1;
+}
+html:not(.modo-ficha) .rpg-body .it-bt {
+  justify-content: flex-start !important;
+  height: 3.4rem !important;
+  padding: 0 0.9rem !important;
+  font: 600 1.1rem / 1 var(--r-pixel) !important;
+  white-space: nowrap;
+}
+html:not(.modo-ficha) .rpg-body .it-bt.forte {
+  justify-content: center !important;
+}
+html:not(.modo-ficha) .rpg-body .it-bt span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html:not(.modo-ficha) .rpg-body .it-bt .ic {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
 }

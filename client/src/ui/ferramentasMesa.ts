@@ -2,7 +2,7 @@ import { contarNevoa, NEVOA_RAIO_MAX, NEVOA_RAIO_PADRAO, type CorGiz, type Forma
 import type { FerramentaMesa } from '../room/RoomView';
 import type { App } from './app';
 import { h } from './dom';
-import { arte, ic } from './icons';
+import { arteOu, ic } from './icons';
 import { abrirMapaImprovisado } from './mapaImprovisado';
 import { sfx } from './sfx';
 
@@ -48,7 +48,10 @@ export class FerramentasMesa {
   constructor(app: App) {
     this.app = app;
     // o ícone pintado (arte/icones/mesa-<nome>.png); sem ele, o de linha
-    const pintado = (nome: string, icone: string) => arte(`/arte/icones/mesa-${nome}.png`, icone);
+    // a arte própria da ferramenta (mesa-<nome>.png, quando chegar) e, até lá, a pintada do kit que serve
+    const RESERVA: Record<string, string> = { desenhar: 'botao-editar', apontar: 'tabuleiro-alcance', mapa: 'topo-mapa' };
+    const pintado = (nome: string, icone: string) =>
+      arteOu([`/arte/icones/mesa-${nome}.png`, ...(RESERVA[nome] ? [`/arte/icones/${RESERVA[nome]}.png`] : [])], ic(icone));
     const botao = (tipo: Tipo, icone: string, nome: string, tecla: string, dica: string) => {
       const b = h('button', { class: 'bv', type: 'button', title: `${dica} (${tecla})`, 'aria-label': nome, 'aria-pressed': 'false', onclick: () => this.alternar(tipo) }, pintado(nome.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(), icone), h('span', null, nome.toUpperCase()));
       this.botoes.set(tipo, b);

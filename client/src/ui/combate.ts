@@ -153,6 +153,7 @@ const PINTADO: Partial<Record<NomeIcone, string>> = {
   reticencias: 'combate-outras',
   pentagrama: 'estado-ritual',
   gota: 'cond-sangrando',
+  lapis: 'botao-editar',
 };
 const icPintado = (icone: NomeIcone, pintado = PINTADO[icone]) => (pintado ? arteOu([`/arte/icones/${pintado}.png`], ic(icone)) : ic(icone));
 
@@ -288,7 +289,7 @@ export class CombateScreen {
     );
     this.regCorpo = h('div', { class: 'cb-reg-corpo' });
     this.regDesfazer = botao('Desfazer último', 'girarE', () => this.acao({ tipo: 'desfazer' }), 'cb-desfazer', 'Volta o combate um passo (com o dano que ele causou)');
-    const anotar = h('button', { class: 'cb-menu', type: 'button', title: 'Anotar no registro', 'aria-label': 'Anotar no registro', onclick: () => (sfx.click(), void this.anotar()) }, ic('lapis'));
+    const anotar = h('button', { class: 'cb-menu', type: 'button', title: 'Anotar no registro', 'aria-label': 'Anotar no registro', onclick: () => (sfx.click(), void this.anotar()) }, icPintado('lapis'));
     const pReg = papel(h('section', { class: 'cb-p cb-reg' }, titulo('REGISTRO DO COMBATE', anotar), this.regFiltro, this.regCorpo, this.regDesfazer), 305);
 
     this.fundo = h('div', { class: 'cb-fundo', 'aria-hidden': 'true' });
@@ -1763,14 +1764,14 @@ export class CombateScreen {
       ? h('div', { class: 'cb-alvo-ritual' }, ic('pentagrama'), h('span', null, `Sustentando ${p.sustenta}`), podeMexer ? botao('Encerrar', null, () => this.acao({ tipo: 'sustentar', id: ch.id, ritual: null }), 'cb-mini') : null)
       : null;
     const noCombate = !!p && !p.fora;
-    const icone = (nome: NomeIcone, dica: string, fn: () => void) => h('button', { class: 'cb-menu', type: 'button', title: dica, 'aria-label': dica, onclick: () => (sfx.click(), fn()) }, ic(nome));
+    const icone = (nome: NomeIcone, dica: string, fn: () => void) => h('button', { class: 'cb-menu', type: 'button', title: dica, 'aria-label': dica, onclick: () => (sfx.click(), fn()) }, icPintado(nome));
     this.alvoExtra.replaceChildren(
       ...[
         lado !== 'agente' || !f ? icone('lapis', am ? 'Ficha da ameaça' : 'Criar a ficha da ameaça (Defesa, resistências, RD, ataques)', () => this.editarFichaAmeaca(ch.id, ch.name)) : null,
         c?.fase === 'andamento' ? (noCombate ? icone('sair', 'Tirar do combate', () => this.dialogoSair(ch.id)) : icone('entrar', 'Pôr no combate', () => this.dialogoEntrar(ch.id))) : null,
       ].filter((x): x is HTMLButtonElement => !!x),
     );
-    const semFicha = lado !== 'agente' && !am ? h('p', { class: 'cb-alvo-nota aviso' }, ic('lapis'), h('span', null, 'Sem ficha: no lápis do cabeçalho, escolha uma ameaça do livro ou preencha à mão.')) : null;
+    const semFicha = lado !== 'agente' && !am ? h('p', { class: 'cb-alvo-nota aviso' }, icPintado('lapis'), h('span', null, 'Sem ficha: no lápis do cabeçalho, escolha uma ameaça do livro ou preencha à mão.')) : null;
     // dano não letal: fica à parte dos PV; desmaia quando passa deles, sem morrendo (LR p. 88)
     const naoLetal = p?.naoLetal
       ? h(
