@@ -300,7 +300,7 @@ Ainda falta (pedido do Felipe):
 **Conferido em 07/10 (o que está no jogo e o que não está)**
 - **No jogo, completo:** a interface (497 arquivos idênticos ao inventário do Códex, partes 1 a 6, com os retratos e as piscadas), os ícones dos itens (244), as variações b e c (20 vistas de cima), as portas, os móveis e os itens de parede na medida, o escritório do Veríssimo, a cortina do leito, a mesa em U.
 - **A vista de cima chegou, falta a peça isométrica** (por isso não entram): Loja da Agatha (18 peças), as 3 bancadas do laboratório, a mesa do Arsenal, a mesa de vidro, a impressora 3D, a poltrona preta, a cadeira gamer, o rack moderno, a lixeira.
-- **Os 7 pisos da fazenda** (grama, estrada, lavoura, cascalho, terra, píer, calabouço) chegaram e **ainda não estão no jogo** (o terreno da fazenda é desenhado por código; falta registrar as texturas e dois estilos de piso novos, `pier` e `calabouco`). É trabalho do Claude.
+- **Os 7 pisos da fazenda** (grama, estrada, lavoura, cascalho, terra, píer, calabouço) **entraram no jogo em 07/10:** as texturas em `client/public/arte/texturas/` (registradas no `texturas.json`, 4 casas cada), os estilos novos `pier` (o terreno `m`) e `calabouco` (as 3 cenas do calabouço; a troca é uma migração leve, `pisosDoCalabouco`, que não refaz a fazenda), e o mapa tático agora pinta cada casa com o chão do terreno dela e a água.
 
 **Os lotes (na ordem)**
 
@@ -316,7 +316,7 @@ Ainda falta (pedido do Felipe):
 
 **Não é com este Códex:** os personagens e as animações (`F:\Dhellow\CRONA\arte\PERSONAGENS-ANIMACAO`, outro Códex; as armadas da Catarina já em andamento) e a tela de entrada temática (em `C:\Users\felip\Documents\Codex\2026-10-06\ami\outputs`, faltam 5 paisagens).
 
-**No código (Claude), enquanto isso:** importar os 7 pisos da fazenda; o mapa tático usar a vista de cima da variação sorteada (`chaveDaArte`); montar o importador e o tocador do formato novo dos personagens (1024×768).
+**No código (Claude), enquanto isso:** o mapa tático usar a vista de cima da variação sorteada (`chaveDaArte`); montar o importador e o tocador do formato novo dos personagens (1024×768).
 
 **O que fazer quando cada zip chegar**
 

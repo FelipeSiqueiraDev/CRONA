@@ -95,6 +95,8 @@ const COR_PISO_PLANTA: Partial<Record<FloorStyle, string>> = {
   musgo: '#253a2c',
   metal: '#2c3540',
   selo: '#3a3024',
+  calabouco: '#25282d',
+  pier: '#43372a',
 };
 const COLORS = ['#e3a94c', '#d83a2e', '#3f6fd8', '#f2efe6', '#6fdc8c', '#c78bff', '#3fe0c0', '#ff6fb0'];
 const INSP_TABS: InspTab[] = ['desc', 'inter', 'items'];
