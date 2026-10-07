@@ -139,6 +139,16 @@ Tudo em [`FERRAMENTAS-DA-MESA.md`](FERRAMENTAS-DA-MESA.md). No canto de cima do 
 - O Docker com teto de 3 GB e devolvendo a memória (`%USERPROFILE%\.wslconfig`): vale depois de reiniciar o PC ou o Docker.
 - Testado: pelo link e pela rede entra como jogador; neste PC, como mestre; de fora, o mestre entra pela conta "Felipe".
 
+## Feito em 06/10 (noite): o visual do HUD no site inteiro e as peças inteiras
+
+- **O visual do celular nas telas do mestre** (`client/src/ui/hud.css`, carregado por último em `main.ts`; por baixo ficam `retro-auto.css`, gerado por `scripts/dev/retro-gerar.mjs`, e `retro.css`). As molduras pintadas do kit (metal, couro, placas) saíram; ficaram os ícones pintados, as casas do inventário e os retratos. Janela azul-noite com borda bege, título com ícone e a linha de ouro, botão de borda e o de ouro com o brilho, barras com riscos e reflexo, linhas com o cursor ▶, abas com o ícone grande. Animações: os painéis sobem ao trocar de tela, a vez no combate pulsa, o passo atual tem o anel, o carimbo bate. Nada mais é girado (as fotos "polaroide" acabaram).
+- **PLANTA = minimapa** (`drawPlan`, `shell.ts`): grade, cômodos azul-escuro, paredes beges, o de agora aceso de ouro com a varredura ao entrar, portas de ouro, nomes em pixel, peças como pontos de luz.
+- **Combate com os ícones pintados**: abas de ação, Defesa/Deslocamento, números do alvo, Atrasar/Preparar, clima, pendências, opções e situações.
+- **Peças inteiras do Códex**: o Gabinete do Veríssimo remontado com as 11 peças; a mesa em U na Sala de Tecnologia; a cortina em cada leito da Enfermaria (fechada não se entra; aberta, sim). `FurniDef.vazio` (casas livres dentro da pegada) e `aberto` (o lado sem parede): o grid, o canPlace e o tilesFor respeitam; o tabuleiro desenha a peça vazada em duas camadas (inteira atrás do que está dentro, as faces de perto por cima). SEDE_REV 46.
+- **Auditoria dos móveis novos** (ângulo de cada vista, o certo é 45°/30°): vitrine, mesa e estante do Veríssimo vão "como estão" (o redesenho na caixa entortava).
+- **WebP numa pasta à parte**: `client/public/arte-leve/` (o mesmo caminho, `.webp`), fora do git.
+- **Falta**: as vistas isométricas da loja da Agatha, das bancadas do laboratório, da mesa do arsenal, da mesa de vidro, da impressora 3D e da poltrona preta (só chegaram as de cima: os zips `agatha-cima`, `bancadas-cima`, `pecas-inteiras-cima`, `tecnologia-cima` continuam na pasta da arte); a cortina ainda não fica transparente com alguém dentro; os pisos de cima da fazenda (`fazenda-pisos-cima.zip`) ainda não têm onde entrar (a vista tática da fazenda usa cor por casa).
+
 ## Pela metade
 
 - **Ferramentas do mestre para arrumar as salas (05/10):** o botão **Trocar** no painel do móvel (aba Descrição: o catálogo abre na categoria dele e troca no mesmo lugar e giro; `swapItem`); o catálogo mostra a **arte** de cada móvel (`arteDaMiniatura`); **Maior/Menor** nos quadros e tapetes (`resizeItem`, `escala` no item, de 0,5 a 3: o quadro cresce em volta do meio, o tapete em volta do meio da pegada, no tabuleiro e no mapa tático); e o **tapete** (todo móvel `flat`) vai para baixo dos móveis (`canPlace`).
