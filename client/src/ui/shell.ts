@@ -45,7 +45,7 @@ import { clear, h, icon, toast, Win } from './dom';
 import { HintEditor, HintViewer } from './infostand';
 import { characterPicker, lookEditor } from './lookEditor';
 import { logIcon, lootIcon } from './lootIcons';
-import { brushSweep, brushWash, bump, countUp, drawStroke, eraseDraw, enter, floatText, flyArc, fxLayer, leave, pencilDraw, pencilShade, reduced, shake, stamp, tilt, typeInto, wait, wipeIn } from './motion';
+import { brushSweep, brushWash, bump, countUp, drawStroke, eraseDraw, enter, floatText, flyArc, fxLayer, leave, pencilDraw, reduced, shake, stamp, tilt, typeInto, wait, wipeIn } from './motion';
 import { askNote, promptNote } from './note';
 import { abrirViagem, ViagemPainel } from './viagem';
 import { brushize, paperize, textures, unpaint } from './paperArt';
@@ -282,6 +282,11 @@ interface Slot {
 /** Bloco de PV, PE e SAN que se acerta no lugar (sem ser refeito). */
 type VitaisVivos = HTMLElement & { atualizar?: (p: PartyMember) => void };
 
+/** Um lugar da planta (o retangulo que o cerca; `aberto` = ao ar livre, onde o terreno inteiro e o lugar). */
+type PlantaRect = { id: number; x: number; y: number; w: number; h: number; name: string; aberto?: boolean };
+/** De quem e cada casa da planta, e onde ela esta na tela: marcar e clicar valem pela casa, nao pelo retangulo. */
+type PlantaGeo = { dono: Map<string, number>; O: { x: number; y: number }; S: number };
+
 export class Shell {
   readonly el: HTMLElement;
   readonly board: HTMLElement;
@@ -338,13 +343,14 @@ export class Shell {
   private planShown = '';
   /** a arte do alfinete (interface/alfinete.png), quando existe */
   private alfineteImg: HTMLImageElement | null = null;
-  private planRects: { id: number; x: number; y: number; w: number; h: number; name: string }[] = [];
+  private planRects: PlantaRect[] = [];
   private planDrag: { id: number; sx: number; sy: number; ox: number; oy: number; moved: boolean; mover: boolean } | null = null;
   private planScale = 6;
   private planOrigin = { x: 0, y: 0 };
   private planHatch = { room: -1, t: 1 };
   private planFade = { room: -1, t: 1 };
   private planHover = -1;
+  private planGeo: PlantaGeo | null = null;
   /** andar que a planta mostra (null = o da cena atual) */
   private planFloor: string | null = null;
   private planTitle!: HTMLElement;
@@ -1033,6 +1039,18 @@ export class Shell {
     });
   }
 
+  /**
+   * Qual lugar esta debaixo do ponto (px da planta). Vale a casa: um comodo torto (em L, com recorte) nao pega o
+   * clique do vizinho que esta dentro do retangulo que o cerca. Ao ar livre, o terreno inteiro e o lugar.
+   */
+  private hitPlanta(rects: PlantaRect[], geo: PlantaGeo | null | undefined, p: { x: number; y: number }): PlantaRect | undefined {
+    if (geo) {
+      const id = geo.dono.get(`${Math.floor((p.x - geo.O.x) / geo.S)},${Math.floor((p.y - geo.O.y) / geo.S)}`);
+      if (id !== undefined) return rects.find((r) => r.id === id);
+    }
+    return [...rects].reverse().find((r) => r.aberto && p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h);
+  }
+
   // ================= 1º andar =================
   private bindPlan() {
     const c = this.planCanvas;
@@ -1040,7 +1058,7 @@ export class Shell {
       const r = c.getBoundingClientRect();
       return { x: ((e.clientX - r.left) * c.clientWidth) / r.width, y: ((e.clientY - r.top) * c.clientHeight) / r.height };
     };
-    const hitRect = (p: { x: number; y: number }) => [...this.planRects].reverse().find((r) => p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h);
+    const hitRect = (p: { x: number; y: number }) => this.hitPlanta(this.planRects, this.planGeo, p);
     c.addEventListener('pointerdown', (e) => {
       const p = at(e);
       const r = hitRect(p);
@@ -1087,46 +1105,12 @@ export class Shell {
     });
   }
 
-  /** Lápis de cor pintando o cômodo atual na planta (hachuras + preenchimento). */
+  /** O cômodo de agora na planta: acende de uma vez e fica (sem lápis nem luz que passa). */
   private animatePlan(room: number, delay: number) {
-    this.planHatch = { room, t: 0 };
-    const run = async () => {
-      if (delay) await wait(delay);
-      if (this.planHatch.room !== room) return;
-      const r = this.planRects.find((x) => x.id === room);
-      const lines = r ? this.hatchLines(r) : [];
-      const cr = this.planCanvas.getBoundingClientRect();
-      const k = cr.width / (this.planCanvas.clientWidth || 1);
-      const pts: { x: number; y: number }[] = [];
-      lines.forEach(([x0, y0, x1, y1], i) => {
-        const a = { x: cr.left + x0 * k, y: cr.top + y0 * k };
-        const b = { x: cr.left + x1 * k, y: cr.top + y1 * k };
-        if (i % 2) pts.push(b, a);
-        else pts.push(a, b);
-      });
-      await pencilShade(pts, 950, (t) => {
-        if (this.planHatch.room !== room) return;
-        this.planHatch.t = t;
-        this.planFade.t = Math.min(1, t * 1.6);
-        this.drawPlan(true);
-      });
-      this.planHatch.t = 1;
-      this.planFade = { room: -1, t: 1 };
-      this.drawPlan(true);
-    };
-    void run();
-  }
-
-  /** Hachuras a 45° dentro do retângulo do cômodo (x0,y0 → x1,y1). */
-  private hatchLines(r: { x: number; y: number; w: number; h: number }) {
-    const out: [number, number, number, number][] = [];
-    const step = 3.2;
-    for (let c = r.x + r.y + step; c < r.x + r.w + r.y + r.h; c += step) {
-      const x0 = Math.max(r.x, c - (r.y + r.h));
-      const x1 = Math.min(r.x + r.w, c - r.y);
-      out.push([x0, c - x0, x1, c - x1]);
-    }
-    return out;
+    void delay;
+    this.planHatch = { room, t: 1 };
+    this.planFade = { room: -1, t: 1 };
+    this.drawPlan(true);
   }
 
   // ================= direita: controle do RPG =================
@@ -1273,7 +1257,7 @@ export class Shell {
    * marcadas na parede, o atual em vermelho com o alfinete e o nome numa plaquinha. Ao ar
    * livre, o terreno (grama, estrada, água) e os prédios com o nome.
    */
-  private drawPlan(keepScale = false, grande?: { c: HTMLCanvasElement; rects: { id: number; x: number; y: number; w: number; h: number; name: string }[]; hover: number }) {
+  private drawPlan(keepScale = false, grande?: { c: HTMLCanvasElement; rects: PlantaRect[]; hover: number; geo?: PlantaGeo | null }) {
     // a planta grande (aberta por cima da tela) se desenha junto com a pequena
     if (!grande && this.plantaGrande) this.desenharPlantaGrande();
     const c = grande?.c ?? this.planCanvas;
@@ -1377,6 +1361,10 @@ export class Shell {
         }
       formas.set(s.id, forma);
     }
+    // o clique e o passar do mouse valem pela casa (e nao pelo retangulo que cerca o comodo)
+    const geo: PlantaGeo = { dono, O: { ...O }, S };
+    if (grande) grande.geo = geo;
+    else this.planGeo = geo;
     // a sombra do prédio e o chão dos cômodos
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.65)';
@@ -1402,7 +1390,7 @@ export class Shell {
       if (s.aberto) {
         this.terrenoNaPlanta(ctx, s, raw, rot, ox, oy, S, granito);
         rotulos.push({ x: ox, y: oy, w: rect.w, h: rect.h, nome: rect.name, atual });
-        rects.push(rect);
+        rects.push({ ...rect, aberto: true });
         continue;
       }
       const forma = formas.get(s.id)!;
@@ -1415,7 +1403,7 @@ export class Shell {
       }
       // o cômodo de agora: o ouro acende (entrando, sobe aos poucos, com a varredura de luz)
       if (atual) {
-        const anima = this.planHatch.room === s.id ? this.planHatch.t : 1;
+        const anima = 1;
         ctx.save();
         ctx.clip(forma);
         const g = ctx.createLinearGradient(ox, oy, ox, oy + rect.h);
@@ -1423,14 +1411,6 @@ export class Shell {
         g.addColorStop(1, `rgba(201,127,44,${(0.2 * anima).toFixed(3)})`);
         ctx.fillStyle = g;
         ctx.fill(forma);
-        if (anima < 1) {
-          const yv = oy + rect.h * anima;
-          const v = ctx.createLinearGradient(0, yv - 10, 0, yv + 2);
-          v.addColorStop(0, 'rgba(255,236,190,0)');
-          v.addColorStop(1, 'rgba(255,236,190,0.65)');
-          ctx.fillStyle = v;
-          ctx.fillRect(ox, yv - 10, rect.w, 12);
-        }
         ctx.restore();
       } else if (s.id === this.planFade.room && this.planFade.t < 1) {
         ctx.fillStyle = `rgba(233,169,68,${0.3 * (1 - this.planFade.t)})`;
@@ -1545,9 +1525,7 @@ export class Shell {
     }
     ctx.restore();
     // o "você está aqui": o contorno pulsando e a setinha (CSS) em cima do cômodo de agora
-    const aqui = grande ? undefined : rects.find((q) => q.id === cur);
-    if (!grande) this.planAqui.classList.toggle('hidden', !aqui);
-    if (aqui) Object.assign(this.planAqui.style, { left: `${c.offsetLeft + aqui.x}px`, top: `${c.offsetTop + aqui.y}px`, width: `${aqui.w}px`, height: `${aqui.h}px` });
+    if (!grande) this.planAqui.classList.add('hidden');
     // onde estão as peças: pontos de luz na cor de cada um
     for (const { s, p, rot } of parsed)
       for (const u of s.users) {
@@ -1596,7 +1574,7 @@ export class Shell {
   }
 
   /** A planta grande, por cima da tela (botão da planta ou a tecla M): o andar inteiro legível. */
-  private plantaGrande: { el: HTMLElement; c: HTMLCanvasElement; abas: HTMLElement; rects: { id: number; x: number; y: number; w: number; h: number; name: string }[]; hover: number } | null = null;
+  private plantaGrande: { el: HTMLElement; c: HTMLCanvasElement; abas: HTMLElement; rects: PlantaRect[]; hover: number; geo: PlantaGeo | null } | null = null;
 
   private abrirPlantaGrande() {
     if (this.plantaGrande) return this.fecharPlantaGrande();
@@ -1610,7 +1588,7 @@ export class Shell {
       h('div', { class: 'plg-janela' }, h('header', { class: 'plg-cab' }, h('h3', { class: 'p-title' }, 'PLANTA'), abas, fechar), c, h('p', { class: 'plg-dica' }, 'Clique num cômodo para ir até ele. Esc fecha.')),
     );
     document.body.append(el);
-    const g = { el, c, abas, rects: [] as { id: number; x: number; y: number; w: number; h: number; name: string }[], hover: -1 };
+    const g = { el, c, abas, rects: [] as PlantaRect[], hover: -1, geo: null as PlantaGeo | null };
     this.plantaGrande = g;
     const at = (e: PointerEvent) => {
       const r = c.getBoundingClientRect();
@@ -1618,7 +1596,7 @@ export class Shell {
     };
     const hit = (e: PointerEvent) => {
       const p = at(e);
-      return [...g.rects].reverse().find((r) => p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h);
+      return this.hitPlanta(g.rects, g.geo, p);
     };
     c.addEventListener('pointermove', (e) => {
       const r = hit(e);

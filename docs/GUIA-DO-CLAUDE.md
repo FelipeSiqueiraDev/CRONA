@@ -87,6 +87,12 @@ Este guia é para o Claude que pega o CRONA do zero, numa conversa nova ou noutr
   Start-Process powershell -WindowStyle Hidden -ArgumentList '-NoProfile','-Command','Start-Sleep -Seconds 120; shutdown /h'
   ```
 
+**A interface não pode piscar (pedido do Felipe, 07/10: "que isso pare para sempre")**
+- Mudou PV, PE, SAN, uma condição ou qualquer número que chega do servidor? **Acerte no lugar** (texto, largura da barra, classe); nunca refaça o painel nem recrie cartas, abas, retratos e ícones por causa de um número. Cada tela separa a **estrutura** (o que obriga a refazer: quem está na lista, nome, cor, arma, condições, máximos) dos **números** (PV, PE, SAN de agora): a assinatura da estrutura não leva os números, e um `atualizar()` guardado no elemento acerta os números.
+- Já é assim em: PLAYERS e o cartão do personagem do MAPA (`vitaisCarta`, `vitalsPanel`, `.atualizar`), as cartas de baixo (`cardVitals`), a FICHAS (`renderJogo`, `soNumerosDeJogo`: fechada ela só marca para refazer ao abrir) e o COMBATE (`patchVitais`, `assinaturaPecas` sem PV e SAN crus).
+- Troque o texto de um nó só se ele mudou (`if (el.textContent !== t) el.textContent = t`): trocar à toa recria o nó.
+- Para conferir: um `MutationObserver` no `document.body` durante um clique em "+ Vida" não pode ver nós criados nos painéis (só trocas de texto).
+
 ## Rodar e conferir
 
 O básico está no `AGENTS.md`. Além dele:
