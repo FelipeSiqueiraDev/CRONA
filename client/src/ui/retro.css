@@ -503,3 +503,300 @@ html:not(.modo-ficha) .room-row.here {
   box-shadow: inset 0 0 0 0.1rem rgba(233, 169, 68, 0.35) !important;
   background: var(--r-noite-3) !important;
 }
+
+/* =====================================================================
+   MAPA: as cartas dos agentes (embaixo). A carta do kit (carta-agente, cortes 24 24 80 24)
+   por cima do retrato, o primeiro nome na plaquinha e as três barrinhas embaixo; ocupam a
+   altura do painel em vez de ficar miúdas num canto.
+   ===================================================================== */
+html:not(.modo-ficha) .p-agentes .party {
+  --cw: min(8.2rem, calc((33rem - (var(--n, 4) - 1) * 1rem) / var(--n, 4)));
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.4rem 0 0;
+}
+html:not(.modo-ficha) .pcard {
+  width: var(--cw);
+  padding: 0;
+  border-radius: 0.4rem;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+html:not(.modo-ficha) .pcard > .paper-cv,
+html:not(.modo-ficha) .pcard > .kit-papel {
+  display: none !important;
+}
+/* a moldura: no lugar da fita */
+html:not(.modo-ficha) .pcard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  transform: none;
+  border: solid transparent;
+  border-width: calc(var(--cw) * 0.08) calc(var(--cw) * 0.08) calc(var(--cw) * 0.267);
+  border-image: var(--ui-cartas-carta-agente-normal-fonte) 24 24 80 24 / calc(var(--cw) * 0.08) calc(var(--cw) * 0.08) calc(var(--cw) * 0.267) stretch;
+  background: none;
+  box-shadow: none;
+  filter: drop-shadow(0 0.4rem 0.6rem rgba(0, 0, 0, 0.6));
+  pointer-events: none;
+}
+html:not(.modo-ficha) .pcard:hover::before {
+  border-image-source: var(--ui-cartas-carta-agente-foco-fonte);
+}
+html:not(.modo-ficha) .pcard.on::before {
+  border-image-source: var(--ui-cartas-carta-agente-foco-fonte);
+  filter: drop-shadow(0 0 0.7rem rgba(255, 196, 90, 0.75));
+}
+/* o retrato enche a janela da carta (sem esticar: corta as sobras) */
+html:not(.modo-ficha) .pcard .pc-photo {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  padding: calc(var(--cw) * 0.07) calc(var(--cw) * 0.07) calc(var(--cw) * 0.25);
+  background: #0b0d12;
+  border-radius: 0.3rem;
+  overflow: hidden;
+}
+html:not(.modo-ficha) .pcard .pc-img {
+  position: relative;
+  inset: auto;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+html:not(.modo-ficha) .pcard .pc-img > * {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+/* o nome na plaquinha de baixo da carta */
+html:not(.modo-ficha) .pcard .pc-name {
+  position: absolute;
+  left: calc(var(--cw) * 0.08);
+  right: calc(var(--cw) * 0.08);
+  top: calc(var(--cw) * 4 / 3 - var(--cw) * 0.255);
+  z-index: 4;
+  height: calc(var(--cw) * 0.2);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font: 600 clamp(1rem, calc(var(--cw) * 0.15), 1.3rem) / 1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html:not(.modo-ficha) .pcard.on .pc-name {
+  color: var(--r-ouro-hi) !important;
+}
+/* as barrinhas: um pouco mais grossas, com o trilho escuro */
+html:not(.modo-ficha) .pcard .pc-vitals {
+  margin: 0.5rem 0 0;
+  gap: 0.25rem;
+}
+html:not(.modo-ficha) .pcard .pcv-bar {
+  height: 0.45rem;
+  border-radius: 0.2rem;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+html:not(.modo-ficha) .pcard .pc-turn {
+  z-index: 5;
+  width: 2.2rem;
+  height: 2.2rem;
+  font-size: 1.3rem;
+  background: rgba(5, 11, 20, 0.9);
+  border-color: var(--r-borda);
+}
+html:not(.modo-ficha) .pcard .pc-turn:hover {
+  background: var(--r-ouro-lo);
+}
+html:not(.modo-ficha) .pcard .pc-img .breath > canvas,
+html:not(.modo-ficha) .pol-photo .breath > canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+
+/* =====================================================================
+   MAPA: o painel do PERSONAGEM (inspetor da peça). O retrato quadrado na moldura da janela,
+   o nome de ouro, a carga e as barras como as do celular, os botões em grade e o resto em linha.
+   ===================================================================== */
+html:not(.modo-ficha) .p-insp .insp-head {
+  grid-template-columns: 8.8rem minmax(0, 1fr);
+  column-gap: 1.2rem;
+  row-gap: 0.8rem;
+  align-items: center;
+  margin: 0.2rem 0 1rem;
+}
+html:not(.modo-ficha) .p-insp .polaroid {
+  width: 8.8rem;
+  height: 8.8rem;
+  padding: 0.3rem;
+  border: 0.18rem solid var(--r-borda) !important;
+  border-radius: 0.6rem;
+  background: var(--r-campo) !important;
+  box-shadow: inset 0 0 0 0.12rem rgba(5, 11, 20, 0.95), 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+  transform: none;
+}
+html:not(.modo-ficha) .p-insp .pol-photo {
+  border-radius: 0.35rem;
+  box-shadow: none;
+}
+html:not(.modo-ficha) .p-insp .pol-photo > * {
+  filter: none;
+}
+html:not(.modo-ficha) .p-insp .insp-text h2 {
+  font-family: var(--r-pixel) !important;
+  font-size: 1.9rem !important;
+  color: var(--r-ouro-hi) !important;
+  text-shadow: var(--r-sombra-pixel);
+  letter-spacing: 0.03em;
+  -webkit-text-stroke: 0 !important;
+}
+html:not(.modo-ficha) .p-insp .insp-text h2 .uline {
+  display: none;
+}
+html:not(.modo-ficha) .p-insp .insp-text p {
+  font: 400 1.3rem / 1.35 var(--r-corpo) !important;
+  color: var(--r-texto-2) !important;
+}
+/* a carga: o rótulo em pixel e a barra grossa */
+html:not(.modo-ficha) .tk-load {
+  display: grid;
+  gap: 0.45rem;
+}
+html:not(.modo-ficha) .tk-load > span {
+  font: 600 1.25rem / 1 var(--r-pixel);
+  color: var(--r-texto-2);
+}
+html:not(.modo-ficha) .tk-load .g-bar {
+  height: 1rem;
+  border-radius: 0.3rem;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 0.1rem rgba(161, 136, 115, 0.3);
+}
+/* os botões: uma grade de três, todos do mesmo tamanho */
+html:not(.modo-ficha) .p-insp .tools {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0.4rem 0 1rem;
+}
+html:not(.modo-ficha) .tool {
+  min-height: 3.4rem;
+  padding: 0.4rem 0.6rem;
+  border: 0.15rem solid #c08442 !important;
+  border-radius: 0.5rem;
+  background: var(--r-campo) !important;
+  box-shadow: inset 0 0 0 0.15rem var(--r-campo), inset 0 0 0 0.25rem rgba(192, 132, 66, 0.35);
+  color: var(--r-texto) !important;
+  font: 600 1.25rem / 1.1 var(--r-pixel) !important;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+html:not(.modo-ficha) .tool:hover {
+  border-color: var(--r-ouro-hi) !important;
+  background: var(--r-noite-3) !important;
+}
+html:not(.modo-ficha) .tool:active {
+  transform: translateY(0.1rem);
+}
+html:not(.modo-ficha) .tool.state.on {
+  border-color: #3a1e08 !important;
+  background: linear-gradient(#f6cf6a, #e9a944 50%, #c97f2c) !important;
+  box-shadow: inset 0 0.12rem 0 rgba(255, 240, 190, 0.7), inset 0 -0.15rem 0 rgba(120, 60, 10, 0.5);
+  color: var(--r-tinta-ouro) !important;
+}
+/* PV, PE e SAN: a sigla na cor, − e + quadrados, a barra com "atual / total" e o total editável */
+html:not(.modo-ficha) .vitals {
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+}
+html:not(.modo-ficha) .vt {
+  grid-template-columns: 3.6rem 2.8rem minmax(0, 1fr) 4.4rem 2.8rem;
+  gap: 0.5rem;
+}
+html:not(.modo-ficha) .vt-k {
+  font: 700 1.35rem / 1 var(--r-pixel) !important;
+  letter-spacing: 0.04em;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .vt.pv .vt-k {
+  color: #f0503f;
+}
+html:not(.modo-ficha) .vt.pe .vt-k {
+  color: #f3a73d;
+}
+html:not(.modo-ficha) .vt.san .vt-k {
+  color: #4f9bff;
+}
+html:not(.modo-ficha) .vt.pv {
+  --vc: linear-gradient(#f0604f, #b8302a);
+}
+html:not(.modo-ficha) .vt.pe {
+  --vc: linear-gradient(#f6b850, #c8862a);
+}
+html:not(.modo-ficha) .vt.san {
+  --vc: linear-gradient(#5fa8ff, #2f62c8);
+}
+html:not(.modo-ficha) .vt-btn {
+  height: 2.8rem;
+  border: 0.15rem solid var(--r-borda-2) !important;
+  border-radius: 0.45rem;
+  background: var(--r-campo) !important;
+  color: var(--r-texto) !important;
+  font: 700 1.6rem / 1 var(--r-pixel);
+}
+html:not(.modo-ficha) .vt-btn:hover {
+  border-color: var(--r-ouro) !important;
+  background: var(--r-noite-3) !important;
+}
+html:not(.modo-ficha) .vt-bar {
+  height: 2.4rem;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 0 0 0 0.12rem rgba(161, 136, 115, 0.35), inset 0 0.2rem 0.4rem rgba(0, 0, 0, 0.5);
+}
+html:not(.modo-ficha) .vt-bar i {
+  background: var(--vc);
+  border-radius: 0.35rem;
+}
+html:not(.modo-ficha) .vt-bar em {
+  font: 700 1.3rem / 1 var(--r-pixel);
+  color: #fff;
+  text-shadow: 0 0.12rem 0 rgba(0, 0, 0, 0.8);
+}
+html:not(.modo-ficha) .vt-max {
+  height: 2.8rem;
+  border: 0.15rem solid var(--r-borda-2) !important;
+  border-radius: 0.45rem;
+  background: var(--r-campo) !important;
+  color: var(--r-texto) !important;
+  font: 600 1.3rem / 1 var(--r-pixel) !important;
+  text-align: center;
+}
+html:not(.modo-ficha) .tool-sel {
+  height: 3.4rem;
+  border: 0.15rem solid var(--r-borda-2) !important;
+  border-radius: 0.5rem;
+  background: var(--r-campo) !important;
+  color: var(--r-texto) !important;
+  font: 500 1.3rem / 1 var(--r-corpo) !important;
+}
+/* a aba da mochila: o ouro sem o anel vermelho */
+html:not(.modo-ficha) .itab .tab-ring {
+  display: none !important;
+}

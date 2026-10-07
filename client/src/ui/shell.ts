@@ -2568,7 +2568,8 @@ export class Shell {
         paperize(c.el, { kit: false, seed: 60 + i * 3, tone: '#cfb99f', burn: 0.72, stripe: p.color, torn: 1.8, backs: [{ dx: 3, dy: 3, rot: 1.8 }, { dx: -3, dy: 5, rot: -1.3 }], pad: 22 });
       }
       // na carta cabe o nome curto (como na referência: Catarina, Alosi)
-      c.name.textContent = p.name.length <= 11 ? p.name : p.name.split(/\s+/)[0];
+      c.name.textContent = p.name.split(/\s+/)[0];
+      c.name.title = p.name;
       const here = p.roomId === cur;
       const wasOn = c.el.classList.contains('on');
       c.el.classList.toggle('on', view.myId === id);
@@ -2595,7 +2596,8 @@ export class Shell {
   private makeCard(p: PartyMember, i: number): Card {
     const id = p.id ?? 0;
     const img = h('span', { class: 'pc-img' }, this.livePortrait(p.look, this.cardPortraitSize(), p));
-    const name = h('span', { class: 'pc-name' }, p.name);
+    // na plaquinha da carta, o primeiro nome (o inteiro no title)
+    const name = h('span', { class: 'pc-name', title: p.name }, p.name.split(/\s+/)[0]);
     const vitals = h('span', { class: 'pc-vitals' });
     this.cardVitals(vitals, p);
     const away = h('span', { class: 'pc-away hidden' });
