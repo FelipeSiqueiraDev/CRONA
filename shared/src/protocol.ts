@@ -324,6 +324,8 @@ export interface SceneInfo {
   door: Door;
   portals: { x: number; y: number; link: number }[];
   users: { id: number; name: string; x: number; y: number }[];
+  /** o piso do cômodo: a planta pinta o cômodo na cor dele (ladrilho, carpete, taco...) */
+  estilo?: FloorStyle;
   /** ao ar livre: a planta desenha o terreno (grama, estrada, água) no lugar da pedra */
   aberto?: boolean;
   terreno?: string;

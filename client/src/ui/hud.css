@@ -2720,3 +2720,398 @@ html:not(.modo-ficha) .il-rodape {
   grid-template-columns: 1fr 1.6fr;
   gap: 0.6rem;
 }
+
+/* ================================================================ a PLANTA, de novo (07/10) */
+/* as abas dos andares não ficam mais embaixo do mapa: o mapa começa depois delas */
+html:not(.modo-ficha) .p-plan .plan-tabs {
+  top: 4.4rem !important;
+}
+html:not(.modo-ficha) .p-plan .plan-canvas {
+  top: 8.2rem !important;
+  height: calc(100% - 9.4rem) !important;
+}
+html:not(.modo-ficha) .p-plan .plan-tabs.hidden ~ .plan-canvas {
+  top: 4.8rem !important;
+  height: calc(100% - 6rem) !important;
+}
+html:not(.modo-ficha) .p-plan .p-title {
+  right: 5.8rem !important;
+}
+/* o botão de abrir a planta grande, no canto do título */
+html:not(.modo-ficha) .plan-ampliar {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.4rem;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  padding: 0;
+  border: var(--h-borda) solid #a18873;
+  border-radius: 0.6rem;
+  background: var(--h-campo);
+  color: var(--r-texto);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s;
+}
+html:not(.modo-ficha) .plan-ampliar:hover {
+  border-color: var(--r-ouro-hi);
+  box-shadow: 0 0 1rem rgba(255, 196, 90, 0.4);
+}
+html:not(.modo-ficha) .plan-ampliar .ic {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+/* a planta grande, por cima da tela */
+.plg {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 5, 10, 0.72);
+  backdrop-filter: blur(3px);
+  animation: plg-entra 0.22s var(--h-ease, ease-out) both;
+}
+.plg.saindo {
+  animation: plg-sai 0.18s ease-in both;
+}
+@keyframes plg-entra {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes plg-sai {
+  to {
+    opacity: 0;
+  }
+}
+.plg-janela {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: min(124rem, 92vw);
+  height: min(78rem, 88vh);
+  padding: 1.6rem 1.8rem 1.2rem;
+  border: 0.2rem solid #a18873;
+  border-radius: 1rem;
+  background: rgba(5, 11, 20, 0.97);
+  box-shadow:
+    inset 0 0 0 0.3rem rgba(5, 11, 20, 0.97),
+    inset 0 0 0 0.4rem rgba(161, 136, 115, 0.38),
+    0 2rem 5rem rgba(0, 0, 0, 0.7);
+  animation: plg-janela 0.32s var(--h-ease, ease-out) both;
+}
+@keyframes plg-janela {
+  from {
+    transform: scale(0.96) translateY(1rem);
+  }
+}
+.plg-cab {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+.plg-cab .p-title {
+  position: static !important;
+  flex: 1;
+  margin: 0;
+  --hud-ic: url('/arte/icones/topo-mapa.png');
+}
+.plg-abas {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.35rem;
+  border: 0.16rem solid rgba(161, 136, 115, 0.38);
+  border-radius: 0.7rem;
+  background: rgba(5, 11, 20, 0.85);
+}
+.plg-abas:empty {
+  display: none;
+}
+.plg-abas .plan-tab {
+  position: static;
+  padding: 0.6rem 1.4rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: none;
+  font: 600 1.2rem / 1 var(--r-pixel);
+  color: var(--r-texto-3);
+  cursor: pointer;
+}
+.plg-abas .plan-tab.on {
+  background: var(--h-ouro);
+  color: var(--r-tinta-ouro);
+}
+.plg-abas .plan-tab::before,
+.plg-abas .plan-tab::after {
+  display: none;
+}
+.plg-x {
+  display: grid;
+  place-items: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border: var(--h-borda) solid #a18873;
+  border-radius: 0.6rem;
+  background: var(--h-campo);
+  color: var(--r-texto);
+  cursor: pointer;
+}
+.plg-x:hover {
+  border-color: var(--r-ouro-hi);
+}
+.plg-canvas {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: 0.16rem solid rgba(161, 136, 115, 0.45);
+  border-radius: 0.7rem;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 45%, rgba(40, 70, 120, 0.22), transparent 75%),
+    #050a12;
+  box-shadow: inset 0 0 2rem rgba(0, 0, 0, 0.7);
+}
+.plg-dica {
+  margin: 0;
+  font: 500 1.2rem / 1 var(--r-corpo);
+  color: var(--r-texto-3);
+  text-align: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .plg,
+  .plg-janela {
+    animation: none;
+  }
+}
+
+/* ================================================================ mais altura para o tabuleiro (07/10) */
+/* a fileira de baixo mais baixa: as cartas menores, o inventário numa linha só, as ações 2 × 2 */
+html:not(.modo-ficha) .shell .board {
+  bottom: 17.6rem !important;
+  transition: bottom 0.35s var(--h-ease);
+}
+html:not(.modo-ficha) .shell .bottom {
+  height: 15.6rem !important;
+  transition:
+    transform 0.35s var(--h-ease),
+    opacity 0.25s;
+}
+html:not(.modo-ficha) .shell .bottom > .sheet {
+  padding: 1.1rem 1.2rem 0.9rem !important;
+}
+html:not(.modo-ficha) .p-agentes .party {
+  margin-top: 0.7rem !important;
+  --cw: min(6.6rem, calc((33rem - (var(--n, 4) - 1) * 1rem) / var(--n, 4))) !important;
+}
+html:not(.modo-ficha) .pcard .pc-vitals {
+  gap: 0.15rem !important;
+}
+html:not(.modo-ficha) .shell .quick-slots {
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  grid-auto-rows: auto !important;
+  gap: 0.5rem !important;
+  margin-top: 0.9rem !important;
+}
+html:not(.modo-ficha) .quick-slots .qslot {
+  width: auto !important;
+  height: auto !important;
+  aspect-ratio: 1;
+}
+html:not(.modo-ficha) .shell .acoes {
+  grid-template-columns: 1fr 1fr !important;
+  gap: 0.5rem !important;
+  margin-top: 0.9rem !important;
+}
+html:not(.modo-ficha) .shell .acao {
+  min-height: 0 !important;
+  height: 4.2rem !important;
+  padding: 0 0.7rem !important;
+  gap: 0.5rem !important;
+  font-size: 1.1rem !important;
+}
+html:not(.modo-ficha) .shell .acao :is(.arte-ic, .ic) {
+  width: 2rem !important;
+  height: 2rem !important;
+}
+/* tabuleiro na altura toda: a fileira de baixo desce e some */
+html:not(.modo-ficha) .shell.foco-tabuleiro .board {
+  bottom: 1rem !important;
+}
+html:not(.modo-ficha) .shell.foco-tabuleiro .bottom {
+  transform: translateY(120%);
+  opacity: 0;
+  pointer-events: none;
+}
+html:not(.modo-ficha) .bv-foco.on {
+  border-color: var(--r-ouro-hi) !important;
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .bv-foco svg.ic {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+/* na fileira baixa, o retrato da carta fica quadrado (o rosto já vem centrado) */
+html:not(.modo-ficha) .shell .bottom .pcard .pc-photo {
+  aspect-ratio: 1 / 1 !important;
+}
+html:not(.modo-ficha) .shell .bottom .pcard {
+  gap: 0.3rem !important;
+}
+
+/* ================================================================ o painel do objeto em três momentos */
+html:not(.modo-ficha) .obj-modos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0.9rem 0 0.8rem;
+  padding: 0.35rem;
+  border: 0.16rem solid rgba(161, 136, 115, 0.38);
+  border-radius: var(--h-raio);
+  background: rgba(5, 11, 20, 0.85);
+}
+html:not(.modo-ficha) .obj-modo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 5.4rem;
+  padding: 0.5rem 0.3rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: none;
+  color: var(--r-texto-3);
+  font: 600 1.1rem / 1 var(--r-pixel);
+  cursor: pointer;
+  transition:
+    background 0.25s var(--h-ease),
+    color 0.2s;
+}
+html:not(.modo-ficha) .obj-modo:not(.on):hover {
+  background: rgba(20, 36, 64, 0.9);
+  color: var(--r-texto);
+}
+html:not(.modo-ficha) .obj-modo.on {
+  background: var(--h-ouro);
+  color: var(--r-tinta-ouro);
+  box-shadow: var(--h-ouro-sombra);
+}
+html:not(.modo-ficha) .obj-modo :is(.arte-ic, .ic) {
+  width: 2.3rem;
+  height: 2.3rem;
+}
+html:not(.modo-ficha) .obj-modo .arte-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+html:not(.modo-ficha) .ipane:is(.obj-jogar, .obj-config, .obj-mexer) {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.9rem;
+  animation: cb-pag-entra 0.28s var(--h-ease) both;
+}
+html:not(.modo-ficha) .obj-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+html:not(.modo-ficha) .obj-sec-tit {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+  font: 700 1.1rem / 1 var(--r-pixel);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--r-ouro-hi);
+}
+html:not(.modo-ficha) .obj-sec-tit::after {
+  content: '';
+  flex: 1;
+  height: 0.15rem;
+  background: var(--h-linha-ouro);
+  opacity: 0.55;
+}
+html:not(.modo-ficha) .obj-nota {
+  margin: 0;
+  font: 500 1.15rem / 1.35 var(--r-corpo);
+  color: var(--r-texto-3);
+}
+html:not(.modo-ficha) .obj-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+html:not(.modo-ficha) .obj-bts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.5rem;
+}
+html:not(.modo-ficha) .obj-bts.grade {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+html:not(.modo-ficha) .obj-bt {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.7rem;
+  min-height: 3.8rem;
+  padding: 0 1rem;
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.7);
+  border-radius: var(--h-raio);
+  background: var(--h-campo);
+  color: var(--r-texto);
+  font: 600 1.15rem / 1.1 var(--r-pixel);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.15s,
+    box-shadow 0.25s;
+}
+html:not(.modo-ficha) .obj-bts.grade .obj-bt {
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 6rem;
+  padding: 0.6rem 0.4rem;
+}
+html:not(.modo-ficha) .obj-bt:hover {
+  border-color: var(--r-ouro-hi);
+  transform: translateY(-0.1rem);
+  box-shadow: 0 0 1rem rgba(255, 196, 90, 0.3);
+}
+html:not(.modo-ficha) .obj-bt :is(.arte-ic, .ic) {
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+}
+html:not(.modo-ficha) .obj-bt .arte-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+html:not(.modo-ficha) .obj-bt.forte {
+  border-color: #3a1e08;
+  background: var(--h-ouro);
+  color: var(--r-tinta-ouro);
+  box-shadow: var(--h-ouro-sombra);
+}
+html:not(.modo-ficha) .obj-bt.perigo:hover {
+  border-color: #ff8a78;
+  box-shadow: 0 0 1rem rgba(214, 84, 70, 0.4);
+  color: #ffd8d0;
+}
+/* em Configurar, o × de tirar o item ou o teste fica sempre à vista */
+html:not(.modo-ficha) .obj-config .ic-del {
+  opacity: 0.75 !important;
+}
+html:not(.modo-ficha) .obj-config .ic-del:hover {
+  opacity: 1 !important;
+  color: #ff8a78;
+}

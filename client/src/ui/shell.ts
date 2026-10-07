@@ -23,6 +23,7 @@ import {
   type Documento,
   type FichaSalva,
   type FloorItem,
+  type FloorStyle,
   type Loot,
   type LootKind,
   espacosDoItemFicha,
@@ -79,6 +80,22 @@ type Sel = { kind: 'floor' | 'wall'; item: FloorItem | WallItem } | null;
 const THUMB_KEY = 'crona.thumb.';
 /** Os botões das AÇÕES com o ícone pintado do kit (arte/icones/<nome>.png). */
 const PINTADO_ACAO: Record<string, string> = { lupa: 'busca', caixa: 'cadeado', mao: 'combate-item', trocar: 'carga' };
+/** A cor de cada piso na planta, escurecida para o azul-noite do HUD (a sala se acha de olho). */
+const COR_PISO_PLANTA: Partial<Record<FloorStyle, string>> = {
+  pedra: '#2b2f37',
+  concreto: '#2a3038',
+  bloco: '#2d323a',
+  cela: '#23272e',
+  madeira: '#3b2a1f',
+  taco: '#4a3524',
+  ladrilho: '#33424f',
+  xadrez: '#2c3c52',
+  azulejo: '#1d3d58',
+  carpete: '#3b2456',
+  musgo: '#253a2c',
+  metal: '#2c3540',
+  selo: '#3a3024',
+};
 const COLORS = ['#e3a94c', '#d83a2e', '#3f6fd8', '#f2efe6', '#6fdc8c', '#c78bff', '#3fe0c0', '#ff6fb0'];
 const INSP_TABS: InspTab[] = ['desc', 'inter', 'items'];
 
@@ -354,6 +371,8 @@ export class Shell {
   private giveOpen = false;
   private giveKey = '';
   private inspTab: InspTab = 'desc';
+  /** o painel do objeto em três momentos: jogar (o agente usa), configurar (texto, itens, testes) e mexer (lugar) */
+  private objModo: 'jogar' | 'config' | 'mexer' = 'jogar';
   private inspKey = '';
   private inspSig = '';
   private photoUrl: string | null = null;
@@ -458,7 +477,15 @@ export class Shell {
       <path d="M32 11 36 30 32 34 28 30Z" fill="#2a241f"/><path d="M32 57 36 38 32 34 28 38Z" fill="#fff8" /><path d="M9 34 28 30 32 34 28 38Z" fill="#fff8"/><path d="M55 34 36 30 32 34 36 38Z" fill="#2a241f"/>
       <path d="M32 11 32 57M9 34 55 34" stroke-width="0.6"/><text x="32" y="8" text-anchor="middle" font-size="8" font-family="Courier Prime, monospace" font-weight="700" fill="#2a241f" stroke="none">N</text></svg>`);
     void rosa;
-    const plan = h('section', { class: 'sheet p-plan wide' }, h('h3', { class: 'p-title' }, this.planTitle), this.planTabs, this.planCanvas, this.planAqui, h('span', { class: 'tachinha', 'aria-hidden': 'true' }));
+    const ampliar = h('button', { class: 'plan-ampliar', type: 'button', title: 'Abrir a planta grande (M)', 'aria-label': 'Abrir a planta grande', onclick: () => this.abrirPlantaGrande() }, ic('lupaMais'));
+    const plan = h('section', { class: 'sheet p-plan wide' }, h('h3', { class: 'p-title' }, this.planTitle), ampliar, this.planTabs, this.planCanvas, this.planAqui, h('span', { class: 'tachinha', 'aria-hidden': 'true' }));
+    // M abre e fecha a planta grande; Esc fecha (fora de um campo de texto)
+    document.addEventListener('keydown', (e) => {
+      const alvo = e.target as HTMLElement | null;
+      if (alvo?.closest?.('input, textarea, select, [contenteditable]')) return;
+      if (e.key === 'Escape' && this.plantaGrande) return this.fecharPlantaGrande();
+      if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey && !e.altKey && !document.documentElement.classList.contains('modo-ficha')) this.abrirPlantaGrande();
+    });
     void existeArte('/arte/interface/alfinete.png').then((ok) => {
       if (!ok) return;
       const im = new Image();
@@ -506,7 +533,19 @@ export class Shell {
       { class: 'board-vista', role: 'group', 'aria-label': 'Câmera do tabuleiro' },
       h('button', { class: 'bv', type: 'button', 'data-tatico': 'nao', title: 'Vista isométrica (T)', onclick: () => this.trocarVista(false) }, ic('isometrico'), h('span', null, 'ISO')),
       h('button', { class: 'bv', type: 'button', 'data-tatico': 'sim', title: 'Vista tática: a sala de cima, como mapa de batalha (T)', onclick: () => this.trocarVista(true) }, arteOu(['/arte/icones/tabuleiro-tatico.png'], ic('tatico')), h('span', null, 'TÁTICA')),
+      // o tabuleiro na altura toda: a fileira de baixo (agentes, inventário, ações) some até clicar de novo
+      h(
+        'button',
+        { class: 'bv bv-foco', type: 'button', title: 'Tabuleiro na altura toda (esconde a fileira de baixo)', 'aria-pressed': 'false', onclick: (e: MouseEvent) => this.alternarFoco(e.currentTarget as HTMLElement) },
+        svg('<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'),
+        h('span', null, 'AMPLIAR'),
+      ),
     );
+    try {
+      if (localStorage.getItem('crona.foco') === '1') queueMicrotask(() => this.alternarFoco(this.vistaEl.querySelector('.bv-foco')!, true));
+    } catch {
+      /* sem armazenamento: começa com a fileira */
+    }
     this.ferramentas = new FerramentasMesa(app);
     this.abaInterludio = new AbaInterludio(app);
     this.combate.aoFerramentaMesa = (tipo) => this.ferramentas.alternar(tipo, false);
@@ -1201,8 +1240,10 @@ export class Shell {
    * marcadas na parede, o atual em vermelho com o alfinete e o nome numa plaquinha. Ao ar
    * livre, o terreno (grama, estrada, água) e os prédios com o nome.
    */
-  private drawPlan(keepScale = false) {
-    const c = this.planCanvas;
+  private drawPlan(keepScale = false, grande?: { c: HTMLCanvasElement; rects: { id: number; x: number; y: number; w: number; h: number; name: string }[]; hover: number }) {
+    // a planta grande (aberta por cima da tela) se desenha junto com a pequena
+    if (!grande && this.plantaGrande) this.desenharPlantaGrande();
+    const c = grande?.c ?? this.planCanvas;
     const cssW = c.clientWidth || 220;
     const cssH = c.clientHeight || 170;
     const dpr = Math.min(2, devicePixelRatio || 1);
@@ -1215,14 +1256,18 @@ export class Shell {
     ctx.clearRect(0, 0, cssW, cssH);
     const camp = this.campaign;
     const cur = this.app.state.room?.id;
-    this.planRects = [];
+    const rects = grande ? grande.rects : (this.planRects = []);
+    rects.length = 0;
+    const hover = grande ? grande.hover : this.planHover;
     if (!camp || !camp.scenes.length) return;
     // um andar por vez: o da cena atual, ou o que o mestre escolheu nas abas
     const floorOf = (id: number | undefined) => camp.scenes.find((s) => s.id === id)?.floor ?? '';
     const floors = [...new Set(camp.scenes.map((s) => s.floor ?? ''))];
     const shown = this.planFloor !== null && floors.includes(this.planFloor) ? this.planFloor : floorOf(cur);
-    this.planShown = shown;
-    this.renderPlanTabs(floors, shown);
+    if (!grande) {
+      this.planShown = shown;
+      this.renderPlanTabs(floors, shown);
+    }
     const todos = camp.scenes.map((s) => {
       const p = camp.layout[s.id] ?? { x: 0, y: 0 };
       const raw = parseHeightmap(s.heightmap);
@@ -1246,8 +1291,16 @@ export class Shell {
     };
     const parsed = todos.filter((q) => (q.s.floor ?? '') === shown);
     void todos;
-    if (!keepScale || !this.planDrag) {
-      const pad = 8;
+    let S = this.planScale;
+    let O = this.planOrigin;
+    if (grande) {
+      // a grande enche a janela, com folga para os nomes
+      const pad = 34;
+      const b = caixa(parsed);
+      S = Math.max(4, Math.min((cssW - pad * 2) / b.w, (cssH - pad * 2) / b.h));
+      O = { x: pad + (cssW - pad * 2 - b.w * S) / 2 - b.x0 * S, y: pad + (cssH - pad * 2 - b.h * S) / 2 - b.y0 * S };
+    } else if (!keepScale || !this.planDrag) {
+      const pad = 10;
       // o andar enche o papel (como o prédio da referência); um cômodo sozinho (o bar) fica em no máximo metade dele
       const b = caixa(parsed);
       const sozinho = parsed.length === 1 && !parsed[0].s.aberto;
@@ -1257,9 +1310,9 @@ export class Shell {
         x: pad + (cssW - pad * 2 - b.w * this.planScale) / 2 - b.x0 * this.planScale,
         y: pad + (cssH - pad * 2 - b.h * this.planScale) / 2 - b.y0 * this.planScale,
       };
+      S = this.planScale;
+      O = this.planOrigin;
     }
-    const S = this.planScale;
-    const O = this.planOrigin;
     // o minimapa do game (06/10): azul-noite com a grade, os cômodos em azul-escuro com as paredes
     // beges, o cômodo de agora aceso de ouro, as portas marcadas, os nomes em pixel e as peças como
     // pontos de luz na cor de cada um
@@ -1298,6 +1351,14 @@ export class Shell {
     ctx.fillStyle = granito;
     for (const f of formas.values()) ctx.fill(f);
     ctx.restore();
+    // cada cômodo na cor do piso dele, escurecida para a noite do HUD: dá para achar a sala de olho
+    for (const { s } of parsed) {
+      const f = formas.get(s.id);
+      const cor = s.estilo ? COR_PISO_PLANTA[s.estilo] : undefined;
+      if (!f || !cor) continue;
+      ctx.fillStyle = cor;
+      ctx.fill(f);
+    }
     const rotulos: { x: number; y: number; w: number; h: number; nome: string; atual: boolean }[] = [];
     for (const { s, hm, raw, p, rot } of parsed) {
       const ox = O.x + p.x * S;
@@ -1307,7 +1368,7 @@ export class Shell {
       if (s.aberto) {
         this.terrenoNaPlanta(ctx, s, raw, rot, ox, oy, S, granito);
         rotulos.push({ x: ox, y: oy, w: rect.w, h: rect.h, nome: rect.name, atual });
-        this.planRects.push(rect);
+        rects.push(rect);
         continue;
       }
       const forma = formas.get(s.id)!;
@@ -1341,8 +1402,8 @@ export class Shell {
         ctx.fillStyle = `rgba(233,169,68,${0.3 * (1 - this.planFade.t)})`;
         ctx.fill(forma);
       }
-      if (s.id === this.planHover) {
-        ctx.fillStyle = 'rgba(160,200,255,0.12)';
+      if (s.id === hover) {
+        ctx.fillStyle = 'rgba(160,200,255,0.14)';
         ctx.fill(forma);
       }
       // as paredes: fina entre dois cômodos, grossa por fora; limpas, como num mapa de jogo
@@ -1397,28 +1458,61 @@ export class Shell {
         else if (!tile(px + 1, py)) ctx.fillRect(X + S - e / 2, Y + S * 0.2, e, S * 0.6);
       }
       rotulos.push({ x: ox, y: oy, w: rect.w, h: rect.h, nome: rect.name, atual });
-      this.planRects.push(rect);
+      rects.push(rect);
     }
-    // os nomes dos cômodos, em pixel, quando cabem (o de agora em ouro)
+    // os nomes dos cômodos em plaquinhas legíveis (do tamanho certo para ler, mesmo que passem da
+    // borda do cômodo), uma sem tapar a outra; o de agora em ouro. A que não cabe em lugar nenhum fica
+    // no aviso do mouse
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    for (const r of rotulos) {
-      const f = Math.max(7, Math.min(10.5, S * 1.15));
-      ctx.font = `600 ${f.toFixed(1)}px "Pixelify Sans", "Ubuntu Mono", monospace`;
+    const fonte = grande ? 15 : 10;
+    ctx.font = `600 ${fonte}px "Pixelify Sans", "Ubuntu Mono", monospace`;
+    const postas: { x0: number; y0: number; x1: number; y1: number }[] = [];
+    const ordem = [...rotulos].sort((a, b) => Number(b.atual) - Number(a.atual) || b.w * b.h - a.w * a.h);
+    for (const r of ordem) {
+      // o nome curto é a palavra que distingue: "Sala de Tecnologia" vira Tecnologia, e não Sala
+      const curto = r.nome.replace(/^(sala|câmara|quarto|área)\s+(de|da|do|dos|das)\s+/i, '').split(/\s+/)[0];
+      const larg = (t: string) => ctx.measureText(t).width + (grande ? 16 : 10);
       let nome = r.nome;
-      if (ctx.measureText(nome).width > r.w - 4) nome = nome.split(/\s+/)[0];
-      if (ctx.measureText(nome).width > r.w - 4 || r.h < f + 4) continue;
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = 'rgba(5,11,20,0.9)';
-      ctx.strokeText(nome, r.x + r.w / 2, r.y + r.h / 2);
-      ctx.fillStyle = r.atual ? '#ffd27a' : 'rgba(243,233,216,0.78)';
-      ctx.fillText(nome, r.x + r.w / 2, r.y + r.h / 2);
+      if (larg(nome) > Math.max(r.w + (grande ? 40 : 14), grande ? 150 : 60)) nome = curto;
+      const w = larg(nome);
+      const hh = fonte + (grande ? 10 : 6);
+      const cx = r.x + r.w / 2;
+      const cy = r.y + r.h / 2;
+      const livre = (x: number, y: number) => {
+        const q = { x0: x - w / 2, y0: y - hh / 2, x1: x + w / 2, y1: y + hh / 2 };
+        if (q.x0 < 1 || q.x1 > cssW - 1 || q.y0 < 1 || q.y1 > cssH - 1) return null;
+        return postas.some((o) => q.x0 < o.x1 + 2 && q.x1 > o.x0 - 2 && q.y0 < o.y1 + 2 && q.y1 > o.y0 - 2) ? null : q;
+      };
+      let lugar: { x0: number; y0: number; x1: number; y1: number } | null = null;
+      let px = cx;
+      let py = cy;
+      for (const [dx, dy] of [[0, 0], [0, -hh], [0, hh], [0, -hh * 2], [0, hh * 2], [-w * 0.6, 0], [w * 0.6, 0]]) {
+        lugar = livre(cx + dx, cy + dy);
+        if (lugar) {
+          px = cx + dx;
+          py = cy + dy;
+          break;
+        }
+      }
+      if (!lugar) continue;
+      postas.push(lugar);
+      const raio = hh / 2;
+      ctx.beginPath();
+      ctx.roundRect(lugar.x0, lugar.y0, w, hh, raio);
+      ctx.fillStyle = r.atual ? 'rgba(42,26,6,0.92)' : 'rgba(5,11,20,0.86)';
+      ctx.fill();
+      ctx.lineWidth = r.atual ? 1.4 : 1;
+      ctx.strokeStyle = r.atual ? '#ffd27a' : 'rgba(161,136,115,0.65)';
+      ctx.stroke();
+      ctx.fillStyle = r.atual ? '#ffd27a' : '#f3e9d8';
+      ctx.fillText(nome, px, py + 0.5);
     }
     ctx.restore();
     // o "você está aqui": o contorno pulsando e a setinha (CSS) em cima do cômodo de agora
-    const aqui = this.planRects.find((q) => q.id === cur);
-    this.planAqui.classList.toggle('hidden', !aqui);
+    const aqui = grande ? undefined : rects.find((q) => q.id === cur);
+    if (!grande) this.planAqui.classList.toggle('hidden', !aqui);
     if (aqui) Object.assign(this.planAqui.style, { left: `${c.offsetLeft + aqui.x}px`, top: `${c.offsetTop + aqui.y}px`, width: `${aqui.w}px`, height: `${aqui.h}px` });
     // onde estão as peças: pontos de luz na cor de cada um
     for (const { s, p, rot } of parsed)
@@ -1427,7 +1521,7 @@ export class Shell {
         const [ux, uy] = rot(u.x, u.y);
         const cx = O.x + (p.x + ux + 0.5) * S;
         const cy = O.y + (p.y + uy + 0.5) * S;
-        const r = Math.max(2.4, Math.min(3.8, S * 0.42));
+        const r = grande ? Math.max(5, Math.min(8, S * 0.5)) : Math.max(2.8, Math.min(4.2, S * 0.48));
         ctx.save();
         ctx.shadowColor = pm?.color ?? '#fff';
         ctx.shadowBlur = 7;
@@ -1441,7 +1535,102 @@ export class Shell {
         ctx.lineWidth = 1.3;
         ctx.strokeStyle = '#050b14';
         ctx.stroke();
+        // na grande, a inicial de cada um dentro do ponto
+        if (grande && r >= 6) {
+          ctx.font = `700 ${Math.round(r * 1.25)}px "Pixelify Sans", monospace`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#050b14';
+          ctx.fillText((u.name || '?').trim()[0]?.toUpperCase() ?? '?', cx, cy + 0.5);
+        }
       }
+  }
+
+  /** O tabuleiro na altura toda: esconde a fileira de baixo (e guarda a escolha neste navegador). */
+  private alternarFoco(bt: HTMLElement, ligar?: boolean) {
+    const on = ligar ?? !this.el.classList.contains('foco-tabuleiro');
+    this.el.classList.toggle('foco-tabuleiro', on);
+    bt.setAttribute('aria-pressed', String(on));
+    bt.classList.toggle('on', on);
+    bt.querySelector('span')!.textContent = on ? 'REDUZIR' : 'AMPLIAR';
+    if (ligar === undefined) sfx.click();
+    try {
+      localStorage.setItem('crona.foco', on ? '1' : '0');
+    } catch {
+      /* sem armazenamento */
+    }
+  }
+
+  /** A planta grande, por cima da tela (botão da planta ou a tecla M): o andar inteiro legível. */
+  private plantaGrande: { el: HTMLElement; c: HTMLCanvasElement; abas: HTMLElement; rects: { id: number; x: number; y: number; w: number; h: number; name: string }[]; hover: number } | null = null;
+
+  private abrirPlantaGrande() {
+    if (this.plantaGrande) return this.fecharPlantaGrande();
+    sfx.paper();
+    const c = h('canvas', { class: 'plg-canvas' });
+    const abas = h('div', { class: 'plg-abas', role: 'tablist' });
+    const fechar = h('button', { class: 'plg-x', type: 'button', title: 'Fechar (Esc)', 'aria-label': 'Fechar a planta', onclick: () => this.fecharPlantaGrande() }, ic('fechar'));
+    const el = h(
+      'div',
+      { class: 'plg', role: 'dialog', 'aria-label': 'Planta', onclick: (e: MouseEvent) => e.target === el && this.fecharPlantaGrande() },
+      h('div', { class: 'plg-janela' }, h('header', { class: 'plg-cab' }, h('h3', { class: 'p-title' }, 'PLANTA'), abas, fechar), c, h('p', { class: 'plg-dica' }, 'Clique num cômodo para ir até ele. Esc fecha.')),
+    );
+    document.body.append(el);
+    const g = { el, c, abas, rects: [] as { id: number; x: number; y: number; w: number; h: number; name: string }[], hover: -1 };
+    this.plantaGrande = g;
+    const at = (e: PointerEvent) => {
+      const r = c.getBoundingClientRect();
+      return { x: ((e.clientX - r.left) * c.clientWidth) / r.width, y: ((e.clientY - r.top) * c.clientHeight) / r.height };
+    };
+    const hit = (e: PointerEvent) => {
+      const p = at(e);
+      return [...g.rects].reverse().find((r) => p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h);
+    };
+    c.addEventListener('pointermove', (e) => {
+      const r = hit(e);
+      c.style.cursor = r ? 'pointer' : 'default';
+      c.title = r?.name ?? '';
+      if ((r?.id ?? -1) !== g.hover) {
+        g.hover = r?.id ?? -1;
+        this.desenharPlantaGrande();
+      }
+    });
+    c.addEventListener('pointerleave', () => ((g.hover = -1), this.desenharPlantaGrande()));
+    c.addEventListener('click', (e) => {
+      const r = hit(e as PointerEvent);
+      if (!r) return;
+      this.goScene(r.id);
+      this.fecharPlantaGrande();
+    });
+    requestAnimationFrame(() => this.desenharPlantaGrande());
+  }
+
+  private fecharPlantaGrande() {
+    const g = this.plantaGrande;
+    if (!g) return;
+    this.plantaGrande = null;
+    g.el.classList.add('saindo');
+    setTimeout(() => g.el.remove(), 180);
+  }
+
+  private desenharPlantaGrande() {
+    const g = this.plantaGrande;
+    if (!g) return;
+    // as abas dos andares, as mesmas da pequena
+    const camp = this.campaign;
+    const floors = camp ? [...new Set(camp.scenes.map((s) => s.floor ?? ''))] : [];
+    const sig = JSON.stringify([floors, this.planShown]);
+    if (g.abas.dataset.sig !== sig) {
+      g.abas.dataset.sig = sig;
+      g.abas.replaceChildren(
+        ...(floors.length > 1
+          ? floors.map((f) =>
+              h('button', { class: `plan-tab${f === this.planShown ? ' on' : ''}`, type: 'button', role: 'tab', onclick: () => ((this.planFloor = f), sfx.paper(), this.drawPlan()) }, f ? f.toUpperCase() : '1º ANDAR'),
+            )
+          : []),
+      );
+    }
+    this.drawPlan(false, g);
   }
 
   /** O granito dos cômodos da planta: pedra cinza salpicada, com uns veios (como a referência). */
@@ -1682,7 +1871,7 @@ export class Shell {
       const map = view.map;
       data = map ? [...map.allItems(), ...map.allWallItems()].filter((it) => it.hint || it.loot?.length || it.actions?.length) : null;
     }
-    return JSON.stringify([sel, this.inspTab, this.giveLoot, this.addingLoot, this.logging, this.gm, this.app.state.room?.id, this.app.state.room?.description, data, party]);
+    return JSON.stringify([sel, this.inspTab, this.objModo, this.giveLoot, this.addingLoot, this.logging, this.gm, this.app.state.room?.id, this.app.state.room?.description, data, party]);
   }
 
   private renderInspector(force = false) {
@@ -1697,6 +1886,7 @@ export class Shell {
     if (fresh) {
       const locked = sel?.kind === 'floor' && !!this.selection()?.item && !!(this.selection()!.item as FloorItem).lock;
       this.inspTab = sel && sel.kind !== 'user' && !locked ? 'items' : 'desc';
+      this.objModo = 'jogar';
       this.photoUrl = sel && sel.kind !== 'user' ? view.photo(sel.kind, sel.id, 262, 250) : null;
       this.inspSig = this.inspState();
       if (sel) sfx.paper();
@@ -1807,32 +1997,144 @@ export class Shell {
     const actions = item.actions ?? [];
     const photo = this.photoUrl ? h('img', { src: this.photoUrl, alt: '' }) : thumbCopy(item.defId, 124);
     body.append(h('div', { class: 'insp-head' }, this.polaroid(photo), this.headText(title, desc)));
-    const tab = (id: InspTab, label: string) => {
-      const on = this.inspTab === id;
-      return h(
-        'button',
-        {
-          class: `itab${on ? ' on' : ''}`,
-          role: 'tab',
-          'aria-selected': String(on),
-          onclick: () => {
-            if (this.inspTab === id) return;
-            this.inspTab = id;
-            this.giveLoot = null;
-            this.renderInspector();
+    const modo = this.gm ? this.objModo : 'jogar';
+    if (this.gm) {
+      // os três momentos: o ícone em cima, o nome embaixo; o pintado quando chegar (PROMPT-ICONES-E-LOGO)
+      const botaoModo = (id: typeof modo, nome: string, pintado: string, linha: NomeIcone, dica: string) =>
+        h(
+          'button',
+          {
+            class: `obj-modo${modo === id ? ' on' : ''}`,
+            type: 'button',
+            role: 'tab',
+            'aria-selected': String(modo === id),
+            title: dica,
+            onclick: () => {
+              if (this.objModo === id) return;
+              sfx.paper();
+              this.objModo = id;
+              this.giveLoot = null;
+              this.renderInspector(true);
+            },
           },
-        },
-        h('span', null, label),
-        on ? tabRing() : null,
+          arteOu([`/arte/icones/${pintado}.png`], ic(linha)),
+          h('span', null, nome),
+        );
+      body.append(
+        h(
+          'div',
+          { class: 'obj-modos', role: 'tablist', 'aria-label': 'O que fazer com o objeto' },
+          botaoModo('jogar', 'Jogar', 'obj-interagir', 'mao', 'O agente vai lá e usa: abrir, ler, pegar e entregar itens, fazer os testes'),
+          botaoModo('config', 'Configurar', 'obj-configurar', 'engrenagem', 'Preparar o objeto: o texto e a pista, os itens dentro e os testes'),
+          botaoModo('mexer', 'Mexer', 'obj-mover', 'mover', 'Mudar de lugar: mover, girar, trocar, tamanho e guardar'),
+        ),
       );
-    };
-    body.append(h('div', { class: 'itabs', role: 'tablist' }, tab('items', `CONTÉM (${loot.length})`), tab('desc', 'DESCRIÇÃO'), tab('inter', 'INTERAÇÕES')));
-    const pane = h('div', { class: `ipane ${this.inspTab}` });
+    }
+    const pane = h('div', { class: `ipane obj-${modo}` });
     body.append(pane, selo());
-    if (this.inspTab === 'desc') this.paneDesc(pane, s);
-    else if (this.inspTab === 'inter') this.paneInter(pane, s, actions);
-    else this.paneItems(pane, s, loot);
+    if (modo === 'mexer') this.paneMexer(pane, s);
+    else if (modo === 'config') this.paneConfig(pane, s, loot, actions);
+    else this.paneJogar(pane, s, loot, actions);
   }
+
+  private secao(titulo: string, ...conteudo: (Node | null)[]) {
+    return h('section', { class: 'obj-sec' }, h('h4', { class: 'obj-sec-tit' }, titulo), ...conteudo);
+  }
+
+  private botaoObj(rotulo: string, pintado: string | null, linha: NomeIcone, fn: () => void, cls = '') {
+    return h('button', { class: `obj-bt ${cls}`, type: 'button', onclick: () => (sfx.click(), fn()) }, pintado ? arteOu([`/arte/icones/${pintado}.png`], ic(linha)) : ic(linha), h('span', null, rotulo));
+  }
+
+  /** Jogar: o que o agente faz com o objeto (abrir/usar, ler a pista, os itens e os testes). */
+  private paneJogar(pane: HTMLElement, s: NonNullable<Sel>, loot: Loot[], actions: NonNullable<FloorItem['actions']>) {
+    const { item, kind } = s;
+    const net = this.app.net;
+    const fdef = kind === 'floor' ? getFurni(item.defId) : undefined;
+    const wdef = kind === 'wall' ? getWallFurni(item.defId) : undefined;
+    const hint = item.hint && (item.hint.visible || this.gm) ? item.hint : undefined;
+    const trancado = kind === 'floor' && !!(item as FloorItem).lock;
+    if (trancado && this.gm) pane.append(this.keypad(item as FloorItem));
+    if (hint && !hint.visible) pane.append(h('p', { class: 'desc-hidden' }, '● pista oculta para os jogadores'));
+    const usos = h('div', { class: 'obj-bts' });
+    const states = fdef?.states ?? wdef?.states ?? 0;
+    const porta = fdef?.openState !== undefined;
+    if (states > 1) usos.append(this.botaoObj(porta ? (item.state === fdef!.openState ? 'Fechar' : 'Abrir') : 'Usar', porta ? 'cadeado' : 'combate-item', porta ? 'cadeado' : 'mao', () => net.send({ t: 'use', id: item.id }), 'forte'));
+    if (hint) usos.append(this.botaoObj('Ler a pista', 'busca', 'lupa', () => this.hintViewer.open(kind, item.id)));
+    if (usos.childElementCount) pane.append(usos);
+    if (loot.length) {
+      const lista = h('div', { class: 'obj-lista' });
+      this.paneItems(lista, s, loot, 'jogar');
+      pane.append(this.secao(`Contém (${loot.length})`, lista));
+    }
+    if (actions.length) {
+      const lista = h('div', { class: 'obj-lista' });
+      this.paneInter(lista, s, actions, 'jogar');
+      pane.append(this.secao('Testes', lista));
+    }
+    if (!usos.childElementCount && !loot.length && !actions.length && !trancado)
+      pane.append(h('p', { class: 'empty' }, this.gm ? 'Nada para fazer aqui. Em Configurar, ponha itens, uma pista ou testes.' : 'Nada de especial aqui.'));
+  }
+
+  /** Configurar: o texto (a pista), os itens dentro, os testes e o destino da passagem. */
+  private paneConfig(pane: HTMLElement, s: NonNullable<Sel>, loot: Loot[], actions: NonNullable<FloorItem['actions']>) {
+    const { item, kind } = s;
+    const net = this.app.net;
+    const texto = h('div', { class: 'obj-bts' }, this.botaoObj(item.hint ? 'Editar o texto' : 'Escrever um texto', 'botao-editar', 'lapis', () => this.hintEditor.open(kind, item.id)));
+    if (item.hint) {
+      const hh = item.hint;
+      texto.append(this.botaoObj(hh.visible ? 'Esconder' : 'Mostrar', null, hh.visible ? 'olhoFechado' : 'olho', () => net.send({ t: 'setHint', id: item.id, hint: { ...hh, visible: !hh.visible } })));
+    }
+    const nota = item.hint ? (item.hint.visible ? 'Os jogadores leem este texto.' : 'Só você vê o texto; mostre quando acharem.') : 'Uma descrição especial, um documento ou uma pista para os jogadores lerem.';
+    pane.append(this.secao('Texto e pista', h('p', { class: 'obj-nota' }, nota), texto));
+    const itens = h('div', { class: 'obj-lista' });
+    this.paneItems(itens, s, loot, 'config');
+    pane.append(this.secao(`Itens dentro (${loot.length})`, itens));
+    const testes = h('div', { class: 'obj-lista' });
+    this.paneInter(testes, s, actions, 'config');
+    pane.append(this.secao('Testes', testes));
+    const floor = kind === 'floor' ? (item as FloorItem) : null;
+    const fdef = floor ? getFurni(floor.defId) : undefined;
+    if (floor && fdef?.portal) {
+      const others = this.app.state.rooms.filter((r) => r.id !== this.app.state.room?.id);
+      const sel = h('select', { class: 'tool-sel', 'aria-label': 'Destino da passagem' }, h('option', { value: '' }, 'Sem destino'), ...others.map((r) => h('option', { value: String(r.id), selected: r.id === floor.link }, r.name)));
+      sel.addEventListener('change', () => net.send({ t: 'setLink', id: floor.id, roomId: sel.value ? Number(sel.value) : null }));
+      pane.append(this.secao('Leva para', sel));
+    }
+  }
+
+  /** Mexer: o lugar do objeto (mover, girar, trocar por outro, o tamanho do desenho e guardar). */
+  private paneMexer(pane: HTMLElement, s: NonNullable<Sel>) {
+    const { item, kind } = s;
+    const net = this.app.net;
+    const floor = kind === 'floor' ? (item as FloorItem) : null;
+    const fdef = floor ? getFurni(floor.defId) : undefined;
+    const bts = h('div', { class: 'obj-bts grade' });
+    bts.append(
+      this.botaoObj('Mover', 'obj-mover', 'mover', () => {
+        if (floor) this.app.view.startPlacement({ kind: 'floor', defId: floor.defId, rot: floor.rot, moveId: floor.id });
+        else this.app.view.startPlacement({ kind: 'wall', defId: item.defId, moveId: item.id });
+        this.app.emit('placement');
+      }),
+    );
+    if (floor && fdef && fdef.rotations.length > 1)
+      bts.append(
+        this.botaoObj('Girar', null, 'girarD', () => {
+          const rot = nextRotation(fdef, floor.rot);
+          if (!this.app.view.map!.canPlace(floor.defId, floor.x, floor.y, rot, floor.id).ok) return toast('Não dá para girar aqui.', 'error');
+          net.send({ t: 'moveItem', id: floor.id, x: floor.x, y: floor.y, rot });
+        }),
+      );
+    if (floor) bts.append(this.botaoObj('Trocar', null, 'trocar', () => this.acts.trocar(floor.id, floor.defId)));
+    if (kind === 'wall' || fdef?.flat) {
+      const e = item.escala ?? 1;
+      const passo = (d: number) => net.send({ t: 'resizeItem', id: item.id, escala: Math.round((e + d) * 100) / 100 });
+      if (e < 3) bts.append(this.botaoObj('Maior', null, 'mais', () => passo(0.25)));
+      if (e > 0.5) bts.append(this.botaoObj('Menor', null, 'menos', () => passo(-0.25)));
+    }
+    bts.append(this.botaoObj('Guardar', null, 'mochila', () => net.send({ t: 'pickup', id: item.id }), 'perigo'));
+    pane.append(bts, h('p', { class: 'obj-nota' }, 'Movendo: clique na casa nova; R ou o botão direito giram. Guardar tira o objeto da cena.'));
+  }
+
 
   /**
    * A fechadura de um mobi no painel do objeto: trancada, o botão que abre o teclado grande no
@@ -1942,12 +2244,14 @@ export class Shell {
     pane.append(tools);
   }
 
-  private paneInter(pane: HTMLElement, s: NonNullable<Sel>, actions: NonNullable<FloorItem['actions']>) {
+  private paneInter(pane: HTMLElement, s: NonNullable<Sel>, actions: NonNullable<FloorItem['actions']>, modo: 'jogar' | 'config' = 'jogar') {
     const net = this.app.net;
-    if (!actions.length) pane.append(h('p', { class: 'empty' }, 'Nenhuma interação cadastrada.'));
+    if (!actions.length) pane.append(h('p', { class: 'empty' }, 'Nenhum teste cadastrado.'));
     actions.forEach((a) => {
       const card = h('div', { class: 'icard' }, h('div', { class: 'ic-icon dt' }, h('b', null, 'DT'), h('span', null, String(a.dt))), h('div', { class: 'ic-text' }, h('b', null, a.label), h('small', null, `Teste | DT ${a.dt}`)));
-      if (this.gm) {
+      if (this.gm && modo === 'config')
+        card.append(h('button', { class: 'ic-del', title: 'Remover', 'aria-label': 'Remover o teste', onclick: () => net.send({ t: 'actionRemove', itemId: s.item.id, actionId: a.id }) }, '×'));
+      else if (this.gm) {
         if (this.logging === a.id) {
           const who = h('select', { class: 'mini' }, ...(this.campaign?.party ?? []).map((p) => h('option', { value: p.name }, p.name)));
           const val = h('input', { class: 'mini num', type: 'number', placeholder: 'valor' });
@@ -1966,14 +2270,13 @@ export class Shell {
               'div',
               { class: 'ic-right' },
               h('button', { class: 'dbtn', onclick: () => ((this.logging = a.id), sfx.click(), this.renderInspector()) }, 'Registrar'),
-              h('button', { class: 'ic-del', title: 'Remover', 'aria-label': 'Remover interação', onclick: () => net.send({ t: 'actionRemove', itemId: s.item.id, actionId: a.id }) }, '×'),
             ),
           );
       }
       pane.append(card);
     });
-    if (this.gm) {
-      const label = h('input', { class: 'mini grow', placeholder: 'Nova interação (ex: Investigar)', maxlength: 40 });
+    if (this.gm && modo === 'config') {
+      const label = h('input', { class: 'mini grow', placeholder: 'Novo teste (ex: Investigar)', maxlength: 40 });
       const dt = h('input', { class: 'mini num', type: 'number', value: '15', min: '0', max: '60' });
       const form = h(
         'form',
@@ -1994,7 +2297,7 @@ export class Shell {
     }
   }
 
-  private paneItems(pane: HTMLElement, s: NonNullable<Sel>, loot: Loot[]) {
+  private paneItems(pane: HTMLElement, s: NonNullable<Sel>, loot: Loot[], modo: 'jogar' | 'config' = 'jogar') {
     const net = this.app.net;
     if (!loot.length && !this.gm) pane.append(h('p', { class: 'empty' }, 'Nada aqui.'));
     // quem está sob comando pega direto (vai para a mochila da ficha dele)
@@ -2012,7 +2315,7 @@ export class Shell {
             h('span', { class: 'given-face', style: `--c:${holder?.color ?? '#999'}` }, portraitCanvas(holder?.look ?? null, 72)),
             h('span', { class: 'given-t' }, 'Entregue', h('br'), `para ${l.holder}`),
           )
-        : this.gm
+        : this.gm && modo === 'jogar'
           ? h(
               'div',
               { class: 'ic-bts' },
@@ -2046,7 +2349,7 @@ export class Shell {
         h('div', { class: 'ic-text' }, h('b', null, l.name), h('small', null, `Espaços: ${fmt(l.espacos)} | ${lootKindLabel(l.kind)}${l.item ? ' · do livro' : ''}`)),
         right,
       );
-      if (this.gm && !l.holder)
+      if (this.gm && !l.holder && modo === 'config')
         card.append(h('button', { class: 'ic-del', title: 'Remover item', 'aria-label': 'Remover item', onclick: () => net.send({ t: 'lootRemove', itemId: s.item.id, lootId: l.id }) }, '×'));
       pane.append(card);
       if (justGiven && right && !reduced()) {
@@ -2055,7 +2358,8 @@ export class Shell {
         setTimeout(() => sfx.pop(), 700);
       }
     });
-    if (this.gm) {
+    if (!loot.length && this.gm && modo === 'jogar') pane.append(h('p', { class: 'empty' }, 'Nada aqui.'));
+    if (this.gm && modo === 'config') {
       if (this.addingLoot) {
         // um nome do livro (lista do campo) faz do item o do catálogo: espaços, tipo e, para arma, o ataque
         const name = h('input', { class: 'mini grow', placeholder: 'Nome do item (ou um do livro)', maxlength: 40, list: listaDoCatalogo() }) as HTMLInputElement;
