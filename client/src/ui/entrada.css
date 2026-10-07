@@ -313,6 +313,15 @@
   letter-spacing: 0.02em;
   caret-color: #ffc35a;
 }
+/* o foco é do campo inteiro (a borda de ouro do .ent-campo): o texto não ganha contorno próprio
+   (a regra geral de input:focus-visible desenhava uma caixa dentro da caixa) */
+.ent-input:focus,
+.ent-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background: transparent !important;
+}
 .ent-input::placeholder {
   color: #6f6b67;
   opacity: 1;
