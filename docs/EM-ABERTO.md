@@ -295,7 +295,7 @@ Ainda falta (pedido do Felipe):
 
 ## Arte em aberto (a fila do Códex)
 
-**A fila vive na pasta da arte: `00-COMECE-AQUI.txt`** (em `F:\Dhellow\CRONArte\TEXTURAS MAPA\BASE - Ordo Realitas`), com os lotes na ordem e a mensagem pronta para colar no Códex. Reorganizada em 07/10: na raiz ficam só os pedidos que ainda faltam; o que já entrou no jogo foi para `_entregas-originais` e `_arquivo`; as vistas de cima que esperam a peça isométrica ficam em `_aguardando-importar`.
+**A fila vive na pasta da arte: `00-COMECE-AQUI.txt`** (em `F:\Dhellow\CRONA\arte\TEXTURAS MAPA\BASE - Ordo Realitas`), com os lotes na ordem e a mensagem pronta para colar no Códex. Reorganizada em 07/10: na raiz ficam só os pedidos que ainda faltam; o que já entrou no jogo foi para `_entregas-originais` e `_arquivo`; as vistas de cima que esperam a peça isométrica ficam em `_aguardando-importar`.
 
 **Conferido em 07/10 (o que está no jogo e o que não está)**
 - **No jogo, completo:** a interface (497 arquivos idênticos ao inventário do Códex, partes 1 a 6, com os retratos e as piscadas), os ícones dos itens (244), as variações b e c (20 vistas de cima), as portas, os móveis e os itens de parede na medida, o escritório do Veríssimo, a cortina do leito, a mesa em U.
@@ -314,7 +314,7 @@ Ainda falta (pedido do Felipe):
 | 6 | `PROMPT-PRISAO.txt` (refeito em 07/10): cada cela como UMA peça inteira (fechada e aberta), a cela de contenção e a vista de cima | Substitui o `PROMPT-PRISAO-CELAS.txt` (módulos), que foi para `_arquivo/prompts`; gabaritos em `gabaritos/pedidos/prisao/`. **No código, quando chegar:** a cela inteira como peça com `vazio`/`aberto` e `openState` (como a cortina), e o `cela` achando o dentro dela |
 | 7 | `PROMPT-FAZENDA.txt` | O último; só os pisos de cima chegaram |
 
-**Não é com este Códex:** os personagens e as animações (`F:\Dhellow\CRONArte\PERSONAGENS-ANIMACAO`, outro Códex; as armadas da Catarina já em andamento) e a tela de entrada temática (em `Documents\Codex6-10-06mi\outputs`, faltam 5 paisagens).
+**Não é com este Códex:** os personagens e as animações (`F:\Dhellow\CRONA\arte\PERSONAGENS-ANIMACAO`, outro Códex; as armadas da Catarina já em andamento) e a tela de entrada temática (em `C:\Users\felip\Documents\Codex\2026-10-06\ami\outputs`, faltam 5 paisagens).
 
 **No código (Claude), enquanto isso:** importar os 7 pisos da fazenda; o mapa tático usar a vista de cima da variação sorteada (`chaveDaArte`); montar o importador e o tocador do formato novo dos personagens (1024×768).
 
