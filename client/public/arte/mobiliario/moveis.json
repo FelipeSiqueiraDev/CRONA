@@ -6019,23 +6019,23 @@
   "giros": {
    "4": {
     "arquivo": "shelf_verissimo/giro-4.png",
-    "ax": 360.0,
-    "ay": 497.0
+    "ax": 358.2,
+    "ay": 495.8
    },
    "6": {
     "arquivo": "shelf_verissimo/giro-6.png",
-    "ax": 40.0,
-    "ay": 484.0
+    "ax": 38.2,
+    "ay": 478.0
    },
    "0": {
     "arquivo": "shelf_verissimo/giro-0.png",
-    "ax": 385.0,
-    "ay": 484.0
+    "ax": 383.8,
+    "ay": 483.0
    },
    "2": {
     "arquivo": "shelf_verissimo/giro-2.png",
-    "ax": 65.0,
-    "ay": 497.0
+    "ax": 63.8,
+    "ay": 500.8
    }
   },
   "real": [
@@ -6059,23 +6059,23 @@
   "giros": {
    "4": {
     "arquivo": "desk_verissimo/giro-4.png",
-    "ax": 174.0,
-    "ay": 236.0
+    "ax": 173.0,
+    "ay": 237.6
    },
    "6": {
     "arquivo": "desk_verissimo/giro-6.png",
-    "ax": 110.0,
-    "ay": 236.0
+    "ax": 109.0,
+    "ay": 262.6
    },
    "0": {
     "arquivo": "desk_verissimo/giro-0.png",
-    "ax": 174.0,
-    "ay": 236.0
+    "ax": 173.0,
+    "ay": 273.6
    },
    "2": {
     "arquivo": "desk_verissimo/giro-2.png",
-    "ax": 110.0,
-    "ay": 236.0
+    "ax": 109.0,
+    "ay": 273.6
    }
   },
   "real": [
@@ -6254,23 +6254,23 @@
   "giros": {
    "4": {
     "arquivo": "vitrine_paranormal/giro-4.png",
-    "ax": 108.0,
-    "ay": 307.0
+    "ax": 106.8,
+    "ay": 319.7
    },
    "6": {
     "arquivo": "vitrine_paranormal/giro-6.png",
-    "ax": 44.0,
-    "ay": 296.0
+    "ax": 42.8,
+    "ay": 315.0
    },
    "0": {
     "arquivo": "vitrine_paranormal/giro-0.png",
-    "ax": 129.0,
-    "ay": 296.0
+    "ax": 128.2,
+    "ay": 301.0
    },
    "2": {
     "arquivo": "vitrine_paranormal/giro-2.png",
-    "ax": 65.0,
-    "ay": 307.0
+    "ax": 64.2,
+    "ay": 316.7
    }
   },
   "real": [
@@ -6458,6 +6458,15 @@
    3.0,
    2.2
   ],
+  "cima": {
+   "arquivo": "bed_curtain/cima.png",
+   "caixa": [
+    0,
+    0,
+    384,
+    384
+   ]
+  },
   "cimaEstados": {
    "1": {
     "arquivo": "bed_curtain/cima-1.png",
@@ -6468,15 +6477,6 @@
      384
     ]
    }
-  },
-  "cima": {
-   "arquivo": "bed_curtain/cima.png",
-   "caixa": [
-    0,
-    0,
-    384,
-    384
-   ]
   }
  }
 }
