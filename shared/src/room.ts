@@ -1,5 +1,5 @@
 import { STACK_LIMIT, WALL_PX_PER_TILE, Z_PX } from './constants';
-import { footprint, getFurni, getWallFurni } from './furni';
+import { footprint, getFurni, getWallFurni, ocupa } from './furni';
 import { parseHeightmap, type Heightmap } from './heightmap';
 import { computeWalls, type Door, type WallInfo } from './walls';
 import type { ItemAction, Loot } from './rpg';
@@ -226,7 +226,7 @@ export class RoomMap {
         for (let dx = 0; dx < fp.sx; dx++) {
           const x = it.x + dx;
           const y = it.y + dy;
-          if (x >= 0 && y >= 0 && x < w && y < h) this.grid[y][x].push(it);
+          if (x >= 0 && y >= 0 && x < w && y < h && ocupa(def, it.rot, dx, dy)) this.grid[y][x].push(it);
         }
     }
     for (const row of this.grid) for (const cell of row) if (cell.length > 1) cell.sort((a, b) => a.z - b.z || a.id - b.id);
@@ -290,6 +290,8 @@ export class RoomMap {
       for (let dx = 0; dx < fp.sx; dx++) {
         const tx = x + dx;
         const ty = y + dy;
+        // a casa vazia da peça (o meio da mesa em U) não conta: lá dentro fica outra coisa
+        if (!ocupa(def, rot, dx, dy)) continue;
         const h = this.floorHeight(tx, ty);
         if (h === null) return fail('Fora do quarto.');
         if (this.isDoor(tx, ty)) return fail('Não bloqueie a porta.');
@@ -320,7 +322,7 @@ export class RoomMap {
     if (!def) return [];
     const fp = footprint(def, rot);
     const out: Point[] = [];
-    for (let dy = 0; dy < fp.sy; dy++) for (let dx = 0; dx < fp.sx; dx++) out.push({ x: x + dx, y: y + dy });
+    for (let dy = 0; dy < fp.sy; dy++) for (let dx = 0; dx < fp.sx; dx++) if (ocupa(def, rot, dx, dy)) out.push({ x: x + dx, y: y + dy });
     return out;
   }
 

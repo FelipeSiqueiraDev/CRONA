@@ -71,6 +71,12 @@ export interface FurniDef {
   cela?: boolean;
   /** só o jogo cria (não aparece no catálogo): a pilha do que alguém largou no chão */
   interno?: boolean;
+  /**
+   * Casas livres dentro da pegada (a peça inteira em volta delas): o meio da mesa em U, o lugar do
+   * leito dentro da cortina. [u, v] na peça virada para a frente: u ao longo da largura (da esquerda
+   * para a direita) e v do fundo (0) para a frente (depth - 1). Nelas se anda e se põe outra peça.
+   */
+  vazio?: [number, number][];
   rotations: number[];
   colors: string[];
   desc?: string;
@@ -94,6 +100,8 @@ const ALL = [0, 2, 4, 6];
 /** Mobis com a altura em metros (convertida para unidades em FURNI_LIST). */
 const FURNI_METERS: FurniDef[] = [
   // ---------- Escritório ----------
+  // a mesa em U da Sala de Tecnologia, inteira (06/10): três postos no fundo, o meio e a entrada livres
+  { id: 'desk_u', name: 'Mesa em U', category: 'escritorio', kind: 'desk', width: 6, depth: 4, height: 0.78, vazio: [1, 2, 3, 4].flatMap((u) => [1, 2, 3].map((v) => [u, v] as [number, number])), rotations: ALL, colors: ['#2a2a30', '#b05ae0'], desc: 'Três postos com três monitores cada, teclados acesos de roxo, fones, fitas e uns cristais esquisitos no meio das pastas.' },
   { id: 'desk_wood', name: 'Mesa de Escritório', category: 'escritorio', kind: 'desk', width: 2, depth: 1, height: 0.8, stackable: true, rotations: ALL, colors: ['#4b3120', '#2f1f15', '#b8955a'] },
   { id: 'desk_metal', name: 'Mesa Metálica', category: 'escritorio', kind: 'desk', width: 2, depth: 1, height: 0.8, stackable: true, rotations: ALL, colors: ['#3c4046', '#2a2d31', '#8a9098'] },
   { id: 'chair_office', name: 'Cadeira de Escritório', category: 'escritorio', kind: 'office_chair', width: 1, depth: 1, height: 0.5, sit: true, rotations: ALL, colors: ['#242329', '#131216'] },
@@ -209,6 +217,16 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'armchair', name: 'Poltrona', category: 'mobilia', kind: 'armchair', width: 1, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#2a2826'] },
   { id: 'chair_red', name: 'Cadeira Estofada', category: 'mobilia', kind: 'chair', width: 1, depth: 1, height: 0.46, sit: true, rotations: ALL, colors: ['#8a1c1a', '#2a1d14'] },
   { id: 'altar', name: 'Altar de Pedra', category: 'ocultismo', kind: 'altar', width: 2, depth: 1, height: 0.6, stackable: true, rotations: ALL, colors: ['#4a4540', '#7a0d0d'], desc: 'Altar baixo de pedra antiga, com cera escorrida e restos de oferendas.' },
+  // o escritório do Veríssimo (peças inteiras, 06/10): madeira escura nobre e o vermelho, como um conjunto
+  { id: 'shelf_verissimo', name: 'Estante do Veríssimo', category: 'escritorio', kind: 'bookshelf', width: 6, depth: 1, height: 2.6, rotations: ALL, colors: ['#4a2a18', '#2a1810'], desc: 'A estante que pega a parede inteira: livros de couro, pastas da Ordem, um globo, chaves antigas e, dobrado num canto, um pedaço de capuz amarelo.' },
+  { id: 'desk_verissimo', name: 'Mesa do Veríssimo', category: 'escritorio', kind: 'desk', width: 3, depth: 2, height: 0.8, stackable: true, rotations: ALL, colors: ['#4a2a18', '#2a1810', '#3f7a3a'], desc: 'A grande mesa de madeira entalhada, cheia de livros, pastas de casos e a luminária verde.' },
+  { id: 'chair_verissimo', name: 'Cadeira do Veríssimo', category: 'escritorio', kind: 'armchair', width: 1, depth: 1, height: 0.48, sit: true, rotations: ALL, colors: ['#5a1418', '#4a2a18'], desc: 'Espaldar alto entalhado, couro vinho capitonê e tachas de latão.' },
+  { id: 'sofa_verissimo', name: 'Sofá Chesterfield', category: 'escritorio', kind: 'sofa', width: 3, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#8a1c1a'], desc: 'O sofá vermelho-vivo de couro capitonê, de braços enrolados.' },
+  { id: 'armchair_verissimo', name: 'Poltrona das Visitas', category: 'escritorio', kind: 'armchair', width: 1, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#7a1a18'] },
+  { id: 'armor_display', name: 'Armadura de Exposição', category: 'ocultismo', kind: 'pedestal', width: 1, depth: 1, height: 2.0, rotations: ALL, colors: ['#6b6a66', '#3a2a1a'], desc: 'Uma armadura completa num pedestal de madeira escura, com a espada apoiada.' },
+  { id: 'vitrine_paranormal', name: 'Vitrine Paranormal', category: 'ocultismo', kind: 'bookshelf', width: 2, depth: 1, height: 2.0, rotations: ALL, colors: ['#4a2a18', '#9fc4d8'], desc: 'Relíquias no veludo vinho: uma máscara estranha, um crânio marcado, uma adaga escura e o pedaço do capuz amarelo.' },
+  { id: 'pedestal_relic', name: 'Pedestal da Relíquia', category: 'ocultismo', kind: 'pedestal', width: 1, depth: 1, height: 1.3, rotations: ALL, colors: ['#2e2a2a', '#c23a2a'], desc: 'Mármore escuro e uma redoma de vidro com uma relíquia paranormal dentro.' },
+  { id: 'rug_aubusson', name: 'Tapete Aubusson', category: 'mobilia', kind: 'rug', width: 4, depth: 3, height: 0.03, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#8a3a4a', '#d8c8a0'] },
   { id: 'pedestal', name: 'Pedestal com Tigela', category: 'ocultismo', kind: 'pedestal', width: 1, depth: 1, height: 1.0, rotations: ALL, colors: ['#3a3532', '#a8843a'], desc: 'Pedestal estreito de pedra com uma tigela de bronze cheia de cinzas.' },
   { id: 'wax_pool', name: 'Poça de Cera', category: 'ocultismo', kind: 'dirt', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#d8c8a0', '#8a6a3a'], desc: 'Cera derretida no chão, com tocos de vela caídos.' },
   { id: 'sigil_gold', name: 'Selo Dourado', category: 'ocultismo', kind: 'sigil', width: 3, depth: 3, height: 0.01, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#b8903a'] },
@@ -218,6 +236,8 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'food_tray', name: 'Bandeja de Comida', category: 'decoracao', kind: 'crate', width: 1, depth: 1, height: 0.1, stackable: true, rotations: ALL, colors: ['#9aa0a6', '#8a6a3a'], desc: 'Restos de comida e uma caneca de lata.' },
   { id: 'drain', name: 'Ralo', category: 'decoracao', kind: 'dirt', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#3a3226', '#5a6a6a'] },
   { id: 'sink', name: 'Pia', category: 'saude', kind: 'sink', width: 1, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#e8e4dc', '#8a9098'] },
+  // a cortina do leito, inteira (06/10): o leito e o soro ficam dentro (as casas vazias); aberta se entra, fechada não
+  { id: 'bed_curtain', name: 'Cortina do Leito', category: 'saude', kind: 'divider', width: 3, depth: 4, height: 2.2, states: 2, openState: 1, xray: true, vazio: [[1, 0], [1, 1], [1, 2], [0, 0], [2, 0]], rotations: ALL, colors: ['#a8d0b8', '#9aa0a8'], desc: 'O trilho em U com a cortina verde-clara. Fechada, ninguém entra; aberta, fica franzida nos cantos de trás.' },
   { id: 'hospital_bed', name: 'Leito Hospitalar', category: 'saude', kind: 'hospital_bed', width: 1, depth: 3, height: 0.7, rotations: ALL, colors: ['#7fb88a', '#c9ccd0'] },
   { id: 'iv_stand', name: 'Suporte de Soro', category: 'saude', kind: 'iv_stand', width: 1, depth: 1, height: 1.9, rotations: ALL, colors: ['#9aa0a8', '#d8e8f0'] },
   { id: 'medical_cabinet', name: 'Armário de Remédios', category: 'saude', kind: 'medical_cabinet', width: 2, depth: 1, height: 1.9, rotations: ALL, colors: ['#d8dcdf', '#b3261e'] },
@@ -289,6 +309,8 @@ const FURNI_METERS: FurniDef[] = [
 export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'poster_sigil', name: 'Pôster de Sigilo', category: 'parede', kind: 'poster_sigil', w: 44, h: 56, colors: ['#cdbf9c', '#8a1010'] },
   { id: 'notes_wall', name: 'Anotações', category: 'parede', kind: 'notes', w: 40, h: 38, colors: ['#d8cdb0'] },
+  { id: 'painting_coliseu', name: 'Pintura do Coliseu', category: 'parede', kind: 'painting', w: 101, h: 63, colors: ['#b8903a', '#8a6a4a'] },
+  { id: 'board_detective', name: 'Quadro de Detetive', category: 'parede', kind: 'board', w: 152, h: 82, colors: ['#8a6a44', '#b3261e'] },
   { id: 'board_investigation', name: 'Quadro de Investigação', category: 'parede', kind: 'board', w: 76, h: 50, colors: ['#6b4a2e', '#b3261e'] },
   { id: 'window_barred', name: 'Janela Gradeada', category: 'parede', kind: 'window', w: 44, h: 54, states: 2, colors: ['#1c2a3a', '#5fa8ff'] },
   { id: 'sconce', name: 'Arandela de Velas', category: 'parede', kind: 'sconce', w: 16, h: 28, states: 2, colors: ['#8a6a2a', '#e8dcc0'] },
@@ -354,6 +376,23 @@ export function anyFurniName(id: string): string {
 /** Tamanho ocupado no grid para uma rotação. */
 export function footprint(def: Pick<FurniDef, 'width' | 'depth'>, rot: number): { sx: number; sy: number } {
   return rot === 2 || rot === 6 ? { sx: def.depth, sy: def.width } : { sx: def.width, sy: def.depth };
+}
+
+/**
+ * A peça ocupa a casa (dx, dy) da pegada na rotação dada? Só as de `vazio` ficam de fora.
+ * Giro 4: a frente para +y; 0: para -y; 2: para +x; 6: para -x.
+ */
+export function ocupa(def: Pick<FurniDef, 'width' | 'depth' | 'vazio'>, rot: number, dx: number, dy: number): boolean {
+  if (!def.vazio?.length) return true;
+  const W = def.width;
+  const D = def.depth;
+  let u: number;
+  let v: number;
+  if (rot === 4) [u, v] = [dx, dy];
+  else if (rot === 0) [u, v] = [W - 1 - dx, D - 1 - dy];
+  else if (rot === 2) [u, v] = [W - 1 - dy, dx];
+  else [u, v] = [dy, D - 1 - dx];
+  return !def.vazio.some(([a, b]) => a === u && b === v);
 }
 
 export function nextRotation(def: FurniDef, rot: number): number {
