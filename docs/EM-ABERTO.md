@@ -169,18 +169,20 @@ Feito depois (commit 9f756c0):
 - **Tabuleiro mais alto:** a fileira de baixo mais baixa, e o AMPLIAR esconde a fileira.
 - **Painel do objeto em três momentos:** Jogar, Configurar e Mexer.
 
+Feito ainda em 07/10 (commits 6cee4a4 e 926c976):
+- **Alvo do combate** folgado; a **foto do agente no celular** grande, no elemento dele e viva
+  (respira e pisca no ritmo da ficha).
+- **Cobertura pela altura (DC-24, aprovada pelo Felipe):** corpo de 1,8 m em pé e 1,0 m agachado; o
+  botão Agachado no combate e no painel do personagem. As animações de agachar, abaixado, furtivo e
+  cobertura entraram no pacote do Códex dos personagens (etapa 9).
+- **Bug do Descartar:** corrigido (o item cai na cena da peça, na campanha de quem pediu).
+
 Ainda falta (pedido do Felipe):
-- **Alvo do combate:** menos apertado.
-- **Tela do jogador no celular:** os retratos no "Jogo".
-- **Altura dos móveis e escombros:** a cobertura parcial ou total nas contas do ataque, e o agente
-  agachado (furtivo) e se protegendo (animações; entram no pacote do Códex dos personagens).
 - **Quando a arte chegar:**
   - montar a sala de tecnologia cheia e o posto da enfermaria (tirar as duas bancadas e a mesa do
     PC);
   - trocar os ícones;
   - escolher a logo.
-- **Bug visto no teste:** "Descartar" na aba ITENS largou o item do Tepes (no Laboratório) no chão
-  da Enfermaria, a cena aberta pelo mestre. Conferir em que cena o `largar` põe a pilha.
 
 ## Esperando o Códex (07/10, manhã)
 
