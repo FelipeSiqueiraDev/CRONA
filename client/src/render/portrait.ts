@@ -97,14 +97,25 @@ function loadArt(url: string): Promise<Art | null> {
             }
           }
         if (pn > 200) {
-          const ch = Math.min(fh * 0.5, W);
+          // a cabeça inteira, com folga em cima, e um pouco de ombro embaixo (antes fechava tanto que cortava o cabelo)
+          const ch = Math.min(fh * 0.64, W * 1.1);
           const fx = px / pn;
           const fy = py / pn;
-          res({ img, crop: { x: fx - ch / 2, y: fy - ch * 0.46, w: ch, h: ch } });
+          // topo da cabeça: a primeira linha com corpo perto do rosto (arma levantada ao lado não conta)
+          const xa = Math.max(0, Math.round(fx - fh * 0.16));
+          const xb = Math.min(W - 1, Math.round(fx + fh * 0.16));
+          let top = y0;
+          topo: for (let y = y0; y < fy; y++)
+            for (let x = xa; x <= xb; x += 2)
+              if (d[(y * W + x) * 4 + 3] > 96) {
+                top = y;
+                break topo;
+              }
+          res({ img, crop: { x: fx - ch / 2, y: Math.min(top - fh * 0.045, fy - ch * 0.5), w: ch, h: ch } });
           return;
         }
-        const ch = fh * 0.6;
-        res({ img, crop: { x: cx - ch / 2, y: y0 - fh * 0.03, w: ch, h: ch } });
+        const ch = fh * 0.64;
+        res({ img, crop: { x: cx - ch / 2, y: y0 - fh * 0.045, w: ch, h: ch } });
       };
       im.onerror = () => res(null);
       im.src = url;

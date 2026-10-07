@@ -2190,6 +2190,15 @@ html:not(.modo-ficha) :is(.fx-nt-aba.on, .fj-aba.on) {
   color: var(--r-tinta-ouro) !important;
   box-shadow: inset 0 0.12rem 0 rgba(255, 240, 190, 0.7), inset 0 -0.15rem 0 rgba(120, 60, 10, 0.5) !important;
 }
+/* a janela: o cabeçalho cresce com o X (3,6rem) em vez de ficar nos 3,9rem do painel, onde o X vazava
+   para cima e encostava na borda; o X fica à mesma distância do alto e da direita */
+html:not(.modo-ficha) .fj:not(.rq) > .fx-tit {
+  height: auto;
+  min-height: 5.6rem;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 1rem 1.2rem 1rem 1.8rem;
+}
 /* a janela: o X de fechar na ponta, depois da linha de ouro */
 html:not(.modo-ficha) .fx-tit .fj-x {
   order: 4;
