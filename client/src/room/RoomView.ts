@@ -1687,6 +1687,50 @@ export class RoomView {
         };
         (flat ? flats : drawables).push(d);
         if (!ghost) hitOf.set(d, { kind: 'floor', id: it.id, test: (x, y) => pointInPoly(x, y, sil) });
+        if (def.vazio?.length && !flat) {
+          // peça vazada (a cortina do leito, a mesa em U): o que está dentro fica entre as paredes do
+          // fundo e as da frente. A peça inteira vai para trás de tudo de dentro (a quina do fundo) e
+          // as paredes da frente (as faces x1 e y1, as que a câmera vê) são redesenhadas por cima,
+          // recortadas, na quina da frente.
+          const fp = footprint(def, rot);
+          const B = { x0: it.x, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy, z0: box.z0, z1: box.z1 };
+          const e = 0.02;
+          d.box = { x0: B.x0 - e, x1: B.x0, y0: B.y0 - e, y1: B.y0, z0: B.z0, z1: B.z1 };
+          // as faces de perto (x1 e y1), menos o lado aberto: pela face aberta se vê o fundo da peça,
+          // que não pode ser repintado por cima de quem está dentro
+          const ladoX1 = rot === 2 ? 'frente' : rot === 6 ? 'fundo' : 'lado';
+          const ladoY1 = rot === 4 ? 'frente' : rot === 0 ? 'fundo' : 'lado';
+          const aberto = (lado: string) => (def.aberto as string[] | undefined)?.includes(lado) ?? false;
+          const faces: [number, number][][] = [];
+          if (!aberto(ladoY1)) faces.push([iso(B.x0, B.y1, B.z0), iso(B.x1, B.y1, B.z0), iso(B.x1, B.y1, B.z1), iso(B.x0, B.y1, B.z1)]);
+          if (!aberto(ladoX1)) faces.push([iso(B.x1, B.y0, B.z0), iso(B.x1, B.y1, B.z0), iso(B.x1, B.y1, B.z1), iso(B.x1, B.y0, B.z1)]);
+          drawables.push({
+            box: { x0: B.x1, x1: B.x1 + e, y0: B.y1, y1: B.y1 + e, z0: B.z0, z1: B.z1 },
+            sx0: d.sx0,
+            sx1: d.sx1,
+            sy0: d.sy0,
+            sy1: d.sy1,
+            poly: sil,
+            draw: () => {
+              if (!faces.length) return;
+              ctx.save();
+              ctx.beginPath();
+              for (const f of faces) {
+                ctx.moveTo(f[0][0], f[0][1]);
+                for (let i = 1; i < f.length; i++) ctx.lineTo(f[i][0], f[i][1]);
+                ctx.closePath();
+              }
+              ctx.clip();
+              painter.m.set(rot, def.width, def.depth, it.x, it.y, it.z);
+              painter.state = it.state;
+              painter.seed = it.id;
+              ctx.globalAlpha = nodeAlpha;
+              node.draw(painter);
+              ctx.globalAlpha = 1;
+              ctx.restore();
+            },
+          });
+        }
       }
       for (const L of vis.lights) {
         const [lx, ly] = m.p(L.u, L.v, L.z);
