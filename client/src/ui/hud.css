@@ -3438,9 +3438,38 @@ html:not(.modo-ficha) .p-plan .plan-tabs.muitas .plan-tab {
 /* o mapa de batalha era o que mais apertava: o tabuleiro ganha 9 rem de altura e a resolução, que agora mostra um passo
    por vez, perde o mesmo tanto */
 html:not(.modo-ficha) .cb-palco > .cb-tab {
-  height: 46.4rem !important;
+  height: 40.6rem !important;
 }
 html:not(.modo-ficha) .cb-palco > .cb-res {
-  top: 56rem !important;
-  height: 37.2rem !important;
+  top: 50.2rem !important;
+  height: 43rem !important;
+}
+/* o cabeçalho e os passos da resolução mais baixos: sobrava só um terço do painel para escolher a ação */
+html:not(.modo-ficha) .cb-ator {
+  gap: 0.8rem;
+}
+html:not(.modo-ficha) .cb-foto.grande {
+  width: 8.4rem !important;
+  height: 8.4rem !important;
+}
+html:not(.modo-ficha) .cb-ator-dir {
+  gap: 0.4rem;
+}
+html:not(.modo-ficha) .cb-aba {
+  min-height: 4.4rem;
+  padding: 0.3rem 0.2rem 0.25rem !important;
+  gap: 0.2rem !important;
+}
+html:not(.modo-ficha) .cb-aba .arte-ic img,
+html:not(.modo-ficha) .cb-aba > .ic {
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+}
+html:not(.modo-ficha) .cb-passos li > span {
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.15rem;
+}
+html:not(.modo-ficha) .cb-passos::before {
+  top: 0.9rem;
 }
