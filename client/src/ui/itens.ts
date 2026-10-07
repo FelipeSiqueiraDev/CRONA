@@ -180,7 +180,7 @@ export class AbaItens {
         'div',
         { class: 'it-grade equipado' },
         ...naMao.map((it) => this.slot(a, it)),
-        ...Array.from({ length: Math.max(0, regras.MAOS - regras.maosOcupadas(inv)) }, () => h('div', { class: 'it-slot vazio', title: 'Mão livre' }, h('span', { class: 'it-arte' }, ic('mao')), h('span', { class: 'it-nome' }, 'Mão livre'))),
+        ...Array.from({ length: Math.max(0, regras.MAOS - regras.maosOcupadas(inv)) }, () => h('div', { class: 'it-slot vazio', title: 'Mão livre' }, h('span', { class: 'it-arte' }, arteOu(['/arte/icones/mao-livre.png'], ic('mao'))), h('span', { class: 'it-nome' }, 'Mão livre'))),
         ...vestidos.map((it) => this.slot(a, it)),
       ),
       h('h4', { class: 'insp-cab it-sec' }, 'MOCHILA'),

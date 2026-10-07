@@ -130,8 +130,9 @@ const arteArma = (a: ArmaOpcao) =>
 
 const icSit = (id: cb.SituacaoId) => {
   const linha = ic(ICONE_SIT[id] ?? 'alerta');
+  // a arte própria da situação (sit-<id>.png, PROMPT-ICONES-E-LOGO) e, até ela chegar, a do kit que serve
   const pintado = PINTADO_SIT[id];
-  return pintado ? arteOu([`/arte/icones/${pintado}.png`], linha) : linha;
+  return arteOu([`/arte/icones/sit-${id}.png`, ...(pintado ? [`/arte/icones/${pintado}.png`] : [])], linha);
 };
 
 const ICONE_SIT: Partial<Record<cb.SituacaoId, NomeIcone>> = {

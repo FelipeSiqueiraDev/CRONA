@@ -128,6 +128,11 @@ function titulo(texto: string, ...extra: (Node | null)[]) {
 }
 
 /** Os ícones de linha que têm o pintado do kit (arte/icones/<nome>.png); sem a arte, fica o de linha. */
+/** Passo a passo: o passo da resolução (o número de cima) e a parte da tela que ele mostra. */
+const PAGINA_ATAQUE = [0, 0, 1, 1, 2, 3, 3];
+const PAGINA_MANOBRA = [0, 0, 1, 2, 3, 3];
+const PAGINA_RITUAL = [0, 0, 1, 1, 2, 3, 3];
+
 const PINTADO: Partial<Record<NomeIcone, string>> = {
   mira: 'tabuleiro-alcance',
   regua: 'tabuleiro-medir',
@@ -214,6 +219,9 @@ export class CombateScreen {
   private alvoId: number | null = null;
   private atorId: number | null = null;
   private aba: Aba = 'atacar';
+  /** passo a passo da resolução: a página que o mestre abriu pelos números (null = a do passo de agora) */
+  private pagina: number | null = null;
+  private paginaDe = '';
   private filtro: 'todos' | cb.TipoRegistro = 'todos';
   private visivel = false;
   /** a tela está pondo a peça da vez no comando (a seleção que vem daí não troca o alvo) */
@@ -1246,7 +1254,7 @@ export class CombateScreen {
     const tab = x?.tab ?? (mx ? (() => { const a = this.manobra.alvoEscolhido(mx); return a ? mx.tabDe(a.p) : null; })() : null);
     const geo = tab ? [tab.metros === null ? null : Math.round(tab.metros * 10), tab.adjacente, tab.cobertura.tipo, tab.cobertura.nome, tab.elevado, tab.flanqueia, tab.emCorpoACorpo] : null;
     const areaSig = rx ? [this.area?.forma, this.area?.metros, this.area?.alvo, this.area?.fixa, rx.naArea?.map((a) => a.p.id), rx.alvo ? rx.metrosAte(rx.alvo.p) : null] : null;
-    const dados = [c && { ...c, registro: 0 }, this.aba, this.atorId, this.alvoId, this.assinaturaPecas(), this.assinaturaFichas(), this.app.state.room?.id, this.ameacas, geo, this.clima(), areaSig];
+    const dados = [c && { ...c, registro: 0 }, this.aba, this.atorId, this.alvoId, this.assinaturaPecas(), this.assinaturaFichas(), this.app.state.room?.id, this.ameacas, geo, this.clima(), areaSig, this.pagina];
     if (!this.mudou('res', dados)) return;
     if (!c) return this.trocar(this.resCorpo, this.semCombate());
     if (c.fase === 'montando') return this.trocar(this.resCorpo, this.montagem(c));
@@ -1265,7 +1273,36 @@ export class CombateScreen {
     const corpo = x ? this.ataque.montar(x) : mx ? this.manobra.montar(mx) : rx ? this.ritualRes.montar(rx) : this.conteudoAba(c, v.ator);
     const passo = x ? this.ataque.passo(x) : mx ? this.manobra.passo(mx) : rx ? this.ritualRes.passo(rx) : 0;
     const nomes = x ? PASSOS_ATAQUE : mx ? PASSOS_MANOBRA : rx ? PASSOS_RITUAL : this.passosDaAba();
-    this.trocar(this.resCorpo, this.faixaAtor(c, v.e, v.ativos, v.ator), this.passos(nomes, passo, !!x || !!mx || !!rx), corpo);
+    // passo a passo: a tela mostra só a parte do passo de agora, grande; os números de cima voltam a um
+    // passo já feito. Trocou a ação, o agente ou o passo andou: volta a seguir o passo de agora
+    const mapa = x ? PAGINA_ATAQUE : mx ? PAGINA_MANOBRA : rx ? PAGINA_RITUAL : null;
+    let irPara: ((i: number) => void) | undefined;
+    if (mapa) {
+      const chave = `${this.aba}:${v.ator.id}:${passo}`;
+      if (chave !== this.paginaDe) {
+        this.paginaDe = chave;
+        this.pagina = null;
+      }
+      const atual = this.pagina ?? mapa[Math.min(passo, mapa.length - 1)];
+      corpo.classList.add('cb-pap');
+      // o passo do alvo: o que fazer agora, em cima da situação (o alvo se escolhe no tabuleiro)
+      if (passo === 2 && atual === 1)
+        corpo.children[1]?.prepend(h('p', { class: 'cb-pap-dica' }, icPintado('mira'), h('span', null, 'Escolha o alvo: clique na peça no tabuleiro ou no nome na ordem de iniciativa.')));
+      [...corpo.children].forEach((el, i) => el.classList.toggle('cb-pag', i === atual));
+      // de volta a um passo feito: o botão de seguir leva ao passo de agora
+      if (this.pagina !== null)
+        corpo.children[atual]?.append(
+          h('div', { class: 'cb-pap-seguir' }, botao(`Seguir para ${nomes[passo].toLowerCase()}`, 'avancar', () => ((this.pagina = null), this.renderRes()), 'forte')),
+        );
+      irPara = (i) => {
+        const pg = mapa[Math.min(i, mapa.length - 1)];
+        if (i > passo || pg === atual) return;
+        sfx.paper();
+        this.pagina = pg === mapa[Math.min(passo, mapa.length - 1)] ? null : pg;
+        this.renderRes();
+      };
+    }
+    this.trocar(this.resCorpo, this.faixaAtor(c, v.e, v.ativos, v.ator), this.passos(nomes, passo, !!x || !!mx || !!rx, irPara), corpo);
   }
 
   private semCombate(): HTMLElement {
@@ -1551,11 +1588,22 @@ export class CombateScreen {
   }
 
   /** A barra de passos: os feitos em vermelho, o atual com anel, os que faltam em cinza. */
-  private passos(nomes: string[], atual: number, vivo: boolean): HTMLElement {
+  private passos(nomes: string[], atual: number, vivo: boolean, irPara?: (i: number) => void): HTMLElement {
     return h(
       'ol',
       { class: `cb-passos${vivo ? ' vivo' : ''}`, style: `--feito:${nomes.length > 1 ? Math.min(1, atual / (nomes.length - 1)) : 0}` },
-      ...nomes.map((p, i) => h('li', { class: i < atual ? 'feito' : i === atual ? 'atual' : '' }, h('span', null, String(i + 1)), h('small', null, p))),
+      ...nomes.map((p, i) =>
+        h(
+          'li',
+          {
+            class: `${i < atual ? 'feito' : i === atual ? 'atual' : ''}${irPara && i > 0 && i <= atual ? ' volta' : ''}`,
+            title: irPara && i > 0 && i < atual ? `Voltar a ${p.toLowerCase()}` : undefined,
+            onclick: irPara && i > 0 && i <= atual ? () => irPara(i) : undefined,
+          },
+          h('span', null, String(i + 1)),
+          h('small', null, p),
+        ),
+      ),
     );
   }
 

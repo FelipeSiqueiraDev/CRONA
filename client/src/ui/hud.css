@@ -2519,3 +2519,204 @@ html:not(.modo-ficha) .rpg-body .it-bt .ic {
   width: 1.5rem;
   height: 1.5rem;
 }
+
+/* ================================================================ combate passo a passo */
+/* a resolução mostra só a parte do passo de agora, na largura toda; as outras esperam a vez */
+html:not(.modo-ficha) .cb-atk.cb-pap {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+html:not(.modo-ficha) .cb-atk.cb-pap > :not(.cb-pag) {
+  display: none !important;
+}
+html:not(.modo-ficha) .cb-atk.cb-pap > .cb-pag {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: none !important;
+  animation: cb-pag-entra 0.32s var(--h-ease) both;
+}
+@keyframes cb-pag-entra {
+  from {
+    opacity: 0;
+    transform: translateX(1.6rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not(.modo-ficha) .cb-atk.cb-pap > .cb-pag {
+    animation: none;
+  }
+}
+/* as armas (e as manobras e os rituais) em cartões lado a lado, com espaço */
+html:not(.modo-ficha) .cb-atk.cb-pap > .cb-pag :is(.cb-armas, .cb-lista, .cb-rola) {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+  align-content: start;
+  gap: 0.7rem;
+}
+html:not(.modo-ficha) .cb-atk.cb-pap > .cb-pag .cb-arma {
+  min-height: 6.4rem;
+}
+/* os números de cima: o passo feito volta com um clique */
+html:not(.modo-ficha) .cb-passos li.volta {
+  cursor: pointer;
+}
+html:not(.modo-ficha) .cb-passos li.volta:hover span {
+  border-color: var(--r-ouro-hi) !important;
+  box-shadow: 0 0 0.9rem rgba(255, 196, 90, 0.55);
+}
+html:not(.modo-ficha) .cb-passos li.volta:hover small {
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .cb-pap-dica {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 0.2rem 0 0.8rem;
+  padding: 0.8rem 1.1rem;
+  border: 0.15rem solid rgba(233, 169, 68, 0.55);
+  border-radius: 0.6rem;
+  background: rgba(233, 169, 68, 0.08);
+  font: 600 1.3rem / 1.3 var(--r-corpo);
+  color: var(--r-ouro-hi);
+  animation: hud-pulsa 2.4s ease-in-out infinite;
+}
+html:not(.modo-ficha) .cb-pap-dica :is(.arte-ic, .ic) {
+  flex: none;
+  width: 2.6rem;
+  height: 2.6rem;
+}
+html:not(.modo-ficha) .cb-pap-seguir {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 0.8rem;
+}
+
+/* ================================================================ aba INTERLÚDIO */
+html:not(.modo-ficha) .il-dica {
+  font: 500 1.2rem / 1.35 var(--r-corpo) !important;
+  color: var(--r-texto-3) !important;
+}
+/* o lugar do descanso: quatro botões de HUD lado a lado */
+html:not(.modo-ficha) .il-lugar {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem !important;
+}
+html:not(.modo-ficha) .il-chip {
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.55) !important;
+  border-image: none !important;
+  border-radius: 0.55rem !important;
+  background: var(--h-campo) !important;
+  box-shadow: none !important;
+  color: var(--r-texto-2, var(--r-texto)) !important;
+  font: 600 1.05rem / 1.1 var(--r-pixel) !important;
+  min-height: 3rem;
+  padding: 0.4rem 0.3rem !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s,
+    transform 0.15s;
+}
+html:not(.modo-ficha) .il-chip:hover:not(:disabled) {
+  border-color: var(--r-ouro) !important;
+  transform: translateY(-0.1rem);
+}
+html:not(.modo-ficha) .il-chip.on {
+  border-color: var(--r-ouro-hi) !important;
+  background: linear-gradient(180deg, rgba(233, 169, 68, 0.22), rgba(233, 169, 68, 0.06)), var(--h-campo) !important;
+  box-shadow: 0 0 1rem rgba(255, 196, 90, 0.35) !important;
+  color: var(--r-ouro-hi) !important;
+}
+/* as ações: o ícone em cima, o nome embaixo, em cartões */
+html:not(.modo-ficha) .il-acoes {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(6.2rem, 1fr));
+  gap: 0.4rem !important;
+}
+html:not(.modo-ficha) .il-acao {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 5.6rem;
+}
+html:not(.modo-ficha) .il-acao :is(.arte-ic, .ic) {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+html:not(.modo-ficha) .il-acao .arte-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* o cartão de cada agente: a janela do HUD, o retrato e os números */
+html:not(.modo-ficha) .il-agente {
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.45) !important;
+  border-image: none !important;
+  border-radius: 0.7rem !important;
+  background: rgba(5, 11, 20, 0.6) !important;
+  box-shadow: inset 0 0 0 0.12rem rgba(5, 11, 20, 0.9) !important;
+  padding: 0.8rem !important;
+}
+html:not(.modo-ficha) .il-cab {
+  display: grid !important;
+  grid-template-columns: 4.4rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 0.8rem;
+  align-items: center;
+}
+html:not(.modo-ficha) .il-foto {
+  grid-row: 1 / 3;
+  width: 4.4rem;
+  height: 4.4rem;
+  overflow: hidden;
+  border: 0.15rem solid #a18873;
+  border-radius: 0.5rem;
+}
+html:not(.modo-ficha) .il-foto canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+html:not(.modo-ficha) .il-cab b {
+  font: 700 1.35rem / 1.1 var(--r-pixel) !important;
+  color: var(--r-texto) !important;
+  text-shadow: var(--r-sombra-pixel);
+}
+html:not(.modo-ficha) .il-vit {
+  font: 600 1.05rem / 1.2 var(--r-pixel) !important;
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) .il-ganho {
+  font: 700 1.15rem / 1.2 var(--r-pixel) !important;
+  color: #8fe0a0 !important;
+}
+html:not(.modo-ficha) .il-nada {
+  font: 500 1.1rem / 1.2 var(--r-corpo) !important;
+  color: var(--r-texto-3) !important;
+}
+html:not(.modo-ficha) .il-bonus {
+  border: 0.12rem solid rgba(161, 136, 115, 0.45) !important;
+  border-radius: 0.45rem !important;
+  background: var(--h-campo) !important;
+  color: var(--r-texto-3) !important;
+  font: 600 1rem / 1 var(--r-pixel) !important;
+}
+html:not(.modo-ficha) .il-bonus.tem {
+  border-color: var(--r-ouro) !important;
+  color: var(--r-ouro-hi) !important;
+}
+html:not(.modo-ficha) .il-prato {
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.7) !important;
+  border-radius: var(--h-raio) !important;
+  background: var(--h-campo) !important;
+  color: var(--r-texto) !important;
+}
+html:not(.modo-ficha) .il-rodape {
+  display: grid !important;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 0.6rem;
+}
