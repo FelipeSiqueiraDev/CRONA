@@ -7408,5 +7408,155 @@
    2.25,
    1.2
   ]
+ },
+ "casarao": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "casarao/giro-4.png",
+    "ax": 896.0,
+    "ay": 1380.0
+   },
+   "6": {
+    "arquivo": "casarao/giro-6.png",
+    "ax": 576.0,
+    "ay": 1419.0
+   },
+   "0": {
+    "arquivo": "casarao/giro-0.png",
+    "ax": 896.0,
+    "ay": 1439.0
+   },
+   "2": {
+    "arquivo": "casarao/giro-2.png",
+    "ax": 576.0,
+    "ay": 1457.0
+   }
+  },
+  "real": [
+   10.5,
+   6.75,
+   6.5
+  ]
+ },
+ "celeiro": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "celeiro/giro-4.png",
+    "ax": 768.0,
+    "ay": 1098.0
+   },
+   "6": {
+    "arquivo": "celeiro/giro-6.png",
+    "ax": 512.0,
+    "ay": 1128.0
+   },
+   "0": {
+    "arquivo": "celeiro/giro-0.png",
+    "ax": 768.0,
+    "ay": 1124.0
+   },
+   "2": {
+    "arquivo": "celeiro/giro-2.png",
+    "ax": 512.0,
+    "ay": 1102.0
+   }
+  },
+  "real": [
+   9.0,
+   6.0,
+   6.5
+  ]
+ },
+ "galpao": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "galpao/giro-4.png",
+    "ax": 512.0,
+    "ay": 779.0
+   },
+   "6": {
+    "arquivo": "galpao/giro-6.png",
+    "ax": 384.0,
+    "ay": 773.0
+   },
+   "0": {
+    "arquivo": "galpao/giro-0.png",
+    "ax": 512.0,
+    "ay": 796.0
+   },
+   "2": {
+    "arquivo": "galpao/giro-2.png",
+    "ax": 384.0,
+    "ay": 767.0
+   }
+  },
+  "real": [
+   6.0,
+   4.5,
+   4.6
+  ]
+ },
+ "fonte": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "fonte/giro-4.png",
+    "ax": 136.0,
+    "ay": 275.0
+   },
+   "6": {
+    "arquivo": "fonte/giro-6.png",
+    "ax": 136.0,
+    "ay": 275.0
+   },
+   "0": {
+    "arquivo": "fonte/giro-0.png",
+    "ax": 135.5,
+    "ay": 275.0
+   },
+   "2": {
+    "arquivo": "fonte/giro-2.png",
+    "ax": 134.5,
+    "ay": 275.0
+   }
+  },
+  "real": [
+   2.25,
+   2.25,
+   2.17
+  ]
+ },
+ "placa": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "placa/giro-4.png",
+    "ax": 37.0,
+    "ay": 211.5
+   },
+   "6": {
+    "arquivo": "placa/giro-6.png",
+    "ax": 39.0,
+    "ay": 211.5
+   },
+   "0": {
+    "arquivo": "placa/giro-0.png",
+    "ax": 37.0,
+    "ay": 211.5
+   },
+   "2": {
+    "arquivo": "placa/giro-2.png",
+    "ax": 33.0,
+    "ay": 211.5
+   }
+  },
+  "real": [
+   0.7,
+   0.15,
+   1.76
+  ]
  }
 }

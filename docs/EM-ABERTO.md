@@ -237,6 +237,24 @@ Ainda falta (pedido do Felipe):
 - **Pedidos novos de arte (Lote 3C, `PROMPT-MOVEIS-VAZIOS.txt`):** o beliche + cores das camas, as gêmeas vazias, 12 quadros
   genéricos de fazenda (viram `painting~d`... pelo sorteio) e os ícones dos brinquedos.
 
+## Fazenda: a arte do Códex entrando (08/10, madrugada)
+
+- **Já no jogo:** a casa por dentro (`moveis-fazenda-casa.json`, 17 peças); a natureza de fora
+  (`moveis-fazenda-natureza.json`: mangueira, ipê e a árvore menor como `arvore`, `~b`, `~c`; dois arbustos; milharal,
+  canteiro, sacas, fardo de feno, cerca e carroça); os prédios de fora (`moveis-fazenda-predios.json`: casarão, celeiro,
+  casa de mantimentos, fonte e placa). As folhas do Códex vêm na escala certa (0,75 m = 168 px, 1,80 m = 247 px): a
+  árvore e o arbusto vão "por imagem" com a altura medida na folha, o resto pela largura de verdade.
+- **A copa passa da casa:** árvore e arbusto não encolhem para caber na casa (`COPA` em `furniArte.ts`); antes ficavam do
+  tamanho de gente.
+- **Falta entrar:**
+  - a porteira (fechada e aberta: a aberta tem o mourão solto, outra largura em cada vista; precisa de `estados` com cuidado);
+  - o calabouço inteiro (`tanque-corpo` a/b/c, `mesa-contencao`, `pilha-cranios`, `alcapao-aberto`, `escada-mao`, e de parede
+    `tocha-parede` e `estandarte-sangue`): precisa de defs novas (o `tank` da Sede é 2 × 2 com luz; o do Códex tem ~1 m) e de
+    pôr no `seedFazenda.ts` no lugar dos racks e consoles (subir `FAZENDA_REV`). Combinar com o Felipe;
+  - as texturas `parede-calabouco` e `parede-celeiro` (1024 × 512, outro caminho, o das paredes);
+  - as variações meio mortas (árvores, arbustos, milho, canteiro): ficam para os lugares abandonados.
+  Os zips desempacotados estão em `%TEMP%\fz\` (some ao reiniciar; o original está na pasta da arte).
+
 ## Esperando o Códex (07/10, manhã)
 
 - **Armados dos quatro (tabuleiro):** só rascunhos em `C:\Users\felip\Documents\Codex\2026-10-04\leia-o-prompt-personagens-txt-na\outputs\continuacao-06-10\armados\` (`*-oito-direcoes-armad*-rascunho.png`), reprovados pelo próprio Códex por causa das mãos (a revisão está em `Personagens/revisao-maos-07-10/` na pasta da arte; NÃO importar). O gerador volta às 14h50 de 07/10. **Decidido pelo Felipe:** esperar a versão certa (`personagens-armados.zip`); quando chegar, importar com `npm run arte:poses -- <folha> <nome> --estado armado --hd` e conferir mão por mão (direita/esquerda de cada direção, como na revisão).
