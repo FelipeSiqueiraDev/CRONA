@@ -304,10 +304,18 @@ Ainda falta (pedido do Felipe):
 - **Ícones do combate no jogo:** as 18 situações do ataque (`arte/icones/sit-*.png`, entram sozinhas pelo `icSit`), a
   cobertura total na linha e na chave de cobertura, e o botão de postura com o "agachar" (em pé) e o "protegido"
   (agachado).
+- **COMBATE refeito ("não tá muito boa"):** (1) o combate perdia o agente quando a peça era recriada (a viagem entre
+  campanhas troca o id): sem retrato, sem PV, "sem ataques". Agora o servidor religa pelo nome (`religarCombate`, com a
+  ficha da ameaça junto; teste `combate-religar.test.ts`). (2) O arranjo novo (fim do `hud.css`): a ORDEM DE INICIATIVA
+  numa faixa de cartas em cima, a RESOLUÇÃO mais larga e alta, e a coluna com ALVO, EFEITOS e REGISTRO (o registro estava
+  com 16 px de altura); as situações uma por linha, com o texto inteiro e o ícone pintado maior; o alvo vazio sem a
+  coluna espremida.
+- **Ícones do celular, do interlúdio e da mochila/objeto no jogo** (o interlúdio ganhou os da condição do descanso e
+  dos bônus). `obj-documento` e `obj-tranca` estão na pasta, sem botão onde entrar ainda.
 - **A logo continua a de hoje** (o Felipe gosta dela): as duas propostas do Códex (`logo-crona-propostas.zip`) ficam
   de fora.
 - **Esperando o Felipe conferir em casa:** o teste dos rituais, os ícones da mesa (Apontar, Desenhar, Mapa) e a viagem em
-  pixel. **Chegou e falta entrar:** ícones do celular, do interlúdio, da mochila e do objeto; a tecnologia cheia (com a
+  pixel. **Chegou e falta entrar:** a tecnologia cheia (com a
   vista de cima) e o posto da enfermaria; a vista de cima da fazenda; o refazer do celeiro, da casa de mantimentos e do
   casarão (com as portas abertas); os quadros, os beliches e a cama D; o altar e a sala dos corpos do calabouço.
 - **Som no celular:** o navegador só libera o som quando o dedo solta (`audioCelular.ts`); no iPhone, o modo reprodução

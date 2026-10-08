@@ -3811,3 +3811,193 @@ html:not(.modo-ficha) .cb-res :is(.cb-mont-pe, .cb-mont-botoes, .cb-mont-mestre)
 html:not(.modo-ficha) .cb-palco > .cb-tab .cb-tab-cena {
   top: 5.8rem !important;
 }
+
+/* ================================================================ COMBATE: o arranjo de 08/10 (o Felipe: "não tá muito boa")
+   À esquerda o mapa de batalha, do mesmo tamanho. À direita, em cima, a ORDEM DE INICIATIVA vira uma faixa de cartas lado a
+   lado (como o marcador de turnos dos jogos), com Atrasar, Preparar e Passar turno na ponta. Embaixo dela, a RESOLUÇÃO DA
+   AÇÃO mais larga e mais alta, e uma coluna com o ALVO, os EFEITOS E PENDÊNCIAS e o REGISTRO (que estava esmagado). */
+html:not(.modo-ficha) .cb-palco > .cb-ini {
+  left: 85.6rem !important;
+  top: 8.8rem !important;
+  width: 80.8rem !important;
+  height: 14.4rem !important;
+}
+html:not(.modo-ficha) .cb-palco > .cb-res {
+  left: 85.6rem !important;
+  top: 24rem !important;
+  width: 48.4rem !important;
+  height: 69.2rem !important;
+}
+html:not(.modo-ficha) .cb-palco > .cb-alvo {
+  left: 134.8rem !important;
+  top: 24rem !important;
+  width: 31.6rem !important;
+  height: 30.4rem !important;
+}
+html:not(.modo-ficha) .cb-palco > .cb-pend {
+  left: 134.8rem !important;
+  top: 55.2rem !important;
+  width: 31.6rem !important;
+  height: 13.6rem !important;
+}
+html:not(.modo-ficha) .cb-palco > .cb-reg {
+  left: 134.8rem !important;
+  top: 69.6rem !important;
+  width: 31.6rem !important;
+  height: 23.6rem !important;
+}
+
+/* --- a faixa da iniciativa: as cartas em fila, os botões em pé na ponta --- */
+html:not(.modo-ficha) .cb-ini .cb-ini-corpo {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 13rem;
+  gap: 0.8rem;
+  align-items: stretch;
+  padding: 0.6rem 0.9rem 0.8rem !important;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-lista {
+  flex-direction: row !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  gap: 0.6rem !important;
+  padding-bottom: 0.3rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha {
+  position: relative;
+  flex: 0 0 21rem !important;
+  width: 21rem !important;
+  min-height: 0 !important;
+  height: 100%;
+  gap: 0.6rem !important;
+  padding: 0.4rem 0.7rem !important;
+  scroll-snap-align: start;
+}
+/* na carta: o número, a foto e o nome; a seta sai e o "Sua vez" vira um selo no canto */
+html:not(.modo-ficha) .cb-ini .cb-ini-linha .cb-seta {
+  display: none !important;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha .cb-fotos {
+  flex: none;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha .cb-ini-txt {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha .cb-ini-txt b {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha .cb-suavez {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.6rem;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha:hover {
+  transform: translateY(-0.2rem) !important;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-botoes {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.4rem !important;
+  margin: 0 !important;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-botoes .cb-bt {
+  flex: 1 1 0;
+  min-height: 0 !important;
+  height: auto !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  gap: 0.6rem !important;
+  padding: 0 0.8rem !important;
+  font-size: 1.1rem !important;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-botoes .cb-bt :is(.arte-ic, .ic, .arte-ic img) {
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+/* --- o alvo na coluna fina: a foto e o nome, o PV embaixo, a defesa e as resistências em fileiras --- */
+html:not(.modo-ficha) .cb-alvo .cb-alvo-corpo {
+  grid-template-columns: 5.4rem minmax(0, 1fr) !important;
+}
+html:not(.modo-ficha) .cb-alvo .cb-alvo-id {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+}
+html:not(.modo-ficha) .cb-alvo .cb-alvo-conds {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  justify-self: start !important;
+  justify-content: flex-start !important;
+}
+html:not(.modo-ficha) .cb-alvo .cb-foto.alvo {
+  grid-row: 1 / 3 !important;
+}
+html:not(.modo-ficha) .cb-alvo .cb-alvo-pv {
+  grid-column: 1 / -1 !important;
+  grid-row: 3 !important;
+}
+html:not(.modo-ficha) .cb-alvo .cb-alvo-linha.um {
+  grid-column: 1 / -1 !important;
+  grid-row: 4 !important;
+}
+html:not(.modo-ficha) .cb-alvo .cb-alvo-linha.tres {
+  grid-column: 1 / -1 !important;
+  grid-row: 5 !important;
+}
+/* sem alvo: o aviso na largura toda (ele ficava espremido na coluna da foto, uma palavra por linha) */
+html:not(.modo-ficha) .cb-alvo .cb-alvo-corpo > .cb-vazio {
+  grid-column: 1 / -1 !important;
+  align-self: center;
+  text-align: center;
+  padding: 1rem 0.6rem;
+}
+
+/* --- as situações do ataque: uma por linha, o texto inteiro e o ícone pintado maior --- */
+html:not(.modo-ficha) .cb-res .cb-atk.cb-pap > .cb-pag .cb-col-lista {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.45rem !important;
+}
+html:not(.modo-ficha) .cb-res .cb-sit {
+  grid-template-columns: 3.2rem minmax(0, 1fr) 1.8rem auto !important;
+  min-height: 3.8rem !important;
+  height: auto !important;
+  padding: 0.35rem 0.6rem !important;
+}
+html:not(.modo-ficha) .cb-res .cb-sit.info {
+  grid-template-columns: 3.2rem minmax(0, 1fr) !important;
+}
+html:not(.modo-ficha) .cb-res :is(.cb-sit-ic, .cb-sit-ic .arte-ic, .cb-sit-ic .arte-ic img) {
+  width: 3rem !important;
+  height: 3rem !important;
+}
+html:not(.modo-ficha) .cb-res .cb-sit-txt {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* --- o registro: agora com altura de verdade --- */
+html:not(.modo-ficha) .cb-reg .cb-reg-corpo {
+  min-height: 6rem;
+}
+
+/* o interlúdio com os ícones pintados (08/10): a condição do descanso e os bônus guardados */
+html:not(.modo-ficha) .il-chip {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.4rem;
+  height: auto !important;
+  min-height: 2.6rem;
+}
+html:not(.modo-ficha) :is(.il-chip, .il-bonus) :is(.arte-ic, .arte-ic img) {
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  object-fit: contain;
+}

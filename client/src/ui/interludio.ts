@@ -63,6 +63,8 @@ export class AbaInterludio {
         h(
           'button',
           { class: `il-chip${l.id === this.lugar ? ' on' : ''}`, type: 'button', role: 'radio', 'aria-checked': String(l.id === this.lugar), title: `${l.exemplo} (recuperação ×${String(l.vezes).replace('.', ',')})`, disabled: !gm, onclick: () => ((this.lugar = l.id), mudou()) },
+          // o pintado da condição (il-<lugar>.png): a barraca, a cama simples, o quarto bom, a suíte
+          arteOu([`/arte/icones/il-${l.id}.png`], h('span')),
           l.nome,
         ),
       ),
@@ -102,6 +104,7 @@ export class AbaInterludio {
         return h(
           'span',
           { class: `il-bonus${v ? ' tem' : ''}`, title: `+1d6 num teste de ${attr} até o fim da missão (até ${max})` },
+          arteOu([`/arte/icones/il-bonus-${tipo}.png`], h('span')),
           `${nome} ${v}`,
           gm && v ? h('button', { class: 'il-usar', type: 'button', title: 'Gastar um (o jogador usou num teste)', 'aria-label': `Gastar um bônus de ${nome}`, onclick: () => (sfx.click(), this.app.net.send({ t: 'bonusInterludio', fichaId: f.id, tipo, delta: -1 })) }, ic('menos')) : null,
         );

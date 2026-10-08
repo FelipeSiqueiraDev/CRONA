@@ -88,6 +88,28 @@ interface MesaBar {
 }
 const NOME_MESA: Record<bar.TipoJogoBar, string> = { fliperama: 'o fliperama', dardos: 'os dardos', sinuca: 'a sinuca' };
 
+/** As chaves do combate que guardam o id de uma peça (as outras contas, como a rodada, ficam como estão). */
+const CHAVES_DE_PECA = new Set(['id', 'quem', 'alvo', 'ator', 'alvos', 'participantes', 'ids', 'de', 'para']);
+
+/** Troca os ids de peça pelo mapa: nos campos de peça, no "p:<id>" das entradas e nas chaves por id. */
+function trocarIds(v: unknown, mapa: Map<number, number>, chave?: string): unknown {
+  if (typeof v === 'number') return chave && CHAVES_DE_PECA.has(chave) ? (mapa.get(v) ?? v) : v;
+  if (typeof v === 'string') {
+    const m = /^p:(\d+)$/.exec(v);
+    return m && mapa.has(Number(m[1])) ? `p:${mapa.get(Number(m[1]))}` : v;
+  }
+  if (Array.isArray(v)) return v.map((x) => trocarIds(x, mapa, chave));
+  if (v && typeof v === 'object') {
+    const o: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v)) {
+      const nk = /^\d+$/.test(k) && mapa.has(Number(k)) ? String(mapa.get(Number(k))) : k;
+      o[nk] = trocarIds(x, mapa, k);
+    }
+    return o;
+  }
+  return v;
+}
+
 const GM_ONLY = new Set([
   'createRoom',
   'barJogar',
@@ -298,6 +320,7 @@ export class Hotel implements HotelApi {
     const group = this.sceneGroup(room.data.id);
     const key = Math.min(...group);
     const camp = this.campaignFor(key);
+    this.religarCombate(group, camp);
     const pilha = this.desfazeres.get(key) ?? [];
     this.desfazeres.set(key, pilha);
     if (a.tipo === 'desfazer') {
@@ -1166,6 +1189,7 @@ export class Hotel implements HotelApi {
       if (cj === undefined) {
         const key = Math.min(...group);
         const camp = this.campaignFor(key);
+        this.religarCombate(group, camp);
         const cb = camp.combate ?? null;
         const podeDesfazer = role === 'gm' && (this.desfazeres.get(key)?.length ?? 0) > 0;
         // as fichas das ameaças são só do mestre (DC-4)
@@ -1177,6 +1201,37 @@ export class Hotel implements HotelApi {
         c.send(JSON.parse(cj) as ServerMsg);
       }
     }
+  }
+
+  /**
+   * O combate guarda as peças pelo id. Quando a peça é recriada (a viagem para outra campanha, a Sede
+   * remontada), o id muda e o combate perdia o agente (sem retrato, sem PV, sem armas). O participante
+   * cujo id sumiu é religado à peça do grupo com o mesmo nome, e a ficha da ameaça vai junto.
+   */
+  private religarCombate(group: number[], camp: CampaignData) {
+    const c = camp.combate;
+    if (!c || c.fase === 'encerrado') return;
+    const pecas = group.flatMap((id) => this.rooms.get(id)?.tokensLive() ?? []);
+    const ids = new Set(pecas.map((p) => p.token.id));
+    const perdidos = c.participantes.filter((p) => !ids.has(p.id));
+    if (!perdidos.length) return;
+    const usados = new Set(c.participantes.filter((p) => ids.has(p.id)).map((p) => p.id));
+    const mapa = new Map<number, number>();
+    for (const p of perdidos) {
+      const nova = pecas.find((x) => !usados.has(x.token.id) && x.name.toLowerCase() === p.nome.toLowerCase());
+      if (!nova) continue;
+      mapa.set(p.id, nova.token.id);
+      usados.add(nova.token.id);
+    }
+    if (!mapa.size) return;
+    camp.combate = trocarIds(c, mapa) as typeof c;
+    if (camp.ameacas)
+      for (const [velho, novo] of mapa)
+        if (camp.ameacas[String(velho)] && !camp.ameacas[String(novo)]) {
+          camp.ameacas[String(novo)] = camp.ameacas[String(velho)];
+          delete camp.ameacas[String(velho)];
+        }
+    this.save();
   }
 
   /** Objetivos, título, planta e carga: só o mestre da cena atual. */
