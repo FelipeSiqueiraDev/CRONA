@@ -310,6 +310,15 @@ Ainda falta (pedido do Felipe):
   numa faixa de cartas em cima, a RESOLUÇÃO mais larga e alta, e a coluna com ALVO, EFEITOS e REGISTRO (o registro estava
   com 16 px de altura); as situações uma por linha, com o texto inteiro e o ícone pintado maior; o alvo vazio sem a
   coluna espremida.
+- **COMBATE, segunda volta ("tudo torto apertadin"; o Felipe pediu o ataque rápido):** o ataque virou um cartão só
+  (`montarRapido` em `combateAtaque.ts`): com o quê (etiquetas, a arma da mão já escolhida), em quem (clicar no mapa; a
+  Defesa e o alcance), o que vale (só as situações que o mapa achou, em etiquetas que se tiram com um toque; as de marcar
+  à mão atrás do "+ situação"), o d20 (e o d10 da camuflagem), a soma do dano com o que acontece com o alvo, e Desfazer
+  / Confirmar sempre à vista. Os dados continuam físicos: a tela só faz a conta. Manobra e ritual seguem no passo a
+  passo. O arranjo (`combateRapido.css`): o mapa com a GAVETA embaixo (abas Alvo, Efeitos e pendências com o número,
+  Registro), a faixa da iniciativa e a resolução na altura toda à direita.
+- **MAPA:** as cartas dos agentes sem o sigilo do elemento e sem os botões de girar (o girar fica no painel do
+  personagem, à esquerda); PV, PE e SAN com − e + alinhados (tudo com a mesma altura, os sinais no meio).
 - **Ícones do celular, do interlúdio e da mochila/objeto no jogo** (o interlúdio ganhou os da condição do descanso e
   dos bônus). `obj-documento` e `obj-tranca` estão na pasta, sem botão onde entrar ainda.
 - **A logo continua a de hoje** (o Felipe gosta dela): as duas propostas do Códex (`logo-crona-propostas.zip`) ficam

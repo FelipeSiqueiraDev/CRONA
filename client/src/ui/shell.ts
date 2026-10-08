@@ -3114,8 +3114,6 @@ export class Shell {
       away,
       h('i', { class: 'pc-glow', 'aria-hidden': 'true' }),
       h('i', { class: 'pc-glare', 'aria-hidden': 'true' }),
-      this.turnButton(id, false),
-      this.turnButton(id, true),
     );
     paperize(el, { kit: false, seed: 60 + i * 3, tone: '#cfb99f', burn: 0.72, stripe: p.color, torn: 1.8, backs: [{ dx: 3, dy: 3, rot: 1.8 }, { dx: -3, dy: 5, rot: -1.3 }], pad: 22 });
     tilt(el);
@@ -3126,29 +3124,6 @@ export class Shell {
   private cardPortraitSize() {
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
     return Math.max(64, Math.round(12.5 * 0.8 * rem));
-  }
-
-  /** Botãozinho de girar no canto da carta (a carta inteira continua comandando). */
-  private turnButton(id: number, cw: boolean) {
-    const run = (e: Event) => {
-      e.stopPropagation();
-      e.preventDefault();
-      this.turnToken(id, cw);
-    };
-    return h(
-      'span',
-      {
-        class: `pc-turn ${cw ? 'r' : 'l'}`,
-        role: 'button',
-        tabindex: '0',
-        title: cw ? 'Girar para a direita (E)' : 'Girar para a esquerda (Q)',
-        'aria-label': cw ? 'Girar para a direita' : 'Girar para a esquerda',
-        onclick: run,
-        onpointerdown: (e: Event) => e.stopPropagation(),
-        onkeydown: (e: KeyboardEvent) => (e.key === 'Enter' || e.key === ' ') && run(e),
-      },
-      cw ? '↻' : '↺',
-    );
   }
 
   private pickCard(id: number) {

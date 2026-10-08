@@ -265,6 +265,9 @@ export class CombateScreen {
   private btApontar: HTMLButtonElement;
   private btDesenhar: HTMLButtonElement;
   private alvoExtra: HTMLElement;
+  /** a gaveta de baixo: o Alvo, os Efeitos e o Registro, um por vez (08/10: eram três painéis espremidos) */
+  private gaveta: HTMLElement;
+  private gavetaAba: 'alvo' | 'pend' | 'reg' = 'alvo';
   /** Apontar e Desenhar (as ferramentas da mesa, as mesmas do MAPA): a tela MAPA liga e desliga */
   aoFerramentaMesa: ((tipo: 'ponto' | 'traco') => void) | null = null;
 
@@ -310,8 +313,19 @@ export class CombateScreen {
     const anotar = h('button', { class: 'cb-menu', type: 'button', title: 'Anotar no registro', 'aria-label': 'Anotar no registro', onclick: () => (sfx.click(), void this.anotar()) }, icPintado('lapis'));
     const pReg = papel(h('section', { class: 'cb-p cb-reg' }, titulo('REGISTRO DO COMBATE', anotar), this.regFiltro, this.regCorpo, this.regDesfazer), 305);
 
+    // a gaveta: as abas em cima, um painel por vez
+    const abaGaveta = (id: 'alvo' | 'pend' | 'reg', rotulo: string, icone: NomeIcone) =>
+      h('button', { class: 'cb-gav-aba', type: 'button', 'data-aba': id, onclick: () => (sfx.click(), this.abrirGaveta(id)) }, icPintado(icone), h('span', null, rotulo), h('i', { class: 'cb-gav-n' }));
+    this.gaveta = h(
+      'section',
+      { class: 'cb-gaveta', 'data-aba': 'alvo' },
+      h('nav', { class: 'cb-gav-abas' }, abaGaveta('alvo', 'Alvo', 'mira'), abaGaveta('pend', 'Efeitos e pendências', 'alerta'), abaGaveta('reg', 'Registro', 'livro')),
+      pAlvo,
+      pPend,
+      pReg,
+    );
     this.fundo = h('div', { class: 'cb-fundo', 'aria-hidden': 'true' });
-    this.el = h('div', { class: 'cb hidden' }, this.fundo, h('div', { class: 'cb-palco' }, pIni, pPend, this.quadro, pRes, pAlvo, pReg));
+    this.el = h('div', { class: 'cb hidden' }, this.fundo, h('div', { class: 'cb-palco' }, pIni, this.quadro, pRes, this.gaveta));
     // o fundo escuro tem um buraco onde fica o tabuleiro
     new ResizeObserver(() => this.furar()).observe(this.quadro);
     window.addEventListener('resize', () => this.furar());
@@ -320,6 +334,7 @@ export class CombateScreen {
       this.sairFerramenta();
     });
 
+    this.abrirGaveta('alvo');
     app.session.subscribe(() => this.render());
     app.on('room', () => this.render());
     app.on('characters', () => (this.sigs.clear(), this.render()));
@@ -327,9 +342,23 @@ export class CombateScreen {
       const s = app.view?.selection;
       if (!this.visivel || this.pondoNaVez || s?.kind !== 'user' || s.id >= 0) return;
       // clicar numa peça do tabuleiro sem a tela interceptar (fora do combate): vira o alvo
-      if (-s.id !== this.daVez()?.ator?.id) this.alvoId = -s.id;
+      if (-s.id !== this.daVez()?.ator?.id) (this.alvoId = -s.id), this.abrirGaveta('alvo');
       this.render();
     });
+  }
+
+  /** Abre uma aba da gaveta de baixo (Alvo, Efeitos e pendências, Registro). */
+  private abrirGaveta(id: 'alvo' | 'pend' | 'reg') {
+    this.gavetaAba = id;
+    this.gaveta.dataset.aba = id;
+    for (const b of this.gaveta.querySelectorAll<HTMLElement>('.cb-gav-aba')) b.classList.toggle('on', b.dataset.aba === id);
+  }
+
+  /** O número de pendências na aba (o que não é "nada pendente"). */
+  private contarPendencias() {
+    const n = this.pendCorpo.querySelectorAll('.cb-pend-item:not(.bom)').length;
+    const el = this.gaveta.querySelector<HTMLElement>('.cb-gav-aba[data-aba="pend"] .cb-gav-n');
+    if (el) (el.textContent = n ? String(n) : ''), el.classList.toggle('tem', n > 0);
   }
 
   // ================================================================ entrada
@@ -1016,6 +1045,7 @@ export class CombateScreen {
     if (!this.visivel) return;
     this.renderIni();
     this.renderPend();
+    this.contarPendencias();
     this.renderTab();
     this.renderRes();
     this.renderAlvo();
@@ -1319,12 +1349,14 @@ export class CombateScreen {
           h('div', { class: 'cb-sem-botoes' }, botao('Pôr no combate', 'entrar', () => this.dialogoEntrar(), 'claro'), botao('Encerrar combate', 'bandeira', () => void this.encerrar(), 'forte')),
         ),
       );
-    const corpo = x ? this.ataque.montar(x) : mx ? this.manobra.montar(mx) : rx ? this.ritualRes.montar(rx) : this.conteudoAba(c, v.ator);
-    const passo = x ? this.ataque.passo(x) : mx ? this.manobra.passo(mx) : rx ? this.ritualRes.passo(rx) : 0;
-    const nomes = x ? PASSOS_ATAQUE : mx ? PASSOS_MANOBRA : rx ? PASSOS_RITUAL : this.passosDaAba();
+    // o ataque é o cartão rápido: tudo de cima para baixo, sem o passo a passo (08/10)
+    if (x) return this.trocar(this.resCorpo, this.faixaAtor(c, v.e, v.ativos, v.ator), this.ataque.montarRapido(x));
+    const corpo = mx ? this.manobra.montar(mx) : rx ? this.ritualRes.montar(rx) : this.conteudoAba(c, v.ator);
+    const passo = mx ? this.manobra.passo(mx) : rx ? this.ritualRes.passo(rx) : 0;
+    const nomes = mx ? PASSOS_MANOBRA : rx ? PASSOS_RITUAL : this.passosDaAba();
     // passo a passo: a tela mostra só a parte do passo de agora, grande; os números de cima voltam a um
     // passo já feito. Trocou a ação, o agente ou o passo andou: volta a seguir o passo de agora
-    const mapa = x ? PAGINA_ATAQUE : mx ? PAGINA_MANOBRA : rx ? PAGINA_RITUAL : null;
+    const mapa = mx ? PAGINA_MANOBRA : rx ? PAGINA_RITUAL : null;
     let irPara: ((i: number) => void) | undefined;
     if (mapa) {
       const chave = `${this.aba}:${v.ator.id}:${passo}`;
@@ -1351,7 +1383,7 @@ export class CombateScreen {
         this.renderRes();
       };
     }
-    this.trocar(this.resCorpo, this.faixaAtor(c, v.e, v.ativos, v.ator), this.passos(nomes, passo, !!x || !!mx || !!rx, irPara), corpo);
+    this.trocar(this.resCorpo, this.faixaAtor(c, v.e, v.ativos, v.ator), this.passos(nomes, passo, !!mx || !!rx, irPara), corpo);
   }
 
   private semCombate(): HTMLElement {

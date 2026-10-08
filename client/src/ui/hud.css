@@ -2432,8 +2432,10 @@ html:not(.modo-ficha) .pcard .pc-photo::after {
     opacity 0.2s,
     transform 0.25s var(--h-ease);
 }
-html:not(.modo-ficha) .pcard[data-tema='ordem'] .pc-photo::after {
-  display: none;
+html:not(.modo-ficha) .pcard[data-tema='ordem'] .pc-photo::after,
+/* 08/10: o Felipe não quer o sigilo nas cartas (fica a cor da moldura) */
+html:not(.modo-ficha) .pcard .pc-photo::after {
+  display: none !important;
 }
 html:not(.modo-ficha) .pcard:hover .pc-photo,
 html:not(.modo-ficha) .pcard.on .pc-photo {
@@ -4000,4 +4002,21 @@ html:not(.modo-ficha) :is(.il-chip, .il-bonus) :is(.arte-ic, .arte-ic img) {
   width: 2.2rem !important;
   height: 2.2rem !important;
   object-fit: contain;
+}
+
+/* PV, PE e SAN com − e + (o painel do personagem e o PLAYERS): tudo na mesma altura e os sinais no meio
+   (08/10: o Felipe achou tortos; o − da fonte pixelada ficava baixo e cada peça tinha uma altura) */
+html:not(.modo-ficha) .vt {
+  align-items: center !important;
+}
+html:not(.modo-ficha) :is(.vt-btn, .vt-max, .vt-bar) {
+  box-sizing: border-box;
+  height: 2.6rem !important;
+  margin: 0 !important;
+}
+html:not(.modo-ficha) .vt-btn {
+  display: grid !important;
+  place-items: center;
+  padding: 0 !important;
+  font: 700 1.9rem / 1 var(--r-corpo) !important;
 }

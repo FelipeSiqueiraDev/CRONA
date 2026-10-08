@@ -1,0 +1,467 @@
+/* =====================================================================
+   COMBATE: o ataque rápido e a gaveta (08/10, segunda volta; carregado depois do hud.css)
+   O mapa à esquerda, com a GAVETA embaixo dele (abas: Alvo, Efeitos e pendências, Registro, um por vez); à direita
+   a faixa da iniciativa e a RESOLUÇÃO na altura toda (o ataque é um cartão só, de cima para baixo: com o quê, em
+   quem, o que vale, o d20 e o dano).
+   ===================================================================== */
+html:not(.modo-ficha) .cb-palco > .cb-tab {
+  left: 0.8rem !important;
+  top: 8.8rem !important;
+  width: 92rem !important;
+  height: 63.4rem !important;
+}
+html:not(.modo-ficha) .cb-palco > .cb-ini {
+  left: 93.6rem !important;
+  top: 8.8rem !important;
+  width: 72.8rem !important;
+  height: 13.6rem !important;
+}
+html:not(.modo-ficha) .cb-palco > .cb-res {
+  left: 93.6rem !important;
+  top: 23.2rem !important;
+  width: 72.8rem !important;
+  height: 70rem !important;
+}
+html:not(.modo-ficha) .cb-palco > .cb-gaveta {
+  position: absolute;
+  left: 0.8rem;
+  top: 73rem;
+  width: 92rem;
+  height: 20.2rem;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  border: var(--h-borda) solid #a18873;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, rgba(13, 24, 43, 0.97), rgba(5, 11, 20, 0.97) 42%);
+  box-shadow: var(--h-janela-sombra);
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------- a gaveta */
+.cb-gav-abas {
+  position: relative;
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.5rem 0.6rem 0;
+  border-bottom: 0.15rem solid rgba(161, 136, 115, 0.35);
+}
+.cb-gav-aba {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem 0.55rem;
+  border: 0.15rem solid transparent;
+  border-bottom: 0;
+  border-radius: 0.6rem 0.6rem 0 0;
+  background: none;
+  color: var(--r-texto-3, #b9b0a0);
+  font: 600 1.1rem / 1 var(--r-pixel);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+.cb-gav-aba :is(.arte-ic, .ic, .arte-ic img) {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+.cb-gav-aba:hover {
+  color: var(--r-texto, #f1ead9);
+}
+.cb-gav-aba.on {
+  border-color: rgba(161, 136, 115, 0.55);
+  background: rgba(11, 21, 38, 0.95);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cb-gav-n {
+  display: none;
+  min-width: 1.7rem;
+  height: 1.7rem;
+  padding: 0 0.4rem;
+  border-radius: 99rem;
+  background: #c8302a;
+  color: #fff;
+  font: 700 1rem / 1.7rem var(--r-pixel);
+  font-style: normal;
+  text-align: center;
+}
+.cb-gav-n.tem {
+  display: inline-block;
+  animation: cb-gav-pulsa 1.6s ease-in-out infinite;
+}
+@keyframes cb-gav-pulsa {
+  50% {
+    box-shadow: 0 0 0 0.4rem rgba(200, 48, 42, 0.25);
+  }
+}
+/* dentro da gaveta: um painel por vez, sem moldura (a aba já diz o que é) */
+html:not(.modo-ficha) .cb-gaveta > .cb-p {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  width: auto !important;
+  height: auto !important;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+.cb-gaveta[data-aba="alvo"] > :is(.cb-pend, .cb-reg),
+.cb-gaveta[data-aba="pend"] > :is(.cb-alvo, .cb-reg),
+.cb-gaveta[data-aba="reg"] > :is(.cb-alvo, .cb-pend) {
+  display: none !important;
+}
+/* o título de cada painel some; os botões dele (o lápis do registro, os do alvo) ficam na linha das abas */
+html:not(.modo-ficha) .cb-gaveta .cb-p > .cb-tit {
+  position: absolute;
+  top: -3.6rem;
+  right: 0.6rem;
+  height: 3.2rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+}
+html:not(.modo-ficha) .cb-gaveta .cb-p > .cb-tit :is(h3, .cb-marca),
+html:not(.modo-ficha) .cb-gaveta .cb-p > .cb-tit::after {
+  display: none !important;
+}
+/* o registro: o filtro e o desfazer numa linha só, as linhas embaixo */
+html:not(.modo-ficha) .cb-gaveta .cb-reg .cb-filtro {
+  margin: 0.5rem 0.8rem 0;
+}
+/* o alvo na largura toda: a foto e o nome à esquerda, o PV e a defesa à direita, as resistências embaixo */
+html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-corpo {
+  grid-template-columns: 5.4rem minmax(0, 1.4fr) minmax(0, 2.4fr) !important;
+}
+html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-id {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+}
+html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-conds {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+}
+html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-pv {
+  grid-column: 3 !important;
+  grid-row: 1 !important;
+}
+html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.um {
+  grid-column: 3 !important;
+  grid-row: 2 !important;
+}
+html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
+  grid-column: 1 / -1 !important;
+  grid-row: 3 !important;
+}
+
+/* ---------------------------------------------------------------- o cartão do ataque rápido */
+.cr {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  gap: 0.8rem;
+}
+.cr-corpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding-right: 0.3rem;
+  scrollbar-width: thin;
+}
+.cr-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.3);
+  border-radius: 0.8rem;
+  background: rgba(11, 21, 38, 0.7);
+  animation: hud-sobe 0.35s var(--h-ease) both;
+}
+.cr-rotulo {
+  font: 600 1.05rem / 1 var(--r-pixel);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--r-ouro, #e9a944);
+}
+.cr-rotulo small {
+  font: 500 1.2rem / 1.2 var(--r-corpo);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cr-vazio,
+.cr-detalhe {
+  margin: 0;
+  font: 400 1.25rem / 1.35 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+/* a arma: etiquetas */
+.cr-armas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.cr-arma {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 3.6rem;
+  padding: 0.3rem 1rem 0.3rem 0.4rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.45);
+  border-radius: 99rem;
+  background: var(--h-campo, #060c16);
+  color: var(--r-texto, #f1ead9);
+  font: 600 1.25rem / 1 var(--r-pixel);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.15s var(--h-ease);
+}
+.cr-arma:hover:not(:disabled) {
+  border-color: var(--r-ouro-hi, #ffd27a);
+}
+.cr-arma:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.cr-arma.on {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  background: radial-gradient(ellipse at 30% 50%, rgba(233, 169, 68, 0.25), transparent 70%), var(--h-campo, #060c16);
+  color: var(--r-ouro-hi, #ffd27a);
+  box-shadow: 0 0 1rem rgba(255, 196, 90, 0.25);
+}
+.cr-arma.fora {
+  opacity: 0.65;
+  border-style: dashed;
+}
+.cr-arma:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.cr-arma-ic,
+.cr-arma-ic :is(.arte-ic, img, .ic) {
+  width: 2.8rem;
+  height: 2.8rem;
+  object-fit: contain;
+}
+.cr-arma small {
+  font: 500 1.05rem / 1 var(--r-corpo);
+  color: var(--r-texto-3, #b9b0a0);
+}
+/* sem alvo: o chamado para clicar no mapa */
+.cr-chama {
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  border-style: dashed;
+  border-color: var(--r-ouro, #e9a944);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cr-chama > .ic {
+  flex: none;
+  width: 3.2rem;
+  height: 3.2rem;
+  animation: cr-mira 1.6s ease-in-out infinite;
+}
+.cr-chama b {
+  display: block;
+  font: 700 1.5rem / 1.2 var(--r-pixel);
+}
+.cr-chama small {
+  font: 400 1.2rem / 1.3 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+@keyframes cr-mira {
+  50% {
+    transform: scale(1.15) rotate(45deg);
+  }
+}
+/* o alvo */
+.cr-alvo-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 1rem;
+}
+.cr-alvo-linha b {
+  font: 700 1.6rem / 1.1 var(--r-pixel);
+  color: var(--r-texto, #f1ead9);
+}
+.cr-def {
+  font: 600 1.25rem / 1 var(--r-pixel);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cr-alcance {
+  padding: 0.2rem 0.7rem;
+  border-radius: 99rem;
+  font: 500 1.15rem / 1.2 var(--r-corpo);
+  background: rgba(255, 255, 255, 0.06);
+}
+.cr-alcance.bom {
+  color: #79d98f;
+  background: rgba(121, 217, 143, 0.12);
+}
+.cr-alcance.aviso {
+  color: #f3c060;
+  background: rgba(243, 192, 96, 0.12);
+}
+.cr-alcance.ruim {
+  color: #ff8a73;
+  background: rgba(240, 80, 63, 0.14);
+}
+/* as situações: etiquetas */
+.cr-sits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.cr-sit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 100%;
+  padding: 0.3rem 0.8rem 0.3rem 0.3rem;
+  border: 0.15rem solid rgba(233, 169, 68, 0.6);
+  border-radius: 0.7rem;
+  background: rgba(233, 169, 68, 0.1);
+  color: var(--r-texto, #f1ead9);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.cr-sit b {
+  display: block;
+  font: 600 1.15rem / 1.15 var(--r-pixel);
+}
+.cr-sit small {
+  display: block;
+  font: 400 1.1rem / 1.2 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cr-sit-ic,
+.cr-sit-ic :is(.arte-ic, img, .ic) {
+  flex: none;
+  width: 2.8rem;
+  height: 2.8rem;
+  object-fit: contain;
+}
+.cr-x {
+  font: 700 1.4rem / 1 var(--r-pixel);
+  font-style: normal;
+  color: var(--r-texto-3, #b9b0a0);
+}
+.cr-sit:hover {
+  border-color: #ff8a73;
+}
+.cr-sit:hover .cr-x {
+  color: #ff8a73;
+}
+.cr-sit.livre {
+  border-color: rgba(161, 136, 115, 0.4);
+  border-style: dashed;
+  background: none;
+}
+.cr-sit.livre:hover {
+  border-color: var(--r-ouro-hi, #ffd27a);
+}
+.cr-mais {
+  padding: 0.5rem 1rem;
+  border: 0.15rem dashed rgba(161, 136, 115, 0.55);
+  border-radius: 0.7rem;
+  background: none;
+  color: var(--r-texto-2, #cdbfa9);
+  font: 600 1.15rem / 1 var(--r-pixel);
+  cursor: pointer;
+}
+.cr-mais:hover,
+.cr-mais.on {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cr-sits-mais {
+  padding-top: 0.5rem;
+  border-top: 0.12rem solid rgba(161, 136, 115, 0.25);
+}
+/* a reação, o d20 e o dano */
+.cr-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+}
+.cr-bloco.cr-linha {
+  flex-direction: row;
+}
+.cr-reacao {
+  padding: 0.5rem 1rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.45);
+  border-radius: 0.6rem;
+  background: var(--h-campo, #060c16);
+  color: var(--r-texto, #f1ead9);
+  font: 600 1.15rem / 1 var(--r-pixel);
+  cursor: pointer;
+}
+.cr-reacao.on {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cr .cb-caixa-dado {
+  flex: none;
+}
+.cr-total {
+  font: 500 1.25rem / 1.2 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cr .cb-carimbo {
+  position: static !important;
+  transform: rotate(-4deg);
+}
+.cr-errou b {
+  font: 700 1.4rem / 1.2 var(--r-pixel);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cr-conta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+.cr-conta small {
+  font: 400 1.15rem / 1.3 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cr-efeito {
+  font: 600 1.3rem / 1.3 var(--r-corpo);
+  color: #ff8a73;
+}
+/* os botões de baixo, sempre à vista */
+.cr-fim {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 0.12rem solid rgba(161, 136, 115, 0.25);
+}
+.cr-fim .cb-bt.forte {
+  min-width: 18rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cr-bloco,
+  .cr-chama > .ic,
+  .cb-gav-n.tem {
+    animation: none;
+  }
+}

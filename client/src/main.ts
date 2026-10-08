@@ -18,6 +18,7 @@ import './ui/barJogos.css';
 import './ui/retro-auto.css';
 import './ui/retro.css';
 import './ui/hud.css';
+import './ui/combateRapido.css';
 import { anyFurniName, getFurni, getWallFurni, portraitState, vitalConditions, type ServerMsg } from '@crona/shared';
 import { Net } from './net';
 import { clearIconCache } from './render/bubbles';

@@ -198,6 +198,8 @@ const JUNTA = String.fromCodePoint(0x2060);
 
 export class ResolucaoAtaque {
   private e: Estado = { chave: '', arma: 0, reacao: 'nenhuma', manual: {}, defesaManual: null, d20: null, d10: null, soma: null, somaExtra: null };
+  /** no ataque rápido: a lista das situações de marcar à mão aberta */
+  private maisSituacoes = false;
 
   /** Zera a rolagem quando muda quem age, o alvo ou a rodada. */
   private sincronizar(x: CtxAtaque) {
@@ -565,41 +567,10 @@ export class ResolucaoAtaque {
     return h('section', { class: 'cb-col cb-col-rol' }, h('h4', null, h('span', null, '3.'), ' ROLAGEM'), h('div', { class: 'cb-col-corpo cb-rola' }, ...corpo));
   }
 
-  private carimbo(r: cb.ResultadoAtaque, mult: number): HTMLElement {
-    const texto = r === 'erro' ? 'ERROU' : r === 'critico' ? `ACERTO CRÍTICO ×${mult}` : 'ACERTO';
-    return h('span', { class: `cb-carimbo ${r}`, role: 'status' }, h('span', null, texto));
-  }
-
-  private linhaDano(x: CtxAtaque, k: ReturnType<ResolucaoAtaque['conta']>): HTMLElement {
-    const alvo = x.alvo;
-    const partes: (HTMLElement | null)[] = [];
+  /** Desfazer (volta um passo da rolagem) e Confirmar ação (aplica o dano e escreve no registro). */
+  private botoesFinais(x: CtxAtaque, k: ReturnType<ResolucaoAtaque['conta']>, pronto: boolean) {
     const arma = k.arma;
-    let pronto = false;
-    let instrucao: HTMLElement | null = null;
-    if (!arma || !alvo || !k.res || k.falhaPendente) partes.push(h('p', { class: 'cb-vazio' }, 'O dano aparece depois da rolagem.'));
-    else if (!k.acertou) {
-      pronto = true;
-      const contra = !arma.faixa && alvo.agente && alvo.reacoes?.contraAtaque && !alvo.p.reacao;
-      partes.push(h('p', { class: 'cb-dano-conta' }, h('b', null, k.res.falhou ? 'A camuflagem desviou o golpe: sem dano.' : 'Errou: sem dano.'), contra ? h('span', { class: 'alerta' }, ` ${alvo.p.nome} pode contra-atacar.`) : null));
-    } else {
-      const ex = arma.extra;
-      instrucao = h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, `${cb.textoDano(arma.dano, k.mult)}${ex ? `; à parte, ${ex.dano} ${cb.NOME_TIPO_DANO[ex.tipo]}` : ''}`));
-      partes.push(this.campo('soma dos dados', this.e.soma, 999, (n) => ((this.e.soma = n), x.mudou()), 'atk:dano', true));
-      if (ex) partes.push(this.campo(`soma do ${ex.dano} ${cb.NOME_TIPO_DANO[ex.tipo]}`, this.e.somaExtra, 999, (n) => ((this.e.somaExtra = n), x.mudou()), 'atk:extra'));
-      if (k.dano && (!ex || k.extra)) {
-        pronto = true;
-        const nome = alvo.p.nome;
-        const linhas: HTMLElement[] = [];
-        for (const d of [k.dano, k.extra]) {
-          if (!d) continue;
-          linhas.push(h('span', null, d.conta.conta));
-          linhas.push(h('span', { class: 'alerta' }, d.previa ? `${nome}: ${d.previa.texto}` : `${nome} não tem PV marcados: o dano só vai para o registro.`));
-          if (d.previa?.massivo) linhas.push(h('span', { class: 'alerta' }, `Dano massivo: Fortitude DT ${d.previa.massivo} (LR p. 88)`));
-        }
-        if (alvo.p.sustenta) linhas.push(h('span', { class: 'alerta' }, `Sustenta ${alvo.p.sustenta}.`));
-        partes.push(h('div', { class: 'cb-dano-conta' }, ...linhas));
-      }
-    }
+    const alvo = x.alvo;
     const desfazer = h(
       'button',
       {
@@ -681,6 +652,286 @@ export class ResolucaoAtaque {
       ic('ok'),
       h('span', null, 'Confirmar ação'),
     );
+    return { desfazer, confirmar };
+  }
+
+  /** Pronto para confirmar: rolou, e, se acertou, o dano está digitado. */
+  private pronto(x: CtxAtaque, k: ReturnType<ResolucaoAtaque['conta']>) {
+    if (!k.arma || !x.alvo || !k.res || k.falhaPendente) return false;
+    if (!k.acertou) return true;
+    return !!k.dano && (!k.arma.extra || !!k.extra);
+  }
+
+  // ---------------------------------------------------------------- o ataque rápido (08/10)
+
+  /**
+   * O ataque num cartão só, de cima para baixo (pedido do Felipe: "tá apertado"): a arma (a da mão já vem
+   * escolhida), o alvo (clicar no mapa), as situações que valem em etiquetas (o tabuleiro acha; as de marcar à
+   * mão ficam atrás do "+"), o d20 que ficou na mesa e a soma do dano. Os dados são sempre físicos: a tela só
+   * faz a conta.
+   */
+  montarRapido(x: CtxAtaque): HTMLElement {
+    this.sincronizar(x);
+    const k = this.conta(x);
+    const arma = k.arma;
+    const alvo = x.alvo;
+    const dist = !!arma?.faixa;
+    const partes: (HTMLElement | null)[] = [];
+
+    // 1. a arma: etiquetas lado a lado, a escolhida acesa; o detalhe só dela
+    const etiquetas = x.armas.map((a, i) => {
+      const fora = a.naMao === false;
+      const travada = !!a.jogada?.erros.length;
+      return h(
+        'button',
+        {
+          class: `cr-arma${i === this.e.arma ? ' on' : ''}${fora ? ' fora' : ''}`,
+          type: 'button',
+          disabled: (fora && !(x.sacar && a.uid !== undefined)) || travada,
+          title: fora ? 'Na mochila: sacar gasta a ação de movimento' : travada ? a.jogada!.erros.join(' · ') : `${a.nome}: ${a.dano}`,
+          onclick: () => {
+            sfx.click();
+            if (fora) return x.sacar?.(a);
+            this.e.arma = i;
+            this.e.d20 = this.e.d10 = this.e.soma = this.e.somaExtra = null;
+            x.mudou();
+          },
+        },
+        h('span', { class: 'cr-arma-ic' }, a.jogada ? arteOu(['/arte/icones/combate-habilidade.png'], ic('estrela')) : arteArma(a)),
+        h('span', null, a.jogada ? a.jogada.nome : a.vezes ? `${a.nome} ×${a.vezes}` : a.nome, fora ? h('small', null, ' · sacar') : null),
+      );
+    });
+    partes.push(
+      h(
+        'div',
+        { class: 'cr-bloco' },
+        h('div', { class: 'cr-rotulo' }, 'Com o quê'),
+        etiquetas.length ? h('div', { class: 'cr-armas' }, ...etiquetas) : h('p', { class: 'cr-vazio' }, 'Sem ataques: crie a ficha da ameaça (o lápis no Alvo).'),
+        arma
+          ? h(
+              'p',
+              { class: 'cr-detalhe' },
+              `${arma.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${textoTeste(arma.dados, arma.bonus, arma.penalidade)} · dano ${arma.dano}${arma.extra ? ` e ${arma.extra.dano} ${cb.NOME_TIPO_DANO[arma.extra.tipo]}` : ''} · crítico ${arma.margem}/${JUNTA}×${arma.multiplicador} · ${arma.faixa ? cb.NOME_FAIXA[arma.faixa] : 'corpo a corpo'}${arma.jogada?.pe ? ` · ${arma.jogada.pe} PE` : ''}`,
+            )
+          : null,
+      ),
+    );
+
+    // 2. o alvo
+    if (!alvo) {
+      partes.push(h('div', { class: 'cr-bloco cr-chama' }, ic('mira'), h('div', null, h('b', null, 'Clique no alvo no mapa'), h('small', null, 'ou no nome dele na ordem de iniciativa'))));
+    } else {
+      const t = x.tab;
+      let alcance: [string, string] = ['', ''];
+      if (arma) {
+        if (!t || t.metros === null) alcance = ['aviso', 'em outra cena'];
+        else if (!dist) alcance = t.adjacente ? ['bom', `adjacente (${cb.textoMetros(t.metros)})`] : ['ruim', `fora do corpo a corpo (${cb.textoMetros(t.metros)})`];
+        else {
+          const m = cb.METROS_FAIXA[arma.faixa!];
+          alcance = t.metros <= m ? ['bom', `no alcance (${cb.textoMetros(t.metros)})`] : t.metros <= 2 * m ? ['aviso', `além do alcance (${cb.textoMetros(t.metros)})`] : ['ruim', `fora do alcance (${cb.textoMetros(t.metros)})`];
+        }
+        if (t?.cobertura.tipo === 'total') alcance = ['ruim', `cobertura total (${t.cobertura.nome}): não dá para mirar`];
+      }
+      partes.push(
+        h(
+          'div',
+          { class: 'cr-bloco cr-alvo' },
+          h('div', { class: 'cr-rotulo' }, 'Em quem'),
+          h(
+            'div',
+            { class: 'cr-alvo-linha' },
+            h('b', null, alvo.p.nome),
+            k.defesaBase !== null ? h('span', { class: 'cr-def' }, `Defesa ${k.teste ? cb.textoDefesa(k.teste, k.defesaBase) : k.defesaBase}`) : null,
+            alcance[1] ? h('span', { class: `cr-alcance ${alcance[0]}` }, alcance[1]) : null,
+          ),
+          k.defesaBase === null ? h('div', { class: 'cr-linha' }, this.campo('Defesa do alvo', this.e.defesaManual, 99, (n) => ((this.e.defesaManual = n), x.mudou()), 'atk:def'), h('small', null, 'Sem ficha: digite a Defesa.')) : null,
+        ),
+      );
+    }
+
+    // 3. as situações que valem: etiquetas (tocar desliga); o "+" mostra as de marcar à mão
+    if (alvo && arma) {
+      const etq = k.ids.map((id) => {
+        const st = cb.situacao(id);
+        const efeito = id === 'alvoCaido' ? (dist ? '+5 na Defesa' : '−5 na Defesa') : st.efeito;
+        return h(
+          'button',
+          {
+            class: `cr-sit${k.det.has(id) ? ' auto' : ''}`,
+            type: 'button',
+            title: `${st.nome}: ${st.efeito} (LR p. ${st.pagina})${k.det.has(id) ? ' · o tabuleiro viu' : ''}. Tocar tira.`,
+            onclick: () => {
+              sfx.click();
+              if (k.det.has(id)) this.e.manual[id] = false;
+              else delete this.e.manual[id];
+              x.mudou();
+            },
+          },
+          h('span', { class: 'cr-sit-ic' }, id === 'cobertura' && x.tab?.cobertura.tipo === 'total' ? arteOu(['/arte/icones/sit-coberturaTotal.png'], ic('escudo')) : icSit(id)),
+          h('span', null, h('b', null, k.det.get(id) ?? st.nome), h('small', null, efeito)),
+          h('i', { class: 'cr-x', 'aria-hidden': 'true' }, '×'),
+        );
+      });
+      const desligadas = [...k.det.keys()].filter((id) => !k.ids.includes(id));
+      const paraMarcar = [...new Set([...desligadas, ...MANUAIS])].filter((id) => !k.ids.includes(id) && (!cb.situacao(id).so || (cb.situacao(id).so === 'distancia') === dist));
+      const mais = h(
+        'button',
+        { class: `cr-mais${this.maisSituacoes ? ' on' : ''}`, type: 'button', title: 'Marcar outra situação à mão', onclick: () => (sfx.click(), (this.maisSituacoes = !this.maisSituacoes), x.mudou()) },
+        this.maisSituacoes ? '− fechar' : '+ situação',
+      );
+      partes.push(
+        h(
+          'div',
+          { class: 'cr-bloco' },
+          h('div', { class: 'cr-rotulo' }, 'O que vale', h('small', null, etq.length ? ' · o mapa achou; tocar tira' : ' · nada especial')),
+          h('div', { class: 'cr-sits' }, ...etq, mais),
+          this.maisSituacoes
+            ? h(
+                'div',
+                { class: 'cr-sits cr-sits-mais' },
+                ...paraMarcar.map((id) =>
+                  h(
+                    'button',
+                    {
+                      class: 'cr-sit livre',
+                      type: 'button',
+                      title: `${cb.situacao(id).nome}: ${cb.situacao(id).efeito}`,
+                      onclick: () => {
+                        sfx.click();
+                        if (k.det.has(id)) delete this.e.manual[id];
+                        else this.e.manual[id] = true;
+                        x.mudou();
+                      },
+                    },
+                    h('span', { class: 'cr-sit-ic' }, icSit(id)),
+                    h('span', null, h('b', null, cb.situacao(id).nome), h('small', null, cb.situacao(id).efeito)),
+                  ),
+                ),
+              )
+            : null,
+        ),
+      );
+    }
+
+    // a reação do alvo (agente treinado), antes de rolar
+    const r = alvo?.reacoes;
+    if (alvo && arma && alvo.agente && r && !alvo.p.reacao && (r.esquiva != null || (r.bloqueio != null && !dist))) {
+      const op = (id: Estado['reacao'], rot: string) =>
+        h('button', { class: `cr-reacao${this.e.reacao === id ? ' on' : ''}`, type: 'button', onclick: () => (sfx.click(), (this.e.reacao = id), x.mudou()) }, rot);
+      partes.push(
+        h(
+          'div',
+          { class: 'cr-bloco cr-linha' },
+          h('div', { class: 'cr-rotulo' }, `${alvo.p.nome} reage?`),
+          op('nenhuma', 'Não'),
+          r.esquiva != null && alvo.defesa != null ? op('esquiva', `Esquiva +${r.esquiva - alvo.defesa}`) : null,
+          r.bloqueio != null && !dist ? op('bloqueio', `Bloqueio RD ${r.bloqueio}`) : null,
+        ),
+      );
+    }
+
+    // 4. a rolagem: o que rolar, a caixa do d20 e o carimbo
+    if (alvo && arma && k.teste && k.defesaBase !== null) {
+      const res = k.res;
+      partes.push(
+        h(
+          'div',
+          { class: 'cr-bloco cr-rola' },
+          h('div', { class: 'cr-rotulo' }, 'Rolou na mesa', h('small', null, ` · ${cb.textoRolagem(k.teste.dados, k.teste.bonus, k.teste.penalidade)}`)),
+          h(
+            'div',
+            { class: 'cr-linha' },
+            this.campo('d20 que ficou', this.e.d20, 20, (n) => ((this.e.d20 = n && n >= 1 ? n : null), (this.e.d10 = null), (this.e.soma = this.e.somaExtra = null), x.mudou()), 'atk:d20', true),
+            res && !k.falhaPendente ? this.carimbo(res.resultado, k.mult) : null,
+            res ? h('small', { class: 'cr-total' }, `${res.total} contra ${k.teste.defesa}${this.e.d20 === 20 ? ' · 20 natural' : ''}`) : null,
+          ),
+          k.pedeD10
+            ? (() => {
+                const { faces, ate } = cb.dadoDaFalha(k.teste!.falha);
+                return h(
+                  'div',
+                  { class: 'cr-linha' },
+                  this.campo(`d${faces} da falha (${k.teste!.falha}%)`, this.e.d10, faces, (n) => ((this.e.d10 = n && n >= 1 ? n : null), x.mudou()), 'atk:d10'),
+                  h('small', null, this.e.d10 === null ? `Camuflagem: falha com 1${ate > 1 ? ` a ${ate}` : ''} no d${faces}.` : res?.falhou ? 'A camuflagem desviou o golpe.' : 'Passou pela camuflagem.'),
+                );
+              })()
+            : null,
+        ),
+      );
+    }
+
+    // 5. o dano: a soma que o jogador falou e o que acontece com o alvo
+    if (alvo && arma && k.res && !k.falhaPendente) {
+      if (!k.acertou) {
+        const contra = !dist && alvo.agente && alvo.reacoes?.contraAtaque && !alvo.p.reacao;
+        partes.push(h('div', { class: 'cr-bloco cr-errou' }, h('b', null, k.res.falhou ? 'A camuflagem desviou: sem dano.' : 'Errou: sem dano.'), contra ? h('small', null, `${alvo.p.nome} pode contra-atacar.`) : null));
+      } else {
+        const ex = arma.extra;
+        const linhas: HTMLElement[] = [];
+        for (const d of [k.dano, k.extra]) {
+          if (!d) continue;
+          linhas.push(h('small', null, d.conta.conta));
+          linhas.push(h('b', { class: 'cr-efeito' }, d.previa ? `${alvo.p.nome}: ${d.previa.texto}` : `${alvo.p.nome} sem PV marcados: o dano só vai para o registro.`));
+          if (d.previa?.massivo) linhas.push(h('b', { class: 'cr-efeito ruim' }, `Dano massivo: Fortitude DT ${d.previa.massivo}`));
+        }
+        if (alvo.p.sustenta && k.dano) linhas.push(h('small', null, `Sustenta ${alvo.p.sustenta}.`));
+        partes.push(
+          h(
+            'div',
+            { class: 'cr-bloco cr-dano' },
+            h('div', { class: 'cr-rotulo' }, 'Dano', h('small', null, ` · ${cb.textoDano(arma.dano, k.mult)}${ex ? `; à parte, ${ex.dano} ${cb.NOME_TIPO_DANO[ex.tipo]}` : ''}`)),
+            h(
+              'div',
+              { class: 'cr-linha' },
+              this.campo('soma dos dados', this.e.soma, 999, (n) => ((this.e.soma = n), x.mudou()), 'atk:dano', true),
+              ex ? this.campo(`soma ${cb.NOME_TIPO_DANO[ex.tipo]}`, this.e.somaExtra, 999, (n) => ((this.e.somaExtra = n), x.mudou()), 'atk:extra', true) : null,
+              linhas.length ? h('div', { class: 'cr-conta' }, ...linhas) : null,
+            ),
+          ),
+        );
+      }
+    }
+
+    const { desfazer, confirmar } = this.botoesFinais(x, k, this.pronto(x, k));
+    return h('div', { class: 'cr' }, h('div', { class: 'cr-corpo' }, ...partes), h('div', { class: 'cr-fim' }, desfazer, confirmar));
+  }
+
+  private carimbo(r: cb.ResultadoAtaque, mult: number): HTMLElement {
+    const texto = r === 'erro' ? 'ERROU' : r === 'critico' ? `ACERTO CRÍTICO ×${mult}` : 'ACERTO';
+    return h('span', { class: `cb-carimbo ${r}`, role: 'status' }, h('span', null, texto));
+  }
+
+  private linhaDano(x: CtxAtaque, k: ReturnType<ResolucaoAtaque['conta']>): HTMLElement {
+    const alvo = x.alvo;
+    const partes: (HTMLElement | null)[] = [];
+    const arma = k.arma;
+    let pronto = false;
+    let instrucao: HTMLElement | null = null;
+    if (!arma || !alvo || !k.res || k.falhaPendente) partes.push(h('p', { class: 'cb-vazio' }, 'O dano aparece depois da rolagem.'));
+    else if (!k.acertou) {
+      pronto = true;
+      const contra = !arma.faixa && alvo.agente && alvo.reacoes?.contraAtaque && !alvo.p.reacao;
+      partes.push(h('p', { class: 'cb-dano-conta' }, h('b', null, k.res.falhou ? 'A camuflagem desviou o golpe: sem dano.' : 'Errou: sem dano.'), contra ? h('span', { class: 'alerta' }, ` ${alvo.p.nome} pode contra-atacar.`) : null));
+    } else {
+      const ex = arma.extra;
+      instrucao = h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, `${cb.textoDano(arma.dano, k.mult)}${ex ? `; à parte, ${ex.dano} ${cb.NOME_TIPO_DANO[ex.tipo]}` : ''}`));
+      partes.push(this.campo('soma dos dados', this.e.soma, 999, (n) => ((this.e.soma = n), x.mudou()), 'atk:dano', true));
+      if (ex) partes.push(this.campo(`soma do ${ex.dano} ${cb.NOME_TIPO_DANO[ex.tipo]}`, this.e.somaExtra, 999, (n) => ((this.e.somaExtra = n), x.mudou()), 'atk:extra'));
+      if (k.dano && (!ex || k.extra)) {
+        pronto = true;
+        const nome = alvo.p.nome;
+        const linhas: HTMLElement[] = [];
+        for (const d of [k.dano, k.extra]) {
+          if (!d) continue;
+          linhas.push(h('span', null, d.conta.conta));
+          linhas.push(h('span', { class: 'alerta' }, d.previa ? `${nome}: ${d.previa.texto}` : `${nome} não tem PV marcados: o dano só vai para o registro.`));
+          if (d.previa?.massivo) linhas.push(h('span', { class: 'alerta' }, `Dano massivo: Fortitude DT ${d.previa.massivo} (LR p. 88)`));
+        }
+        if (alvo.p.sustenta) linhas.push(h('span', { class: 'alerta' }, `Sustenta ${alvo.p.sustenta}.`));
+        partes.push(h('div', { class: 'cb-dano-conta' }, ...linhas));
+      }
+    }
+    const { desfazer, confirmar } = this.botoesFinais(x, k, pronto);
     return h(
       'section',
       { class: 'cb-dano' },
