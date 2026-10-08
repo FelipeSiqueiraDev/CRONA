@@ -1,0 +1,333 @@
+{
+ "destino": "client/public/arte/mobiliario",
+ "escala": 0.5,
+ "limpar": 56,
+ "moveis": [
+  {
+   "def": "armario_cozinha",
+   "folha": "client/public/arte/mobiliario/folhas/armario-cozinha.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.5,
+    1.9
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "banheira",
+   "folha": "client/public/arte/mobiliario/folhas/banheira.png",
+   "W": 1,
+   "D": 2,
+   "real": [
+    0.75,
+    1.5,
+    0.6
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "cama_casal",
+   "folha": "client/public/arte/mobiliario/folhas/cama-casal.png",
+   "W": 2,
+   "D": 3,
+   "real": [
+    1.5,
+    2.25,
+    1.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "cama_solteiro",
+   "folha": "client/public/arte/mobiliario/folhas/cama-solteiro.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.75,
+    2.25,
+    1.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "cama_solteiro~b",
+   "folha": "client/public/arte/mobiliario/folhas/cama-solteiro-b.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.75,
+    2.25,
+    1.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "cama_solteiro~c",
+   "folha": "client/public/arte/mobiliario/folhas/cama-solteiro-c.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.75,
+    2.25,
+    1.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "comoda",
+   "folha": "client/public/arte/mobiliario/folhas/comoda.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.5,
+    0.9
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "nightstand",
+   "folha": "client/public/arte/mobiliario/folhas/criado-mudo.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.5,
+    0.4,
+    0.6
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "iwall_low",
+   "folha": "client/public/arte/mobiliario/folhas/divisoria-baixa-madeira.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.75,
+    0.12,
+    1.3
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "escada_desce",
+   "folha": "client/public/arte/mobiliario/folhas/escada-desce.png",
+   "W": 1,
+   "D": 2,
+   "real": [
+    0.75,
+    1.5,
+    0.9
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "fogao_lenha",
+   "folha": "client/public/arte/mobiliario/folhas/fogao-lenha-apagado.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.75,
+    0.85
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "estados": {
+    "1": "client/public/arte/mobiliario/folhas/fogao-lenha-aceso.png"
+   }
+  },
+  {
+   "def": "guarda_roupa",
+   "folha": "client/public/arte/mobiliario/folhas/guarda-roupa.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.6,
+    2.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "mesa_cozinha",
+   "folha": "client/public/arte/mobiliario/folhas/mesa-cozinha.png",
+   "W": 3,
+   "D": 2,
+   "real": [
+    2.25,
+    1.5,
+    0.78
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "mesa_jantar",
+   "folha": "client/public/arte/mobiliario/folhas/mesa-jantar.png",
+   "W": 4,
+   "D": 2,
+   "real": [
+    3.0,
+    1.5,
+    0.78
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "pia_cozinha",
+   "folha": "client/public/arte/mobiliario/folhas/pia-cozinha.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.6,
+    0.9
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "prateleira",
+   "folha": "client/public/arte/mobiliario/folhas/prateleira-madeira.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.45,
+    2.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "baia",
+   "folha": "client/public/arte/mobiliario/folhas/cerca-baia.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.75,
+    0.12,
+    1.4
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  }
+ ]
+}
