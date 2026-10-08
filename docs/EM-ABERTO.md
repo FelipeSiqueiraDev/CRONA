@@ -237,6 +237,28 @@ Ainda falta (pedido do Felipe):
 - **Pedidos novos de arte (Lote 3C, `PROMPT-MOVEIS-VAZIOS.txt`):** o beliche + cores das camas, as gêmeas vazias, 12 quadros
   genéricos de fazenda (viram `painting~d`... pelo sorteio) e os ícones dos brinquedos.
 
+## Manhã de 08/10 (o Felipe acordou e foi testando)
+
+- **Viagem:** o "Partir para cá" não clicava (a camada dos pinos tampava), o painel da viagem não clicava (herdava
+  pointer-events: none) e a chegada empilhava todo mundo numa casa. Corrigido e no ar.
+- **Lupinhas de pista** desligadas (`MOSTRAR_LUPAS` em RoomView); a pista continua no painel do objeto.
+- **Item de parede atrás de móvel:** `server/src/paredes.ts` conserta em toda sala (sobe ou escorrega) e o
+  `paredes.test.ts` reprova sala montada com o defeito. Regra para sempre: nada de quadro/TV atrás de móvel encostado.
+- **Calabouço (história do Felipe):** ritual de troca de mente à força; ninguém ficava lá (sem leitos). Central de
+  monitoramento na parede, computadores, máquinas e monitores (um tomado pela Energia) em volta do altar, gravador,
+  câmera, a mesa do chefe. A Sala de Sangue guarda os corpos que viraram **Existidos** (primeiro combate oficial;
+  a ameaça está no catálogo, p. 238). Falta: a arte (lote 4) e, quem sabe, um "acordar" dos corpos.
+- **Operação Pede Mesa:** item em cima de mesa escorrega para o tampo desenhado; cadeira virada para mesa entra
+  embaixo dela (`ajusteDoMovel`). Falta: pedir ao Códex mesas com pé aberto e tampo do tamanho das casas.
+- **Fazenda abandonada:** plantação meio morta, árvores e arbustos sorteando vivos e meio mortos.
+- **Entrada larga** (um capacho só por prédio).
+- **Códex, lote 4** (`PEDIDO-UNICO-CODEX.txt`, SEÇÃO 0, gabaritos em `gabaritos/pedidos/lote-4/`, conferência
+  `gabaritos/conferir_camera.py`): refazer celeiro, casa de mantimentos e casarão (tortos; versões de porta aberta),
+  porta de enrolar do bar, passagem de caverna, o altar (estrado + pedra do sacrifício), monitores (normal e
+  Energia), eletroencefalógrafo, gravador, câmera, corpos. Existido no pacote dos personagens (seção 14).
+- **Falta fazer (código):** portas de várias casas (a de enrolar tem 3, a caverna 2) e passagem sem folha; o altar
+  pisável quando a arte chegar; "Nesta cena" sem rolagem (não reproduzi: esperando o Felipe dizer onde).
+
 ## Fazenda: a arte do Códex entrando (08/10, madrugada)
 
 - **Já no jogo:** a casa por dentro (`moveis-fazenda-casa.json`, 17 peças); a natureza de fora

@@ -26,6 +26,19 @@
   ]
  },
  {
+  "nome": "casarao",
+  "titulo": "Casarão (REFAZER: a escada da varanda torta)",
+  "casas": [
+   14,
+   9
+  ],
+  "real": [
+   10.5,
+   6.75,
+   6.5
+  ]
+ },
+ {
   "nome": "estrado-altar",
   "titulo": "O altar do calabouço: o estrado redondo de pedra (pisável)",
   "casas": [
