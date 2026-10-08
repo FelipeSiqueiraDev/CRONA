@@ -3,6 +3,8 @@
  * lápis riscando, borracha, papel, pincel, carimbo, teclas da máquina de
  * escrever, item voando e caindo. Volume baixo; dá para desligar no menu.
  */
+import { aoLiberar } from './audioCelular';
+
 const KEY = 'crona.sfx';
 
 interface Burst {
@@ -30,13 +32,8 @@ class Sfx {
       /* sem storage */
     }
     if (typeof window === 'undefined') return;
-    const unlock = () => {
-      this.ctx();
-      window.removeEventListener('pointerdown', unlock);
-      window.removeEventListener('keydown', unlock);
-    };
-    window.addEventListener('pointerdown', unlock);
-    window.addEventListener('keydown', unlock);
+    // libera no gesto que conta (no celular, quando o dedo solta), até o som estar de pé
+    aoLiberar(() => this.ctx() !== null);
   }
 
   setEnabled(v: boolean) {
@@ -67,7 +64,8 @@ class Sfx {
       for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
       this.noise = b;
     }
-    if (this.ac.state === 'suspended') void this.ac.resume();
+    // suspenso (antes do gesto) ou interrompido (o iPhone, ao voltar de outro app)
+    if (this.ac.state !== 'running' && this.ac.state !== 'closed') void this.ac.resume();
     return this.ac.state === 'running' ? this.ac : null;
   }
 
