@@ -89,6 +89,9 @@ export interface Mundo {
   encacapadas: number[];
   parado: boolean;
   t: number;
+  /** o que aconteceu desde a última vez que a tela olhou (o som e a animação; não mexe no resultado) */
+  batidas: { tipo: 'bola' | 'tabela'; forca: number }[];
+  quedas: { n: number; x: number; y: number; cx: number; cy: number }[];
 }
 
 /** Começa a tacada: a branca sai com (vx, vy), limitada à mais forte. */
@@ -99,7 +102,7 @@ export function tacar(bolas: Bola[], vx: number, vy: number): Mundo {
   const branca = copia.find((b) => b.n === 0)!;
   branca.vx = vx * k;
   branca.vy = vy * k;
-  return { bolas: copia, primeiroToque: null, encacapadas: [], parado: false, t: 0 };
+  return { bolas: copia, primeiroToque: null, encacapadas: [], parado: false, t: 0, batidas: [], quedas: [] };
 }
 
 /** Um passo de física (DT). */
@@ -118,21 +121,21 @@ export function passo(m: Mundo) {
     // a tabela (menos na boca das caçapas)
     const bocaCanto = b.y < 7 || b.y > COMPRIMENTO - 7;
     const bocaMeio = b.y > COMPRIMENTO / 2 - 4.4 && b.y < COMPRIMENTO / 2 + 4.4;
-    if (b.x < RAIO && !bocaCanto && !bocaMeio) (b.x = 2 * RAIO - b.x), (b.vx = -b.vx * TABELA);
-    if (b.x > LARGURA - RAIO && !bocaCanto && !bocaMeio) (b.x = 2 * (LARGURA - RAIO) - b.x), (b.vx = -b.vx * TABELA);
+    if (b.x < RAIO && !bocaCanto && !bocaMeio) (b.x = 2 * RAIO - b.x), (b.vx = -b.vx * TABELA), m.batidas.push({ tipo: 'tabela', forca: Math.abs(b.vx) / VMAX });
+    if (b.x > LARGURA - RAIO && !bocaCanto && !bocaMeio) (b.x = 2 * (LARGURA - RAIO) - b.x), (b.vx = -b.vx * TABELA), m.batidas.push({ tipo: 'tabela', forca: Math.abs(b.vx) / VMAX });
     const bocaLado = b.x < 7 || b.x > LARGURA - 7;
-    if (b.y < RAIO && !bocaLado) (b.y = 2 * RAIO - b.y), (b.vy = -b.vy * TABELA);
-    if (b.y > COMPRIMENTO - RAIO && !bocaLado) (b.y = 2 * (COMPRIMENTO - RAIO) - b.y), (b.vy = -b.vy * TABELA);
+    if (b.y < RAIO && !bocaLado) (b.y = 2 * RAIO - b.y), (b.vy = -b.vy * TABELA), m.batidas.push({ tipo: 'tabela', forca: Math.abs(b.vy) / VMAX });
+    if (b.y > COMPRIMENTO - RAIO && !bocaLado) (b.y = 2 * (COMPRIMENTO - RAIO) - b.y), (b.vy = -b.vy * TABELA), m.batidas.push({ tipo: 'tabela', forca: Math.abs(b.vy) / VMAX });
     // a caçapa
     for (const c of CACAPAS) {
       const dx = b.x - c.x;
       const dy = b.y - c.y;
       if (dx * dx + dy * dy < c.r * c.r) {
-        cair(m, b);
+        cair(m, b, c);
         break;
       }
     }
-    if (!b.fora && (b.x < -5 || b.x > LARGURA + 5 || b.y < -5 || b.y > COMPRIMENTO + 5)) cair(m, b);
+    if (!b.fora && (b.x < -5 || b.x > LARGURA + 5 || b.y < -5 || b.y > COMPRIMENTO + 5)) cair(m, b, CACAPAS.reduce((p, c) => ((c.x - b.x) ** 2 + (c.y - b.y) ** 2 < (p.x - b.x) ** 2 + (p.y - b.y) ** 2 ? c : p)));
   }
   // o choque entre as bolas
   const d0 = 4 * RAIO * RAIO;
@@ -157,6 +160,7 @@ export function passo(m: Mundo) {
         b.vx += k * nx;
         b.vy += k * ny;
         if (m.primeiroToque === null && (a.n === 0 || b.n === 0)) m.primeiroToque = a.n === 0 ? b.n : a.n;
+        m.batidas.push({ tipo: 'bola', forca: vrel / VMAX });
       }
       const sobra = (2 * RAIO - d) / 2;
       a.x -= nx * sobra;
@@ -168,7 +172,8 @@ export function passo(m: Mundo) {
   m.parado = m.t > 40 || bs.every((b) => b.fora || (b.vx === 0 && b.vy === 0));
 }
 
-function cair(m: Mundo, b: Bola) {
+function cair(m: Mundo, b: Bola, c: { x: number; y: number }) {
+  m.quedas.push({ n: b.n, x: b.x, y: b.y, cx: c.x, cy: c.y });
   b.fora = true;
   b.vx = 0;
   b.vy = 0;

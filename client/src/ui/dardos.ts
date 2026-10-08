@@ -8,10 +8,14 @@
  * partida" recomeça para todos. Quem arremessa calcula o lance e manda pronto (guardado, para quem
  * reconectar refazer a partida).
  *
- * Desenhado por código até chegar a arte do Códex (o alvo, o dardo e a parede).
+ * Com vida de bar: a luz da luminária em cima do alvo, o dardo voando em arco com rastro, o alvo
+ * balançando na batida, o pó do sisal, o valor subindo do lugar, a faixa de quem joga, o confete de
+ * quem fecha e uma bossinha de jukebox (chiptune.ts). Desenhado por código até chegar a arte do Códex.
  */
 import { bar } from '@crona/shared';
+import { faixa, Festa } from './barFx';
 import type { Dados, Mesa, TelaDoBar } from './barJogos';
+import { musica } from './chiptune';
 import { h } from './dom';
 import { sfx } from './sfx';
 
@@ -19,6 +23,8 @@ const D = bar.dardos;
 /** a cor das penas do dardo de cada lugar */
 const CORES = ['#e9a944', '#4f9bff', '#f0503f', '#79d98f'];
 const curto = (n: string) => n.split(/\s+/)[0] ?? n;
+/** quanto tempo o dardo leva da mão até o alvo */
+const VOO = 340;
 
 interface Voando {
   lance: bar.dardos.Lance;
@@ -26,10 +32,31 @@ interface Voando {
   t0: number;
 }
 
+/** O botão ♪ da música, igual no fliperama, nos dardos e na sinuca. */
+export function botaoMusica(): HTMLButtonElement {
+  const b = h(
+    'button',
+    {
+      class: `bj-som${musica.ligada ? '' : ' off'}`,
+      type: 'button',
+      title: 'Música',
+      'aria-label': 'Música',
+      onclick: () => {
+        const on = musica.alternar();
+        b.classList.toggle('off', !on);
+        sfx.click();
+      },
+    },
+    '♪',
+  ) as HTMLButtonElement;
+  return b;
+}
+
 export class Dardos implements TelaDoBar {
   readonly el: HTMLElement;
   private placar = h('div', { class: 'bj-placar' });
   private aviso = h('p', { class: 'bj-aviso' });
+  private palco: HTMLElement;
   private nova: HTMLButtonElement;
   private cv: HTMLCanvasElement;
   private g: CanvasRenderingContext2D;
@@ -38,23 +65,30 @@ export class Dardos implements TelaDoBar {
   private ligado = false;
   private raf = 0;
   /** os dardos cravados no alvo agora (os da vez, ou os da vez que acabou) e quem jogou */
-  private cravados: { lance: bar.dardos.Lance; de: number }[] = [];
+  private cravados: { lance: bar.dardos.Lance; de: number; t0: number }[] = [];
   private voando: Voando | null = null;
   /** a mira: onde o dedo aponta (em raios do alvo) e desde quando */
   private mira: { x: number; y: number; desde: number } | null = null;
   private recado = '';
   private recadoAte = 0;
+  private festa = new Festa();
+  /** o alvo balançando depois da batida (de 1 a 0) */
+  private balanco = 0;
+  /** os números do placar da última vez (para o número "pular" quando muda) */
+  private mostrados: number[] = [];
+  private vezAnunciada = -1;
 
   constructor() {
     this.cv = h('canvas', { class: 'bj-canvas', 'aria-label': 'Alvo de dardos' }) as HTMLCanvasElement;
     this.g = this.cv.getContext('2d')!;
     this.nova = h('button', { class: 'bj-bt', type: 'button', onclick: () => this.novaPartida() }, 'Nova partida') as HTMLButtonElement;
+    this.palco = h('div', { class: 'bj-palco' }, this.cv);
     this.el = h(
       'div',
       { class: 'bj bj-dardos' },
-      h('header', { class: 'bj-topo' }, h('b', null, 'DARDOS'), h('span', null, '301 · três por vez · zere para vencer')),
+      h('header', { class: 'bj-topo' }, h('b', null, 'DARDOS'), h('span', null, '301 · três por vez · zere para vencer'), botaoMusica()),
       this.placar,
-      h('div', { class: 'bj-palco' }, this.cv),
+      this.palco,
       this.aviso,
       h('footer', { class: 'bj-rodape' }, this.nova, h('button', { class: 'bj-bt sair', type: 'button', onclick: () => this.m?.sair() }, 'Sair')),
     );
@@ -67,6 +101,7 @@ export class Dardos implements TelaDoBar {
       }
       const a = this.noAlvo(e);
       this.mira = { ...a, desde: performance.now() };
+      sfx.chip(520, 520, 0.02, 0.03);
     });
     this.cv.addEventListener('pointermove', (e) => {
       if (this.mira) Object.assign(this.mira, this.noAlvo(e));
@@ -86,8 +121,11 @@ export class Dardos implements TelaDoBar {
       this.p = D.nova(n);
       this.cravados = [];
       for (const { de, dados } of log) this.aplicar(de, dados, false);
+      this.mostrados = [];
+      this.vezAnunciada = -1;
     }
     this.render();
+    if (this.ligado) this.anunciar();
   }
 
   jogada(de: number, dados: Dados) {
@@ -98,35 +136,80 @@ export class Dardos implements TelaDoBar {
     if (d.tipo === 'comecar') {
       this.p = D.nova(this.m?.jogadores.length ?? 1);
       this.cravados = [];
-      if (animar) this.avisar('Nova partida!');
+      this.vezAnunciada = -1;
+      if (animar) {
+        this.avisar('Nova partida!');
+        musica.tocar('bar');
+        this.anunciar();
+      }
     } else if (d.tipo === 'dardo' && typeof d.x === 'number' && typeof d.y === 'number' && typeof d.valor === 'number') {
       const lance: bar.dardos.Lance = { x: d.x, y: d.y, valor: d.valor, mult: typeof d.mult === 'number' ? d.mult : 1, rotulo: typeof d.rotulo === 'string' ? d.rotulo : String(d.valor) };
-      if (animar) this.voando = { lance, de, t0: performance.now() };
-      else this.cravar(lance, de, false);
+      if (animar) {
+        this.voando = { lance, de, t0: performance.now() };
+        sfx.dardoVoa();
+      } else this.cravar(lance, de, false);
     }
     this.render();
   }
 
-  /** O dardo chegou no alvo: conta, e passa a vez se for o caso. */
+  /** O dardo chegou no alvo: conta, festeja e passa a vez se for o caso. */
   private cravar(lance: bar.dardos.Lance, de: number, animar: boolean) {
     if (this.p.lances.length === 0) this.cravados = [];
-    this.cravados.push({ lance, de });
+    this.cravados.push({ lance, de, t0: performance.now() });
     const antes = this.p;
     this.p = D.lancar(this.p, lance);
     if (!animar) return;
-    sfx.chip(lance.valor ? 180 : 90, 60, 0.08, 0.1);
+    const { cx, cy, raio } = this.geo();
+    const x = cx + lance.x * raio;
+    const y = cy + lance.y * raio;
+    const k = this.festa.k;
+    sfx.dardoCrava(lance.valor > 0);
+    this.balanco = 1;
+    // o pó do sisal (ou as lascas da parede, fora do alvo)
+    this.festa.faiscas(x, y, lance.valor ? ['#e8dcc0', '#c9b98f'] : ['#8a5a2a', '#5a3a1a'], 9, 2.2, 0.12, 22, 2.5);
+    const cor = lance.valor === 50 ? '#ff6a5a' : lance.mult === 3 ? '#ffd27a' : lance.mult === 2 ? '#79d98f' : lance.valor ? '#f3e9d8' : '#a3978a';
+    const grande = lance.valor === 50 || lance.mult === 3;
+    this.festa.texto(x, y - 26 * k, lance.valor ? (lance.mult > 1 && lance.valor !== 50 ? `${lance.rotulo} +${lance.valor}` : `+${lance.valor}`) : 'FORA', cor, grande ? 26 : 18);
     const nome = curto(this.m?.jogadores[de] ?? '');
+    const estourou = this.p.historico.length > antes.historico.length && this.p.historico.at(-1)!.estourou;
     if (this.p.vencedor !== null) {
       sfx.arpejo([523, 659, 784, 1046, 1318], 0.09);
       this.avisar(`${nome} fechou! ${nome} venceu!`);
-    } else if (this.p.historico.length > antes.historico.length && this.p.historico.at(-1)!.estourou) {
+      this.festa.confete(this.cv.width, 90);
+      this.festa.piscar('#ffd27a', 18);
+      faixa(this.palco, `${nome.toUpperCase()} VENCEU!`, 'festa');
+      musica.tocar(this.m?.eu.includes(this.p.vencedor) ? 'vitoria' : 'derrota');
+      window.setTimeout(() => this.ligado && this.p.vencedor !== null && musica.tocar('bar'), 3200);
+    } else if (estourou) {
       sfx.chip(300, 80, 0.4, 0.08);
       this.avisar(`${nome} estourou!`);
-    } else if (lance.mult === 3 || lance.valor === 50) {
+      this.festa.piscar('#f0503f', 16);
+      this.festa.tremer(6);
+      faixa(this.palco, 'ESTOUROU!', 'ruim');
+    } else if (lance.valor === 50) {
+      sfx.arpejo([784, 1046, 1318], 0.06);
+      this.festa.faiscas(x, y, ['#ffd27a', '#ffffff', '#ff6a5a'], 30, 5, 0.06, 40);
+      this.festa.tremer(4);
+      this.avisar('Na mosca!');
+    } else if (lance.mult === 3) {
       sfx.arpejo([784, 1046], 0.06);
-      this.avisar(lance.valor === 50 ? 'Na mosca!' : `Triplo ${lance.valor / 3}!`);
+      this.festa.faiscas(x, y, ['#ffd27a', '#ffffff'], 18, 4, 0.08, 32);
+      this.avisar(`Triplo ${lance.valor / 3}!`);
     }
     this.render();
+    // a vez mudou: a faixa de quem joga (depois de ver onde caiu o último)
+    if (!estourou && this.p.vencedor === null) window.setTimeout(() => this.anunciar(), 700);
+    else if (estourou) window.setTimeout(() => this.anunciar(), 1500);
+  }
+
+  /** A faixa "SUA VEZ" ou "VEZ DE CATARINA", quando a vez muda. */
+  private anunciar() {
+    const m = this.m;
+    if (!m || this.p.vencedor !== null || this.vezAnunciada === this.p.vez || m.jogadores.length < 2) return;
+    this.vezAnunciada = this.p.vez;
+    const minha = this.minhaVez();
+    faixa(this.palco, minha && m.eu.length === 1 ? 'SUA VEZ!' : `VEZ DE ${curto(m.jogadores[this.p.vez]).toUpperCase()}`, minha ? 'minha' : 'vez');
+    if (minha) sfx.arpejo([659, 880], 0.07, 0.06), navigator.vibrate?.([20, 30, 20]);
   }
 
   private novaPartida() {
@@ -174,7 +257,7 @@ export class Dardos implements TelaDoBar {
     const de = this.p.vez;
     this.m.enviar({ tipo: 'dardo', ...lance }, true, de);
     this.voando = { lance, de, t0: agora };
-    sfx.chip(900, 400, 0.12, 0.05);
+    sfx.dardoVoa();
     navigator.vibrate?.(12);
   }
 
@@ -182,6 +265,9 @@ export class Dardos implements TelaDoBar {
 
   ligar() {
     this.ligado = true;
+    this.el.classList.add('entra');
+    musica.tocar('bar');
+    window.setTimeout(() => this.anunciar(), 600);
     const laco = () => {
       if (!this.ligado) return;
       this.raf = requestAnimationFrame(laco);
@@ -193,6 +279,7 @@ export class Dardos implements TelaDoBar {
   desligar() {
     this.ligado = false;
     cancelAnimationFrame(this.raf);
+    musica.parar();
   }
 
   /** O raio do alvo na tela e o centro (o canvas acompanha o tamanho da caixa). */
@@ -201,9 +288,10 @@ export class Dardos implements TelaDoBar {
     const dpr = Math.min(2, devicePixelRatio || 1);
     const w = Math.round(r.width * dpr);
     const hh = Math.round(r.height * dpr);
-    if (this.cv.width !== w || this.cv.height !== hh) (this.cv.width = w), (this.cv.height = hh);
-    const raio = Math.min(w, hh) * 0.4;
-    return { cx: w / 2, cy: hh / 2, raio, dpr };
+    if (w && hh && (this.cv.width !== w || this.cv.height !== hh)) (this.cv.width = w), (this.cv.height = hh);
+    const raio = Math.min(this.cv.width, this.cv.height) * 0.4;
+    this.festa.k = dpr;
+    return { cx: this.cv.width / 2, cy: this.cv.height / 2, raio, dpr };
   }
 
   private noAlvo(e: PointerEvent) {
@@ -217,29 +305,86 @@ export class Dardos implements TelaDoBar {
   private desenhar() {
     const g = this.g;
     const { cx, cy, raio, dpr } = this.geo();
+    const W = this.cv.width;
+    const H = this.cv.height;
     const agora = performance.now();
-    g.clearRect(0, 0, this.cv.width, this.cv.height);
+    this.festa.passo();
+    if (this.balanco > 0.01) this.balanco *= 0.9;
+    else this.balanco = 0;
+    g.clearRect(0, 0, W, H);
+    const s = this.festa.sacode();
+    g.save();
+    g.translate(s.x, s.y);
+    // a luz da luminária, cintilando de leve
+    const luz = 0.9 + 0.05 * Math.sin(agora / 700) + 0.03 * Math.sin(agora / 97);
+    const lampada = g.createRadialGradient(cx, cy - raio * 0.9, raio * 0.1, cx, cy, raio * 1.9);
+    lampada.addColorStop(0, `rgba(255, 214, 150, ${0.22 * luz})`);
+    lampada.addColorStop(0.55, `rgba(255, 190, 120, ${0.08 * luz})`);
+    lampada.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    g.fillStyle = lampada;
+    g.fillRect(0, 0, W, H);
+    // o alvo (e os dardos cravados nele) balança junto na batida
+    g.save();
+    const bal = this.balanco;
+    g.translate(cx, cy);
+    g.rotate(Math.sin(agora / 40) * 0.012 * bal);
+    g.scale(1 + 0.015 * bal, 1 + 0.015 * bal);
+    g.translate(-cx, -cy);
+    // a sombra do alvo na parede
+    g.fillStyle = 'rgba(0,0,0,0.45)';
+    g.beginPath();
+    g.arc(cx + raio * 0.05, cy + raio * 0.08, raio * 1.24, 0, Math.PI * 2);
+    g.fill();
     this.alvo(g, cx, cy, raio, dpr);
-    for (const c of this.cravados) this.dardo(g, cx + c.lance.x * raio, cy + c.lance.y * raio, CORES[c.de % 4], 1, dpr);
-    // o dardo voando: chega grande e encolhe até cravar
+    for (const c of this.cravados) {
+      // o dardo cravado ainda vibra um instante
+      const vib = Math.max(0, 1 - (agora - c.t0) / 450);
+      this.dardo(g, cx + c.lance.x * raio, cy + c.lance.y * raio, CORES[c.de % 4], 1, dpr, 0, Math.sin(agora / 18) * 0.12 * vib);
+    }
+    g.restore();
+    // o dardo voando: sai de baixo (a mão), sobe em arco e encolhe até cravar, com rastro
     const v = this.voando;
     if (v) {
-      const k = Math.min(1, (agora - v.t0) / 260);
-      this.dardo(g, cx + v.lance.x * raio, cy + v.lance.y * raio, CORES[v.de % 4], 1 + (1 - k) * 2.2, dpr, 1 - k);
-      if (k >= 1) {
+      const t = Math.min(1, (agora - v.t0) / VOO);
+      const pos = (k: number) => {
+        const x1 = cx + v.lance.x * raio;
+        const y1 = cy + v.lance.y * raio;
+        const x0 = cx + (x1 - cx) * 0.3;
+        const y0 = H + 60 * dpr;
+        return { x: x0 + (x1 - x0) * k, y: y0 + (y1 - y0) * k - Math.sin(k * Math.PI) * raio * 0.35, e: 1 + (1 - k) * 2.6 };
+      };
+      for (let i = 4; i >= 1; i--) {
+        const k = Math.max(0, t - i * 0.05);
+        const p = pos(k);
+        g.globalAlpha = 0.12 * (5 - i);
+        this.dardo(g, p.x, p.y, CORES[v.de % 4], p.e, dpr, 0);
+      }
+      g.globalAlpha = 1;
+      const p = pos(t);
+      this.dardo(g, p.x, p.y, CORES[v.de % 4], p.e, dpr, 0);
+      if (t >= 1) {
         this.voando = null;
         this.cravar(v.lance, v.de, true);
       }
     }
-    // a mira, tremendo
+    // a mira, tremendo, com o círculo de onde o dardo pode cair
     if (this.mira) {
       const o = this.oscila(agora);
       const x = cx + (this.mira.x + o.x) * raio;
       const y = cy + (this.mira.y + o.y) * raio;
+      const zona = this.tremor(agora) * raio * 1.1;
+      g.fillStyle = 'rgba(255, 240, 200, 0.08)';
+      g.strokeStyle = 'rgba(255, 240, 200, 0.35)';
+      g.lineWidth = 1 * dpr;
+      g.beginPath();
+      g.arc(cx + this.mira.x * raio, cy + this.mira.y * raio, zona, 0, Math.PI * 2);
+      g.fill();
+      g.stroke();
+      const pulso = 1 + Math.sin(agora / 90) * 0.12;
       g.strokeStyle = 'rgba(255, 240, 200, 0.95)';
       g.lineWidth = 2 * dpr;
       g.beginPath();
-      g.arc(x, y, 9 * dpr, 0, Math.PI * 2);
+      g.arc(x, y, 9 * dpr * pulso, 0, Math.PI * 2);
       g.moveTo(x - 16 * dpr, y);
       g.lineTo(x - 5 * dpr, y);
       g.moveTo(x + 5 * dpr, y);
@@ -252,6 +397,8 @@ export class Dardos implements TelaDoBar {
       g.fillStyle = '#f0503f';
       g.fillRect(x - 1.5 * dpr, y - 1.5 * dpr, 3 * dpr, 3 * dpr);
     }
+    g.restore();
+    this.festa.desenhar(g, W, H);
     if (agora > this.recadoAte && this.recado) {
       this.recado = '';
       this.render();
@@ -308,6 +455,15 @@ export class Dardos implements TelaDoBar {
       g.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
       g.stroke();
     }
+    // a luz batendo de cima no alvo
+    const brilho = g.createLinearGradient(cx, cy - r * 1.2, cx, cy + r * 1.2);
+    brilho.addColorStop(0, 'rgba(255, 220, 160, 0.14)');
+    brilho.addColorStop(0.5, 'rgba(255, 220, 160, 0)');
+    brilho.addColorStop(1, 'rgba(0, 0, 0, 0.18)');
+    g.fillStyle = brilho;
+    g.beginPath();
+    g.arc(cx, cy, r * 1.22, 0, Math.PI * 2);
+    g.fill();
     // os números
     g.fillStyle = '#f3e9d8';
     g.font = `700 ${Math.round(r * 0.13)}px 'Pixel Numeros', 'Pixelify Sans', monospace`;
@@ -320,11 +476,12 @@ export class Dardos implements TelaDoBar {
   }
 
   /** O dardo cravado: a ponta no lugar, o corpo e as penas na cor de quem jogou. */
-  private dardo(g: CanvasRenderingContext2D, x: number, y: number, cor: string, escala: number, dpr: number, alfa = 0) {
+  private dardo(g: CanvasRenderingContext2D, x: number, y: number, cor: string, escala: number, dpr: number, alfa = 0, giro = 0) {
     const k = escala * dpr;
     g.save();
     g.translate(x, y);
-    g.globalAlpha = 1 - alfa * 0.3;
+    if (giro) g.rotate(giro);
+    g.globalAlpha *= 1 - alfa * 0.3;
     g.fillStyle = 'rgba(0,0,0,0.35)';
     g.beginPath();
     g.ellipse(3 * k, 3 * k, 4 * k, 2 * k, 0, 0, Math.PI * 2);
@@ -359,16 +516,19 @@ export class Dardos implements TelaDoBar {
     if (!m) return;
     const p = this.p;
     const soma = D.somaDaVez(p);
+    const valores = m.jogadores.map((_, i) => (i === p.vez && p.vencedor === null ? p.restam[i] - soma : p.restam[i]));
     this.placar.replaceChildren(
       ...m.jogadores.map((nome, i) =>
         h(
           'div',
           { class: `bj-chip${i === p.vez && p.vencedor === null ? ' on' : ''}${p.vencedor === i ? ' venceu' : ''}`, style: `--cor:${CORES[i % 4]}` },
           h('span', null, curto(nome), m.npc[i] ? h('small', null, ' (NPC)') : m.eu.includes(i) ? h('small', null, ' (você)') : null),
-          h('b', null, String(i === p.vez && p.vencedor === null ? p.restam[i] - soma : p.restam[i])),
+          // o número pula quando muda
+          h('b', { class: this.mostrados[i] !== undefined && this.mostrados[i] !== valores[i] ? 'muda' : '' }, String(valores[i])),
         ),
       ),
     );
+    this.mostrados = valores;
     const vez = curto(m.jogadores[p.vez] ?? '');
     const lances = p.lances.map((l) => l.rotulo).join(' + ');
     const texto =

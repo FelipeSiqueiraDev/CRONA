@@ -284,6 +284,11 @@ Ainda falta (pedido do Felipe):
     persiana entre as telas; as lâmpadas do letreiro piscando em fila. Nos jogos, `fx` (faíscas, confete, "+1",
     tremor e clarão). Música por chiptune (`chiptune.ts`: pulso, quadrada, triângulo e bateria de ruído; o menu, um
     tema por jogo, a fanfarra do recorde e as vinhetas de vitória e derrota), com o botão ♪ no letreiro.
+  - **Dardos e sinuca com vida de bar** (`barFx.ts`: faíscas, confete, o número subindo, tremor, clarão e a faixa
+    "SUA VEZ" / "ESTOUROU!" / "VENCEU!"): nos dardos, a luminária, o dardo em arco com rastro, o alvo balançando, o pó
+    do sisal; na sinuca, o lustre balançando, o taco avançando com o pó de giz, o estalo pela força da batida e o baque
+    na tabela (a física agora conta as `batidas` e as `quedas`, sem mudar o resultado), a bola sumindo na caçapa e a
+    bandeja das encaçapadas. Música de jukebox (a bossinha "bar" do chiptune), com o ♪ no topo.
   - Testes: `server/test/bar.test.ts`. Arte pedida ao Códex: SEÇÃO 0C (o alvo, os dardos, a parede, a mesa, as bolas, o
     taco; gabaritos em `gabaritos/pedidos/bar-jogos/`). Ideias: recordes da mesa inteira, o mestre ver quem está jogando.
 - **A arte do gabinete do fliperama** foi para o Códex (SEÇÃO 0B do pedido, gabarito em

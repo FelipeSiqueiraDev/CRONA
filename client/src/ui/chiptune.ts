@@ -108,6 +108,42 @@ const MUSICAS: Record<string, Musica> = {
       { voz: 'bateria', vol: 0.4, notas: vezes(2, 'k . h h s . h . k . h h s . s s') },
     ],
   },
+  // os dardos e a sinuca: uma bossinha de jukebox, baixinha (Am7, D9, Gmaj7, E7)
+  bar: {
+    bpm: 104,
+    faixas: [
+      {
+        voz: 'pulso',
+        vol: 0.055,
+        notas: t(
+          'E5 - - - . . C5 D5 E5 - - . . . . .',
+          'F#5 - - - . . E5 F#5 A5 - - . . . . .',
+          'B5 - - - A5 - G5 - F#5 - - . E5 . . .',
+          'D5 - - . G#4 - - . B4 - - . . . . .',
+          'E5 - - - . . G5 - A5 - C6 - B5 - A5 .',
+          'F#5 - - - E5 - D5 - C5 - - . A4 . . .',
+          'B4 - D5 - F#5 - A5 - G5 - - - F#5 - - .',
+          'E5 - - - D5 - - - B4 - - - . . . .',
+        ),
+      },
+      // o violão: duas vozes batendo no ritmo da bossa
+      ...[
+        ['G4', 'C5', 'F#4', 'G#4'],
+        ['C5', 'E5', 'B4', 'D5'],
+      ].map((acorde) => ({
+        voz: 'quadrada' as const,
+        vol: 0.016,
+        notas: vezes(2, ...['A', 'B', 'C', 'D'].map((_, i) => `${acorde[i]} . . ${acorde[i]} . . ${acorde[i]} . . . ${acorde[i]} . . ${acorde[i]} . .`)),
+      })),
+      {
+        voz: 'triangulo',
+        vol: 0.2,
+        notas: vezes(2, 'A2 . . A2 E2 . . . A2 . . A2 E2 . . .', 'D2 . . D2 A2 . . . D2 . . D2 A2 . . .', 'G2 . . G2 D2 . . . G2 . . G2 D2 . . .', 'E2 . . E2 B1 . . . E2 . . E2 G#2 . . .'),
+      },
+      { voz: 'bateria', vol: 0.16, notas: vezes(8, 'h h h h h h h h h h h h h h h h') },
+      { voz: 'bateria', vol: 0.22, notas: vezes(8, 'k . . s . . k . . . s . . s . .') },
+    ],
+  },
   // as vinhetas
   vitoria: {
     bpm: 200,

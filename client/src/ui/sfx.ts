@@ -144,6 +144,52 @@ class Sfx {
     this.burst({ dur, type: 'bandpass', freq, freq2, q: 1.2, gain, attack: 0.004, release: dur * 0.8 });
   }
 
+  // ---------------------------------------------------------------- o bar (dardos e sinuca); força de 0 a 1
+
+  /** Bola batendo em bola: o estalo seco, mais alto quanto mais forte. */
+  bolaNaBola(forca: number) {
+    const f = Math.max(0, Math.min(1, forca));
+    this.tone(2400 + f * 900, 1700, 0.035, 0.04 + 0.22 * f);
+    this.burst({ dur: 0.03, type: 'highpass', freq: 2600, gain: 0.04 + 0.26 * f, attack: 0.001, release: 0.02 });
+  }
+
+  /** A bola na tabela: um baque surdo de borracha. */
+  tabela(forca: number) {
+    const f = Math.max(0, Math.min(1, forca));
+    this.burst({ dur: 0.09, type: 'lowpass', freq: 380, gain: 0.05 + 0.25 * f, attack: 0.002, release: 0.07 });
+    this.tone(130, 70, 0.08, 0.04 + 0.12 * f);
+  }
+
+  /** A bola caindo na caçapa: o "plunc" e ela rolando lá dentro. */
+  cacapa() {
+    this.tone(320, 110, 0.14, 0.14);
+    this.burst({ dur: 0.16, type: 'bandpass', freq: 900, freq2: 300, gain: 0.12, attack: 0.003, release: 0.12 });
+    if (typeof window !== 'undefined') window.setTimeout(() => this.burst({ dur: 0.35, type: 'bandpass', freq: 500, freq2: 260, q: 2, gain: 0.05, attack: 0.02, release: 0.3 }), 130);
+  }
+
+  /** O taco batendo na branca. */
+  taco(forca: number) {
+    const f = Math.max(0, Math.min(1, forca));
+    this.burst({ dur: 0.04, type: 'highpass', freq: 1400, gain: 0.1 + 0.25 * f, attack: 0.001, release: 0.03 });
+    this.tone(900, 420, 0.05, 0.06 + 0.1 * f);
+  }
+
+  /** O pó de giz e o ranger do taco na mão. */
+  giz() {
+    this.burst({ dur: 0.1, type: 'highpass', freq: 5200, gain: 0.04, attack: 0.01, release: 0.08 });
+  }
+
+  /** O dardo cortando o ar. */
+  dardoVoa() {
+    this.burst({ dur: 0.18, type: 'bandpass', freq: 1100, freq2: 3200, q: 1.5, gain: 0.06, attack: 0.03, release: 0.1 });
+  }
+
+  /** O dardo cravando no sisal (fora do alvo: na parede de madeira). */
+  dardoCrava(noAlvo: boolean) {
+    this.burst({ dur: 0.07, type: 'lowpass', freq: noAlvo ? 520 : 900, gain: 0.3, attack: 0.001, release: 0.05 });
+    this.tone(noAlvo ? 170 : 260, noAlvo ? 90 : 140, 0.08, 0.18);
+  }
+
   /** Notas em sequência (a ficha caindo, o recorde). */
   arpejo(notas: number[], passo = 0.07, gain = 0.08) {
     notas.forEach((f, i) => this.chip(f, f, passo * 0.9, gain, i * passo));
