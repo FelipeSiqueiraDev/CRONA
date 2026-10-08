@@ -12,6 +12,7 @@ import type { AcaoNevoa, MarcaMesa, NevoaCena } from './mesa';
 import type { TipoItemCatalogo } from './regras/ficha';
 import type { VitalKey } from './vitals';
 import type { Door } from './walls';
+import type { TipoJogoBar } from './bar';
 
 /**
  * Para onde a linha da folha de sprite está virada, na tela. As diagonais são
@@ -386,12 +387,15 @@ export type ClientMsg =
   | { t: 'swapItem'; id: number; defId: string }
   | { t: 'use'; id: number }
   /**
-   * o fliperama (só o mestre): a peça vai até a frente do mobi e o jogo abre no celular de quem
-   * joga com ela; de novo, com a mesma peça, fecha
+   * os jogos do bar (só o mestre): a peça vai até o fliperama, o alvo de dardos ou a sinuca e o jogo
+   * abre no celular de quem joga com ela (peça sem ficha = um NPC: o mestre joga na tela dele); de
+   * novo, com a mesma peça, ela sai do jogo
    */
-  | { t: 'fliperama'; tokenId: number; itemId: number }
-  /** o jogador largou o fliperama (o botão Sair da tela do jogo); `recorde` = o melhor da vez */
-  | { t: 'fliperamaSair'; recorde?: { jogo: string; pontos: number } }
+  | { t: 'barJogar'; tokenId: number; itemId: number }
+  /** sair da mesa do bar (o jogador, ou o mestre pelo NPC do `lugar`); `recorde` = o melhor da vez */
+  | { t: 'barSair'; mesa: number; lugar?: number; recorde?: { jogo: string; pontos: number } }
+  /** uma jogada para os outros da mesa (o mestre diz de qual lugar de NPC); `registrar` = guardar para quem reconectar */
+  | { t: 'barJogo'; mesa: number; de?: number; dados: Record<string, unknown>; registrar?: boolean }
   | { t: 'setHint'; id: number; hint: Hint | null }
   | { t: 'roomSettings'; name: string; description: string; darkness: number; publicBuild: boolean; floor?: string; area?: string; floorStyle?: FloorStyle; ambient?: string | null; particles?: ParticleKind[] }
   /** senha de um mobi com fechadura: certa = ele desliza e abre a passagem */
@@ -490,8 +494,15 @@ export type ServerMsg =
   | { t: 'conta'; ok: false; erro: string; expirou?: boolean }
   | { t: 'error'; msg: string }
   | { t: 'notice'; msg: string }
-  /** o fliperama no celular do jogador: abre (ligado) ou fecha (o mestre chamou de volta) */
-  | { t: 'fliperama'; ligado: boolean; nome?: string }
+  /**
+   * a mesa do bar de que você faz parte: o jogo, quem joga em cada lugar (npc = o mestre joga), os seus
+   * lugares e as jogadas guardadas desde o começo da partida (para quem reconecta)
+   */
+  | { t: 'bar'; mesa: number; tipo: TipoJogoBar; jogadores: string[]; npc: boolean[]; eu: number[]; log: Record<string, unknown>[] }
+  /** você saiu da mesa (ou o mestre chamou de volta) */
+  | { t: 'barFechar'; mesa: number; aviso?: string }
+  /** a jogada de outro lugar da mesa */
+  | { t: 'barJogo'; mesa: number; de: number; dados: Record<string, unknown> }
   | { t: 'roomList'; rooms: RoomSummary[] }
   | { t: 'lugares'; lugares: LugarInfo[] }
   | { t: 'roomCreated'; id: number }

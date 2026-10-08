@@ -20,6 +20,8 @@ export * from './lugares';
 export * as regras from './regras';
 /** Combate: ordem de iniciativa, rodadas, turnos e registro (ver docs/COMBATE.md). */
 export * as combate from './combate';
+/** Os jogos do bar: fliperama, dardos e sinuca (as contas que todo celular faz igual). */
+export * as bar from './bar';
 export {
   LOOT_KINDS,
   lootKindLabel,

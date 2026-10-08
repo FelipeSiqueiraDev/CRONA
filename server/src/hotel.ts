@@ -49,6 +49,7 @@ import {
   type Vitals,
   VITAL_LABEL,
   regras,
+  bar,
   combate as cmb,
   sanitizarFicha,
   sanitizarDocumento,
@@ -78,9 +79,18 @@ const NAME_RE = /^[\p{L}\p{N}_\-. ]+$/u;
 const STARTER: string[] = ['chair_wood', 'table_small', 'candles', 'crate_wood', 'plant'];
 
 /** Mensagens que mudam o tabuleiro: só o mestre manda (o resto recebe "Só o mestre..."). */
+/** Uma mesa do bar: o móvel (id), o jogo, quem joga em cada lugar (sem ficha = NPC do mestre) e as jogadas guardadas. */
+interface MesaBar {
+  id: number;
+  tipo: bar.TipoJogoBar;
+  lugares: { tokenId: number; nome: string; fichaId?: number }[];
+  log: Record<string, unknown>[];
+}
+const NOME_MESA: Record<bar.TipoJogoBar, string> = { fliperama: 'o fliperama', dardos: 'os dardos', sinuca: 'a sinuca' };
+
 const GM_ONLY = new Set([
   'createRoom',
-  'fliperama',
+  'barJogar',
   'charUpdate',
   'charDelete',
   'sendTo',
@@ -258,8 +268,8 @@ export class Hotel implements HotelApi {
 
   // ---------- combate (docs/COMBATE.md) ----------
   /** estados anteriores do combate de cada campanha, para o "Desfazer" (só na memória), com os PV/PE/SAN que cada passo mudou */
-  /** quem está no fliperama agora (a ficha e o nome da peça), para fechar e para reabrir se o celular reconectar */
-  private jogando = new Map<number, string>();
+  /** as mesas do bar (o fliperama, o alvo, a sinuca), pelo id do móvel: quem joga em cada lugar e as jogadas guardadas */
+  private mesas = new Map<number, MesaBar>();
   private desfazeres = new Map<number, { combate: string; vitais: { id: number; antes: Vitals }[]; mochilas?: { fichaId: number; inventario: regras.ItemFicha[] }[]; largados?: number[] }[]>();
 
   /** Peças da campanha e os PV/SAN delas, para as regras do combate. */
@@ -1584,11 +1594,14 @@ export class Hotel implements HotelApi {
       case 'viagem':
         this.viagem(c, m);
         return;
-      case 'fliperama':
-        this.fliperama(c, m);
+      case 'barJogar':
+        this.barJogar(c, m);
         return;
-      case 'fliperamaSair':
-        this.fliperamaSair(c, m);
+      case 'barSair':
+        this.barSair(c, m);
+        return;
+      case 'barJogo':
+        this.barJogo(c, m);
         return;
       case 'lugares':
         c.send({ t: 'lugares', lugares: this.lugares(c) });
@@ -1679,46 +1692,123 @@ export class Hotel implements HotelApi {
     c.room?.handle(c, m);
   }
 
-  // ---------- o fliperama (08/10) ----------
+  // ---------- os jogos do bar (08/10) ----------
   /** As telas de jogador abertas na ficha. */
   private telasDaFicha(fichaId: number) {
     return [...this.clients.values()].filter((o) => o.role !== 'gm' && o.fichaId === fichaId);
   }
 
-  /**
-   * O mestre escolheu um agente e usou o fliperama: a peça vai até ele e o jogo abre no celular de
-   * quem joga com ela. Com o agente já jogando, o mesmo Usar chama de volta.
-   */
-  private fliperama(c: Client, m: Record<string, unknown>) {
-    const room = c.room;
-    if (!room || typeof m.tokenId !== 'number' || typeof m.itemId !== 'number') return;
-    const r = room.irJogar(c, m.tokenId, m.itemId);
-    if (typeof r === 'string') return c.send({ t: 'error', msg: r });
-    const f = this.fichaDoPersonagem(r.charId);
-    if (!f) return c.send({ t: 'notice', msg: `${r.nome} foi para o fliperama, mas não tem ficha de jogador: o jogo não abre em nenhum celular.` });
-    const telas = this.telasDaFicha(f.id);
-    if (this.jogando.has(f.id)) {
-      this.jogando.delete(f.id);
-      for (const o of telas) o.send({ t: 'fliperama', ligado: false });
-      return c.send({ t: 'notice', msg: `${r.nome} largou o fliperama.` });
-    }
-    this.jogando.set(f.id, r.nome);
-    for (const o of telas) o.send({ t: 'fliperama', ligado: true, nome: r.nome });
-    c.send({ t: 'notice', msg: telas.length ? `${r.nome} foi jogar: o fliperama abriu no celular.` : `${r.nome} foi jogar, mas o celular do jogador não está conectado (abre quando conectar).` });
+  private mestres() {
+    return [...this.clients.values()].filter((o) => o.role === 'gm' && o.name);
   }
 
-  /** O jogador apertou Sair no fliperama: o mestre fica sabendo (e do recorde, se teve). */
-  private fliperamaSair(c: Client, m: Record<string, unknown>) {
-    if (!c.fichaId) return;
-    const nome = this.jogando.get(c.fichaId);
-    if (nome === undefined) return;
-    this.jogando.delete(c.fichaId);
-    for (const o of this.telasDaFicha(c.fichaId)) if (o !== c) o.send({ t: 'fliperama', ligado: false });
+  /** Cada conexão que olha a mesa e os lugares dela (o jogador, o seu; o mestre, os dos NPCs). */
+  private telasDaMesa(mesa: MesaBar): { c: Client; eu: number[] }[] {
+    const out: { c: Client; eu: number[] }[] = [];
+    mesa.lugares.forEach((l, i) => {
+      if (l.fichaId !== undefined) for (const c of this.telasDaFicha(l.fichaId)) out.push({ c, eu: [i] });
+    });
+    const npcs = mesa.lugares.flatMap((l, i) => (l.fichaId === undefined ? [i] : []));
+    if (npcs.length) for (const c of this.mestres()) out.push({ c, eu: npcs });
+    return out;
+  }
+
+  private msgMesa(mesa: MesaBar, eu: number[]) {
+    return { t: 'bar' as const, mesa: mesa.id, tipo: mesa.tipo, jogadores: mesa.lugares.map((l) => l.nome), npc: mesa.lugares.map((l) => l.fichaId === undefined), eu, log: mesa.log };
+  }
+
+  /** Quem está na mesa mudou: todos recebem a mesa de novo (a partida volta para o começo). */
+  private mesaMudou(mesa: MesaBar) {
+    mesa.log = [];
+    for (const { c, eu } of this.telasDaMesa(mesa)) c.send(this.msgMesa(mesa, eu));
+  }
+
+  /** Tira um lugar da mesa: a tela de quem saiu fecha, os outros recebem a mesa nova. */
+  private tirarDaMesa(mesa: MesaBar, i: number, aviso?: string) {
+    const antes = this.telasDaMesa(mesa);
+    const [saiu] = mesa.lugares.splice(i, 1);
+    const ficam = new Set(this.telasDaMesa(mesa).map((x) => x.c));
+    for (const { c } of antes) if (!ficam.has(c)) c.send({ t: 'barFechar', mesa: mesa.id, ...(aviso && saiu.fichaId !== undefined ? { aviso } : {}) });
+    if (!mesa.lugares.length) this.mesas.delete(mesa.id);
+    else this.mesaMudou(mesa);
+  }
+
+  /**
+   * O mestre escolheu um agente e usou um jogo do bar: a peça vai até ele e o jogo abre no celular de
+   * quem joga com ela; a peça sem ficha é um NPC, e o mestre joga por ele na tela dele. Com a peça já
+   * jogando, o mesmo Usar chama de volta.
+   */
+  private barJogar(c: Client, m: Record<string, unknown>) {
+    const room = c.room;
+    if (!room || typeof m.tokenId !== 'number' || typeof m.itemId !== 'number') return;
+    const r = room.pecaNoJogo(c, m.tokenId, m.itemId);
+    if (typeof r === 'string') return c.send({ t: 'error', msg: r });
+    const jogo = NOME_MESA[r.tipo];
+    let mesa = this.mesas.get(m.itemId);
+    const ja = mesa?.lugares.findIndex((l) => l.tokenId === m.tokenId) ?? -1;
+    if (mesa && ja >= 0) {
+      this.tirarDaMesa(mesa, ja, 'O mestre chamou de volta para a mesa.');
+      return c.send({ t: 'notice', msg: `${r.nome} largou ${jogo}.` });
+    }
+    if (mesa && mesa.lugares.length >= bar.MAX_JOGADORES[r.tipo]) return c.send({ t: 'error', msg: `Já tem ${mesa.lugares.length} em ${jogo}: chame alguém de volta antes.` });
+    const f = this.fichaDoPersonagem(r.charId);
+    // a peça só joga uma coisa por vez
+    for (const outra of [...this.mesas.values()]) {
+      const i = outra.lugares.findIndex((l) => l.tokenId === m.tokenId || (f && l.fichaId === f.id));
+      if (i >= 0) this.tirarDaMesa(outra, i);
+    }
+    mesa = this.mesas.get(m.itemId);
+    if (!mesa) {
+      mesa = { id: m.itemId, tipo: r.tipo, lugares: [], log: [] };
+      this.mesas.set(mesa.id, mesa);
+    }
+    mesa.lugares.push({ tokenId: m.tokenId, nome: r.nome, ...(f ? { fichaId: f.id } : {}) });
+    room.irAoJogo(m.tokenId, m.itemId);
+    this.mesaMudou(mesa);
+    const msg = !f
+      ? `${r.nome} foi para ${jogo}. Sem ficha de jogador, é um NPC: você joga por ele na sua tela.`
+      : this.telasDaFicha(f.id).length
+        ? `${r.nome} foi para ${jogo}: o jogo abriu no celular.`
+        : `${r.nome} foi para ${jogo}, mas o celular do jogador não está conectado (abre quando conectar).`;
+    c.send({ t: 'notice', msg });
+  }
+
+  /** O lugar de quem mandou a mensagem: o do jogador, ou o do NPC que o mestre disse. */
+  private lugarNaMesa(c: Client, mesa: MesaBar, de: unknown): number {
+    if (c.role === 'gm') return typeof de === 'number' && mesa.lugares[de] && mesa.lugares[de].fichaId === undefined ? de : -1;
+    return c.fichaId === undefined ? -1 : mesa.lugares.findIndex((l) => l.fichaId === c.fichaId);
+  }
+
+  /** Sair da mesa (o botão Sair): o mestre fica sabendo, e do recorde, se teve. */
+  private barSair(c: Client, m: Record<string, unknown>) {
+    const mesa = typeof m.mesa === 'number' ? this.mesas.get(m.mesa) : undefined;
+    if (!mesa) return c.send({ t: 'barFechar', mesa: typeof m.mesa === 'number' ? m.mesa : 0 });
+    const i = this.lugarNaMesa(c, mesa, m.lugar);
+    if (i < 0) return;
+    const nome = mesa.lugares[i].nome;
+    const jogo = NOME_MESA[mesa.tipo];
+    this.tirarDaMesa(mesa, i);
+    if (c.role === 'gm') return;
     const rec = m.recorde as { jogo?: unknown; pontos?: unknown } | undefined;
     const pontos = typeof rec?.pontos === 'number' && Number.isFinite(rec.pontos) ? Math.max(0, Math.floor(rec.pontos)) : 0;
-    const jogo = typeof rec?.jogo === 'string' ? rec.jogo.replace(/[^\p{L}\p{N} -]/gu, '').slice(0, 20) : '';
-    const msg = pontos && jogo ? `${nome} largou o fliperama (${pontos} pontos no ${jogo}).` : `${nome} largou o fliperama.`;
-    for (const o of this.clients.values()) if (o.role === 'gm') o.send({ t: 'notice', msg });
+    const qual = typeof rec?.jogo === 'string' ? rec.jogo.replace(/[^\p{L}\p{N} -]/gu, '').slice(0, 20) : '';
+    const msg = pontos && qual ? `${nome} largou ${jogo} (${pontos} pontos no ${qual}).` : `${nome} largou ${jogo}.`;
+    for (const o of this.mestres()) o.send({ t: 'notice', msg });
+  }
+
+  /** Uma jogada: vai para os outros da mesa (e fica guardada, se pedir, para quem reconectar). */
+  private barJogo(c: Client, m: Record<string, unknown>) {
+    const mesa = typeof m.mesa === 'number' ? this.mesas.get(m.mesa) : undefined;
+    if (!mesa || !m.dados || typeof m.dados !== 'object' || Array.isArray(m.dados)) return;
+    const de = this.lugarNaMesa(c, mesa, m.de);
+    if (de < 0) return;
+    const dados = m.dados as Record<string, unknown>;
+    if (JSON.stringify(dados).length > 4000) return;
+    if (m.registrar === true) {
+      if (dados.tipo === 'comecar') mesa.log = [];
+      if (mesa.log.length < 3000) mesa.log.push({ de, dados });
+    }
+    for (const { c: o } of this.telasDaMesa(mesa)) if (o !== c) o.send({ t: 'barJogo', mesa: mesa.id, de, dados });
   }
 
   // ---------- contas (a tela de entrada) ----------
@@ -1824,9 +1914,9 @@ export class Hotel implements HotelApi {
       this.enviarFichas(c);
       this.enviarDocs(c);
     }
-    // o celular caiu no meio do jogo: o fliperama abre de novo
-    const jogando = c.fichaId !== undefined ? this.jogando.get(c.fichaId) : undefined;
-    if (jogando !== undefined) c.send({ t: 'fliperama', ligado: true, nome: jogando });
+    // o celular (ou o mestre) caiu no meio do jogo: a mesa do bar abre de novo
+    for (const mesa of this.mesas.values())
+      for (const t of this.telasDaMesa(mesa)) if (t.c === c) c.send(this.msgMesa(mesa, t.eu));
     if (this.persist) console.log(`[hotel] ${name} entrou (${role === 'gm' ? 'mestre' : 'jogador'})`);
   }
 

@@ -14,6 +14,7 @@ import './ui/mapaMundi.css';
 import './ui/kit.css';
 import './ui/jogador.css';
 import './ui/fliperama.css';
+import './ui/barJogos.css';
 import './ui/retro-auto.css';
 import './ui/retro.css';
 import './ui/hud.css';
@@ -35,6 +36,7 @@ import { TableScreen } from './ui/table';
 import { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha, TelaFicha } from './ui/telaFicha';
 import { Entrada } from './ui/entrada';
 import { mostrarTelaViagem } from './ui/viagemTela';
+import { BarJogos } from './ui/barJogos';
 import { esquecerSessao, guardarSessao, lerSessao } from './session/conta';
 import { janelaAberta } from './ui/fichaModal';
 import { NavigatorWin } from './ui/navigator';
@@ -190,6 +192,8 @@ const telaFicha = fichaMode
       sessionEnded();
     })
   : null;
+/** os jogos do bar em que o mestre joga por um NPC (janelinha no canto) */
+const barMestre = shell ? new BarJogos(app, 'mestre') : null;
 if (shell) {
   shell.mountCanvas(canvas);
   root.append(shell.el);
@@ -388,8 +392,11 @@ net.onMessage = (m: ServerMsg) => {
       shell?.combate.setCombate(m.combate, m.podeDesfazer, m.ameacas);
       table?.setCombate(m.combate);
       break;
-    case 'fliperama':
-      telaFicha?.fliperama(m.ligado, m.nome);
+    case 'bar':
+    case 'barFechar':
+    case 'barJogo':
+      // os jogos do bar: no celular do jogador, ou na janelinha do mestre (o NPC)
+      (telaFicha?.bar ?? barMestre)?.receber(m);
       break;
     case 'viagemTela':
       mostrarTelaViagem(m.fase, m.ilustracao, m.texto, m.reserva);

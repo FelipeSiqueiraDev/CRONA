@@ -396,11 +396,6 @@ export function anyFurniName(id: string): string {
 }
 
 /** Tamanho ocupado no grid para uma rotação. */
-/** Os mobis em que dá para jogar (o jogo abre no celular do jogador; client/src/ui/fliperama.ts). */
-export function ehFliperama(defId: string): boolean {
-  return defId === 'arcade';
-}
-
 export function footprint(def: Pick<FurniDef, 'width' | 'depth'>, rot: number): { sx: number; sy: number } {
   return rot === 2 || rot === 6 ? { sx: def.depth, sy: def.width } : { sx: def.width, sy: def.depth };
 }

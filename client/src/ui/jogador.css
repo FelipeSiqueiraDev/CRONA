@@ -11,7 +11,8 @@
    - Usado de dia, na varanda: contraste alto, nada abaixo de ~11 px, alvos de ~44 px.
    ===================================================================== */
 
-html.modo-ficha {
+html.modo-ficha,
+.bar-janela {
   --u: calc(min(100vw, 480px) / 94);
   /* espaços */
   --s1: calc(var(--u) * 2);

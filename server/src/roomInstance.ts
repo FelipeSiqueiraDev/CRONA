@@ -9,7 +9,7 @@ import {
   getFurni,
   getWallFurni,
   anyFurniName,
-  ehFliperama,
+  bar,
   applyVital,
   espacosDoItemFicha,
   kindDoItem,
@@ -1030,32 +1030,60 @@ export class RoomInstance {
   }
 
   /**
-   * O fliperama (08/10): a peça vai até a casa da frente do mobi, vira para a tela, e o mobi liga
-   * (estado 0 = aceso). Devolve o personagem e o nome da peça, ou o motivo de não dar.
+   * Os jogos do bar (08/10): a peça e o móvel do jogo (o fliperama, a sinuca, o alvo de dardos na
+   * parede). Devolve o personagem, o nome da peça e o jogo, ou o motivo de não dar. Não mexe em nada.
    */
-  irJogar(c: Client, tokenId: number, itemId: number): { charId: number | null; nome: string } | string {
+  pecaNoJogo(c: Client, tokenId: number, itemId: number): { charId: number | null; nome: string; tipo: bar.TipoJogoBar } | string {
     if (!this.canBuild(c)) return 'Só o mestre leva alguém para jogar.';
     const u = this.users.get(tokenId);
     if (!u) return 'Escolha no tabuleiro o agente que vai jogar.';
-    const it = this.map.getItem(itemId);
-    if (!it || !ehFliperama(it.defId)) return 'Isso não é um fliperama.';
-    const frente = this.stairFoot(it);
-    if (frente && (frente.x !== u.x || frente.y !== u.y)) {
-      if (this.occupied(frente.x, frente.y, u.client.id)) return 'Tem alguém na frente do fliperama.';
-      u.goal = frente;
-      u.encara = { x: it.x, y: it.y };
-    } else if (frente) {
-      u.dir = u.headDir = directionTo(u, { x: it.x, y: it.y });
+    const defId = this.map.getItem(itemId)?.defId ?? this.map.getWallItem(itemId)?.defId;
+    const tipo = defId ? bar.jogoDoBar(defId) : null;
+    if (!tipo) return 'Isso não é um jogo do bar.';
+    return { charId: u.client.look.charId ?? null, nome: u.client.name ?? 'O agente', tipo };
+  }
+
+  /**
+   * A peça vai até o jogo e vira para ele: a frente do fliperama (ou do lado, se já tem alguém), a
+   * beira da sinuca, a linha de arremesso a três casas do alvo. O fliperama acende.
+   */
+  irAoJogo(tokenId: number, itemId: number) {
+    const u = this.users.get(tokenId);
+    if (!u) return;
+    const floor = this.map.getItem(itemId);
+    const wall = floor ? undefined : this.map.getWallItem(itemId);
+    let alvo: Point | null = null;
+    let olha: Point | null = null;
+    if (floor?.defId === 'arcade') {
+      olha = { x: floor.x, y: floor.y };
+      alvo = this.stairFoot(floor);
+      if (alvo && this.occupied(alvo.x, alvo.y, u.client.id)) alvo = this.freeNear(alvo.x, alvo.y, u.client.id);
+      if (floor.state !== 0) {
+        const aceso = { ...floor, state: 0 };
+        this.map.updateItem(aceso);
+        this.persist();
+        this.broadcastFloor('itemUpdate', aceso);
+      }
+    } else if (floor) {
+      const def = getFurni(floor.defId);
+      const fp = def ? footprint(def, floor.rot) : { sx: 1, sy: 1 };
+      olha = { x: floor.x + Math.floor(fp.sx / 2), y: floor.y + Math.floor(fp.sy / 2) };
+      alvo = this.freeNear(olha.x, olha.y, u.client.id);
+    } else if (wall) {
+      const casa = Math.floor(wall.pos);
+      olha = wall.wall === 'l' ? { x: wall.plane, y: casa } : { x: casa, y: wall.plane };
+      const linha = wall.wall === 'l' ? { x: wall.plane + 3, y: casa } : { x: casa, y: wall.plane + 3 };
+      alvo = this.map.walkState(linha.x, linha.y) === 'walk' && !this.occupied(linha.x, linha.y, u.client.id) ? linha : this.freeNear(linha.x, linha.y, u.client.id);
+    }
+    if (!olha) return;
+    if (alvo && (alvo.x !== u.x || alvo.y !== u.y)) {
+      u.goal = alvo;
+      u.encara = olha;
+    } else {
+      u.dir = u.headDir = directionTo(u, olha);
       u.dirty = true;
     }
     this.ensureTimer();
-    if (it.state !== 0) {
-      const aceso = { ...it, state: 0 };
-      this.map.updateItem(aceso);
-      this.persist();
-      this.broadcastFloor('itemUpdate', aceso);
-    }
-    return { charId: u.client.look.charId ?? null, nome: u.client.name ?? 'O agente' };
   }
 
   // ---------- passagem secreta ----------

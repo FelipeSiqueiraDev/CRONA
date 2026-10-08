@@ -7,8 +7,24 @@
  *   travessia é um ponto, e o carro empurra de volta.
  * - PULA-PULA: o agente pula sozinho de plataforma em plataforma, subindo; a verde é firme, a azul
  *   anda, a marrom quebra, a mola joga longe. Caiu, acabou.
+ *
+ * Em DUPLA (dois agentes na mesma máquina, cada um no seu celular): o PONG é um contra o outro (o
+ * celular de quem convidou faz as contas e manda a bola; o outro manda a raquete); no ATRAVESSA os
+ * dois agentes correm lado a lado na mesma avenida (o trânsito sai da mesma semente); no PULA-PULA
+ * cada um sobe as mesmas plataformas e vence quem for mais alto.
  */
+import { bar } from '@crona/shared';
 import { sfx } from './sfx';
+
+/** Jogando em dupla: a semente da partida, o lado (0 = quem convidou) e o nome do outro. */
+export interface Dupla {
+  semente: number;
+  lado: number;
+  outro: string;
+}
+
+/** O primeiro nome, curto, para o placar ("CATARINA"). */
+export const curto = (nome: string) => semAcento(nome.split(/\s+/)[0] ?? nome).replace(/[^A-Z0-9.-]/g, '').slice(0, 8);
 
 export const W = 160;
 export const H = 192;
@@ -109,6 +125,8 @@ function boneco(g: CanvasRenderingContext2D, linhas: string[], x: number, y: num
 }
 
 const CORES_AGENTE = { h: COR.cabelo, s: COR.pele, b: COR.terno, w: COR.branco, r: COR.vermelho };
+/** O outro agente, em dupla: de terno vinho e gravata amarela. */
+const CORES_OUTRO = { h: '#1a1412', s: '#f3d2b3', b: '#6a1e2e', w: COR.branco, r: COR.amarelo };
 /** O agente de terno, de frente (7 × 9), com as duas pernas de andar. */
 const AGENTE = ['..hhh..', '.hsss..', '..sss..', '.bbwbb.', 'bbbrbbb', 'b.bbb.b', '..bbb..'];
 const PERNAS = [
@@ -126,7 +144,9 @@ const aleat = (a: number, b: number) => a + Math.random() * (b - a);
 export class Pong implements Jogo {
   pontos = 0;
   fim = false;
-  private deles = 0;
+  deles = 0;
+  /** em dupla, quem convidou: onde o outro quer a raquete dele (a da esquerda) */
+  remoto: number | null = null;
   private readonly topo = 24;
   private readonly base = H - 6;
   private readonly RH = 18;
@@ -141,6 +161,18 @@ export class Pong implements Jogo {
   private saqueParaMim = Math.random() < 0.5;
   private q = 0;
 
+  /**
+   * `papel`: sem dupla, contra a máquina; 'dono' (quem convidou) faz as contas, com a raquete do outro
+   * vindo de `remoto`; 'convidado' só mexe a própria raquete e desenha o que o dono manda (`aplicar`),
+   * do ponto de vista dele (a raquete dele também à direita).
+   */
+  constructor(private papel: 'sozinho' | 'dono' | 'convidado' = 'sozinho') {}
+
+  /** A raquete de quem joga deste celular (o convidado manda essa para o dono). */
+  get minhaRaquete() {
+    return this.eu;
+  }
+
   passo(e: Entrada) {
     if (this.fim) return;
     this.q++;
@@ -151,11 +183,20 @@ export class Pong implements Jogo {
     } else if (e.segura.has('cima')) this.eu -= 2.6;
     else if (e.segura.has('baixo')) this.eu += 2.6;
     this.eu = Math.max(this.topo, Math.min(this.base - this.RH, this.eu));
-    // a máquina: olha a bola de tempos em tempos, erra um pouco e fica mais esperta quando você pontua
     const b = this.bola;
-    if (this.q % 7 === 0) this.alvoEles = b.vx < 0 ? b.y - this.RH / 2 + aleat(-7, 7) : (this.topo + this.base) / 2 - this.RH / 2;
-    const vel = 1.35 + this.pontos * 0.12;
-    this.eles += Math.max(-vel, Math.min(vel, this.alvoEles - this.eles));
+    if (this.papel === 'convidado') {
+      // entre um recado e outro do dono, a bola segue andando
+      if (this.espera === 0) (b.x += b.vx), (b.y += b.vy);
+      return;
+    }
+    if (this.papel === 'dono') {
+      if (this.remoto !== null) this.eles += Math.max(-4.5, Math.min(4.5, this.remoto - this.eles));
+    } else {
+      // a máquina: olha a bola de tempos em tempos, erra um pouco e fica mais esperta quando você pontua
+      if (this.q % 7 === 0) this.alvoEles = b.vx < 0 ? b.y - this.RH / 2 + aleat(-7, 7) : (this.topo + this.base) / 2 - this.RH / 2;
+      const vel = 1.35 + this.pontos * 0.12;
+      this.eles += Math.max(-vel, Math.min(vel, this.alvoEles - this.eles));
+    }
     this.eles = Math.max(this.topo, Math.min(this.base - this.RH, this.eles));
 
     if (this.espera > 0) {
@@ -192,6 +233,31 @@ export class Pong implements Jogo {
     }
   }
 
+  /** O que o dono manda ao convidado (a cada dois quadros). */
+  estado(): number[] {
+    const b = this.bola;
+    const r = (n: number) => Math.round(n * 100) / 100;
+    return [r(b.x), r(b.y), r(b.vx), r(b.vy), r(this.eu), this.pontos, this.deles, this.espera, this.fim ? 1 : 0];
+  }
+
+  /** O convidado recebe o estado do dono e vira para o lado dele (espelhado: ele também fica à direita). */
+  aplicar(s: unknown) {
+    if (!Array.isArray(s) || s.length < 9 || !s.every((n) => typeof n === 'number')) return;
+    const [bx, by, vx, vy, raqueteDono, pontosDono, pontosMeus, espera, fim] = s as number[];
+    const b = this.bola;
+    b.x = W - bx - 3;
+    b.y = by;
+    b.vx = -vx;
+    b.vy = vy;
+    this.eles = raqueteDono;
+    if (pontosMeus > this.pontos) sfx.chip(660, 990, 0.22);
+    if (pontosDono > this.deles) sfx.chip(180, 90, 0.22);
+    this.pontos = pontosMeus;
+    this.deles = pontosDono;
+    this.espera = espera;
+    this.fim = fim === 1;
+  }
+
   desenhar(g: CanvasRenderingContext2D, quadro: number) {
     g.fillStyle = COR.preto;
     g.fillRect(0, 0, W, H);
@@ -214,6 +280,7 @@ export class Pong implements Jogo {
   }
 
   resumo() {
+    if (this.papel !== 'sozinho') return `${this.pontos} A ${this.deles}`;
     return this.pontos > this.deles ? `VOCE VENCEU ${this.pontos} A ${this.deles}` : `A MAQUINA VENCEU ${this.deles} A ${this.pontos}`;
   }
 }
@@ -241,8 +308,19 @@ export class Atravessa implements Jogo {
   private passos = 0;
   private atropelado = 0;
   private faixas: { y: number; vel: number; dir: number; carros: Carro[] }[] = [];
+  /** em dupla: o outro agente (a altura e os pontos que o celular dele manda) */
+  outro: { y: number; p: number; passos: number } | null = null;
+  private xOutro = 0;
 
-  constructor() {
+  constructor(private dupla?: Dupla) {
+    const rnd = bar.sorteio(dupla?.semente ?? bar.novaSemente());
+    const aleat = (a: number, b: number) => a + rnd() * (b - a);
+    if (dupla) {
+      // como no Freeway: o de quem convidou à esquerda, o outro à direita
+      this.x = dupla.lado === 0 ? 44 : 108;
+      this.xOutro = dupla.lado === 0 ? 108 : 44;
+      this.outro = { y: 186, p: 0, passos: 0 };
+    }
     const vels = [0.55, 0.8, 1.1, 1.45, 1.9, 2.1, 1.6, 1.25, 0.9, 0.6];
     for (let i = 0; i < 10; i++) {
       const n = i % 3 === 0 ? 2 : 3;
@@ -318,16 +396,31 @@ export class Atravessa implements Jogo {
       for (let x = 0; x < W; x += 12) g.fillRect(x, y, 6, 1);
     }
     for (const f of this.faixas) for (const c of f.carros) this.carro(g, c, f.y, f.dir);
+    // o outro agente (em dupla), de terno vinho
+    if (this.outro) boneco(g, [...AGENTE, ...PERNAS[(this.outro.passos >> 3) % 2]], this.xOutro, this.outro.y - 9, CORES_OUTRO);
     // o agente (pisca quando o carro pega)
     if (this.atropelado === 0 || (quadro >> 2) % 2 === 0) {
       const p = PERNAS[(this.passos >> 3) % 2];
       boneco(g, [...AGENTE, ...p], this.x, this.y - 9, CORES_AGENTE);
     }
     // o placar e o relógio
-    texto(g, String(this.pontos), 6, 3, COR.amarelo, 2);
     const s = Math.ceil(this.tempo / 60);
     const pouco = s <= 10;
-    if (!pouco || (quadro >> 4) % 2 === 0) texto(g, `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`, W - 6, 3, pouco ? COR.vermelho : COR.branco, 2, 'dir');
+    const relogio = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    if (this.dupla && this.outro) {
+      const esq = this.dupla.lado === 0;
+      texto(g, String(this.pontos), esq ? 6 : W - 6, 3, COR.amarelo, 2, esq ? 'esq' : 'dir');
+      texto(g, String(this.outro.p), esq ? W - 6 : 6, 3, COR.rosa, 2, esq ? 'dir' : 'esq');
+      if (!pouco || (quadro >> 4) % 2 === 0) texto(g, relogio, W / 2, 3, pouco ? COR.vermelho : COR.branco, 2, 'meio');
+      return;
+    }
+    texto(g, String(this.pontos), 6, 3, COR.amarelo, 2);
+    if (!pouco || (quadro >> 4) % 2 === 0) texto(g, relogio, W - 6, 3, pouco ? COR.vermelho : COR.branco, 2, 'dir');
+  }
+
+  /** O que vai para o celular do outro (em dupla). */
+  posicao() {
+    return { y: Math.round(this.y * 10) / 10, p: this.pontos, passos: this.passos };
   }
 
   private carro(g: CanvasRenderingContext2D, c: Carro, y: number, dir: number) {
@@ -357,6 +450,7 @@ export class Atravessa implements Jogo {
   }
 
   resumo() {
+    if (this.outro) return `${this.pontos} A ${this.outro.p}`;
     return this.pontos ? 'O TEMPO ACABOU' : 'NENHUMA TRAVESSIA';
   }
 }
@@ -388,11 +482,21 @@ export class PulaPula implements Jogo {
   private alto = 168;
   private plats: Plataforma[] = [];
   private proxY = 176;
-  private estrelas = Array.from({ length: 34 }, () => ({ x: Math.floor(aleat(0, W)), y: aleat(0, H), cor: Math.random() < 0.3 ? COR.amarelo : COR.claro }));
+  private rnd: () => number;
+  private estrelas: { x: number; y: number; cor: string }[];
+  /** em dupla: os pontos do outro e se ele ainda está pulando */
+  outro: { p: number; vivo: boolean } | null = null;
 
-  constructor() {
+  constructor(private dupla?: Dupla) {
+    this.rnd = bar.sorteio(dupla?.semente ?? bar.novaSemente());
+    this.estrelas = Array.from({ length: 34 }, () => ({ x: Math.floor(this.al(0, W)), y: this.al(0, H), cor: this.rnd() < 0.3 ? COR.amarelo : COR.claro }));
+    if (dupla) this.outro = { p: 0, vivo: true };
     this.plats.push({ x: W / 2 - 14, y: 176, w: 28, tipo: 'firme', vx: 0, mola: false, quebrada: false });
     this.gerar();
+  }
+
+  private al(a: number, b: number) {
+    return a + this.rnd() * (b - a);
   }
 
   /** Mais alto, mais difícil: de 0 a 1. */
@@ -404,13 +508,13 @@ export class PulaPula implements Jogo {
     while (this.proxY > this.camY - 40) {
       const d = this.dificuldade();
       // o pulo alcança 66 pixels; o vão maior fica em 54
-      const vao = aleat(16, 26 + d * 28);
+      const vao = this.al(16, 26 + d * 28);
       this.proxY -= vao;
-      const anda = Math.random() < 0.08 + d * 0.32;
+      const anda = this.rnd() < 0.08 + d * 0.32;
       const w = Math.round(22 - d * 4);
-      this.plats.push({ x: aleat(0, W - w), y: this.proxY, w, tipo: anda ? 'anda' : 'firme', vx: anda ? aleat(0.5, 0.9 + d) * (Math.random() < 0.5 ? -1 : 1) : 0, mola: !anda && Math.random() < 0.06, quebrada: false });
+      this.plats.push({ x: this.al(0, W - w), y: this.proxY, w, tipo: anda ? 'anda' : 'firme', vx: anda ? this.al(0.5, 0.9 + d) * (this.rnd() < 0.5 ? -1 : 1) : 0, mola: !anda && this.rnd() < 0.06, quebrada: false });
       // a que quebra é de enfeite: nunca é o único caminho
-      if (Math.random() < 0.1 + d * 0.2) this.plats.push({ x: aleat(0, W - w), y: this.proxY + vao / 2, w, tipo: 'quebra', vx: 0, mola: false, quebrada: false });
+      if (this.rnd() < 0.1 + d * 0.2) this.plats.push({ x: this.al(0, W - w), y: this.proxY + vao / 2, w, tipo: 'quebra', vx: 0, mola: false, quebrada: false });
     }
   }
 
@@ -505,15 +609,21 @@ export class PulaPula implements Jogo {
     }
     boneco(g, this.vy < 0 ? SUBINDO : PULANDO, this.x - 4, this.y - this.camY - 10, CORES_AGENTE, this.lado < 0);
     texto(g, String(this.pontos), 5, 4, COR.branco, 2);
+    // em dupla: os pontos do outro, no canto
+    if (this.dupla && this.outro) {
+      texto(g, curto(this.dupla.outro), W - 5, 4, COR.rosa, 1, 'dir');
+      texto(g, this.outro.vivo ? String(this.outro.p) : `${this.outro.p} CAIU`, W - 5, 11, this.outro.vivo ? COR.rosa : COR.cinza, 1, 'dir');
+    }
   }
 
   resumo() {
+    if (this.outro) return `${this.pontos} A ${this.outro.p}`;
     return 'CAIU LA DE CIMA';
   }
 }
 
 export const JOGOS = [
   { id: 'pong', nome: 'PONG', dica: 'PRIMEIRO A 7 VENCE', toque: 'O DEDO NA TELA MOVE A RAQUETE', recorde: false, novo: () => new Pong() },
-  { id: 'atravessa', nome: 'ATRAVESSA', dica: '90 SEGUNDOS NA AVENIDA', toque: 'SEGURE A TELA PARA ANDAR', recorde: true, novo: () => new Atravessa() },
-  { id: 'pula', nome: 'PULA-PULA', dica: 'SOBE SEM CAIR', toque: 'TOQUE NA ESQUERDA OU NA DIREITA', recorde: true, novo: () => new PulaPula() },
+  { id: 'atravessa', nome: 'ATRAVESSA', dica: '90 SEGUNDOS NA AVENIDA', toque: 'SEGURE A TELA PARA ANDAR', recorde: true, novo: (d?: Dupla) => new Atravessa(d) },
+  { id: 'pula', nome: 'PULA-PULA', dica: 'SOBE SEM CAIR', toque: 'TOQUE NA ESQUERDA OU NA DIREITA', recorde: true, novo: (d?: Dupla) => new PulaPula(d) },
 ] as const;

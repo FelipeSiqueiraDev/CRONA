@@ -259,15 +259,25 @@ Ainda falta (pedido do Felipe):
 - **Falta fazer (código):** portas de várias casas (a de enrolar tem 3, a caverna 2) e passagem sem folha; o altar
   pisável quando a arte chegar; "Nesta cena" sem rolagem (não reproduzi: esperando o Felipe dizer onde).
 - **Item no chão menor:** 44 px (um) e 34 (vários); eram 72 e 58, do tamanho de gente.
-- **O fliperama do bar (ideia do Felipe):** o mestre escolhe o agente, escolhe o fliperama e usa: a peça anda até a
-  frente dele e vira para a tela, o fliperama acende e o celular do jogador se desfaz em pixels e vira o gabinete
-  (`client/src/ui/fliperama.ts` e `.css`). Três jogos de Atari, por código e sem arte (`fliperamaJogos.ts`, tela de
-  160 × 192, letra de 3 × 5, bipes no `sfx.chip`): PONG (contra a máquina, até 7), ATRAVESSA (o Freeway: 90 s na
-  avenida) e PULA-PULA (subir pelas plataformas). Direcional e A na tela, setas e espaço no teclado, o dedo na própria
-  tela. Recordes no aparelho, com as três letras. Sair avisa o mestre (com o recorde); o mesmo Usar do mestre chama de
-  volta; o celular que reconecta no meio abre o fliperama de novo. Servidor: `irJogar` (roomInstance) e `fliperama`
-  / `fliperamaSair` (hotel); teste em `server/test/fliperama.test.ts`. Ideia para depois: recordes da mesa inteira
-  (no servidor) e o mestre ver quem está jogando.
+- **Os jogos do bar (ideia do Felipe): fliperama, dardos e sinuca.** O mestre escolhe o agente, escolhe o móvel
+  (o fliperama, o alvo na parede, a sinuca) e usa: a peça anda até lá e vira para o jogo, e o jogo abre no celular de
+  quem joga com ela (a ficha se desfaz em pixels). Usar de novo com a mesma peça chama de volta.
+  - **Mesas** (`server/src/hotel.ts`, "os jogos do bar"): cada móvel é uma mesa com lugares (fliperama 2, sinuca 2,
+    dardos 4). O servidor só repassa as jogadas (`barJogo`) e guarda as que pedem (`registrar`), para quem reconecta
+    refazer a partida. Entrou ou saiu alguém: a partida recomeça. Peça sem ficha = **NPC**: o mestre joga por ele numa
+    janelinha do tamanho de um celular no canto da tela dele (`BarJogos` em modo 'mestre').
+  - **As contas iguais em todo celular** (`shared/src/bar/`): o sorteio com semente, o alvo e o 301, a física e a regra
+    da sinuca (bola 8 simplificada). Só soma, divisão e raiz: a tacada dá a mesma mesa em todo aparelho (conferido na
+    prévia com dois celulares).
+  - **Fliperama** (`fliperama.ts`, `fliperamaJogos.ts`): sozinho como antes, ou em **dupla** (o A chama, o outro
+    aceita): PONG um contra o outro (quem convidou faz as contas, o outro manda a raquete; cada um se vê à direita),
+    ATRAVESSA lado a lado como no Freeway, PULA-PULA na corrida (as mesmas plataformas).
+  - **Dardos** (`dardos.ts`): o dedo mira (a mira treme; menos com Agilidade alta, mais se demorar), soltar arremessa.
+    301, três por vez, estoura e zera.
+  - **Sinuca** (`sinuca.ts`): o dedo mira o taco (linha até a primeira bola e para onde ela vai), segurar Tacada carrega
+    a força. Os outros veem o taco de quem mira.
+  - Testes: `server/test/bar.test.ts`. Arte pedida ao Códex: SEÇÃO 0C (o alvo, os dardos, a parede, a mesa, as bolas, o
+    taco; gabaritos em `gabaritos/pedidos/bar-jogos/`). Ideias: recordes da mesa inteira, o mestre ver quem está jogando.
 - **A arte do gabinete do fliperama** foi para o Códex (SEÇÃO 0B do pedido, gabarito em
   `gabaritos/pedidos/fliperama/`): 13 PNGs, a mesma máquina da folha do tabuleiro, de frente. Quando chegar: trocar o
   gabinete de CSS pelas peças (a alavanca vira o direcional, com 4 zonas de toque; o botão grande vira o A).

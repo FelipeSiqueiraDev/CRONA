@@ -1,13 +1,18 @@
 /**
- * O fliperama do bar no celular do jogador (08/10). O mestre escolhe o agente no tabuleiro, escolhe
- * o fliperama e usa: a peça vai até ele e a tela do jogador se desfaz em pixels e vira o gabinete,
- * com a tela do Atari (fliperamaJogos.ts), o direcional e o botão A. Sair devolve a ficha; o mestre
- * fica sabendo (e do recorde). O mestre também chama de volta, usando o fliperama de novo.
+ * O fliperama do bar (08/10): o gabinete com a tela do Atari (fliperamaJogos.ts), o direcional e o
+ * botão A. Abre pelo barJogos.ts (no celular do jogador, ou na janelinha do mestre quando um NPC joga).
  *
- * Os recordes ficam neste aparelho, com as três letras de quem jogou, como no fliperama de verdade.
+ * Dois na mesma máquina jogam em DUPLA: no menu, "dupla" e A manda o convite; o outro aceita com A
+ * (ou recusa com Menu) e os dois começam juntos. As jogadas vão de um aparelho para o outro pelo
+ * servidor, sem ficar guardadas (é tudo na hora).
+ *
+ * Os recordes (sozinho) ficam neste aparelho, com as três letras de quem jogou, como no fliperama de
+ * verdade.
  */
-import { h, toast } from './dom';
-import { COR, H, JOGOS, semAcento, texto, W, type Botao, type Entrada, type Jogo } from './fliperamaJogos';
+import { bar } from '@crona/shared';
+import type { Dados, Mesa, TelaDoBar } from './barJogos';
+import { h } from './dom';
+import { Atravessa, COR, curto, H, JOGOS, Pong, PulaPula, semAcento, texto, W, type Botao, type Entrada, type Jogo } from './fliperamaJogos';
 import { sfx } from './sfx';
 
 const PASSO = 1000 / 60;
@@ -16,7 +21,7 @@ const MAX_RECORDES = 5;
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 type Recorde = { n: string; p: number };
-type Estado = 'menu' | 'jogo' | 'fim' | 'nome' | 'tabela';
+type Estado = 'menu' | 'jogo' | 'fim' | 'nome' | 'tabela' | 'esperando' | 'convite';
 
 const TECLAS: Record<string, Botao> = {
   ArrowUp: 'cima',
@@ -59,17 +64,22 @@ function prender(el: Element, id: number) {
   }
 }
 
-const reduzido = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-const esperar = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
+/** A partida em dupla: o jogo, o meu lado (0 = quem convidou) e o que o outro mandou no fim. */
+interface Partida {
+  jogo: number;
+  lado: number;
+  outro: string;
+  /** os pontos finais do outro (quando ele terminou) */
+  fimOutro: number | null;
+}
 
-export class Fliperama {
-  private el: HTMLElement | null = null;
-  private gabinete!: HTMLElement;
-  private tela!: HTMLCanvasElement;
-  private g!: CanvasRenderingContext2D;
-  private pixels!: HTMLCanvasElement;
-  private aberto = false;
-  private saindo = false;
+export class Fliperama implements TelaDoBar {
+  readonly el: HTMLElement;
+  private tela: HTMLCanvasElement;
+  private g: CanvasRenderingContext2D;
+  private m: Mesa | null = null;
+  private ligado = false;
+  private teclas: EventTarget | null = null;
   private raf = 0;
   private ultimo = 0;
   private acum = 0;
@@ -90,50 +100,17 @@ export class Fliperama {
   private destaque = -1;
   /** o melhor de cada jogo nesta vez no fliperama (vai para o mestre ao sair) */
   private melhor: { jogo: string; pontos: number } | null = null;
+  // a dupla
+  private dupla = true;
+  private partida: Partida | null = null;
+  private convite: number | null = null;
+  /** o recado que aparece no menu um tempo ("CATARINA RECUSOU") */
+  private recado = '';
+  private recadoAte = 0;
+  /** o quadro em que a partida acabou aqui */
+  private fimEm = 0;
 
-  constructor(private aoSair: (recorde?: { jogo: string; pontos: number }) => void) {}
-
-  /** Abre o fliperama (o mestre mandou): a tela se desfaz em pixels e o gabinete aparece. */
-  async abrir(nome: string) {
-    if (this.aberto) return;
-    this.aberto = true;
-    this.saindo = false;
-    this.montar();
-    const letras = semAcento(nome).replace(/[^A-Z]/g, '');
-    this.iniciais = (letras + 'AAA').slice(0, 3);
-    this.estado = 'menu';
-    this.melhor = null;
-    this.el!.classList.add('some');
-    document.body.append(this.el!);
-    window.addEventListener('keydown', this.tecla);
-    window.addEventListener('keyup', this.tecla);
-    sfx.arpejo([392, 523, 659, 784, 1046], 0.06);
-    await this.desfazer(true);
-    this.ultimo = 0;
-    this.raf = requestAnimationFrame(this.laco);
-  }
-
-  /** Fecha: o gabinete se desfaz e a ficha volta. `avisar` = foi o jogador que saiu (o mestre fica sabendo). */
-  async fechar(avisar: boolean, aviso?: string) {
-    if (!this.aberto || this.saindo) return;
-    this.saindo = true;
-    cancelAnimationFrame(this.raf);
-    window.removeEventListener('keydown', this.tecla);
-    window.removeEventListener('keyup', this.tecla);
-    this.segura.clear();
-    sfx.arpejo([784, 659, 523, 392], 0.06);
-    await this.desfazer(false);
-    this.el?.remove();
-    this.aberto = false;
-    this.saindo = false;
-    if (avisar) this.aoSair(this.melhor ?? undefined);
-    if (aviso) toast(aviso);
-  }
-
-  // ---------------------------------------------------------------- o gabinete
-
-  private montar() {
-    if (this.el) return;
+  constructor() {
     this.tela = h('canvas', { class: 'flip-tela', width: W, height: H, 'aria-label': 'Tela do fliperama' }) as HTMLCanvasElement;
     this.g = this.tela.getContext('2d')!;
     this.g.imageSmoothingEnabled = false;
@@ -153,22 +130,124 @@ export class Fliperama {
     const pequeno = (rotulo: string, fazer: () => void) =>
       h('button', { class: 'flip-mini', type: 'button', onclick: () => (sfx.click(), fazer()) }, h('i'), h('span', null, rotulo));
 
-    this.gabinete = h(
+    this.el = h(
       'div',
-      { class: 'flip-gabinete' },
-      h('header', { class: 'flip-letreiro' }, h('b', null, 'FLIPERAMA'), h('span', null, 'Suvaco Seco · Crédito 1'), h('div', { class: 'flip-listras', 'aria-hidden': 'true' })),
-      h('div', { class: 'flip-moldura' }, this.tela, h('div', { class: 'flip-crt', 'aria-hidden': 'true' })),
+      { class: 'flip' },
       h(
         'div',
-        { class: 'flip-controles' },
-        h('div', { class: 'flip-dpad' }, seta('cima', 'Cima'), seta('esq', 'Esquerda'), seta('dir', 'Direita'), seta('baixo', 'Baixo'), h('span', { class: 'flip-dpad-meio' })),
-        h('div', { class: 'flip-meio' }, pequeno('Menu', () => this.voltarAoMenu()), pequeno('Sair', () => void this.fechar(true))),
-        this.botao(h('button', { class: 'flip-a', type: 'button', 'aria-label': 'Botão A' }, h('span', null, 'A')), 'a'),
+        { class: 'flip-gabinete' },
+        h('header', { class: 'flip-letreiro' }, h('b', null, 'FLIPERAMA'), h('span', null, 'Suvaco Seco · Crédito 1'), h('div', { class: 'flip-listras', 'aria-hidden': 'true' })),
+        h('div', { class: 'flip-moldura' }, this.tela, h('div', { class: 'flip-crt', 'aria-hidden': 'true' })),
+        h(
+          'div',
+          { class: 'flip-controles' },
+          h('div', { class: 'flip-dpad' }, seta('cima', 'Cima'), seta('esq', 'Esquerda'), seta('dir', 'Direita'), seta('baixo', 'Baixo'), h('span', { class: 'flip-dpad-meio' })),
+          h('div', { class: 'flip-meio' }, pequeno('Menu', () => this.voltarAoMenu()), pequeno('Sair', () => this.m?.sair(this.melhor))),
+          this.botao(h('button', { class: 'flip-a', type: 'button', 'aria-label': 'Botão A' }, h('span', null, 'A')), 'a'),
+        ),
       ),
     );
-    this.pixels = h('canvas', { class: 'flip-pixels', 'aria-hidden': 'true' }) as HTMLCanvasElement;
-    this.el = h('div', { class: 'flip', role: 'dialog', 'aria-label': 'Fliperama' }, this.gabinete, this.pixels);
     this.el.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+
+  // ---------------------------------------------------------------- a mesa
+
+  mesa(m: Mesa) {
+    const antes = this.m;
+    this.m = m;
+    const meu = m.jogadores[m.eu[0]] ?? '';
+    if (!antes) {
+      const letras = semAcento(meu).replace(/[^A-Z]/g, '');
+      this.iniciais = (letras + 'AAA').slice(0, 3);
+    }
+    // alguém entrou ou saiu: a partida em dupla acaba
+    if (antes && antes.jogadores.join('|') !== m.jogadores.join('|')) {
+      if (this.partida || this.estado === 'esperando' || this.estado === 'convite') {
+        const saiu = antes.jogadores.find((n) => !m.jogadores.includes(n));
+        this.avisar(saiu ? `${curto(saiu)} SAIU` : 'A DUPLA MUDOU');
+        this.partida = null;
+        this.jogo = null;
+        this.estado = 'menu';
+      }
+      if (m.jogadores.length > antes.jogadores.length) this.avisar(`${curto(m.jogadores.at(-1)!)} CHEGOU`), (this.dupla = true);
+    }
+  }
+
+  /** O outro da dupla (ou null, sozinho). */
+  private outro(): { lugar: number; nome: string } | null {
+    const m = this.m;
+    if (!m || m.jogadores.length < 2) return null;
+    const lugar = m.jogadores.findIndex((_, i) => i !== m.eu[0]);
+    return lugar < 0 ? null : { lugar, nome: m.jogadores[lugar] };
+  }
+
+  private enviar(dados: Dados) {
+    this.m?.enviar(dados);
+  }
+
+  private avisar(texto: string) {
+    this.recado = texto;
+    this.recadoAte = this.quadro + 180;
+  }
+
+  jogada(_de: number, d: Dados) {
+    const outro = this.outro();
+    switch (d.tipo) {
+      case 'convite':
+        if (typeof d.jogo !== 'number' || !JOGOS[d.jogo]) return;
+        this.convite = d.jogo;
+        this.partida = null;
+        this.jogo = null;
+        this.estado = 'convite';
+        sfx.arpejo([784, 988, 784, 988], 0.08);
+        navigator.vibrate?.([30, 40, 30]);
+        return;
+      case 'cancela':
+        if (this.estado === 'convite') (this.estado = 'menu'), this.avisar(`${curto(outro?.nome ?? '')} DESISTIU`);
+        return;
+      case 'recusa':
+        if (this.estado === 'esperando') (this.estado = 'menu'), this.avisar(`${curto(outro?.nome ?? '')} RECUSOU`);
+        return;
+      case 'aceita':
+        if (this.estado === 'esperando' && typeof d.jogo === 'number' && typeof d.semente === 'number') this.comecarDupla(d.jogo, d.semente, 0);
+        return;
+      case 'desistiu':
+        if (this.partida) (this.partida = null), (this.jogo = null), (this.estado = 'menu'), this.avisar(`${curto(outro?.nome ?? '')} LARGOU A PARTIDA`);
+        return;
+    }
+    const p = this.partida;
+    const j = this.jogo;
+    if (!p || !j) return;
+    if (d.tipo === 'pong' && j instanceof Pong) j.aplicar(d.s);
+    else if (d.tipo === 'raquete' && j instanceof Pong && typeof d.y === 'number') j.remoto = d.y;
+    else if (d.tipo === 'pos' && j instanceof Atravessa && typeof d.y === 'number' && typeof d.p === 'number') j.outro = { y: d.y, p: d.p, passos: typeof d.passos === 'number' ? d.passos : 0 };
+    else if (d.tipo === 'pos' && j instanceof PulaPula && typeof d.p === 'number') j.outro = { p: d.p, vivo: true };
+    else if (d.tipo === 'fim' && typeof d.p === 'number') {
+      p.fimOutro = d.p;
+      if (j instanceof PulaPula) j.outro = { p: d.p, vivo: false };
+      if (j instanceof Atravessa && j.outro) j.outro.p = d.p;
+    }
+  }
+
+  // ---------------------------------------------------------------- ligar e desligar
+
+  ligar(teclas: EventTarget) {
+    if (this.ligado) return;
+    this.ligado = true;
+    this.teclas = teclas;
+    teclas.addEventListener('keydown', this.tecla as EventListener);
+    teclas.addEventListener('keyup', this.tecla as EventListener);
+    this.ultimo = 0;
+    this.raf = requestAnimationFrame(this.laco);
+  }
+
+  desligar() {
+    this.ligado = false;
+    cancelAnimationFrame(this.raf);
+    this.teclas?.removeEventListener('keydown', this.tecla as EventListener);
+    this.teclas?.removeEventListener('keyup', this.tecla as EventListener);
+    this.segura.clear();
+    if (this.partida) this.enviar({ tipo: 'desistiu' });
   }
 
   /** O botão do controle: segurar vale enquanto o dedo estiver nele. */
@@ -201,66 +280,16 @@ export class Fliperama {
     const b = TECLAS[e.code];
     if (!b) return;
     e.preventDefault();
+    e.stopPropagation();
     if (e.type === 'keyup') return void this.segura.delete(b);
     if (!e.repeat) this.apertou.add(b);
     this.segura.add(b);
   };
 
-  /**
-   * A transição de pixels: a tela vira blocos coloridos do Atari, que escurecem e somem revelando o
-   * gabinete (entrando) ou a ficha (saindo).
-   */
-  private async desfazer(entrando: boolean) {
-    const el = this.el!;
-    if (reduzido()) {
-      this.gabinete.classList.toggle('hidden', !entrando);
-      el.classList.toggle('some', !entrando);
-      await esperar(entrando ? 0 : 200);
-      return;
-    }
-    // blocos quadrados: 14 na largura da coluna do celular
-    const bloco = Math.min(innerWidth, 480) / 14;
-    const cols = Math.ceil(innerWidth / bloco);
-    const linhas = Math.ceil(innerHeight / bloco);
-    const cv = this.pixels;
-    cv.width = cols;
-    cv.height = linhas;
-    cv.style.width = `${cols * bloco}px`;
-    cv.style.height = `${linhas * bloco}px`;
-    const g = cv.getContext('2d')!;
-    const casas = Array.from({ length: cols * linhas }, (_, i) => i).sort(() => Math.random() - 0.5);
-    const cores = [COR.laranja, COR.ouro, COR.vermelho, COR.roxo, COR.azul, COR.verde, COR.rosa];
-    const fase = async (ms: number, pinta: (i: number) => void) => {
-      const t0 = performance.now();
-      let feitas = 0;
-      while (feitas < casas.length) {
-        await new Promise(requestAnimationFrame);
-        const alvo = Math.min(casas.length, Math.ceil(((performance.now() - t0) / ms) * casas.length));
-        for (; feitas < alvo; feitas++) pinta(casas[feitas]);
-      }
-    };
-    const casa = (i: number, cor: string | null) => {
-      const x = i % cols;
-      const y = Math.floor(i / cols);
-      if (cor) (g.fillStyle = cor), g.fillRect(x, y, 1, 1);
-      else g.clearRect(x, y, 1, 1);
-    };
-    g.clearRect(0, 0, cols, linhas);
-    if (entrando) this.gabinete.classList.add('hidden');
-    // cobre com blocos coloridos, escurece e revela
-    await fase(entrando ? 420 : 320, (i) => casa(i, cores[i % cores.length]));
-    casas.sort(() => Math.random() - 0.5);
-    await fase(260, (i) => casa(i, '#050b14'));
-    this.gabinete.classList.toggle('hidden', !entrando);
-    el.classList.toggle('some', !entrando);
-    casas.sort(() => Math.random() - 0.5);
-    await fase(entrando ? 420 : 320, (i) => casa(i, null));
-  }
-
   // ---------------------------------------------------------------- o laço do jogo
 
   private laco = (t: number) => {
-    if (!this.aberto || this.saindo) return;
+    if (!this.ligado) return;
     this.raf = requestAnimationFrame(this.laco);
     const dt = this.ultimo ? Math.min(100, t - this.ultimo) : PASSO;
     this.ultimo = t;
@@ -282,43 +311,74 @@ export class Fliperama {
     this.quadro++;
     const e = this.entrada();
     const a = e.apertou.has('a') || e.tocou;
+    const outro = this.outro();
     switch (this.estado) {
       case 'menu': {
         if (e.apertou.has('cima') || e.apertou.has('baixo')) {
           this.sel = (this.sel + (e.apertou.has('cima') ? JOGOS.length - 1 : 1)) % JOGOS.length;
           sfx.chip(660, 660, 0.04);
         }
-        // o dedo: toca no jogo para escolher, toca de novo para começar
+        if (outro && (e.apertou.has('esq') || e.apertou.has('dir'))) {
+          this.dupla = !this.dupla;
+          sfx.chip(880, 880, 0.04);
+        }
+        // o dedo: toca no jogo para escolher, toca de novo para começar; na linha da dupla, troca
         if (e.tocou && e.dedo) {
-          const i = Math.floor((e.dedo.y - 62) / 22);
+          if (outro && e.dedo.y >= 114 && e.dedo.y < 128) {
+            this.dupla = !this.dupla;
+            sfx.chip(880, 880, 0.04);
+            break;
+          }
+          const i = Math.floor((e.dedo.y - 52) / 20);
           if (i >= 0 && i < JOGOS.length && i !== this.sel) {
             this.sel = i;
             sfx.chip(660, 660, 0.04);
             break;
           }
         }
-        if (a) this.comecar();
+        if (a) {
+          if (outro && this.dupla) {
+            this.enviar({ tipo: 'convite', jogo: this.sel });
+            this.estado = 'esperando';
+            sfx.chip(660, 880, 0.12);
+          } else this.comecar();
+        }
         break;
       }
+      case 'esperando':
+        break;
+      case 'convite':
+        if (a && this.convite !== null) {
+          const semente = bar.novaSemente();
+          this.enviar({ tipo: 'aceita', jogo: this.convite, semente });
+          this.comecarDupla(this.convite, semente, 1);
+        }
+        break;
       case 'jogo':
         this.jogo!.passo(e);
+        if (this.partida) this.rede();
         if (this.jogo!.fim) {
           this.estado = 'fim';
           this.espera = 50;
+          this.fimEm = this.quadro;
           const j = JOGOS[this.sel];
-          if (j.recorde && this.jogo!.pontos > (this.melhor?.pontos ?? 0)) this.melhor = { jogo: j.nome, pontos: this.jogo!.pontos };
+          if (this.partida) {
+            this.enviar({ tipo: 'fim', p: this.jogo!.pontos });
+            if (this.jogo instanceof Pong && this.partida.lado === 0) this.enviar({ tipo: 'pong', s: this.jogo.estado() });
+          } else if (j.recorde && this.jogo!.pontos > (this.melhor?.pontos ?? 0)) this.melhor = { jogo: j.nome, pontos: this.jogo!.pontos };
           // o PULA-PULA já tem o som da queda
           if (j.id !== 'pula') sfx.arpejo([659, 523, 392, 262], 0.12);
         }
         break;
       case 'fim':
+        // em dupla, o PULA-PULA de quem caiu primeiro continua mostrando o outro
         if (this.espera > 0) this.espera--;
-        else if (a) {
-          if (this.entraNoRecorde()) {
+        else if (a && !this.esperandoOutro()) {
+          if (!this.partida && this.entraNoRecorde()) {
             this.estado = 'nome';
             this.letra = 0;
             sfx.arpejo([523, 659, 784, 1046, 784, 1046], 0.08);
-          } else this.estado = 'menu';
+          } else this.voltarAoMenu();
         }
         break;
       case 'nome': {
@@ -357,16 +417,57 @@ export class Fliperama {
     this.tocou = false;
   }
 
+  /** O que vai para o outro celular durante a partida em dupla. */
+  private rede() {
+    const j = this.jogo!;
+    const p = this.partida!;
+    if (j instanceof Pong) {
+      if (this.quadro % 2) return;
+      if (p.lado === 0) this.enviar({ tipo: 'pong', s: j.estado() });
+      else this.enviar({ tipo: 'raquete', y: Math.round(j.minhaRaquete * 10) / 10 });
+    } else if (this.quadro % 6 === 0) {
+      if (j instanceof Atravessa) this.enviar({ tipo: 'pos', ...j.posicao() });
+      else if (j instanceof PulaPula) this.enviar({ tipo: 'pos', p: j.pontos });
+    }
+  }
+
+  /** Em dupla, ainda falta o outro terminar (o PULA-PULA de quem caiu primeiro, o fim do ATRAVESSA). */
+  private esperandoOutro() {
+    const p = this.partida;
+    if (!p || this.jogo instanceof Pong) return false;
+    // o ATRAVESSA termina junto (o relógio é o mesmo): espera uns segundos pelo número final
+    if (this.jogo instanceof Atravessa) return p.fimOutro === null && this.quadro - this.fimEm < 180;
+    return p.fimOutro === null;
+  }
+
   private comecar() {
     this.jogo = JOGOS[this.sel].novo();
+    this.partida = null;
     this.estado = 'jogo';
     this.quadro = 0;
     sfx.arpejo([523, 784, 1046], 0.07);
   }
 
+  private comecarDupla(jogo: number, semente: number, lado: number) {
+    const outro = this.outro();
+    this.sel = jogo;
+    this.partida = { jogo, lado, outro: outro?.nome ?? '', fimOutro: null };
+    const d = { semente, lado, outro: outro?.nome ?? '' };
+    this.jogo = JOGOS[jogo].id === 'pong' ? new Pong(lado === 0 ? 'dono' : 'convidado') : JOGOS[jogo].id === 'atravessa' ? new Atravessa(d) : new PulaPula(d);
+    this.convite = null;
+    this.estado = 'jogo';
+    this.quadro = 0;
+    sfx.arpejo([523, 659, 784, 1046], 0.07);
+  }
+
   private voltarAoMenu() {
     if (this.estado === 'menu') return;
+    if (this.estado === 'esperando') this.enviar({ tipo: 'cancela' });
+    if (this.estado === 'convite') this.enviar({ tipo: 'recusa' });
+    if (this.partida && this.estado === 'jogo') this.enviar({ tipo: 'desistiu' });
     this.jogo = null;
+    this.partida = null;
+    this.convite = null;
     this.estado = 'menu';
     sfx.chip(440, 220, 0.1);
   }
@@ -406,13 +507,17 @@ export class Fliperama {
         g.fillRect(0, H - 22, W, 11);
         texto(g, JOGOS[this.sel].toque, W / 2, H - 19, COR.amarelo, 1, 'meio');
       }
-      if (this.estado === 'fim') this.caixaFim(g, pisca);
+      if (this.estado === 'fim') {
+        if (this.partida) this.caixaDupla(g, pisca);
+        else this.caixaFim(g, pisca);
+      }
       return;
     }
     g.fillStyle = COR.preto;
     g.fillRect(0, 0, W, H);
     if (this.estado === 'menu') return this.menu(g, pisca);
     if (this.estado === 'nome') return this.nome(g, pisca);
+    if (this.estado === 'esperando' || this.estado === 'convite') return this.chamado(g, pisca);
     this.tabela(g, pisca);
   }
 
@@ -425,27 +530,58 @@ export class Fliperama {
   }
 
   private menu(g: CanvasRenderingContext2D, pisca: boolean) {
-    texto(g, 'FLIPERAMA', W / 2, 8, COR.ouro, 2, 'meio');
-    texto(g, 'SUVACO SECO', W / 2, 22, COR.cinza, 1, 'meio');
-    this.listras(g, 32);
+    const outro = this.outro();
+    texto(g, 'FLIPERAMA', W / 2, 6, COR.ouro, 2, 'meio');
+    texto(g, 'SUVACO SECO', W / 2, 20, COR.cinza, 1, 'meio');
+    this.listras(g, 30);
     JOGOS.forEach((j, i) => {
-      const y = 62 + i * 22;
+      const y = 56 + i * 20;
       const on = i === this.sel;
       if (on) {
         g.fillStyle = COR.escuro;
-        g.fillRect(10, y - 4, W - 20, 18);
+        g.fillRect(10, y - 4, W - 20, 16);
         if (pisca) texto(g, '>', 16, y, COR.amarelo, 2);
       }
       texto(g, j.nome, W / 2, y, on ? COR.branco : COR.cinza, 2, 'meio');
     });
     const j = JOGOS[this.sel];
-    texto(g, j.dica, W / 2, 132, COR.verde, 1, 'meio');
-    if (j.recorde) {
+    // dois na máquina: sozinho ou em dupla
+    if (outro) {
+      const linha = this.dupla ? `< DUPLA COM ${curto(outro.nome)} >` : '< SOZINHO >';
+      texto(g, linha, W / 2, 118, this.dupla ? COR.rosa : COR.claro, 1, 'meio');
+    }
+    texto(g, this.dupla && outro ? (j.id === 'pong' ? 'UM CONTRA O OUTRO' : j.id === 'atravessa' ? 'LADO A LADO NA AVENIDA' : 'QUEM SUBIR MAIS VENCE') : j.dica, W / 2, 132, COR.verde, 1, 'meio');
+    if (this.dupla && outro) texto(g, 'A CHAMA PARA JOGAR', W / 2, 146, COR.medio, 1, 'meio');
+    else if (j.recorde) {
       const l = this.lista();
       if (!l.length) texto(g, 'SEM RECORDE AINDA', W / 2, 146, COR.medio, 1, 'meio');
       l.slice(0, 3).forEach((r, i) => texto(g, `${i + 1} ${r.n} ${String(r.p).padStart(5, ' ')}`, W / 2, 146 + i * 8, i === 0 ? COR.amarelo : COR.claro, 1, 'meio'));
     } else texto(g, 'CONTRA A MAQUINA', W / 2, 146, COR.medio, 1, 'meio');
-    if (pisca) texto(g, 'APERTE A', W / 2, 178, COR.branco, 1, 'meio');
+    if (this.quadro < this.recadoAte) {
+      g.fillStyle = COR.vermelho;
+      g.fillRect(0, 172, W, 13);
+      texto(g, this.recado, W / 2, 176, COR.branco, 1, 'meio');
+    } else if (pisca) texto(g, 'APERTE A', W / 2, 178, COR.branco, 1, 'meio');
+  }
+
+  /** O convite: esperando o outro, ou o outro chamando. */
+  private chamado(g: CanvasRenderingContext2D, pisca: boolean) {
+    const outro = curto(this.outro()?.nome ?? '');
+    this.listras(g, 20);
+    if (this.estado === 'esperando') {
+      texto(g, 'CHAMANDO', W / 2, 50, COR.cinza, 1, 'meio');
+      texto(g, outro, W / 2, 62, COR.rosa, 2, 'meio');
+      texto(g, `PARA O ${JOGOS[this.sel].nome}`, W / 2, 84, COR.branco, 1, 'meio');
+      const pontos = '.'.repeat(1 + ((this.quadro >> 4) % 3));
+      texto(g, `ESPERANDO${pontos}`, W / 2 - 18, 110, COR.amarelo, 1);
+      texto(g, 'MENU CANCELA', W / 2, 170, COR.medio, 1, 'meio');
+      return;
+    }
+    texto(g, outro, W / 2, 46, COR.rosa, 2, 'meio');
+    texto(g, 'CHAMOU PARA JOGAR', W / 2, 66, COR.branco, 1, 'meio');
+    texto(g, JOGOS[this.convite ?? 0].nome, W / 2, 84, COR.ouro, 2, 'meio');
+    if (pisca) texto(g, 'A ACEITA', W / 2, 130, COR.verde, 2, 'meio');
+    texto(g, 'MENU RECUSA', W / 2, 160, COR.medio, 1, 'meio');
   }
 
   private caixaFim(g: CanvasRenderingContext2D, pisca: boolean) {
@@ -458,6 +594,33 @@ export class Fliperama {
     texto(g, this.jogo!.resumo(), W / 2, 92, COR.branco, 1, 'meio');
     if (JOGOS[this.sel].recorde) texto(g, `${this.jogo!.pontos} PONTOS`, W / 2, 104, COR.amarelo, 1, 'meio');
     if (this.espera === 0 && pisca) texto(g, 'APERTE A', W / 2, 118, COR.claro, 1, 'meio');
+  }
+
+  /** O fim da partida em dupla: o placar dos dois e quem venceu. */
+  private caixaDupla(g: CanvasRenderingContext2D, pisca: boolean) {
+    const j = this.jogo!;
+    const p = this.partida!;
+    const eu = curto(this.m?.jogadores[this.m.eu[0]] ?? '');
+    const ele = curto(p.outro);
+    const meus = j.pontos;
+    const dele = j instanceof Pong ? j.deles : (p.fimOutro ?? (j instanceof Atravessa ? (j.outro?.p ?? 0) : j instanceof PulaPula ? (j.outro?.p ?? 0) : 0));
+    const espera = this.esperandoOutro();
+    g.fillStyle = 'rgba(0,0,0,0.8)';
+    g.fillRect(6, 52, W - 12, 88);
+    g.fillStyle = COR.rosa;
+    g.fillRect(6, 52, W - 12, 1);
+    g.fillRect(6, 139, W - 12, 1);
+    texto(g, 'FIM DE JOGO', W / 2, 60, COR.ouro, 2, 'meio');
+    texto(g, `${eu} ${meus}`, W / 2 - 6, 84, COR.amarelo, 1, 'dir');
+    texto(g, 'X', W / 2, 84, COR.cinza, 1, 'meio');
+    texto(g, `${dele} ${ele}`, W / 2 + 6, 84, COR.rosa, 1);
+    if (espera) {
+      texto(g, `ESPERANDO ${ele}${'.'.repeat(1 + ((this.quadro >> 4) % 3))}`, W / 2, 104, COR.claro, 1, 'meio');
+      return;
+    }
+    const placar = meus === dele ? 'EMPATE' : meus > dele ? 'VOCE VENCEU!' : `${ele} VENCEU`;
+    texto(g, placar, W / 2, 102, meus > dele ? COR.verde : meus === dele ? COR.branco : COR.vermelho, 2, 'meio');
+    if (this.espera === 0 && pisca) texto(g, 'APERTE A', W / 2, 126, COR.claro, 1, 'meio');
   }
 
   private nome(g: CanvasRenderingContext2D, pisca: boolean) {
