@@ -1,6 +1,7 @@
 import {
   anyFurniName,
   distinctFacings,
+  ehFliperama,
   getFurni,
   getWallFurni,
   LOOT_KINDS,
@@ -2086,7 +2087,7 @@ export class Shell {
     const usos = h('div', { class: 'obj-bts' });
     const states = fdef?.states ?? wdef?.states ?? 0;
     const porta = fdef?.openState !== undefined;
-    if (states > 1) usos.append(this.botaoObj(porta ? (item.state === fdef!.openState ? 'Fechar' : 'Abrir') : 'Usar', porta ? 'cadeado' : 'combate-item', porta ? 'cadeado' : 'mao', () => net.send({ t: 'use', id: item.id }), 'forte'));
+    if (states > 1) usos.append(this.botaoObj(porta ? (item.state === fdef!.openState ? 'Fechar' : 'Abrir') : 'Usar', porta ? 'cadeado' : 'combate-item', porta ? 'cadeado' : 'mao', () => this.usar(kind, item.id, item.defId), 'forte'));
     if (hint) usos.append(this.botaoObj('Ler a pista', 'busca', 'lupa', () => this.hintViewer.open(kind, item.id)));
     if (usos.childElementCount) pane.append(usos);
     if (loot.length) {
@@ -2228,7 +2229,7 @@ export class Shell {
     const tools = h('div', { class: 'tools' });
     const tool = (label: string, fn: () => void) => h('button', { class: 'tool', onclick: () => (sfx.click(), fn()) }, label);
     const states = fdef?.states ?? wdef?.states ?? 0;
-    if (states > 1) tools.append(tool('Usar', () => net.send({ t: 'use', id: item.id })));
+    if (states > 1) tools.append(tool('Usar', () => this.usar(kind, item.id, item.defId)));
     if (hint) tools.append(tool('Ler', () => this.hintViewer.open(kind, item.id)));
     if (this.gm) {
       const floor = kind === 'floor' ? (item as FloorItem) : null;
@@ -2911,6 +2912,19 @@ export class Shell {
     this.app.net.send({ t: 'mapaApagar', roomId });
   }
 
+  /** O agente comandado que vai jogar, se o objeto for um fliperama (só o mestre). */
+  private jogador(kind: string, defId: string): string | null {
+    const id = this.app.view.myId;
+    if (!this.gm || kind !== 'floor' || !id || !ehFliperama(defId)) return null;
+    return this.app.view.users.get(id)?.name ?? null;
+  }
+
+  /** Usar um objeto: liga e desliga; o fliperama, com um agente escolhido, leva o agente para jogar. */
+  private usar(kind: string, id: number, defId: string) {
+    if (this.jogador(kind, defId)) this.app.net.send({ t: 'fliperama', tokenId: this.app.view.myId, itemId: id });
+    else this.app.net.send({ t: 'use', id });
+  }
+
   /** AÇÕES sobre o objeto escolhido: examinar, abrir, usar e entregar. */
   private renderAcoes() {
     const s = this.selection();
@@ -2960,7 +2974,7 @@ export class Shell {
           else ((this.inspTab = lock ? 'desc' : 'items'), this.renderInspector(true));
         },
       },
-      { id: 'usar', rotulo: 'Usar', icone: 'mao', ok: !!s && usa, dica: 'Ligar, acender, abrir a gaveta…', fazer: () => s && this.app.net.send({ t: 'use', id: it!.id }) },
+      { id: 'usar', rotulo: 'Usar', icone: 'mao', ok: !!s && usa, dica: (s && this.jogador(s.kind, it!.defId)) ? `${this.jogador(s.kind, it!.defId)} vai jogar (o jogo abre no celular)` : 'Ligar, acender, abrir a gaveta…', fazer: () => s && this.usar(s.kind, it!.id, it!.defId) },
       { id: 'entregar', rotulo: 'Entregar', icone: 'trocar', ok: livres > 0 && this.gm, dica: 'Entregar um item daqui a um personagem', fazer: () => ((this.inspTab = 'items'), this.renderInspector(true)) },
     ];
     if (!acoes.find((a) => a.id === this.acaoAtiva)?.ok) this.acaoAtiva = acoes.find((a) => a.ok)?.id ?? 'examinar';

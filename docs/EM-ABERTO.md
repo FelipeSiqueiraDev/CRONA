@@ -258,6 +258,16 @@ Ainda falta (pedido do Felipe):
   Energia), eletroencefalógrafo, gravador, câmera, corpos. Existido no pacote dos personagens (seção 14).
 - **Falta fazer (código):** portas de várias casas (a de enrolar tem 3, a caverna 2) e passagem sem folha; o altar
   pisável quando a arte chegar; "Nesta cena" sem rolagem (não reproduzi: esperando o Felipe dizer onde).
+- **Item no chão menor:** 44 px (um) e 34 (vários); eram 72 e 58, do tamanho de gente.
+- **O fliperama do bar (ideia do Felipe):** o mestre escolhe o agente, escolhe o fliperama e usa: a peça anda até a
+  frente dele e vira para a tela, o fliperama acende e o celular do jogador se desfaz em pixels e vira o gabinete
+  (`client/src/ui/fliperama.ts` e `.css`). Três jogos de Atari, por código e sem arte (`fliperamaJogos.ts`, tela de
+  160 × 192, letra de 3 × 5, bipes no `sfx.chip`): PONG (contra a máquina, até 7), ATRAVESSA (o Freeway: 90 s na
+  avenida) e PULA-PULA (subir pelas plataformas). Direcional e A na tela, setas e espaço no teclado, o dedo na própria
+  tela. Recordes no aparelho, com as três letras. Sair avisa o mestre (com o recorde); o mesmo Usar do mestre chama de
+  volta; o celular que reconecta no meio abre o fliperama de novo. Servidor: `irJogar` (roomInstance) e `fliperama`
+  / `fliperamaSair` (hotel); teste em `server/test/fliperama.test.ts`. Ideia para depois: recordes da mesa inteira
+  (no servidor) e o mestre ver quem está jogando.
 
 ## Fazenda: a arte do Códex entrando (08/10, madrugada)
 

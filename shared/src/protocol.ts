@@ -385,6 +385,13 @@ export type ClientMsg =
   /** troca o móvel por outro do catálogo, no mesmo lugar (e no mesmo giro, se der) */
   | { t: 'swapItem'; id: number; defId: string }
   | { t: 'use'; id: number }
+  /**
+   * o fliperama (só o mestre): a peça vai até a frente do mobi e o jogo abre no celular de quem
+   * joga com ela; de novo, com a mesma peça, fecha
+   */
+  | { t: 'fliperama'; tokenId: number; itemId: number }
+  /** o jogador largou o fliperama (o botão Sair da tela do jogo); `recorde` = o melhor da vez */
+  | { t: 'fliperamaSair'; recorde?: { jogo: string; pontos: number } }
   | { t: 'setHint'; id: number; hint: Hint | null }
   | { t: 'roomSettings'; name: string; description: string; darkness: number; publicBuild: boolean; floor?: string; area?: string; floorStyle?: FloorStyle; ambient?: string | null; particles?: ParticleKind[] }
   /** senha de um mobi com fechadura: certa = ele desliza e abre a passagem */
@@ -483,6 +490,8 @@ export type ServerMsg =
   | { t: 'conta'; ok: false; erro: string; expirou?: boolean }
   | { t: 'error'; msg: string }
   | { t: 'notice'; msg: string }
+  /** o fliperama no celular do jogador: abre (ligado) ou fecha (o mestre chamou de volta) */
+  | { t: 'fliperama'; ligado: boolean; nome?: string }
   | { t: 'roomList'; rooms: RoomSummary[] }
   | { t: 'lugares'; lugares: LugarInfo[] }
   | { t: 'roomCreated'; id: number }

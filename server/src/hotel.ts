@@ -80,6 +80,7 @@ const STARTER: string[] = ['chair_wood', 'table_small', 'candles', 'crate_wood',
 /** Mensagens que mudam o tabuleiro: só o mestre manda (o resto recebe "Só o mestre..."). */
 const GM_ONLY = new Set([
   'createRoom',
+  'fliperama',
   'charUpdate',
   'charDelete',
   'sendTo',
@@ -257,6 +258,8 @@ export class Hotel implements HotelApi {
 
   // ---------- combate (docs/COMBATE.md) ----------
   /** estados anteriores do combate de cada campanha, para o "Desfazer" (só na memória), com os PV/PE/SAN que cada passo mudou */
+  /** quem está no fliperama agora (a ficha e o nome da peça), para fechar e para reabrir se o celular reconectar */
+  private jogando = new Map<number, string>();
   private desfazeres = new Map<number, { combate: string; vitais: { id: number; antes: Vitals }[]; mochilas?: { fichaId: number; inventario: regras.ItemFicha[] }[]; largados?: number[] }[]>();
 
   /** Peças da campanha e os PV/SAN delas, para as regras do combate. */
@@ -1581,6 +1584,12 @@ export class Hotel implements HotelApi {
       case 'viagem':
         this.viagem(c, m);
         return;
+      case 'fliperama':
+        this.fliperama(c, m);
+        return;
+      case 'fliperamaSair':
+        this.fliperamaSair(c, m);
+        return;
       case 'lugares':
         c.send({ t: 'lugares', lugares: this.lugares(c) });
         return;
@@ -1668,6 +1677,48 @@ export class Hotel implements HotelApi {
         return;
     }
     c.room?.handle(c, m);
+  }
+
+  // ---------- o fliperama (08/10) ----------
+  /** As telas de jogador abertas na ficha. */
+  private telasDaFicha(fichaId: number) {
+    return [...this.clients.values()].filter((o) => o.role !== 'gm' && o.fichaId === fichaId);
+  }
+
+  /**
+   * O mestre escolheu um agente e usou o fliperama: a peça vai até ele e o jogo abre no celular de
+   * quem joga com ela. Com o agente já jogando, o mesmo Usar chama de volta.
+   */
+  private fliperama(c: Client, m: Record<string, unknown>) {
+    const room = c.room;
+    if (!room || typeof m.tokenId !== 'number' || typeof m.itemId !== 'number') return;
+    const r = room.irJogar(c, m.tokenId, m.itemId);
+    if (typeof r === 'string') return c.send({ t: 'error', msg: r });
+    const f = this.fichaDoPersonagem(r.charId);
+    if (!f) return c.send({ t: 'notice', msg: `${r.nome} foi para o fliperama, mas não tem ficha de jogador: o jogo não abre em nenhum celular.` });
+    const telas = this.telasDaFicha(f.id);
+    if (this.jogando.has(f.id)) {
+      this.jogando.delete(f.id);
+      for (const o of telas) o.send({ t: 'fliperama', ligado: false });
+      return c.send({ t: 'notice', msg: `${r.nome} largou o fliperama.` });
+    }
+    this.jogando.set(f.id, r.nome);
+    for (const o of telas) o.send({ t: 'fliperama', ligado: true, nome: r.nome });
+    c.send({ t: 'notice', msg: telas.length ? `${r.nome} foi jogar: o fliperama abriu no celular.` : `${r.nome} foi jogar, mas o celular do jogador não está conectado (abre quando conectar).` });
+  }
+
+  /** O jogador apertou Sair no fliperama: o mestre fica sabendo (e do recorde, se teve). */
+  private fliperamaSair(c: Client, m: Record<string, unknown>) {
+    if (!c.fichaId) return;
+    const nome = this.jogando.get(c.fichaId);
+    if (nome === undefined) return;
+    this.jogando.delete(c.fichaId);
+    for (const o of this.telasDaFicha(c.fichaId)) if (o !== c) o.send({ t: 'fliperama', ligado: false });
+    const rec = m.recorde as { jogo?: unknown; pontos?: unknown } | undefined;
+    const pontos = typeof rec?.pontos === 'number' && Number.isFinite(rec.pontos) ? Math.max(0, Math.floor(rec.pontos)) : 0;
+    const jogo = typeof rec?.jogo === 'string' ? rec.jogo.replace(/[^\p{L}\p{N} -]/gu, '').slice(0, 20) : '';
+    const msg = pontos && jogo ? `${nome} largou o fliperama (${pontos} pontos no ${jogo}).` : `${nome} largou o fliperama.`;
+    for (const o of this.clients.values()) if (o.role === 'gm') o.send({ t: 'notice', msg });
   }
 
   // ---------- contas (a tela de entrada) ----------
@@ -1773,6 +1824,9 @@ export class Hotel implements HotelApi {
       this.enviarFichas(c);
       this.enviarDocs(c);
     }
+    // o celular caiu no meio do jogo: o fliperama abre de novo
+    const jogando = c.fichaId !== undefined ? this.jogando.get(c.fichaId) : undefined;
+    if (jogando !== undefined) c.send({ t: 'fliperama', ligado: true, nome: jogando });
     if (this.persist) console.log(`[hotel] ${name} entrou (${role === 'gm' ? 'mestre' : 'jogador'})`);
   }
 

@@ -9,6 +9,7 @@ import {
   getFurni,
   getWallFurni,
   anyFurniName,
+  ehFliperama,
   applyVital,
   espacosDoItemFicha,
   kindDoItem,
@@ -149,6 +150,8 @@ interface RoomUser {
   dir: number;
   headDir: number;
   goal: Point | null;
+  /** a casa para onde a peça vira quando chegar (o fliperama) */
+  encara?: Point;
   next: Point | null;
   sit: 0 | 1 | 2;
   dance: boolean;
@@ -594,10 +597,16 @@ export class RoomInstance {
         u.dirty = true;
       }
       if (u.goal) {
-        if (u.goal.x === u.x && u.goal.y === u.y) u.goal = null;
-        else {
+        if (u.goal.x === u.x && u.goal.y === u.y) {
+          u.goal = null;
+          if (u.encara) {
+            u.dir = u.headDir = directionTo(u, u.encara);
+            u.dirty = true;
+          }
+          delete u.encara;
+        } else {
           const path = findPath(this.map, u, u.goal, (x, y) => this.occupied(x, y, u.client.id));
-          if (!path || !path.length) u.goal = null;
+          if (!path || !path.length) (u.goal = null), delete u.encara;
           else {
             const step = path[0];
             u.dir = u.headDir = directionTo(u, step);
@@ -1020,6 +1029,35 @@ export class RoomInstance {
     }
   }
 
+  /**
+   * O fliperama (08/10): a peça vai até a casa da frente do mobi, vira para a tela, e o mobi liga
+   * (estado 0 = aceso). Devolve o personagem e o nome da peça, ou o motivo de não dar.
+   */
+  irJogar(c: Client, tokenId: number, itemId: number): { charId: number | null; nome: string } | string {
+    if (!this.canBuild(c)) return 'Só o mestre leva alguém para jogar.';
+    const u = this.users.get(tokenId);
+    if (!u) return 'Escolha no tabuleiro o agente que vai jogar.';
+    const it = this.map.getItem(itemId);
+    if (!it || !ehFliperama(it.defId)) return 'Isso não é um fliperama.';
+    const frente = this.stairFoot(it);
+    if (frente && (frente.x !== u.x || frente.y !== u.y)) {
+      if (this.occupied(frente.x, frente.y, u.client.id)) return 'Tem alguém na frente do fliperama.';
+      u.goal = frente;
+      u.encara = { x: it.x, y: it.y };
+    } else if (frente) {
+      u.dir = u.headDir = directionTo(u, { x: it.x, y: it.y });
+      u.dirty = true;
+    }
+    this.ensureTimer();
+    if (it.state !== 0) {
+      const aceso = { ...it, state: 0 };
+      this.map.updateItem(aceso);
+      this.persist();
+      this.broadcastFloor('itemUpdate', aceso);
+    }
+    return { charId: u.client.look.charId ?? null, nome: u.client.name ?? 'O agente' };
+  }
+
   // ---------- passagem secreta ----------
   /**
    * Abre (ou fecha) a fechadura: o mobi desliza `slide` casas e a passagem
@@ -1178,7 +1216,7 @@ export class RoomInstance {
     }
     switch (m.t) {
       case 'tokenWalk':
-        if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) u.goal = { x: m.x, y: m.y };
+        if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) (u.goal = { x: m.x, y: m.y }), delete u.encara;
         break;
       case 'tokenFace':
         if (isInt(m.dir)) this.faceToken(-u.client.id, m.dir);

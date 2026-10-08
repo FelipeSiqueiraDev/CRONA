@@ -205,7 +205,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'minibar', name: 'Frigobar', category: 'bar', kind: 'beer_fridge', width: 1, depth: 1, height: 0.9, stackable: true, rotations: [4, 2], colors: ['#3a3f44', '#ffe9b0'], desc: 'A geladeirinha de trás do balcão.' },
   { id: 'pool_table', name: 'Mesa de Sinuca', category: 'bar', kind: 'pool_table', width: 2, depth: 4, height: 0.85, stackable: true, rotations: ALL, colors: ['#3fae4a', '#4a2c1a'] },
   { id: 'jukebox', name: 'Jukebox', category: 'bar', kind: 'jukebox', width: 1, depth: 1, height: 1.6, states: 2, rotations: ALL, colors: ['#3a1a24', '#ff7ab0', '#ffb14a'], desc: 'Clique duplo liga/desliga.' },
-  { id: 'arcade', name: 'Fliperama', category: 'bar', kind: 'jukebox', width: 1, depth: 1, height: 1.8, states: 2, rotations: ALL, colors: ['#16123a', '#6a5aff', '#5ad8ff'], desc: 'Fliperama de Tetris: a tela ilumina o bar inteiro. Clique duplo liga/desliga.' },
+  { id: 'arcade', name: 'Fliperama', category: 'bar', kind: 'jukebox', width: 1, depth: 1, height: 1.8, states: 2, rotations: ALL, colors: ['#16123a', '#6a5aff', '#5ad8ff'], desc: 'Fliperama de Tetris: a tela ilumina o bar inteiro. Clique duplo liga/desliga; com um agente escolhido, Usar leva o agente para jogar (o jogo abre no celular do jogador).' },
   { id: 'beer_crate', name: 'Engradado de Cerveja', category: 'bar', kind: 'crate', width: 1, depth: 1, height: 0.35, stackable: true, rotations: ALL, colors: ['#a8842e', '#5a4020'] },
   { id: 'chair_stack', name: 'Pilha de Cadeiras', category: 'bar', kind: 'crate', width: 1, depth: 1, height: 1.3, rotations: ALL, colors: ['#c99a2e', '#7a5a1a'], desc: 'Cadeiras de plástico empilhadas no canto.' },
   { id: 'bar_cabinet', name: 'Armarinho', category: 'bar', kind: 'nightstand', width: 1, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#4a3020', '#c9a86a'] },
@@ -396,6 +396,11 @@ export function anyFurniName(id: string): string {
 }
 
 /** Tamanho ocupado no grid para uma rotação. */
+/** Os mobis em que dá para jogar (o jogo abre no celular do jogador; client/src/ui/fliperama.ts). */
+export function ehFliperama(defId: string): boolean {
+  return defId === 'arcade';
+}
+
 export function footprint(def: Pick<FurniDef, 'width' | 'depth'>, rot: number): { sx: number; sy: number } {
   return rot === 2 || rot === 6 ? { sx: def.depth, sy: def.width } : { sx: def.width, sy: def.depth };
 }

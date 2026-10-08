@@ -8,6 +8,7 @@ import type { App } from './app';
 import { h } from './dom';
 import { botao, janela } from './fichaModal';
 import { FichaCelular } from './fichaCelular';
+import { Fliperama } from './fliperama';
 import { TelaJogador } from './jogador';
 import { sfx } from './sfx';
 
@@ -48,8 +49,13 @@ export class TelaFicha {
   readonly jogo: TelaJogador;
   readonly ficha: FichaCelular;
   private aviso: HTMLElement;
+  /** o fliperama do bar (o mestre manda o agente jogar) */
+  private flip: Fliperama | null = null;
 
-  constructor(app: App, sair: () => void) {
+  constructor(
+    private app: App,
+    sair: () => void,
+  ) {
     this.jogo = new TelaJogador(app, { fichaCompleta: () => this.verFicha(true), menu: () => this.menu(), sair });
     this.ficha = new FichaCelular(app, () => this.verFicha(false), (uid) => this.jogo.abrirItem(uid));
     this.aviso = h('div', { class: 'tf-aviso hidden' });
@@ -67,6 +73,14 @@ export class TelaFicha {
     sfx.paper();
     this.ficha.el.classList.toggle('hidden', !sim);
     this.jogo.el.classList.toggle('hidden', sim);
+  }
+
+  /** O mestre mandou jogar (ligado) ou chamou de volta. */
+  fliperama(ligado: boolean, nome = '') {
+    if (ligado) {
+      this.flip ??= new Fliperama((recorde) => this.app.net.send({ t: 'fliperamaSair', ...(recorde ? { recorde } : {}) }));
+      void this.flip.abrir(nome);
+    } else void this.flip?.fechar(false, 'O mestre chamou de volta para a mesa.');
   }
 
   /** A engrenagem: a ficha e o som. */

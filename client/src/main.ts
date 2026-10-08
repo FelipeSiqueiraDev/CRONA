@@ -13,6 +13,7 @@ import './ui/entrada.css';
 import './ui/mapaMundi.css';
 import './ui/kit.css';
 import './ui/jogador.css';
+import './ui/fliperama.css';
 import './ui/retro-auto.css';
 import './ui/retro.css';
 import './ui/hud.css';
@@ -386,6 +387,9 @@ net.onMessage = (m: ServerMsg) => {
     case 'combate':
       shell?.combate.setCombate(m.combate, m.podeDesfazer, m.ameacas);
       table?.setCombate(m.combate);
+      break;
+    case 'fliperama':
+      telaFicha?.fliperama(m.ligado, m.nome);
       break;
     case 'viagemTela':
       mostrarTelaViagem(m.fase, m.ilustracao, m.texto, m.reserva);

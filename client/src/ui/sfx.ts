@@ -113,6 +113,31 @@ class Sfx {
     o.stop(t + dur + 0.02);
   }
 
+  // ---------------------------------------------------------------- o fliperama
+
+  /** Bipe de videogame antigo (onda quadrada, ataque seco), de f1 a f2; `atraso` em segundos, para as notas em sequência. */
+  chip(f1: number, f2 = f1, dur = 0.07, gain = 0.09, atraso = 0) {
+    const ac = this.ctx();
+    if (!ac || !this.master) return;
+    const t = ac.currentTime + 0.005 + atraso;
+    const o = ac.createOscillator();
+    o.type = 'square';
+    o.frequency.setValueAtTime(f1, t);
+    if (f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.setValueAtTime(gain, t + dur * 0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(this.master);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  }
+
+  /** Notas em sequência (a ficha caindo, o recorde). */
+  arpejo(notas: number[], passo = 0.07, gain = 0.08) {
+    notas.forEach((f, i) => this.chip(f, f, passo * 0.9, gain, i * passo));
+  }
+
   // ---------------------------------------------------------------- o carro (a tela da viagem)
 
   /** Um tom com começo marcado no tempo (para montar o som em sequência). */
