@@ -24,20 +24,20 @@ export function mostrarTelaViagem(fase: 'partida' | 'chegada', ilustracao: strin
     setTimeout(() => tela.remove(), 900);
   };
   tela.addEventListener('pointerdown', fechar);
-  const mostrar = () => {
-    document.body.append(tela);
-    requestAnimationFrame(() => tela.classList.add('on'));
-    if (fase === 'partida') sfx.carroPartindo();
-    else sfx.carroChegando();
-    setTimeout(fechar, DURACAO_MS);
-  };
-  // espera a pintura carregar (no máximo um segundo e meio), para não aparecer a tela preta
+  // a tela cobre NA HORA (08/10, o Felipe: "tem que vir sempre o loading antes da tela"): a cena troca por baixo dela,
+  // escondida; a pintura entra por cima do escuro quando carrega (no máximo um segundo e meio)
+  document.body.append(tela);
+  tela.classList.add('on');
+  if (fase === 'partida') sfx.carroPartindo();
+  else sfx.carroChegando();
   let foi = false;
   const vai = () => {
     if (foi) return;
     foi = true;
-    mostrar();
+    img.classList.add('pronta');
+    setTimeout(fechar, DURACAO_MS);
   };
+  if (img.complete && img.naturalWidth) vai();
   img.addEventListener('load', vai, { once: true });
   // a arte de chegada do lugar ainda não existe: a ilustração da viagem que combina com ele
   img.addEventListener('error', () => (reserva && !img.src.endsWith(arteDaIlustracao(reserva)) ? (img.src = arteDaIlustracao(reserva)) : vai()));

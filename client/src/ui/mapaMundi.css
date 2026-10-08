@@ -97,8 +97,8 @@
   z-index: 9000;
   overflow: hidden;
   background: #05070b;
+  /* entra de uma vez (cobre a troca de cena); só a saída é suave */
   opacity: 0;
-  transition: opacity 0.9s ease;
   cursor: pointer;
 }
 .vg-tela.on {
@@ -106,6 +106,7 @@
 }
 .vg-tela.saindo {
   opacity: 0;
+  transition: opacity 0.9s ease;
 }
 .vg-tela-img {
   position: absolute;
@@ -114,9 +115,13 @@
   height: 100%;
   object-fit: cover;
   transform: scale(1.02);
-  transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1);
+  opacity: 0;
+  transition:
+    transform 7s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.6s ease;
 }
-.vg-tela.on .vg-tela-img {
+.vg-tela-img.pronta {
+  opacity: 1;
   transform: scale(1.1);
 }
 .vg-tela-vinheta {

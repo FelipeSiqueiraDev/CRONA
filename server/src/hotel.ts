@@ -2038,15 +2038,16 @@ export class Hotel implements HotelApi {
     // sem cenário escolhido: a estrada de terra para o campo, a rodovia para o resto
     if (!isCenarioViagem(m.cenario) && v.destino) v.cenario = ambienteDoDestino(v.destino) === 'rural' ? 'terra' : 'rodovia';
     sala.definirViagem(v);
+    // a tela da partida, para todos, ANTES de qualquer peça sair do lugar (ela cobre a troca): uma pintura que combina
+    // com o destino
+    const ilustracao = sortearIlustracao(ambienteDoDestino(v.destino));
+    sala.data.viagem = { ...sala.data.viagem!, ilustracao };
+    this.telaDaViagem('partida', ilustracao, v.destino ? `Rumo a ${v.destino}` : 'A viagem começou');
     for (const x of vai) {
       const t = x.de.takeToken(x.id);
       if (t) sala.putToken({ ...t, x: x.banco.x, y: x.banco.y, dir: VAN.giroBanco }, null);
     }
     this.log(sala.data.id, 'scene', `A viagem começou: ${vai.map((x) => x.name).join(', ')} na van.`);
-    // a tela da partida, para todos: uma pintura que combina com o destino
-    const ilustracao = sortearIlustracao(ambienteDoDestino(v.destino));
-    sala.data.viagem = { ...sala.data.viagem!, ilustracao };
-    this.telaDaViagem('partida', ilustracao, v.destino ? `Rumo a ${v.destino}` : 'A viagem começou');
     this.save();
     this.roomChanged();
     this.enter(c, sala);
@@ -2066,6 +2067,12 @@ export class Hotel implements HotelApi {
     const dest = isInt(m.roomId) ? this.rooms.get(m.roomId) : undefined;
     if (!dest || dest.data.viagem) return c.send({ t: 'error', msg: 'Escolha a cena de chegada.' });
     const vindos = van.tokenList();
+    // a tela da chegada, para todos (outra pintura do mesmo lugar)
+    const lugar = this.lugares().find((l) => this.sceneGroup(dest.data.id).includes(l.id) || l.entrada === dest.data.id);
+    const nomeDest = lugar?.nome ?? dest.data.name;
+    // a arte de chegada do lugar (regra da casa: duas por lugar); se ainda não existe, a do jeito do lugar
+    const doLugar = artesDeChegada(nomeDest)[Math.floor(Math.random() * 2)];
+    this.telaDaViagem('chegada', doLugar, `Chegamos: ${nomeDest}`, sortearIlustracao(ambienteDoDestino(nomeDest), van.data.viagem.ilustracao));
     // outra campanha tem as peças dela: quem chega no lugar delas é o grupo da viagem, e as de antes saem
     const grupoDest = this.sceneGroup(dest.data.id);
     if (!grupoDest.includes(van.data.id)) {
@@ -2076,12 +2083,6 @@ export class Hotel implements HotelApi {
         for (const t of r.tokenList()) if (t.look?.charId && charIds.has(t.look.charId)) r.takeToken(t.id);
       }
     }
-    // a tela da chegada, para todos (outra pintura do mesmo lugar)
-    const lugar = this.lugares().find((l) => this.sceneGroup(dest.data.id).includes(l.id) || l.entrada === dest.data.id);
-    const nomeDest = lugar?.nome ?? dest.data.name;
-    // a arte de chegada do lugar (regra da casa: duas por lugar); se ainda não existe, a do jeito do lugar
-    const doLugar = artesDeChegada(nomeDest)[Math.floor(Math.random() * 2)];
-    this.telaDaViagem('chegada', doLugar, `Chegamos: ${nomeDest}`, sortearIlustracao(ambienteDoDestino(nomeDest), van.data.viagem.ilustracao));
     for (const t of vindos) this.moveToken(van, t.id, dest.data.id);
     this.log(dest.data.id, 'scene', `Chegaram: ${vindos.map((t) => t.name).join(', ') || 'ninguém'}.`);
     this.save();
