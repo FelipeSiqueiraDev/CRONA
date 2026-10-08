@@ -1,7 +1,7 @@
 import type { LugarInfo, ViagemInfo } from '@crona/shared';
 import { DioramaViagem } from '../render/dioramaViagem';
 import { spriteDoLugar } from '../render/lugarSprites';
-import { portraitCanvas } from '../render/portrait';
+import { quadroDoBoneco, type SpriteFrame } from '../render/sprites';
 import { vanDeLado } from '../render/vanDeCima';
 import { MundoViagem } from '../render/viagemMundo';
 import type { App } from './app';
@@ -33,7 +33,8 @@ export class TelaDeViagem {
 
   constructor(private app: App) {
     const trajeto = h('div', { class: 'tv-trajeto' }, this.origemEl, h('div', { class: 'tv-estrada' }, this.van), this.destinoEl);
-    this.el.append(this.cena, h('div', { class: 'tv-vinheta' }), this.clima, h('header', { class: 'tv-topo' }, h('small', null, 'EM VIAGEM'), this.titulo), h('footer', { class: 'tv-base' }, this.quem, trajeto));
+    void trajeto;
+    this.el.append(this.cena, h('div', { class: 'tv-vinheta' }), this.clima, h('header', { class: 'tv-topo' }, h('small', null, 'EM VIAGEM'), this.titulo));
     app.on('room', () => this.atualizar());
     app.on('lugares', () => this.lugares());
   }
@@ -81,19 +82,17 @@ export class TelaDeViagem {
     ponto(this.destinoEl, destino, v.destino ?? 'Destino');
   }
 
-  /** Quem vai na van: os retratos das peças da cena. */
+  /** Quem vai na van: o boneco de cada peça da cena (sentado dentro da van do dioraminha). */
+  private figuras: (SpriteFrame | null)[] = [];
   private agentes() {
     const us = [...(this.app.view?.users.values() ?? [])];
-    const sig = us.map((u) => `${u.id}:${u.name}`).join('|');
-    if (sig === this.sigQuem) return;
-    this.sigQuem = sig;
-    this.quem.replaceChildren(...us.map((u) => h('span', { class: 'tv-ag' }, h('span', { class: 'tv-ag-foto' }, portraitCanvas(u.look, 64, { dir: 2 })), h('small', null, u.name.split(' ')[0]))));
+    this.figuras = us.map((u) => quadroDoBoneco(u.look.charId ?? null, 2));
   }
 
   private quadro(now: number) {
     if (!this.v) return;
     this.raf = requestAnimationFrame((t) => this.quadro(t));
-    if (Math.floor(now / 500) !== Math.floor((now - 17) / 500)) this.agentes();
+    if (Math.floor(now / 500) !== Math.floor((now - 17) / 500) || !this.figuras.some(Boolean)) this.agentes();
     // a vanzinha anda pelo trajeto: depressa no começo e cada vez mais devagar, sem chegar (quem chega é o mestre)
     const t = (now - this.desde) / 1000;
     const p = 0.04 + 0.86 * (1 - Math.exp(-t / 70));
@@ -102,14 +101,14 @@ export class TelaDeViagem {
     this.van.style.transform = `translate(-50%, ${-pulo}px)`;
     // o dioraminha, numa tela pequena que cresce com pixels grandes (uns 190 pixels de altura)
     const cena = this.cena;
-    const escala = Math.max(2, Math.floor(cena.clientHeight / 190));
+    const escala = Math.max(2, Math.floor(cena.clientHeight / 160));
     const cw = Math.max(1, Math.ceil(cena.clientWidth / escala));
     const ch = Math.max(1, Math.ceil(cena.clientHeight / escala));
     if (cena.width !== cw || cena.height !== ch) {
       cena.width = cw;
       cena.height = ch;
     }
-    this.diorama.desenhar(cena.getContext('2d')!, cw, ch, now, this.v);
+    this.diorama.desenhar(cena.getContext('2d')!, cw, ch, now, this.v, this.figuras);
     // a chuva e a neblina por cima
     const c = this.clima;
     const dpr = Math.min(2, window.devicePixelRatio || 1);

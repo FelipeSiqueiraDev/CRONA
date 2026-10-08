@@ -989,3 +989,23 @@ function paint(ctx: CanvasRenderingContext2D, f: SpriteFrame, x: number, y: numb
   } else ctx.drawImage(img, x - f.ax, y - f.ay, f.w, f.h);
   ctx.restore();
 }
+
+/**
+ * Um quadro parado do boneco de um personagem, virado para `dir` (para desenhar pequeno fora do tabuleiro, como na van
+ * da tela de viagem): o boneco filmado, o animado, a pose do tabuleiro ou a folha, o que existir. null enquanto carrega.
+ */
+export function quadroDoBoneco(charId: number | null, dir: number): SpriteFrame | null {
+  const def = sprites.def(charId);
+  if (!def) return null;
+  const bc = sprites.boneco(def);
+  const bd = bc ? bonecoDir(bc, 'desarmado', dir) : null;
+  if (bd?.parado?.quadros[0]) return bd.parado.quadros[0];
+  const la = sprites.anim(def);
+  const ba = la ? bonecoFor(la, 'desarmado', dir) : null;
+  if (ba?.parado[0]) return ba.parado[0];
+  const lp = sprites.poses(def);
+  const pf = lp ? poseFor(lp, 'desarmado', dir) : null;
+  if (pf) return pf;
+  const sp = charId ? sprites.get(charId) : null;
+  return sp ? (framesFor(sp.lc, dir)?.[0] ?? null) : null;
+}
