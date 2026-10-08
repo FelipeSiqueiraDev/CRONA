@@ -1898,7 +1898,8 @@ export class RoomView {
               // os do fundo primeiro: o de trás não tapa o da frente
               for (const { img, ox, oy, semente } of [...pos].sort((a, b) => a.ox + a.oy - (b.ox + b.oy))) {
                 const [px, py] = iso(real.x + 0.5 + ox, real.y + 0.5 + oy, z);
-                desenharItemNoChao(ctx, img, px, py, imgs.length > 1 ? 58 : 72, semente);
+                // o lado maior do item: 44 (uns 0,8 m perto da pessoa de 94), 34 quando são vários (08/10: eram 72 e 58, do tamanho de gente)
+                desenharItemNoChao(ctx, img, px, py, imgs.length > 1 ? 34 : 44, semente);
               }
             },
           });
