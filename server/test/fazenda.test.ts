@@ -117,7 +117,7 @@ describe("Fazenda Olhos de Águia", () => {
     assert.ok(!cena("Hall do Casarão").data.aberto);
   });
 
-  test("os prédios entram inteiros na fazenda, com uma entrada na frente de cada porta", () => {
+  test("os prédios entram inteiros na fazenda, com uma entrada larga na frente de cada porta", () => {
     const itens = cena("Olhos de Águia").map.allItems();
     for (const id of ["casarao", "celeiro", "galpao", "porteira", "fonte"])
       assert.ok(
@@ -125,8 +125,8 @@ describe("Fazenda Olhos de Águia", () => {
         id,
       );
     assert.equal(
-      itens.filter((i) => i.defId === "entrada" && i.link).length,
-      6,
+      itens.filter((i) => i.defId === "entrada_larga" && i.link).length,
+      3,
     );
   });
 
