@@ -433,7 +433,7 @@ export type ClientMsg =
    * `ajustar` muda o cenário, a hora, a velocidade e o destino; `chegar` leva todos à cena escolhida e a viagem acaba.
    */
   | { t: 'viagem'; acao: 'iniciar'; bancos: { tokenId: number; banco: number }[]; cenario?: string; hora?: string; clima?: string; velocidade?: number; destino?: string; destinoId?: number }
-  | { t: 'viagem'; acao: 'ajustar'; cenario?: string; hora?: string; clima?: string; velocidade?: number; destino?: string; destinoId?: number | null }
+  | { t: 'viagem'; acao: 'ajustar'; cenario?: string; hora?: string; clima?: string; velocidade?: number; destino?: string; destinoId?: number | null; ilustracao?: string }
   | { t: 'viagem'; acao: 'chegar'; roomId: number }
   /** o mapa-múndi: a lista dos lugares; o mestre arrasta um ícone para outro ponto do mapa */
   | { t: 'lugares' }

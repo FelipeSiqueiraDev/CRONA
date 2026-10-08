@@ -20,12 +20,6 @@ const CASAS_POR_S = 5;
 /** Quanto o piso da van fica acima do chão (debaixo das rodas), em metros: o desenho do casco tem a base lá embaixo. */
 const PISO_NA_ARTE_M = 0.45;
 const ALTURA_CASCO = 1.7;
-/** As rodas de perto da van pintada: onde ficam (x, em casas) e o raio do pneu (m). */
-const RODAS_VAN_X = [1.57, 7.5];
-/** o plano das rodas de perto (y, em casas): um pouco para fora do casco */
-const RODAS_VAN_Y = 3.25;
-const RAIO_RODA_VAN = 0.38;
-
 const ASFALTO = '#2b2d33';
 const FAIXA_AMARELA = '#d8b43a';
 const FAIXA_BRANCA = '#cfd2d4';
@@ -254,43 +248,10 @@ export class MundoViagem {
     const n = Math.floor((this.pos * 1.9 + 60) / periodo);
     const x = periodo - (((this.pos * 1.9 + 60) % periodo) + periodo) % periodo - 40;
     // o centro do veículo na mão de lá (y = -3): a imagem se apoia na quina de baixo, então o centro é recuado
-    const [nome, L, W, raio] = n % 2 ? (['caminhao', 8, 2.5, 0.5] as const) : (['sedan', 4.4, 1.8, 0.32] as const);
+    const [nome, L, W] = n % 2 ? (['caminhao', 8, 2.5] as const) : (['sedan', 4.4, 1.8] as const);
     const d = (L + W) / 4 / 0.75;
     this.peca(ctx, nome, x + d, -3.0 + d);
-    // as rodas de perto girando (o veículo vai a 0,9 da velocidade do mundo, para o outro lado)
-    const ang = (0.9 * this.pos * 0.75) / raio;
-    for (const f of [-0.3, 0.3]) this.rodaGirando(ctx, x + (f * L) / 0.75, -3.0 + W / 2 / 0.75 - 0.1, CHAO_Z + raio * Z_PER_M, raio, ang);
     void v;
-  }
-
-  /** O que gira na roda: os parafusos em volta do cubo e um raio claro (a roda de perto, desenhada por cima da pintada). */
-  private rodaGirando(ctx: CanvasRenderingContext2D, cx: number, y: number, zCubo: number, raio: number, ang: number) {
-    const P = (a: number, rr: number) => iso(cx + (Math.cos(a) * rr) / 0.75, y, zCubo + Math.sin(a) * rr * Z_PER_M);
-    const [hx, hy] = iso(cx, y, zCubo);
-    ctx.save();
-    ctx.lineCap = 'round';
-    // o raio claro, do cubo até perto do aro
-    const [rx, ry] = P(ang, raio * 0.78);
-    ctx.strokeStyle = 'rgba(190,196,205,0.55)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(hx, hy);
-    ctx.lineTo(rx, ry);
-    ctx.stroke();
-    // os cinco parafusos
-    ctx.fillStyle = '#d3d6dc';
-    for (let k = 0; k < 5; k++) {
-      const [px, py] = P(ang + (k * Math.PI * 2) / 5, raio * 0.36);
-      ctx.beginPath();
-      ctx.ellipse(px, py, 1.7, 1.7, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    // o cubo
-    ctx.fillStyle = '#8a8f98';
-    ctx.beginPath();
-    ctx.ellipse(hx, hy, 3.2, 3.2, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
   }
 
   private arvore(ctx: CanvasRenderingContext2D, x: number, y: number, h: number, seed: number) {
@@ -331,12 +292,7 @@ export class MundoViagem {
 
   casco(ctx: CanvasRenderingContext2D, v: ViagemInfo) {
     // a arte: o casco cortado, com a base debaixo das rodas (o piso da van fica PISO_NA_ARTE_M acima dela)
-    if (this.peca(ctx, 'van-casco', 0, 0, -PISO_NA_ARTE_M * Z_PER_M)) {
-      // as rodas de perto, girando com o mundo (a pintada fica por baixo)
-      const ang = -(this.pos * 0.75) / RAIO_RODA_VAN;
-      for (const x of RODAS_VAN_X) this.rodaGirando(ctx, x, RODAS_VAN_Y, -PISO_NA_ARTE_M * Z_PER_M + RAIO_RODA_VAN * Z_PER_M, RAIO_RODA_VAN, ang);
-      return;
-    }
+    if (this.peca(ctx, 'van-casco', 0, 0, -PISO_NA_ARTE_M * Z_PER_M)) return;
     const L = VAN.comprimento;
     const W = VAN.largura;
     const H = ALTURA_CASCO;

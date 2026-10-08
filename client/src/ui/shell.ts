@@ -48,6 +48,7 @@ import { logIcon, lootIcon } from './lootIcons';
 import { brushSweep, brushWash, bump, countUp, drawStroke, eraseDraw, enter, floatText, flyArc, fxLayer, leave, pencilDraw, reduced, shake, stamp, tilt, typeInto, wait, wipeIn } from './motion';
 import { askNote, promptNote } from './note';
 import { abrirMapaMundi } from './mapaMundi';
+import { TelaDeViagem } from './telaDeViagem';
 import { abrirViagem, ViagemPainel } from './viagem';
 import { brushize, paperize, textures, unpaint } from './paperArt';
 import { sfx } from './sfx';
@@ -579,7 +580,7 @@ export class Shell {
     this.placaEl = h('div', { class: 'board-placa' });
     this.estadoEl = h('div', { class: 'board-estado hidden' });
     const ferr = h('div', { class: 'board-ferr' }, this.ferramentas.el, centro);
-    this.board = h('main', { class: 'board' }, moldura, this.placeBar, zoom, this.placaEl, ferr, this.vistaEl, this.tabOverlay, this.teclado.el);
+    this.board = h('main', { class: 'board' }, moldura, this.placeBar, zoom, this.placaEl, ferr, this.vistaEl, this.tabOverlay, this.teclado.el, new TelaDeViagem(app).el);
 
     // ================= direita =================
     const backboard = h('div', { class: 'backboard', 'aria-hidden': 'true' });

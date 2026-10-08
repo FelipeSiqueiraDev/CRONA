@@ -6,6 +6,7 @@ import {
   isCenarioViagem,
   iconePeloNome,
   ambienteDoDestino,
+  ILUSTRACOES_VIAGEM,
   isClimaViagem,
   sortearIlustracao,
   posicaoInicial,
@@ -1955,6 +1956,7 @@ export class Hotel implements HotelApi {
     if (isHoraViagem(m.hora)) v.hora = m.hora;
     if (typeof m.velocidade === 'number' && Number.isFinite(m.velocidade)) v.velocidade = Math.max(0, Math.min(1, m.velocidade));
     if (isClimaViagem(m.clima)) v.clima = m.clima;
+    if (typeof m.ilustracao === 'string' && ILUSTRACOES_VIAGEM.some((i) => i.id === m.ilustracao)) v.ilustracao = m.ilustracao;
     // o destino é uma cena: o nome dela vira o texto da faixa, e "Chegamos" abre exatamente ela
     if (m.destinoId === null) {
       delete v.destinoId;
@@ -2031,6 +2033,8 @@ export class Hotel implements HotelApi {
     delete antes.destino;
     delete antes.destinoId;
     const v = this.viagemAjustes(m, antes);
+    // sem cenário escolhido: a estrada de terra para o campo, a rodovia para o resto
+    if (!isCenarioViagem(m.cenario) && v.destino) v.cenario = ambienteDoDestino(v.destino) === 'rural' ? 'terra' : 'rodovia';
     sala.definirViagem(v);
     for (const x of vai) {
       const t = x.de.takeToken(x.id);

@@ -24,6 +24,9 @@ export interface OpcoesMapa {
   marcado?: number | null;
   /** o botão Viajar para cá (o mestre, fora da viagem) */
   aoViajar?: (l: LugarInfo) => void;
+  /** o título da janela e o texto do botão de escolher */
+  titulo?: string;
+  rotulo?: string;
 }
 
 const aleat = (n: number) => {
@@ -69,7 +72,7 @@ function fundo(c: HTMLCanvasElement, lugares: LugarInfo[]) {
 export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
   const escolhendo = !!o.escolher;
   let sel: number | null = o.marcado ?? null;
-  const j = janela(escolhendo ? 'ESCOLHER O DESTINO' : 'MAPA-MÚNDI', 'globo', () => off(), 92);
+  const j = janela(o.titulo ?? (escolhendo ? 'ESCOLHER O DESTINO' : 'MAPA-MÚNDI'), 'globo', () => off(), 92);
   const tela = h('canvas', { class: 'mm-tela', width: W, height: H });
   const palco = h('div', { class: 'mm-palco' }, tela);
   const painel = h('div', { class: 'mm-info hidden' });
@@ -173,7 +176,9 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
         'div',
         { class: 'mm-bts' },
         ...(escolhendo
-          ? [botao('Escolher este destino', 'bandeira', 'forte', () => (o.escolher!(l), j.fechar()))]
+          ? l.aqui
+            ? []
+            : [botao(o.rotulo ?? 'Escolher este destino', 'bandeira', 'forte', () => (j.fechar(), o.escolher!(l)))]
           : [
               ...(o.aoViajar && eu() ? [botao('Viajar para cá', 'correr', 'forte', () => (j.fechar(), o.aoViajar!(l)))] : []),
               ...(eu() ? [botao('Abrir', 'olho', 'claro', () => (app.net.send({ t: 'join', roomId: l.entrada }), j.fechar()))] : []),
@@ -239,7 +244,7 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
   const off = () => cancelAnimationFrame(raf);
 
   j.corpo.append(
-    h('p', { class: 'vg-dica' }, escolhendo ? 'Toque no lugar para onde a van vai.' : eu() ? 'Toque num lugar. Arraste as ilhas para arrumar o mapa.' : 'O mundo da campanha.'),
+    h('p', { class: 'vg-dica' }, escolhendo ? 'A bandeirinha marca onde vocês estão. Toque em outro lugar.' : eu() ? 'Toque num lugar. Arraste as ilhas para arrumar o mapa.' : 'O mundo da campanha.'),
     palco,
   );
   j.rodape.append(botao('Fechar', 'fechar', 'claro', () => j.fechar()));
