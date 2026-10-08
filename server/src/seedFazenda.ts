@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 18;
+export const FAZENDA_REV = 19;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -224,12 +224,10 @@ const FAZENDA_FORA: FloorSeed[] = [
   ["casarao", 13, 9, 4],
   ["galpao", 27, 1, 4],
   ["celeiro", 46, 1, 4],
-  ["entrada", 19, 18, 0],
-  ["entrada", 20, 18, 0],
-  ["entrada", 30, 7, 0],
-  ["entrada", 31, 7, 0],
-  ["entrada", 51, 9, 0],
-  ["entrada", 52, 9, 0],
+  // uma entrada larga por prédio (08/10: eram dois capachos lado a lado)
+  ["entrada_larga", 19, 18, 0],
+  ["entrada_larga", 30, 7, 0],
+  ["entrada_larga", 51, 9, 0],
   // a porteira (aberta) e a cerca em volta de tudo; a do meio separa a casa das plantações
   ["porteira", 0, 18, 2, undefined, 1],
   ...cercaX(0, 0, 71),
@@ -672,11 +670,8 @@ const CENAS_BRUTAS: CenaSpec[] = [
     links: [
       [0, 18, "arredores"],
       [19, 18, "hall"],
-      [20, 18, "hall"],
       [30, 7, "mantimentos"],
-      [31, 7, "mantimentos"],
       [51, 9, "celeiro"],
-      [52, 9, "celeiro"],
     ],
     plan: { x: 0, y: 0 },
     grupo: [

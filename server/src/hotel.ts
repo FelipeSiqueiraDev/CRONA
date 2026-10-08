@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import type { WebSocket } from 'ws';
 import {
   BANCOS_VAN,
+  getFurni,
   heightmapDaVan,
   isCenarioViagem,
   iconePeloNome,
@@ -1849,7 +1850,7 @@ export class Hotel implements HotelApi {
     const r = isInt(m.roomId) ? this.rooms.get(m.roomId) : undefined;
     if (!r?.data.mapa) return c.send({ t: 'error', msg: 'Só um mapa improvisado pode ser apagado.' });
     const id = r.data.id;
-    const volta = r.data.items.find((it) => it.defId === 'entrada' && it.link !== undefined)?.link;
+    const volta = r.data.items.find((it) => getFurni(it.defId)?.kind === 'entrada' && it.link !== undefined)?.link;
     const destino = (volta !== undefined && volta !== id ? this.rooms.get(volta) : undefined) ?? this.rooms.get(this.sceneGroup(id).find((x) => x !== id) ?? -1);
     if (!destino) return c.send({ t: 'error', msg: 'O mapa não está ligado a nenhuma cena.' });
     for (const t of r.tokenList()) this.moveToken(r, t.id, destino.data.id);

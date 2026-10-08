@@ -511,20 +511,22 @@ export const FAZENDA_BUILDERS: Record<string, Builder> = {
   // ---------------------------------------------------------------- passagens
   entrada(def) {
     const [cor] = def.colors;
+    // a entrada larga (a porta dupla) é um capacho só, da largura dela
+    const W = def.width;
     return V([
-      N([0.1, 0.9, 0.1, 0.9, 0, 0.02], (p) => {
+      N([0.1, 0.9, 0.1, W - 0.1, 0, 0.02], (p) => {
         // capacho gasto com a borda escura
         p.withTop(0.012, (ctx) => {
           ctx.fillStyle = rgba(shade(cor, -0.35), 0.85);
-          ctx.fillRect(0.14, 0.1, 0.72, 0.8);
+          ctx.fillRect(0.14, 0.1, 0.72, W - 0.2);
           ctx.fillStyle = rgba(cor, 0.9);
-          ctx.fillRect(0.2, 0.16, 0.6, 0.68);
+          ctx.fillRect(0.2, 0.16, 0.6, W - 0.32);
           ctx.strokeStyle = "rgba(0,0,0,0.25)";
           ctx.lineWidth = 0.02;
           for (let u = 0.24; u < 0.8; u += 0.08) {
             ctx.beginPath();
             ctx.moveTo(u, 0.18);
-            ctx.lineTo(u, 0.82);
+            ctx.lineTo(u, W - 0.18);
             ctx.stroke();
           }
         });
