@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 48;
+export const SEDE_REV = 49;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -585,7 +585,8 @@ const ROOMS: RoomSpec[] = [
       ['candelabra', 11, 3, 0],
       // a mesa grande perto do centro, com a cadeira do Veríssimo atrás (de costas para o sofá)
       ['chair_verissimo', 4, 1, 4],
-      ['desk_verissimo', 3, 2, 4],
+      // a frente da mesa (as gavetas, o lado de quem trabalha) virada para a cadeira do Veríssimo (08/10, o Felipe)
+      ['desk_verissimo', 3, 2, 0],
       // as quatro poltronas avermelhadas: duas na frente da mesa e duas frente a frente no tapete; o
       // armário de metal ao lado da mesa
       ['rug_aubusson', 2, 5, 0],
