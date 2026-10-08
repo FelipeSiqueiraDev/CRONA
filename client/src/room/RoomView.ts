@@ -319,6 +319,8 @@ const BG = '#07060a';
 /** a pessoa (~1,78 m) em unidades de altura: a caixa dela na ordem de desenho e no raio-x */
 const ALTURA_PESSOA = 1.78 * Z_PER_M;
 const AMBER = 'rgba(255,196,90,0.95)';
+/** As lupinhas de pista em cima dos móveis (desligadas em 08/10; true traz de volta). */
+const MOSTRAR_LUPAS = false;
 
 export class RoomView {
   readonly canvas: HTMLCanvasElement;
@@ -2303,8 +2305,9 @@ export class RoomView {
         },
       );
 
-    // ícones de pista (a tela da mesa não mostra)
-    if (this.watchOnly) hintTargets.length = 0;
+    // ícones de pista (a tela da mesa não mostra). Desligados em 08/10 a pedido do Felipe ("por hora, vamos descartar
+    // essas lupinhas sobre os móveis... todos eles"): a pista continua no objeto, no painel dele ao clicar.
+    if (this.watchOnly || !MOSTRAR_LUPAS) hintTargets.length = 0;
     for (const h of hintTargets) {
       h.sx = Math.round(h.wx * z + this.cam.x);
       h.sy = Math.round(h.wy * z + this.cam.y + Math.sin(t / 450 + h.id) * 2);

@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 47;
+export const SEDE_REV = 48;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -399,12 +399,13 @@ const ROOMS: RoomSpec[] = [
       ['sigil_floor', 0, 10, 0],
       ['blood_drops', 2, 13, 0],
       ['rubble', 0, 14, 0],
-      // o posto do carcereiro, no canto perto da porta: armários, a mesa das câmeras e a cadeira
-      ['locker_row', 20, 0, 4],
-      ['locker', 22, 0, 4],
-      ['desk_metal', 21, 3, 4],
-      ['monitor', 21, 3, 4],
-      ['chair_office', 21, 2, 4],
+      // o posto do carcereiro, no canto perto da porta: a mesa das câmeras encostada na parede, com o painel dos
+      // monitores em cima dela (08/10: antes o painel ficava atrás dos armários), e os armários do lado
+      ['desk_metal', 20, 0, 4],
+      ['monitor', 21, 0, 4],
+      ['chair_office', 21, 1, 0],
+      ['locker_row', 22, 0, 4],
+      ['locker', 23, 1, 6],
       ['cabinet_file', 23, 3, 6],
       // o interrogatório, no meio do pátio: a mesinha, as duas cadeiras e a lâmpada em cima
       ['desk_metal', 11, 9, 0],
@@ -434,7 +435,7 @@ const ROOMS: RoomSpec[] = [
       ['sigil_scratch', 'l', 0, 13.6, 2],
       ['emergency_light', 'l', 0, 12.3, 3.45],
       // o posto: o painel das câmeras e o relógio
-      ['monitor_wall', 'r', 0, 21.5, 2.9],
+      ['monitor_wall', 'r', 0, 21, 2.9],
       ['clock', 'r', 0, 23.3, 3.6],
     ],
     links: [[23, 9, 'corredor']],
@@ -515,7 +516,8 @@ const ROOMS: RoomSpec[] = [
       ...lamps([2, 2], [4, 5], [7, 3]),
     ],
     wall: [
-      ['board_investigation', 'r', 0, 4.6, 2.18],
+      // o quadro de investigação em cima dos arquivos (atrás do quadro branco, ele sumia)
+      ['board_investigation', 'r', 0, 7.5, 2.4],
       ['notes_wall', 'l', 0, 6.5, 2.36],
     ],
     links: [[6, 9, 'corredor']],
@@ -592,21 +594,22 @@ const ROOMS: RoomSpec[] = [
       ['armchair_verissimo', 2, 6, 2],
       ['armchair_verissimo', 5, 6, 6],
       ['cabinet_file', 7, 2, 4],
-      // o canto de exibição, na parede da esquerda: um museu particular
-      ['armor_display', 0, 2, 2],
-      ['vitrine_paranormal', 0, 3, 2],
+      // o canto de exibição, na parede da esquerda, depois do quadro de detetive (08/10: antes o quadro ficava atrás
+      // da vitrine e da armadura): um museu particular; a outra armadura guarda a relíquia do meio da sala
       ['pedestal_relic', 0, 5, 2],
-      ['pedestal_relic', 0, 6, 2],
-      ['armor_display', 0, 7, 2],
+      ['vitrine_paranormal', 0, 6, 2],
+      ['pedestal_relic', 0, 8, 2],
+      ['armor_display', 0, 9, 2],
       ['pedestal_relic', 9, 6, 0],
+      ['armor_display', 10, 6, 6],
       ['plant', 11, 9, 0],
       ...lamps([6, 4], [6, 8], [3, 7], [10, 5]),
     ],
     wall: [
       // a pintura do Coliseu sobre o sofá, o quadro de detetive enorme, o relógio
       ['painting_coliseu', 'r', 0, 2.1, 2.1],
-      ['board_detective', 'l', 0, 5.4, 1.95],
-      ['clock', 'r', 0, 10.6, 3.54],
+      ['board_detective', 'l', 0, 2.5, 1.95],
+      ['clock', 'r', 0, 4.6, 3.54],
     ],
     links: [[2, 9, 'corredor']],
   },
@@ -791,7 +794,7 @@ const ROOMS: RoomSpec[] = [
     wall: [
       ['blade_rack', 'r', 1, 5.0, 2.09],
       ['emergency_light', 'r', 1, 5.0, 3.99],
-      ['tool_board', 'l', 0, 2.7, 1.63],
+      ['tool_board', 'l', 0, 2.9, 1.63],
       ['target_paper', 'l', 0, 9.0, 1.72],
     ],
     links: [[6, 1, 'salao']],

@@ -1002,6 +1002,25 @@ const builders: Record<string, Builder> = {
     return V([N([0.3, 0.7, 0.3, 0.7, 0, 0.3], (p) => skull(p, 0.5, 0.5, 0, 1))]);
   },
 
+  // o corpo deitado no chão, coberto (o lençol ou o saco): o pano no chão, a cabeça, o tronco, as pernas e os pés
+  // levantando o pano na ponta; 1,9 m no meio das 3 casas (até chegar corpo-lencol.png e corpo-saco.png)
+  corpo(def) {
+    const [pano, marca] = def.colors;
+    const u0 = (def.depth - 2.5) / 2;
+    const u1 = u0 + 2.5;
+    return V([
+      N([u0, u1, 0.2, 0.8, 0, 0.3], (p) => {
+        p.box([u0 + 0.04, u1 - 0.04, 0.22, 0.78, 0, 0.06], shade(pano, -0.2), { edge: 0.3 });
+        p.box([u0 + 0.08, u0 + 0.4, 0.36, 0.64, 0.04, 0.26], pano, { edge: 0.45 });
+        p.box([u0 + 0.42, u0 + 1.4, 0.28, 0.72, 0.04, 0.24], pano, { edge: 0.35 });
+        p.box([u0 + 1.4, u1 - 0.24, 0.31, 0.69, 0.04, 0.16], shade(pano, -0.05), { edge: 0.35 });
+        p.box([u1 - 0.24, u1 - 0.06, 0.34, 0.66, 0.04, 0.22], pano, { edge: 0.4 });
+        // a mancha no lençol (no saco, o zíper)
+        p.box([u0 + 0.7, u0 + 1.1, 0.4, 0.6, 0.24, 0.245], marca);
+      }),
+    ]);
+  },
+
   // o que alguém largou no chão: uma bolsa de lona com a boca amarrada e um volume ao lado (até chegar a arte)
   pilha(def) {
     const [c0, c1] = def.colors;

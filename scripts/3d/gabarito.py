@@ -161,13 +161,17 @@ def peca_parede(p, saida):
     page.draw_rect(page.rect, color=None, fill=FUNDO)
     extra = f", vão de {m(vao[0])} x {m(vao[1])} m" if vao else ''
     texto(page, 30, 32, f"{p['titulo']}: {m(w)} m de largura na parede x {m(h)} m de altura, saindo {m(sai)} m da parede{extra}", 17, True)
+    # a porta larga (a de enrolar do bar, a dupla do celeiro) ocupa n casas; a parede mostra uma casa a mais de cada lado
+    n = max(1, round(w / CASA)) if vao else 1
     if vao:
-        texto(page, 30, 56, 'Desenhe POR CIMA do contorno (vermelho), sem passar dele: a largura é a de 1 casa (o trecho escuro da parede). A parede NÃO entra no desenho. Bordas: 2 para 1.', 13)
+        casas = '1 casa' if n == 1 else f'{n} casas'
+        texto(page, 30, 56, f'Desenhe POR CIMA do contorno (vermelho), sem passar dele: a largura é a de {casas} (o trecho escuro da parede). A parede NÃO entra no desenho. Bordas: 2 para 1.', 13)
     else:
         texto(page, 30, 56, 'Desenhe POR CIMA do contorno (vermelho), sem passar dele. A parede (em casas de 0,75 m) NÃO entra no desenho. As bordas de cima e de baixo seguem a parede: 2 para 1.', 13)
-    comp = 3 * CASA
-    meio = 1.5 * CASA
-    s = min((CEL_L - 80) / ((3 + 0.6) * 32), (CEL_A - 110) / (3 * 16 + 2.7 * PX_Z))
+    nc = n + 2
+    comp = nc * CASA
+    meio = comp / 2
+    s = min((CEL_L - 80) / ((nc + 0.6) * 32), (CEL_A - 110) / (nc * 16 + 2.7 * PX_Z))
     sh = page.new_shape()
     for col, titulo in ((0, 'VISTA 1: na PAREDE DA DIREITA (corre como \\), virada para baixo-esquerda'), (1, 'VISTA 2: na PAREDE DA ESQUERDA (corre como /), virada para baixo-direita')):
         ox = col * CEL_L + CEL_L / 2 - (comp / 2 if col == 0 else -comp / 2) * PX_X * s
@@ -175,14 +179,14 @@ def peca_parede(p, saida):
         o = (ox, oy)
         page.draw_rect(fitz.Rect(col * CEL_L + 12, TOPO + 8, (col + 1) * CEL_L - 12, TOPO + CEL_A - 8), color=(0.7, 0.7, 0.68), width=1)
         texto(page, col * CEL_L + 26, TOPO + 32, titulo, 13, True)
-        # a parede (3 casas) e a casa do meio, mais escura
+        # a parede (as casas da peça e uma de cada lado) e as casas da peça, mais escuras
         if col == 0:
             P = lambda a, n, z: ponto(o, s, a, n, z)
         else:
             P = lambda a, n, z: ponto(o, s, n, a, z)
         poli(sh, [P(0, 0, 0), P(comp, 0, 0), P(comp, 0, 2.7), P(0, 0, 2.7)], PAREDE, PAREDE, 0.5, 1.0)
-        poli(sh, [P(CASA, 0, 0), P(2 * CASA, 0, 0), P(2 * CASA, 0, 2.7), P(CASA, 0, 2.7)], (0.6, 0.6, 0.58), (0.6, 0.6, 0.58), 0.35, 1.0)
-        for i in range(4):
+        poli(sh, [P(CASA, 0, 0), P((n + 1) * CASA, 0, 0), P((n + 1) * CASA, 0, 2.7), P(CASA, 0, 2.7)], (0.6, 0.6, 0.58), (0.6, 0.6, 0.58), 0.35, 1.0)
+        for i in range(nc + 1):
             linha(sh, P(i * CASA, 0, 0), P(i * CASA, 0.35, 0), CHAO, 1.0)
         pessoa(sh, o, s, *((0.35, 0.55) if col == 0 else (0.55, 0.35)))
         a0, a1 = meio - w / 2, meio + w / 2

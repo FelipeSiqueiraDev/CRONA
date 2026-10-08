@@ -144,6 +144,8 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'sigil_map', name: 'Mapa do Sigilo', category: 'ocultismo', kind: 'sigil_map', width: 2, depth: 1, height: 0.02, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#cbb994', '#8a1010'] },
   { id: 'blood_pool', name: 'Mancha de Sangue', category: 'ocultismo', kind: 'blood', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#6e0b0b'] },
   { id: 'blood_drops', name: 'Respingos de Sangue', category: 'ocultismo', kind: 'blood_small', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#6e0b0b'] },
+  { id: 'corpo_lencol', name: 'Corpo Coberto', category: 'ocultismo', kind: 'corpo', width: 1, depth: 3, height: 0.3, rotations: ALL, colors: ['#d8d0bc', '#6e1a14'], desc: 'Alguém deitado no chão, embaixo de um lençol encardido. Os pés aparecem.' },
+  { id: 'corpo_saco', name: 'Saco de Cadáver', category: 'ocultismo', kind: 'corpo', width: 1, depth: 3, height: 0.3, rotations: ALL, colors: ['#1d1d22', '#8a8a90'], desc: 'Um saco de cadáver preto, fechado.' },
   { id: 'skull', name: 'Crânio', category: 'ocultismo', kind: 'skull', width: 1, depth: 1, height: 0.3, rotations: ALL, colors: ['#d8cfb8'] },
   { id: 'table_tools', name: 'Mesa das Ferramentas', category: 'ocultismo', kind: 'desk', width: 2, depth: 1, height: 0.8, stackable: true, rotations: ALL, colors: ['#4a3020', '#2e1d12', '#9a7a4a'], desc: 'Mesa rústica com a faca cerimonial, o giz, a tigela, a corda e as velas.' },
   { id: 'books_stack', name: 'Pilha de Livros', category: 'ocultismo', kind: 'books', width: 1, depth: 1, height: 0.4, stackable: true, rotations: ALL, colors: ['#5a2320', '#2f3f5a', '#4a4a2a'] },

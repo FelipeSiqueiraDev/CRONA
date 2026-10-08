@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 16;
+export const FAZENDA_REV = 17;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -786,7 +786,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ...lamps([4, 2], [8, 2]),
     ],
     wall: [
-      ["shelf_wall", "r", 0, 8.5, 2.99],
+      ["shelf_wall", "r", 0, 8.5, 3.22],
       ["clock", "l", 0, 4.5, 3.45],
     ],
     links: [[9, 3, "hall"]],
@@ -1193,7 +1193,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     key: "calabouco",
     name: FAZENDA + "Calabouço",
     description:
-      "Embaixo do celeiro, pedra molhada e o cheiro de ferro: de um lado os computadores ligados e os tanques com gente dentro, no meio o altar no estrado redondo, com o círculo de sangue e os crânios, e no fundo um corredor escuro.",
+      "Embaixo do celeiro, pedra molhada e cheiro de ferro: o laboratório de um ritual. Na parede da esquerda, a central que monitorava a pessoa; no fundo, os leitos de observação com as correias abertas e os arquivos do estudo; no meio, o altar no estrado redondo, com o círculo de sangue e os crânios; e a passagem para o corredor escuro.",
     layout: calaboucoPlan(),
     andar: CALABOUCO,
     style: "calabouco",
@@ -1201,12 +1201,14 @@ const CENAS_BRUTAS: CenaSpec[] = [
     fog: 0.25,
     ambient: "#3a8a90",
     particles: ["dust", "smoke"],
+    // 08/10 (o Felipe): aqui faziam um ritual de TROCA DE MENTE à força, pondo uma mente muito forte num corpo que não
+    // aguentava. Não tem criatura presa (os tanques saíram): tem os aparelhos que monitoravam a pessoa e o registro do
+    // "estudo". Quem não resistiu ficou na sala do fim do corredor e virou Existido.
     floor: [
-      // a escada de mão que sobe reto para o alçapão do celeiro, e a porta do corredor escuro
+      // a escada de mão que sobe reto para o alçapão do celeiro, e a passagem do corredor escuro
       ["escada_vertical", 1, 1, 4],
       ["portal", 9, 1, 4],
-      // a parede dos computadores (à esquerda), cada estação com a sua cadeira
-      ["server_rack", 0, 3, 2],
+      // a central de monitoramento, na parede da esquerda: os computadores, com o painel das telas em cima
       [
         "console",
         0,
@@ -1214,52 +1216,48 @@ const CENAS_BRUTAS: CenaSpec[] = [
         2,
         oculta(
           "Computadores",
-          "As telas mostram um corpo por dentro, em camadas, e um contador que não para de subir. Os cabos descem pelo chão até os tanques.",
+          "As telas mostram um corpo por dentro, em camadas, e duas linhas de atividade cerebral que deviam ser de pessoas diferentes, mas sobem e descem juntas. Os cabos descem pelo chão até o altar.",
         ),
       ],
       ["chair_office", 1, 4, 6],
-      ["server_rack", 0, 6, 2],
-      ["server_rack", 0, 7, 2],
-      ["console", 0, 8, 2],
-      ["chair_office", 1, 9, 6],
-      ["ups", 0, 10, 2],
-      ["parts_boxes", 0, 11, 2],
-      ["crate_metal", 0, 12, 2],
-      ["crate_metal", 0, 12, 2],
-      ["crate_metal", 0, 13, 2],
-      ["cables_floor", 1, 6, 2],
-      // os tanques com os corpos: dois no fundo e um no lado direito (na frente, tampava o estrado)
+      ["console", 0, 6, 2],
+      ["chair_office", 1, 7, 6],
+      ["cables_floor", 2, 6, 0],
+      ["cables_floor", 4, 7, 0],
+      ["server_rack", 0, 11, 2],
+      ["server_rack", 0, 12, 2],
+      ["ups", 0, 13, 2],
+      // os leitos de observação, no fundo: quem ia passar pelo ritual (ou já tinha passado) ficava ligado aqui
+      ["iv_stand", 2, 1, 4],
       [
-        "tank",
-        4,
+        "hospital_bed",
+        3,
         1,
         4,
         oculta(
-          "Tanque",
-          "No líquido esverdeado boia um homem, ligado por tubos. Os olhos estão abertos.",
+          "Leito",
+          "As correias de couro estão abertas e o colchão afundado no meio. Presa na grade, uma pulseira de plástico com um número e o nome riscado à caneta.",
         ),
       ],
+      ["table_small", 4, 1, 4],
+      ["vitals_monitor", 4, 1, 4],
+      ["hospital_bed", 13, 1, 4],
+      ["iv_stand", 14, 1, 4],
+      ["table_small", 12, 4, 4],
+      ["vitals_monitor", 12, 4, 4],
+      // o registro do estudo: os arquivos do lado da passagem, o quadro branco com os gráficos e a mesa de trabalho
       [
-        "tank",
-        12,
-        1,
-        4,
-        oculta(
-          "Tanque",
-          "Uma mulher encolhida no líquido, com marcas riscadas na pele. O vidro está quente.",
-        ),
-      ],
-      [
-        "tank",
-        14,
-        5,
+        "cabinet_file",
         6,
+        1,
+        4,
         oculta(
-          "Tanque",
-          "O corpo aqui dentro não é bem de gente: os braços são compridos demais.",
+          "Arquivo",
+          "Pastas por nome, em ordem de data. Cada uma termina com a mesma palavra carimbada: REJEIÇÃO. A última está vazia, só com o nome escrito na capa.",
         ),
       ],
-      // a mesa de trabalho com os frascos e o monitor dos sinais vitais; o carrinho
+      ["cabinet_file", 7, 1, 4],
+      ["whiteboard", 10, 1, 4],
       ["table_work", 3, 11, 4],
       ["flasks", 3, 11, 0],
       ["vitals_monitor", 5, 11, 4],
@@ -1274,7 +1272,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
         4,
         oculta(
           "Altar",
-          "Pedra escura, lisa de tanto uso. O círculo pintado em volta ainda está úmido: é sangue.",
+          "Pedra escura, lisa de tanto uso. O círculo pintado em volta ainda está úmido: é sangue. Subir aqui dá a sensação de que alguma coisa olha de volta.",
         ),
       ],
       ["blood_pool", 9, 8, 0],
@@ -1295,19 +1293,28 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["blood_drops", 10, 4, 0],
       ["blood_drops", 9, 5, 0],
       ["puddle", 5, 6, 0],
-      ["puddle", 13, 4, 0],
+      ["puddle", 13, 6, 0],
       ["puddle", 3, 8, 0],
       ["puddle", 10, 13, 0],
       ["drain", 7, 13, 0],
     ],
     wall: [
-      ["monitor_wall", "l", 0, 6.5, 2.63],
+      // as telas em cima dos computadores (antes ficavam atrás dos racks), a câmera da escada e as arandelas
+      ["monitor_wall", "l", 0, 5.5, 2.63],
       ["cctv", "l", 0, 1.7, 3.9],
-      ["sconce", "l", 0, 11.8, 2.9],
-      ["sconce", "r", 1, 7.6, 2.9],
-      ["sconce", "r", 1, 11.4, 2.9],
-      ["pipes", "r", 1, 6.4, 3.6],
-      ["poster_sigil", "r", 1, 14.4, 2.2],
+      ["sconce", "l", 0, 9.0, 2.9],
+      ["sconce", "r", 1, 8.5, 2.9],
+      ["sconce", "r", 1, 15.4, 2.9],
+      ["pipes", "r", 1, 3.0, 3.6],
+      // as fotos de quem passou pelo ritual
+      [
+        "board_investigation",
+        "r",
+        1,
+        5.6,
+        2.5,
+        { icon: "inspect", title: "Quadro", text: "Fotos de gente da região, de frente e de perfil, cada uma com uma data. Fios ligam todas a uma foto só, no meio: o altar, de cima.", visible: false },
+      ],
     ],
     links: [
       [1, 1, "celeiro"],
@@ -1356,8 +1363,10 @@ const CENAS_BRUTAS: CenaSpec[] = [
   {
     key: "sala_sangue",
     name: FAZENDA + "Sala de Sangue",
+    // 08/10 (o Felipe): é onde guardavam quem não resistiu ao ritual. Os corpos viraram Existidos e acordam quando os
+    // agentes chegam: o primeiro combate oficial do CRONA. Os Existidos entram pelo combate (a ameaça do livro).
     description:
-      "Uma sala pequena no fim do corredor, e tudo nela é sangue: o chão, as paredes, a mesa de metal no meio, o ralo entupido.",
+      "A sala do fim do corredor, onde guardavam quem não aguentou o ritual: os corpos no chão, cobertos, o sangue de tudo, a mesa de metal no meio e o ralo entupido. O ar aqui é parado demais.",
     layout: plan(6, 5, 2),
     andar: CALABOUCO,
     style: "calabouco",
@@ -1368,7 +1377,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     particles: ["dust"],
     floor: [
       ["portal", 1, 2, 2],
-      // o sangue vem antes: a mesa fica em cima dele, não o contrário
+      // o sangue vem antes: a mesa e os corpos ficam em cima dele, não o contrário
       ...de(
         "blood_pool",
         [2, 0],
@@ -1394,8 +1403,20 @@ const CENAS_BRUTAS: CenaSpec[] = [
           "As correias de couro estão abertas e duras de sangue seco. O sangue escorre da mesa até o ralo entupido.",
         ),
       ],
-      ["barrel", 1, 4, 0],
-      ["skull", 6, 3, 6],
+      // os corpos de quem não aguentou
+      [
+        "corpo_lencol",
+        5,
+        0,
+        4,
+        oculta(
+          "Corpo",
+          "Embaixo do lençol, a pele está fria e cinzenta. Por baixo dela, fraco, alguma coisa brilha dourado, como uma luz que acabou de acender.",
+        ),
+      ],
+      ["corpo_saco", 6, 1, 4],
+      ["corpo_lencol", 2, 4, 2],
+      ["skull", 6, 4, 6],
       ["candles", 6, 0, 0],
     ],
     wall: [

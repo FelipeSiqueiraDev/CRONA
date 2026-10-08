@@ -1,3 +1,4 @@
+import { desencostarItensDeParede } from './paredes';
 import {
   footprint,
   getFurni,
@@ -175,7 +176,6 @@ function seedCasa(db: Database) {
       ['portal', 12, 4, 6],
     ],
     [
-      ['window_barred', 'r', 0, 7.9, 2],
       ['poster_sigil', 'l', 1, 7.0, 1.81],
       ['emergency_light', 'r', 0, 11.5, 2.9],
       ['clock', 'r', 0, 9.2, 3.08],
@@ -414,10 +414,8 @@ function seedMansao(db: Database) {
       ['portal', 5, 8, 0],
     ],
     [
-      ['window_barred', 'r', 0, 5.2, 2],
-      ['board_investigation', 'r', 0, 8.3, 1.63],
       ['sconce', 'l', 1, 4.5, 2.18],
-      ['sconce', 'r', 0, 2.6, 2.36],
+      ['sconce', 'r', 0, 5.5, 2.36],
       ['clock', 'l', 1, 7.4, 2.99],
     ],
     0.58,
@@ -712,7 +710,8 @@ export function upgradeDb(db: Database): boolean {
     const cores = coresDosAgentes(db);
     const temas = temasDosAgentes(db);
     const van = vanNoLugar(db);
-    return sede || fazenda || cores || temas || van;
+    const paredes = paredesLivres(db);
+    return sede || fazenda || cores || temas || van || paredes;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';
@@ -785,8 +784,20 @@ export function upgradeDb(db: Database): boolean {
   montarFazenda(db);
   coresDosAgentes(db);
   temasDosAgentes(db);
+  paredesLivres(db);
   db.seedVersion = SEED_VERSION;
   return true;
+}
+
+/** Item de parede atrás de móvel encostado (o painel de monitores atrás dos racks): sobe ou escorrega, em toda sala. */
+function paredesLivres(db: Database): boolean {
+  let mudou = false;
+  for (const r of db.rooms) {
+    const feito = desencostarItensDeParede(r);
+    for (const f of feito) console.log(`[paredes] ${f}`);
+    if (feito.length) mudou = true;
+  }
+  return mudou;
 }
 
 export function seedDb(): Database {
@@ -871,7 +882,7 @@ export function seedDb(): Database {
         ['notes_wall', 'l', 1, 7.2, 1.81],
         ['sconce', 'l', 1, 8.9, 2.09],
         ['wall_shelf', 'r', 0, 2.0, 2.27],
-        ['antlers', 'r', 0, 4.0, 2.72],
+        ['antlers', 'r', 0, 2.0, 2.85],
         ['clock', 'r', 0, 6.0, 2.81],
         ['window_barred', 'r', 0, 8.0, 1.91],
         ['pipes', 'r', 0, 10.0, 3.54],
