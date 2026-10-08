@@ -129,8 +129,15 @@ O básico está no `AGENTS.md`. Além dele:
 
 **A pasta da arte**
 - Fica em `F:\Dhellow\CRONA\arte\TEXTURAS MAPA\BASE - Ordo Realitas\`.
-- O `LEIA-ME.txt` dela é o mapa:
-  - os pedidos `PROMPT-*.txt`;
+- Desde 07/10 (noite), TUDO o que falta para o Códex está num arquivo só, o `PEDIDO-UNICO-CODEX.txt` (o que já chegou, a fila
+  e o pedido completo de cada parte); o `00-COMECE-AQUI.txt` tem a mensagem para colar. Pedido novo entra nele (numa seção
+  nova da fila), e não num PROMPT solto. Os pedidos antigos estão em `_arquivo/prompts/`.
+- **Regra da casa (Felipe, 07/10): todo LUGAR novo** (o Orfanato Filhos do Dragão, Santo Berço...) ganha, além das salas, a
+  **ilha no mapa-múndi** (`lugar-<slug>.png`) e **duas artes de chegada** (`chegada-<slug>-1.png` e `-2.png`, pinturas
+  1920 × 1080 como as 10 da viagem, em `client/public/arte/viagem/ilustracoes/`). A tela de chegada usa as do lugar quando
+  existem (`artesDeChegada` em `shared/src/viagem.ts`).
+- O mapa da pasta:
+  - o pedido único `PEDIDO-UNICO-CODEX.txt`;
   - `gabaritos/`: câmera, estilo, telas, agentes e "como está hoje";
   - `Sede da Ordem/<cômodo>/`: as folhas certas de cada cômodo;
   - `_entregas-originais/`: os zips como chegaram;

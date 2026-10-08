@@ -6,6 +6,7 @@ import {
   isCenarioViagem,
   iconePeloNome,
   ambienteDoDestino,
+  artesDeChegada,
   ILUSTRACOES_VIAGEM,
   isClimaViagem,
   sortearIlustracao,
@@ -1944,8 +1945,8 @@ export class Hotel implements HotelApi {
   }
 
   /** A pintura da partida ou da chegada, na tela de todo mundo (o mestre, a mesa e os celulares), com o som do carro. */
-  private telaDaViagem(fase: 'partida' | 'chegada', ilustracao: string, texto: string) {
-    const msg: ServerMsg = { t: 'viagemTela', fase, ilustracao, texto };
+  private telaDaViagem(fase: 'partida' | 'chegada', ilustracao: string, texto: string, reserva?: string) {
+    const msg: ServerMsg = { t: 'viagemTela', fase, ilustracao, texto, ...(reserva ? { reserva } : {}) };
     for (const c of this.clients.values()) if (c.name) c.send(msg);
   }
 
@@ -2077,7 +2078,9 @@ export class Hotel implements HotelApi {
     // a tela da chegada, para todos (outra pintura do mesmo lugar)
     const lugar = this.lugares().find((l) => this.sceneGroup(dest.data.id).includes(l.id) || l.entrada === dest.data.id);
     const nomeDest = lugar?.nome ?? dest.data.name;
-    this.telaDaViagem('chegada', sortearIlustracao(ambienteDoDestino(nomeDest), van.data.viagem.ilustracao), `Chegamos: ${nomeDest}`);
+    // a arte de chegada do lugar (regra da casa: duas por lugar); se ainda não existe, a do jeito do lugar
+    const doLugar = artesDeChegada(nomeDest)[Math.floor(Math.random() * 2)];
+    this.telaDaViagem('chegada', doLugar, `Chegamos: ${nomeDest}`, sortearIlustracao(ambienteDoDestino(nomeDest), van.data.viagem.ilustracao));
     for (const t of vindos) this.moveToken(van, t.id, dest.data.id);
     this.log(dest.data.id, 'scene', `Chegaram: ${vindos.map((t) => t.name).join(', ') || 'ninguém'}.`);
     this.save();

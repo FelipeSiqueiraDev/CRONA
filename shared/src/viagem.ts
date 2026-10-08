@@ -51,7 +51,22 @@ export const ILUSTRACOES_VIAGEM: { id: string; nome: string; ambientes: Ambiente
   { id: 'posto-noite', nome: 'Posto de gasolina à noite', ambientes: ['estrada', 'cidade'] },
   { id: 'tunel', nome: 'O túnel', ambientes: ['estrada', 'cidade'] },
 ];
-export const arteDaIlustracao = (id: string) => `/arte/viagem/ilustracoes/ilust-${id}.png`;
+export const arteDaIlustracao = (id: string) => (id.startsWith('chegada-') ? `/arte/viagem/ilustracoes/${id}.png` : `/arte/viagem/ilustracoes/ilust-${id}.png`);
+
+/** O nome do lugar em letras simples, para o nome do arquivo ("Fazenda Olhos de Águia" -> "fazenda-olhos-de-aguia"). */
+const slugLugar = (nome: string) =>
+  nome
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+/**
+ * As duas artes de chegada de um lugar (regra da casa, 07/10: todo lugar novo ganha duas): `chegada-<lugar>-1` e `-2`.
+ * A tela tenta uma delas e, se a arte ainda não existe, mostra a ilustração da viagem que combina com o lugar.
+ */
+export const artesDeChegada = (nomeLugar: string) => [`chegada-${slugLugar(nomeLugar)}-1`, `chegada-${slugLugar(nomeLugar)}-2`];
 
 /** O jeito do lugar de destino, pelo nome ("Fazenda Olhos de Águia" é do campo; "Sede da Ordem" é da cidade). */
 export function ambienteDoDestino(nome?: string): AmbienteViagem {

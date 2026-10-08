@@ -9,7 +9,7 @@ import { sfx } from './sfx';
 
 const DURACAO_MS = 6200;
 
-export function mostrarTelaViagem(fase: 'partida' | 'chegada', ilustracao: string, texto: string) {
+export function mostrarTelaViagem(fase: 'partida' | 'chegada', ilustracao: string, texto: string, reserva?: string) {
   document.querySelector('.vg-tela')?.remove();
   const img = h('img', { class: 'vg-tela-img', src: arteDaIlustracao(ilustracao), alt: '' }) as HTMLImageElement;
   const legenda = h('div', { class: 'vg-tela-legenda' }, h('small', null, fase === 'partida' ? 'PARTIDA' : 'CHEGADA'), h('b', null, texto));
@@ -39,6 +39,7 @@ export function mostrarTelaViagem(fase: 'partida' | 'chegada', ilustracao: strin
     mostrar();
   };
   img.addEventListener('load', vai, { once: true });
-  img.addEventListener('error', vai, { once: true });
+  // a arte de chegada do lugar ainda não existe: a ilustração da viagem que combina com ele
+  img.addEventListener('error', () => (reserva && !img.src.endsWith(arteDaIlustracao(reserva)) ? (img.src = arteDaIlustracao(reserva)) : vai()));
   setTimeout(vai, 1500);
 }

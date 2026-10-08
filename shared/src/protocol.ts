@@ -471,7 +471,7 @@ export type ClientMsg =
 
 export type ServerMsg =
   /** a tela da viagem: a pintura que aparece para todos na partida e na chegada (com o som do carro) */
-  | { t: 'viagemTela'; fase: 'partida' | 'chegada'; ilustracao: string; texto: string }
+  | { t: 'viagemTela'; fase: 'partida' | 'chegada'; ilustracao: string; texto: string; reserva?: string }
   | { t: 'hello'; characters: CharacterDef[] }
   | { t: 'welcome'; id: number; name: string; look: AvatarLook; token: string; inventory: InvItem[]; home?: number; role: Role }
   /**

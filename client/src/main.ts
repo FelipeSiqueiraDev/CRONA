@@ -388,7 +388,7 @@ net.onMessage = (m: ServerMsg) => {
       table?.setCombate(m.combate);
       break;
     case 'viagemTela':
-      mostrarTelaViagem(m.fase, m.ilustracao, m.texto);
+      mostrarTelaViagem(m.fase, m.ilustracao, m.texto, m.reserva);
       break;
     case 'lugares':
       app.state.lugares = m.lugares;
