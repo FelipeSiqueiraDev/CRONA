@@ -1,0 +1,131 @@
+{
+ "destino": "client/public/arte/mobiliario",
+ "escala": 0.5,
+ "limpar": 56,
+ "moveis": [
+  {
+   "def": "arvore~d",
+   "folha": "client/public/arte/mobiliario/folhas/arvore-meio-morta.png",
+   "real": [
+    0.75,
+    0.75,
+    5.86
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.4,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "arvore~e",
+   "folha": "client/public/arte/mobiliario/folhas/arvore-b-meio-morta.png",
+   "real": [
+    0.75,
+    0.75,
+    5.86
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.4,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "arvore~f",
+   "folha": "client/public/arte/mobiliario/folhas/arvore-c-meio-morta.png",
+   "real": [
+    0.75,
+    0.75,
+    4.81
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.45,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "arbusto~c",
+   "folha": "client/public/arte/mobiliario/folhas/arbusto-meio-morto.png",
+   "real": [
+    0.75,
+    0.75,
+    0.98
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.5,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "arbusto~d",
+   "folha": "client/public/arte/mobiliario/folhas/arbusto-b-meio-morto.png",
+   "real": [
+    0.75,
+    0.75,
+    0.87
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.5,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "milharal",
+   "folha": "client/public/arte/mobiliario/folhas/milharal-meio-morto.png",
+   "real": [
+    0.75,
+    0.75,
+    1.9
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "horta",
+   "folha": "client/public/arte/mobiliario/folhas/canteiro-meio-morto.png",
+   "real": [
+    0.75,
+    0.75,
+    0.45
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  }
+ ]
+}

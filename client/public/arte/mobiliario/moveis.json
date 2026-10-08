@@ -7235,12 +7235,12 @@
    "4": {
     "arquivo": "milharal/giro-4.png",
     "ax": 64.0,
-    "ay": 189.0
+    "ay": 190.0
    },
    "6": {
     "arquivo": "milharal/giro-6.png",
     "ax": 64.0,
-    "ay": 215.0
+    "ay": 216.0
    },
    "0": {
     "arquivo": "milharal/giro-0.png",
@@ -7557,6 +7557,156 @@
    0.7,
    0.15,
    1.76
+  ]
+ },
+ "arvore~d": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "arvore~d/giro-4.png",
+    "ax": 342.0,
+    "ay": 631.9
+   },
+   "6": {
+    "arquivo": "arvore~d/giro-6.png",
+    "ax": 223.0,
+    "ay": 631.9
+   },
+   "0": {
+    "arquivo": "arvore~d/giro-0.png",
+    "ax": 194.5,
+    "ay": 631.9
+   },
+   "2": {
+    "arquivo": "arvore~d/giro-2.png",
+    "ax": 161.0,
+    "ay": 631.9
+   }
+  },
+  "real": [
+   0.75,
+   0.75,
+   5.86
+  ]
+ },
+ "arvore~e": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "arvore~e/giro-4.png",
+    "ax": 224.0,
+    "ay": 631.9
+   },
+   "6": {
+    "arquivo": "arvore~e/giro-6.png",
+    "ax": 223.5,
+    "ay": 631.9
+   },
+   "0": {
+    "arquivo": "arvore~e/giro-0.png",
+    "ax": 224.0,
+    "ay": 631.9
+   },
+   "2": {
+    "arquivo": "arvore~e/giro-2.png",
+    "ax": 220.0,
+    "ay": 631.9
+   }
+  },
+  "real": [
+   0.75,
+   0.75,
+   5.86
+  ]
+ },
+ "arvore~f": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "arvore~f/giro-4.png",
+    "ax": 189.5,
+    "ay": 521.4
+   },
+   "6": {
+    "arquivo": "arvore~f/giro-6.png",
+    "ax": 188.5,
+    "ay": 521.4
+   },
+   "0": {
+    "arquivo": "arvore~f/giro-0.png",
+    "ax": 188.5,
+    "ay": 521.4
+   },
+   "2": {
+    "arquivo": "arvore~f/giro-2.png",
+    "ax": 192.5,
+    "ay": 521.4
+   }
+  },
+  "real": [
+   0.75,
+   0.75,
+   4.81
+  ]
+ },
+ "arbusto~c": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "arbusto~c/giro-4.png",
+    "ax": 43.5,
+    "ay": 118.9
+   },
+   "6": {
+    "arquivo": "arbusto~c/giro-6.png",
+    "ax": 48.0,
+    "ay": 118.9
+   },
+   "0": {
+    "arquivo": "arbusto~c/giro-0.png",
+    "ax": 45.5,
+    "ay": 118.9
+   },
+   "2": {
+    "arquivo": "arbusto~c/giro-2.png",
+    "ax": 46.5,
+    "ay": 118.9
+   }
+  },
+  "real": [
+   0.75,
+   0.75,
+   0.98
+  ]
+ },
+ "arbusto~d": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "arbusto~d/giro-4.png",
+    "ax": 47.0,
+    "ay": 107.9
+   },
+   "6": {
+    "arquivo": "arbusto~d/giro-6.png",
+    "ax": 44.5,
+    "ay": 107.9
+   },
+   "0": {
+    "arquivo": "arbusto~d/giro-0.png",
+    "ax": 40.5,
+    "ay": 107.9
+   },
+   "2": {
+    "arquivo": "arbusto~d/giro-2.png",
+    "ax": 42.5,
+    "ay": 107.9
+   }
+  },
+  "real": [
+   0.75,
+   0.75,
+   0.87
   ]
  }
 }

@@ -10,6 +10,7 @@ import {
   RoomMap,
   TICK_MS,
   Z_PER_M,
+  M_POR_CASA,
   type AvatarLook,
   type ChatKind,
   type FloorItem,
@@ -32,7 +33,7 @@ import {
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
-import { desenharParedeComArte, visualComArte } from '../render/furniArte';
+import { desenharParedeComArte, tamanhoReal, visualComArte } from '../render/furniArte';
 import { furniVisual } from '../render/furniFloor';
 import { drawWallFurni, wallLights } from '../render/furniWall';
 import { drawHintGlyph, drawHintIcon } from '../render/hints';
@@ -706,6 +707,81 @@ export class RoomView {
     return d.seg.wall === 'l' ? [x + 0.45, y] : [x, y + 0.45];
   }
 
+  /**
+   * Operação "Pede Mesa" (08/10, o Felipe): a mesa desenhada costuma ser menor que as casas dela (a de trabalho do
+   * calabouço ocupa 3 × 2 casas, 2,25 × 1,5 m, e o tampo tem 0,95 m de fundo). O item na casa de trás ficava no ar, do
+   * lado do tampo, e a cadeira ficava uma casa inteira longe da borda de verdade. Sem mexer na arte: o item em cima da
+   * mesa escorrega para dentro do tampo desenhado, e a cadeira virada para uma mesa entra um pouco embaixo dela (a peça
+   * sentada vai junto). O deslocamento é em casas, só no desenho; a casa de cada um continua a mesma.
+   */
+  private ajustes = new Map<number, [number, number]>();
+  private ajustesQuadro = -1;
+
+  /** O tampo desenhado de uma mesa (centro e meia medida, em casas), se ele for menor que as casas dela. */
+  private tampo(s: FloorItem) {
+    const def = getFurni(s.defId);
+    if (!def || !def.stackable || def.sit || def.walkable || def.height < 0.85 || def.height > 1.75) return null;
+    const tr = tamanhoReal(s.defId);
+    if (!tr || tr.encosta) return null;
+    const fp = footprint(def, s.rot);
+    const larguraEmX = s.rot === 0 || s.rot === 4;
+    const hx = (larguraEmX ? tr.real[0] : tr.real[1]) / M_POR_CASA / 2;
+    const hy = (larguraEmX ? tr.real[1] : tr.real[0]) / M_POR_CASA / 2;
+    if (hx * 2 > fp.sx - 0.05 && hy * 2 > fp.sy - 0.05) return null;
+    return { cx: s.x + fp.sx / 2, cy: s.y + fp.sy / 2, hx, hy, topo: s.z + def.height };
+  }
+
+  private ajusteDoMovel(map: RoomMap, it: FloorItem, fundo = 0): [number, number] {
+    const q = Math.floor(performance.now() / 250);
+    if (q !== this.ajustesQuadro) {
+      this.ajustes.clear();
+      this.ajustesQuadro = q;
+    }
+    const salvo = this.ajustes.get(it.id);
+    if (salvo) return salvo;
+    let r: [number, number] = [0, 0];
+    const def = getFurni(it.defId);
+    const chao = map.floorHeight(it.x, it.y) ?? 0;
+    if (def && fundo < 4) {
+      const fp = footprint(def, it.rot);
+      const tr = tamanhoReal(it.defId);
+      if (it.z > chao + 0.05) {
+        // em cima de alguma coisa: na mesa de tampo menor, para dentro do tampo; em cima de outro item, junto com ele
+        const apoio = map.itemsAt(it.x, it.y).find((s) => s !== it && s.id !== it.id && Math.abs(s.z + (getFurni(s.defId)?.height ?? 0) - it.z) < 0.06);
+        const t = apoio ? this.tampo(apoio) : null;
+        if (t) {
+          const ihx = Math.min(t.hx, (tr ? (it.rot === 0 || it.rot === 4 ? tr.real[0] : tr.real[1]) : 0.4) / M_POR_CASA / 2);
+          const ihy = Math.min(t.hy, (tr ? (it.rot === 0 || it.rot === 4 ? tr.real[1] : tr.real[0]) : 0.4) / M_POR_CASA / 2);
+          const cx = it.x + fp.sx / 2;
+          const cy = it.y + fp.sy / 2;
+          const nx = Math.max(t.cx - t.hx + ihx, Math.min(t.cx + t.hx - ihx, cx));
+          const ny = Math.max(t.cy - t.hy + ihy, Math.min(t.cy + t.hy - ihy, cy));
+          r = [nx - cx, ny - cy];
+        } else if (apoio) r = this.ajusteDoMovel(map, apoio, fundo + 1);
+      } else if (def.sit && !def.leitos && def.width === 1 && def.depth === 1) {
+        // a cadeira: a mesa na casa da frente dela (para onde quem senta olha)
+        const [fx, fy] = it.rot === 4 ? [0, 1] : it.rot === 0 ? [0, -1] : it.rot === 2 ? [1, 0] : [-1, 0];
+        const mesa = map.itemsAt(it.x + fx, it.y + fy).find((s) => this.tampo(s));
+        const t = mesa ? this.tampo(mesa) : null;
+        if (t) {
+          const meia = (tr ? tr.real[1] : 0.5) / M_POR_CASA / 2;
+          const encaixa = 0.2; // quanto o assento entra embaixo do tampo (0,15 m)
+          const c = fx ? it.x + 0.5 : it.y + 0.5;
+          const lado = fx ? it.y + 0.5 : it.x + 0.5;
+          const [tc, th, lc, lh] = fx ? [t.cx, t.hx, t.cy, t.hy] : [t.cy, t.hy, t.cx, t.hx];
+          if (Math.abs(lado - lc) <= lh + 0.1) {
+            const borda = tc - (fx || fy) * th;
+            const alvo = borda - (fx || fy) * (meia - encaixa);
+            const d = Math.max(0, Math.min(0.7, (alvo - c) * (fx || fy)));
+            if (d > 0.02) r = fx ? [d * fx, 0] : [0, d * fy];
+          }
+        }
+      }
+    }
+    this.ajustes.set(it.id, r);
+    return r;
+  }
+
   private userPos(u: ClientUser, now: number) {
     if (u.anim) {
       const t = (now - u.anim.start) / TICK_MS;
@@ -720,7 +796,10 @@ export class RoomView {
       };
     }
     const [x, y] = this.vis(u.x, u.y);
-    return { x, y, z: u.z, moving: false };
+    // sentada numa cadeira que entrou embaixo da mesa: vai junto com ela
+    const cadeira = u.sit === 1 && this.map ? this.map.sitItem(u.x, u.y) : undefined;
+    const [ax, ay] = cadeira && this.map ? this.ajusteDoMovel(this.map, cadeira) : [0, 0];
+    return { x: x + ax, y: y + ay, z: u.z, moving: false };
   }
 
   /** A altura da pessoa na tela (zoom 1): a arte dela vem na escala antiga e o tabuleiro reduz (ESCALA_ARTE_PESSOA). */
@@ -1666,7 +1745,11 @@ export class RoomView {
       if (!def) return;
       const base = furniVisual(def, it.state, it.id);
       const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio) ?? base;
-      m.set(it.rot, def.width, def.depth, it.x, it.y, it.z);
+      // a Operação Pede Mesa: o item escorrega para o tampo desenhado, a cadeira entra embaixo da mesa
+      const [ax, ay] = ghost ? [0, 0] : this.ajusteDoMovel(map, it as FloorItem);
+      const ix = it.x + ax;
+      const iy = it.y + ay;
+      m.set(it.rot, def.width, def.depth, ix, iy, it.z);
       const floorH = map.floorHeight(it.x, it.y) ?? 0;
       const flat = !!def.flat && it.z <= floorH + 0.05 && !ghost;
       let topZ = it.z + def.height;
@@ -1700,7 +1783,7 @@ export class RoomView {
           sy1: sy1 + 4,
           poly: sil,
           draw: () => {
-            painter.m.set(rot, def.width, def.depth, it.x, it.y, it.z);
+            painter.m.set(rot, def.width, def.depth, ix, iy, it.z);
             painter.state = it.state;
             painter.seed = it.id;
             ctx.globalAlpha = nodeAlpha;
@@ -1774,7 +1857,7 @@ export class RoomView {
                 ctx.closePath();
               }
               ctx.clip();
-              painter.m.set(rot, def.width, def.depth, it.x, it.y, it.z);
+              painter.m.set(rot, def.width, def.depth, ix, iy, it.z);
               painter.state = it.state;
               painter.seed = it.id;
               ctx.globalAlpha = nodeAlpha;
