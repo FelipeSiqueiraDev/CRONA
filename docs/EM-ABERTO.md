@@ -192,6 +192,28 @@ Ainda falta (pedido do Felipe):
   - trocar os ícones;
   - escolher a logo.
 
+## Noite de 07/10: a viagem, o mapa-múndi, os lugares e o combate novo (o Felipe foi dormir; "amanhã corrigimos")
+
+- **Lugares e mapa-múndi** (`shared/src/lugares.ts`, `ui/mapaMundi.ts`, `render/mapaBrasil.ts`, `render/lugarSprites.ts`): cada conjunto
+  de salas é um LUGAR (a Sede inteira entra pelo Bar; a Fazenda pela vista de fora). O botão do globo no topo abre o Brasil em pixel
+  art com uma ilha por lugar; o mestre arrasta as ilhas (`lugarMover`, guardado em `CampaignData.lugar`). Para o Felipe, a campanha é
+  uma só e os lugares moram dentro dela: quando as contas e as campanhas existirem, isso muda de lugar (ele avisou).
+- **Viagem = tela de carregamento** (`ui/telaDeViagem.ts`, `render/dioramaViagem.ts`): VIAGEM → marca quem vai (a van de cima mostra
+  cada um sentado) → Partir abre o mapa ("Para onde vamos?") → o lugar clicado é o destino. No lugar do tabuleiro (mestre e mesa), o
+  dioraminha: a ilha flutuando com a estrada, a van aberta com os bonecos sentados, árvores, postes e carros passando; 5 momentos do
+  dia (amanhecer, dia, entardecer, noite, madrugada) e 5 climas (limpo, nublado, chuva, tempestade, neblina) em pixel. O painel do
+  mestre: hora, clima, estrada e Chegamos (desce na entrada do lugar). Partida e chegada: a pintura para todos com o som do carro
+  (chave, arranque, motor). **Regra da casa:** todo lugar novo ganha a ilha do mapa e duas artes de chegada (`artesDeChegada`).
+- **Combate** (só CSS, no fim do `hud.css`): o mapa 84 × 84 rem à esquerda; no meio o Alvo rápido e a Resolução numa coluna (abas em
+  ladrilhos com ícone, como no celular); à direita a Ordem de iniciativa, os Efeitos e o Registro pequeno. Conferido no preview:
+  montagem, ataque (arma, rolagem), manobra, ritual e "outras". Falta o Felipe usar e dizer o que apertar.
+- **Arte:** tudo o que falta para o Códex está no `PEDIDO-UNICO-CODEX.txt` (os textos antigos foram para `_arquivo/prompts/`). A van
+  pixel art que chegou veio fechada: a correção está no `CORRECAO-VAN.txt` (aberta, 6 bancos vazios). Os zips da fazenda (texturas,
+  prédios, natureza, casa, calabouço, escada, camas de cima), as peças inteiras e as bancadas estão na raiz da pasta da arte,
+  ESPERANDO ENTRAR NO JOGO (próximo trabalho do Claude).
+- **Pendente da viagem:** a arte do Códex (van aberta com as rodas à parte, carros, beira da estrada, as ilhas e as artes de chegada)
+  entra no lugar do desenho em código; os ícones da barra (velocidade saiu do painel; a van anda sempre na mesma).
+
 ## Fazenda: o casarão do desenho, beliches e móveis vazios (07/10, noite)
 
 - **Portas na parede do desenho:** `plan.r` em `seedFazenda.ts` agora ESPELHA a sala (r 1 e 3 giram um quarto): a porta
