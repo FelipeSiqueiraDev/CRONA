@@ -97,6 +97,9 @@ Formato em [ARTE.md](ARTE.md) (Itens, "Arte pintada dos itens"). O que está mar
 
 Nada novo: usa os retratos, os ícones e as folhas da FICHAS. Os cartões de resumo ilustrados da referência (dados, grimório, maleta, fotos) só entram se um dia a tela do celular for por cartões.
 
+**O fliperama (08/10):** o gabinete de frente, em peças (corpo, moldura da tela, letreiro, painel, botão grande, alavanca em 5 posições e o botãozinho), pedido na SEÇÃO 0B do `PEDIDO-UNICO-CODEX.txt` com o gabarito `gabaritos/pedidos/fliperama/gabarito-fliperama.png`. Os jogos continuam em código.
+- [ ] fliperama-corpo, -moldura, -letreiro, -painel, -botao (+ apertado), -alavanca-centro/cima/baixo/esq/dir, -mini (+ apertado)
+
 ## 5. Tela COMBATE
 
 - [ ] ✱ **Retrato das ameaças**: na referência o Ocultista é um retrato pintado, de capuz; hoje é o avatar padrão. `personagens/<id>/retrato-desarmado.png`, no estilo dos retratos dos agentes (o Claude cadastra cada ameaça que chegar)

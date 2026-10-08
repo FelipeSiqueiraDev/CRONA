@@ -268,6 +268,9 @@ Ainda falta (pedido do Felipe):
   volta; o celular que reconecta no meio abre o fliperama de novo. Servidor: `irJogar` (roomInstance) e `fliperama`
   / `fliperamaSair` (hotel); teste em `server/test/fliperama.test.ts`. Ideia para depois: recordes da mesa inteira
   (no servidor) e o mestre ver quem está jogando.
+- **A arte do gabinete do fliperama** foi para o Códex (SEÇÃO 0B do pedido, gabarito em
+  `gabaritos/pedidos/fliperama/`): 13 PNGs, a mesma máquina da folha do tabuleiro, de frente. Quando chegar: trocar o
+  gabinete de CSS pelas peças (a alavanca vira o direcional, com 4 zonas de toque; o botão grande vira o A).
 
 ## Fazenda: a arte do Códex entrando (08/10, madrugada)
 
