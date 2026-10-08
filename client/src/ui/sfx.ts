@@ -133,6 +133,17 @@ class Sfx {
     o.stop(t + dur + 0.02);
   }
 
+  /** O áudio liberado (para a música do fliperama tocar pela mesma saída e respeitar o "Sons: desligados"). */
+  audio(): { ac: AudioContext; saida: GainNode; ruido: AudioBuffer } | null {
+    const ac = this.ctx();
+    return ac && this.master && this.noise ? { ac, saida: this.master, ruido: this.noise } : null;
+  }
+
+  /** Um estouro de ruído (a explosão, o carro batendo, a moeda caindo no cofre). */
+  ruido(dur: number, freq: number, gain = 0.2, freq2?: number) {
+    this.burst({ dur, type: 'bandpass', freq, freq2, q: 1.2, gain, attack: 0.004, release: dur * 0.8 });
+  }
+
   /** Notas em sequência (a ficha caindo, o recorde). */
   arpejo(notas: number[], passo = 0.07, gain = 0.08) {
     notas.forEach((f, i) => this.chip(f, f, passo * 0.9, gain, i * passo));

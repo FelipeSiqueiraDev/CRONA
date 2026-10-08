@@ -48,6 +48,7 @@
 
 /* o letreiro aceso */
 .flip-letreiro {
+  position: relative;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -123,23 +124,160 @@
   width: 100%;
   height: 100%;
   border-radius: calc(var(--u) * 1.4);
-  image-rendering: pixelated;
+  /* a tela já vem 4x maior: reduzir suave dá o leve borrado do tubo */
+  image-rendering: auto;
   touch-action: none;
   background: #000;
+  /* o tubo cintila de leve, como TV velha */
+  animation: flip-cintila 0.18s steps(2) infinite;
 }
 .bar-conteudo:not(.hidden) .flip-tela {
-  animation: flip-liga 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation:
+    flip-liga 0.55s cubic-bezier(0.22, 1, 0.36, 1) both,
+    flip-cintila 0.18s steps(2) 0.55s infinite;
 }
 /* as linhas do tubo (uma a cada dois pixels do jogo) e o canto escuro do vidro */
 .flip-crt {
   position: absolute;
   inset: var(--s2);
+  overflow: hidden;
   border-radius: calc(var(--u) * 1.4);
   pointer-events: none;
   background:
     linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.2) 50%) 0 0 / 100% calc(100% / 96),
     radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.06), transparent 55%, rgba(0, 0, 0, 0.42));
-  box-shadow: inset 0 0 calc(var(--u) * 2.4) rgba(0, 0, 0, 0.75);
+  box-shadow:
+    inset 0 0 calc(var(--u) * 2.4) rgba(0, 0, 0, 0.75),
+    inset 0 0 calc(var(--u) * 6) rgba(0, 0, 0, 0.35);
+}
+/* a faixa clara que desce devagar pela tela (a do tubo velho) */
+.flip-crt::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22%;
+  background: linear-gradient(to bottom, transparent, rgba(190, 230, 255, 0.045) 45%, rgba(190, 230, 255, 0.07) 50%, rgba(190, 230, 255, 0.045) 55%, transparent);
+  animation: flip-faixa 8s linear infinite;
+}
+/* o granulado do tubo (o canvas pequeno, trocado a cada dois quadros) */
+.flip-ruido {
+  position: absolute;
+  inset: var(--s2);
+  width: calc(100% - var(--s2) * 2);
+  height: calc(100% - var(--s2) * 2);
+  border-radius: calc(var(--u) * 1.4);
+  image-rendering: pixelated;
+  pointer-events: none;
+  /* overlay: some no preto e só granula o que está aceso */
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+}
+/* o vidro curvo: um reflexo no canto de cima e a borda mais escura */
+.flip-vidro {
+  position: absolute;
+  inset: var(--s2);
+  border-radius: calc(var(--u) * 1.4);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 40% at 22% 8%, rgba(255, 255, 255, 0.08), transparent 60%),
+    radial-gradient(ellipse 130% 120% at 50% 50%, transparent 62%, rgba(0, 0, 0, 0.35) 100%);
+}
+@keyframes flip-cintila {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.975;
+  }
+}
+@keyframes flip-faixa {
+  0% {
+    transform: translateY(-110%);
+  }
+  100% {
+    transform: translateY(560%);
+  }
+}
+
+/* desligando: a imagem vira uma linha, a linha um ponto, e apaga */
+.flip.apagando .flip-tela {
+  animation: flip-desliga 0.5s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+.flip.apagando .flip-ruido,
+.flip.apagando .flip-crt::after {
+  opacity: 0;
+}
+@keyframes flip-desliga {
+  0% {
+    transform: none;
+    filter: none;
+  }
+  45% {
+    transform: scale(1, 0.012);
+    filter: brightness(4);
+  }
+  80% {
+    transform: scale(0.02, 0.012);
+    filter: brightness(6);
+  }
+  100% {
+    transform: scale(0, 0);
+    filter: brightness(0);
+  }
+}
+
+/* as lâmpadas do letreiro, piscando em fila */
+.flip-lampadas {
+  display: flex;
+  gap: calc(var(--u) * 2.4);
+  margin-bottom: calc(var(--u) * 0.6);
+}
+.flip-lampadas i {
+  width: calc(var(--u) * 1.3);
+  height: calc(var(--u) * 1.3);
+  border-radius: 50%;
+  background: #5a3a14;
+  animation: flip-lampada 1.3s steps(1) infinite;
+  animation-delay: calc(var(--i) * 0.1s);
+}
+@keyframes flip-lampada {
+  0%,
+  60% {
+    background: #5a3a14;
+    box-shadow: none;
+  }
+  70%,
+  100% {
+    background: var(--c-ouro-hi);
+    box-shadow: 0 0 calc(var(--u) * 1.6) rgba(255, 210, 122, 0.9);
+  }
+}
+
+/* o botão da música, no canto do letreiro */
+.flip-som {
+  position: absolute;
+  right: 0;
+  top: var(--s1);
+  width: calc(var(--u) * 9);
+  height: calc(var(--u) * 9);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: var(--borda) solid var(--c-borda-2);
+  border-radius: 50%;
+  background: rgba(5, 11, 20, 0.7);
+  color: var(--c-ouro-hi);
+  font: 700 calc(var(--u) * 4.4) / 1 var(--f-corpo);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s, color 0.2s;
+}
+.flip-som.off {
+  color: var(--c-texto-3);
+  opacity: 0.6;
+  text-decoration: line-through;
 }
 /* o tubo ligando: uma linha clara que abre na tela inteira */
 @keyframes flip-liga {
@@ -306,8 +444,29 @@
     0 0 0 calc(var(--u) * 2.1) var(--c-borda-2);
 }
 
+/* o botão A respira de leve, chamando */
+.flip-a {
+  animation: flip-chama 2.6s ease-in-out infinite;
+}
+.flip-a.on {
+  animation: none;
+}
+@keyframes flip-chama {
+  0%,
+  100% {
+    filter: none;
+  }
+  50% {
+    filter: brightness(1.12) drop-shadow(0 0 calc(var(--u) * 2) rgba(255, 210, 122, 0.45));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flip-letreiro b,
+  .flip-tela,
+  .flip-crt::after,
+  .flip-lampadas i,
+  .flip-a,
   .bar-conteudo:not(.hidden) .flip-tela {
     animation: none;
   }

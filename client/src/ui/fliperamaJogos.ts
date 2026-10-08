@@ -139,6 +139,97 @@ const SUBINDO = ['b..hhh.b', 'b.hssssb', '.b.sss.b', '..bbwbb.', '..bbrb..', '..
 
 const aleat = (a: number, b: number) => a + Math.random() * (b - a);
 
+// ---------------------------------------------------------------- os efeitos (o "suco" dos jogos)
+
+interface Particula {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  vida: number;
+  max: number;
+  cor: string;
+  peso: number;
+}
+
+/**
+ * Faíscas, poeira, confete, o textinho que sobe ("+1"), o tremor da tela e o clarão. Os jogos chamam
+ * (`fx.faiscas(...)`) e o gabinete desenha por cima do jogo e treme a tela inteira.
+ */
+export class Efeitos {
+  private particulas: Particula[] = [];
+  private textos: { x: number; y: number; t: string; vida: number; cor: string }[] = [];
+  tremor = 0;
+  private clarao = 0;
+  private corClarao = COR.branco;
+
+  /** Pedacinhos saindo de (x, y) para todo lado; `peso` puxa para baixo (poeira, cacos). */
+  faiscas(x: number, y: number, cor: string | string[], n = 8, vel = 1.4, peso = 0.04, vida = 26) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const v = vel * (0.4 + Math.random() * 0.8);
+      const c = Array.isArray(cor) ? cor[i % cor.length] : cor;
+      const max = vida * (0.6 + Math.random() * 0.6);
+      this.particulas.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vida: max, max, cor: c, peso });
+    }
+  }
+
+  texto(x: number, y: number, t: string, cor: string = COR.amarelo) {
+    this.textos.push({ x, y, t, vida: 50, cor });
+  }
+
+  tremer(n: number) {
+    this.tremor = Math.max(this.tremor, n);
+  }
+
+  piscar(cor: string, n = 6) {
+    this.corClarao = cor;
+    this.clarao = n;
+  }
+
+  limpar() {
+    this.particulas = [];
+    this.textos = [];
+    this.tremor = 0;
+    this.clarao = 0;
+  }
+
+  passo() {
+    for (const p of this.particulas) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.peso;
+      p.vx *= 0.97;
+      p.vida--;
+    }
+    this.particulas = this.particulas.filter((p) => p.vida > 0);
+    for (const t of this.textos) (t.y -= 0.4), t.vida--;
+    this.textos = this.textos.filter((t) => t.vida > 0);
+    this.tremor = this.tremor < 0.2 ? 0 : this.tremor * 0.86;
+    if (this.clarao > 0) this.clarao--;
+  }
+
+  desenhar(g: CanvasRenderingContext2D) {
+    for (const p of this.particulas) {
+      // nasce de 2 pixels e vira 1; pisca no fim
+      if (p.vida < 6 && p.vida % 2) continue;
+      const tam = p.vida > p.max * 0.6 ? 2 : 1;
+      g.fillStyle = p.cor;
+      g.fillRect(Math.round(p.x), Math.round(p.y), tam, tam);
+    }
+    for (const t of this.textos) if (t.vida > 10 || t.vida % 2) texto(g, t.t, t.x, t.y, t.cor, 1, 'meio');
+    if (this.clarao > 0) {
+      g.globalAlpha = this.clarao / 16;
+      g.fillStyle = this.corClarao;
+      g.fillRect(0, 0, W, H);
+      g.globalAlpha = 1;
+    }
+  }
+}
+
+export const fx = new Efeitos();
+const CONFETE = [COR.vermelho, COR.amarelo, COR.verde, COR.azulClaro, COR.rosa, COR.ouro];
+
 // ---------------------------------------------------------------- PONG
 
 export class Pong implements Jogo {
@@ -210,8 +301,8 @@ export class Pong implements Jogo {
     }
     b.x += b.vx;
     b.y += b.vy;
-    if (b.y < this.topo) (b.y = this.topo), (b.vy = Math.abs(b.vy)), sfx.chip(330, 330, 0.035);
-    if (b.y > this.base - 3) (b.y = this.base - 3), (b.vy = -Math.abs(b.vy)), sfx.chip(330, 330, 0.035);
+    if (b.y < this.topo) (b.y = this.topo), (b.vy = Math.abs(b.vy)), sfx.chip(330, 330, 0.035), fx.faiscas(b.x + 1, b.y, COR.claro, 3, 0.7, 0.02, 12);
+    if (b.y > this.base - 3) (b.y = this.base - 3), (b.vy = -Math.abs(b.vy)), sfx.chip(330, 330, 0.035), fx.faiscas(b.x + 1, b.y + 3, COR.claro, 3, 0.7, -0.02, 12);
     const bate = (x: number, y: number) => b.x + 3 >= x && b.x <= x + this.RW && b.y + 3 >= y && b.y <= y + this.RH;
     const rebate = (y: number, lado: number) => {
       const rel = (b.y + 1.5 - (y + this.RH / 2)) / (this.RH / 2);
@@ -219,6 +310,9 @@ export class Pong implements Jogo {
       b.vx = v * lado;
       b.vy = Math.max(-2.4, Math.min(2.4, rel * 2.3));
       sfx.chip(lado < 0 ? 523 : 440, lado < 0 ? 523 : 440, 0.05);
+      // a raquete solta faíscas da cor dela, mais quanto mais rápida a bola
+      fx.faiscas(b.x + 1, b.y + 1, lado < 0 ? COR.verde : COR.laranja, 4 + Math.round(v * 2), 0.8 + v * 0.4, 0, 18);
+      if (v > 2.6) fx.tremer(1.5);
     };
     if (b.vx > 0 && bate(this.xEu, this.eu)) (b.x = this.xEu - 3), rebate(this.eu, -1);
     if (b.vx < 0 && bate(this.xEles, this.eles)) (b.x = this.xEles + this.RW), rebate(this.eles, 1);
@@ -229,6 +323,10 @@ export class Pong implements Jogo {
       this.saqueParaMim = !meu;
       this.espera = 55;
       sfx.chip(meu ? 660 : 180, meu ? 990 : 90, 0.22);
+      sfx.ruido(0.25, meu ? 2400 : 500, 0.12, meu ? 4000 : 200);
+      fx.tremer(4);
+      fx.piscar(meu ? COR.verde : COR.laranja, 7);
+      fx.faiscas(meu ? 4 : W - 4, Math.max(this.topo, Math.min(this.base, b.y)), meu ? CONFETE : COR.laranja, 18, 2.2, 0.03, 34);
       if (this.pontos >= 7 || this.deles >= 7) this.fim = true;
     }
   }
@@ -250,8 +348,8 @@ export class Pong implements Jogo {
     b.vx = -vx;
     b.vy = vy;
     this.eles = raqueteDono;
-    if (pontosMeus > this.pontos) sfx.chip(660, 990, 0.22);
-    if (pontosDono > this.deles) sfx.chip(180, 90, 0.22);
+    if (pontosMeus > this.pontos) sfx.chip(660, 990, 0.22), fx.tremer(4), fx.piscar(COR.verde, 7), fx.faiscas(4, b.y, CONFETE, 18, 2.2, 0.03, 34);
+    if (pontosDono > this.deles) sfx.chip(180, 90, 0.22), fx.tremer(4), fx.piscar(COR.laranja, 7);
     this.pontos = pontosMeus;
     this.deles = pontosDono;
     this.espera = espera;
@@ -337,7 +435,8 @@ export class Atravessa implements Jogo {
       this.fim = true;
       return;
     }
-    if (this.tempo === 600) sfx.arpejo([880, 660], 0.12);
+    if (this.tempo === 600) sfx.arpejo([880, 660], 0.12), fx.texto(W / 2, 30, '10 SEGUNDOS!', COR.vermelho);
+    if (this.tempo < 600 && this.tempo % 60 === 0) sfx.chip(1200, 1200, 0.03, 0.05);
     // o trânsito aperta com o tempo
     const pressa = 1 + 0.5 * (1 - this.tempo / this.total);
     for (const f of this.faixas)
@@ -357,6 +456,9 @@ export class Atravessa implements Jogo {
     else if (desce && this.y < 186) (this.y = Math.min(186, this.y + 0.85)), this.passos++;
     if (this.y <= 20) {
       this.pontos++;
+      fx.faiscas(this.x + 3, 18, CONFETE, 22, 2, 0.06, 40);
+      fx.texto(this.x + 3, 10, '+1', COR.amarelo);
+      fx.piscar(COR.amarelo, 4);
       this.y = 186;
       sfx.arpejo([523, 659, 784, 1046], 0.06);
       return;
@@ -368,6 +470,9 @@ export class Atravessa implements Jogo {
         if (this.x + 6 > c.x && this.x + 1 < c.x + c.w) {
           this.atropelado = 18;
           sfx.chip(320, 70, 0.3, 0.1);
+          sfx.ruido(0.2, 900, 0.15, 200);
+          fx.tremer(5);
+          fx.faiscas(this.x + 3, this.y - 5, [c.cor, COR.branco, COR.amarelo], 14, 1.8, 0.05, 24);
           return;
         }
     }
@@ -544,23 +649,33 @@ export class PulaPula implements Jogo {
         if (p.tipo === 'quebra') {
           p.quebrada = true;
           sfx.chip(160, 60, 0.12);
+          sfx.ruido(0.12, 600, 0.1);
+          fx.faiscas(p.x + p.w / 2, p.y - this.camY + 1, [COR.marrom, COR.marromEscuro], 10, 1.2, 0.12, 28);
           continue;
         }
         this.y = p.y;
         const mola = p.mola && Math.abs(this.x - (p.x + p.w / 2)) < 5;
         this.vy = mola ? -7.6 : -4.6;
-        if (mola) sfx.chip(300, 1300, 0.22);
-        else sfx.chip(260, 620, 0.08, 0.06);
+        if (mola) sfx.chip(300, 1300, 0.22), fx.faiscas(this.x, p.y - this.camY - 3, [COR.amarelo, COR.branco], 12, 1.8, 0.02, 26), fx.tremer(2);
+        else sfx.chip(260, 620, 0.08, 0.06), fx.faiscas(this.x, p.y - this.camY, COR.claro, 4, 0.7, 0.03, 12);
         break;
       }
     this.alto = Math.min(this.alto, this.y);
+    const antes100 = Math.floor(this.pontos / 100);
     this.pontos = Math.floor((168 - this.alto) / 3);
+    // a cada 100: a comemoração
+    if (Math.floor(this.pontos / 100) > antes100) {
+      fx.texto(this.x, this.y - this.camY - 16, `${Math.floor(this.pontos / 100) * 100}!`, COR.amarelo);
+      fx.faiscas(this.x, this.y - this.camY - 6, CONFETE, 16, 1.8, 0.04, 34);
+      sfx.arpejo([784, 988, 1175], 0.05, 0.06);
+    }
     if (this.y - this.camY < 72) this.camY = this.y - 72;
     this.gerar();
     this.plats = this.plats.filter((p) => p.y - this.camY < H + 24);
     if (this.y - this.camY > H + 12) {
       this.fim = true;
       sfx.chip(700, 70, 0.7, 0.08);
+      fx.tremer(6);
     }
   }
 

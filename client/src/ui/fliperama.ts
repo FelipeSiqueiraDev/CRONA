@@ -12,16 +12,21 @@
 import { bar } from '@crona/shared';
 import type { Dados, Mesa, TelaDoBar } from './barJogos';
 import { h } from './dom';
-import { Atravessa, COR, curto, H, JOGOS, Pong, PulaPula, semAcento, texto, W, type Botao, type Entrada, type Jogo } from './fliperamaJogos';
+import { musica, type NomeMusica } from './chiptune';
+import { Atravessa, COR, curto, fx, H, JOGOS, larguraTexto, Pong, PulaPula, semAcento, texto, W, type Botao, type Entrada, type Jogo } from './fliperamaJogos';
 import { sfx } from './sfx';
 
 const PASSO = 1000 / 60;
+/** a tela de verdade: 4 pixels de tela para cada pixel do jogo (o brilho e o rastro do tubo precisam de espaço) */
+const ESC = 4;
+/** o letreiro que corre embaixo do menu */
+const LETREIRO = 'SUVACO SECO  *  O CHOPP MAIS GELADO DA REGIAO  *  DESDE 1987  *  A FICHA E NO BALCAO  *  ';
 const CHAVE = 'crona.fliperama.recordes';
 const MAX_RECORDES = 5;
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 type Recorde = { n: string; p: number };
-type Estado = 'menu' | 'jogo' | 'fim' | 'nome' | 'tabela' | 'esperando' | 'convite';
+type Estado = 'boot' | 'menu' | 'jogo' | 'fim' | 'nome' | 'tabela' | 'esperando' | 'convite';
 
 const TECLAS: Record<string, Botao> = {
   ArrowUp: 'cima',
@@ -75,8 +80,21 @@ interface Partida {
 
 export class Fliperama implements TelaDoBar {
   readonly el: HTMLElement;
+  /** a tela que aparece (4x) e o que fica por trás dela: o jogo em 160 × 192, o brilho, o rastro e o chiado */
   private tela: HTMLCanvasElement;
+  private d: CanvasRenderingContext2D;
+  private jogoCv: HTMLCanvasElement;
   private g: CanvasRenderingContext2D;
+  private brilho: CanvasRenderingContext2D;
+  private rastro: CanvasRenderingContext2D;
+  private ruido: HTMLCanvasElement;
+  private somBt: HTMLButtonElement;
+  /** a falha do tubo (raríssima), a persiana entre as telas, o boot e a música de agora */
+  private falha = 0;
+  private cortina = 0;
+  private bootQ = 0;
+  private trilhaAtual = '';
+  private estrelas = Array.from({ length: 42 }, () => ({ x: Math.random() * W, y: Math.random() * H, v: 0.08 + Math.random() * 0.4 }));
   private m: Mesa | null = null;
   private ligado = false;
   private teclas: EventTarget | null = null;
@@ -111,9 +129,29 @@ export class Fliperama implements TelaDoBar {
   private fimEm = 0;
 
   constructor() {
-    this.tela = h('canvas', { class: 'flip-tela', width: W, height: H, 'aria-label': 'Tela do fliperama' }) as HTMLCanvasElement;
-    this.g = this.tela.getContext('2d')!;
+    this.tela = h('canvas', { class: 'flip-tela', width: W * ESC, height: H * ESC, 'aria-label': 'Tela do fliperama' }) as HTMLCanvasElement;
+    this.d = this.tela.getContext('2d')!;
+    this.jogoCv = h('canvas', { width: W, height: H }) as HTMLCanvasElement;
+    this.g = this.jogoCv.getContext('2d')!;
     this.g.imageSmoothingEnabled = false;
+    this.brilho = (h('canvas', { width: W / 4, height: H / 4 }) as HTMLCanvasElement).getContext('2d')!;
+    this.rastro = (h('canvas', { width: W * ESC, height: H * ESC }) as HTMLCanvasElement).getContext('2d')!;
+    this.ruido = h('canvas', { class: 'flip-ruido', width: 80, height: 96, 'aria-hidden': 'true' }) as HTMLCanvasElement;
+    this.somBt = h(
+      'button',
+      {
+        class: `flip-som${musica.ligada ? '' : ' off'}`,
+        type: 'button',
+        title: 'Música do fliperama',
+        'aria-label': 'Música do fliperama',
+        onclick: () => {
+          const on = musica.alternar();
+          this.somBt.classList.toggle('off', !on);
+          sfx.chip(on ? 880 : 440, on ? 1320 : 220, 0.08);
+        },
+      },
+      '♪',
+    ) as HTMLButtonElement;
     this.tela.addEventListener('pointerdown', (e) => {
       prender(this.tela, e.pointerId);
       this.dedo = this.noJogo(e);
@@ -136,8 +174,16 @@ export class Fliperama implements TelaDoBar {
       h(
         'div',
         { class: 'flip-gabinete' },
-        h('header', { class: 'flip-letreiro' }, h('b', null, 'FLIPERAMA'), h('span', null, 'Suvaco Seco · Crédito 1'), h('div', { class: 'flip-listras', 'aria-hidden': 'true' })),
-        h('div', { class: 'flip-moldura' }, this.tela, h('div', { class: 'flip-crt', 'aria-hidden': 'true' })),
+        h(
+          'header',
+          { class: 'flip-letreiro' },
+          h('div', { class: 'flip-lampadas', 'aria-hidden': 'true' }, ...Array.from({ length: 13 }, (_, i) => h('i', { style: `--i:${i}` }))),
+          h('b', null, 'FLIPERAMA'),
+          h('span', null, 'Suvaco Seco · Crédito 1'),
+          h('div', { class: 'flip-listras', 'aria-hidden': 'true' }),
+          this.somBt,
+        ),
+        h('div', { class: 'flip-moldura' }, this.tela, this.ruido, h('div', { class: 'flip-crt', 'aria-hidden': 'true' }), h('div', { class: 'flip-vidro', 'aria-hidden': 'true' })),
         h(
           'div',
           { class: 'flip-controles' },
@@ -234,6 +280,12 @@ export class Fliperama implements TelaDoBar {
   ligar(teclas: EventTarget) {
     if (this.ligado) return;
     this.ligado = true;
+    this.el.classList.remove('apagando');
+    // liga como fliperama de verdade: o sistema, a ficha caindo, o crédito
+    this.estado = 'boot';
+    this.bootQ = 0;
+    this.trilhaAtual = '';
+    fx.limpar();
     this.teclas = teclas;
     teclas.addEventListener('keydown', this.tecla as EventListener);
     teclas.addEventListener('keyup', this.tecla as EventListener);
@@ -247,7 +299,16 @@ export class Fliperama implements TelaDoBar {
     this.teclas?.removeEventListener('keydown', this.tecla as EventListener);
     this.teclas?.removeEventListener('keyup', this.tecla as EventListener);
     this.segura.clear();
+    musica.parar();
     if (this.partida) this.enviar({ tipo: 'desistiu' });
+  }
+
+  /** Desliga como TV velha: a imagem vira uma linha, a linha vira um ponto e some. */
+  async apagar() {
+    this.el.classList.add('apagando');
+    musica.parar();
+    sfx.chip(1600, 50, 0.4, 0.05);
+    await new Promise((r) => window.setTimeout(r, 520));
   }
 
   /** O botão do controle: segurar vale enquanto o dedo estiver nele. */
@@ -312,7 +373,19 @@ export class Fliperama implements TelaDoBar {
     const e = this.entrada();
     const a = e.apertou.has('a') || e.tocou;
     const outro = this.outro();
+    const antes = this.estado;
+    fx.passo();
+    if (this.cortina > 0) this.cortina--;
+    if (this.falha > 0) this.falha--;
+    // o tubo falha de vez em quando (uma vez a cada meio minuto, mais ou menos)
+    else if (Math.random() < 1 / 1800) (this.falha = 7 + Math.floor(Math.random() * 6)), sfx.ruido(0.1, 3000, 0.03);
     switch (this.estado) {
+      case 'boot':
+        this.bootQ++;
+        if (this.bootQ === 18 || this.bootQ === 42 || this.bootQ === 62) sfx.chip(1200, 1200, 0.03, 0.05);
+        if (this.bootQ === 116) sfx.arpejo([988, 1319], 0.09, 0.1), sfx.ruido(0.12, 4000, 0.04);
+        if (this.bootQ >= 170 || (a && this.bootQ > 10)) this.estado = 'menu';
+        break;
       case 'menu': {
         if (e.apertou.has('cima') || e.apertou.has('baixo')) {
           this.sel = (this.sel + (e.apertou.has('cima') ? JOGOS.length - 1 : 1)) % JOGOS.length;
@@ -413,8 +486,44 @@ export class Fliperama implements TelaDoBar {
         else if (a) this.estado = 'menu';
         break;
     }
+    // trocou de tela: a persiana, como nos jogos de Atari
+    if (this.estado !== antes && (this.estado === 'jogo' || this.estado === 'menu' || this.estado === 'convite')) this.cortina = 14;
+    if (this.estado === 'jogo' && antes !== 'jogo') fx.limpar();
+    this.trilha();
     this.apertou.clear();
     this.tocou = false;
+  }
+
+  /** A música de cada tela: a do menu, a de cada jogo, a fanfarra do recorde e a vinheta do fim. */
+  private trilha() {
+    let alvo: NomeMusica | '' = 'menu';
+    if (this.estado === 'boot') alvo = '';
+    else if (this.estado === 'jogo') alvo = JOGOS[this.sel].id as NomeMusica;
+    else if (this.estado === 'nome') alvo = 'recorde';
+    else if (this.estado === 'fim') {
+      const r = this.resultado();
+      alvo = r === null ? '' : r ? 'vitoria' : 'derrota';
+    }
+    if (alvo === this.trilhaAtual) return;
+    // a vinheta toca uma vez e fica o silêncio até a próxima tela
+    if (this.trilhaAtual === 'vitoria' || this.trilhaAtual === 'derrota') if (this.estado === 'fim') return;
+    this.trilhaAtual = alvo;
+    if (alvo) musica.tocar(alvo);
+    else musica.parar();
+  }
+
+  /** Ganhou (true), perdeu (false) ou ainda não se sabe (null, esperando o outro). */
+  private resultado(): boolean | null {
+    const j = this.jogo;
+    if (!j) return false;
+    if (j instanceof Pong) return j.pontos > j.deles;
+    const p = this.partida;
+    if (p) {
+      if (this.esperandoOutro()) return null;
+      const dele = p.fimOutro ?? (j instanceof Atravessa ? (j.outro?.p ?? 0) : j instanceof PulaPula ? (j.outro?.p ?? 0) : 0);
+      return j.pontos >= dele;
+    }
+    return this.entraNoRecorde();
   }
 
   /** O que vai para o outro celular durante a partida em dupla. */
@@ -462,6 +571,7 @@ export class Fliperama implements TelaDoBar {
 
   private voltarAoMenu() {
     if (this.estado === 'menu') return;
+    if (this.estado === 'boot') return void (this.estado = 'menu');
     if (this.estado === 'esperando') this.enviar({ tipo: 'cancela' });
     if (this.estado === 'convite') this.enviar({ tipo: 'recusa' });
     if (this.partida && this.estado === 'jogo') this.enviar({ tipo: 'desistiu' });
@@ -496,11 +606,87 @@ export class Fliperama implements TelaDoBar {
   // ---------------------------------------------------------------- desenhar
 
   private desenhar() {
+    this.desenharJogo();
+    // a persiana entre as telas: faixas de 8 linhas que abrem de cima para baixo
+    if (this.cortina > 0) {
+      const g = this.g;
+      const n = Math.ceil((this.cortina / 14) * 8);
+      g.fillStyle = COR.preto;
+      for (let y = 0; y < H; y += 8) g.fillRect(0, y + 8 - n, W, n);
+    }
+    this.compor();
+    if (this.quadro % 2 === 0) this.chiado();
+  }
+
+  /**
+   * O tubo: a imagem do jogo ampliada, com o rastro do fósforo (o que se mexe deixa um fantasma que
+   * apaga devagar), o brilho em volta do que é claro, a tela tremendo quando o jogo pede e, de vez em
+   * quando, uma falha que arrasta umas faixas para o lado.
+   */
+  private compor() {
+    const d = this.d;
+    const w = W * ESC;
+    const hh = H * ESC;
+    const tr = fx.tremor;
+    const sx = tr ? Math.round((Math.random() * 2 - 1) * tr * 1.6) : 0;
+    const sy = tr ? Math.round((Math.random() * 2 - 1) * tr * 1.2) : 0;
+    d.globalCompositeOperation = 'source-over';
+    d.globalAlpha = 1;
+    d.imageSmoothingEnabled = false;
+    if (sx || sy) (d.fillStyle = '#000'), d.fillRect(0, 0, w, hh);
+    d.drawImage(this.jogoCv, sx, sy, w, hh);
+    // o rastro: o quadro de antes, mais fraco, por baixo do que for mais claro
+    d.globalCompositeOperation = 'lighten';
+    d.globalAlpha = 0.4;
+    d.drawImage(this.rastro.canvas, 0, 0);
+    this.rastro.globalCompositeOperation = 'copy';
+    this.rastro.drawImage(this.tela, 0, 0);
+    // o brilho: o jogo em miniatura, ampliado e borrado, somado por cima
+    const b = this.brilho;
+    b.imageSmoothingEnabled = true;
+    b.clearRect(0, 0, W / 4, H / 4);
+    b.drawImage(this.jogoCv, 0, 0, W / 4, H / 4);
+    d.globalCompositeOperation = 'lighter';
+    d.globalAlpha = 0.26;
+    d.imageSmoothingEnabled = true;
+    d.drawImage(b.canvas, sx - 14, sy - 14, w + 28, hh + 28);
+    d.globalCompositeOperation = 'source-over';
+    d.globalAlpha = 1;
+    // a falha: faixas arrastadas e riscos de estática
+    if (this.falha > 0) {
+      d.imageSmoothingEnabled = false;
+      for (let i = 0; i < 3; i++) {
+        const y = Math.floor(Math.random() * hh);
+        const alto = 8 + Math.floor(Math.random() * 40);
+        const dx = Math.round((Math.random() * 2 - 1) * 24);
+        d.drawImage(this.tela, 0, y, w, alto, dx, y, w, alto);
+      }
+      d.fillStyle = 'rgba(255,255,255,0.18)';
+      for (let i = 0; i < 6; i++) d.fillRect(0, Math.floor(Math.random() * hh), w, 1 + Math.floor(Math.random() * 3));
+    }
+  }
+
+  /** O chiado do tubo: um granulado que muda a cada dois quadros (bem fraco, por cima). */
+  private chiado() {
+    const c = this.ruido.getContext('2d')!;
+    const img = c.createImageData(80, 96);
+    const px = img.data;
+    for (let i = 0; i < px.length; i += 4) {
+      const v = Math.random() * 255;
+      px[i] = px[i + 1] = px[i + 2] = v;
+      px[i + 3] = 255;
+    }
+    c.putImageData(img, 0, 0);
+  }
+
+  private desenharJogo() {
     const g = this.g;
     const q = this.quadro;
     const pisca = (q >> 4) % 2 === 0;
+    if (this.estado === 'boot') return this.boot(g);
     if (this.estado === 'jogo' || this.estado === 'fim') {
       this.jogo!.desenhar(g, q);
+      fx.desenhar(g);
       // o jeito de jogar com o dedo, no começo
       if (this.estado === 'jogo' && q < 150 && pisca) {
         g.fillStyle = 'rgba(0,0,0,0.7)';
@@ -521,17 +707,110 @@ export class Fliperama implements TelaDoBar {
     this.tabela(g, pisca);
   }
 
-  /** As listras do Atari embaixo do título. */
+  /** As listras do Atari embaixo do título (as cores andam devagar). */
   private listras(g: CanvasRenderingContext2D, y: number) {
-    [COR.vermelho, COR.laranja, COR.ouro, COR.amarelo].forEach((c, i) => {
-      g.fillStyle = c;
+    const cores = [COR.vermelho, COR.laranja, COR.ouro, COR.amarelo];
+    const k = (this.quadro >> 3) % 4;
+    cores.forEach((_, i) => {
+      g.fillStyle = cores[(i + k) % 4];
       g.fillRect(14, y + i * 3, W - 28, 2);
     });
   }
 
+  /** O sistema ligando: as linhas do teste, a ficha caindo no cofre e o crédito. */
+  private boot(g: CanvasRenderingContext2D) {
+    const q = this.bootQ;
+    g.fillStyle = COR.preto;
+    g.fillRect(0, 0, W, H);
+    const pontos = (n: number) => '.'.repeat(Math.max(0, Math.min(8, n)));
+    if (q > 8) texto(g, 'CRONA ARCADE SYSTEM', 10, 14, COR.claro);
+    if (q > 14) texto(g, 'SUVACO SECO LTDA  1987', 10, 22, COR.medio);
+    if (q > 18) texto(g, `MEMORIA ${pontos((q - 18) >> 1)}${q > 36 ? ' OK' : ''}`, 10, 40, COR.verde);
+    if (q > 42) texto(g, `VIDEO   ${pontos((q - 42) >> 1)}${q > 58 ? ' OK' : ''}`, 10, 48, COR.verde);
+    if (q > 62) texto(g, `SOM     ${pontos((q - 62) >> 1)}${q > 78 ? ' OK' : ''}`, 10, 56, COR.verde);
+    // o cofre e a ficha caindo
+    if (q > 84) {
+      if (q < 116 && (q >> 3) % 2 === 0) texto(g, 'INSIRA A FICHA', W / 2, 92, COR.amarelo, 1, 'meio');
+      g.fillStyle = COR.escuro;
+      g.fillRect(W / 2 - 10, 132, 20, 14);
+      g.fillStyle = COR.preto;
+      g.fillRect(W / 2 - 1, 134, 2, 8);
+      g.fillStyle = q > 112 && q < 124 ? COR.vermelho : '#5a1010';
+      g.fillRect(W / 2 - 8, 143, 3, 2);
+      g.fillRect(W / 2 + 5, 143, 3, 2);
+      if (q > 92 && q < 116) {
+        const y = 100 + ((q - 92) / 24) * 34;
+        // a ficha girando: larga, fina, larga
+        const larg = [5, 3, 1, 3][(q >> 2) % 4];
+        g.fillStyle = COR.ouro;
+        g.fillRect(Math.round(W / 2 - larg / 2), Math.round(y), larg, 5);
+        g.fillStyle = COR.amarelo;
+        g.fillRect(Math.round(W / 2 - larg / 2), Math.round(y), Math.max(1, larg - 2), 1);
+      }
+    }
+    if (q > 118) texto(g, 'CREDITO 01', W / 2, 106, (q >> 2) % 2 ? COR.branco : COR.verde, 2, 'meio');
+    if (q > 140) texto(g, 'BOA SORTE, AGENTE', W / 2, 160, COR.rosa, 1, 'meio');
+  }
+
+  /** O fundo do menu: as estrelas descendo devagar, em duas camadas. */
+  private ceu(g: CanvasRenderingContext2D) {
+    for (const s of this.estrelas) {
+      s.y += s.v;
+      if (s.y > H) (s.y = 0), (s.x = Math.random() * W);
+      g.fillStyle = s.v > 0.34 ? COR.claro : s.v > 0.2 ? COR.medio : COR.escuro;
+      g.fillRect(Math.floor(s.x), Math.floor(s.y), 1, 1);
+    }
+  }
+
+  /** O título: as letras ondulando e um brilho correndo por elas. */
+  private titulo(g: CanvasRenderingContext2D, y: number) {
+    const t = 'FLIPERAMA';
+    const x0 = W / 2 - larguraTexto(t, 2) / 2;
+    const brilho = (this.quadro >> 2) % 30;
+    for (let i = 0; i < t.length; i++) {
+      const dy = Math.round(Math.sin(this.quadro * 0.08 + i * 0.7) * 1.5);
+      const cor = i === brilho ? COR.branco : i === brilho - 1 || i === brilho + 1 ? COR.amarelo : COR.ouro;
+      // a sombra dura de pixel
+      texto(g, t[i], x0 + i * 8 + 1, y + dy + 1, '#5a3010', 2);
+      texto(g, t[i], x0 + i * 8, y + dy, cor, 2);
+    }
+  }
+
+  /** Um gostinho de cada jogo, ao lado do escolhido. */
+  private previa(g: CanvasRenderingContext2D, id: string, y: number) {
+    const q = this.quadro;
+    const x = 128;
+    if (id === 'pong') {
+      const bx = x + 2 + Math.abs(((q * 0.6) % 36) - 18);
+      g.fillStyle = COR.laranja;
+      g.fillRect(x, y + 1 + Math.round(Math.sin(q * 0.1) * 2), 1, 5);
+      g.fillStyle = COR.verde;
+      g.fillRect(x + 22, y + 1 + Math.round(Math.cos(q * 0.1) * 2), 1, 5);
+      g.fillStyle = COR.branco;
+      g.fillRect(Math.round(bx), y + 3 + Math.round(Math.sin(q * 0.17) * 2), 2, 2);
+    } else if (id === 'atravessa') {
+      g.fillStyle = COR.medio;
+      g.fillRect(x - 2, y + 6, 26, 1);
+      const cx = x - 2 + ((q * 0.5) % 30);
+      g.fillStyle = COR.vermelho;
+      g.fillRect(Math.round(cx), y + 2, 6, 3);
+      g.fillStyle = COR.azulClaro;
+      g.fillRect(Math.round(cx) + 4, y + 3, 2, 1);
+    } else {
+      const pulo = Math.abs(Math.sin(q * 0.09)) * 6;
+      g.fillStyle = COR.verde;
+      g.fillRect(x + 6, y + 8, 10, 1);
+      g.fillStyle = COR.pele;
+      g.fillRect(x + 10, Math.round(y + 1 - pulo), 2, 2);
+      g.fillStyle = COR.azul;
+      g.fillRect(x + 10, Math.round(y + 3 - pulo), 2, 3);
+    }
+  }
+
   private menu(g: CanvasRenderingContext2D, pisca: boolean) {
     const outro = this.outro();
-    texto(g, 'FLIPERAMA', W / 2, 6, COR.ouro, 2, 'meio');
+    this.ceu(g);
+    this.titulo(g, 6);
     texto(g, 'SUVACO SECO', W / 2, 20, COR.cinza, 1, 'meio');
     this.listras(g, 30);
     JOGOS.forEach((j, i) => {
@@ -540,9 +819,11 @@ export class Fliperama implements TelaDoBar {
       if (on) {
         g.fillStyle = COR.escuro;
         g.fillRect(10, y - 4, W - 20, 16);
-        if (pisca) texto(g, '>', 16, y, COR.amarelo, 2);
+        // o cursor anda de leve para a frente e para trás
+        texto(g, '>', 14 + Math.round(Math.sin(this.quadro * 0.2) * 1.5), y, pisca ? COR.amarelo : COR.ouro, 2);
+        this.previa(g, j.id, y);
       }
-      texto(g, j.nome, W / 2, y, on ? COR.branco : COR.cinza, 2, 'meio');
+      texto(g, j.nome, W / 2 - (on ? 8 : 0), y, on ? COR.branco : COR.cinza, 2, 'meio');
     });
     const j = JOGOS[this.sel];
     // dois na máquina: sozinho ou em dupla
@@ -559,9 +840,16 @@ export class Fliperama implements TelaDoBar {
     } else texto(g, 'CONTRA A MAQUINA', W / 2, 146, COR.medio, 1, 'meio');
     if (this.quadro < this.recadoAte) {
       g.fillStyle = COR.vermelho;
-      g.fillRect(0, 172, W, 13);
-      texto(g, this.recado, W / 2, 176, COR.branco, 1, 'meio');
-    } else if (pisca) texto(g, 'APERTE A', W / 2, 178, COR.branco, 1, 'meio');
+      g.fillRect(0, 170, W, 12);
+      texto(g, this.recado, W / 2, 173, COR.branco, 1, 'meio');
+    } else if (pisca) texto(g, 'APERTE A', W / 2, 174, COR.branco, 1, 'meio');
+    // o letreiro correndo embaixo
+    g.fillStyle = '#0c0c18';
+    g.fillRect(0, 184, W, 8);
+    const larg = larguraTexto(LETREIRO) + 4;
+    const x = -((this.quadro * 0.5) % larg);
+    texto(g, LETREIRO, x, 186, COR.medio);
+    texto(g, LETREIRO, x + larg, 186, COR.medio);
   }
 
   /** O convite: esperando o outro, ou o outro chamando. */

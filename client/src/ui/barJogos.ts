@@ -43,6 +43,8 @@ export interface TelaDoBar {
   /** começa (o laço, o teclado); `teclas` = onde ouvir o teclado */
   ligar(teclas: EventTarget): void;
   desligar(): void;
+  /** a animação de desligar, antes de a tela sumir (o fliperama apaga como TV velha) */
+  apagar?(): Promise<void>;
   /** quem está na mesa (de novo, quando muda) e as jogadas guardadas desde o começo da partida */
   mesa(m: Mesa, log: { de: number; dados: Dados }[]): void;
   /** a jogada de outro lugar */
@@ -143,8 +145,9 @@ export class BarJogos {
     const a = this.abertas.get(id);
     if (!a || a.saindo) return;
     a.saindo = true;
-    a.tela.desligar();
     sfx.arpejo([784, 659, 523, 392], 0.06);
+    await a.tela.apagar?.();
+    a.tela.desligar();
     if (this.modo === 'celular') await this.pixels(a, false);
     a.caixa.remove();
     this.abertas.delete(id);

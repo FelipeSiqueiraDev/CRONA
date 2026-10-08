@@ -276,6 +276,14 @@ Ainda falta (pedido do Felipe):
     301, três por vez, estoura e zera.
   - **Sinuca** (`sinuca.ts`): o dedo mira o taco (linha até a primeira bola e para onde ela vai), segurar Tacada carrega
     a força. Os outros veem o taco de quem mira.
+  - **O fliperama ganhou vida (o Felipe pediu "bastante animação"):** a tela passa por um tubo antigo (`compor` em
+    `fliperama.ts`: o jogo em 160 × 192 ampliado 4x, o rastro do fósforo, o brilho, o tremor quando o jogo pede e uma
+    falha rara que arrasta faixas), mais o CSS (as linhas, a faixa clara descendo, a cintilação, o granulado em
+    overlay, o reflexo do vidro, a TV desligando em linha e ponto). Liga com o boot (o teste do sistema e a ficha caindo
+    no cofre), o menu tem estrelas, o título ondulando com brilho, a prévia de cada jogo e o letreiro correndo; a
+    persiana entre as telas; as lâmpadas do letreiro piscando em fila. Nos jogos, `fx` (faíscas, confete, "+1",
+    tremor e clarão). Música por chiptune (`chiptune.ts`: pulso, quadrada, triângulo e bateria de ruído; o menu, um
+    tema por jogo, a fanfarra do recorde e as vinhetas de vitória e derrota), com o botão ♪ no letreiro.
   - Testes: `server/test/bar.test.ts`. Arte pedida ao Códex: SEÇÃO 0C (o alvo, os dardos, a parede, a mesa, as bolas, o
     taco; gabaritos em `gabaritos/pedidos/bar-jogos/`). Ideias: recordes da mesa inteira, o mestre ver quem está jogando.
 - **A arte do gabinete do fliperama** foi para o Códex (SEÇÃO 0B do pedido, gabarito em
