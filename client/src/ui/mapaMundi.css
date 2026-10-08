@@ -1,0 +1,156 @@
+/* O mapa-múndi: a tela pequena com pixels grandes, os pinos clicáveis por cima e o cartão do lugar */
+.mm-palco {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0.35rem solid #2a1d2e;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: #35a1a8;
+  box-shadow: inset 0 0 0 0.2rem rgba(255, 255, 255, 0.18);
+}
+.mm-tela {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  display: block;
+}
+.mm-pinos {
+  position: absolute;
+  inset: 0;
+}
+.mm-pino {
+  position: absolute;
+  width: 17%;
+  height: 31%;
+  transform: translate(-50%, -62%);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  touch-action: none;
+}
+.mm-pino .mm-nome {
+  position: absolute;
+  left: 50%;
+  bottom: -1.7rem;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 0.25rem 0.9rem;
+  border-radius: 99rem;
+  background: rgba(42, 29, 46, 0.88);
+  color: #fff6d8;
+  font: 700 1.3rem / 1.2 var(--r-pixel, monospace);
+  border: 0.15rem solid rgba(255, 246, 216, 0.4);
+}
+.mm-pino:hover .mm-nome,
+.mm-pino.on .mm-nome {
+  background: #e9a844;
+  color: #2a1d2e;
+  border-color: #fff6d8;
+}
+.mm-pino:focus-visible {
+  outline: 0.25rem solid #fff6d8;
+  outline-radius: 0.5rem;
+}
+.mm-info {
+  position: absolute;
+  left: 1.2rem;
+  bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.3rem;
+  border-radius: 0.7rem;
+  background: rgba(42, 29, 46, 0.92);
+  border: 0.2rem solid rgba(255, 246, 216, 0.55);
+  color: #fff6d8;
+  max-width: 34%;
+}
+.mm-info.hidden {
+  display: none;
+}
+.mm-nome-grande {
+  font: 700 1.8rem / 1.15 var(--r-pixel, monospace);
+}
+.mm-info small {
+  font: 500 1.2rem / 1.2 var(--r-corpo, sans-serif);
+  opacity: 0.85;
+}
+.mm-bts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+/* a tela da viagem (partida e chegada): a pintura cobrindo tudo, aproximando devagar, com a legenda embaixo */
+.vg-tela {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  overflow: hidden;
+  background: #05070b;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  cursor: pointer;
+}
+.vg-tela.on {
+  opacity: 1;
+}
+.vg-tela.saindo {
+  opacity: 0;
+}
+.vg-tela-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.vg-tela.on .vg-tela-img {
+  transform: scale(1.1);
+}
+.vg-tela-vinheta {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.4) 100%), linear-gradient(to top, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0) 22%);
+}
+.vg-tela-legenda {
+  position: absolute;
+  left: 50%;
+  bottom: 7%;
+  transform: translate(-50%, 1.2rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  color: #fff3d8;
+  text-align: center;
+  text-shadow: 0 0.2rem 1.2rem rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transition: opacity 1s ease 0.6s, transform 1.2s cubic-bezier(0.25, 1, 0.5, 1) 0.6s;
+}
+.vg-tela.on .vg-tela-legenda {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.vg-tela-legenda small {
+  font: 700 1.3rem / 1 var(--r-pixel, monospace);
+  letter-spacing: 0.3em;
+  color: #e9a844;
+}
+.vg-tela-legenda b {
+  font: 700 clamp(2.4rem, 4vw, 4.4rem) / 1.1 var(--r-pixel, monospace);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vg-tela-img,
+  .vg-tela.on .vg-tela-img {
+    transition: none;
+    transform: none;
+  }
+}

@@ -20,6 +20,11 @@ const CASAS_POR_S = 5;
 /** Quanto o piso da van fica acima do chão (debaixo das rodas), em metros: o desenho do casco tem a base lá embaixo. */
 const PISO_NA_ARTE_M = 0.45;
 const ALTURA_CASCO = 1.7;
+/** As rodas de perto da van pintada: onde ficam (x, em casas) e o raio do pneu (m). */
+const RODAS_VAN_X = [1.57, 7.5];
+/** o plano das rodas de perto (y, em casas): um pouco para fora do casco */
+const RODAS_VAN_Y = 3.25;
+const RAIO_RODA_VAN = 0.38;
 
 const ASFALTO = '#2b2d33';
 const FAIXA_AMARELA = '#d8b43a';
@@ -184,18 +189,27 @@ export class MundoViagem {
       this.faixas(ctx, b);
     }
     this.farois(ctx, v);
-    // a sombra da van no chão
-    ctx.fillStyle = 'rgba(0,0,0,0.34)';
-    ctx.fillRect(-0.9, -0.5, VAN.comprimento + 3.6, VAN.largura + 1.3);
+    // a sombra da van no chão: uma mancha macia debaixo do casco, um pouco para o lado da luz (baixo e à direita)
+    ctx.save();
+    ctx.translate(VAN.comprimento / 2 + 0.1, VAN.largura / 2 + 0.25);
+    ctx.scale(VAN.comprimento / 2 + 0.9, VAN.largura / 2 + 0.75);
+    const sombra = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    sombra.addColorStop(0, 'rgba(0,0,0,0.55)');
+    sombra.addColorStop(0.6, 'rgba(0,0,0,0.36)');
+    sombra.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = sombra;
+    ctx.fillRect(-1, -1, 2, 2);
+    ctx.restore();
     ctx.restore();
     this.fundo(ctx, v, b);
   }
 
   /** As linhas da rodovia: a amarela dupla no meio e as brancas nas bordas, andando com o mundo. */
   private faixas(ctx: CanvasRenderingContext2D, b: { x0: number; x1: number }) {
+    // a amarela do meio é tracejada: é ela que mostra o mundo passando (uma linha corrida parece parada)
     ctx.fillStyle = FAIXA_AMARELA;
-    ctx.fillRect(b.x0, PISTA.centro - 0.22, b.x1 - b.x0, 0.1);
-    ctx.fillRect(b.x0, PISTA.centro + 0.1, b.x1 - b.x0, 0.1);
+    const passo = 4;
+    for (let x = Math.floor((b.x0 + this.pos) / passo) * passo - this.pos; x < b.x1; x += passo) ctx.fillRect(x, PISTA.centro - 0.08, 2, 0.16);
     ctx.fillStyle = FAIXA_BRANCA;
     ctx.fillRect(b.x0, PISTA.y1 - 0.45, b.x1 - b.x0, 0.12);
     ctx.fillRect(b.x0, PISTA.y0 + 0.35, b.x1 - b.x0, 0.12);
@@ -205,15 +219,15 @@ export class MundoViagem {
     if (v.hora === 'dia') return;
     const f = v.hora === 'noite' ? 0.5 : 0.22;
     for (const y of [0.6, 2.4]) {
-      const g = ctx.createLinearGradient(VAN.comprimento + 2.4, 0, VAN.comprimento + 16, 0);
+      const g = ctx.createLinearGradient(VAN.comprimento + 0.2, 0, VAN.comprimento + 14, 0);
       g.addColorStop(0, `rgba(255,236,180,${f})`);
       g.addColorStop(1, 'rgba(255,236,180,0)');
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.moveTo(VAN.comprimento + 2.4, y - 0.2);
-      ctx.lineTo(VAN.comprimento + 16, y - 2.4);
-      ctx.lineTo(VAN.comprimento + 16, y + 2.4);
-      ctx.lineTo(VAN.comprimento + 2.4, y + 0.2);
+      ctx.moveTo(VAN.comprimento + 0.2, y - 0.2);
+      ctx.lineTo(VAN.comprimento + 14, y - 2.2);
+      ctx.lineTo(VAN.comprimento + 14, y + 2.2);
+      ctx.lineTo(VAN.comprimento + 0.2, y + 0.2);
       ctx.closePath();
       ctx.fill();
     }
@@ -239,8 +253,44 @@ export class MundoViagem {
     const periodo = 190;
     const n = Math.floor((this.pos * 1.9 + 60) / periodo);
     const x = periodo - (((this.pos * 1.9 + 60) % periodo) + periodo) % periodo - 40;
-    this.peca(ctx, n % 2 ? 'caminhao' : 'sedan', x, -3.0);
+    // o centro do veículo na mão de lá (y = -3): a imagem se apoia na quina de baixo, então o centro é recuado
+    const [nome, L, W, raio] = n % 2 ? (['caminhao', 8, 2.5, 0.5] as const) : (['sedan', 4.4, 1.8, 0.32] as const);
+    const d = (L + W) / 4 / 0.75;
+    this.peca(ctx, nome, x + d, -3.0 + d);
+    // as rodas de perto girando (o veículo vai a 0,9 da velocidade do mundo, para o outro lado)
+    const ang = (0.9 * this.pos * 0.75) / raio;
+    for (const f of [-0.3, 0.3]) this.rodaGirando(ctx, x + (f * L) / 0.75, -3.0 + W / 2 / 0.75 - 0.1, CHAO_Z + raio * Z_PER_M, raio, ang);
     void v;
+  }
+
+  /** O que gira na roda: os parafusos em volta do cubo e um raio claro (a roda de perto, desenhada por cima da pintada). */
+  private rodaGirando(ctx: CanvasRenderingContext2D, cx: number, y: number, zCubo: number, raio: number, ang: number) {
+    const P = (a: number, rr: number) => iso(cx + (Math.cos(a) * rr) / 0.75, y, zCubo + Math.sin(a) * rr * Z_PER_M);
+    const [hx, hy] = iso(cx, y, zCubo);
+    ctx.save();
+    ctx.lineCap = 'round';
+    // o raio claro, do cubo até perto do aro
+    const [rx, ry] = P(ang, raio * 0.78);
+    ctx.strokeStyle = 'rgba(190,196,205,0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(hx, hy);
+    ctx.lineTo(rx, ry);
+    ctx.stroke();
+    // os cinco parafusos
+    ctx.fillStyle = '#d3d6dc';
+    for (let k = 0; k < 5; k++) {
+      const [px, py] = P(ang + (k * Math.PI * 2) / 5, raio * 0.36);
+      ctx.beginPath();
+      ctx.ellipse(px, py, 1.7, 1.7, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // o cubo
+    ctx.fillStyle = '#8a8f98';
+    ctx.beginPath();
+    ctx.ellipse(hx, hy, 3.2, 3.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
   private arvore(ctx: CanvasRenderingContext2D, x: number, y: number, h: number, seed: number) {
@@ -281,7 +331,12 @@ export class MundoViagem {
 
   casco(ctx: CanvasRenderingContext2D, v: ViagemInfo) {
     // a arte: o casco cortado, com a base debaixo das rodas (o piso da van fica PISO_NA_ARTE_M acima dela)
-    if (this.peca(ctx, 'van-casco', 0, 0, -PISO_NA_ARTE_M * Z_PER_M)) return;
+    if (this.peca(ctx, 'van-casco', 0, 0, -PISO_NA_ARTE_M * Z_PER_M)) {
+      // as rodas de perto, girando com o mundo (a pintada fica por baixo)
+      const ang = -(this.pos * 0.75) / RAIO_RODA_VAN;
+      for (const x of RODAS_VAN_X) this.rodaGirando(ctx, x, RODAS_VAN_Y, -PISO_NA_ARTE_M * Z_PER_M + RAIO_RODA_VAN * Z_PER_M, RAIO_RODA_VAN, ang);
+      return;
+    }
     const L = VAN.comprimento;
     const W = VAN.largura;
     const H = ALTURA_CASCO;
@@ -375,6 +430,68 @@ export class MundoViagem {
     ctx.beginPath();
     ctx.ellipse(hx, hy, 6, 5, 0, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // ---------------------------------------------------------------- o clima, por cima de tudo
+
+  /** A chuva (traços na diagonal), o relâmpago da tempestade e a neblina, em cima da cena inteira. `dpr`: pixels por pixel de tela. */
+  clima(ctx: CanvasRenderingContext2D, v: ViagemInfo, now: number, dpr: number) {
+    const c = v.clima ?? 'limpo';
+    if (c === 'limpo') return;
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (c === 'neblina') {
+      ctx.fillStyle = 'rgba(176,186,198,0.2)';
+      ctx.fillRect(0, 0, w, h);
+      // mantas de névoa andando devagar, mais densas embaixo
+      for (let i = 0; i < 5; i++) {
+        const cx = (((now / (90 + i * 25)) * dpr + i * w * 0.37) % (w * 1.6)) - w * 0.3;
+        const cy = h * (0.25 + i * 0.17);
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.42);
+        g.addColorStop(0, 'rgba(200,208,218,0.26)');
+        g.addColorStop(1, 'rgba(200,208,218,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, w, h);
+      }
+      ctx.restore();
+      return;
+    }
+    // a chuva: cada gota cai na vertical (com o vento puxando para trás) e recomeça em cima
+    const forte = c === 'tempestade';
+    const n = Math.round((forte ? 300 : 150) * Math.min(2.2, (w * h) / (dpr * dpr * 1280 * 720)));
+    ctx.strokeStyle = forte ? 'rgba(205,220,238,0.42)' : 'rgba(205,220,238,0.32)';
+    ctx.lineWidth = Math.max(1, dpr);
+    ctx.lineCap = 'round';
+    const vel = (forte ? 1250 : 950) * dpr;
+    const vento = forte ? 0.42 : 0.26;
+    const tam = (forte ? 26 : 19) * dpr;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const fase = aleat(i, 41);
+      const y = (((now / 1000) * vel * (0.85 + aleat(i, 43) * 0.3) + fase * (h + tam * 2)) % (h + tam * 2)) - tam;
+      const x = ((aleat(i, 42) * (w + h * vento) - y * vento) % (w + h * vento)) - (h * vento) / 2;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - tam * vento, y + tam);
+    }
+    ctx.stroke();
+    // o céu fecha com a chuva
+    ctx.fillStyle = forte ? 'rgba(18,24,38,0.28)' : 'rgba(30,38,52,0.14)';
+    ctx.fillRect(0, 0, w, h);
+    if (forte) {
+      // o relâmpago: um clarão duplo, de tempos em tempos
+      const ciclo = Math.floor(now / 8000);
+      const t = now - (ciclo * 8000 + aleat(ciclo, 44) * 5500);
+      if (t >= 0 && t < 420) {
+        const a = t < 110 ? 0.45 : t < 200 ? 0.08 : t < 300 ? 0.38 * (1 - (t - 200) / 100) : 0;
+        if (a > 0) {
+          ctx.fillStyle = `rgba(225,232,255,${a})`;
+          ctx.fillRect(0, 0, w, h);
+        }
+      }
+    }
+    ctx.restore();
   }
 
   // ---------------------------------------------------------------- o que passa na frente da van

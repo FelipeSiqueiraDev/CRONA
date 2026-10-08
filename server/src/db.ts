@@ -1,4 +1,4 @@
-import type { ViagemInfo, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
+import type { ViagemInfo, IconeLugar, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
 import type { Conta } from './contas';
@@ -95,6 +95,8 @@ export interface CampaignData {
   ameacas?: Record<string, combate.FichaAmeaca>;
   /** anotações do mestre na planta, por andar */
   notas?: NotaPlanta[];
+  /** onde este lugar fica no mapa-múndi, o ícone e a sala de entrada (sem valor, valem os padrões) */
+  lugar?: { x: number; y: number; icone?: IconeLugar; entrada?: number };
 }
 
 export interface Database {

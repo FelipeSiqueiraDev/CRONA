@@ -980,7 +980,8 @@ function paint(ctx: CanvasRenderingContext2D, f: SpriteFrame, x: number, y: numb
     }
   }
   if (sit) {
-    const drop = f.h * 0.22;
+    // o quadril (uns 45% da altura) cai no assento; as pernas ficam escondidas, como quem está sentado
+    const drop = f.h * 0.4;
     ctx.beginPath();
     ctx.rect(x - f.w * 2, y - f.h * 2, f.w * 4, f.h * 2 + 4);
     ctx.clip();

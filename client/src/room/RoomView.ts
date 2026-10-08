@@ -1943,7 +1943,8 @@ export class RoomView {
       }
       const passos = lp && p.moving ? passosFor(lp, estado, u.dir) : null;
       // folha sem pose de sentar: fica de pé no chão, junto do assento (não em cima dele)
-      const standBy = !!sp && u.sit === 1 && !p.moving && !framesFor(sp.lc, u.dir, 'sit');
+      // (na van não: lá o agente senta no banco mesmo sem a pose de sentar, com as pernas escondidas)
+      const standBy = !!sp && u.sit === 1 && !p.moving && !framesFor(sp.lc, u.dir, 'sit') && !this.info?.viagem;
       const seated = u.sit === 1 && !standBy;
       const baseZ = standBy ? (map.floorHeight(u.x, u.y) ?? p.z) : p.z;
       const half = seated ? 0.25 : 0.3;
@@ -2321,6 +2322,7 @@ export class RoomView {
       this.nameTag(u.name, wx * z + this.cam.x, (wy - H - (u.sit ? -12 : 4)) * z + this.cam.y, u.id === this.myId);
     }
 
+    if (viagem) this.mundoViagem.clima(ctx, viagem, now, this.dpr);
     this.bubbles.draw(ctx, (wx) => wx * z + this.cam.x, this.vw);
     if (viagem?.destino) this.faixaDoDestino(viagem.destino);
   }

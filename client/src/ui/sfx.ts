@@ -113,6 +113,196 @@ class Sfx {
     o.stop(t + dur + 0.02);
   }
 
+  // ---------------------------------------------------------------- o carro (a tela da viagem)
+
+  /** Um tom com começo marcado no tempo (para montar o som em sequência). */
+  private tomEm(atraso: number, f1: number, f2: number, dur: number, gain: number, type: OscillatorType, filtro?: number) {
+    const ac = this.ctx();
+    if (!ac || !this.master) return;
+    const t = ac.currentTime + atraso;
+    const o = ac.createOscillator();
+    o.type = type;
+    o.frequency.setValueAtTime(f1, t);
+    o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + Math.min(0.25, dur / 3));
+    g.gain.setValueAtTime(gain, t + dur * 0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    let saida: AudioNode = g;
+    if (filtro) {
+      const f = ac.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = filtro;
+      g.connect(f);
+      saida = f;
+    }
+    o.connect(g);
+    saida.connect(this.master);
+    o.start(t);
+    o.stop(t + dur + 0.05);
+  }
+
+  /** Ruído filtrado com começo marcado (o asfalto, o freio, a batida da porta). */
+  private ruidoEm(atraso: number, dur: number, type: BiquadFilterType, f1: number, f2: number, gain: number) {
+    const ac = this.ctx();
+    if (!ac || !this.noise || !this.master) return;
+    const t = ac.currentTime + atraso;
+    const src = ac.createBufferSource();
+    src.buffer = this.noise;
+    src.loop = true;
+    const f = ac.createBiquadFilter();
+    f.type = type;
+    f.frequency.setValueAtTime(f1, t);
+    f.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    f.Q.value = 0.9;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + Math.min(0.3, dur / 3));
+    g.gain.setValueAtTime(gain, t + dur * 0.65);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f).connect(g).connect(this.master);
+    src.start(t);
+    src.stop(t + dur + 0.05);
+  }
+
+  /**
+   * O motor de verdade (07/10): o estouro de cada cilindro é um dente de serra grave (a frequência é a rotação), com um
+   * sub-grave na metade, o ronco do escapamento (ruído que pulsa no ritmo do motor) e um filtro que abre quando acelera.
+   * `rot`: [segundos, explosões por segundo]; `vol`: [segundos, volume]. O motor "manca" de leve (a marcha lenta irregular).
+   */
+  private motorVivo(atraso: number, rot: [number, number][], vol: [number, number][]) {
+    const ac = this.ctx();
+    if (!ac || !this.noise || !this.master) return;
+    const t0 = ac.currentTime + atraso;
+    const fim = t0 + Math.max(rot[rot.length - 1][0], vol[vol.length - 1][0]) + 0.1;
+    const curva = (p: AudioParam, pts: [number, number][], k = 1) => {
+      p.setValueAtTime(pts[0][1] * k, t0 + pts[0][0]);
+      for (const [t, v] of pts.slice(1)) p.linearRampToValueAtTime(v * k, t0 + t);
+    };
+    const saida = ac.createGain();
+    curva(saida.gain, vol);
+    saida.connect(this.master);
+    const filtro = ac.createBiquadFilter();
+    filtro.type = 'lowpass';
+    filtro.Q.value = 2.2;
+    curva(filtro.frequency, rot, 6);
+    filtro.connect(saida);
+    // os estouros
+    const o = ac.createOscillator();
+    o.type = 'sawtooth';
+    curva(o.frequency, rot);
+    // a marcha lenta manca: um balanço lento na rotação
+    const manca = ac.createOscillator();
+    manca.frequency.value = 2.7;
+    const mancaG = ac.createGain();
+    mancaG.gain.value = 1.6;
+    manca.connect(mancaG).connect(o.frequency);
+    o.connect(filtro);
+    // o sub-grave, meia rotação
+    const sub = ac.createOscillator();
+    sub.type = 'square';
+    curva(sub.frequency, rot, 0.5);
+    const subG = ac.createGain();
+    subG.gain.value = 0.35;
+    sub.connect(subG).connect(filtro);
+    // o escapamento: ruído grave que pulsa a cada estouro
+    const ruido = ac.createBufferSource();
+    ruido.buffer = this.noise;
+    ruido.loop = true;
+    const bp = ac.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = 0.8;
+    curva(bp.frequency, rot, 5);
+    const am = ac.createGain();
+    am.gain.value = 0;
+    const amProf = ac.createGain();
+    amProf.gain.value = 0.9;
+    o.connect(amProf).connect(am.gain);
+    ruido.connect(bp).connect(am).connect(filtro);
+    for (const n of [o, sub, manca]) {
+      n.start(t0);
+      n.stop(fim);
+    }
+    ruido.start(t0, Math.random());
+    ruido.stop(fim);
+  }
+
+  /** O motor de arranque girando: o zumbido do motorzinho, batendo nos tempos de compressão ("rrr-rrr-rrr"). */
+  private arranque(atraso: number, dur: number) {
+    const ac = this.ctx();
+    if (!ac || !this.noise || !this.master) return;
+    const t = ac.currentTime + atraso;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.16, t + 0.05);
+    g.gain.setValueAtTime(0.16, t + dur - 0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    // as batidas da compressão: o volume pulsa uns 6 vezes por segundo, acelerando um pouco
+    const pulso = ac.createGain();
+    pulso.gain.value = 0.55;
+    const lfo = ac.createOscillator();
+    lfo.type = 'square';
+    lfo.frequency.setValueAtTime(5.2, t);
+    lfo.frequency.linearRampToValueAtTime(6.8, t + dur);
+    const lfoG = ac.createGain();
+    lfoG.gain.value = 0.45;
+    lfo.connect(lfoG).connect(pulso.gain);
+    const f = ac.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = 900;
+    f.Q.value = 1.4;
+    const zumbido = ac.createOscillator();
+    zumbido.type = 'sawtooth';
+    zumbido.frequency.setValueAtTime(110, t);
+    zumbido.frequency.linearRampToValueAtTime(135, t + dur);
+    const ruido = ac.createBufferSource();
+    ruido.buffer = this.noise;
+    ruido.loop = true;
+    const rg = ac.createGain();
+    rg.gain.value = 0.6;
+    zumbido.connect(f);
+    ruido.connect(rg).connect(f);
+    f.connect(pulso).connect(g).connect(this.master);
+    for (const n of [zumbido, lfo]) {
+      n.start(t);
+      n.stop(t + dur + 0.05);
+    }
+    ruido.start(t, Math.random());
+    ruido.stop(t + dur + 0.05);
+  }
+
+  /** A chave: entra no contato e gira (dois cliques metálicos). */
+  private chave(atraso: number) {
+    this.ruidoEm(atraso, 0.03, 'highpass', 4200, 3600, 0.22);
+    this.tomEm(atraso, 3100, 2900, 0.04, 0.05, 'square');
+    this.ruidoEm(atraso + 0.3, 0.04, 'highpass', 3600, 3000, 0.26);
+    this.tomEm(atraso + 0.3, 2500, 2300, 0.05, 0.05, 'square');
+  }
+
+  /** A porta da van batendo. */
+  private porta(atraso: number) {
+    this.tomEm(atraso, 140, 48, 0.22, 0.5, 'sine');
+    this.ruidoEm(atraso, 0.16, 'lowpass', 900, 300, 0.35);
+  }
+
+  /** A partida: a porta bate, a chave gira, o motor de arranque, o motor pega com uma acelerada, a marcha lenta e a saída. */
+  carroPartindo() {
+    this.porta(0);
+    this.chave(0.6);
+    this.arranque(1.0, 1.1);
+    // pegou: uma acelerada, cai para a marcha lenta e depois sai acelerando
+    this.motorVivo(2.05, [[0, 22], [0.18, 58], [0.55, 30], [1.4, 27], [2.0, 30], [4.2, 62]], [[0, 0.0001], [0.06, 0.32], [0.55, 0.22], [1.4, 0.2], [3.4, 0.24], [4.2, 0.0001]]);
+  }
+
+  /** A chegada: o motor desacelera, para, a chave desliga (o motor engasga e morre) e a porta abre e bate. */
+  carroChegando() {
+    this.motorVivo(0, [[0, 58], [1.6, 32], [2.6, 27], [3.0, 26], [3.25, 14]], [[0, 0.24], [1.6, 0.22], [2.9, 0.2], [3.25, 0.0001]]);
+    this.tomEm(1.2, 2500, 1900, 0.7, 0.03, 'sine');
+    this.chave(3.0);
+    this.porta(4.0);
+  }
+
   /** Grafite no papel: ruído agudo com "arranhado" irregular. */
   pencil(ms: number, vol = 1) {
     const ac = this.ctx();

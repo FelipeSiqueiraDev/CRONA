@@ -1,4 +1,4 @@
-import type { AvatarLook, CharacterDef, InvItem, Role, RoomInfo, RoomSummary } from '@crona/shared';
+import type { AvatarLook, CharacterDef, InvItem, LugarInfo, Role, RoomInfo, RoomSummary } from '@crona/shared';
 import type { Net } from '../net';
 import type { RoomView } from '../room/RoomView';
 import { SessionStore } from '../session/store';
@@ -15,15 +15,17 @@ export interface AppState {
   inventory: InvItem[];
   characters: CharacterDef[];
   rooms: RoomSummary[];
+  /** os lugares do mapa-múndi (chega quando o mapa abre) */
+  lugares: LugarInfo[];
   room: RoomInfo | null;
   /** mestre controla; jogador só acompanha (vem do servidor no login) */
   role: Role;
 }
 
-export type AppEvent = 'me' | 'inventory' | 'characters' | 'rooms' | 'room' | 'selection' | 'items' | 'placement';
+export type AppEvent = 'me' | 'inventory' | 'characters' | 'rooms' | 'lugares' | 'room' | 'selection' | 'items' | 'placement';
 
 export class App {
-  state: AppState = { me: null, inventory: [], characters: [], rooms: [], room: null, role: 'player' };
+  state: AppState = { me: null, inventory: [], characters: [], rooms: [], lugares: [], room: null, role: 'player' };
   net: Net;
   /** sessão compartilhada (contrato novo, docs/CONTRATO.md) */
   readonly session: SessionStore;

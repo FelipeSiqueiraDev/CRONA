@@ -3,6 +3,7 @@ import {
   getFurni,
   getLayout,
   getWallFurni,
+  heightmapDaVan,
   parseHeightmap,
   RoomMap,
   VAN,
@@ -676,16 +677,29 @@ export function limparSalasDeExemplo(db: Database): boolean {
   return true;
 }
 
-/** O painel da van olhava para a frente (07/10): vira para os bancos, nas vans que já existem. */
-function painelDaVanParaTras(db: Database): boolean {
+/**
+ * A van no lugar (07/10): o piso tem só as 6 casas de trás (as 2 da frente são o capô), os bancos andaram 2 casas para trás,
+ * o painel vira para os bancos e o console do meio saiu. Refaz as vans que já existem (as de 8 casas de piso).
+ */
+function vanNoLugar(db: Database): boolean {
   let mudou = false;
-  for (const r of db.rooms)
-    if (r.viagem)
-      for (const it of r.items)
-        if (it.defId === 'van_dash' && it.rot !== VAN.giroPainel) {
-          it.rot = VAN.giroPainel;
-          mudou = true;
-        }
+  for (const r of db.rooms) {
+    if (!r.viagem) continue;
+    const largura = r.heightmap.split(String.fromCharCode(10))[0]?.length ?? 0;
+    if (largura > VAN.piso) {
+      const recuo = largura - VAN.piso;
+      r.heightmap = heightmapDaVan();
+      r.items = r.items.filter((it) => it.defId !== 'van_console');
+      for (const it of r.items) if (it.defId === 'van_seat' || it.defId === 'van_dash') it.x = Math.max(0, it.x - recuo);
+      for (const t of r.tokens ?? []) t.x = Math.max(0, Math.min(VAN.piso - 1, t.x - recuo));
+      mudou = true;
+    }
+    for (const it of r.items)
+      if (it.defId === 'van_dash' && it.rot !== VAN.giroPainel) {
+        it.rot = VAN.giroPainel;
+        mudou = true;
+      }
+  }
   return mudou;
 }
 
@@ -697,7 +711,7 @@ export function upgradeDb(db: Database): boolean {
     const fazenda = montarFazenda(db);
     const cores = coresDosAgentes(db);
     const temas = temasDosAgentes(db);
-    const van = painelDaVanParaTras(db);
+    const van = vanNoLugar(db);
     return sede || fazenda || cores || temas || van;
   }
   for (const r of db.rooms) {

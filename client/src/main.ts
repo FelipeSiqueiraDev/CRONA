@@ -10,6 +10,7 @@ import './ui/itens.css';
 import './ui/teclado.css';
 import './ui/requisicao.css';
 import './ui/entrada.css';
+import './ui/mapaMundi.css';
 import './ui/kit.css';
 import './ui/jogador.css';
 import './ui/retro-auto.css';
@@ -32,6 +33,7 @@ import { loadLogin, saveLogin } from './ui/login';
 import { TableScreen } from './ui/table';
 import { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha, TelaFicha } from './ui/telaFicha';
 import { Entrada } from './ui/entrada';
+import { mostrarTelaViagem } from './ui/viagemTela';
 import { esquecerSessao, guardarSessao, lerSessao } from './session/conta';
 import { janelaAberta } from './ui/fichaModal';
 import { NavigatorWin } from './ui/navigator';
@@ -384,6 +386,13 @@ net.onMessage = (m: ServerMsg) => {
     case 'combate':
       shell?.combate.setCombate(m.combate, m.podeDesfazer, m.ameacas);
       table?.setCombate(m.combate);
+      break;
+    case 'viagemTela':
+      mostrarTelaViagem(m.fase, m.ilustracao, m.texto);
+      break;
+    case 'lugares':
+      app.state.lugares = m.lugares;
+      app.emit('lugares');
       break;
     case 'roomList':
       app.state.rooms = m.rooms;

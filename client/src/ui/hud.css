@@ -3436,6 +3436,21 @@ html:not(.modo-ficha) .vg-bt.on {
 html:not(.modo-ficha) .vg-destino {
   width: 100%;
 }
+/* o destino é um botão que abre a lista das cenas */
+html:not(.modo-ficha) .vg-escolhe {
+  width: 100%;
+  min-height: 4rem;
+  text-align: left;
+  cursor: pointer;
+  color: var(--r-texto-3);
+}
+html:not(.modo-ficha) .vg-escolhe.on {
+  color: var(--r-ouro-hi);
+  border-color: var(--r-ouro-hi);
+}
+html:not(.modo-ficha) .vg-cena.on {
+  border-color: var(--r-ouro-hi);
+}
 html:not(.modo-ficha) .vg-painel .fx-bt {
   width: 100%;
   justify-content: center;

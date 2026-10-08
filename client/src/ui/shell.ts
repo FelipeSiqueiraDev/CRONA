@@ -47,6 +47,7 @@ import { characterPicker, lookEditor } from './lookEditor';
 import { logIcon, lootIcon } from './lootIcons';
 import { brushSweep, brushWash, bump, countUp, drawStroke, eraseDraw, enter, floatText, flyArc, fxLayer, leave, pencilDraw, reduced, shake, stamp, tilt, typeInto, wait, wipeIn } from './motion';
 import { askNote, promptNote } from './note';
+import { abrirMapaMundi } from './mapaMundi';
 import { abrirViagem, ViagemPainel } from './viagem';
 import { brushize, paperize, textures, unpaint } from './paperArt';
 import { sfx } from './sfx';
@@ -441,6 +442,7 @@ export class Shell {
       aoClicarMarca: () => void this.renameCampaign(),
       botoes: [
         // no celular, só a engrenagem e o sair, como na referência
+        { id: 'mundo', icone: 'globo', titulo: 'Mapa-múndi', soDesktop: true, onclick: () => (sfx.click(), abrirMapaMundi(app, { aoViajar: (l) => abrirViagem(app, this.campaign?.party ?? [], l) })) },
         { id: 'clima', icone: 'sol', titulo: 'Clima da cena', soDesktop: true, onclick: () => (sfx.click(), act.fx()) },
         { id: 'config', icone: 'engrenagem', titulo: 'Configurações', cheio: true, onclick: (e) => (e.stopPropagation(), this.toggleMenu()) },
         { id: 'registro', icone: 'documento', titulo: 'Registro da sessão', soDesktop: true, onclick: (e) => (e.stopPropagation(), this.toggleRegistro()) },

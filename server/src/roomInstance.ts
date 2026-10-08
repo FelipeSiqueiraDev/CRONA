@@ -1463,7 +1463,9 @@ export class RoomInstance {
     this.data.viagem = v;
     const hora = HORAS_VIAGEM.find((h) => h.id === v.hora);
     if (hora) {
-      this.data.darkness = hora.escuro;
+      // o tempo fechado escurece a cena (a chuva, a tempestade e a neblina)
+      const mais = v.clima === 'tempestade' ? 0.2 : v.clima === 'chuva' ? 0.1 : v.clima === 'neblina' ? 0.06 : 0;
+      this.data.darkness = Math.min(0.9, hora.escuro + mais);
       this.data.ambient = hora.ambiente;
     }
     this.hotel.save();

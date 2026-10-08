@@ -2,6 +2,7 @@ import type { AvatarLook } from './avatar';
 import type { AcaoCombate, Combate, FichaAmeaca } from './combate/tipos';
 import type { RollResult } from './dice';
 import type { FloorItem, FloorStyle, Hint, ParticleKind, WallItem } from './room';
+import type { LugarInfo } from './lugares';
 import type { ViagemInfo } from './viagem';
 import type { CampaignState, LootKind } from './rpg';
 import type { PapelConta, Role, Session, SessionAction, Token } from './session';
@@ -431,9 +432,12 @@ export type ClientMsg =
    * a Viagem (só o mestre): `iniciar` leva os agentes (cada um no banco que o mestre escolheu) para a van;
    * `ajustar` muda o cenário, a hora, a velocidade e o destino; `chegar` leva todos à cena escolhida e a viagem acaba.
    */
-  | { t: 'viagem'; acao: 'iniciar'; bancos: { tokenId: number; banco: number }[]; cenario?: string; hora?: string; velocidade?: number; destino?: string }
-  | { t: 'viagem'; acao: 'ajustar'; cenario?: string; hora?: string; velocidade?: number; destino?: string }
+  | { t: 'viagem'; acao: 'iniciar'; bancos: { tokenId: number; banco: number }[]; cenario?: string; hora?: string; clima?: string; velocidade?: number; destino?: string; destinoId?: number }
+  | { t: 'viagem'; acao: 'ajustar'; cenario?: string; hora?: string; clima?: string; velocidade?: number; destino?: string; destinoId?: number | null }
   | { t: 'viagem'; acao: 'chegar'; roomId: number }
+  /** o mapa-múndi: a lista dos lugares; o mestre arrasta um ícone para outro ponto do mapa */
+  | { t: 'lugares' }
+  | { t: 'lugarMover'; id: number; x: number; y: number }
   | { t: 'setLink'; id: number; roomId: number | null }
   | { t: 'sendTo'; userId: number | 'all'; roomId: number }
   | { t: 'tokenAdd'; name: string; look: AvatarLook; color?: string; capacity?: number }
@@ -466,6 +470,8 @@ export type ClientMsg =
   | { t: 'charDelete'; id: number };
 
 export type ServerMsg =
+  /** a tela da viagem: a pintura que aparece para todos na partida e na chegada (com o som do carro) */
+  | { t: 'viagemTela'; fase: 'partida' | 'chegada'; ilustracao: string; texto: string }
   | { t: 'hello'; characters: CharacterDef[] }
   | { t: 'welcome'; id: number; name: string; look: AvatarLook; token: string; inventory: InvItem[]; home?: number; role: Role }
   /**
@@ -478,6 +484,7 @@ export type ServerMsg =
   | { t: 'error'; msg: string }
   | { t: 'notice'; msg: string }
   | { t: 'roomList'; rooms: RoomSummary[] }
+  | { t: 'lugares'; lugares: LugarInfo[] }
   | { t: 'roomCreated'; id: number }
   | { t: 'roomEnter'; room: RoomInfo; items: FloorItem[]; wallItems: WallItem[]; users: UserInfo[] }
   /** conteúdo de outra cena da campanha (miniatura), sem entrar nela */

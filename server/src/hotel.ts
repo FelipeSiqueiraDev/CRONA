@@ -4,10 +4,16 @@ import {
   BANCOS_VAN,
   heightmapDaVan,
   isCenarioViagem,
+  iconePeloNome,
+  ambienteDoDestino,
+  isClimaViagem,
+  sortearIlustracao,
+  posicaoInicial,
   isHoraViagem,
   moveisDaVan,
   VAN,
   type BancoVan,
+  type LugarInfo,
   type ViagemInfo,
   DIR_KEYS,
   getLayout,
@@ -1572,6 +1578,12 @@ export class Hotel implements HotelApi {
       case 'viagem':
         this.viagem(c, m);
         return;
+      case 'lugares':
+        c.send({ t: 'lugares', lugares: this.lugares(c) });
+        return;
+      case 'lugarMover':
+        this.lugarMover(c, m);
+        return;
       case 'join': {
         const room = typeof m.roomId === 'number' ? this.rooms.get(m.roomId) : undefined;
         if (!room) return c.send({ t: 'error', msg: 'Quarto não encontrado.' });
@@ -1867,16 +1879,98 @@ export class Hotel implements HotelApi {
     if (m.acao === 'chegar') return this.viagemChegar(c, m);
   }
 
+  // ---------- o mapa-múndi: os lugares ----------
+  /** Os lugares do mundo: cada conjunto de salas ligadas (menos a van) é um lugar, com ícone, ponto no mapa e a sala de entrada. */
+  lugares(c?: Client): LugarInfo[] {
+    const vistos = new Set<number>();
+    const grupos: number[][] = [];
+    for (const r of [...this.rooms.values()].sort((a, b) => a.data.id - b.data.id)) {
+      if (r.data.viagem || vistos.has(r.data.id)) continue;
+      const g = this.sceneGroup(r.data.id).filter((id) => !this.rooms.get(id)?.data.viagem);
+      for (const id of g) vistos.add(id);
+      grupos.push(g.sort((a, b) => a - b));
+    }
+    // salas soltas com o mesmo nome de lugar ("Sede · Câmara do Selo", que só se alcança pela passagem secreta) são do mesmo lugar
+    const prefixo = (g: number[]) => {
+      const nomes = g.map((id) => this.rooms.get(id)?.data.name ?? '').filter((n) => n.includes('·'));
+      return nomes.length ? nomes[0].split('·')[0].trim().toLowerCase() : null;
+    };
+    for (let i = 0; i < grupos.length; i++)
+      for (let k = grupos.length - 1; k > i; k--) {
+        const p = prefixo(grupos[i]);
+        if (p && p === prefixo(grupos[k])) {
+          grupos[i] = [...grupos[i], ...grupos[k]].sort((a, b) => a - b);
+          grupos.splice(k, 1);
+        }
+      }
+    const aqui = c?.room && !c.room.data.viagem ? this.groupKey(c.room.data.id) : c?.room?.data.viagem ? this.groupKey(c.room.data.viagem.origem) : -1;
+    return grupos.map((g, i) => {
+      const key = g[0];
+      const camp = this.campaignFor(key);
+      const salas = g.map((id) => this.rooms.get(id)!).filter(Boolean);
+      const nome = camp.title || salas[0]?.data.name || 'Lugar';
+      // a entrada: a que o mestre escolheu; senão o Bar da Sede, a fazenda vista de fora, ou a primeira sala
+      const escolhida = camp.lugar?.entrada;
+      const entrada =
+        (escolhida !== undefined && g.includes(escolhida) ? escolhida : undefined) ??
+        salas.find((r) => /·\s*Bar$/.test(r.data.name))?.data.id ??
+        salas.find((r) => /·\s*Olhos de [AÁaá]guia$/.test(r.data.name))?.data.id ??
+        key;
+      const pos = posicaoInicial(nome, i);
+      return {
+        id: key,
+        nome,
+        icone: camp.lugar?.icone ?? iconePeloNome(nome),
+        x: camp.lugar?.x ?? pos[0],
+        y: camp.lugar?.y ?? pos[1],
+        entrada,
+        salas: salas.length,
+        aqui: key === aqui,
+      };
+    });
+  }
+
+  /** O mestre arrasta o ícone de um lugar para outro ponto do mapa. */
+  private lugarMover(c: Client, m: Record<string, unknown>) {
+    if (c.role !== 'gm') return c.send({ t: 'error', msg: 'Só o mestre mexe no mapa.' });
+    if (!isInt(m.id) || typeof m.x !== 'number' || typeof m.y !== 'number' || !Number.isFinite(m.x) || !Number.isFinite(m.y)) return;
+    const l = this.lugares(c).find((x) => x.id === m.id);
+    if (!l) return;
+    const camp = this.campaignFor(l.id);
+    camp.lugar = { ...(camp.lugar ?? {}), x: Math.max(0.08, Math.min(0.92, m.x)), y: Math.max(0.1, Math.min(0.9, m.y)) };
+    this.save();
+    c.send({ t: 'lugares', lugares: this.lugares(c) });
+  }
+
+  /** A pintura da partida ou da chegada, na tela de todo mundo (o mestre, a mesa e os celulares), com o som do carro. */
+  private telaDaViagem(fase: 'partida' | 'chegada', ilustracao: string, texto: string) {
+    const msg: ServerMsg = { t: 'viagemTela', fase, ilustracao, texto };
+    for (const c of this.clients.values()) if (c.name) c.send(msg);
+  }
+
   /** Os ajustes de uma Viagem que o mestre mandou (o que vier errado fica como estava). */
   private viagemAjustes(m: Record<string, unknown>, base: ViagemInfo): ViagemInfo {
     const v = { ...base };
     if (isCenarioViagem(m.cenario)) v.cenario = m.cenario;
     if (isHoraViagem(m.hora)) v.hora = m.hora;
     if (typeof m.velocidade === 'number' && Number.isFinite(m.velocidade)) v.velocidade = Math.max(0, Math.min(1, m.velocidade));
-    if (typeof m.destino === 'string') {
+    if (isClimaViagem(m.clima)) v.clima = m.clima;
+    // o destino é uma cena: o nome dela vira o texto da faixa, e "Chegamos" abre exatamente ela
+    if (m.destinoId === null) {
+      delete v.destinoId;
+      delete v.destino;
+    } else if (isInt(m.destinoId)) {
+      const r = this.rooms.get(m.destinoId);
+      if (r && !r.data.viagem) {
+        // o destino é a sala de entrada do lugar; o texto é o nome do lugar
+        v.destinoId = r.data.id;
+        v.destino = (this.lugares().find((l) => l.entrada === r.data.id)?.nome ?? r.data.name).slice(0, 60);
+      }
+    } else if (typeof m.destino === 'string') {
       const d = m.destino.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 60);
       if (d) v.destino = d;
       else delete v.destino;
+      delete v.destinoId;
     }
     return v;
   }
@@ -1932,13 +2026,21 @@ export class Hotel implements HotelApi {
       sala = new RoomInstance(data, this);
       this.rooms.set(data.id, sala);
     }
-    const v = this.viagemAjustes(m, { ...base, ...(sala.data.viagem ?? {}), origem: de.data.id });
+    // o destino da viagem anterior não vale para esta
+    const antes: ViagemInfo = { ...base, ...(sala.data.viagem ?? {}), origem: de.data.id };
+    delete antes.destino;
+    delete antes.destinoId;
+    const v = this.viagemAjustes(m, antes);
     sala.definirViagem(v);
     for (const x of vai) {
       const t = x.de.takeToken(x.id);
       if (t) sala.putToken({ ...t, x: x.banco.x, y: x.banco.y, dir: VAN.giroBanco }, null);
     }
     this.log(sala.data.id, 'scene', `A viagem começou: ${vai.map((x) => x.name).join(', ')} na van.`);
+    // a tela da partida, para todos: uma pintura que combina com o destino
+    const ilustracao = sortearIlustracao(ambienteDoDestino(v.destino));
+    sala.data.viagem = { ...sala.data.viagem!, ilustracao };
+    this.telaDaViagem('partida', ilustracao, v.destino ? `Rumo a ${v.destino}` : 'A viagem começou');
     this.save();
     this.roomChanged();
     this.enter(c, sala);
@@ -1968,6 +2070,10 @@ export class Hotel implements HotelApi {
         for (const t of r.tokenList()) if (t.look?.charId && charIds.has(t.look.charId)) r.takeToken(t.id);
       }
     }
+    // a tela da chegada, para todos (outra pintura do mesmo lugar)
+    const lugar = this.lugares().find((l) => this.sceneGroup(dest.data.id).includes(l.id) || l.entrada === dest.data.id);
+    const nomeDest = lugar?.nome ?? dest.data.name;
+    this.telaDaViagem('chegada', sortearIlustracao(ambienteDoDestino(nomeDest), van.data.viagem.ilustracao), `Chegamos: ${nomeDest}`);
     for (const t of vindos) this.moveToken(van, t.id, dest.data.id);
     this.log(dest.data.id, 'scene', `Chegaram: ${vindos.map((t) => t.name).join(', ') || 'ninguém'}.`);
     this.save();
