@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 17;
+export const FAZENDA_REV = 18;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -1193,7 +1193,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     key: "calabouco",
     name: FAZENDA + "Calabouço",
     description:
-      "Embaixo do celeiro, pedra molhada e cheiro de ferro: o laboratório de um ritual. Na parede da esquerda, a central que monitorava a pessoa; no fundo, os leitos de observação com as correias abertas e os arquivos do estudo; no meio, o altar no estrado redondo, com o círculo de sangue e os crânios; e a passagem para o corredor escuro.",
+      "Embaixo do celeiro, pedra molhada e cheiro de ferro: o lugar de um ritual. Na parede da esquerda, a central de monitoramento; no meio, o altar no estrado redondo, com o círculo de sangue e os crânios, e em volta dele os computadores, as máquinas e os monitores que ficavam ligados na pessoa, o gravador e a câmera; no fundo, os arquivos do estudo e a passagem para o corredor escuro.",
     layout: calaboucoPlan(),
     andar: CALABOUCO,
     style: "calabouco",
@@ -1203,7 +1203,8 @@ const CENAS_BRUTAS: CenaSpec[] = [
     particles: ["dust", "smoke"],
     // 08/10 (o Felipe): aqui faziam um ritual de TROCA DE MENTE à força, pondo uma mente muito forte num corpo que não
     // aguentava. Não tem criatura presa (os tanques saíram): tem os aparelhos que monitoravam a pessoa e o registro do
-    // "estudo". Quem não resistiu ficou na sala do fim do corredor e virou Existido.
+    // "estudo". Ninguém ficava aqui: descia, fazia o ritual e pronto (sem leitos). Quem não resistiu ficou na sala do fim
+    // do corredor e virou Existido.
     floor: [
       // a escada de mão que sobe reto para o alçapão do celeiro, e a passagem do corredor escuro
       ["escada_vertical", 1, 1, 4],
@@ -1227,24 +1228,25 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["server_rack", 0, 11, 2],
       ["server_rack", 0, 12, 2],
       ["ups", 0, 13, 2],
-      // os leitos de observação, no fundo: quem ia passar pelo ritual (ou já tinha passado) ficava ligado aqui
-      ["iv_stand", 2, 1, 4],
+      // em volta do altar: o computador do ritual, as máquinas, os monitores ligados na pessoa (um deles tomado pela
+      // Energia), o gravador e a câmera apontada para a pedra
+      ["console", 12, 5, 2],
+      ["chair_office", 13, 5, 6],
+      ["gravador_rolo", 13, 7, 6],
+      ["eletroencefalografo", 6, 7, 2],
+      ["monitor_suporte", 7, 5, 4],
+      ["monitor_suporte", 6, 9, 2],
       [
-        "hospital_bed",
-        3,
-        1,
-        4,
+        "monitor_energia",
+        12,
+        9,
+        6,
         oculta(
-          "Leito",
-          "As correias de couro estão abertas e o colchão afundado no meio. Presa na grade, uma pulseira de plástico com um número e o nome riscado à caneta.",
+          "Monitor",
+          "Fundido com outro aparelho que não devia estar ali, os cabos acesos como veias. A tela ainda mostra um batimento, e não tem ninguém ligado nele.",
         ),
       ],
-      ["table_small", 4, 1, 4],
-      ["vitals_monitor", 4, 1, 4],
-      ["hospital_bed", 13, 1, 4],
-      ["iv_stand", 14, 1, 4],
-      ["table_small", 12, 4, 4],
-      ["vitals_monitor", 12, 4, 4],
+      ["camera_tripe", 9, 12, 0],
       // o registro do estudo: os arquivos do lado da passagem, o quadro branco com os gráficos e a mesa de trabalho
       [
         "cabinet_file",

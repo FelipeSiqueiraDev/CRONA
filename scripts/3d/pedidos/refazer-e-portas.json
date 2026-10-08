@@ -157,5 +157,31 @@
    1.9,
    0.3
   ]
+ },
+ {
+  "nome": "monitor-suporte",
+  "titulo": "Monitor de sinais vitais no pé de rodinhas (hospital)",
+  "casas": [
+   1,
+   1
+  ],
+  "real": [
+   0.6,
+   0.6,
+   1.45
+  ]
+ },
+ {
+  "nome": "monitor-energia",
+  "titulo": "O mesmo monitor, tomado pela Energia",
+  "casas": [
+   1,
+   1
+  ],
+  "real": [
+   0.6,
+   0.6,
+   1.6
+  ]
  }
 ]

@@ -643,6 +643,137 @@ const builders: Record<string, Builder> = {
     );
   },
 
+  // o monitor de pé com rodinhas (o de hospital e o tomado pela Energia), até chegar monitor-suporte.png e
+  // monitor-energia.png: o pé de cinco rodas, o poste, a bandeja e o monitor com o batimento correndo
+  monitor_pe(def, state, seed) {
+    const [corpo, tela] = def.colors;
+    const on = state === 0;
+    const energia = def.id === 'monitor_energia';
+    const scr: LBox = [0.4, 0.58, 0.22, 0.78, 1.02, 1.42];
+    const nos: FNode[] = [
+      B([0.2, 0.8, 0.2, 0.8, 0.04, 0.09], shade(corpo, -0.15), { edge: 0.3 }),
+      ...[
+        [0.22, 0.22],
+        [0.22, 0.78],
+        [0.78, 0.22],
+        [0.78, 0.78],
+      ].map(([u, v]) => B([u - 0.04, u + 0.04, v - 0.04, v + 0.04, 0, 0.05], '#2a2a2e')),
+      B([0.46, 0.54, 0.46, 0.54, 0.09, 1.0], shade(corpo, -0.05)),
+      B([0.36, 0.64, 0.3, 0.7, 0.98, 1.02], corpo),
+      N(scr, (p) => {
+        p.box(scr, corpo, { edge: 0.25 });
+        if (!p.m.visible('front')) return;
+        const lit = on && p.power > 0.1;
+        p.face(scr, 'front', 0.1, 0.9, 0.12, 0.8, lit ? shade(tela, -0.6) : '#0a0c0e', true);
+        if (!lit) return;
+        p.withFace(scr, 'front', (ctx) => {
+          const t = p.t / 1000 + seed;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(0.1, 0.12, 0.8, 0.68);
+          ctx.clip();
+          ctx.strokeStyle = tela;
+          ctx.lineWidth = 0.025;
+          ctx.globalAlpha = 0.9;
+          // o batimento correndo
+          ctx.beginPath();
+          for (let i = 0; i <= 32; i++) {
+            const x = 0.12 + i * 0.024;
+            const f = (i * 0.024 + t * 0.35) % 0.5;
+            const y = 0.36 - (f > 0.22 && f < 0.26 ? 0.14 : f >= 0.26 && f < 0.28 ? -0.06 : 0);
+            if (i) ctx.lineTo(x, y);
+            else ctx.moveTo(x, y);
+          }
+          ctx.stroke();
+          // os blocos dos números (só a cor: nada escrito)
+          ctx.fillStyle = tela;
+          ctx.globalAlpha = 0.75;
+          ctx.fillRect(0.14, 0.52, 0.22, 0.08);
+          ctx.fillRect(0.5, 0.52, 0.3, 0.08);
+          ctx.fillRect(0.14, 0.66, 0.3, 0.06);
+          if (energia) {
+            // o raio roxo atravessando a tela
+            ctx.globalAlpha = 0.55 + 0.45 * Math.sin(t * 23);
+            ctx.strokeStyle = '#f0d8ff';
+            ctx.beginPath();
+            let x = 0.1;
+            ctx.moveTo(x, 0.2);
+            for (let k = 0; k < 6; k++) {
+              x += 0.13;
+              ctx.lineTo(x, 0.15 + hash(k, Math.floor(t * 8) + seed) * 0.6);
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+        });
+      }),
+    ];
+    if (energia)
+      // a coisa fundida: um segundo aparelho torto grudado no poste e os cabos que viraram veias acesas
+      nos.push(
+        B([0.3, 0.52, 0.58, 0.88, 0.5, 0.86], shade(corpo, 0.1), { edge: 0.3 }),
+        N([0.4, 0.66, 0.3, 0.8, 0.1, 1.0], (p) => {
+          for (let k = 0; k < 3; k++) p.line([0.5, 0.5, 0.15 + k * 0.28], [0.64, 0.32 + k * 0.16, 0.26 + k * 0.28], tela, 2);
+        }),
+      );
+    return V(nos, lightIf(on, { u: 0.95, v: 0.5, z: 1.2, radius: energia ? 110 : 70, color: tela, intensity: energia ? 0.75 : 0.45, ...(energia ? { flicker: 0.3 } : {}) }));
+  },
+
+  // um aparelho num carrinho (o gravador de rolo, o eletroencefalógrafo), até chegar a arte do Códex
+  aparelho(def, _state, seed) {
+    const [corpo, luz] = def.colors;
+    const H = def.height / Z_PER_M;
+    const tampo = Math.min(0.75, H * 0.55);
+    const dev: LBox = [0.25, 0.75, 0.15, 0.85, tampo, H];
+    return V(
+      [
+        B([0.2, 0.8, 0.12, 0.88, tampo - 0.05, tampo], shade(corpo, -0.2), { edge: 0.2 }),
+        ...[
+          [0.24, 0.16],
+          [0.24, 0.84],
+          [0.76, 0.16],
+          [0.76, 0.84],
+        ].map(([u, v]) => B([u - 0.03, u + 0.03, v - 0.03, v + 0.03, 0, tampo - 0.05], '#2a2a2e')),
+        N(dev, (p) => {
+          p.box(dev, corpo, { edge: 0.25 });
+          if (!p.m.visible('front')) return;
+          p.face(dev, 'front', 0.12, 0.88, 0.2, 0.55, shade(corpo, -0.35), true);
+          p.withFace(dev, 'front', (ctx) => {
+            ctx.fillStyle = luz;
+            ctx.globalAlpha = 0.75 + 0.25 * Math.sin(p.t / 300 + seed);
+            ctx.fillRect(0.74, 0.68, 0.08, 0.08);
+            ctx.globalAlpha = 1;
+          });
+        }),
+      ],
+      [{ u: 0.9, v: 0.5, z: tampo + 0.2, radius: 30, color: luz, intensity: 0.25 }],
+    );
+  },
+
+  // a câmera de fita no tripé, com a luzinha de gravando (até chegar camera-tripe.png)
+  camera_tripe(def) {
+    const [corpo, luz] = def.colors;
+    const cam: LBox = [0.35, 0.7, 0.4, 0.6, 1.3, 1.52];
+    return V(
+      [
+        N([0.15, 0.85, 0.15, 0.85, 0, 1.3], (p) => {
+          for (const [u, v] of [
+            [0.2, 0.3],
+            [0.2, 0.7],
+            [0.8, 0.5],
+          ])
+            p.line([u, v, 0], [0.5, 0.5, 1.28], '#2a2a2e', 3);
+        }),
+        N(cam, (p) => {
+          p.box(cam, corpo, { edge: 0.25 });
+          p.box([0.7, 0.8, 0.44, 0.56, 1.36, 1.48], '#111114', { edge: 0.3 });
+          p.box([0.4, 0.46, 0.55, 0.6, 1.53, 1.56], luz);
+        }),
+      ],
+      [{ u: 0.45, v: 0.58, z: 1.55, radius: 14, color: luz, intensity: 0.5, flicker: 0.5 }],
+    );
+  },
+
   keyboard(def) {
     const [c0] = def.colors;
     const kb: LBox = [0.5, 0.78, 0.14, 0.82, 0, 0.035];
