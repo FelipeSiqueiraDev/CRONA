@@ -271,6 +271,10 @@ Ainda falta (pedido do Felipe):
 - **A arte do gabinete do fliperama** foi para o Códex (SEÇÃO 0B do pedido, gabarito em
   `gabaritos/pedidos/fliperama/`): 13 PNGs, a mesma máquina da folha do tabuleiro, de frente. Quando chegar: trocar o
   gabinete de CSS pelas peças (a alavanca vira o direcional, com 4 zonas de toque; o botão grande vira o A).
+- **O fliperama do mapa refeito (F0, mesma seção):** o Felipe achou magrelo (0,62 m e ainda encolhido pelo `encaixe`).
+  O novo enche a casa: 0,74 × 0,74 × 1,85 m (`scripts/3d/pedidos/fliperama.json`). Ao importar: trocar o `real` e o
+  ponto da tela (`tela.giros`) na ficha de `moveis-bar.json`. Regra 12 nova no pedido: a referência de posição e
+  ângulo (`gabaritos/referencias/referencia-isometrico-moveis.webp`), para nada sair espichado ou magrelo.
 
 ## Fazenda: a arte do Códex entrando (08/10, madrugada)
 
