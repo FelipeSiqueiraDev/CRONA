@@ -13,9 +13,11 @@ export const isCenarioViagem = (s: unknown): s is CenarioViagem => CENARIOS_VIAG
 
 /** A hora do dia: muda a luz da cena (o escuro e a cor do ambiente). */
 export const HORAS_VIAGEM = [
+  { id: 'amanhecer', nome: 'Amanhecer', escuro: 0.2, ambiente: '#ffb48a' },
   { id: 'dia', nome: 'Dia', escuro: 0.08, ambiente: '#fff1d6' },
   { id: 'entardecer', nome: 'Entardecer', escuro: 0.3, ambiente: '#ff9a52' },
   { id: 'noite', nome: 'Noite', escuro: 0.62, ambiente: '#4a68c8' },
+  { id: 'madrugada', nome: 'Madrugada', escuro: 0.72, ambiente: '#3a3f8a' },
 ] as const;
 export type HoraViagem = (typeof HORAS_VIAGEM)[number]['id'];
 export const isHoraViagem = (s: unknown): s is HoraViagem => HORAS_VIAGEM.some((h) => h.id === s);
@@ -23,6 +25,7 @@ export const isHoraViagem = (s: unknown): s is HoraViagem => HORAS_VIAGEM.some((
 /** O clima lá fora: a chuva e a neblina são desenhadas por cima da cena. */
 export const CLIMAS_VIAGEM = [
   { id: 'limpo', nome: 'Limpo' },
+  { id: 'nublado', nome: 'Nublado' },
   { id: 'chuva', nome: 'Chuva' },
   { id: 'tempestade', nome: 'Tempestade' },
   { id: 'neblina', nome: 'Neblina' },

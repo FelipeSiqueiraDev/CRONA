@@ -2,19 +2,23 @@ import type { ViagemInfo } from '@crona/shared';
 import type { SpriteFrame } from './sprites';
 
 /**
- * O dioraminha da viagem (07/10), em pixel art, no estilo das referências do Felipe: uma ilha de formato irregular
- * flutuando no céu, com a terra em camadas aparecendo embaixo e umas pedrinhas soltas, e a estrada atravessando a ilha
- * de ponta a ponta. A van preta fica no meio, ABERTA por cima, com os agentes sentados lá dentro (sobe e desce de leve,
- * as rodas giram) e o mundo passa em cima da ilha: árvores, postes, cercas, arbustos e um carro de vez em quando na outra
- * mão. Desenhado em código numa tela pequena e ampliado com pixels grandes; a arte do Códex entra depois.
+ * O dioraminha da viagem (07/10), em pixel art, no estilo das referências do Felipe: uma ilha flutuando no céu, de
+ * contorno orgânico (arredondado, com reentrâncias e saliências feitas à mão), a grama com a beira clara, a terra em
+ * camadas com pedras encaixadas e o fundo afinando como ilha flutuante, umas pedrinhas soltas embaixo. A estrada atravessa
+ * a ilha de ponta a ponta. A van preta fica no meio, ABERTA por cima, com os agentes sentados lá dentro (sobe e desce de
+ * leve, as rodas giram) e o mundo passa em cima da ilha: árvores, postes, cercas, arbustos e um carro na outra mão.
+ * Os momentos do dia (amanhecer, dia, entardecer, noite, madrugada) mudam o céu, o sol ou a lua e a luz da ilha; os climas
+ * (nublado, chuva, tempestade, neblina) são desenhados em pixel por cima. A ilha é pintada uma vez (a terra, as pedras, a
+ * grama) e o que se mexe é desenhado a cada quadro, numa tela pequena ampliada com pixels grandes.
  */
 
 /** a ilha: o comprimento (ao longo da estrada) e a largura, em unidades; cada unidade anda (K, K/2) na tela */
 const LX = 38;
 const LY = 22;
 const K = 3;
-/** a espessura da ilha (a terra aparente embaixo), em px */
-const BOLO = 16;
+/** a espessura da terra na beira e quanto o fundo afina para baixo no meio (px) */
+const BOLO = 14;
+const PONTA = 16;
 /** unidades por segundo com a velocidade em 1 */
 const UNID_POR_S = 7;
 /** a estrada (em y) e a faixa do meio */
@@ -24,36 +28,34 @@ const MEIO = 10.2;
 const CONTORNO = '#17121c';
 
 type Pt = [number, number];
+type Rgb = [number, number, number];
 
 const aleat = (n: number, s = 0) => {
   const v = Math.sin(n * 127.1 + s * 311.7) * 43758.5453;
   return v - Math.floor(v);
 };
-
-const CEUS: Record<string, [string, string, string]> = {
-  dia: ['#7fcfee', '#c4ebf7', '#ffffff'],
-  entardecer: ['#e9845a', '#f6c27a', '#ffe7c4'],
-  noite: ['#141c3a', '#2b3a72', '#a9b6e8'],
+const rgb = (hex: string): Rgb => {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 };
 
-/** O contorno da ilha (em unidades): um retângulo de cantos redondos, limpo. */
-const ILHA: [number, number][] = (() => {
-  const pts: [number, number][] = [];
-  const r = 3.2;
-  const x0 = -1;
-  const y0 = -1;
-  const x1 = LX + 1;
-  const y1 = LY + 1;
-  const canto = (cx: number, cy: number, a0: number) => {
-    for (let i = 0; i <= 6; i++) {
-      const a = a0 + (i / 6) * (Math.PI / 2);
-      pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+/** O contorno da ilha (em unidades), desenhado à mão e arredondado (Chaikin): saliências e reentrâncias suaves. */
+const ILHA: Pt[] = (() => {
+  let pts: Pt[] = [
+    [-0.8, 3.5], [0.6, -0.6], [4, -1.6], [8.5, -1.2], [11.5, -2.2], [15, -1.4], [20, -1.8], [24, -0.9], [27.5, -2], [32, -1.5],
+    [36.5, -1], [39.3, 0.6], [40.3, 4], [39.6, 7.5], [40.6, 11], [40, 15], [40.8, 18.5], [39.5, 21.8], [36.5, 23.4],
+    [32, 23], [28, 24.2], [23.5, 23.4], [19, 24.3], [14, 23.5], [9.5, 24.2], [5, 23.4], [1.4, 22.8], [-0.9, 20.6],
+    [-1.6, 16.5], [-0.7, 12.5], [-1.5, 8],
+  ];
+  for (let it = 0; it < 2; it++) {
+    const novo: Pt[] = [];
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i];
+      const b = pts[(i + 1) % pts.length];
+      novo.push([a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25], [a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]);
     }
-  };
-  canto(x1 - r, y1 - r, 0);
-  canto(x0 + r, y1 - r, Math.PI / 2);
-  canto(x0 + r, y0 + r, Math.PI);
-  canto(x1 - r, y0 + r, (Math.PI * 3) / 2);
+    pts = novo;
+  }
   return pts;
 })();
 
@@ -67,6 +69,23 @@ function dentro(x: number, y: number): boolean {
   return d;
 }
 
+/** O céu de cada momento do dia (em cima, embaixo), a cor das nuvens e a luz que tinge a ilha. */
+const HORAS: Record<string, { ceu: [string, string]; nuvem: string; tinta: string | null; escuro: boolean }> = {
+  amanhecer: { ceu: ['#f2a0a8', '#ffd9a8'], nuvem: '#ffe4dc', tinta: 'rgba(255,150,120,0.16)', escuro: false },
+  dia: { ceu: ['#7fcfee', '#c4ebf7'], nuvem: '#ffffff', tinta: null, escuro: false },
+  entardecer: { ceu: ['#e2775a', '#f7c47a'], nuvem: '#ffe2c0', tinta: 'rgba(255,120,40,0.2)', escuro: false },
+  noite: { ceu: ['#121a38', '#2b3a72'], nuvem: '#6f7bb4', tinta: 'rgba(18,28,88,0.5)', escuro: true },
+  madrugada: { ceu: ['#06091b', '#1b2350'], nuvem: '#4e5890', tinta: 'rgba(8,12,50,0.6)', escuro: true },
+};
+/** O que o clima faz no céu (de dia e de noite) e na luz da ilha. */
+const CLIMAS: Record<string, { dia: [string, string]; noite: [string, string]; nuvem: string; tinta: string; nuvens: number } | null> = {
+  limpo: null,
+  nublado: { dia: ['#93a3b3', '#c8d1d9'], noite: ['#161b2b', '#2a3246'], nuvem: '#d7dde3', tinta: 'rgba(90,100,120,0.16)', nuvens: 14 },
+  chuva: { dia: ['#5a687a', '#8794a3'], noite: ['#0e121d', '#1d2433'], nuvem: '#9aa3ad', tinta: 'rgba(40,55,80,0.3)', nuvens: 16 },
+  tempestade: { dia: ['#353d4b', '#58626f'], noite: ['#090b13', '#151925'], nuvem: '#6d7580', tinta: 'rgba(24,28,48,0.42)', nuvens: 18 },
+  neblina: { dia: ['#bcc6cf', '#e2e7eb'], noite: ['#283042', '#465066'], nuvem: '#eef1f4', tinta: 'rgba(205,212,222,0.2)', nuvens: 6 },
+};
+
 export class DioramaViagem {
   private pos = 0;
   private vel = 0;
@@ -74,6 +93,13 @@ export class DioramaViagem {
   /** o canto (0, 0) da ilha na tela (muda com o tamanho da tela e com o sobe-desce) */
   private ox = 0;
   private oy = 0;
+  /** a ilha pintada (a terra, as pedras e a grama), feita uma vez; e onde fica o (0, 0) dela dentro da pintura */
+  private base: HTMLCanvasElement | null = null;
+  private baseO: Pt = [0, 0];
+  /** a tela do mundo (a ilha e o que passa), para a luz da hora tingir só ela */
+  private mundo = document.createElement('canvas');
+  /** as luzes (faróis, postes) desenhadas depois da tinta, para brilharem no escuro */
+  private luzes: (() => void)[] = [];
 
   private p(x: number, y: number, z = 0): Pt {
     return [Math.round(this.ox + (x - y) * K), Math.round(this.oy + ((x + y) * K) / 2 - z)];
@@ -119,7 +145,7 @@ export class DioramaViagem {
     this.chao(ctx, x0, x1, y0, y1, z1, topo, true);
   }
 
-  /** A roda na lateral de +y: o pneu, o aro e dois raios que giram (`ang`, em radianos). */
+  /** A roda na lateral de +y: o pneu, o aro e três parafusos que giram (`ang`, em radianos). */
   private roda(ctx: CanvasRenderingContext2D, cx: number, y: number, zc: number, ang: number) {
     const R = 1.5;
     const RZ = 4.5;
@@ -137,7 +163,7 @@ export class DioramaViagem {
     ctx.fillRect(hx, hy, 1, 1);
   }
 
-  private arvore(ctx: CanvasRenderingContext2D, x: number, y: number, tam: number, noite: boolean, tipo: number) {
+  private arvore(ctx: CanvasRenderingContext2D, x: number, y: number, tam: number, tipo: number) {
     const [bx, by] = this.p(x, y, 0);
     ctx.fillStyle = 'rgba(0,0,0,0.22)';
     ctx.fillRect(bx - 4, by, 9, 2);
@@ -146,7 +172,7 @@ export class DioramaViagem {
     ctx.fillStyle = '#6a4632';
     ctx.fillRect(bx, by - 6 * tam, 2, 6 * tam);
     const ipe = tipo === 2;
-    const cores = noite ? ['#1e4a33', '#25583c', '#2c6545'] : ipe ? ['#d99a1e', '#f0c33c', '#ffe27a'] : tipo === 1 ? ['#2a7a3a', '#3a9a46', '#5fbf5a'] : ['#2f8a3b', '#3fa54a', '#6fd06a'];
+    const cores = ipe ? ['#d99a1e', '#f0c33c', '#ffe27a'] : tipo === 1 ? ['#2a7a3a', '#3a9a46', '#5fbf5a'] : ['#2f8a3b', '#3fa54a', '#6fd06a'];
     const copa: [number, number, number][] = [
       [0, -11, 6.5],
       [-3, -13, 4.5],
@@ -165,12 +191,11 @@ export class DioramaViagem {
       ctx.arc(bx + 1 + dx, by + dy * tam, r * tam, 0, Math.PI * 2);
       ctx.fill();
     });
-    // o brilho da copa
-    ctx.fillStyle = noite ? '#356f4e' : ipe ? '#fff1b0' : '#9be38a';
+    ctx.fillStyle = ipe ? '#fff1b0' : '#9be38a';
     ctx.fillRect(bx - 1, Math.round(by - 17 * tam), 2, 1);
   }
 
-  private poste(ctx: CanvasRenderingContext2D, x: number, y: number, noite: boolean) {
+  private poste(ctx: CanvasRenderingContext2D, x: number, y: number, aceso: boolean) {
     const [bx, by] = this.p(x, y, 0);
     ctx.fillStyle = CONTORNO;
     ctx.fillRect(bx - 1, by - 26, 3, 26);
@@ -178,20 +203,23 @@ export class DioramaViagem {
     ctx.fillStyle = '#7a7f8a';
     ctx.fillRect(bx, by - 25, 1, 25);
     ctx.fillRect(bx, by - 26, 6, 1);
-    ctx.fillStyle = noite ? '#ffe9a0' : '#d8d6c4';
+    ctx.fillStyle = '#d8d6c4';
     ctx.fillRect(bx + 5, by - 25, 2, 1);
-    if (noite) {
-      ctx.fillStyle = 'rgba(255,233,160,0.16)';
-      ctx.beginPath();
-      ctx.moveTo(bx + 6, by - 24);
-      ctx.lineTo(bx + 16, by + 4);
-      ctx.lineTo(bx - 4, by + 4);
-      ctx.closePath();
-      ctx.fill();
-    }
+    if (aceso)
+      this.luzes.push(() => {
+        ctx.fillStyle = '#fff2b8';
+        ctx.fillRect(bx + 5, by - 25, 2, 1);
+        ctx.fillStyle = 'rgba(255,233,160,0.2)';
+        ctx.beginPath();
+        ctx.moveTo(bx + 6, by - 24);
+        ctx.lineTo(bx + 17, by + 4);
+        ctx.lineTo(bx - 5, by + 4);
+        ctx.closePath();
+        ctx.fill();
+      });
   }
 
-  private arbusto(ctx: CanvasRenderingContext2D, x: number, y: number, noite: boolean) {
+  private arbusto(ctx: CanvasRenderingContext2D, x: number, y: number) {
     const [bx, by] = this.p(x, y, 0);
     const bolas: [number, number, number][] = [
       [-3, -2, 3],
@@ -204,25 +232,23 @@ export class DioramaViagem {
       ctx.arc(bx + dx, by + dy, r + 1, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.fillStyle = noite ? '#24563a' : '#3c9a46';
+    ctx.fillStyle = '#3c9a46';
     for (const [dx, dy, r] of bolas) {
       ctx.beginPath();
       ctx.arc(bx + dx, by + dy, r, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.fillStyle = noite ? '#2f6a48' : '#7fd26e';
+    ctx.fillStyle = '#7fd26e';
     ctx.fillRect(bx - 1, by - 6, 2, 1);
-    if (!noite) {
-      ctx.fillStyle = '#ffd1e0';
-      ctx.fillRect(bx + 2, by - 3, 1, 1);
-    }
+    ctx.fillStyle = '#ffd1e0';
+    ctx.fillRect(bx + 2, by - 3, 1, 1);
   }
 
-  private cerca(ctx: CanvasRenderingContext2D, x: number, y: number, noite: boolean) {
+  private cerca(ctx: CanvasRenderingContext2D, x: number, y: number) {
     const [bx, by] = this.p(x, y, 0);
     ctx.fillStyle = CONTORNO;
     ctx.fillRect(bx - 1, by - 8, 3, 8);
-    ctx.fillStyle = noite ? '#5a4232' : '#9a7448';
+    ctx.fillStyle = '#9a7448';
     ctx.fillRect(bx, by - 7, 1, 7);
     ctx.fillRect(bx - 6, by - 6, 13, 1);
     ctx.fillRect(bx - 6, by - 3, 13, 1);
@@ -230,10 +256,10 @@ export class DioramaViagem {
 
   /**
    * A van preta, ABERTA por cima, parada no meio da ilha (o mundo é que anda): o piso, as paredes de dentro, os bancos
-   * com os agentes sentados (os retratos), a lateral de perto mais baixa (para ver quem está dentro), a cabine com o
-   * para-brisa, o capô e as rodas girando.
+   * com os agentes sentados (o boneco de cada um), a lateral de perto mais baixa (para ver quem está dentro), a cabine
+   * com o para-brisa, o capô e as rodas girando.
    */
-  private van(ctx: CanvasRenderingContext2D, now: number, noite: boolean, figuras: (SpriteFrame | null)[]) {
+  private van(ctx: CanvasRenderingContext2D, now: number, escuro: boolean, figuras: (SpriteFrame | null)[]) {
     const x0 = 10.5;
     const x1 = 23;
     const y0 = 10.8;
@@ -242,17 +268,21 @@ export class DioramaViagem {
     const z = 4 + (Math.sin(now / 90) > 0.6 ? 1 : 0);
     const alto = 15;
     const lataria = '#2c2c36';
-    const dentro = noite ? '#34343f' : '#4a4d58';
-    // a sombra na estrada e o facho dos faróis à noite
+    // a sombra na estrada e o facho dos faróis no escuro
     this.chao(ctx, x0 - 0.4, x1 + 3.6, y0 + 0.8, y1 + 1.4, 0, 'rgba(0,0,0,0.3)');
-    if (noite) this.poli(ctx, [this.p(x1 + 3.2, y0 + 0.6, 0), this.p(x1 + 13, y0 - 1.6, 0), this.p(x1 + 13, y1 + 1.4, 0), this.p(x1 + 3.2, y1 - 0.6, 0)], 'rgba(255,236,170,0.22)');
+    if (escuro)
+      this.luzes.push(() => {
+        this.poli(ctx, [this.p(x1 + 3.2, y0 + 0.6, 0), this.p(x1 + 14, y0 - 1.8, 0), this.p(x1 + 14, y1 + 1.6, 0), this.p(x1 + 3.2, y1 - 0.6, 0)], 'rgba(255,236,170,0.24)');
+        this.faceX(ctx, x1 + 3.2, y0 + 0.8, y0 + 1.7, z + 4, z + 6, '#fff6c8');
+        this.faceX(ctx, x1 + 3.2, y1 - 1.7, y1 - 0.8, z + 4, z + 6, '#fff6c8');
+      });
     // o piso
-    this.chao(ctx, x0, x1, y0, y1, z, dentro, true);
+    this.chao(ctx, x0, x1, y0, y1, z, '#4a4d58', true);
     // a parede de lá (vista por dentro) e a de trás (por dentro), com as janelas
     this.faceY(ctx, y0, x0, x1, z, z + alto, '#3a3b46', true);
-    for (const [a, b] of [[11.6, 14.8], [15.6, 18.8], [19.6, 22.4]] as const) this.faceY(ctx, y0, a, b, z + 8, z + 13, noite ? '#2a3f58' : '#7fb2cf');
+    for (const [a, b] of [[11.6, 14.8], [15.6, 18.8], [19.6, 22.4]] as const) this.faceY(ctx, y0, a, b, z + 8, z + 13, '#7fb2cf');
     this.faceX(ctx, x0, y0, y1, z, z + alto, '#33343e', true);
-    this.faceX(ctx, x0, y0 + 0.8, y1 - 0.8, z + 8, z + 13, noite ? '#2a3f58' : '#7fb2cf');
+    this.faceX(ctx, x0, y0 + 0.8, y1 - 0.8, z + 8, z + 13, '#7fb2cf');
     // a beira de cima das paredes (a lataria cortada)
     this.chao(ctx, x0, x1, y0 - 0.4, y0, z + alto, '#5a5a6a', true);
     this.chao(ctx, x0 - 0.4, x0, y0 - 0.4, y1, z + alto, '#5a5a6a', true);
@@ -281,7 +311,7 @@ export class DioramaViagem {
           ctx.restore();
         }
       }
-    // o painel e o volante, na frente do motorista
+    // o painel na frente dos bancos da frente
     this.caixa(ctx, x1 - 1.2, x1, y0, y1, z, z + 7, '#3a3a46', '#2a2a33', '#24242c');
     // a lateral de perto, mais baixa, para ver quem está dentro, com a porta de correr e a maçaneta
     this.faceY(ctx, y1, x0, x1, z, z + 7, lataria, true);
@@ -291,8 +321,8 @@ export class DioramaViagem {
     this.faceY(ctx, y1, x0, x0 + 0.5, z + 3, z + 6, '#c8322a');
     // a cabine: a coluna, o para-brisa (aberto em cima, só a moldura) e o retrovisor
     this.faceX(ctx, x1, y0, y1, z, z + alto, lataria, true);
-    this.faceX(ctx, x1, y0 + 0.6, y1 - 0.6, z + 8, z + alto - 1, noite ? '#3b5a78' : '#9cc9de', true);
-    this.faceX(ctx, x1, y0 + 1.2, y0 + 2, z + 9, z + alto - 2, noite ? '#4a6a88' : '#d4ecf6');
+    this.faceX(ctx, x1, y0 + 0.6, y1 - 0.6, z + 8, z + alto - 1, '#9cc9de', true);
+    this.faceX(ctx, x1, y0 + 1.2, y0 + 2, z + 9, z + alto - 2, '#d4ecf6');
     this.faceY(ctx, y1 + 0.5, x1 - 0.5, x1 + 0.3, z + 10, z + 12, CONTORNO);
     // o capô, a grade e os faróis
     this.caixa(ctx, x1, x1 + 3.2, y0 + 0.3, y1 - 0.3, z, z + 8, '#3c3c48', lataria, '#202028');
@@ -306,7 +336,7 @@ export class DioramaViagem {
   }
 
   /** Um carro na outra mão, de vez em quando, indo para o outro lado. */
-  private carro(ctx: CanvasRenderingContext2D, noite: boolean) {
+  private carro(ctx: CanvasRenderingContext2D, escuro: boolean) {
     const ciclo = 80;
     const t = (this.pos * 1.9) % ciclo;
     const n = Math.floor((this.pos * 1.9) / ciclo);
@@ -320,12 +350,138 @@ export class DioramaViagem {
     const z = 3;
     this.chao(ctx, x0 - 0.3, x0 + len + 0.6, y0 + 0.5, y1 + 0.9, 0, 'rgba(0,0,0,0.28)');
     this.caixa(ctx, x0, x0 + len, y0, y1, z, z + 6, cor, cor, cor);
-    this.caixa(ctx, x0 + 1.8, x0 + 5.4, y0 + 0.4, y1 - 0.4, z + 6, z + 10, '#e6e8ec', noite ? '#36506a' : '#8cc4de', noite ? '#36506a' : '#8cc4de');
-    // a lanterna de trás (o carro vai para lá: a traseira fica para cá)
-    this.faceX(ctx, x0 + len, y0 + 0.4, y0 + 1.2, z + 3, z + 5, '#c8322a');
-    this.faceX(ctx, x0 + len, y1 - 1.2, y1 - 0.4, z + 3, z + 5, '#c8322a');
+    this.caixa(ctx, x0 + 1.8, x0 + 5.4, y0 + 0.4, y1 - 0.4, z + 6, z + 10, '#e6e8ec', '#8cc4de', '#8cc4de');
+    // as lanternas de trás (o carro vai para lá: a traseira fica para cá), acesas no escuro
+    const lanterna = () => {
+      this.faceX(ctx, x0 + len, y0 + 0.4, y0 + 1.2, z + 3, z + 5, escuro ? '#ff5a4a' : '#c8322a');
+      this.faceX(ctx, x0 + len, y1 - 1.2, y1 - 0.4, z + 3, z + 5, escuro ? '#ff5a4a' : '#c8322a');
+    };
+    lanterna();
+    if (escuro) this.luzes.push(lanterna);
     const ang = this.pos * 0.9;
     for (const x of [x0 + 1.7, x0 + 5.8]) this.roda(ctx, x, y1, 3.3, ang);
+  }
+
+  /**
+   * A ilha pintada uma vez, pixel a pixel: a grama (com a beira clara e o contorno escuro), a terra em faixas embaixo da
+   * beira de cá, afinando para baixo no meio como ilha flutuante, com pedras encaixadas e a pontinha de baixo.
+   */
+  private pintarBase(): HTMLCanvasElement {
+    // o (0, 0) da ilha dentro da pintura, com folga em volta
+    const ox = (LY + 3) * K;
+    const oy = 4 * K;
+    const W = (LX + LY + 6) * K;
+    const H = ((LX + LY + 6) * K) / 2 + BOLO + PONTA + 10;
+    const salvo: Pt = [this.ox, this.oy];
+    this.ox = ox;
+    this.oy = oy;
+    const m = document.createElement('canvas');
+    m.width = W;
+    m.height = H;
+    const mc = m.getContext('2d')!;
+    this.caminho(mc, ILHA.map(([x, y]) => this.p(x, y)));
+    mc.fillStyle = '#fff';
+    mc.fill();
+    this.ox = salvo[0];
+    this.oy = salvo[1];
+    const mask = mc.getImageData(0, 0, W, H).data;
+    const topo = (x: number, y: number) => x >= 0 && y >= 0 && x < W && y < H && mask[(y * W + x) * 4 + 3] > 120;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext('2d')!;
+    const img = ctx.createImageData(W, H);
+    const d = img.data;
+    const pinta = (x: number, y: number, cor: Rgb) => {
+      if (x < 0 || y < 0 || x >= W || y >= H) return;
+      const i = (y * W + x) * 4;
+      d[i] = cor[0];
+      d[i + 1] = cor[1];
+      d[i + 2] = cor[2];
+      d[i + 3] = 255;
+    };
+    // as colunas da ilha: onde começa e termina a grama em cada uma
+    let xMin = W;
+    let xMax = 0;
+    const cima = new Int32Array(W).fill(-1);
+    const baixo = new Int32Array(W).fill(-1);
+    for (let x = 0; x < W; x++)
+      for (let y = 0; y < H; y++)
+        if (topo(x, y)) {
+          if (cima[x] < 0) cima[x] = y;
+          baixo[x] = y;
+          xMin = Math.min(xMin, x);
+          xMax = Math.max(xMax, x);
+        }
+    const terra = [rgb('#a27c5c'), rgb('#8f6b50'), rgb('#7b5b44'), rgb('#664a37')];
+    const gramaBeira = rgb('#3f8f3a');
+    const raiz = rgb('#5a3f2e');
+    const escuro = rgb(CONTORNO);
+    // a terra: cada coluna desce da beira de baixo da grama; mais funda no meio (a ponta da ilha flutuante)
+    const fundo = new Int32Array(W).fill(0);
+    for (let x = xMin; x <= xMax; x++) {
+      if (baixo[x] < 0) continue;
+      const t = (x - xMin) / Math.max(1, xMax - xMin);
+      const prof = Math.round(BOLO + PONTA * Math.pow(Math.sin(Math.PI * t), 1.6) + Math.sin(x * 0.31) * 1.2 + (aleat(x, 3) < 0.15 ? 1 : 0));
+      fundo[x] = prof;
+      for (let r = 1; r <= prof; r++) {
+        const y = baixo[x] + r;
+        if (r <= 2) {
+          pinta(x, y, gramaBeira);
+          continue;
+        }
+        // as faixas da terra, onduladas, mais escuras para baixo
+        const faixa = Math.floor((r + Math.round(Math.sin(x * 0.18) * 1.5)) / 4);
+        const tom = Math.min(3, Math.floor((r / prof) * 3.2));
+        pinta(x, y, terra[Math.min(3, tom + (faixa % 2 ? 1 : 0))]);
+      }
+      // o contorno escuro embaixo e as raizinhas penduradas
+      pinta(x, baixo[x] + prof + 1, escuro);
+      if (aleat(x, 9) < 0.08) {
+        const n = 1 + Math.floor(aleat(x, 10) * 3);
+        for (let k = 1; k <= n; k++) pinta(x, baixo[x] + prof + 1 + k, raiz);
+      }
+    }
+    // as bordas laterais da terra (a coluna vizinha mais rasa deixa ver a quina)
+    for (let x = xMin; x <= xMax; x++) {
+      if (!fundo[x]) continue;
+      for (const v of [x - 1, x + 1]) {
+        if (v < 0 || v >= W || fundo[v]) continue;
+        for (let r = 1; r <= fundo[x]; r++) pinta(x, baixo[x] + r, escuro);
+      }
+    }
+    // as pedras encaixadas na terra: blocos claros com o brilho em cima e a sombra embaixo
+    const pedra = rgb('#b48e6c');
+    const brilho = rgb('#d0a982');
+    const sombra = rgb('#5e4434');
+    for (let x = xMin + 3, i = 0; x < xMax - 3; i++) {
+      const larg = 3 + Math.floor(aleat(i, 11) * 4);
+      const alt = 2 + Math.floor(aleat(i, 12) * 2);
+      if (baixo[x] >= 0 && fundo[x] > 8) {
+        const r0 = 4 + Math.floor(aleat(i, 13) * Math.max(1, fundo[x] - alt - 7));
+        for (let dx = 0; dx < larg; dx++) {
+          const xx = x + dx;
+          if (baixo[xx] < 0 || fundo[xx] < r0 + alt + 2) continue;
+          for (let dy = 0; dy < alt; dy++) pinta(xx, baixo[xx] + r0 + dy, dy === 0 ? brilho : pedra);
+          pinta(xx, baixo[xx] + r0 + alt, sombra);
+        }
+      }
+      x += larg + 2 + Math.floor(aleat(i, 14) * 5);
+    }
+    // a grama: o topo, com a beira de cima clara, umas manchas e o contorno escuro
+    const g0 = rgb('#5fbf4f');
+    const g1 = rgb('#70cb5c');
+    const gClaro = rgb('#9be38a');
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (!topo(x, y)) continue;
+        const borda = !topo(x - 1, y) || !topo(x + 1, y) || !topo(x, y - 1) || !topo(x, y + 1);
+        if (borda) pinta(x, y, !topo(x, y - 1) ? gClaro : escuro);
+        else pinta(x, y, aleat(x * 7 + y, 15) < 0.1 ? g1 : g0);
+      }
+    ctx.putImageData(img, 0, 0);
+    this.baseO = [ox, oy];
+    return c;
   }
 
   /** Desenha a cena inteira (o céu, as nuvens e a ilha) numa tela pequena de `w` × `h`. */
@@ -334,8 +490,11 @@ export class DioramaViagem {
     this.ultimo = now;
     this.vel += (Math.max(0.35, v.velocidade) - this.vel) * Math.min(1, dt * 1.5);
     this.pos += this.vel * UNID_POR_S * dt;
-    const noite = v.hora === 'noite';
-    const [c0, c1, nuv] = CEUS[v.hora] ?? CEUS.dia;
+    const hora = HORAS[v.hora] ?? HORAS.dia;
+    const clima = CLIMAS[v.clima ?? 'limpo'] ?? null;
+    const escuro = hora.escuro || v.clima === 'tempestade';
+    const [c0, c1] = clima ? (hora.escuro ? clima.noite : clima.dia) : hora.ceu;
+    const corNuvem = clima ? (hora.escuro ? hora.nuvem : clima.nuvem) : hora.nuvem;
     ctx.imageSmoothingEnabled = false;
     // o céu
     const g = ctx.createLinearGradient(0, 0, 0, h);
@@ -343,127 +502,213 @@ export class DioramaViagem {
     g.addColorStop(1, c1);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
-    if (noite) {
+    if (hora.escuro && (!clima || v.clima === 'nublado')) {
       ctx.fillStyle = '#e8ecff';
-      for (let i = 0; i < 50; i++) if (Math.sin(now / 700 + i) > -0.6) ctx.fillRect(Math.floor(aleat(i, 1) * w), Math.floor(aleat(i, 2) * h * 0.8), 1, 1);
+      const n = v.hora === 'madrugada' ? 90 : 55;
+      for (let i = 0; i < n; i++) if (Math.sin(now / 700 + i) > -0.6) ctx.fillRect(Math.floor(aleat(i, 1) * w), Math.floor(aleat(i, 2) * h * 0.85), 1, 1);
     }
-    // as nuvens de trás, passando devagar
-    for (let i = 0; i < 7; i++) this.nuvem(ctx, ((aleat(i, 3) * w - now / (120 + i * 30)) % (w + 40) + w + 40) % (w + 40) - 20, 8 + aleat(i, 4) * h * 0.8, nuv, 0.5);
-    // a ilha: o meio dela no meio da tela, subindo e descendo devagar
+    if (!clima || v.clima === 'nublado') this.astro(ctx, w, h, v.hora);
+    // as nuvens de trás, passando devagar (mais e mais escuras com o tempo fechado)
+    const nNuvens = clima?.nuvens ?? 7;
+    for (let i = 0; i < nNuvens; i++) this.nuvem(ctx, ((aleat(i, 3) * w - now / (120 + i * 30)) % (w + 40) + w + 40) % (w + 40) - 20, 8 + aleat(i, 4) * h * 0.8, corNuvem, clima ? 0.75 : 0.5, aleat(i, 5) < 0.4);
+    // o mundo (a ilha e o que passa) numa tela só, para a luz da hora tingir só ele
+    if (this.mundo.width !== w || this.mundo.height !== h) {
+      this.mundo.width = w;
+      this.mundo.height = h;
+    }
+    const mc = this.mundo.getContext('2d')!;
+    mc.imageSmoothingEnabled = false;
+    mc.clearRect(0, 0, w, h);
     const bob = Math.round(Math.sin(now / 1200) * 2);
     this.ox = Math.round(w / 2 - (LX - LY) * K * 0.5);
-    this.oy = Math.round(h / 2 - ((LX + LY) * K) / 4 - 4 + bob);
-    this.pedrinhas(ctx, now, noite);
-    this.ilha(ctx, v, noite, now, figuras);
+    this.oy = Math.round(h / 2 - ((LX + LY) * K) / 4 - 10 + bob);
+    this.luzes = [];
+    this.pedrinhas(mc, now);
+    this.base ??= this.pintarBase();
+    mc.drawImage(this.base, this.ox - this.baseO[0], this.oy - this.baseO[1]);
+    this.emCima(mc, v, now, figuras, escuro);
+    // a luz da hora e do clima, só no mundo
+    mc.globalCompositeOperation = 'source-atop';
+    for (const t of [hora.tinta, clima?.tinta]) {
+      if (!t) continue;
+      mc.fillStyle = t;
+      mc.fillRect(0, 0, w, h);
+    }
+    mc.globalCompositeOperation = 'source-over';
+    for (const l of this.luzes) l();
+    if (v.clima === 'chuva' || v.clima === 'tempestade') this.respingos(mc, now);
+    ctx.drawImage(this.mundo, 0, 0);
     // as nuvens da frente, poucas
-    for (let i = 0; i < 2; i++) this.nuvem(ctx, ((aleat(i, 9) * w - now / (80 + i * 25)) % (w + 40) + w + 40) % (w + 40) - 20, h * (0.76 + i * 0.1), nuv, 0.9);
+    for (let i = 0; i < 2; i++) this.nuvem(ctx, ((aleat(i, 9) * w - now / (80 + i * 25)) % (w + 40) + w + 40) % (w + 40) - 20, h * (0.8 + i * 0.09), corNuvem, 0.9, false);
+    // o clima por cima de tudo, em pixel
+    if (v.clima === 'chuva' || v.clima === 'tempestade') this.chuva(ctx, w, h, now, v.clima === 'tempestade');
+    if (v.clima === 'neblina') this.neblina(ctx, w, h, now, hora.escuro);
   }
 
-  private nuvem(ctx: CanvasRenderingContext2D, x: number, y: number, cor: string, a: number) {
+  /** O sol ou a lua, conforme a hora. */
+  private astro(ctx: CanvasRenderingContext2D, w: number, h: number, hora: string) {
+    const disco = (x: number, y: number, r: number, cor: string, borda: string) => {
+      ctx.fillStyle = borda;
+      ctx.beginPath();
+      ctx.arc(x, y, r + 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = cor;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    if (hora === 'dia') disco(Math.round(w * 0.82), Math.round(h * 0.16), 7, '#fff3a8', 'rgba(255,243,168,0.35)');
+    else if (hora === 'amanhecer') disco(Math.round(w * 0.8), Math.round(h * 0.62), 10, '#ffd27a', 'rgba(255,210,122,0.35)');
+    else if (hora === 'entardecer') disco(Math.round(w * 0.18), Math.round(h * 0.55), 12, '#ff9a4a', 'rgba(255,154,74,0.35)');
+    else {
+      // a lua minguante: um disco claro com um pedaço do céu por cima
+      const [x, y] = hora === 'noite' ? [Math.round(w * 0.8), Math.round(h * 0.18)] : [Math.round(w * 0.22), Math.round(h * 0.3)];
+      disco(x, y, 7, '#eef0ff', 'rgba(220,226,255,0.2)');
+      ctx.fillStyle = hora === 'noite' ? '#18224a' : '#0a0f28';
+      ctx.beginPath();
+      ctx.arc(x + 4, y - 2, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  private nuvem(ctx: CanvasRenderingContext2D, x: number, y: number, cor: string, a: number, grande: boolean) {
     const bx = Math.round(x);
     const by = Math.round(y);
+    const k = grande ? 2 : 1;
     ctx.globalAlpha = a;
     ctx.fillStyle = cor;
-    ctx.fillRect(bx - 9, by, 19, 3);
-    ctx.fillRect(bx - 6, by - 3, 13, 3);
-    ctx.fillRect(bx - 2, by - 5, 6, 2);
+    ctx.fillRect(bx - 9 * k, by, 19 * k, 3 * k);
+    ctx.fillRect(bx - 6 * k, by - 3 * k, 13 * k, 3 * k);
+    ctx.fillRect(bx - 2 * k, by - 5 * k, 6 * k, 2 * k);
     ctx.globalAlpha = 1;
   }
 
+  /** A chuva em pixel: traços curtos na diagonal; na tempestade, mais forte e com o relâmpago. */
+  private chuva(ctx: CanvasRenderingContext2D, w: number, h: number, now: number, forte: boolean) {
+    const n = Math.round(((w * h) / 900) * (forte ? 2.2 : 1.2));
+    ctx.fillStyle = forte ? 'rgba(210,225,255,0.7)' : 'rgba(210,225,255,0.55)';
+    const vel = forte ? 0.32 : 0.22;
+    for (let i = 0; i < n; i++) {
+      const y = Math.floor((now * vel * (0.8 + aleat(i, 21) * 0.4) + aleat(i, 22) * (h + 10)) % (h + 10)) - 5;
+      const x = Math.floor((aleat(i, 23) * (w + h * 0.4) - y * 0.4) % (w + 10));
+      ctx.fillRect(x, y, 1, 1);
+      ctx.fillRect(x - 1, y + 2, 1, 1);
+      ctx.fillRect(x - 1, y + 3, 1, 1);
+    }
+    if (!forte) return;
+    // o relâmpago: um clarão duplo de tempos em tempos, com o raio no céu
+    const ciclo = Math.floor(now / 7000);
+    const t = now - (ciclo * 7000 + aleat(ciclo, 24) * 4500);
+    if (t < 0 || t > 380) return;
+    const a = t < 90 ? 0.55 : t < 170 ? 0.1 : t < 260 ? 0.45 : 0;
+    if (!a) return;
+    ctx.fillStyle = `rgba(230,236,255,${a})`;
+    ctx.fillRect(0, 0, w, h);
+    let x = Math.floor(w * (0.15 + aleat(ciclo, 25) * 0.7));
+    ctx.fillStyle = '#ffffff';
+    for (let y = 0; y < h * 0.35; y += 2) {
+      x += Math.floor((aleat(ciclo, y) - 0.5) * 4);
+      ctx.fillRect(x, y, 1, 2);
+    }
+  }
+
+  /** Os respingos da chuva no chão da ilha. */
+  private respingos(ctx: CanvasRenderingContext2D, now: number) {
+    ctx.fillStyle = 'rgba(220,235,255,0.7)';
+    const quadro = Math.floor(now / 120);
+    for (let i = 0; i < 26; i++) {
+      const x = aleat(i, quadro) * LX;
+      const y = aleat(i + 50, quadro) * LY;
+      if (!dentro(x, y)) continue;
+      const [px, py] = this.p(x, y);
+      ctx.fillRect(px - 1, py, 1, 1);
+      ctx.fillRect(px + 1, py, 1, 1);
+    }
+  }
+
+  /** A neblina em pixel: faixas claras de bordas recortadas, passando devagar por cima e em volta da ilha. */
+  private neblina(ctx: CanvasRenderingContext2D, w: number, h: number, now: number, escuro: boolean) {
+    const cor = escuro ? '180,190,215' : '235,240,245';
+    for (let i = 0; i < 9; i++) {
+      const y = Math.floor(h * (0.18 + i * 0.09) + Math.sin(now / 2500 + i) * 3);
+      const larg = Math.floor(w * (0.35 + aleat(i, 31) * 0.4));
+      const x = Math.floor(((aleat(i, 32) * w + now / (60 + i * 18)) % (w + larg)) - larg);
+      const alto = 3 + Math.floor(aleat(i, 33) * 4);
+      ctx.fillStyle = `rgba(${cor},${0.18 + aleat(i, 34) * 0.16})`;
+      ctx.fillRect(x, y, larg, alto);
+      ctx.fillRect(x + 4, y - 1, larg - 10, 1);
+      ctx.fillRect(x + 6, y + alto, larg - 14, 1);
+    }
+    ctx.fillStyle = `rgba(${cor},0.14)`;
+    ctx.fillRect(0, 0, w, h);
+  }
+
   /** As pedrinhas soltas embaixo da ilha, cada uma subindo e descendo no seu tempo. */
-  private pedrinhas(ctx: CanvasRenderingContext2D, now: number, noite: boolean) {
+  private pedrinhas(ctx: CanvasRenderingContext2D, now: number) {
     const [bx, by] = this.p(LX / 2, LY / 2, -BOLO);
     const pedras: [number, number, number][] = [
-      [-38, 22, 5],
-      [30, 30, 4],
-      [-8, 40, 3],
-      [52, 12, 3],
+      [-46, 26, 5],
+      [38, 34, 4],
+      [-14, 50, 3],
+      [58, 14, 3],
+      [12, 58, 2],
     ];
     pedras.forEach(([dx, dy, r], i) => {
       const y = by + dy + Math.round(Math.sin(now / (900 + i * 170) + i) * 2);
       const x = bx + dx;
       ctx.fillStyle = CONTORNO;
-      ctx.fillRect(x - r - 1, y - 1, r * 2 + 2, r + 2);
-      ctx.fillStyle = noite ? '#4a3a52' : '#8a6a55';
-      ctx.fillRect(x - r, y, r * 2, r);
-      ctx.fillStyle = noite ? '#2f6a3c' : '#5fbf4f';
+      ctx.fillRect(x - r - 1, y - 1, r * 2 + 2, r + 3);
+      ctx.fillStyle = '#8f6b50';
+      ctx.fillRect(x - r, y, r * 2, r + 1);
+      ctx.fillStyle = '#b48e6c';
+      ctx.fillRect(x - r, y, r * 2, 1);
+      ctx.fillStyle = '#5fbf4f';
       ctx.fillRect(x - r, y - 1, r * 2, 1);
     });
   }
 
-  private ilha(ctx: CanvasRenderingContext2D, v: ViagemInfo, noite: boolean, now: number, figuras: (SpriteFrame | null)[]) {
+  /** O que fica em cima da ilha: a estrada, os tufos, e o que passa (com a van no meio). */
+  private emCima(ctx: CanvasRenderingContext2D, v: ViagemInfo, now: number, figuras: (SpriteFrame | null)[], escuro: boolean) {
     const terra = v.cenario === 'terra';
     const topo: Pt[] = ILHA.map(([x, y]) => this.p(x, y));
-    // a terra aparente: o contorno repetido para baixo, em faixas limpas (a grama na beira, as camadas de terra e a base escura)
-    const faixa = (d: number) => {
-      if (d <= 2) return noite ? '#2a5a34' : '#4aa040';
-      if (d >= BOLO - 1) return noite ? '#241b2c' : '#4a3426';
-      const k = Math.floor((d - 3) / 4) % 2;
-      return noite ? (k ? '#3c2f46' : '#46384f') : k ? '#8a6650' : '#9c7759';
-    };
-    for (let d = BOLO; d >= 1; d--) {
-      this.caminho(ctx, topo.map(([x, y]) => [x, y + d] as Pt));
-      ctx.fillStyle = faixa(d);
-      ctx.fill();
-    }
-    this.caminho(ctx, topo.map(([x, y]) => [x, y + BOLO + 1] as Pt));
-    ctx.strokeStyle = CONTORNO;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    // umas pedras encravadas, espaçadas, nas duas faces que aparecem
-    ctx.fillStyle = noite ? '#2c2236' : '#6a4c3a';
-    for (let k = 0; k < 9; k++) {
-      const [px, py] = this.p(2 + k * 4.1, LY + 1, 0);
-      ctx.fillRect(px, py + 6 + (k % 2) * 4, 3, 2);
-    }
-    for (let k = 0; k < 5; k++) {
-      const [px, py] = this.p(LX + 1, 2 + k * 4.3, 0);
-      ctx.fillRect(px, py + 8 - (k % 2) * 3, 2, 2);
-    }
-    // a grama: o topo, com a beira de cima mais clara
-    const gr = noite ? ['#2f6a3c', '#3b7d47', '#4a8f56'] : ['#5fbf4f', '#77d063', '#9be38a'];
-    this.caminho(ctx, topo);
-    ctx.fillStyle = gr[0];
-    ctx.fill();
-    ctx.strokeStyle = CONTORNO;
-    ctx.stroke();
     ctx.save();
     this.caminho(ctx, topo);
     ctx.clip();
-    // tufos de grama mais clara, andando com o mundo
-    ctx.fillStyle = gr[1];
+    // tufos de grama mais clara e florzinhas, andando com o mundo
     for (let i = 0; i < 70; i++) {
       const x = (((aleat(i, 10) * (LX + 4) - this.pos) % (LX + 4)) + LX + 4) % (LX + 4) - 2;
       const y = aleat(i, 11) * LY;
       if (y > ESTRADA[0] - 0.3 && y < ESTRADA[1] + 0.3) continue;
       const [px, py] = this.p(x, y);
+      ctx.fillStyle = '#86d670';
       ctx.fillRect(px, py, 2, 1);
       if (aleat(i, 12) < 0.2) {
-        ctx.fillStyle = noite ? '#7a86b0' : aleat(i, 13) < 0.5 ? '#ffffff' : '#ffd1e0';
+        ctx.fillStyle = aleat(i, 13) < 0.5 ? '#ffffff' : '#ffd1e0';
         ctx.fillRect(px + 1, py - 1, 1, 1);
-        ctx.fillStyle = gr[1];
       }
     }
     // a estrada atravessando a ilha de ponta a ponta
     const [e0, e1] = ESTRADA;
     if (terra) {
-      this.chao(ctx, -4, LX + 4, e0, e1, 0, noite ? '#6a5236' : '#b48d5c');
-      for (const y of [6.4, 7.8, 12.4, 14]) this.chao(ctx, -4, LX + 4, y, y + 0.6, 0, noite ? '#5c4630' : '#9a754a');
-      // pedrinhas da terra batida, andando com o mundo
-      ctx.fillStyle = noite ? '#4c3a28' : '#8a6a42';
+      this.chao(ctx, -4, LX + 4, e0, e1, 0, '#b48d5c');
+      for (const y of [6.4, 7.8, 12.4, 14]) this.chao(ctx, -4, LX + 4, y, y + 0.6, 0, '#9a754a');
+      ctx.fillStyle = '#8a6a42';
       for (let i = 0; i < 26; i++) {
         const x = (((aleat(i, 14) * (LX + 8) - this.pos) % (LX + 8)) + LX + 8) % (LX + 8) - 4;
         const [px, py] = this.p(x, e0 + 0.5 + aleat(i, 15) * (e1 - e0 - 1));
         ctx.fillRect(px, py, 1, 1);
       }
     } else {
-      this.chao(ctx, -4, LX + 4, e0, e1, 0, noite ? '#23252c' : '#3e414a');
-      // a beira branca e a faixa amarela tracejada do meio
+      this.chao(ctx, -4, LX + 4, e0, e1, 0, '#3e414a');
       this.chao(ctx, -4, LX + 4, e0 + 0.3, e0 + 0.6, 0, '#d9dbde');
       this.chao(ctx, -4, LX + 4, e1 - 0.6, e1 - 0.3, 0, '#d9dbde');
       const passo = 5;
       for (let x = -4 - ((this.pos % passo) + passo) % passo; x < LX + 4; x += passo) this.chao(ctx, x, x + 2.4, MEIO - 0.25, MEIO + 0.25, 0, '#f0c33c');
+      // o asfalto molhado brilha com a chuva
+      if (v.clima === 'chuva' || v.clima === 'tempestade')
+        for (let x = -4 - ((this.pos * 0.5) % 9 + 9) % 9; x < LX + 4; x += 9) this.chao(ctx, x, x + 3, e0 + 2, e0 + 2.6, 0, 'rgba(200,215,240,0.18)');
     }
+    // a beira da estrada: a grama gasta encostando no asfalto
     ctx.restore();
     // o que passa, de trás para a frente: árvores e postes (ou a cerca) de lá, o carro, a van, os arbustos e árvores de cá
     const passa = (n: number, passo: number, y: number, f: (x: number, i: number) => void) => {
@@ -472,12 +717,12 @@ export class DioramaViagem {
         if (dentro(x, y) && dentro(x + 1.5, y) && dentro(x - 1.5, y)) f(x, i);
       }
     };
-    passa(6, 8, 1.6, (x, i) => this.arvore(ctx, x, 1.6 + aleat(i, 40) * 0.6, 1, noite, i % 3));
-    if (!terra) passa(3, 14, 3.4, (x) => this.poste(ctx, x, 3.4, noite));
-    else passa(10, 4, 3.3, (x) => this.cerca(ctx, x, 3.3, noite));
-    this.carro(ctx, noite);
-    this.van(ctx, now, noite, figuras);
-    passa(5, 8, 19, (x) => this.arbusto(ctx, x, 19, noite));
-    passa(3, 13, 20.2, (x, i) => this.arvore(ctx, x, 20.2, 0.75, noite, (i + 1) % 3));
+    passa(6, 8, 1.6, (x, i) => this.arvore(ctx, x, 1.6 + aleat(i, 40) * 0.6, 1, i % 3));
+    if (!terra) passa(3, 14, 3.4, (x) => this.poste(ctx, x, 3.4, escuro));
+    else passa(10, 4, 3.3, (x) => this.cerca(ctx, x, 3.3));
+    this.carro(ctx, escuro);
+    this.van(ctx, now, escuro, figuras);
+    passa(5, 8, 19.4, (x) => this.arbusto(ctx, x, 19.4));
+    passa(3, 13, 20.6, (x, i) => this.arvore(ctx, x, 20.6, 0.75, (i + 1) % 3));
   }
 }
