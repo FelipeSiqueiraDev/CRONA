@@ -263,8 +263,9 @@ export class RoomInstance {
       const lado = this.freeNear(back.x, back.y, -t.id);
       if (lado) [sx, sy] = [lado.x, lado.y];
     }
-    // chegando por uma passagem ocupada: vai para a casa livre mais perto dela
-    if (back && (this.occupied(sx, sy, -t.id) || this.map.walkState(sx, sy) !== 'walk')) {
+    // chegando por uma passagem ocupada (ou de outra cena sem passagem para cá, como a van da viagem, que
+    // deixa o grupo inteiro na porta): vai para a casa livre mais perto dela, e ninguém fica empilhado
+    if ((back || fromRoomId !== null) && (this.occupied(sx, sy, -t.id) || this.map.walkState(sx, sy) !== 'walk')) {
       const free = this.freeNear(sx, sy, -t.id);
       if (free) [sx, sy] = [free.x, free.y];
     }
