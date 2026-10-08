@@ -188,9 +188,9 @@ export function campoDado(rotulo: string, valor: number | null, max: number, fn:
   return h('label', { class: 'cb-caixa-dado' }, h('small', null, rotulo), inp);
 }
 
-/** Linha de aviso (sem chave) nas colunas da resolução. */
-export function linhaInfo(icone: NomeIcone, texto: string, cls: string): HTMLElement {
-  return h('div', { class: `cb-sit info ${cls}` }, h('span', { class: 'cb-sit-ic' }, ic(icone)), h('span', { class: 'cb-sit-txt' }, texto));
+/** Linha de aviso (sem chave) nas colunas da resolução; `arte` = o ícone pintado (arte/icones/<arte>.png), se houver. */
+export function linhaInfo(icone: NomeIcone, texto: string, cls: string, arte?: string): HTMLElement {
+  return h('div', { class: `cb-sit info ${cls}` }, h('span', { class: 'cb-sit-ic' }, arte ? arteOu([`/arte/icones/${arte}.png`], ic(icone)) : ic(icone)), h('span', { class: 'cb-sit-txt' }, texto));
 }
 
 /** Junta sem espaço: a linha não quebra no meio do crítico ("20/×2"). */
@@ -441,7 +441,7 @@ export class ResolucaoAtaque {
         if (t.metros <= m) linhas.push(this.info('mira', `Alcance ${cb.NOME_FAIXA[fx ?? k.arma.faixa!]}: sem penalidade (${cb.textoMetros(t.metros)})`, 'bom'));
         else if (t.metros > 2 * m) linhas.push(this.info('alerta', `Fora do alcance: ${cb.textoMetros(t.metros)}, passa do dobro (${cb.textoMetros(2 * m)})`, 'ruim'));
       }
-      if (t?.cobertura.tipo === 'total') linhas.push(this.info('escudo', `Cobertura total (${t.cobertura.nome}): não pode ser alvo`, 'ruim'));
+      if (t?.cobertura.tipo === 'total') linhas.push(this.info('escudo', `Cobertura total (${t.cobertura.nome}): não pode ser alvo`, 'ruim', 'sit-coberturaTotal'));
     }
     const vistas = new Set<cb.SituacaoId>();
     const chave = (id: cb.SituacaoId, texto: string, auto: boolean) => {
@@ -452,7 +452,8 @@ export class ResolucaoAtaque {
       return h(
         'label',
         { class: `cb-sit${on ? ' on' : ''}`, title: `${s.nome}: ${s.efeito} (LR p. ${s.pagina})${auto ? ' · visto no tabuleiro' : ''}` },
-        h('span', { class: 'cb-sit-ic' }, icSit(id)),
+        // a cobertura total tem o ícone dela (a parede de tijolos)
+        h('span', { class: 'cb-sit-ic' }, id === 'cobertura' && x.tab?.cobertura.tipo === 'total' ? arteOu(['/arte/icones/sit-coberturaTotal.png', '/arte/icones/sit-cobertura.png'], ic('escudo')) : icSit(id)),
         h('span', { class: 'cb-sit-txt' }, `${texto}: ${efeito}`),
         auto ? h('i', { class: 'cb-visto', title: 'Visto no tabuleiro' }, ic('olho')) : h('i', { class: 'cb-visto vazio' }),
         h('input', {
@@ -489,8 +490,8 @@ export class ResolucaoAtaque {
     );
   }
 
-  private info(icone: NomeIcone, texto: string, cls: string) {
-    return linhaInfo(icone, texto, cls);
+  private info(icone: NomeIcone, texto: string, cls: string, arte?: string) {
+    return linhaInfo(icone, texto, cls, arte);
   }
 
   private campo(rotulo: string, valor: number | null, max: number, fn: (n: number | null) => void, foco: string, grande = false): HTMLElement {

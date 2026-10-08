@@ -1541,7 +1541,8 @@ export class CombateScreen {
             title: pecaAtor.agachado ? 'Levantar: o corpo volta a 1,8 m' : 'Agachar (furtivo, atrás de um móvel): o corpo fica com 1,0 m e um móvel baixo já dá cobertura',
             onclick: () => (sfx.click(), this.app.net.send({ t: 'tokenEdit', tokenId: -ator.id, agachado: !pecaAtor.agachado })),
           },
-          icPintado('agachar'),
+          // em pé: o "agachar" (furtivo); agachado: o "protegido" (atrás do caixote)
+          icPintado('agachar', pecaAtor.agachado ? 'protegido' : 'agachar'),
           h('span', null, pecaAtor.agachado ? 'Agachado' : 'Em pé'),
         )
       : null;

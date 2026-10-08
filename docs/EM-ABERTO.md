@@ -299,6 +299,20 @@ Ainda falta (pedido do Felipe):
   ponto da tela (`tela.giros`) na ficha de `moveis-bar.json`. Regra 12 nova no pedido: a referência de posição e
   ângulo (`gabaritos/referencias/referencia-isometrico-moveis.webp`), para nada sair espichado ou magrelo.
 
+## Tarde de 08/10: a fila do Códex
+
+- **Ícones do combate no jogo:** as 18 situações do ataque (`arte/icones/sit-*.png`, entram sozinhas pelo `icSit`), a
+  cobertura total na linha e na chave de cobertura, e o botão de postura com o "agachar" (em pé) e o "protegido"
+  (agachado).
+- **A logo continua a de hoje** (o Felipe gosta dela): as duas propostas do Códex (`logo-crona-propostas.zip`) ficam
+  de fora.
+- **Esperando o Felipe conferir em casa:** o teste dos rituais, os ícones da mesa (Apontar, Desenhar, Mapa) e a viagem em
+  pixel. **Chegou e falta entrar:** ícones do celular, do interlúdio, da mochila e do objeto; a tecnologia cheia (com a
+  vista de cima) e o posto da enfermaria; a vista de cima da fazenda; o refazer do celeiro, da casa de mantimentos e do
+  casarão (com as portas abertas); os quadros, os beliches e a cama D; o altar e a sala dos corpos do calabouço.
+- **Som no celular:** o navegador só libera o som quando o dedo solta (`audioCelular.ts`); no iPhone, o modo reprodução
+  (o silencioso não cala mais).
+
 ## Fazenda: a arte do Códex entrando (08/10, madrugada)
 
 - **Já no jogo:** a casa por dentro (`moveis-fazenda-casa.json`, 17 peças); a natureza de fora
