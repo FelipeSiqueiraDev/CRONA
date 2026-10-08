@@ -116,6 +116,9 @@ function larguraDoDesenho(c: HTMLCanvasElement): number {
  */
 const DA_PAREDE = /^(portal|cell_door|cell_front|cell_wall|cell_bars|bars|iwall)/;
 
+/** A árvore e o arbusto: a copa passa da casa de propósito (o tronco é que pisa nela); não encolhem. */
+const COPA = /^(arvore|arbusto)$/;
+
 /**
  * Quanto a peça encolhe para caber nas casas dela. O desenho vai ao tamanho de verdade pela altura
  * (moveis.py), e o gerador costuma desenhar largo: a base passava da casa (o carrinho entrava na casa
@@ -132,7 +135,7 @@ function encaixe(chave: string, a: MovelArte, def: FurniDef, prontas: Imagens[])
   const salvo = encaixes.get(chave);
   if (salvo) return salvo;
   const e: Encaixe = { f: 1, base: null };
-  if (a.real && prontas.length && !DA_PAREDE.test(def.kind)) {
+  if (a.real && prontas.length && !DA_PAREDE.test(def.kind) && !COPA.test(def.kind)) {
     const [rw, rd] = a.real;
     const larguras = prontas.map((im) => im.largura * a.escala).sort((x, y) => x - y);
     const medida = larguras[Math.floor(larguras.length / 2)];
