@@ -522,15 +522,19 @@ const draws: Record<string, Draw> = {
     const r = rng(seed + 5);
     // o tamanho da letra sai da altura da peça: sete linhas, com o espaço do sangue escorrendo entre elas
     const lh = d.h / 7.2;
-    const fs = Math.round(lh * 0.72);
     ctx.save();
+    // a letra enche a parede: a maior linha cabe na largura, sem passar da altura da linha
+    ctx.font = '700 10px Georgia, "Times New Roman", serif';
+    const larga = Math.max(...linhas.map((l) => ctx.measureText(l).width + l.length * 0.4));
+    const fs = Math.max(6, Math.min(Math.round(lh * 0.78), Math.floor((10 * (d.w - 10)) / larga)));
     ctx.font = `700 ${fs}px Georgia, "Times New Roman", serif`;
     ctx.textBaseline = 'top';
     ctx.lineJoin = 'round';
     linhas.forEach((l, i) => {
       const y = 1 + i * lh;
-      // cada linha começa num canto diferente e sai torta, como escrita à mão na parede
-      let x = 2 + r() * 6;
+      // cada linha centralizada, um pouco fora do lugar e torta, como escrita à mão na parede
+      const largura = ctx.measureText(l).width + l.length * 0.4;
+      let x = Math.max(2, (d.w - largura) / 2 + (r() - 0.5) * 8);
       const inclina = (r() - 0.5) * 0.012;
       for (const ch of l) {
         ctx.save();

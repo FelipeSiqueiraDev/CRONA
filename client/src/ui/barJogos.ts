@@ -61,6 +61,8 @@ interface Aberta {
   titulo: HTMLElement | null;
   mesa: Mesa | null;
   saindo: boolean;
+  /** enquanto fecha: termina quando a tela some (quem abrir a mesma mesa de novo espera) */
+  fechou?: Promise<void>;
 }
 
 export class BarJogos {
@@ -81,6 +83,12 @@ export class BarJogos {
 
   private async abrir(m: Extract<ServerMsg, { t: 'bar' }>) {
     let a = this.abertas.get(m.mesa);
+    // a mesma mesa fechando (o servidor tirou e pôs de novo, ex.: a peça já estava sentada nela): espera a tela
+    // velha sumir e abre outra; sem isso, o fechamento levava a tela nova junto e só o F5 trazia o jogo
+    while (a?.saindo) {
+      await a.fechou;
+      a = this.abertas.get(m.mesa);
+    }
     if (a && a.tipo !== m.tipo) {
       await this.fechar(m.mesa);
       a = undefined;
@@ -143,15 +151,18 @@ export class BarJogos {
 
   private async fechar(id: number, aviso?: string) {
     const a = this.abertas.get(id);
-    if (!a || a.saindo) return;
+    if (!a || a.saindo) return a?.fechou;
     a.saindo = true;
-    sfx.arpejo([784, 659, 523, 392], 0.06);
-    await a.tela.apagar?.();
-    a.tela.desligar();
-    if (this.modo === 'celular') await this.pixels(a, false);
-    a.caixa.remove();
-    this.abertas.delete(id);
-    if (aviso) toast(aviso);
+    a.fechou = (async () => {
+      sfx.arpejo([784, 659, 523, 392], 0.06);
+      await a.tela.apagar?.();
+      a.tela.desligar();
+      if (this.modo === 'celular') await this.pixels(a, false);
+      a.caixa.remove();
+      if (this.abertas.get(id) === a) this.abertas.delete(id);
+      if (aviso) toast(aviso);
+    })();
+    return a.fechou;
   }
 
   /**
@@ -161,7 +172,8 @@ export class BarJogos {
   private async pixels(a: Aberta, entrando: boolean) {
     const el = a.caixa;
     const conteudo = el.querySelector('.bar-conteudo') as HTMLElement;
-    if (reduzido()) {
+    // sem animação com a tela escondida (o celular apagado): o requestAnimationFrame para e a troca ficaria presa
+    if (reduzido() || document.hidden) {
       conteudo.classList.toggle('hidden', !entrando);
       el.classList.toggle('some', !entrando);
       return;

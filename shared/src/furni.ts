@@ -415,7 +415,7 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'scanner_digital', name: 'Leitor de Digital', category: 'parede', kind: 'power_box', w: 10, h: 14, colors: ['#2a2d33', '#3fd0ff'] },
   { id: 'tv_grande', name: 'TV Grande', category: 'parede', kind: 'tv', w: 72, h: 42, colors: ['#141418', '#3a5a8a'], desc: 'TV de tela fina, grande, presa na parede.' },
   { id: 'quadro_fazenda', name: 'Quadro da Fazenda', category: 'parede', kind: 'painting', w: 36, h: 30, colors: ['#8a6a3a', '#3a2a1a'], desc: 'Um dos doze quadros do casarão: o pasto, a família em sépia, o cavalo, o bordado, o rio na neblina...' },
-  { id: 'escrita_sangue', name: 'Escrita de Sangue', category: 'parede', kind: 'escrita', w: 300, h: 122, colors: ['#b01212'], desc: 'Frases escritas com sangue na parede, à mão.' },
+  { id: 'escrita_sangue', name: 'Escrita de Sangue', category: 'parede', kind: 'escrita', w: 340, h: 136, colors: ['#c81414'], desc: 'Frases escritas com sangue na parede, à mão.' },
   { id: 'fuligem_parede', name: 'Fuligem na Parede', category: 'parede', kind: 'fuligem', w: 70, h: 110, colors: ['#0f0c0a'], desc: 'As marcas pretas que o fogo deixou subindo pela parede.' },
 ];
 

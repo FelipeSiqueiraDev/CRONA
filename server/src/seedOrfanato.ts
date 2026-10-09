@@ -21,7 +21,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * cada cômodo é uma cena, a porta principal numa parede do fundo; subiu ORFANATO_REV, o orfanato é refeito no lugar.
  */
 export const ORFANATO = "Orfanato · ";
-export const ORFANATO_REV = 12;
+export const ORFANATO_REV = 13;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -362,7 +362,7 @@ const CENAS: CenaSpec[] = [
     floor: corredorDaAla(),
     wall: [
       // no fim do corredor, as frases escritas com sangue (o texto inteiro vai na pista)
-      ["escrita_sangue", "r", 0, ALA_W / 2, 0.6, { icon: "inspect", title: "Escrito com sangue", text: FRASES, visible: true }],
+      ["escrita_sangue", "r", 0, ALA_W / 2, 0.3, { icon: "inspect", title: "Escrito com sangue", text: FRASES, visible: true }],
       // não tem luz: o fogo levou a fiação; as tochas que eles prenderam nas paredes
       ["tocha_parede", "l", 0, 2.0, 2.4],
       ...[1, 3, 5].map((i): WallSeed => ["tocha_parede", "l", ALA_X0, portaDoQuarto(i) + 2.5, 2.4]),
