@@ -13,7 +13,7 @@ import { bar } from '@crona/shared';
 import type { Dados, Mesa, TelaDoBar } from './barJogos';
 import { h } from './dom';
 import { musica, type NomeMusica } from './chiptune';
-import { Atravessa, COR, curto, fx, H, JOGOS, larguraTexto, Pong, PulaPula, semAcento, texto, W, type Botao, type Entrada, type Jogo } from './fliperamaJogos';
+import { Atravessa, COR, curto, fx, H, JOGOS, larguraTexto, Pong, PulaPula, semAcento, texto, W, type Botao, type Entrada, type Jogo, type Nivel } from './fliperamaJogos';
 import { sfx } from './sfx';
 import { vestirComArte } from './arteBar';
 
@@ -25,6 +25,25 @@ const LETREIRO = 'SUVACO SECO  *  O CHOPP MAIS GELADO DA REGIAO  *  DESDE 1987  
 const CHAVE = 'crona.fliperama.recordes';
 const MAX_RECORDES = 5;
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+/** A sensibilidade da alavanca e do teclado (09/10: o Felipe achou rápido demais): o quanto da velocidade máxima. */
+const SENSIBILIDADES = [
+  { nome: 'BAIXA', k: 0.5 },
+  { nome: 'MEDIA', k: 0.72 },
+  { nome: 'ALTA', k: 1 },
+];
+const NIVEIS = ['FACIL', 'NORMAL', 'DIFICIL'];
+const CHAVE_AJUSTES = 'crona.fliperama.ajustes';
+/** a zona morta da alavanca (do raio) e a curva da força: pouca inclinação, bem pouca velocidade */
+const ZONA_MORTA = 0.18;
+const CURVA = 1.6;
+function lerAjustes(): { nivel: Nivel; sens: number } {
+  try {
+    const a = JSON.parse(localStorage.getItem(CHAVE_AJUSTES) ?? '{}') as { nivel?: number; sens?: number };
+    return { nivel: (a.nivel === 0 || a.nivel === 2 ? a.nivel : 1) as Nivel, sens: a.sens === 0 || a.sens === 2 ? a.sens : 1 };
+  } catch {
+    return { nivel: 1, sens: 1 };
+  }
+}
 
 type Recorde = { n: string; p: number };
 type Estado = 'boot' | 'menu' | 'jogo' | 'fim' | 'nome' | 'tabela' | 'esperando' | 'convite';
@@ -108,6 +127,15 @@ export class Fliperama implements TelaDoBar {
   private apertou = new Set<Botao>();
   /** as direções que a alavanca está segurando (soltar a alavanca só larga estas, não as do teclado) */
   private alavanca = new Set<Botao>();
+  /** a alavanca agora (do meio até a borda, de -1 a 1), ou null solta */
+  private joyEixo: { x: number; y: number } | null = null;
+  /** a dificuldade e a sensibilidade escolhidas no menu (guardadas no aparelho) */
+  private nivel: Nivel = lerAjustes().nivel;
+  private sens = lerAjustes().sens;
+  /** a linha do menu onde está o cursor: os jogos, a dupla (com alguém na máquina), o nível e a sensibilidade */
+  private linha = 0;
+  /** o nível que veio no convite (em dupla vale o de quem chamou) */
+  private conviteNivel: Nivel = 1;
   private dedo: { x: number; y: number } | null = null;
   private tocou = false;
   // o que está na tela
@@ -254,6 +282,7 @@ export class Fliperama implements TelaDoBar {
       case 'convite':
         if (typeof d.jogo !== 'number' || !JOGOS[d.jogo]) return;
         this.convite = d.jogo;
+        this.conviteNivel = (d.nivel === 0 || d.nivel === 2 ? d.nivel : 1) as Nivel;
         this.partida = null;
         this.jogo = null;
         this.estado = 'convite';
@@ -267,7 +296,7 @@ export class Fliperama implements TelaDoBar {
         if (this.estado === 'esperando') (this.estado = 'menu'), this.avisar(`${curto(outro?.nome ?? '')} RECUSOU`);
         return;
       case 'aceita':
-        if (this.estado === 'esperando' && typeof d.jogo === 'number' && typeof d.semente === 'number') this.comecarDupla(d.jogo, d.semente, 0);
+        if (this.estado === 'esperando' && typeof d.jogo === 'number' && typeof d.semente === 'number') this.comecarDupla(d.jogo, d.semente, 0, this.nivel);
         return;
       case 'desistiu':
         if (this.partida) (this.partida = null), (this.jogo = null), (this.estado = 'menu'), this.avisar(`${curto(outro?.nome ?? '')} LARGOU A PARTIDA`);
@@ -357,6 +386,7 @@ export class Fliperama implements TelaDoBar {
       const d = Math.hypot(dx, dy);
       if (d > 1) (dx /= d), (dy /= d);
       bola.style.translate = `${dx * raio}px ${dy * raio}px`;
+      this.joyEixo = { x: dx, y: dy };
       aplicar(dx, dy);
     };
     let dedo: number | null = null;
@@ -372,6 +402,7 @@ export class Fliperama implements TelaDoBar {
       dedo = null;
       el.classList.remove('pegando');
       bola.style.translate = '';
+      this.joyEixo = null;
       aplicar(0, 0);
     };
     el.addEventListener('pointerup', solta);
@@ -434,7 +465,43 @@ export class Fliperama implements TelaDoBar {
   };
 
   private entrada(): Entrada {
-    return { segura: this.segura, apertou: this.apertou, dedo: this.dedo, tocou: this.tocou };
+    return { segura: this.segura, apertou: this.apertou, dedo: this.dedo, tocou: this.tocou, eixo: this.eixo() };
+  }
+
+  /** A força de cada eixo: a alavanca analógica (com a zona morta e a curva) ou o teclado; vezes a sensibilidade. */
+  private eixo() {
+    const k = SENSIBILIDADES[this.sens].k;
+    const j = this.joyEixo;
+    if (j) {
+      const d = Math.hypot(j.x, j.y);
+      if (d <= ZONA_MORTA) return { x: 0, y: 0 };
+      const m = ((Math.min(1, d) - ZONA_MORTA) / (1 - ZONA_MORTA)) ** CURVA;
+      return { x: (j.x / d) * m * k, y: (j.y / d) * m * k };
+    }
+    const s = this.segura;
+    return { x: ((s.has('dir') ? 1 : 0) - (s.has('esq') ? 1 : 0)) * k, y: ((s.has('baixo') ? 1 : 0) - (s.has('cima') ? 1 : 0)) * k };
+  }
+
+  /** As linhas do menu, de cima para baixo, com a altura de cada uma na tela do jogo. */
+  private linhasDoMenu(): { id: string; y: number }[] {
+    const l = JOGOS.map((_, i) => ({ id: `j${i}`, y: 46 + i * 16 }));
+    if (this.outro()) l.push({ id: 'dupla', y: 98 });
+    l.push({ id: 'nivel', y: 110 }, { id: 'sens', y: 122 });
+    return l;
+  }
+
+  /** Mexe no ajuste da linha (para a direita ou a esquerda) e guarda no aparelho. */
+  private ajustar(id: string, passo: number) {
+    if (id === 'dupla') this.dupla = !this.dupla;
+    else if (id === 'nivel') this.nivel = (((this.nivel + passo) % 3) + 3) % 3 as Nivel;
+    else if (id === 'sens') this.sens = (((this.sens + passo) % 3) + 3) % 3;
+    else return;
+    sfx.chip(880, 880, 0.04);
+    try {
+      localStorage.setItem(CHAVE_AJUSTES, JSON.stringify({ nivel: this.nivel, sens: this.sens }));
+    } catch {
+      /* sem armazenamento */
+    }
   }
 
   private passo() {
@@ -456,31 +523,37 @@ export class Fliperama implements TelaDoBar {
         if (this.bootQ >= 170 || (a && this.bootQ > 10)) this.estado = 'menu';
         break;
       case 'menu': {
+        const linhas = this.linhasDoMenu();
+        this.linha = Math.min(this.linha, linhas.length - 1);
         if (e.apertou.has('cima') || e.apertou.has('baixo')) {
-          this.sel = (this.sel + (e.apertou.has('cima') ? JOGOS.length - 1 : 1)) % JOGOS.length;
+          this.linha = (this.linha + (e.apertou.has('cima') ? linhas.length - 1 : 1)) % linhas.length;
+          if (this.linha < JOGOS.length) this.sel = this.linha;
           sfx.chip(660, 660, 0.04);
         }
-        if (outro && (e.apertou.has('esq') || e.apertou.has('dir'))) {
-          this.dupla = !this.dupla;
-          sfx.chip(880, 880, 0.04);
-        }
-        // o dedo: toca no jogo para escolher, toca de novo para começar; na linha da dupla, troca
+        const aqui = linhas[this.linha].id;
+        if (e.apertou.has('esq') || e.apertou.has('dir')) this.ajustar(aqui, e.apertou.has('esq') ? -1 : 1);
+        // o dedo: toca no jogo para escolher, toca de novo para começar; num ajuste, troca o valor
         if (e.tocou && e.dedo) {
-          if (outro && e.dedo.y >= 114 && e.dedo.y < 128) {
-            this.dupla = !this.dupla;
-            sfx.chip(880, 880, 0.04);
+          const i = linhas.findIndex((l) => Math.abs(e.dedo!.y + 1 - (l.y + 2)) <= 7);
+          if (i >= JOGOS.length) {
+            this.linha = i;
+            this.ajustar(linhas[i].id, e.dedo.x < W / 2 ? -1 : 1);
             break;
           }
-          const i = Math.floor((e.dedo.y - 52) / 20);
-          if (i >= 0 && i < JOGOS.length && i !== this.sel) {
-            this.sel = i;
+          if (i >= 0 && i !== this.sel) {
+            this.linha = this.sel = i;
             sfx.chip(660, 660, 0.04);
             break;
           }
+          if (i >= 0) this.linha = i;
+        }
+        if (a && this.linha >= JOGOS.length && !e.tocou) {
+          this.ajustar(aqui, 1);
+          break;
         }
         if (a) {
           if (outro && this.dupla) {
-            this.enviar({ tipo: 'convite', jogo: this.sel });
+            this.enviar({ tipo: 'convite', jogo: this.sel, nivel: this.nivel });
             this.estado = 'esperando';
             sfx.chip(660, 880, 0.12);
           } else this.comecar();
@@ -493,7 +566,7 @@ export class Fliperama implements TelaDoBar {
         if (a && this.convite !== null) {
           const semente = bar.novaSemente();
           this.enviar({ tipo: 'aceita', jogo: this.convite, semente });
-          this.comecarDupla(this.convite, semente, 1);
+          this.comecarDupla(this.convite, semente, 1, this.conviteNivel);
         }
         break;
       case 'jogo':
@@ -565,7 +638,8 @@ export class Fliperama implements TelaDoBar {
 
   /** A música de cada tela: a do menu, a de cada jogo, a fanfarra do recorde e a vinheta do fim. */
   private trilha() {
-    let alvo: NomeMusica | '' = 'menu';
+    // no menu (e no convite), o tema do jogo marcado: trocar de jogo troca a música
+    let alvo: NomeMusica | '' = JOGOS[this.estado === 'convite' && this.convite !== null ? this.convite : this.sel].id as NomeMusica;
     if (this.estado === 'boot') alvo = '';
     else if (this.estado === 'jogo') alvo = JOGOS[this.sel].id as NomeMusica;
     else if (this.estado === 'nome') alvo = 'recorde';
@@ -619,19 +693,19 @@ export class Fliperama implements TelaDoBar {
   }
 
   private comecar() {
-    this.jogo = JOGOS[this.sel].novo();
+    this.jogo = JOGOS[this.sel].novo(undefined, this.nivel);
     this.partida = null;
     this.estado = 'jogo';
     this.quadro = 0;
     sfx.arpejo([523, 784, 1046], 0.07);
   }
 
-  private comecarDupla(jogo: number, semente: number, lado: number) {
+  private comecarDupla(jogo: number, semente: number, lado: number, nivel: Nivel) {
     const outro = this.outro();
     this.sel = jogo;
     this.partida = { jogo, lado, outro: outro?.nome ?? '', fimOutro: null };
     const d = { semente, lado, outro: outro?.nome ?? '' };
-    this.jogo = JOGOS[jogo].id === 'pong' ? new Pong(lado === 0 ? 'dono' : 'convidado') : JOGOS[jogo].id === 'atravessa' ? new Atravessa(d) : new PulaPula(d);
+    this.jogo = JOGOS[jogo].id === 'pong' ? new Pong(lado === 0 ? 'dono' : 'convidado', nivel) : JOGOS[jogo].id === 'atravessa' ? new Atravessa(d, nivel) : new PulaPula(d, nivel);
     this.convite = null;
     this.estado = 'jogo';
     this.quadro = 0;
@@ -882,31 +956,44 @@ export class Fliperama implements TelaDoBar {
     this.titulo(g, 6);
     texto(g, 'SUVACO SECO', W / 2, 20, COR.cinza, 1, 'meio');
     this.listras(g, 30);
+    const linhas = this.linhasDoMenu();
+    const cursor = linhas[Math.min(this.linha, linhas.length - 1)]?.id;
+    const seta = 14 + Math.round(Math.sin(this.quadro * 0.2) * 1.5);
     JOGOS.forEach((j, i) => {
-      const y = 56 + i * 20;
+      const y = 46 + i * 16;
       const on = i === this.sel;
+      const aqui = cursor === `j${i}`;
       if (on) {
-        g.fillStyle = COR.escuro;
-        g.fillRect(10, y - 4, W - 20, 16);
-        // o cursor anda de leve para a frente e para trás
-        texto(g, '>', 14 + Math.round(Math.sin(this.quadro * 0.2) * 1.5), y, pisca ? COR.amarelo : COR.ouro, 2);
-        this.previa(g, j.id, y);
+        g.fillStyle = aqui ? COR.escuro : '#202028';
+        g.fillRect(10, y - 3, W - 20, 13);
+        this.previa(g, j.id, y - 1);
       }
+      // o cursor anda de leve para a frente e para trás
+      if (aqui) texto(g, '>', seta, y, pisca ? COR.amarelo : COR.ouro, 2);
       texto(g, j.nome, W / 2 - (on ? 8 : 0), y, on ? COR.branco : COR.cinza, 2, 'meio');
     });
     const j = JOGOS[this.sel];
-    // dois na máquina: sozinho ou em dupla
-    if (outro) {
-      const linha = this.dupla ? `< DUPLA COM ${curto(outro.nome)} >` : '< SOZINHO >';
-      texto(g, linha, W / 2, 118, this.dupla ? COR.rosa : COR.claro, 1, 'meio');
-    }
-    texto(g, this.dupla && outro ? (j.id === 'pong' ? 'UM CONTRA O OUTRO' : j.id === 'atravessa' ? 'LADO A LADO NA AVENIDA' : 'QUEM SUBIR MAIS VENCE') : j.dica, W / 2, 132, COR.verde, 1, 'meio');
-    if (this.dupla && outro) texto(g, 'A CHAMA PARA JOGAR', W / 2, 146, COR.medio, 1, 'meio');
+    // os ajustes: a dupla (com alguém na máquina), o nível e a sensibilidade, com < > em volta do valor
+    const ajuste = (id: string, y: number, rotulo: string, valor: string, cor: string) => {
+      const aqui = cursor === id;
+      if (aqui) {
+        g.fillStyle = COR.escuro;
+        g.fillRect(10, y - 2, W - 20, 9);
+        texto(g, '>', seta, y, pisca ? COR.amarelo : COR.ouro, 1);
+      }
+      texto(g, rotulo, 24, y, aqui ? COR.branco : COR.cinza, 1);
+      texto(g, aqui ? `< ${valor} >` : valor, W - 22, y, cor, 1, 'dir');
+    };
+    if (outro) ajuste('dupla', 98, 'JOGAR', this.dupla ? `DUPLA ${curto(outro.nome)}` : 'SOZINHO', this.dupla ? COR.rosa : COR.claro);
+    ajuste('nivel', 110, 'NIVEL', NIVEIS[this.nivel], [COR.verde, COR.amarelo, COR.vermelho][this.nivel]);
+    ajuste('sens', 122, 'ALAVANCA', SENSIBILIDADES[this.sens].nome, COR.azulClaro);
+    texto(g, this.dupla && outro ? (j.id === 'pong' ? 'UM CONTRA O OUTRO' : j.id === 'atravessa' ? 'LADO A LADO NA AVENIDA' : 'QUEM SUBIR MAIS VENCE') : j.dica, W / 2, 136, COR.verde, 1, 'meio');
+    if (this.dupla && outro) texto(g, 'A CHAMA PARA JOGAR', W / 2, 148, COR.medio, 1, 'meio');
     else if (j.recorde) {
       const l = this.lista();
-      if (!l.length) texto(g, 'SEM RECORDE AINDA', W / 2, 146, COR.medio, 1, 'meio');
+      if (!l.length) texto(g, 'SEM RECORDE AINDA', W / 2, 148, COR.medio, 1, 'meio');
       l.slice(0, 3).forEach((r, i) => texto(g, `${i + 1} ${r.n} ${String(r.p).padStart(5, ' ')}`, W / 2, 146 + i * 8, i === 0 ? COR.amarelo : COR.claro, 1, 'meio'));
-    } else texto(g, 'CONTRA A MAQUINA', W / 2, 146, COR.medio, 1, 'meio');
+    } else texto(g, 'CONTRA A MAQUINA', W / 2, 148, COR.medio, 1, 'meio');
     if (this.quadro < this.recadoAte) {
       g.fillStyle = COR.vermelho;
       g.fillRect(0, 170, W, 12);

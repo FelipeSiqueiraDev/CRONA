@@ -53,49 +53,86 @@ const MUSICAS: Record<string, Musica> = {
       { voz: 'bateria', vol: 0.5, notas: vezes(4, 'k . h . s . h . k k h . s . h h') },
     ],
   },
-  // o PONG: pouca coisa, um baixo de fundo (o de 1972 nem tinha música)
+  // o PONG (09/10, refeito): eletrônico de fliperama, ré menor, a melodia quicando entre duas oitavas como a bola
+  // (A: Dm, C, Bb, A; B: F, Am, Dm, A)
   pong: {
-    bpm: 100,
-    faixas: [
-      { voz: 'triangulo', vol: 0.2, notas: t('A2 . . A2 . . E2 . A2 . . A2 . . G2 .', 'F2 . . F2 . . C2 . E2 . . E2 . . G#2 .') },
-      { voz: 'pulso', vol: 0.05, notas: t('. . . . E5 . . . . . . . C5 . . .', '. . . . A4 . . . . . . . B4 . . .') },
-      { voz: 'bateria', vol: 0.35, notas: vezes(2, 'k . h . . . h . k . h . . . h h') },
-    ],
-  },
-  // o ATRAVESSA: correria na avenida (mi menor: Em, C, D, B)
-  atravessa: {
-    bpm: 150,
+    bpm: 118,
     faixas: [
       {
         voz: 'pulso',
-        vol: 0.09,
+        vol: 0.085,
+        notas: t(
+          'D5 . . A4 . . D5 . F5 . E5 . D5 . A4 .',
+          'C5 . . G4 . . C5 . E5 . D5 . C5 . G4 .',
+          'A#4 . . F4 . . A#4 . D5 . C5 . A#4 . F5 .',
+          'A4 . . E4 . . A4 . C#5 - E5 - A5 - - .',
+          'F5 . F5 . A5 . F5 . G5 . G5 . A#5 . G5 .',
+          'A5 . A5 . C6 . A5 . G5 - F5 - E5 - - .',
+          'D5 . F5 . A5 . D6 . C6 . A#5 . A5 . G5 .',
+          'F5 . E5 . D5 . C#5 . D5 - - - . . . .',
+        ),
+      },
+      { voz: 'quadrada', vol: 0.028, notas: t(...['D4 F4 A4 F4', 'C4 E4 G4 E4', 'A#3 D4 F4 D4', 'A3 C#4 E4 C#4', 'F4 A4 C5 A4', 'A3 C4 E4 C4', 'D4 F4 A4 F4', 'A3 C#4 E4 C#4'].map((a) => `${a} ${a} ${a} ${a}`)) },
+      { voz: 'triangulo', vol: 0.21, notas: t(...['D2', 'C2', 'A#1', 'A1', 'F2', 'A1', 'D2', 'A1'].map((r) => { const o = r.replace(/\d/, (n) => String(Number(n) + 1)); return `${r} . ${o} . ${r} . ${o} . ${r} . ${o} . ${r} ${r} ${o} .`; })) },
+      { voz: 'bateria', vol: 0.38, notas: vezes(4, 'k . h . s . h . k . h k s . h h') },
+    ],
+  },
+  // o ATRAVESSA: correria na avenida (mi menor; A: Em, C, D, B; B: G, Am, D, Em-B)
+  atravessa: {
+    bpm: 156,
+    faixas: [
+      {
+        voz: 'pulso',
+        vol: 0.085,
         notas: t(
           'B4 . E5 . G5 . E5 . B5 . A5 G5 F#5 . E5 .',
           'C5 . E5 . G5 . E5 . C6 . B5 A5 G5 . E5 .',
           'D5 . F#5 . A5 . F#5 . D6 . C6 B5 A5 . F#5 .',
           'B4 . D#5 . F#5 . B5 . A5 - G5 - F#5 - D#5 .',
+          'G5 . G5 . A5 . B5 . D6 . B5 . A5 . G5 .',
+          'A5 . A5 . B5 . C6 . E6 . C6 . B5 . A5 .',
+          'F#5 . G5 . A5 . B5 . A5 . G5 . F#5 . D5 .',
+          'E5 . F#5 . G5 . B5 . E6 - - - D#6 - B5 .',
         ),
       },
-      { voz: 'triangulo', vol: 0.22, notas: t(...['E2 E2 E3 E2', 'C2 C2 C3 C2', 'D2 D2 D3 D2', 'B1 B1 B2 B1'].map((b) => `${b} ${b} ${b} ${b}`)) },
+      { voz: 'quadrada', vol: 0.026, notas: t(...['E4 G4', 'E4 G4', 'G4 C5', 'D4 A4', 'D4 B4', 'C5 E5', 'D4 A4', 'D#4 B4'].map((a) => { const [x, y] = a.split(' '); return `. . ${x} . . . ${y} . . . ${x} . . . ${y} .`; })) },
+      { voz: 'triangulo', vol: 0.22, notas: t(...['E2 E2 E3 E2', 'C2 C2 C3 C2', 'D2 D2 D3 D2', 'B1 B1 B2 B1', 'G2 G2 G3 G2', 'A2 A2 A3 A2', 'D2 D2 D3 D2', 'E2 E2 B1 B1'].map((b) => `${b} ${b} ${b} ${b}`)) },
       { voz: 'bateria', vol: 0.45, notas: vezes(4, 'k h s h k h s h k h s h k k s h') },
     ],
   },
-  // o PULA-PULA: saltitante (dó maior: C, F, G, C)
+  // o PULA-PULA: saltitante (dó maior; A: C, F, G, C; B: Am, Dm, G, C), a melodia subindo como o agente
   pula: {
     bpm: 132,
     faixas: [
       {
         voz: 'pulso',
-        vol: 0.09,
+        vol: 0.085,
         notas: t(
           'C5 . E5 G5 . E5 C6 . G5 . E5 . G5 - - .',
           'A5 . F5 A5 . C6 A5 . F5 . A5 . C6 - - .',
           'B5 . G5 B5 . D6 B5 . G5 . B5 . D6 . B5 .',
           'C6 . G5 E5 . G5 C6 . E6 - D6 - C6 - - .',
+          'E6 . D6 . C6 . A5 . B5 . C6 . E6 - - .',
+          'F6 . E6 . D6 . A5 . B5 . D6 . F6 - - .',
+          'D6 . C6 . B5 . G5 . A5 . B5 . D6 . G6 .',
+          'E6 . G6 . E6 . C6 . D6 - B5 - C6 - - .',
         ),
       },
-      { voz: 'quadrada', vol: 0.03, notas: t(...['C5 E5 G5 E5', 'F4 A4 C5 A4', 'G4 B4 D5 B4', 'C5 E5 G5 C6'].map((a) => `${a} ${a} ${a} ${a}`)) },
-      { voz: 'triangulo', vol: 0.22, notas: t('C3 . . C3 G2 . C3 . C3 . . C3 G2 . E3 .', 'F2 . . F2 C3 . F2 . F2 . . F2 C3 . A2 .', 'G2 . . G2 D3 . G2 . G2 . . G2 D3 . B2 .', 'C3 . . C3 G2 . C3 . C3 . E3 . G3 . C3 .') },
+      { voz: 'quadrada', vol: 0.028, notas: t(...['C5 E5 G5 E5', 'F4 A4 C5 A4', 'G4 B4 D5 B4', 'C5 E5 G5 C6', 'A4 C5 E5 C5', 'D5 F5 A5 F5', 'G4 B4 D5 B4', 'C5 E5 G5 C6'].map((a) => `${a} ${a} ${a} ${a}`)) },
+      {
+        voz: 'triangulo',
+        vol: 0.22,
+        notas: t(
+          'C3 . . C3 G2 . C3 . C3 . . C3 G2 . E3 .',
+          'F2 . . F2 C3 . F2 . F2 . . F2 C3 . A2 .',
+          'G2 . . G2 D3 . G2 . G2 . . G2 D3 . B2 .',
+          'C3 . . C3 G2 . C3 . C3 . E3 . G3 . C3 .',
+          'A2 . . A2 E3 . A2 . A2 . . A2 E3 . C3 .',
+          'D3 . . D3 A2 . D3 . D3 . . D3 A2 . F2 .',
+          'G2 . . G2 D3 . G2 . G2 . B2 . D3 . G2 .',
+          'C3 . . C3 G2 . C3 . C3 . E3 . G3 . C4 .',
+        ),
+      },
       { voz: 'bateria', vol: 0.35, notas: vezes(4, 'k . h . s . h h k . h . s . h .') },
     ],
   },

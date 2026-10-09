@@ -30,6 +30,8 @@ export const W = 160;
 export const H = 192;
 
 export type Botao = 'cima' | 'baixo' | 'esq' | 'dir' | 'a';
+/** A dificuldade (09/10): 0 fácil, 1 normal, 2 difícil. */
+export type Nivel = 0 | 1 | 2;
 
 /** O que o jogador fez neste passo: o que está segurando, o que acabou de apertar e o dedo na tela. */
 export interface Entrada {
@@ -39,6 +41,11 @@ export interface Entrada {
   dedo: { x: number; y: number } | null;
   /** o dedo acabou de encostar */
   tocou: boolean;
+  /**
+   * Para onde e com que força (de -1 a 1 em cada eixo, já com a sensibilidade): a alavanca é analógica (pouca inclinação,
+   * pouca velocidade); no teclado, o máximo da sensibilidade. É o que move o agente e a raquete.
+   */
+  eixo: { x: number; y: number };
 }
 
 export interface Jogo {
@@ -257,7 +264,10 @@ export class Pong implements Jogo {
    * vindo de `remoto`; 'convidado' só mexe a própria raquete e desenha o que o dono manda (`aplicar`),
    * do ponto de vista dele (a raquete dele também à direita).
    */
-  constructor(private papel: 'sozinho' | 'dono' | 'convidado' = 'sozinho') {}
+  constructor(
+    private papel: 'sozinho' | 'dono' | 'convidado' = 'sozinho',
+    private nivel: Nivel = 1,
+  ) {}
 
   /** A raquete de quem joga deste celular (o convidado manda essa para o dono). */
   get minhaRaquete() {
@@ -271,8 +281,7 @@ export class Pong implements Jogo {
     if (e.dedo) {
       const alvo = e.dedo.y - this.RH / 2;
       this.eu += Math.max(-4.5, Math.min(4.5, alvo - this.eu));
-    } else if (e.segura.has('cima')) this.eu -= 2.6;
-    else if (e.segura.has('baixo')) this.eu += 2.6;
+    } else this.eu += 2.8 * e.eixo.y;
     this.eu = Math.max(this.topo, Math.min(this.base - this.RH, this.eu));
     const b = this.bola;
     if (this.papel === 'convidado') {
@@ -285,7 +294,7 @@ export class Pong implements Jogo {
     } else {
       // a máquina: olha a bola de tempos em tempos, erra um pouco e fica mais esperta quando você pontua
       if (this.q % 7 === 0) this.alvoEles = b.vx < 0 ? b.y - this.RH / 2 + aleat(-7, 7) : (this.topo + this.base) / 2 - this.RH / 2;
-      const vel = 1.35 + this.pontos * 0.12;
+      const vel = [1.0, 1.35, 1.8][this.nivel] + this.pontos * 0.12;
       this.eles += Math.max(-vel, Math.min(vel, this.alvoEles - this.eles));
     }
     this.eles = Math.max(this.topo, Math.min(this.base - this.RH, this.eles));
@@ -294,7 +303,8 @@ export class Pong implements Jogo {
       b.x = W / 2 - 1;
       b.y = (this.topo + this.base) / 2;
       if (--this.espera === 0) {
-        b.vx = this.saqueParaMim ? 1.4 : -1.4;
+        const saque = [1.15, 1.4, 1.7][this.nivel];
+        b.vx = this.saqueParaMim ? saque : -saque;
         b.vy = aleat(0.5, 1.1) * (Math.random() < 0.5 ? -1 : 1);
       }
       return;
@@ -306,7 +316,7 @@ export class Pong implements Jogo {
     const bate = (x: number, y: number) => b.x + 3 >= x && b.x <= x + this.RW && b.y + 3 >= y && b.y <= y + this.RH;
     const rebate = (y: number, lado: number) => {
       const rel = (b.y + 1.5 - (y + this.RH / 2)) / (this.RH / 2);
-      const v = Math.min(3.3, Math.abs(b.vx) + 0.12);
+      const v = Math.min([2.7, 3.3, 3.9][this.nivel], Math.abs(b.vx) + 0.12);
       b.vx = v * lado;
       b.vy = Math.max(-2.4, Math.min(2.4, rel * 2.3));
       sfx.chip(lado < 0 ? 523 : 440, lado < 0 ? 523 : 440, 0.05);
@@ -410,7 +420,10 @@ export class Atravessa implements Jogo {
   outro: { y: number; p: number; passos: number } | null = null;
   private xOutro = 0;
 
-  constructor(private dupla?: Dupla) {
+  constructor(
+    private dupla?: Dupla,
+    nivel: Nivel = 1,
+  ) {
     const rnd = bar.sorteio(dupla?.semente ?? bar.novaSemente());
     const aleat = (a: number, b: number) => a + rnd() * (b - a);
     if (dupla) {
@@ -419,9 +432,16 @@ export class Atravessa implements Jogo {
       this.xOutro = dupla.lado === 0 ? 108 : 44;
       this.outro = { y: 186, p: 0, passos: 0 };
     }
-    const vels = [0.55, 0.8, 1.1, 1.45, 1.9, 2.1, 1.6, 1.25, 0.9, 0.6];
+    // o nível: menos carros e mais devagar (fácil), ou mais cheio e mais rápido (difícil)
+    const ritmo = [0.72, 1, 1.3][nivel];
+    const vels = [0.55, 0.8, 1.1, 1.45, 1.9, 2.1, 1.6, 1.25, 0.9, 0.6].map((v) => v * ritmo);
+    const quantos = [
+      [1, 2],
+      [2, 3],
+      [3, 4],
+    ][nivel];
     for (let i = 0; i < 10; i++) {
-      const n = i % 3 === 0 ? 2 : 3;
+      const n = quantos[i % 3 === 0 ? 0 : 1];
       const caminhao = i === 2 || i === 7;
       const carros: Carro[] = [];
       for (let k = 0; k < n; k++) carros.push({ x: -24 + (k * VOLTA) / n + aleat(0, 16), w: caminhao && k === 0 ? 22 : 12, cor: CORES_CARRO[(i * 3 + k) % CORES_CARRO.length] });
@@ -450,10 +470,12 @@ export class Atravessa implements Jogo {
       this.y = Math.min(186, this.y + 1.1);
       return;
     }
-    const sobe = e.segura.has('cima') || e.segura.has('a') || !!e.dedo;
-    const desce = e.segura.has('baixo');
-    if (sobe) (this.y -= 0.85), this.passos++;
-    else if (desce && this.y < 186) (this.y = Math.min(186, this.y + 0.85)), this.passos++;
+    // a força da alavanca dá o passo (o A e o dedo andam no máximo)
+    const forte = e.segura.has('a') || !!e.dedo;
+    const sobe = forte ? 1 : Math.max(0, -e.eixo.y);
+    const desce = forte ? 0 : Math.max(0, e.eixo.y);
+    if (sobe > 0.02) (this.y -= 0.85 * sobe), this.passos++;
+    else if (desce > 0.02 && this.y < 186) (this.y = Math.min(186, this.y + 0.85 * desce)), this.passos++;
     if (this.y <= 20) {
       this.pontos++;
       fx.faiscas(this.x + 3, 18, CONFETE, 22, 2, 0.06, 40);
@@ -592,7 +614,10 @@ export class PulaPula implements Jogo {
   /** em dupla: os pontos do outro e se ele ainda está pulando */
   outro: { p: number; vivo: boolean } | null = null;
 
-  constructor(private dupla?: Dupla) {
+  constructor(
+    private dupla?: Dupla,
+    private nivel: Nivel = 1,
+  ) {
     this.rnd = bar.sorteio(dupla?.semente ?? bar.novaSemente());
     this.estrelas = Array.from({ length: 34 }, () => ({ x: Math.floor(this.al(0, W)), y: this.al(0, H), cor: this.rnd() < 0.3 ? COR.amarelo : COR.claro }));
     if (dupla) this.outro = { p: 0, vivo: true };
@@ -606,7 +631,8 @@ export class PulaPula implements Jogo {
 
   /** Mais alto, mais difícil: de 0 a 1. */
   private dificuldade() {
-    return Math.min(1, (168 - this.alto) / 5000);
+    const subida = (168 - this.alto) / 5000;
+    return Math.min(1, [subida * 0.6, subida, 0.15 + subida * 1.3][this.nivel]);
   }
 
   private gerar() {
@@ -616,7 +642,7 @@ export class PulaPula implements Jogo {
       const vao = this.al(16, 26 + d * 28);
       this.proxY -= vao;
       const anda = this.rnd() < 0.08 + d * 0.32;
-      const w = Math.round(22 - d * 4);
+      const w = Math.round(22 - d * 4) + [4, 0, -3][this.nivel];
       this.plats.push({ x: this.al(0, W - w), y: this.proxY, w, tipo: anda ? 'anda' : 'firme', vx: anda ? this.al(0.5, 0.9 + d) * (this.rnd() < 0.5 ? -1 : 1) : 0, mola: !anda && this.rnd() < 0.06, quebrada: false });
       // a que quebra é de enfeite: nunca é o único caminho
       if (this.rnd() < 0.1 + d * 0.2) this.plats.push({ x: this.al(0, W - w), y: this.proxY + vao / 2, w, tipo: 'quebra', vx: 0, mola: false, quebrada: false });
@@ -625,11 +651,13 @@ export class PulaPula implements Jogo {
 
   passo(e: Entrada) {
     if (this.fim) return;
-    const esq = e.segura.has('esq') || (!!e.dedo && e.dedo.x < W / 2);
-    const dir = e.segura.has('dir') || (!!e.dedo && e.dedo.x >= W / 2);
-    if (esq && !dir) (this.vx = Math.max(-2.1, this.vx - 0.3)), (this.lado = -1);
-    else if (dir && !esq) (this.vx = Math.min(2.1, this.vx + 0.3)), (this.lado = 1);
-    else this.vx *= 0.82;
+    // a força da alavanca dá a velocidade (o dedo, numa metade da tela, vai no máximo)
+    const forca = e.dedo ? (e.dedo.x < W / 2 ? -1 : 1) : e.eixo.x;
+    if (Math.abs(forca) > 0.02) {
+      const alvo = 2.1 * forca;
+      this.vx += Math.max(-0.3, Math.min(0.3, alvo - this.vx));
+      this.lado = forca < 0 ? -1 : 1;
+    } else this.vx *= 0.82;
     this.x += this.vx;
     if (this.x < -4) this.x = W + 4;
     if (this.x > W + 4) this.x = -4;
@@ -738,7 +766,7 @@ export class PulaPula implements Jogo {
 }
 
 export const JOGOS = [
-  { id: 'pong', nome: 'PONG', dica: 'PRIMEIRO A 7 VENCE', toque: 'O DEDO NA TELA MOVE A RAQUETE', recorde: false, novo: () => new Pong() },
-  { id: 'atravessa', nome: 'ATRAVESSA', dica: '90 SEGUNDOS NA AVENIDA', toque: 'SEGURE A TELA PARA ANDAR', recorde: true, novo: (d?: Dupla) => new Atravessa(d) },
-  { id: 'pula', nome: 'PULA-PULA', dica: 'SOBE SEM CAIR', toque: 'TOQUE NA ESQUERDA OU NA DIREITA', recorde: true, novo: (d?: Dupla) => new PulaPula(d) },
+  { id: 'pong', nome: 'PONG', dica: 'PRIMEIRO A 7 VENCE', toque: 'O DEDO NA TELA MOVE A RAQUETE', recorde: false, novo: (_d?: Dupla, n?: Nivel) => new Pong('sozinho', n) },
+  { id: 'atravessa', nome: 'ATRAVESSA', dica: '90 SEGUNDOS NA AVENIDA', toque: 'SEGURE A TELA PARA ANDAR', recorde: true, novo: (d?: Dupla, n?: Nivel) => new Atravessa(d, n) },
+  { id: 'pula', nome: 'PULA-PULA', dica: 'SOBE SEM CAIR', toque: 'TOQUE NA ESQUERDA OU NA DIREITA', recorde: true, novo: (d?: Dupla, n?: Nivel) => new PulaPula(d, n) },
 ] as const;
