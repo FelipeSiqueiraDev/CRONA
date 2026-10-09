@@ -663,9 +663,131 @@
 /* com o letreiro, a moldura e o painel pintados, a tela é a maior que cabe entre eles
    (a moldura tem 1,2 × a largura da tela e 1,4 × de altura; letreiro + painel + o espaço da alavanca = ~0,81 da largura) */
 .flip.tem-moldura.tem-letreiro.tem-painel {
-  --tela-l: min(calc((min(100cqw, 480px) - var(--s4) * 2) / 1.2), calc((100cqh - min(100cqw, 480px) * 0.81 - var(--s3) * 4) / 1.4));
+  --tela-l: min(calc((min(100cqw, 480px) - var(--s4) * 2) / 1.2), calc((100cqh - min(100cqw, 480px) * 0.69 - var(--s3) * 4) / 1.4));
 }
 /* o espaço que sobra (celular comprido) fica em volta da tela, e o painel desce para o pé do gabinete */
 .flip.tem-painel .flip-moldura {
   margin-block: auto;
+}
+
+/* =====================================================================
+   A ALAVANCA VISTA DE CIMA (09/10): a base redonda de metal e a bola vermelha que segue o dedão.
+   Com a arte do Códex, a bola é a da própria alavanca pintada (recortada em círculo); sem ela, desenhada.
+   ===================================================================== */
+.flip .flip-joy {
+  position: relative;
+  display: block;
+  width: calc(var(--u) * 30);
+  height: calc(var(--u) * 30);
+  justify-self: start;
+  touch-action: none;
+  cursor: grab;
+  filter: drop-shadow(0 calc(var(--u) * 1) calc(var(--u) * 1.5) rgba(0, 0, 0, 0.6));
+}
+.flip.tem-alavanca .flip-dpad.flip-joy,
+.flip.tem-alavanca .flip-dpad.flip-joy:has(.on) {
+  background: none;
+}
+.flip-joy-base {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #07070c 0 30%, #1a1a24 31% 34%, transparent 35%),
+    radial-gradient(circle at 38% 30%, #4a4a5a, #22222c 55%, #101016 100%);
+  box-shadow:
+    inset 0 calc(var(--u) * 0.5) 0 rgba(255, 255, 255, 0.12),
+    inset 0 calc(var(--u) * -0.8) calc(var(--u) * 1.2) rgba(0, 0, 0, 0.7),
+    0 0 0 calc(var(--u) * 0.6) #08080c,
+    0 0 0 calc(var(--u) * 1.1) rgba(255, 210, 122, 0.35);
+}
+/* os quatro parafusos da base */
+.flip-joy-base::before {
+  content: '';
+  position: absolute;
+  inset: 9%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 0, #9a9aa6 0 4%, transparent 4.5%),
+    radial-gradient(circle at 50% 100%, #9a9aa6 0 4%, transparent 4.5%),
+    radial-gradient(circle at 0 50%, #9a9aa6 0 4%, transparent 4.5%),
+    radial-gradient(circle at 100% 50%, #9a9aa6 0 4%, transparent 4.5%);
+}
+.flip-joy-bola {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40%;
+  height: 40%;
+  margin: -20% 0 0 -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #ffd0c8 0 8%, #ff5a4a 22%, #c8201c 58%, #6a0a0a 100%);
+  box-shadow:
+    0 calc(var(--u) * 1.2) calc(var(--u) * 1.4) rgba(0, 0, 0, 0.55),
+    inset 0 calc(var(--u) * -0.6) calc(var(--u) * 0.8) rgba(60, 0, 0, 0.6);
+  transition: translate 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+/* a bola pintada: a da alavanca do Códex (o meio dela em 160, 100 da imagem de 320; uns 80 de diâmetro) */
+.flip.tem-alavanca .flip-joy-bola {
+  background: var(--a-fliperama-alavanca-centro) no-repeat;
+  background-size: 400% 400%;
+  background-position: 50% 25%;
+  image-rendering: pixelated;
+}
+.flip-joy.pegando {
+  cursor: grabbing;
+}
+.flip-joy.pegando .flip-joy-bola {
+  transition: none;
+  scale: 1.06;
+}
+/* as setinhas de ouro, nas quatro direções da base */
+.flip-joy-seta {
+  position: absolute;
+  width: calc(var(--u) * 5);
+  height: calc(var(--u) * 4);
+  background: var(--c-ouro-hi);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  filter: drop-shadow(0 calc(var(--u) * 0.5) 0 #1b0d03);
+  opacity: 0.75;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+.flip-joy-seta.s-cima {
+  top: -2%;
+  left: 50%;
+  translate: -50% 0;
+}
+.flip-joy-seta.s-baixo {
+  bottom: -2%;
+  left: 50%;
+  translate: -50% 0;
+  rotate: 180deg;
+}
+.flip-joy-seta.s-esq {
+  left: -2%;
+  top: 50%;
+  translate: 0 -50%;
+  rotate: -90deg;
+}
+.flip-joy-seta.s-dir {
+  right: -2%;
+  top: 50%;
+  translate: 0 -50%;
+  rotate: 90deg;
+}
+.flip-joy-seta.on {
+  opacity: 1;
+  background: #fff3c4;
+  filter: drop-shadow(0 0 calc(var(--u) * 1.6) rgba(255, 210, 122, 0.95));
+}
+/* no painel pintado: a alavanca na chapa, na caixa dela (sem a bola subindo: agora é vista de cima) */
+.flip.tem-painel .flip-dpad.flip-joy {
+  left: 1%;
+  top: 2%;
+  width: 44%;
+}
+.flip.tem-painel .flip-controles {
+  margin-top: 0;
 }

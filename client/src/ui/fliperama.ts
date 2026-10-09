@@ -106,6 +106,8 @@ export class Fliperama implements TelaDoBar {
   // o que o jogador faz
   private segura = new Set<Botao>();
   private apertou = new Set<Botao>();
+  /** as direções que a alavanca está segurando (soltar a alavanca só larga estas, não as do teclado) */
+  private alavanca = new Set<Botao>();
   private dedo: { x: number; y: number } | null = null;
   private tocou = false;
   // o que está na tela
@@ -165,7 +167,6 @@ export class Fliperama implements TelaDoBar {
     this.tela.addEventListener('pointerup', soltar);
     this.tela.addEventListener('pointercancel', soltar);
 
-    const seta = (b: Botao, rotulo: string) => this.botao(h('button', { class: `flip-seta s-${b}`, type: 'button', 'aria-label': rotulo }, h('i')), b);
     const pequeno = (rotulo: string, fazer: () => void) =>
       h('button', { class: 'flip-mini', type: 'button', onclick: () => (sfx.click(), fazer()) }, h('i'), h('span', null, rotulo));
 
@@ -188,7 +189,7 @@ export class Fliperama implements TelaDoBar {
         h(
           'div',
           { class: 'flip-controles' },
-          h('div', { class: 'flip-dpad' }, seta('cima', 'Cima'), seta('esq', 'Esquerda'), seta('dir', 'Direita'), seta('baixo', 'Baixo'), h('span', { class: 'flip-dpad-meio' })),
+          this.joystick(),
           h('div', { class: 'flip-meio' }, pequeno('Menu', () => this.voltarAoMenu()), pequeno('Sair', () => this.m?.sair(this.melhor))),
           this.botao(h('button', { class: 'flip-a', type: 'button', 'aria-label': 'Botão A' }, h('span', null, 'A')), 'a'),
         ),
@@ -320,6 +321,63 @@ export class Fliperama implements TelaDoBar {
     musica.parar();
     sfx.chip(1600, 50, 0.4, 0.05);
     await new Promise((r) => window.setTimeout(r, 520));
+  }
+
+  /**
+   * A alavanca vista de cima (09/10, o Felipe: "o dedão na bolinha vermelha, ela vai acompanhando"): a bola segue o dedo
+   * dentro da base e a direção vira as setas do jogo (com diagonal); solta, ela volta ao meio. As setinhas de ouro em
+   * volta acendem na direção.
+   */
+  private joystick(): HTMLElement {
+    const bola = h('i', { class: 'flip-joy-bola' });
+    const setas = (['cima', 'baixo', 'esq', 'dir'] as Botao[]).map((b) => h('i', { class: `flip-joy-seta s-${b}`, 'data-b': b }));
+    const el = h('div', { class: 'flip-dpad flip-joy', role: 'application', 'aria-label': 'Alavanca: arraste para os lados' }, h('span', { class: 'flip-joy-base' }), ...setas, bola);
+    const ZONA = 0.3;
+    const aplicar = (dx: number, dy: number) => {
+      const novo = new Set<Botao>();
+      if (dy < -ZONA) novo.add('cima');
+      if (dy > ZONA) novo.add('baixo');
+      if (dx < -ZONA) novo.add('esq');
+      if (dx > ZONA) novo.add('dir');
+      for (const b of ['cima', 'baixo', 'esq', 'dir'] as Botao[]) {
+        if (novo.has(b) && !this.alavanca.has(b)) {
+          this.segura.add(b);
+          this.apertou.add(b);
+          navigator.vibrate?.(5);
+        } else if (!novo.has(b) && this.alavanca.has(b)) this.segura.delete(b);
+      }
+      this.alavanca = novo;
+      for (const sb of setas) sb.classList.toggle('on', novo.has(sb.dataset.b as Botao));
+    };
+    const mover = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      const raio = r.width * 0.32;
+      let dx = (e.clientX - (r.left + r.width / 2)) / raio;
+      let dy = (e.clientY - (r.top + r.height / 2)) / raio;
+      const d = Math.hypot(dx, dy);
+      if (d > 1) (dx /= d), (dy /= d);
+      bola.style.translate = `${dx * raio}px ${dy * raio}px`;
+      aplicar(dx, dy);
+    };
+    let dedo: number | null = null;
+    el.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      prender(el, e.pointerId);
+      dedo = e.pointerId;
+      el.classList.add('pegando');
+      mover(e);
+    });
+    el.addEventListener('pointermove', (e) => e.pointerId === dedo && mover(e));
+    const solta = () => {
+      dedo = null;
+      el.classList.remove('pegando');
+      bola.style.translate = '';
+      aplicar(0, 0);
+    };
+    el.addEventListener('pointerup', solta);
+    el.addEventListener('pointercancel', solta);
+    el.addEventListener('lostpointercapture', solta);
+    return el;
   }
 
   /** O botão do controle: segurar vale enquanto o dedo estiver nele. */
