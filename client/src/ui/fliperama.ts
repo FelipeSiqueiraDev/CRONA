@@ -24,6 +24,9 @@ const ESC = 4;
 const LETREIRO = 'SUVACO SECO  *  O CHOPP MAIS GELADO DA REGIAO  *  DESDE 1987  *  A FICHA E NO BALCAO  *  ';
 const CHAVE = 'crona.fliperama.recordes';
 const MAX_RECORDES = 5;
+/** O recorde de lenda (09/10, o Felipe): AON, 99999, sempre no topo de todo jogo do Feliperama. Não é gravado: só aparece. */
+const LENDA = { n: 'AON', p: 99999 };
+const ehLenda = (r: { n: string; p: number }) => r.n === LENDA.n && r.p === LENDA.p;
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 /** A sensibilidade da alavanca e do teclado (09/10: o Felipe achou rápido demais): o quanto da velocidade máxima. */
 const SENSIBILIDADES = [
@@ -725,8 +728,10 @@ export class Fliperama implements TelaDoBar {
     sfx.chip(440, 220, 0.1);
   }
 
+  /** A tabela do jogo marcado: a lenda (AON 99999) no topo e os recordes do aparelho embaixo. */
   private lista(): Recorde[] {
-    return this.recordes[JOGOS[this.sel].id] ?? [];
+    const guardados = (this.recordes[JOGOS[this.sel].id] ?? []).filter((r) => !ehLenda(r));
+    return [LENDA, ...guardados].slice(0, MAX_RECORDES);
   }
 
   private entraNoRecorde() {
@@ -740,7 +745,7 @@ export class Fliperama implements TelaDoBar {
     const p = this.jogo?.pontos ?? 0;
     const l = [...this.lista(), { n: this.iniciais, p }].sort((x, y) => y.p - x.p).slice(0, MAX_RECORDES);
     this.destaque = l.findIndex((r) => r.n === this.iniciais && r.p === p);
-    this.recordes = { ...lerRecordes(), [JOGOS[this.sel].id]: l };
+    this.recordes = { ...lerRecordes(), [JOGOS[this.sel].id]: l.filter((r) => !ehLenda(r)) };
     gravarRecordes(this.recordes);
     this.estado = 'tabela';
     this.espera = 40;
@@ -991,9 +996,12 @@ export class Fliperama implements TelaDoBar {
     if (this.dupla && outro) texto(g, 'A CHAMA PARA JOGAR', W / 2, 148, COR.medio, 1, 'meio');
     else if (j.recorde) {
       const l = this.lista();
-      if (!l.length) texto(g, 'SEM RECORDE AINDA', W / 2, 148, COR.medio, 1, 'meio');
       l.slice(0, 3).forEach((r, i) => texto(g, `${i + 1} ${r.n} ${String(r.p).padStart(5, ' ')}`, W / 2, 146 + i * 8, i === 0 ? COR.amarelo : COR.claro, 1, 'meio'));
-    } else texto(g, 'CONTRA A MAQUINA', W / 2, 148, COR.medio, 1, 'meio');
+    } else {
+      // o PONG não tem tabela, mas a lenda aparece mesmo assim
+      texto(g, 'CONTRA A MAQUINA', W / 2, 146, COR.medio, 1, 'meio');
+      texto(g, `1 ${LENDA.n} ${LENDA.p}`, W / 2, 156, COR.amarelo, 1, 'meio');
+    }
     if (this.quadro < this.recadoAte) {
       g.fillStyle = COR.vermelho;
       g.fillRect(0, 170, W, 12);
