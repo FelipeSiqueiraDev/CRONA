@@ -527,29 +527,38 @@
   aspect-ratio: 960 / 440;
   background: var(--a-fliperama-painel) center / 100% 100% no-repeat;
 }
+.flip.tem-painel .flip-controles {
+  /* a alavanca sobe acima da chapa (como num fliperama de verdade): espaço em cima para ela não encostar na tela */
+  margin-top: 12%;
+  margin-bottom: var(--s2);
+}
+/* maiores que no gabarito (o Felipe: "tudo pequenininho, sumido no meio do desenho"): a alavanca e o botão
+   passam um pouco da chapa, e o Menu e o Sair ganham o nome em destaque */
 .flip.tem-painel .flip-dpad {
   position: absolute;
-  left: 4.17%;
-  top: 13.64%;
-  width: 33.33%;
-  height: 72.73%;
+  left: -3%;
+  top: -34%;
+  width: 56%;
+  height: auto;
+  aspect-ratio: 1;
   --c: auto;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
 }
 .flip.tem-painel .flip-meio {
   position: absolute;
-  left: 41.67%;
-  top: 25.9%;
-  width: 16.67%;
-  height: 50.5%;
+  left: 44%;
+  top: 14%;
+  width: 19%;
+  height: 74%;
   padding: 0;
+  gap: 0;
   justify-content: space-between;
 }
 .flip.tem-painel .flip-a {
   position: absolute;
-  left: 68.54%;
-  top: 24.55%;
-  width: 23.33%;
+  left: 62%;
+  top: 2%;
+  width: 37%;
   height: auto;
   aspect-ratio: 1;
   margin: 0;
@@ -576,8 +585,29 @@
   background: none;
   box-shadow: none;
 }
+.flip.tem-alavanca .flip-dpad {
+  filter: drop-shadow(0 calc(var(--u) * 1.2) calc(var(--u) * 1.6) rgba(0, 0, 0, 0.65)) drop-shadow(0 0 calc(var(--u) * 2) rgba(255, 90, 90, 0.25));
+}
+/* as setinhas de ouro em volta da alavanca: mostram que ela vai para os quatro lados e acendem na direção apertada */
+.flip.tem-alavanca .flip-seta {
+  position: relative;
+}
 .flip.tem-alavanca .flip-seta i {
-  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: calc(var(--u) * 5.6);
+  height: calc(var(--u) * 4.6);
+  background: var(--c-ouro-hi);
+  filter: drop-shadow(0 0 0 #1b0d03) drop-shadow(calc(var(--u) * 0.45) 0 0 #1b0d03) drop-shadow(calc(var(--u) * -0.45) 0 0 #1b0d03) drop-shadow(0 calc(var(--u) * 0.6) 0 #1b0d03);
+  opacity: 0.9;
+  transition: opacity 0.1s;
+}
+.flip.tem-alavanca .flip-seta.on i {
+  opacity: 1;
+  background: #fff3c4;
+  filter: drop-shadow(0 0 calc(var(--u) * 1.6) rgba(255, 210, 122, 0.95));
 }
 /* o botão grande: a imagem solta e a apertada (o A escrito por cima) */
 .flip.tem-botao .flip-a,
@@ -612,8 +642,30 @@
 .flip.tem-painel.tem-mini .flip-mini i {
   width: 100%;
 }
+.flip.tem-painel .flip-mini {
+  gap: calc(var(--u) * 0.8);
+  min-height: 0;
+}
+.flip.tem-painel .flip-mini span {
+  font: 700 var(--t-meta) / 1 var(--f-pixel);
+  letter-spacing: 0.1em;
+  color: var(--c-ouro-hi);
+  text-shadow:
+    0 calc(var(--u) * 0.5) 0 #1b0d03,
+    0 0 calc(var(--u) * 1.5) rgba(0, 0, 0, 0.9);
+}
+.flip.tem-botao .flip-a {
+  filter: drop-shadow(0 calc(var(--u) * 1.2) calc(var(--u) * 1.6) rgba(0, 0, 0, 0.65));
+}
+.flip.tem-botao .flip-a span {
+  font-size: calc(var(--u) * 10);
+}
 /* com o letreiro, a moldura e o painel pintados, a tela é a maior que cabe entre eles
-   (a moldura tem 1,2 × a largura da tela e 1,4 × de altura; letreiro + painel = 660/960 da largura) */
+   (a moldura tem 1,2 × a largura da tela e 1,4 × de altura; letreiro + painel + o espaço da alavanca = ~0,81 da largura) */
 .flip.tem-moldura.tem-letreiro.tem-painel {
-  --tela-l: min(calc((min(100cqw, 480px) - var(--s4) * 2) / 1.2), calc((100cqh - min(100cqw, 480px) * 0.6875 - var(--s3) * 3) / 1.4));
+  --tela-l: min(calc((min(100cqw, 480px) - var(--s4) * 2) / 1.2), calc((100cqh - min(100cqw, 480px) * 0.81 - var(--s3) * 4) / 1.4));
+}
+/* o espaço que sobra (celular comprido) fica em volta da tela, e o painel desce para o pé do gabinete */
+.flip.tem-painel .flip-moldura {
+  margin-block: auto;
 }

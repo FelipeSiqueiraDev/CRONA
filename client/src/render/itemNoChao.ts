@@ -32,6 +32,33 @@ function silhueta(img: HTMLImageElement): HTMLCanvasElement {
   return c;
 }
 
+/**
+ * O contorno do ícone (09/10, o Felipe: o item não pode "se misturar" com o chão): a silhueta dilatada, no ouro do
+ * Apontar, feita uma vez por imagem. A espessura é uma fração do ícone (fica com ~1,5 px na tela, no tamanho do chão).
+ */
+const contornos = new WeakMap<HTMLImageElement, { c: HTMLCanvasElement; pad: number }>();
+const COR_CONTORNO = '#ffd27a';
+function contorno(img: HTMLImageElement) {
+  let o = contornos.get(img);
+  if (!o) {
+    const pad = Math.max(2, Math.round(Math.max(img.naturalWidth, img.naturalHeight) * 0.032));
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth + pad * 2;
+    c.height = img.naturalHeight + pad * 2;
+    const g = c.getContext('2d')!;
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2;
+      g.drawImage(img, pad + Math.cos(a) * pad, pad + Math.sin(a) * pad);
+    }
+    g.globalCompositeOperation = 'source-in';
+    g.fillStyle = COR_CONTORNO;
+    g.fillRect(0, 0, c.width, c.height);
+    o = { c, pad };
+    contornos.set(img, o);
+  }
+  return o;
+}
+
 export function desenharItemNoChao(ctx: CanvasRenderingContext2D, img: HTMLImageElement, sx: number, sy: number, lado: number, semente: number) {
   const t = performance.now() / 1000;
   const parado = !!reduz?.matches;
@@ -77,12 +104,19 @@ export function desenharItemNoChao(ctx: CanvasRenderingContext2D, img: HTMLImage
   ctx.drawImage(sil, -sw / 2, -sh / 2, sw, sh);
   ctx.restore();
 
-  // o ícone: apoiado no chão, inclinado, com um contorno de luz suave (o destaque)
+  // o ícone: apoiado no chão, inclinado, com o contorno de ouro fino (não se mistura com o chão) e a luz suave em volta
   ctx.save();
   ctx.translate(sx, sy - h * 0.3 + bob);
   ctx.rotate(inclina);
+  const ct = contorno(img);
+  const cw = ct.c.width * k;
+  const ch = ct.c.height * k;
   ctx.shadowColor = `rgba(255, 224, 160, ${(0.55 * pulso).toFixed(3)})`;
   ctx.shadowBlur = lado * 0.16;
+  ctx.globalAlpha = 0.75 + 0.2 * pulso;
+  ctx.drawImage(ct.c, -cw / 2, -ch / 2, cw, ch);
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
   ctx.drawImage(img, -w / 2, -h / 2, w, h);
   ctx.restore();
 }
