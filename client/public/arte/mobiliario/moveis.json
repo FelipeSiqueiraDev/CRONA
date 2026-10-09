@@ -10029,21 +10029,6 @@
    }
   }
  },
- "dartboard": {
-  "escala": 0.5,
-  "parede": {
-   "r": {
-    "arquivo": "dartboard/parede-r.png",
-    "ax": 23.5,
-    "ay": 47.0
-   },
-   "l": {
-    "arquivo": "dartboard/parede-l.png",
-    "ax": 23.5,
-    "ay": 46.5
-   }
-  }
- },
  "quadro_fazenda": {
   "escala": 0.5,
   "parede": {
