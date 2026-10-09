@@ -9402,6 +9402,17 @@
     247,
     247
    ]
+  },
+  "cimaEstados": {
+   "1": {
+    "arquivo": "mesa_holografica/cima-1.png",
+    "caixa": [
+     8,
+     8,
+     247,
+     247
+    ]
+   }
   }
  },
  "mesa_holografica!vazio": {
