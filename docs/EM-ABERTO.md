@@ -2,6 +2,29 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## A FILA DE AGORA (09/10, noite: o que o Felipe pediu e ainda falta)
+
+Feito em 09/10 (noite): o Orfanato pela planta (corredor da frente → salão sem porta desenhada, `passagem_aberta`;
+salão com mesinhas e o balcão no canto oposto às frases); móvel **quebrado** (`FloorItem.quebrado`, botão
+Destruir/Consertar no painel do objeto); as frases com letra de dedo; **andar em grupo** (Shift + clique); o
+**mapa-múndi** sem o Brasil, ilhas maiores; a arte da cidadezinha virou **Tiradentes**.
+
+Falta, na ordem:
+1. **Mesas do tamanho certo** (o Felipe: as mesas ficam pequeninas, parecem mesa de centro; deviam ser mesas de
+   escritório grandes) e **o vão embaixo da mesa**: a casa da mesa deixa de ser sólida no tabuleiro, a cadeira encaixa
+   embaixo e a peça pode se esconder ali. Mexe no `canPlace`, no `walkState` e na ordem de desenho. Ver também a
+   `table_small` (0,55 m, baixa demais).
+2. **Igarapé**: outra cidadezinha parecida com Tiradentes (cenas + pedir ao Códex a ilha e as duas chegadas).
+3. **Santo Berço**: o lugar de Morte, medieval, espiral, lodo, cristais. A pesquisa e o plano estão em
+   [`SANTO-BERCO.md`](SANTO-BERCO.md). Cada cômodo uma cena.
+4. **Monstros com ficha única e várias aparências**: uma entidade ligada a uma ficha (do livro ou adaptada); 10 em
+   campo têm os mesmos atributos (salvo edição manual), e cada peça escolhe uma das aparências. O primeiro: o
+   **Existido** (LR p. 238, Conhecimento; já está em `ameacasLivro.ts`), versões masculina e feminina, a partir da
+   ilustração que o Felipe fez (corpos esqueléticos cobertos de escrita dourada brilhando, olhos acesos).
+5. **Ilustrações de momento** (a Agatha na loja, a Ivete na loja de armas, o começo de um combate): a imagem toma a
+   tela (mestre e mesa), como as da viagem. O Felipe quer primeiro pensar o USO no tabuleiro (proposta na conversa).
+6. A escrita de sangue: o Felipe quer ela bem rústica; se a letra de código não bastar, pedir ao Códex uma imagem.
+
 ## Para a conversa nova (06/10)
 
 O Felipe trocou de conta do Claude em 06/10. Tudo do CRONA está em `F:\Dhellow\CRONA` (a tabela "Onde está cada coisa", abaixo); abra a conversa na pasta `F:\Dhellow\CRONA\projeto`. O jogo de verdade roda no Docker (`npm run crona`, `http://localhost:8080`); o banco `crona` fica preso a ele, e a prévia do Claude usa o `crona_visual` (preset `crona-visual` do `.claude/launch.json`).
