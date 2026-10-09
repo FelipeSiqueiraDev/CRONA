@@ -2088,7 +2088,11 @@ export class Shell {
     const usos = h('div', { class: 'obj-bts' });
     const states = fdef?.states ?? wdef?.states ?? 0;
     const porta = fdef?.openState !== undefined;
-    if (states > 1 || this.jogador(kind, item.defId)) usos.append(this.botaoObj(porta ? (item.state === fdef!.openState ? 'Fechar' : 'Abrir') : 'Usar', porta ? 'cadeado' : 'combate-item', porta ? 'cadeado' : 'mao', () => this.usar(kind, item.id, item.defId), 'forte'));
+    // um jogo do bar: o agente comandado vai até ele e o jogo abre quando ele chega
+    const quemJoga = this.jogador(kind, item.defId);
+    if (quemJoga) usos.append(this.botaoObj(`Jogar (${quemJoga.split(' ')[0]})`, 'combate-item', 'mao', () => this.usar(kind, item.id, item.defId), 'forte'));
+    else if (states > 1) usos.append(this.botaoObj(porta ? (item.state === fdef!.openState ? 'Fechar' : 'Abrir') : 'Usar', porta ? 'cadeado' : 'combate-item', porta ? 'cadeado' : 'mao', () => this.usar(kind, item.id, item.defId), 'forte'));
+    if (!quemJoga && this.gm && bar.jogoDoBar(item.defId)) pane.append(h('p', { class: 'obj-nota' }, 'Para jogar: comande um agente (clique no retrato dele) e escolha o jogo de novo. Ele vai até lá e o jogo abre quando chegar.'));
     if (hint) usos.append(this.botaoObj('Ler a pista', 'busca', 'lupa', () => this.hintViewer.open(kind, item.id)));
     if (usos.childElementCount) pane.append(usos);
     if (loot.length) {
@@ -2890,7 +2894,7 @@ export class Shell {
           else ((this.inspTab = lock ? 'desc' : 'items'), this.renderInspector(true));
         },
       },
-      { id: 'usar', rotulo: 'Usar', icone: 'mao', ok: !!s && (usa || !!this.jogador(s.kind, it!.defId)), dica: s && this.jogador(s.kind, it!.defId) ? `${this.jogador(s.kind, it!.defId)} vai jogar (de novo: sai do jogo)` : 'Ligar, acender, abrir a gaveta…', fazer: () => s && this.usar(s.kind, it!.id, it!.defId) },
+      { id: 'usar', rotulo: s && this.jogador(s.kind, it!.defId) ? 'Jogar' : 'Usar', icone: 'mao', ok: !!s && (usa || !!this.jogador(s.kind, it!.defId)), dica: s && this.jogador(s.kind, it!.defId) ? `${this.jogador(s.kind, it!.defId)} vai até o jogo e ele abre quando chegar (de novo: sai do jogo)` : 'Ligar, acender, abrir a gaveta…', fazer: () => s && this.usar(s.kind, it!.id, it!.defId) },
       { id: 'entregar', rotulo: 'Entregar', icone: 'trocar', ok: livres > 0 && this.gm, dica: 'Entregar um item daqui a um personagem', fazer: () => ((this.inspTab = 'items'), this.renderInspector(true)) },
     ];
     if (!acoes.find((a) => a.id === this.acaoAtiva)?.ok) this.acaoAtiva = acoes.find((a) => a.ok)?.id ?? 'examinar';

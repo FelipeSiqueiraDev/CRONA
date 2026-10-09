@@ -469,21 +469,21 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
 /* =====================================================================
    O FLUXO DA VEZ (08/10, terceira volta): a tela de ação muda a cada escolha
    ===================================================================== */
-.fx-tela {
+.vez-tela {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
   flex: 1 1 auto;
   min-height: 0;
-  animation: fx-entra 0.32s var(--h-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation: vez-entra 0.32s var(--h-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
-@keyframes fx-entra {
+@keyframes vez-entra {
   from {
     opacity: 0;
     transform: translateX(1.4rem);
   }
 }
-.fx-passo {
+.vez-passo {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -491,13 +491,13 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
   min-height: 0;
 }
 /* o caminho: Voltar e onde está */
-.fx-trilha {
+.vez-trilha {
   display: flex;
   align-items: center;
   gap: 1rem;
   flex: none;
 }
-.fx-voltar {
+.vez-voltar {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -509,14 +509,14 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
   font: 600 1.15rem / 1 var(--r-pixel);
   cursor: pointer;
 }
-.fx-voltar:hover {
+.vez-voltar:hover {
   border-color: var(--r-ouro-hi, #ffd27a);
 }
-.fx-voltar .ic {
+.vez-voltar .ic {
   width: 1.6rem;
   height: 1.6rem;
 }
-.fx-caminho {
+.vez-caminho {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -524,12 +524,12 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
   font: 600 1.15rem / 1 var(--r-pixel);
   color: var(--r-ouro-hi, #ffd27a);
 }
-.fx-caminho i {
+.vez-caminho i {
   margin-right: 0.5rem;
   font-style: normal;
   color: var(--r-texto-3, #b9b0a0);
 }
-.fx-raiz {
+.vez-raiz {
   padding: 0;
   border: 0;
   background: none;
@@ -537,10 +537,10 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
   font: inherit;
   cursor: pointer;
 }
-.fx-raiz:hover {
+.vez-raiz:hover {
   color: var(--r-texto, #f1ead9);
 }
-.fx-menu {
+.vez-menu {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
@@ -550,22 +550,22 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
   overflow-y: auto;
   scrollbar-width: thin;
 }
-.fx-pergunta {
+.vez-pergunta {
   margin: 0;
   font: 700 1.7rem / 1.2 var(--r-pixel);
   color: var(--r-texto, #f1ead9);
 }
-.fx-pergunta.menor {
+.vez-pergunta.menor {
   font-size: 1.3rem;
   color: var(--r-texto-2, #cdbfa9);
 }
 /* o menu da vez: botões grandes */
-.fx-acoes {
+.vez-acoes {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.8rem;
 }
-.fx-acao {
+.vez-acao {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -584,68 +584,68 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
     border-color 0.2s,
     transform 0.18s var(--h-ease),
     box-shadow 0.2s;
-  animation: fx-sobe 0.4s var(--h-ease) both;
+  animation: vez-sobe 0.4s var(--h-ease) both;
 }
-.fx-acao:nth-child(2) {
+.vez-acao:nth-child(2) {
   animation-delay: 0.04s;
 }
-.fx-acao:nth-child(3) {
+.vez-acao:nth-child(3) {
   animation-delay: 0.08s;
 }
-.fx-acao:nth-child(4) {
+.vez-acao:nth-child(4) {
   animation-delay: 0.12s;
 }
-.fx-acao:nth-child(5) {
+.vez-acao:nth-child(5) {
   animation-delay: 0.16s;
 }
-.fx-acao:nth-child(6) {
+.vez-acao:nth-child(6) {
   animation-delay: 0.2s;
 }
-@keyframes fx-sobe {
+@keyframes vez-sobe {
   from {
     opacity: 0;
     transform: translateY(1rem);
   }
 }
-.fx-acao:hover {
+.vez-acao:hover {
   border-color: var(--r-ouro-hi, #ffd27a);
   transform: translateY(-0.3rem);
   box-shadow: 0 0.8rem 1.6rem rgba(0, 0, 0, 0.45), 0 0 1.2rem rgba(255, 196, 90, 0.2);
 }
-.fx-acao-ic,
-.fx-acao-ic :is(.arte-ic, img, .ic) {
+.vez-acao-ic,
+.vez-acao-ic :is(.arte-ic, img, .ic) {
   width: 4.8rem;
   height: 4.8rem;
   object-fit: contain;
 }
-.fx-acao b {
+.vez-acao b {
   font: 700 1.5rem / 1.1 var(--r-pixel);
   letter-spacing: 0.04em;
 }
-.fx-acao small {
+.vez-acao small {
   font: 400 1.15rem / 1.25 var(--r-corpo);
   color: var(--r-texto-2, #cdbfa9);
 }
-.fx-acao.a-atacar {
+.vez-acao.a-atacar {
   border-color: rgba(233, 169, 68, 0.7);
 }
-.fx-acao.a-passar {
+.vez-acao.a-passar {
   background: var(--h-campo, #060c16);
   border-style: dashed;
 }
-.fx-acao.usada {
+.vez-acao.usada {
   opacity: 0.45;
 }
-.fx-acao.usada small {
+.vez-acao.usada small {
   color: #ff8a73;
 }
 /* os cartões (as armas do ataque, as opções do movimento) */
-.fx-cartoes {
+.vez-cartoes {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
   gap: 0.7rem;
 }
-.fx-cartao {
+.vez-cartao {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -660,43 +660,43 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
   transition:
     border-color 0.2s,
     transform 0.18s var(--h-ease);
-  animation: fx-sobe 0.35s var(--h-ease) both;
+  animation: vez-sobe 0.35s var(--h-ease) both;
 }
-.fx-cartao:hover:not(:disabled) {
+.vez-cartao:hover:not(:disabled) {
   border-color: var(--r-ouro-hi, #ffd27a);
   transform: translateY(-0.2rem);
 }
-.fx-cartao.travado {
+.vez-cartao.travado {
   opacity: 0.45;
   cursor: default;
 }
-.fx-cartao.investida {
+.vez-cartao.investida {
   border-color: rgba(240, 120, 70, 0.6);
 }
-.fx-cartao-ic,
-.fx-cartao-ic :is(.arte-ic, img, .ic) {
+.vez-cartao-ic,
+.vez-cartao-ic :is(.arte-ic, img, .ic) {
   flex: none;
   width: 4.4rem;
   height: 4.4rem;
   object-fit: contain;
 }
-.fx-cartao-txt b {
+.vez-cartao-txt b {
   display: block;
   font: 700 1.4rem / 1.15 var(--r-pixel);
 }
-.fx-cartao-txt small {
+.vez-cartao-txt small {
   display: block;
   margin-top: 0.25rem;
   font: 400 1.15rem / 1.3 var(--r-corpo);
   color: var(--r-texto-2, #cdbfa9);
 }
 /* a mochila: três grupos */
-.fx-grupos {
+.vez-grupos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
   gap: 0.8rem;
 }
-.fx-grupo {
+.vez-grupo {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -705,41 +705,42 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
   border-radius: 0.8rem;
   background: rgba(11, 21, 38, 0.7);
 }
-.fx-grupo h5 {
+.vez-grupo h5 {
   margin: 0 0 0.2rem;
   font: 600 1.05rem / 1 var(--r-pixel);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--r-ouro, #e9a944);
 }
-.fx-item {
+.vez-item {
   display: flex;
   align-items: center;
   gap: 0.8rem;
   padding: 0.5rem 0;
   border-top: 0.1rem solid rgba(161, 136, 115, 0.18);
 }
-.fx-item:first-of-type {
+.vez-item:first-of-type {
   border-top: 0;
 }
-.fx-item-txt {
+.vez-item-txt {
   flex: 1;
   min-width: 0;
 }
-.fx-item-txt b {
+.vez-item-txt b {
   display: block;
   font: 600 1.25rem / 1.2 var(--r-corpo);
 }
-.fx-item-txt small {
+.vez-item-txt small {
   font: 400 1.1rem / 1.2 var(--r-corpo);
   color: var(--r-texto-3, #b9b0a0);
 }
-.fx-item-bts {
+.vez-item-bts {
   display: flex;
   gap: 0.4rem;
   flex: none;
 }
-.fx-bt {
+/* os botões da mochila do combate (só aqui: o .fx-bt é o botão de todo o site) */
+.vez-item-bts .fx-bt {
   padding: 0.5rem 0.9rem;
   border: 0.15rem solid rgba(161, 136, 115, 0.5);
   border-radius: 0.6rem;
@@ -748,15 +749,15 @@ html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-linha.tres {
   font: 600 1.1rem / 1 var(--r-pixel);
   cursor: pointer;
 }
-.fx-bt:hover {
+.vez-item-bts .fx-bt:hover {
   border-color: var(--r-ouro-hi, #ffd27a);
 }
-.fx-bt.forte {
+.vez-item-bts .fx-bt.forte {
   border-color: #3a1e08;
   background: linear-gradient(#f6cf6a, #e9a944 46%, #c97f2c);
   color: #2b1606;
 }
-.fx-vazio {
+.vez-vazio {
   margin: 0;
   font: 400 1.2rem / 1.35 var(--r-corpo);
   color: var(--r-texto-3, #b9b0a0);
@@ -1023,9 +1024,9 @@ html:not(.modo-ficha) :is(.cb-ini, .cb-res) .cb-foto canvas {
   object-fit: cover;
 }
 @media (prefers-reduced-motion: reduce) {
-  .fx-tela,
-  .fx-acao,
-  .fx-cartao {
+  .vez-tela,
+  .vez-acao,
+  .vez-cartao {
     animation: none;
   }
 }

@@ -369,7 +369,8 @@
   --vela: 1;
   --chama: 255, 170, 80;
 }
-.fx-grupo {
+/* só na tela de entrada: o .fx-grupo solto pegava os grupos da aba FICHAS */
+.entrada .fx-grupo {
   position: absolute;
   inset: 0;
 }

@@ -41,7 +41,11 @@ const movel = (defId: string) => salao.map.allItems().find((i) => i.defId === de
 const andar = () => {
   for (let i = 0; i < 60; i++) salao.step();
 };
-const jogar = (nome: string, defId: string) => gm.send({ t: 'barJogar', tokenId: peca(nome).client.id, itemId: movel(defId).id });
+/** O mestre manda jogar, e a peça anda até o jogo (o jogo só abre quando ela chega). */
+const jogar = (nome: string, defId: string) => {
+  gm.send({ t: 'barJogar', tokenId: peca(nome).client.id, itemId: movel(defId).id });
+  andar();
+};
 
 /** O celular do jogador, entrando pelo link da ficha. */
 function celular(nome: string): Peer {

@@ -1806,26 +1806,33 @@ export class Hotel implements HotelApi {
       return c.send({ t: 'notice', msg: `${r.nome} largou ${jogo}.` });
     }
     if (mesa && mesa.lugares.length >= bar.MAX_JOGADORES[r.tipo]) return c.send({ t: 'error', msg: `Já tem ${mesa.lugares.length} em ${jogo}: chame alguém de volta antes.` });
-    const f = this.fichaDoPersonagem(r.charId);
-    // a peça só joga uma coisa por vez
-    for (const outra of [...this.mesas.values()]) {
-      const i = outra.lugares.findIndex((l) => l.tokenId === m.tokenId || (f && l.fichaId === f.id));
-      if (i >= 0) this.tirarDaMesa(outra, i);
-    }
-    mesa = this.mesas.get(m.itemId);
-    if (!mesa) {
-      mesa = { id: m.itemId, tipo: r.tipo, lugares: [], log: [] };
-      this.mesas.set(mesa.id, mesa);
-    }
-    mesa.lugares.push({ tokenId: m.tokenId, nome: r.nome, ...(f ? { fichaId: f.id } : {}) });
-    room.irAoJogo(m.tokenId, m.itemId);
-    this.mesaMudou(mesa);
-    const msg = !f
-      ? `${r.nome} foi para ${jogo}. Sem ficha de jogador, é um NPC: você joga por ele na sua tela.`
-      : this.telasDaFicha(f.id).length
-        ? `${r.nome} foi para ${jogo}: o jogo abriu no celular.`
-        : `${r.nome} foi para ${jogo}, mas o celular do jogador não está conectado (abre quando conectar).`;
-    c.send({ t: 'notice', msg });
+    // a peça vai até o jogo, e o jogo só abre quando ela chega (09/10, o Felipe)
+    const tokenId = m.tokenId;
+    const itemId = m.itemId;
+    const sentar = () => {
+      const f = this.fichaDoPersonagem(r.charId);
+      // a peça só joga uma coisa por vez
+      for (const outra of [...this.mesas.values()]) {
+        const i = outra.lugares.findIndex((l) => l.tokenId === tokenId || (f && l.fichaId === f.id));
+        if (i >= 0) this.tirarDaMesa(outra, i);
+      }
+      let aqui = this.mesas.get(itemId);
+      if (aqui && aqui.lugares.length >= bar.MAX_JOGADORES[r.tipo]) return c.send({ t: 'error', msg: `${r.nome} chegou, mas ${jogo} encheu enquanto andava.` });
+      if (!aqui) {
+        aqui = { id: itemId, tipo: r.tipo, lugares: [], log: [] };
+        this.mesas.set(aqui.id, aqui);
+      }
+      aqui.lugares.push({ tokenId, nome: r.nome, ...(f ? { fichaId: f.id } : {}) });
+      this.mesaMudou(aqui);
+      const msg = !f
+        ? `${r.nome} chegou em ${jogo}. Sem ficha de jogador, é um NPC: você joga por ele na sua tela.`
+        : this.telasDaFicha(f.id).length
+          ? `${r.nome} chegou em ${jogo}: o jogo abriu no celular.`
+          : `${r.nome} chegou em ${jogo}, mas o celular do jogador não está conectado (abre quando conectar).`;
+      c.send({ t: 'notice', msg });
+    };
+    c.send({ t: 'notice', msg: `${r.nome} está indo para ${jogo}.` });
+    room.irAoJogo(tokenId, itemId, sentar);
   }
 
   /** O lugar de quem mandou a mensagem: o do jogador, ou o do NPC que o mestre disse. */

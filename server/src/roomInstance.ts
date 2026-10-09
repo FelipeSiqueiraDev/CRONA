@@ -152,6 +152,8 @@ interface RoomUser {
   goal: Point | null;
   /** a casa para onde a peça vira quando chegar (o fliperama) */
   encara?: Point;
+  /** o que fazer quando a peça chegar aonde ia (o jogo do bar abre só quando ela chega); outro destino cancela */
+  aoChegar?: () => void;
   next: Point | null;
   sit: 0 | 1 | 2;
   dance: boolean;
@@ -604,9 +606,19 @@ export class RoomInstance {
             u.dirty = true;
           }
           delete u.encara;
+          const chegou = u.aoChegar;
+          delete u.aoChegar;
+          chegou?.();
         } else {
           const path = findPath(this.map, u, u.goal, (x, y) => this.occupied(x, y, u.client.id));
-          if (!path || !path.length) (u.goal = null), delete u.encara;
+          if (!path || !path.length) {
+            // não dá para chegar (o caminho fechou): fica onde está, e o que esperava a chegada acontece assim mesmo
+            u.goal = null;
+            delete u.encara;
+            const chegou = u.aoChegar;
+            delete u.aoChegar;
+            chegou?.();
+          }
           else {
             const step = path[0];
             u.dir = u.headDir = directionTo(u, step);
@@ -1047,7 +1059,7 @@ export class RoomInstance {
    * A peça vai até o jogo e vira para ele: a frente do fliperama (ou do lado, se já tem alguém), a
    * beira da sinuca, a linha de arremesso a três casas do alvo. O fliperama acende.
    */
-  irAoJogo(tokenId: number, itemId: number) {
+  irAoJogo(tokenId: number, itemId: number, aoChegar?: () => void) {
     const u = this.users.get(tokenId);
     if (!u) return;
     const floor = this.map.getItem(itemId);
@@ -1075,13 +1087,16 @@ export class RoomInstance {
       const linha = wall.wall === 'l' ? { x: wall.plane + 3, y: casa } : { x: casa, y: wall.plane + 3 };
       alvo = this.map.walkState(linha.x, linha.y) === 'walk' && !this.occupied(linha.x, linha.y, u.client.id) ? linha : this.freeNear(linha.x, linha.y, u.client.id);
     }
-    if (!olha) return;
+    if (!olha) return void aoChegar?.();
     if (alvo && (alvo.x !== u.x || alvo.y !== u.y)) {
       u.goal = alvo;
       u.encara = olha;
+      if (aoChegar) u.aoChegar = aoChegar;
+      else delete u.aoChegar;
     } else {
       u.dir = u.headDir = directionTo(u, olha);
       u.dirty = true;
+      aoChegar?.();
     }
     this.ensureTimer();
   }
@@ -1244,7 +1259,7 @@ export class RoomInstance {
     }
     switch (m.t) {
       case 'tokenWalk':
-        if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) (u.goal = { x: m.x, y: m.y }), delete u.encara;
+        if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) (u.goal = { x: m.x, y: m.y }), delete u.encara, delete u.aoChegar;
         break;
       case 'tokenFace':
         if (isInt(m.dir)) this.faceToken(-u.client.id, m.dir);

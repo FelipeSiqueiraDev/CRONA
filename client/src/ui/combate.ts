@@ -393,9 +393,9 @@ export class CombateScreen {
     const voltar = () => (sfx.paper(), this.irPara(this.fluxo === 'acao' && ataque ? 'atacar' : 'menu'));
     return h(
       'div',
-      { class: 'fx-trilha' },
-      h('button', { class: 'fx-voltar', type: 'button', onclick: voltar, title: 'Voltar' }, ic('esquerda'), h('span', null, 'Voltar')),
-      h('span', { class: 'fx-caminho' }, h('button', { class: 'fx-raiz', type: 'button', onclick: () => (sfx.paper(), this.irPara('menu')) }, `Vez de ${ator.nome.split(/\s+/)[0]}`), ...caminho.map((c) => h('span', null, h('i', null, '›'), c))),
+      { class: 'vez-trilha' },
+      h('button', { class: 'vez-voltar', type: 'button', onclick: voltar, title: 'Voltar' }, ic('esquerda'), h('span', null, 'Voltar')),
+      h('span', { class: 'vez-caminho' }, h('button', { class: 'vez-raiz', type: 'button', onclick: () => (sfx.paper(), this.irPara('menu')) }, `Vez de ${ator.nome.split(/\s+/)[0]}`), ...caminho.map((c) => h('span', null, h('i', null, '›'), c))),
     );
   }
 
@@ -413,18 +413,18 @@ export class CombateScreen {
     const botaoMenu = (id: string, rotulo: string, pintado: string, icone: NomeIcone, sub: string, ok: boolean, fazer: () => void, motivo?: string) =>
       h(
         'button',
-        { class: `fx-acao a-${id}${ok ? '' : ' usada'}`, type: 'button', title: ok ? sub : (motivo ?? sub), onclick: () => (sfx.click(), fazer()) },
-        h('span', { class: 'fx-acao-ic' }, arteOu([`/arte/icones/${pintado}.png`], ic(icone))),
+        { class: `vez-acao a-${id}${ok ? '' : ' usada'}`, type: 'button', title: ok ? sub : (motivo ?? sub), onclick: () => (sfx.click(), fazer()) },
+        h('span', { class: 'vez-acao-ic' }, arteOu([`/arte/icones/${pintado}.png`], ic(icone))),
         h('b', null, rotulo),
         h('small', null, ok ? sub : (motivo ?? sub)),
       );
     return h(
       'div',
-      { class: 'fx-menu' },
-      h('p', { class: 'fx-pergunta' }, `O que ${ator.nome.split(/\s+/)[0]} vai fazer?`),
+      { class: 'vez-menu' },
+      h('p', { class: 'vez-pergunta' }, `O que ${ator.nome.split(/\s+/)[0]} vai fazer?`),
       h(
         'div',
-        { class: 'fx-acoes' },
+        { class: 'vez-acoes' },
         botaoMenu('atacar', 'Atacar', 'combate-atacar', 'espadas', 'arma, investida, manobra ou ritual', padraoLivre, () => this.irPara('atacar'), 'a ação padrão já foi usada'),
         botaoMenu('movimento', 'Movimento', 'combate-movimento', 'bota', `andar até ${cb.textoMetros(metros)}`, movLivre || padraoLivre, () => this.irPara('acao', 'movimento'), 'sem ação para andar'),
         botaoMenu('item', 'Pegar ou guardar', 'combate-item', 'mochila', 'a mão, a mochila e o chão', movLivre || padraoLivre, () => this.irPara('acao', 'item')),
@@ -441,9 +441,9 @@ export class CombateScreen {
     const cartao = (cls: string, arte: Node, nome: string, sub: string, fazer: (() => void) | null, motivo?: string) =>
       h(
         'button',
-        { class: `fx-cartao ${cls}${fazer ? '' : ' travado'}`, type: 'button', disabled: !fazer, title: fazer ? sub : motivo, onclick: () => fazer && (sfx.click(), fazer()) },
-        h('span', { class: 'fx-cartao-ic' }, arte),
-        h('span', { class: 'fx-cartao-txt' }, h('b', null, nome), h('small', null, fazer ? sub : (motivo ?? sub))),
+        { class: `vez-cartao ${cls}${fazer ? '' : ' travado'}`, type: 'button', disabled: !fazer, title: fazer ? sub : motivo, onclick: () => fazer && (sfx.click(), fazer()) },
+        h('span', { class: 'vez-cartao-ic' }, arte),
+        h('span', { class: 'vez-cartao-txt' }, h('b', null, nome), h('small', null, fazer ? sub : (motivo ?? sub))),
       );
     const lista: HTMLElement[] = [];
     armas.forEach((a, i) => {
@@ -477,7 +477,7 @@ export class CombateScreen {
     lista.push(cartao('manobra', arteOu(['/arte/icones/combate-manobra.png'], ic('mao')), 'Manobra', 'agarrar, derrubar, desarmar, empurrar…', () => this.irPara('acao', 'manobra')));
     const rituais = this.rituaisDe(ator);
     lista.push(cartao('ritual', arteOu(['/arte/icones/combate-ritual.png'], ic('pentagrama')), 'Ritual', rituais.length ? `${rituais.length} ritua${rituais.length > 1 ? 'is' : 'l'} conhecido${rituais.length > 1 ? 's' : ''}` : 'nenhum ritual', rituais.length ? () => this.irPara('acao', 'ritual') : null, 'nenhum ritual conhecido'));
-    return h('div', { class: 'fx-menu' }, h('p', { class: 'fx-pergunta' }, 'Com o quê?'), h('div', { class: 'fx-cartoes' }, ...lista));
+    return h('div', { class: 'vez-menu' }, h('p', { class: 'vez-pergunta' }, 'Com o quê?'), h('div', { class: 'vez-cartoes' }, ...lista));
   }
 
   /** O deslocamento em metros: o da ficha, o da ameaça, ou 9 m. */
@@ -539,18 +539,18 @@ export class CombateScreen {
     const alvo = this.alvoId !== null && this.alvoId !== ator.id ? cb.participante(c, this.alvoId) : undefined;
     return h(
       'div',
-      { class: 'fx-menu' },
+      { class: 'vez-menu' },
       h('div', { class: 'atq-bloco atq-chama' }, ic('bota'), h('div', null, h('b', null, 'Clique no mapa onde ir'), h('small', null, `as casas acesas: até ${cb.textoMetros(metros)} (${qual === 'movimento' ? 'a ação de movimento' : 'a ação padrão, que vira movimento'})`))),
-      h('p', { class: 'fx-pergunta menor' }, 'Ou, sem andar:'),
+      h('p', { class: 'vez-pergunta menor' }, 'Ou, sem andar:'),
       h(
         'div',
-        { class: 'fx-cartoes' },
+        { class: 'vez-cartoes' },
         ...extra.map((o) =>
           h(
             'button',
-            { class: 'fx-cartao', type: 'button', onclick: () => (sfx.click(), this.acaoDoLivro(c, ator, o, alvo), this.irPara('menu')) },
-            h('span', { class: 'fx-cartao-ic' }, ic(o.id === 'levantar' ? 'seta' : o.id === 'mirar' ? 'mira' : 'girarD')),
-            h('span', { class: 'fx-cartao-txt' }, h('b', null, o.nome), h('small', null, o.dica)),
+            { class: 'vez-cartao', type: 'button', onclick: () => (sfx.click(), this.acaoDoLivro(c, ator, o, alvo), this.irPara('menu')) },
+            h('span', { class: 'vez-cartao-ic' }, ic(o.id === 'levantar' ? 'seta' : o.id === 'mirar' ? 'mira' : 'girarD')),
+            h('span', { class: 'vez-cartao-txt' }, h('b', null, o.nome), h('small', null, o.dica)),
           ),
         ),
       ),
@@ -571,7 +571,7 @@ export class CombateScreen {
     const qual: cb.TipoAcao = !ac.movimento && !ac.completa ? 'movimento' : 'padrao';
     const gastar = (texto: string) => this.acao({ tipo: 'declarar', qual, texto, quem: ator.id });
     const linha = (nome: string, onde: string, ...bts: (HTMLElement | null)[]) =>
-      h('div', { class: 'fx-item' }, h('span', { class: 'fx-item-txt' }, h('b', null, nome), h('small', null, onde)), h('span', { class: 'fx-item-bts' }, ...bts));
+      h('div', { class: 'vez-item' }, h('span', { class: 'vez-item-txt' }, h('b', null, nome), h('small', null, onde)), h('span', { class: 'vez-item-bts' }, ...bts));
     const bt = (rot: string, fazer: () => void, forte = false) => h('button', { class: `fx-bt${forte ? ' forte' : ''}`, type: 'button', onclick: () => (sfx.click(), fazer(), this.irPara('menu')) }, rot);
     const grupos: HTMLElement[] = [];
     if (fs) {
@@ -582,24 +582,24 @@ export class CombateScreen {
       grupos.push(
         h(
           'section',
-          { class: 'fx-grupo' },
+          { class: 'vez-grupo' },
           h('h5', null, 'Na mão'),
           ...(naMao.length
             ? naMao.map((it) =>
                 linha(regras.nomeDoItem(it), 'empunhado', bt('Guardar', () => (mochila('guardar', it.uid!), gastar(`guarda ${regras.nomeDoItem(it)}`))), bt('Largar no chão', () => (mochila('largar', it.uid!), this.acao({ tipo: 'declarar', qual: 'livre', texto: `larga ${regras.nomeDoItem(it)}`, quem: ator.id })))),
               )
-            : [h('p', { class: 'fx-vazio' }, 'As duas mãos livres.')]),
+            : [h('p', { class: 'vez-vazio' }, 'As duas mãos livres.')]),
         ),
         h(
           'section',
-          { class: 'fx-grupo' },
+          { class: 'vez-grupo' },
           h('h5', null, 'Na mochila'),
           ...(naMochila.length
             ? naMochila.map((it) => linha(regras.nomeDoItem(it), it.qtd && it.qtd > 1 ? `${it.qtd} unidades` : 'guardado', it.uid !== undefined ? bt('Sacar', () => (mochila('empunhar', it.uid!), gastar(`saca ${regras.nomeDoItem(it)}`)), true) : null))
-            : [h('p', { class: 'fx-vazio' }, 'Mochila vazia.')]),
+            : [h('p', { class: 'vez-vazio' }, 'Mochila vazia.')]),
         ),
       );
-    } else grupos.push(h('p', { class: 'fx-vazio' }, 'Sem ficha de agente: a ameaça não tem mochila. Declare em Outras ações, se precisar.'));
+    } else grupos.push(h('p', { class: 'vez-vazio' }, 'Sem ficha de agente: a ameaça não tem mochila. Declare em Outras ações, se precisar.'));
     // o chão (e os móveis) em volta: até 1 casa
     const ondeEsta = this.casa(ator.id);
     const map = this.app.view?.map;
@@ -616,8 +616,8 @@ export class CombateScreen {
         for (const l of livres)
           perto.push(linha(l.name, def?.name ?? 'no chão', bt('Pegar', () => (this.app.net.send({ t: 'lootGive', itemId: it.id, lootId: l.id, to: ator.nome }), gastar(`pega ${l.name}`)), true)));
       }
-    grupos.push(h('section', { class: 'fx-grupo' }, h('h5', null, 'Perto, para pegar'), ...(perto.length ? perto : [h('p', { class: 'fx-vazio' }, 'Nada ao alcance da mão.')])));
-    return h('div', { class: 'fx-menu' }, h('p', { class: 'fx-pergunta' }, `Sacar, guardar ou pegar (${qual === 'movimento' ? 'gasta a ação de movimento' : 'gasta a ação padrão'})`), h('div', { class: 'fx-grupos' }, ...grupos));
+    grupos.push(h('section', { class: 'vez-grupo' }, h('h5', null, 'Perto, para pegar'), ...(perto.length ? perto : [h('p', { class: 'vez-vazio' }, 'Nada ao alcance da mão.')])));
+    return h('div', { class: 'vez-menu' }, h('p', { class: 'vez-pergunta' }, `Sacar, guardar ou pegar (${qual === 'movimento' ? 'gasta a ação de movimento' : 'gasta a ação padrão'})`), h('div', { class: 'vez-grupos' }, ...grupos));
   }
 
   // ================================================================ entrada
@@ -1621,7 +1621,7 @@ export class CombateScreen {
     // o fluxo da vez: o menu, o menu de ataque, ou a ação (o ataque em dois cartões, o movimento, a mochila…)
     const topo = this.faixaAtor(c, v.e, v.ativos, v.ator);
     const trilha = this.trilhaDoFluxo(v.ator);
-    const tela = (el: HTMLElement) => this.trocar(this.resCorpo, topo, h('div', { class: `fx-tela fx-${this.fluxo === 'acao' ? this.aba : this.fluxo}` }, trilha, el));
+    const tela = (el: HTMLElement) => this.trocar(this.resCorpo, topo, h('div', { class: `vez-tela vez-${this.fluxo === 'acao' ? this.aba : this.fluxo}` }, trilha, el));
     if (this.fluxo === 'menu') return tela(this.menuDaVez(c, v.ator));
     if (this.fluxo === 'atacar') return tela(this.menuDeAtaque(c, v.ator));
     if (x) return tela(this.ataque.montarRapido(x));
@@ -1660,7 +1660,7 @@ export class CombateScreen {
         this.renderRes();
       };
     }
-    tela(h('div', { class: 'fx-passo' }, this.passos(nomes, passo, true, irPara), corpo));
+    tela(h('div', { class: 'vez-passo' }, this.passos(nomes, passo, true, irPara), corpo));
   }
 
   private semCombate(): HTMLElement {
