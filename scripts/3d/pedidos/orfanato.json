@@ -1,4 +1,6 @@
 [
- {"nome": "orfanato-predio", "titulo": "Orfanato Filhos do Dragão, visto de fora: o prédio comprido de um andar só", "casas": [24, 6], "real": [18.0, 4.5, 4.8]},
- {"nome": "orfanato-anexo", "titulo": "O anexo de concreto do fundo do pátio", "casas": [5, 6], "real": [3.75, 4.5, 3.0]}
+ {"nome": "orfanato-predio-refeitorio", "titulo": "Orfanato queimado, de fora: a ponta de cima (o refeitório), 1 de 3", "casas": [18, 7], "real": [13.5, 5.25, 4.8]},
+ {"nome": "orfanato-predio-meio", "titulo": "Orfanato queimado, de fora: o meio (salão, cozinha, banheiros), 2 de 3", "casas": [18, 16], "real": [13.5, 12.0, 4.8]},
+ {"nome": "orfanato-predio-ala", "titulo": "Orfanato queimado, de fora: a ala dos quartos com a porta no fim, 3 de 3", "casas": [18, 25], "real": [13.5, 18.75, 4.8]},
+ {"nome": "orfanato-anexo", "titulo": "O anexo de concreto do canto do terreno", "casas": [5, 6], "real": [3.75, 4.5, 3.0]}
 ]

@@ -11,7 +11,7 @@ describe("Orfanato Filhos do Dragão", () => {
   const porNome = (n: string) => salas.find((r) => r.name === ORFANATO + n)!;
 
   test("o lugar existe: o pátio, o casarão e o anexo, numa campanha com o nome do lugar", () => {
-    for (const n of ["Pátio", "Salão", "Refeitório", "Sala de Estudos", "Quarto da Diretora", "Banheiros", "Ala dos Dormitórios", "Anexo"])
+    for (const n of ["Pátio", "Refeitório", "Salão", "Cozinha", "Depósito", "Quarto da Diretora", "Sanitários", "Banheiro", "Sala de Banho", "Ala dos Dormitórios", "Anexo"])
       assert.ok(porNome(n), `falta ${n}`);
     const camp = db.campaigns?.[String(Math.min(...salas.map((r) => r.id)))];
     assert.equal(camp?.title, "Orfanato Filhos do Dragão");
@@ -49,9 +49,9 @@ describe("Orfanato Filhos do Dragão", () => {
     }
   });
 
-  test("o fim do corredor tem as frases escritas com sangue, com o texto inteiro na pista", () => {
-    const ala = porNome("Ala dos Dormitórios");
-    const escrita = ala.wallItems.find((w) => w.defId === "escrita_sangue");
+  test("a área aberta onde o corredor termina (o salão) tem as frases escritas com sangue, com o texto inteiro na pista", () => {
+    const salao = porNome("Salão");
+    const escrita = salao.wallItems.find((w) => w.defId === "escrita_sangue");
     assert.ok(escrita, "falta a escrita de sangue");
     assert.match(escrita.hint?.text ?? "", /sofrimento é o idioma dos escolhidos/);
   });

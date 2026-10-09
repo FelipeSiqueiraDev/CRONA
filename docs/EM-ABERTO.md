@@ -349,15 +349,14 @@ Ainda falta (pedido do Felipe):
   lado; o salão é a sala comum (fogueira no chão, colchões em volta, crânios de troféu); o refeitório é o açougue
   (ganchos de carne, corpo na mesa); a sala de estudos é a sala de tortura (mesa de contenção, ferramentas, correntes);
   os dormitórios têm camas queimadas, colchões no chão e um quartinho-jaula com grade; o anexo é o abatedouro.
-  - **Cada quarto é uma cena (o Felipe, 09/10: "entrei na sala, mudou o cenário"):** a Ala dos Dormitórios é só o
-    corredor, em L (encostado na parede da esquerda: no meio de um T a parede some, `computeWalls` só desenha a borda
-    de trás), com 6 passagens de cada lado e a área aberta larga no fim, com as frases. Os 12 quartos ("Orfanato ·
-    Quarto 1" a 12, `quartos()`) são cenas de 5 × 4: cama queimada, colchão, baú, sangue; 2 com o teto caído; o
-    Quarto 10 é a jaula (a passagem começa trancada). A parede e a porta de quarto feitas antes (`parede_orfanato`,
-    `porta_quarto`, com a mecânica da cela) ficaram no catálogo, sem uso.
-  - **As frases** (`FRASES`) estão escritas com sangue na parede do fim do corredor dos dormitórios, na área aberta
-    (as duas fileiras de cima, sem quartinho; a ala virou `planBottom(13, 25, 6)`): `escrita_sangue` (300 × 122,
-    desenhada em código, letra por letra, com o sangue escorrendo; o texto inteiro vai na pista Examinar).
+  - **Refeito pela planta do Felipe (09/10, noite; `ORFANATO_REV` 14):** cada cômodo é uma cena (regra geral, como na
+    Sede) e a planta do andar segue o desenho: Refeitório em cima; Salão (a área aberta, balcão em L, fogueira, as
+    FRASES na parede comprida) e Cozinha; Depósito e Quarto da Diretora; Sanitários e Banheiro; Sala de Banho; a Ala
+    (corredor de 6 casas) com os 12 quartos ("Orfanato · Quarto 1" a 12, o 10 é a jaula). O Pátio tem o prédio comprido
+    (paredes de fora, o miolo queimado), o anexo no canto de cima à direita, a estradinha pela direita e a porta no fim
+    da ala. A "sala de estudos" (inventada) e os "Banheiros" de antes são apagados no rebuild.
+  - **As frases** (`FRASES`) estão escritas com sangue na parede comprida do Salão, a área aberta onde o corredor dos
+    quartos termina: `escrita_sangue` (340 × 136, desenhada em código; o texto inteiro vai na pista Examinar).
   - **Peças novas em código:** `fogueira` (acende/apaga, luz de fogo), `colchao_chao`, `gancho_carne`, `cama_queimada`,
     `escombros` (monte com telhas e tábuas), `viga_queimada`, `fuligem`, `cinzas`, `fuligem_parede` (mancha: pode
     ficar atrás de móvel, `eManchaNaParede` em `paredes.ts`).
