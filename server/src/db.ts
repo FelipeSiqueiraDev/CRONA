@@ -123,6 +123,8 @@ export interface Database {
   temasAgentes?: boolean;
   /** versão da montagem da Fazenda Olhos de Águia (seedFazenda) */
   fazendaRev?: number;
+  /** versão da montagem do Orfanato Filhos do Dragão (seedOrfanato) */
+  orfanatoRev?: number;
   /** as salas e campanhas de exemplo antigas já foram tiradas (seed.ts, limparSalasDeExemplo) */
   limpezaExemplos?: boolean;
   /** fichas de personagem (motor de regras) */

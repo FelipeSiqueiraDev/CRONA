@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { limparSalasDeExemplo, seedDb, upgradeDb } from "../src/seed";
 import { FAZENDA } from "../src/seedFazenda";
+import { ORFANATO } from "../src/seedOrfanato";
 import { SEDE } from "../src/seedSede";
 
 const AGENTES = ["D.Tepes", "Catarina Albuquerque", "Alosi Walker", "Cora Falcão"];
@@ -14,19 +15,20 @@ function bancoComTudo() {
 }
 
 describe("limpeza das salas de exemplo", () => {
-  test("fica só a Sede e a Fazenda, com as campanhas delas", () => {
+  test("ficam só a Sede, a Fazenda e o Orfanato, com as campanhas deles", () => {
     const db = bancoComTudo();
     const antes = db.rooms.length;
     assert.ok(db.rooms.some((r) => r.name.startsWith("Mansão Alvarez")), "o banco de exemplo tem a Mansão");
     assert.equal(limparSalasDeExemplo(db), true);
     assert.ok(db.rooms.length < antes);
-    for (const r of db.rooms) assert.ok(r.name.startsWith(SEDE) || r.name.startsWith(FAZENDA), `sobrou ${r.name}`);
+    for (const r of db.rooms) assert.ok(r.name.startsWith(SEDE) || r.name.startsWith(FAZENDA) || r.name.startsWith(ORFANATO), `sobrou ${r.name}`);
     // as campanhas que sobram são as das salas que sobram
     const ids = new Set(db.rooms.map((r) => r.id));
     for (const k of Object.keys(db.campaigns ?? {})) assert.ok(ids.has(Number(k)), `campanha ${k} sem sala`);
     const titulos = Object.values(db.campaigns ?? {}).map((c) => c.title);
     assert.ok(titulos.some((t) => /Sede/.test(t)));
     assert.ok(titulos.some((t) => /Fazenda/.test(t)));
+    assert.ok(titulos.some((t) => /Orfanato/.test(t)));
     assert.ok(db.home === undefined || ids.has(db.home));
   });
 

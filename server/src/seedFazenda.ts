@@ -47,7 +47,7 @@ const oculta = (title: string, text: string): Hint => ({
 // ------------------------------------------------------------------ terreno
 
 /** Chão ao ar livre casa por casa (letras de TERRENOS); a água vira casa vazia na planta. */
-class Terreno {
+export class Terreno {
   readonly g: string[][];
   constructor(
     readonly w: number,
@@ -500,7 +500,7 @@ function plantacoesArredores(): FloorSeed[] {
 
 // ------------------------------------------------------------------ as cenas
 
-interface CenaSpec {
+export interface CenaSpec {
   key: string;
   name: string;
   description: string;
@@ -1434,7 +1434,7 @@ function giraPt(
 }
 
 /** Posição na planta: o canto de cima à esquerda do cômodo girado (sem o vão da porta) cai em (plan.x, plan.y). */
-function naPlanta(spec: CenaSpec): { x: number; y: number; r?: number } {
+export function naPlanta(spec: CenaSpec): { x: number; y: number; r?: number } {
   const hm = parseHeightmap(spec.layout.heightmap);
   const r = spec.plan.r ?? 0;
   let mx = Infinity;
@@ -1454,7 +1454,7 @@ function naPlanta(spec: CenaSpec): { x: number; y: number; r?: number } {
 }
 
 /** Aplica o andar, o piso, o clima e o ar livre da cena. */
-function estilo(room: RoomData, spec: CenaSpec) {
+export function estilo(room: RoomData, spec: CenaSpec) {
   room.floor = spec.andar;
   room.floorStyle = spec.style;
   room.fog = spec.fog ?? 0;
@@ -1504,7 +1504,7 @@ function ligar(built: Map<string, RoomData>) {
   else console.warn("[seed] Fazenda: o feno do alçapão não coube");
 }
 
-const montar = (db: Database, spec: CenaSpec) => {
+export const montar = (db: Database, spec: CenaSpec) => {
   const chao = spec.chao ?? [];
   const room = buildRoom(
     db,

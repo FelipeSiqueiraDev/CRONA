@@ -21,6 +21,7 @@ import {
 } from '@crona/shared';
 import type { Database, RoomData, TokenData } from './db';
 import { FAZENDA, montarFazenda, reporAgentesDaFazenda } from './seedFazenda';
+import { montarOrfanato, ORFANATO } from './seedOrfanato';
 import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgentes } from './seedSede';
 
 export const SYSTEM_OWNER = 'CRONA';
@@ -651,7 +652,7 @@ export function limparSalasDeExemplo(db: Database): boolean {
   if (db.limpezaExemplos) return false;
   // só quando a Sede e a Fazenda existem (um banco novo ainda vai montá-las)
   if (!db.rooms.some((r) => r.name.startsWith(SEDE)) || !db.rooms.some((r) => r.name.startsWith(FAZENDA))) return false;
-  const ids = new Set(db.rooms.filter((r) => !r.name.startsWith(SEDE) && !r.name.startsWith(FAZENDA)).map((r) => r.id));
+  const ids = new Set(db.rooms.filter((r) => !r.name.startsWith(SEDE) && !r.name.startsWith(FAZENDA) && !r.name.startsWith(ORFANATO)).map((r) => r.id));
   if (ids.size) {
     db.rooms = db.rooms.filter((r) => !ids.has(r.id));
     if (db.campaigns) for (const k of Object.keys(db.campaigns)) if (ids.has(Number(k))) delete db.campaigns[k];
@@ -707,11 +708,12 @@ export function upgradeDb(db: Database): boolean {
   if (v >= SEED_VERSION) {
     const sede = rebuildSede(db);
     const fazenda = montarFazenda(db);
+    const orfanato = montarOrfanato(db);
     const cores = coresDosAgentes(db);
     const temas = temasDosAgentes(db);
     const van = vanNoLugar(db);
     const paredes = paredesLivres(db);
-    return sede || fazenda || cores || temas || van || paredes;
+    return sede || fazenda || orfanato || cores || temas || van || paredes;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';
@@ -782,6 +784,8 @@ export function upgradeDb(db: Database): boolean {
   rebuildSede(db);
   // Fazenda Olhos de Águia: a fazenda de fora, os arredores e o interior das casas
   montarFazenda(db);
+  // o Orfanato Filhos do Dragão (09/10)
+  montarOrfanato(db);
   coresDosAgentes(db);
   temasDosAgentes(db);
   paredesLivres(db);
