@@ -1,0 +1,121 @@
+{
+ "destino": "client/public/arte/mobiliario",
+ "escala": 0.5,
+ "limpar": 56,
+ "moveis": [
+  {
+   "def": "armario_cozinha!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/armario-cozinha-vazio.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.5,
+    1.9
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "comoda!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/comoda-vazio.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.5,
+    0.9
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "nightstand!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/criado-mudo-vazio.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.5,
+    0.4,
+    0.6
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "mesa_cozinha!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/mesa-cozinha-vazio.png",
+   "W": 3,
+   "D": 2,
+   "real": [
+    2.25,
+    1.5,
+    0.78
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "mesa_jantar!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/mesa-jantar-vazio.png",
+   "W": 4,
+   "D": 2,
+   "real": [
+    3.0,
+    1.5,
+    0.78
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "prateleira!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/prateleira-madeira-vazio.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.45,
+    2.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  }
+ ]
+}

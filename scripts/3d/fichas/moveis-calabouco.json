@@ -1,0 +1,268 @@
+{
+ "destino": "client/public/arte/mobiliario",
+ "escala": 0.5,
+ "limpar": 56,
+ "moveis": [
+  {
+   "def": "estrado_altar",
+   "folha": "client/public/arte/mobiliario/folhas/estrado-altar.png",
+   "W": 5,
+   "D": 5,
+   "real": [
+    3.75,
+    3.75,
+    0.61
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "forma": "redonda"
+  },
+  {
+   "def": "pedra_sacrificio",
+   "folha": "client/public/arte/mobiliario/folhas/pedra-sacrificio.png",
+   "W": 3,
+   "D": 2,
+   "real": [
+    2.2,
+    1.2,
+    1.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "corpo_lencol",
+   "folha": "client/public/arte/mobiliario/folhas/corpo-lencol.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.6,
+    1.9,
+    0.3
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "corpo_saco",
+   "folha": "client/public/arte/mobiliario/folhas/corpo-saco.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.6,
+    1.9,
+    0.3
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "tanque_corpo",
+   "folha": "client/public/arte/mobiliario/folhas/tanque-corpo.png",
+   "W": 2,
+   "D": 2,
+   "real": [
+    1.5,
+    1.5,
+    2.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "forma": "redonda",
+   "altura": true
+  },
+  {
+   "def": "tanque_corpo~b",
+   "folha": "client/public/arte/mobiliario/folhas/tanque-corpo-b.png",
+   "W": 2,
+   "D": 2,
+   "real": [
+    1.5,
+    1.5,
+    2.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "forma": "redonda",
+   "altura": true
+  },
+  {
+   "def": "tanque_corpo~c",
+   "folha": "client/public/arte/mobiliario/folhas/tanque-corpo-c.png",
+   "W": 2,
+   "D": 2,
+   "real": [
+    1.5,
+    1.5,
+    2.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "forma": "redonda",
+   "altura": true
+  },
+  {
+   "def": "mesa_contencao",
+   "folha": "client/public/arte/mobiliario/folhas/mesa-contencao.png",
+   "W": 2,
+   "D": 3,
+   "real": [
+    0.9,
+    2.0,
+    0.9
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "altura": true
+  },
+  {
+   "def": "pilha_cranios",
+   "folha": "client/public/arte/mobiliario/folhas/pilha-cranios.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.75,
+    0.75,
+    0.45
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "escada_vertical",
+   "folha": "client/public/arte/mobiliario/folhas/escada-mao.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.55,
+    0.3,
+    3.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "encosta": true,
+   "altura": true
+  },
+  {
+   "def": "alcapao",
+   "folha": "client/public/arte/mobiliario/folhas/alcapao-aberto.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.75,
+    0.75,
+    0.75
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "estandarte_sangue",
+   "folha": "client/public/arte/mobiliario/folhas/estandarte-sangue.png",
+   "real": [
+    0.8,
+    0.05,
+    1.6
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "tocha_parede",
+   "folha": "client/public/arte/mobiliario/folhas/tocha-parede.png",
+   "real": [
+    0.25,
+    0.25,
+    0.7
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  }
+ ]
+}

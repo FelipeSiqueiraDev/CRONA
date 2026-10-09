@@ -6571,7 +6571,16 @@
    1.5,
    0.5,
    1.9
-  ]
+  ],
+  "cima": {
+   "arquivo": "armario_cozinha/cima.png",
+   "caixa": [
+    0,
+    21,
+    256,
+    106
+   ]
+  }
  },
  "banheira": {
   "escala": 0.5,
@@ -6601,7 +6610,16 @@
    0.75,
    1.5,
    0.6
-  ]
+  ],
+  "cima": {
+   "arquivo": "banheira/cima.png",
+   "caixa": [
+    0,
+    0,
+    128,
+    256
+   ]
+  }
  },
  "cama_casal": {
   "escala": 0.5,
@@ -6787,7 +6805,16 @@
    1.5,
    0.5,
    0.9
-  ]
+  ],
+  "cima": {
+   "arquivo": "comoda/cima.png",
+   "caixa": [
+    0,
+    22,
+    255,
+    106
+   ]
+  }
  },
  "nightstand": {
   "escala": 0.5,
@@ -6817,7 +6844,16 @@
    0.5,
    0.4,
    0.6
-  ]
+  ],
+  "cima": {
+   "arquivo": "nightstand/cima.png",
+   "caixa": [
+    21,
+    30,
+    106,
+    98
+   ]
+  }
  },
  "iwall_low": {
   "escala": 0.5,
@@ -6847,7 +6883,16 @@
    0.75,
    0.12,
    1.3
-  ]
+  ],
+  "cima": {
+   "arquivo": "iwall_low/cima.png",
+   "caixa": [
+    0,
+    54,
+    128,
+    74
+   ]
+  }
  },
  "escada_desce": {
   "escala": 0.5,
@@ -6877,7 +6922,16 @@
    0.75,
    1.5,
    0.9
-  ]
+  ],
+  "cima": {
+   "arquivo": "escada_desce/cima.png",
+   "caixa": [
+    0,
+    0,
+    128,
+    256
+   ]
+  }
  },
  "fogao_lenha": {
   "escala": 0.5,
@@ -6933,7 +6987,16 @@
    1.5,
    0.75,
    0.85
-  ]
+  ],
+  "cima": {
+   "arquivo": "fogao_lenha/cima.png",
+   "caixa": [
+    0,
+    0,
+    256,
+    128
+   ]
+  }
  },
  "guarda_roupa": {
   "escala": 0.5,
@@ -6963,7 +7026,16 @@
    1.5,
    0.6,
    2.0
-  ]
+  ],
+  "cima": {
+   "arquivo": "guarda_roupa/cima.png",
+   "caixa": [
+    0,
+    13,
+    256,
+    115
+   ]
+  }
  },
  "mesa_cozinha": {
   "escala": 0.5,
@@ -6993,7 +7065,16 @@
    2.25,
    1.5,
    0.78
-  ]
+  ],
+  "cima": {
+   "arquivo": "mesa_cozinha/cima.png",
+   "caixa": [
+    0,
+    0,
+    384,
+    256
+   ]
+  }
  },
  "mesa_jantar": {
   "escala": 0.5,
@@ -7023,7 +7104,16 @@
    3.0,
    1.5,
    0.78
-  ]
+  ],
+  "cima": {
+   "arquivo": "mesa_jantar/cima.png",
+   "caixa": [
+    0,
+    0,
+    512,
+    256
+   ]
+  }
  },
  "pia_cozinha": {
   "escala": 0.5,
@@ -7053,7 +7143,16 @@
    1.5,
    0.6,
    0.9
-  ]
+  ],
+  "cima": {
+   "arquivo": "pia_cozinha/cima.png",
+   "caixa": [
+    0,
+    13,
+    256,
+    115
+   ]
+  }
  },
  "prateleira": {
   "escala": 0.5,
@@ -7083,7 +7182,16 @@
    1.5,
    0.45,
    2.2
-  ]
+  ],
+  "cima": {
+   "arquivo": "prateleira/cima.png",
+   "caixa": [
+    0,
+    25,
+    256,
+    102
+   ]
+  }
  },
  "baia": {
   "escala": 0.5,
@@ -7113,7 +7221,16 @@
    0.75,
    0.12,
    1.4
-  ]
+  ],
+  "cima": {
+   "arquivo": "baia/cima.png",
+   "caixa": [
+    0,
+    54,
+    128,
+    74
+   ]
+  }
  },
  "arvore": {
   "escala": 0.5,
@@ -7143,7 +7260,16 @@
    0.75,
    0.75,
    5.86
-  ]
+  ],
+  "cima": {
+   "arquivo": "arvore/cima.png",
+   "caixa": [
+    21,
+    22,
+    618,
+    613
+   ]
+  }
  },
  "arvore~b": {
   "escala": 0.5,
@@ -7173,7 +7299,16 @@
    0.75,
    0.75,
    5.86
-  ]
+  ],
+  "cima": {
+   "arquivo": "arvore~b/cima.png",
+   "caixa": [
+    25,
+    25,
+    613,
+    614
+   ]
+  }
  },
  "arvore~c": {
   "escala": 0.5,
@@ -7203,7 +7338,16 @@
    0.75,
    0.75,
    4.81
-  ]
+  ],
+  "cima": {
+   "arquivo": "arvore~c/cima.png",
+   "caixa": [
+    2,
+    11,
+    507,
+    511
+   ]
+  }
  },
  "arbusto": {
   "escala": 0.5,
@@ -7233,7 +7377,16 @@
    0.75,
    0.75,
    0.98
-  ]
+  ],
+  "cima": {
+   "arquivo": "arbusto/cima.png",
+   "caixa": [
+    0,
+    0,
+    128,
+    127
+   ]
+  }
  },
  "arbusto~b": {
   "escala": 0.5,
@@ -7263,7 +7416,16 @@
    0.75,
    0.75,
    0.87
-  ]
+  ],
+  "cima": {
+   "arquivo": "arbusto~b/cima.png",
+   "caixa": [
+    0,
+    0,
+    127,
+    127
+   ]
+  }
  },
  "milharal": {
   "escala": 0.5,
@@ -7293,7 +7455,16 @@
    0.75,
    0.75,
    1.9
-  ]
+  ],
+  "cima": {
+   "arquivo": "milharal/cima.png",
+   "caixa": [
+    0,
+    0,
+    127,
+    127
+   ]
+  }
  },
  "horta": {
   "escala": 0.5,
@@ -7323,7 +7494,16 @@
    0.75,
    0.75,
    0.45
-  ]
+  ],
+  "cima": {
+   "arquivo": "horta/cima.png",
+   "caixa": [
+    0,
+    0,
+    128,
+    128
+   ]
+  }
  },
  "sacas": {
   "escala": 0.5,
@@ -7353,7 +7533,16 @@
    0.75,
    0.75,
    0.7
-  ]
+  ],
+  "cima": {
+   "arquivo": "sacas/cima.png",
+   "caixa": [
+    0,
+    0,
+    128,
+    128
+   ]
+  }
  },
  "feno": {
   "escala": 0.5,
@@ -7383,7 +7572,16 @@
    0.75,
    0.75,
    0.5
-  ]
+  ],
+  "cima": {
+   "arquivo": "feno/cima.png",
+   "caixa": [
+    0,
+    0,
+    128,
+    128
+   ]
+  }
  },
  "cerca": {
   "escala": 0.5,
@@ -7413,7 +7611,16 @@
    0.75,
    0.12,
    1.1
-  ]
+  ],
+  "cima": {
+   "arquivo": "cerca/cima.png",
+   "caixa": [
+    0,
+    54,
+    128,
+    74
+   ]
+  }
  },
  "carroca": {
   "escala": 0.5,
@@ -7443,7 +7650,16 @@
    1.5,
    2.25,
    1.2
-  ]
+  ],
+  "cima": {
+   "arquivo": "carroca/cima.png",
+   "caixa": [
+    0,
+    0,
+    256,
+    384
+   ]
+  }
  },
  "casarao": {
   "escala": 0.5,
@@ -7473,7 +7689,16 @@
    10.5,
    6.75,
    6.5
-  ]
+  ],
+  "cima": {
+   "arquivo": "casarao/cima.png",
+   "caixa": [
+    0,
+    0,
+    1792,
+    1152
+   ]
+  }
  },
  "celeiro": {
   "escala": 0.5,
@@ -7503,7 +7728,16 @@
    9.0,
    6.0,
    6.5
-  ]
+  ],
+  "cima": {
+   "arquivo": "celeiro/cima.png",
+   "caixa": [
+    0,
+    0,
+    1536,
+    1024
+   ]
+  }
  },
  "galpao": {
   "escala": 0.5,
@@ -7533,7 +7767,16 @@
    6.0,
    4.5,
    4.6
-  ]
+  ],
+  "cima": {
+   "arquivo": "galpao/cima.png",
+   "caixa": [
+    0,
+    0,
+    1024,
+    768
+   ]
+  }
  },
  "fonte": {
   "escala": 0.5,
@@ -7563,7 +7806,16 @@
    2.25,
    2.25,
    2.17
-  ]
+  ],
+  "cima": {
+   "arquivo": "fonte/cima.png",
+   "caixa": [
+    0,
+    0,
+    384,
+    384
+   ]
+  }
  },
  "placa": {
   "escala": 0.5,
@@ -7593,7 +7845,16 @@
    0.7,
    0.15,
    1.76
-  ]
+  ],
+  "cima": {
+   "arquivo": "placa/cima.png",
+   "caixa": [
+    4,
+    51,
+    123,
+    77
+   ]
+  }
  },
  "arvore~d": {
   "escala": 0.5,
@@ -7623,7 +7884,16 @@
    0.75,
    0.75,
    5.86
-  ]
+  ],
+  "cima": {
+   "arquivo": "arvore~d/cima.png",
+   "caixa": [
+    22,
+    21,
+    617,
+    618
+   ]
+  }
  },
  "arvore~e": {
   "escala": 0.5,
@@ -7653,7 +7923,16 @@
    0.75,
    0.75,
    5.86
-  ]
+  ],
+  "cima": {
+   "arquivo": "arvore~e/cima.png",
+   "caixa": [
+    21,
+    21,
+    618,
+    618
+   ]
+  }
  },
  "arvore~f": {
   "escala": 0.5,
@@ -7683,7 +7962,16 @@
    0.75,
    0.75,
    4.81
-  ]
+  ],
+  "cima": {
+   "arquivo": "arvore~f/cima.png",
+   "caixa": [
+    0,
+    0,
+    512,
+    512
+   ]
+  }
  },
  "arbusto~c": {
   "escala": 0.5,
@@ -7713,7 +8001,16 @@
    0.75,
    0.75,
    0.98
-  ]
+  ],
+  "cima": {
+   "arquivo": "arbusto~c/cima.png",
+   "caixa": [
+    0,
+    0,
+    128,
+    128
+   ]
+  }
  },
  "arbusto~d": {
   "escala": 0.5,
@@ -7743,7 +8040,16 @@
    0.75,
    0.75,
    0.87
-  ]
+  ],
+  "cima": {
+   "arquivo": "arbusto~d/cima.png",
+   "caixa": [
+    2,
+    0,
+    128,
+    128
+   ]
+  }
  },
  "beliche": {
   "escala": 0.5,
@@ -8015,6 +8321,664 @@
     0,
     256,
     384
+   ]
+  }
+ },
+ "estrado_altar": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "estrado_altar/giro-4.png",
+    "ax": 226.5,
+    "ay": 282.0
+   },
+   "6": {
+    "arquivo": "estrado_altar/giro-6.png",
+    "ax": 226.5,
+    "ay": 282.0
+   },
+   "0": {
+    "arquivo": "estrado_altar/giro-0.png",
+    "ax": 226.5,
+    "ay": 281.0
+   },
+   "2": {
+    "arquivo": "estrado_altar/giro-2.png",
+    "ax": 226.5,
+    "ay": 281.0
+   }
+  },
+  "real": [
+   3.75,
+   3.75,
+   0.61
+  ]
+ },
+ "pedra_sacrificio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "pedra_sacrificio/giro-4.png",
+    "ax": 177.0,
+    "ay": 234.5
+   },
+   "6": {
+    "arquivo": "pedra_sacrificio/giro-6.png",
+    "ax": 113.0,
+    "ay": 229.5
+   },
+   "0": {
+    "arquivo": "pedra_sacrificio/giro-0.png",
+    "ax": 177.0,
+    "ay": 228.5
+   },
+   "2": {
+    "arquivo": "pedra_sacrificio/giro-2.png",
+    "ax": 113.0,
+    "ay": 232.5
+   }
+  },
+  "real": [
+   2.2,
+   1.2,
+   1.0
+  ]
+ },
+ "corpo_lencol": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "corpo_lencol/giro-4.png",
+    "ax": 42.5,
+    "ay": 135.7
+   },
+   "6": {
+    "arquivo": "corpo_lencol/giro-6.png",
+    "ax": 170.5,
+    "ay": 135.7
+   },
+   "0": {
+    "arquivo": "corpo_lencol/giro-0.png",
+    "ax": 42.5,
+    "ay": 134.7
+   },
+   "2": {
+    "arquivo": "corpo_lencol/giro-2.png",
+    "ax": 170.5,
+    "ay": 141.7
+   }
+  },
+  "real": [
+   0.6,
+   1.9,
+   0.3
+  ]
+ },
+ "corpo_saco": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "corpo_saco/giro-4.png",
+    "ax": 42.5,
+    "ay": 138.7
+   },
+   "6": {
+    "arquivo": "corpo_saco/giro-6.png",
+    "ax": 170.5,
+    "ay": 140.7
+   },
+   "0": {
+    "arquivo": "corpo_saco/giro-0.png",
+    "ax": 42.5,
+    "ay": 140.7
+   },
+   "2": {
+    "arquivo": "corpo_saco/giro-2.png",
+    "ax": 170.5,
+    "ay": 131.7
+   }
+  },
+  "real": [
+   0.6,
+   1.9,
+   0.3
+  ]
+ },
+ "tanque_corpo": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "tanque_corpo/giro-4.png",
+    "ax": 115.5,
+    "ay": 364.3
+   },
+   "6": {
+    "arquivo": "tanque_corpo/giro-6.png",
+    "ax": 116.5,
+    "ay": 342.6
+   },
+   "0": {
+    "arquivo": "tanque_corpo/giro-0.png",
+    "ax": 116.5,
+    "ay": 365.6
+   },
+   "2": {
+    "arquivo": "tanque_corpo/giro-2.png",
+    "ax": 118.0,
+    "ay": 363.0
+   }
+  },
+  "real": [
+   1.5,
+   1.5,
+   2.2
+  ],
+  "cima": {
+   "arquivo": "tanque_corpo/cima.png",
+   "caixa": [
+    0,
+    18,
+    256,
+    238
+   ]
+  }
+ },
+ "tanque_corpo~b": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "tanque_corpo~b/giro-4.png",
+    "ax": 115.5,
+    "ay": 364.3
+   },
+   "6": {
+    "arquivo": "tanque_corpo~b/giro-6.png",
+    "ax": 116.5,
+    "ay": 342.6
+   },
+   "0": {
+    "arquivo": "tanque_corpo~b/giro-0.png",
+    "ax": 116.5,
+    "ay": 365.6
+   },
+   "2": {
+    "arquivo": "tanque_corpo~b/giro-2.png",
+    "ax": 118.0,
+    "ay": 363.0
+   }
+  },
+  "real": [
+   1.5,
+   1.5,
+   2.2
+  ],
+  "cima": {
+   "arquivo": "tanque_corpo~b/cima.png",
+   "caixa": [
+    0,
+    18,
+    256,
+    238
+   ]
+  }
+ },
+ "tanque_corpo~c": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "tanque_corpo~c/giro-4.png",
+    "ax": 115.5,
+    "ay": 364.3
+   },
+   "6": {
+    "arquivo": "tanque_corpo~c/giro-6.png",
+    "ax": 116.5,
+    "ay": 342.6
+   },
+   "0": {
+    "arquivo": "tanque_corpo~c/giro-0.png",
+    "ax": 116.5,
+    "ay": 365.6
+   },
+   "2": {
+    "arquivo": "tanque_corpo~c/giro-2.png",
+    "ax": 118.0,
+    "ay": 363.0
+   }
+  },
+  "real": [
+   1.5,
+   1.5,
+   2.2
+  ],
+  "cima": {
+   "arquivo": "tanque_corpo~c/cima.png",
+   "caixa": [
+    0,
+    18,
+    256,
+    238
+   ]
+  }
+ },
+ "mesa_contencao": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "mesa_contencao/giro-4.png",
+    "ax": 106.0,
+    "ay": 228.9
+   },
+   "6": {
+    "arquivo": "mesa_contencao/giro-6.png",
+    "ax": 169.5,
+    "ay": 229.3
+   },
+   "0": {
+    "arquivo": "mesa_contencao/giro-0.png",
+    "ax": 105.5,
+    "ay": 217.3
+   },
+   "2": {
+    "arquivo": "mesa_contencao/giro-2.png",
+    "ax": 168.5,
+    "ay": 229.7
+   }
+  },
+  "real": [
+   0.9,
+   2.0,
+   0.9
+  ],
+  "cima": {
+   "arquivo": "mesa_contencao/cima.png",
+   "caixa": [
+    51,
+    21,
+    205,
+    362
+   ]
+  }
+ },
+ "pilha_cranios": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "pilha_cranios/giro-4.png",
+    "ax": 64.0,
+    "ay": 91.0
+   },
+   "6": {
+    "arquivo": "pilha_cranios/giro-6.png",
+    "ax": 64.0,
+    "ay": 88.0
+   },
+   "0": {
+    "arquivo": "pilha_cranios/giro-0.png",
+    "ax": 64.0,
+    "ay": 85.0
+   },
+   "2": {
+    "arquivo": "pilha_cranios/giro-2.png",
+    "ax": 64.0,
+    "ay": 85.0
+   }
+  },
+  "real": [
+   0.75,
+   0.75,
+   0.45
+  ],
+  "cima": {
+   "arquivo": "pilha_cranios/cima.png",
+   "caixa": [
+    0,
+    0,
+    128,
+    128
+   ]
+  }
+ },
+ "escada_vertical": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "escada_vertical/giro-4.png",
+    "ax": 7.3,
+    "ay": 378.2
+   },
+   "6": {
+    "arquivo": "escada_vertical/giro-6.png",
+    "ax": 7.3,
+    "ay": 356.5
+   },
+   "0": {
+    "arquivo": "escada_vertical/giro-0.png",
+    "ax": 50.7,
+    "ay": 356.5
+   },
+   "2": {
+    "arquivo": "escada_vertical/giro-2.png",
+    "ax": 50.7,
+    "ay": 378.2
+   }
+  },
+  "real": [
+   0.55,
+   0.3,
+   3.0
+  ],
+  "encosta": true,
+  "cima": {
+   "arquivo": "escada_vertical/cima.png",
+   "caixa": [
+    17,
+    54,
+    111,
+    74
+   ]
+  }
+ },
+ "alcapao": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "alcapao/giro-4.png",
+    "ax": 64.0,
+    "ay": 130.0
+   },
+   "6": {
+    "arquivo": "alcapao/giro-6.png",
+    "ax": 64.0,
+    "ay": 107.0
+   },
+   "0": {
+    "arquivo": "alcapao/giro-0.png",
+    "ax": 64.0,
+    "ay": 107.0
+   },
+   "2": {
+    "arquivo": "alcapao/giro-2.png",
+    "ax": 64.0,
+    "ay": 133.0
+   }
+  },
+  "real": [
+   0.75,
+   0.75,
+   0.75
+  ],
+  "cima": {
+   "arquivo": "alcapao/cima.png",
+   "caixa": [
+    0,
+    0,
+    128,
+    128
+   ]
+  }
+ },
+ "estandarte_sangue": {
+  "escala": 0.5,
+  "parede": {
+   "r": {
+    "arquivo": "estandarte_sangue/parede-r.png",
+    "ax": 36.5,
+    "ay": 75.0
+   },
+   "l": {
+    "arquivo": "estandarte_sangue/parede-l.png",
+    "ax": 36.5,
+    "ay": 75.0
+   }
+  }
+ },
+ "tocha_parede": {
+  "escala": 0.5,
+  "parede": {
+   "r": {
+    "arquivo": "tocha_parede/parede-r.png",
+    "ax": 21.5,
+    "ay": 49.5
+   },
+   "l": {
+    "arquivo": "tocha_parede/parede-l.png",
+    "ax": 21.5,
+    "ay": 45.0
+   }
+  }
+ },
+ "armario_cozinha!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "armario_cozinha!vazio/giro-4.png",
+    "ax": 117.5,
+    "ay": 306.3
+   },
+   "6": {
+    "arquivo": "armario_cozinha!vazio/giro-6.png",
+    "ax": 53.5,
+    "ay": 304.3
+   },
+   "0": {
+    "arquivo": "armario_cozinha!vazio/giro-0.png",
+    "ax": 117.5,
+    "ay": 306.3
+   },
+   "2": {
+    "arquivo": "armario_cozinha!vazio/giro-2.png",
+    "ax": 53.5,
+    "ay": 307.3
+   }
+  },
+  "real": [
+   1.5,
+   0.5,
+   1.9
+  ],
+  "cima": {
+   "arquivo": "armario_cozinha!vazio/cima.png",
+   "caixa": [
+    0,
+    21,
+    256,
+    106
+   ]
+  }
+ },
+ "comoda!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "comoda!vazio/giro-4.png",
+    "ax": 117.5,
+    "ay": 160.3
+   },
+   "6": {
+    "arquivo": "comoda!vazio/giro-6.png",
+    "ax": 53.5,
+    "ay": 164.3
+   },
+   "0": {
+    "arquivo": "comoda!vazio/giro-0.png",
+    "ax": 117.5,
+    "ay": 168.3
+   },
+   "2": {
+    "arquivo": "comoda!vazio/giro-2.png",
+    "ax": 53.5,
+    "ay": 163.3
+   }
+  },
+  "real": [
+   1.5,
+   0.5,
+   0.9
+  ],
+  "cima": {
+   "arquivo": "comoda!vazio/cima.png",
+   "caixa": [
+    0,
+    21,
+    256,
+    106
+   ]
+  }
+ },
+ "nightstand!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "nightstand!vazio/giro-4.png",
+    "ax": 38.5,
+    "ay": 100.8
+   },
+   "6": {
+    "arquivo": "nightstand!vazio/giro-6.png",
+    "ax": 38.5,
+    "ay": 100.8
+   },
+   "0": {
+    "arquivo": "nightstand!vazio/giro-0.png",
+    "ax": 38.5,
+    "ay": 101.8
+   },
+   "2": {
+    "arquivo": "nightstand!vazio/giro-2.png",
+    "ax": 38.5,
+    "ay": 101.8
+   }
+  },
+  "real": [
+   0.5,
+   0.4,
+   0.6
+  ],
+  "cima": {
+   "arquivo": "nightstand!vazio/cima.png",
+   "caixa": [
+    21,
+    30,
+    106,
+    98
+   ]
+  }
+ },
+ "mesa_cozinha!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "mesa_cozinha!vazio/giro-4.png",
+    "ax": 192.0,
+    "ay": 236.0
+   },
+   "6": {
+    "arquivo": "mesa_cozinha!vazio/giro-6.png",
+    "ax": 128.0,
+    "ay": 238.0
+   },
+   "0": {
+    "arquivo": "mesa_cozinha!vazio/giro-0.png",
+    "ax": 192.0,
+    "ay": 241.0
+   },
+   "2": {
+    "arquivo": "mesa_cozinha!vazio/giro-2.png",
+    "ax": 128.0,
+    "ay": 238.0
+   }
+  },
+  "real": [
+   2.25,
+   1.5,
+   0.78
+  ],
+  "cima": {
+   "arquivo": "mesa_cozinha!vazio/cima.png",
+   "caixa": [
+    0,
+    0,
+    384,
+    256
+   ]
+  }
+ },
+ "mesa_jantar!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "mesa_jantar!vazio/giro-4.png",
+    "ax": 256.0,
+    "ay": 279.0
+   },
+   "6": {
+    "arquivo": "mesa_jantar!vazio/giro-6.png",
+    "ax": 128.0,
+    "ay": 265.0
+   },
+   "0": {
+    "arquivo": "mesa_jantar!vazio/giro-0.png",
+    "ax": 256.0,
+    "ay": 280.0
+   },
+   "2": {
+    "arquivo": "mesa_jantar!vazio/giro-2.png",
+    "ax": 128.0,
+    "ay": 275.0
+   }
+  },
+  "real": [
+   3.0,
+   1.5,
+   0.78
+  ],
+  "cima": {
+   "arquivo": "mesa_jantar!vazio/cima.png",
+   "caixa": [
+    1,
+    0,
+    512,
+    255
+   ]
+  }
+ },
+ "prateleira!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "prateleira!vazio/giro-4.png",
+    "ax": 115.0,
+    "ay": 320.4
+   },
+   "6": {
+    "arquivo": "prateleira!vazio/giro-6.png",
+    "ax": 51.0,
+    "ay": 333.4
+   },
+   "0": {
+    "arquivo": "prateleira!vazio/giro-0.png",
+    "ax": 115.0,
+    "ay": 338.4
+   },
+   "2": {
+    "arquivo": "prateleira!vazio/giro-2.png",
+    "ax": 51.0,
+    "ay": 341.4
+   }
+  },
+  "real": [
+   1.5,
+   0.45,
+   2.2
+  ],
+  "cima": {
+   "arquivo": "prateleira!vazio/cima.png",
+   "caixa": [
+    0,
+    25,
+    256,
+    102
    ]
   }
  }

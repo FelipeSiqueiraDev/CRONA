@@ -151,6 +151,12 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'camera_tripe', name: 'Câmera no Tripé', category: 'escritorio', kind: 'camera_tripe', width: 1, depth: 1, height: 1.6, rotations: ALL, colors: ['#2a2a2e', '#ff3030'], desc: 'A câmera de fita no tripé, com a luzinha de gravando.' },
   { id: 'corpo_lencol', name: 'Corpo Coberto', category: 'ocultismo', kind: 'corpo', width: 1, depth: 3, height: 0.3, rotations: ALL, colors: ['#d8d0bc', '#6e1a14'], desc: 'Alguém deitado no chão, embaixo de um lençol encardido. Os pés aparecem.' },
   { id: 'corpo_saco', name: 'Saco de Cadáver', category: 'ocultismo', kind: 'corpo', width: 1, depth: 3, height: 0.3, rotations: ALL, colors: ['#1d1d22', '#8a8a90'], desc: 'Um saco de cadáver preto, fechado.' },
+  // o calabouço (09/10, arte do Códex): o estrado redondo do altar, a pedra do sacrifício e o que sobrou do laboratório
+  { id: 'estrado_altar', name: 'Estrado do Altar', category: 'ocultismo', kind: 'estrado', width: 5, depth: 5, height: 0.61, rotations: ALL, colors: ['#2a2630', '#7a0d0d'], desc: 'O estrado redondo de pedra negra do calabouço, com o sigilo nas canaletas e velas e crânios na borda.' },
+  { id: 'pedra_sacrificio', name: 'Pedra do Sacrifício', category: 'ocultismo', kind: 'pedra_sacrificio', width: 3, depth: 2, height: 1.0, rotations: ALL, colors: ['#3a3438', '#6e0b0b'], desc: 'A pedra do sacrifício: o tampo côncavo, as argolas e as correntes nas quatro pontas, o sangue seco.' },
+  { id: 'tanque_corpo', name: 'Tanque com Corpo', category: 'laboratorio', kind: 'tanque_corpo', width: 2, depth: 2, height: 2.2, rotations: ALL, colors: ['#2b2f33', '#3fe0c0'], desc: 'Um cilindro de vidro grosso, cheio de líquido, com um corpo suspenso lá dentro.' },
+  { id: 'mesa_contencao', name: 'Mesa de Contenção', category: 'laboratorio', kind: 'mesa_contencao', width: 2, depth: 3, height: 0.9, rotations: ALL, colors: ['#8a9096', '#3a3d42'], desc: 'Mesa de aço inox com as correias de couro para prender alguém deitado.' },
+  { id: 'pilha_cranios', name: 'Pilha de Crânios', category: 'ocultismo', kind: 'pilha_cranios', width: 1, depth: 1, height: 0.45, rotations: ALL, colors: ['#d8cfb8', '#5a4a3a'] },
   { id: 'skull', name: 'Crânio', category: 'ocultismo', kind: 'skull', width: 1, depth: 1, height: 0.3, rotations: ALL, colors: ['#d8cfb8'] },
   { id: 'table_tools', name: 'Mesa das Ferramentas', category: 'ocultismo', kind: 'desk', width: 2, depth: 1, height: 0.8, stackable: true, rotations: ALL, colors: ['#4a3020', '#2e1d12', '#9a7a4a'], desc: 'Mesa rústica com a faca cerimonial, o giz, a tigela, a corda e as velas.' },
   { id: 'books_stack', name: 'Pilha de Livros', category: 'ocultismo', kind: 'books', width: 1, depth: 1, height: 0.4, stackable: true, rotations: ALL, colors: ['#5a2320', '#2f3f5a', '#4a4a2a'] },
@@ -366,6 +372,8 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'chains_wall', name: 'Correntes com Algemas', category: 'parede', kind: 'board', w: 28, h: 52, colors: ['#5a3a24', '#2a1d14'], desc: 'Correntes enferrujadas presas por argolas, com as algemas abertas.' },
   { id: 'crack_glow', name: 'Rachadura Dourada', category: 'parede', kind: 'crack', w: 38, h: 92, colors: ['#ffc45a', '#1a1410'], desc: 'Uma rachadura funda; lá dentro, uma luz dourada fraca.' },
   { id: 'sigil_scratch', name: 'Sigilo Riscado', category: 'parede', kind: 'board', w: 28, h: 35, colors: ['#2a2622', '#8a8078'], desc: 'Riscos fundos na pedra, em espiral, como feitos à unha.' },
+  { id: 'estandarte_sangue', name: 'Estandarte de Sangue', category: 'parede', kind: 'board', w: 40, h: 80, colors: ['#5a0d0d', '#2a1d14'], desc: 'Um estandarte velho de pano, com um sigilo pintado em sangue.' },
+  { id: 'tocha_parede', name: 'Tocha de Parede', category: 'parede', kind: 'sconce', w: 14, h: 34, colors: ['#4a3a2a', '#ffb050'], desc: 'Uma tocha acesa presa na parede de pedra.' },
 ];
 
 /** Metros → unidades de altura (duas casas). */
