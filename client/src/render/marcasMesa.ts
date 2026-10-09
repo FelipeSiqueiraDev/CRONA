@@ -25,16 +25,6 @@ export const COR_GIZ: Record<CorGiz, string> = {
   ouro: '#f4c45a',
 };
 const COR_PONTO = '#ffd27a';
-/**
- * O cristal pintado (arte/efeitos/ponto-cristal.png, pedido ao Códex): 8 quadros de 96 × 144 lado a lado,
- * o cristal girando um quarto de volta (o octaedro se repete a cada 90°). Sem ele, o desenhado em código.
- */
-const CRISTAL = new Image();
-CRISTAL.decoding = 'async';
-fetch('/api/arte')
-  .then((r) => r.json() as Promise<{ arquivos: string[] }>)
-  .then((j) => j.arquivos.includes('/arte/efeitos/ponto-cristal.png') && (CRISTAL.src = '/arte/efeitos/ponto-cristal.png'))
-  .catch(() => {});
 
 /** O traço que o mestre está fazendo agora (só na tela dele). */
 export interface Rascunho {
@@ -265,17 +255,6 @@ function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, ida
  */
 function desenharCristal(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, idade: number, dpr: number, px: number) {
   const giro = idade / 900;
-  if (CRISTAL.complete && CRISTAL.naturalWidth) {
-    const q = Math.floor(((giro % (Math.PI / 2)) / (Math.PI / 2)) * 8) % 8;
-    const w = s * 2.6;
-    const h = w * 1.5;
-    ctx.save();
-    ctx.shadowBlur = 14 * dpr;
-    ctx.shadowColor = 'rgba(255, 190, 90, 0.9)';
-    ctx.drawImage(CRISTAL, q * 96, 0, 96, 144, x - w / 2, y - h * 0.47, w, h);
-    ctx.restore();
-    return;
-  }
   const alto = s * 1.7;
   const baixo = s * 1.9;
   // a cintura: quatro pontas em volta, achatadas (vista de cima e de lado ao mesmo tempo)
