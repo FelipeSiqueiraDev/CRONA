@@ -39,21 +39,13 @@ describe("Orfanato Filhos do Dragão", () => {
     assert.equal(vistos.size, salas.length, "alguma sala ficou sem caminho");
   });
 
-  test("os doze quartinhos são quartos de verdade: a cama queimada ou o teto caído, e a porta para o corredor", () => {
+  test("os doze quartos são cenas: a porta do corredor leva a cada um, com a cama queimada, o teto caído ou a jaula", () => {
     const ala = porNome("Ala dos Dormitórios");
-    for (let i = 0; i < 6; i++) {
-      const y0 = 5 + i * 4;
-      for (const [x0, x1] of [[0, 3], [9, 12]]) {
-        const dentro = ala.items.filter((it) => it.x >= x0 && it.x <= x1 && it.y >= y0 && it.y < y0 + 3);
-        assert.ok(dentro.some((it) => it.defId === "cama_queimada" || it.defId === "escombros"), `quartinho ${i} (x ${x0}) vazio`);
-      }
-      for (const x of [4, 8]) {
-        const porta = ala.items.find((it) => it.x === x && it.y === y0 + 1);
-        assert.ok(porta && getFurni(porta.defId)?.cela, `falta a porta em ${x},${y0 + 1}`);
-        // a casa de dentro, logo depois da porta, fica livre para entrar
-        const dentro = x === 4 ? 3 : 9;
-        assert.ok(!ala.items.some((it) => it.x === dentro && it.y === y0 + 1 && !getFurni(it.defId)?.walkable), `a entrada do quarto em ${dentro},${y0 + 1} está tapada`);
-      }
+    for (let n = 1; n <= 12; n++) {
+      const q = porNome(`Quarto ${n}`);
+      assert.ok(q, `falta o Quarto ${n}`);
+      assert.ok(ala.items.some((it) => it.defId === "portal" && it.link === q.id), `o corredor não leva ao Quarto ${n}`);
+      assert.ok(q.items.some((it) => ["cama_queimada", "escombros", "colchao_chao"].includes(it.defId)), `Quarto ${n} vazio`);
     }
   });
 
