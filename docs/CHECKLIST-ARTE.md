@@ -105,8 +105,8 @@ Nada novo: usa os retratos, os ícones e as folhas da FICHAS. Os cartões de res
 - [ ] sinuca-mesa, sinuca-bola-0 a 15, sinuca-taco
 
 **As abas do painel da direita e a viagem (08/10):** seção 3 (D) e (C) do pedido. Entram sozinhos em `client/public/arte/icones/`.
-- [ ] painel-players, painel-itens, painel-interludio (128×128)
-- [ ] mesa-viagem (128×128, junto das ferramentas da mesa)
+- [x] painel-players, painel-itens, painel-interludio (128×128) · no jogo 09/10
+- [x] mesa-viagem (128×128, junto das ferramentas da mesa) · no jogo 09/10
 
 ## 5. Tela COMBATE
 
