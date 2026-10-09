@@ -8981,5 +8981,658 @@
     102
    ]
   }
+ },
+ "cadeira_gamer": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "cadeira_gamer/giro-4.png",
+    "ax": 55.5,
+    "ay": 212.3
+   },
+   "6": {
+    "arquivo": "cadeira_gamer/giro-6.png",
+    "ax": 55.5,
+    "ay": 217.3
+   },
+   "0": {
+    "arquivo": "cadeira_gamer/giro-0.png",
+    "ax": 55.5,
+    "ay": 218.3
+   },
+   "2": {
+    "arquivo": "cadeira_gamer/giro-2.png",
+    "ax": 55.5,
+    "ay": 226.3
+   }
+  },
+  "real": [
+   0.65,
+   0.65,
+   1.3
+  ],
+  "cima": {
+   "arquivo": "cadeira_gamer/cima.png",
+   "caixa": [
+    8,
+    8,
+    119,
+    119
+   ]
+  }
+ },
+ "cadeira_gamer~b": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "cadeira_gamer~b/giro-4.png",
+    "ax": 55.5,
+    "ay": 195.3
+   },
+   "6": {
+    "arquivo": "cadeira_gamer~b/giro-6.png",
+    "ax": 55.5,
+    "ay": 195.3
+   },
+   "0": {
+    "arquivo": "cadeira_gamer~b/giro-0.png",
+    "ax": 55.5,
+    "ay": 195.3
+   },
+   "2": {
+    "arquivo": "cadeira_gamer~b/giro-2.png",
+    "ax": 55.5,
+    "ay": 195.3
+   }
+  },
+  "real": [
+   0.65,
+   0.65,
+   1.3
+  ],
+  "cima": {
+   "arquivo": "cadeira_gamer~b/cima.png",
+   "caixa": [
+    8,
+    8,
+    119,
+    119
+   ]
+  }
+ },
+ "rack_moderno": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "rack_moderno/giro-4.png",
+    "ax": 15.2,
+    "ay": 301.5
+   },
+   "6": {
+    "arquivo": "rack_moderno/giro-6.png",
+    "ax": 79.2,
+    "ay": 279.2
+   },
+   "0": {
+    "arquivo": "rack_moderno/giro-0.png",
+    "ax": 57.8,
+    "ay": 278.2
+   },
+   "2": {
+    "arquivo": "rack_moderno/giro-2.png",
+    "ax": 121.8,
+    "ay": 300.5
+   }
+  },
+  "real": [
+   0.6,
+   1.0,
+   2.0
+  ],
+  "encosta": true,
+  "cima": {
+   "arquivo": "rack_moderno/cima.png",
+   "caixa": [
+    13,
+    42,
+    115,
+    213
+   ]
+  }
+ },
+ "rack_moderno!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "rack_moderno!vazio/giro-4.png",
+    "ax": 15.2,
+    "ay": 301.5
+   },
+   "6": {
+    "arquivo": "rack_moderno!vazio/giro-6.png",
+    "ax": 79.2,
+    "ay": 280.2
+   },
+   "0": {
+    "arquivo": "rack_moderno!vazio/giro-0.png",
+    "ax": 57.8,
+    "ay": 280.2
+   },
+   "2": {
+    "arquivo": "rack_moderno!vazio/giro-2.png",
+    "ax": 121.8,
+    "ay": 301.5
+   }
+  },
+  "real": [
+   0.6,
+   1.0,
+   2.0
+  ],
+  "encosta": true,
+  "cima": {
+   "arquivo": "rack_moderno!vazio/cima.png",
+   "caixa": [
+    12,
+    42,
+    116,
+    215
+   ]
+  }
+ },
+ "lixeira_lanches": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "lixeira_lanches/giro-4.png",
+    "ax": 34.0,
+    "ay": 110.9
+   },
+   "6": {
+    "arquivo": "lixeira_lanches/giro-6.png",
+    "ax": 34.0,
+    "ay": 110.9
+   },
+   "0": {
+    "arquivo": "lixeira_lanches/giro-0.png",
+    "ax": 34.0,
+    "ay": 110.9
+   },
+   "2": {
+    "arquivo": "lixeira_lanches/giro-2.png",
+    "ax": 34.0,
+    "ay": 110.9
+   }
+  },
+  "real": [
+   0.4,
+   0.4,
+   0.6
+  ],
+  "cima": {
+   "arquivo": "lixeira_lanches/cima.png",
+   "caixa": [
+    30,
+    30,
+    98,
+    98
+   ]
+  }
+ },
+ "torre_crt": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "torre_crt/giro-4.png",
+    "ax": 123.9,
+    "ay": 283.1
+   },
+   "6": {
+    "arquivo": "torre_crt/giro-6.png",
+    "ax": 59.9,
+    "ay": 280.0
+   },
+   "0": {
+    "arquivo": "torre_crt/giro-0.png",
+    "ax": 128.1,
+    "ay": 278.0
+   },
+   "2": {
+    "arquivo": "torre_crt/giro-2.png",
+    "ax": 64.1,
+    "ay": 286.1
+   }
+  },
+  "real": [
+   1.5,
+   0.7,
+   1.8
+  ],
+  "encosta": true,
+  "cima": {
+   "arquivo": "torre_crt/cima.png",
+   "caixa": [
+    0,
+    5,
+    255,
+    123
+   ]
+  }
+ },
+ "torre_crt!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "torre_crt!vazio/giro-4.png",
+    "ax": 123.9,
+    "ay": 291.1
+   },
+   "6": {
+    "arquivo": "torre_crt!vazio/giro-6.png",
+    "ax": 59.9,
+    "ay": 282.0
+   },
+   "0": {
+    "arquivo": "torre_crt!vazio/giro-0.png",
+    "ax": 128.1,
+    "ay": 282.0
+   },
+   "2": {
+    "arquivo": "torre_crt!vazio/giro-2.png",
+    "ax": 64.1,
+    "ay": 284.1
+   }
+  },
+  "real": [
+   1.5,
+   0.7,
+   1.8
+  ],
+  "encosta": true,
+  "cima": {
+   "arquivo": "torre_crt!vazio/cima.png",
+   "caixa": [
+    0,
+    4,
+    256,
+    123
+   ]
+  }
+ },
+ "bancada_eletronica": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "bancada_eletronica/giro-4.png",
+    "ax": 123.9,
+    "ay": 195.1
+   },
+   "6": {
+    "arquivo": "bancada_eletronica/giro-6.png",
+    "ax": 59.9,
+    "ay": 196.0
+   },
+   "0": {
+    "arquivo": "bancada_eletronica/giro-0.png",
+    "ax": 128.1,
+    "ay": 194.0
+   },
+   "2": {
+    "arquivo": "bancada_eletronica/giro-2.png",
+    "ax": 64.1,
+    "ay": 196.1
+   }
+  },
+  "real": [
+   1.5,
+   0.7,
+   0.95
+  ],
+  "encosta": true,
+  "cima": {
+   "arquivo": "bancada_eletronica/cima.png",
+   "caixa": [
+    0,
+    4,
+    256,
+    123
+   ]
+  }
+ },
+ "bancada_eletronica!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "bancada_eletronica!vazio/giro-4.png",
+    "ax": 123.9,
+    "ay": 195.1
+   },
+   "6": {
+    "arquivo": "bancada_eletronica!vazio/giro-6.png",
+    "ax": 59.9,
+    "ay": 193.0
+   },
+   "0": {
+    "arquivo": "bancada_eletronica!vazio/giro-0.png",
+    "ax": 128.1,
+    "ay": 193.0
+   },
+   "2": {
+    "arquivo": "bancada_eletronica!vazio/giro-2.png",
+    "ax": 64.1,
+    "ay": 195.1
+   }
+  },
+  "real": [
+   1.5,
+   0.7,
+   0.95
+  ],
+  "encosta": true,
+  "cima": {
+   "arquivo": "bancada_eletronica!vazio/cima.png",
+   "caixa": [
+    0,
+    4,
+    256,
+    123
+   ]
+  }
+ },
+ "mesa_holografica": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "mesa_holografica/giro-4.png",
+    "ax": 84.5,
+    "ay": 126.3
+   },
+   "6": {
+    "arquivo": "mesa_holografica/giro-6.png",
+    "ax": 84.5,
+    "ay": 124.3
+   },
+   "0": {
+    "arquivo": "mesa_holografica/giro-0.png",
+    "ax": 84.5,
+    "ay": 126.3
+   },
+   "2": {
+    "arquivo": "mesa_holografica/giro-2.png",
+    "ax": 84.5,
+    "ay": 120.3
+   }
+  },
+  "estados": {
+   "1": {
+    "giros": {
+     "4": {
+      "arquivo": "mesa_holografica/giro-4-1.png",
+      "ax": 84.5,
+      "ay": 120.0
+     },
+     "6": {
+      "arquivo": "mesa_holografica/giro-6-1.png",
+      "ax": 84.5,
+      "ay": 121.8
+     },
+     "0": {
+      "arquivo": "mesa_holografica/giro-0-1.png",
+      "ax": 84.5,
+      "ay": 123.1
+     },
+     "2": {
+      "arquivo": "mesa_holografica/giro-2-1.png",
+      "ax": 84.5,
+      "ay": 120.3
+     }
+    }
+   }
+  },
+  "real": [
+   1.4,
+   1.4,
+   1.0
+  ],
+  "cima": {
+   "arquivo": "mesa_holografica/cima.png",
+   "caixa": [
+    8,
+    8,
+    247,
+    247
+   ]
+  }
+ },
+ "mesa_holografica!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "mesa_holografica!vazio/giro-4.png",
+    "ax": 84.5,
+    "ay": 120.3
+   },
+   "6": {
+    "arquivo": "mesa_holografica!vazio/giro-6.png",
+    "ax": 84.5,
+    "ay": 121.3
+   },
+   "0": {
+    "arquivo": "mesa_holografica!vazio/giro-0.png",
+    "ax": 84.5,
+    "ay": 123.3
+   },
+   "2": {
+    "arquivo": "mesa_holografica!vazio/giro-2.png",
+    "ax": 84.5,
+    "ay": 120.3
+   }
+  },
+  "real": [
+   1.4,
+   1.4,
+   1.0
+  ],
+  "cima": {
+   "arquivo": "mesa_holografica!vazio/cima.png",
+   "caixa": [
+    8,
+    8,
+    247,
+    247
+   ]
+  }
+ },
+ "frigobar_energetico": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "frigobar_energetico/giro-4.png",
+    "ax": 47.0,
+    "ay": 149.5
+   },
+   "6": {
+    "arquivo": "frigobar_energetico/giro-6.png",
+    "ax": 47.0,
+    "ay": 149.5
+   },
+   "0": {
+    "arquivo": "frigobar_energetico/giro-0.png",
+    "ax": 47.0,
+    "ay": 149.5
+   },
+   "2": {
+    "arquivo": "frigobar_energetico/giro-2.png",
+    "ax": 47.0,
+    "ay": 149.5
+   }
+  },
+  "real": [
+   0.55,
+   0.55,
+   0.9
+  ],
+  "cima": {
+   "arquivo": "frigobar_energetico/cima.png",
+   "caixa": [
+    17,
+    17,
+    111,
+    111
+   ]
+  }
+ },
+ "posto_enfermagem": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "posto_enfermagem/giro-4.png",
+    "ax": 448.0,
+    "ay": 371.0
+   },
+   "6": {
+    "arquivo": "posto_enfermagem/giro-6.png",
+    "ax": 192.0,
+    "ay": 544.0
+   },
+   "0": {
+    "arquivo": "posto_enfermagem/giro-0.png",
+    "ax": 448.0,
+    "ay": 351.0
+   },
+   "2": {
+    "arquivo": "posto_enfermagem/giro-2.png",
+    "ax": 192.0,
+    "ay": 544.0
+   }
+  },
+  "real": [
+   5.25,
+   2.25,
+   1.1
+  ],
+  "cima": {
+   "arquivo": "posto_enfermagem/cima.png",
+   "caixa": [
+    0,
+    0,
+    896,
+    384
+   ]
+  }
+ },
+ "posto_enfermagem!vazio": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "posto_enfermagem!vazio/giro-4.png",
+    "ax": 448.0,
+    "ay": 371.0
+   },
+   "6": {
+    "arquivo": "posto_enfermagem!vazio/giro-6.png",
+    "ax": 192.0,
+    "ay": 544.0
+   },
+   "0": {
+    "arquivo": "posto_enfermagem!vazio/giro-0.png",
+    "ax": 448.0,
+    "ay": 351.0
+   },
+   "2": {
+    "arquivo": "posto_enfermagem!vazio/giro-2.png",
+    "ax": 192.0,
+    "ay": 544.0
+   }
+  },
+  "real": [
+   5.25,
+   2.25,
+   1.1
+  ],
+  "cima": {
+   "arquivo": "posto_enfermagem!vazio/cima.png",
+   "caixa": [
+    0,
+    0,
+    896,
+    384
+   ]
+  }
+ },
+ "painel_telas": {
+  "escala": 0.5,
+  "parede": {
+   "r": {
+    "arquivo": "painel_telas/parede-r.png",
+    "ax": 88.5,
+    "ay": 101.5
+   },
+   "l": {
+    "arquivo": "painel_telas/parede-l.png",
+    "ax": 88.5,
+    "ay": 101.5
+   }
+  }
+ },
+ "mural_polaroids": {
+  "escala": 0.5,
+  "parede": {
+   "r": {
+    "arquivo": "mural_polaroids/parede-r.png",
+    "ax": 39.5,
+    "ay": 51.0
+   },
+   "l": {
+    "arquivo": "mural_polaroids/parede-l.png",
+    "ax": 39.5,
+    "ay": 50.5
+   }
+  }
+ },
+ "mural_polaroids!vazio": {
+  "escala": 0.5,
+  "parede": {
+   "r": {
+    "arquivo": "mural_polaroids!vazio/parede-r.png",
+    "ax": 39.5,
+    "ay": 51.5
+   },
+   "l": {
+    "arquivo": "mural_polaroids!vazio/parede-l.png",
+    "ax": 39.5,
+    "ay": 51.5
+   }
+  }
+ },
+ "tela_cris": {
+  "escala": 0.5,
+  "parede": {
+   "r": {
+    "arquivo": "tela_cris/parede-r.png",
+    "ax": 115.0,
+    "ay": 133.5
+   },
+   "l": {
+    "arquivo": "tela_cris/parede-l.png",
+    "ax": 115.0,
+    "ay": 133.5
+   }
+  }
+ },
+ "tela_derrota": {
+  "escala": 0.5,
+  "parede": {
+   "r": {
+    "arquivo": "tela_derrota/parede-r.png",
+    "ax": 50.5,
+    "ay": 59.0
+   },
+   "l": {
+    "arquivo": "tela_derrota/parede-l.png",
+    "ax": 50.5,
+    "ay": 59.0
+   }
+  }
  }
 }

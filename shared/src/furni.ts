@@ -277,6 +277,15 @@ const FURNI_METERS: FurniDef[] = [
   // depósito
   { id: 'rubble', name: 'Entulho', category: 'armazenamento', kind: 'rubble', width: 2, depth: 2, height: 0.5, rotations: ALL, colors: ['#5a5550', '#4a3222'] },
   { id: 'console', name: 'Bancada de Computadores', category: 'escritorio', kind: 'console', width: 2, depth: 1, height: 0.78, stackable: true, states: 2, rotations: ALL, colors: ['#2e2a36', '#8a78c0', '#7fd0ff'], desc: 'Dois monitores e teclado. Clique duplo liga/desliga.' },
+  // a Sala de Tecnologia cheia e o posto da enfermaria (09/10, arte do Códex)
+  { id: 'cadeira_gamer', name: 'Cadeira Gamer', category: 'escritorio', kind: 'chair', width: 1, depth: 1, height: 1.3, rotations: ALL, colors: ['#3a1a5a', '#141418'] },
+  { id: 'rack_moderno', name: 'Rack de Servidores Moderno', category: 'escritorio', kind: 'server', width: 1, depth: 2, height: 2.0, rotations: ALL, colors: ['#141418', '#3fd0ff'] },
+  { id: 'lixeira_lanches', name: 'Lixeira Transbordando', category: 'escritorio', kind: 'lixeira_lanches', width: 1, depth: 1, height: 0.6, rotations: ALL, colors: ['#3a3d42', '#e0a040'] },
+  { id: 'torre_crt', name: 'Torre de Monitores CRT', category: 'escritorio', kind: 'torre_crt', width: 2, depth: 1, height: 1.8, rotations: ALL, colors: ['#c8c0a8', '#5ad8ff'], desc: 'Seis monitores de tubo empilhados e um videocassete, todos ligados.' },
+  { id: 'bancada_eletronica', name: 'Bancada de Eletrônica', category: 'escritorio', kind: 'bancada_eletronica', width: 2, depth: 1, height: 0.95, rotations: ALL, colors: ['#7a5a3a', '#3a3d42'], desc: 'Tampo de madeira gasto, ferro de solda fumegando, a lupa com luz presa na borda.' },
+  { id: 'mesa_holografica', name: 'Mesa Holográfica', category: 'escritorio', kind: 'mesa_holografica', width: 2, depth: 2, height: 1.0, states: 2, rotations: ALL, colors: ['#1a1d24', '#5ad8ff'], desc: 'Uma mesa redonda que projeta um mapa no ar. Clique duplo liga e desliga.' },
+  { id: 'frigobar_energetico', name: 'Frigobar de Energético', category: 'escritorio', kind: 'frigobar', width: 1, depth: 1, height: 0.9, rotations: ALL, colors: ['#141418', '#7aff5a'] },
+  { id: 'posto_enfermagem', name: 'Posto de Enfermagem', category: 'saude', kind: 'posto_enfermagem', width: 7, depth: 3, height: 1.1, rotations: ALL, colors: ['#e0dccc', '#5a7a8a'], desc: 'O balcão do posto de enfermagem, inteiro, com o computador em cima.' },
   { id: 'server_rack', name: 'Rack de Servidores', category: 'escritorio', kind: 'locker', width: 1, depth: 1, height: 2.0, rotations: ALL, colors: ['#1d1d20', '#4fe39a'], desc: 'Armário de metal com os servidores piscando.' },
   { id: 'printer_dot', name: 'Impressora Matricial', category: 'escritorio', kind: 'crate', width: 1, depth: 1, height: 1.0, rotations: ALL, colors: ['#d8ccb0', '#6a6e74'], desc: 'Papel contínuo caindo na frente.' },
   { id: 'whiteboard', name: 'Quadro Branco', category: 'escritorio', kind: 'crate', width: 3, depth: 1, height: 1.8, rotations: ALL, colors: ['#e8e4dc', '#8a8f96'], desc: 'De rodinhas, cheio de setas e círculos.' },
@@ -374,6 +383,10 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'sigil_scratch', name: 'Sigilo Riscado', category: 'parede', kind: 'board', w: 28, h: 35, colors: ['#2a2622', '#8a8078'], desc: 'Riscos fundos na pedra, em espiral, como feitos à unha.' },
   { id: 'estandarte_sangue', name: 'Estandarte de Sangue', category: 'parede', kind: 'board', w: 40, h: 80, colors: ['#5a0d0d', '#2a1d14'], desc: 'Um estandarte velho de pano, com um sigilo pintado em sangue.' },
   { id: 'tocha_parede', name: 'Tocha de Parede', category: 'parede', kind: 'sconce', w: 14, h: 34, colors: ['#4a3a2a', '#ffb050'], desc: 'Uma tocha acesa presa na parede de pedra.' },
+  { id: 'painel_telas', name: 'Painel de Telas', category: 'parede', kind: 'tv', w: 100, h: 56, colors: ['#141418', '#5ad8ff'] },
+  { id: 'mural_polaroids', name: 'Mural de Polaroids', category: 'parede', kind: 'board', w: 46, h: 31, colors: ['#8a6a4a', '#e8e0d0'] },
+  { id: 'tela_cris', name: 'Tela do C.R.I.S', category: 'parede', kind: 'tv', w: 130, h: 72, colors: ['#0a1420', '#3fd0ff'], desc: 'A tela enorme do C.R.I.S, o sistema da Ordem que procura o paranormal.' },
+  { id: 'tela_derrota', name: 'Tela de Derrota', category: 'parede', kind: 'tv', w: 56, h: 34, colors: ['#141418', '#ff5a5a'], desc: 'Um monitor na parede travado na tela de DERROTA de algum jogo.' },
 ];
 
 /** Metros → unidades de altura (duas casas). */
