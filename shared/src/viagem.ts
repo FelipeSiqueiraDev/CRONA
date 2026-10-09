@@ -72,7 +72,7 @@ export const artesDeChegada = (nomeLugar: string) => [`chegada-${slugLugar(nomeL
 export function ambienteDoDestino(nome?: string): AmbienteViagem {
   if (!nome) return 'estrada';
   if (/fazenda|arredores|celeiro|casar[aã]o|calabou[cç]o|mantimentos|olhos de [aá]guia|s[ií]tio|orfanato/i.test(nome)) return 'rural';
-  if (/sede|ordem|ordo|cidade|pr[eé]dio|bar\b|subsolo/i.test(nome)) return 'cidade';
+  if (/sede|ordem|ordo|cidade|pr[eé]dio|bar\b|subsolo|tiradentes|igarap[eé]|santo ber[cç]o/i.test(nome)) return 'cidade';
   return 'estrada';
 }
 

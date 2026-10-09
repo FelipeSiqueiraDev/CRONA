@@ -6,7 +6,7 @@
   border: 0.35rem solid #2a1d2e;
   border-radius: 0.6rem;
   overflow: hidden;
-  background: #35a1a8;
+  background: #0f1117;
   box-shadow: inset 0 0 0 0.2rem rgba(255, 255, 255, 0.18);
 }
 .mm-tela {
@@ -26,8 +26,9 @@
 .mm-pino {
   pointer-events: auto;
   position: absolute;
-  width: 17%;
-  height: 31%;
+  /* a ilha na tela de 288 × 162: 72 × 64 pixels */
+  width: 25%;
+  height: 38%;
   transform: translate(-50%, -62%);
   background: transparent;
   border: 0;

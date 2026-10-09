@@ -221,7 +221,7 @@ const cache = new Map<IconeLugar, HTMLCanvasElement>();
  * casinha genérica. Enquanto carrega (ou se não existe), o desenho em código.
  */
 const PASTA_MAPA = '/arte/mapa/';
-const CENTRO_ARTE: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'santo-berco': 43, 'generico-casa': 41 };
+const CENTRO_ARTE: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'tiradentes': 43, 'igarape': 43, 'santo-berco': 43, 'generico-casa': 41 };
 const artes = new Map<string, HTMLCanvasElement | null>();
 let existentes: Set<string> | null = null;
 fetch('/api/arte')

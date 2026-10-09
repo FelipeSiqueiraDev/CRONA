@@ -154,6 +154,8 @@ interface RoomUser {
   encara?: Point;
   /** o que fazer quando a peça chegar aonde ia (o jogo do bar abre só quando ela chega); outro destino cancela */
   aoChegar?: () => void;
+  /** quantos passos a peça já esperou porque outra peça tapava o caminho (o grupo andando junto) */
+  esperando?: number;
   next: Point | null;
   sit: 0 | 1 | 2;
   dance: boolean;
@@ -611,8 +613,12 @@ export class RoomInstance {
           chegou?.();
         } else {
           const path = findPath(this.map, u, u.goal, (x, y) => this.occupied(x, y, u.client.id));
-          if (!path || !path.length) {
+          // só outra peça no caminho (o grupo andando junto, alguém parado na porta): espera uns passos e tenta de novo
+          const soPecas = (!path || !path.length) && (u.esperando ?? 0) < 8 && !!findPath(this.map, u, u.goal, () => false)?.length;
+          if (soPecas) u.esperando = (u.esperando ?? 0) + 1;
+          else if (!path || !path.length) {
             // não dá para chegar (o caminho fechou): fica onde está, e o que esperava a chegada acontece assim mesmo
+            delete u.esperando;
             u.goal = null;
             delete u.encara;
             const chegou = u.aoChegar;
@@ -620,7 +626,8 @@ export class RoomInstance {
             chegou?.();
           }
           else {
-            const step = path[0];
+            delete u.esperando;
+            const step = path![0];
             u.dir = u.headDir = directionTo(u, step);
             u.next = step;
             u.sit = 0;

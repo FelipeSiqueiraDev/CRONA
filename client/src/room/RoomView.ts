@@ -285,6 +285,8 @@ export interface RoomEvents {
   openHint(kind: 'floor' | 'wall', id: number): void;
   /** um aviso curto para quem está mexendo no tabuleiro */
   aviso?(texto: string): void;
+  /** o grupo de peças mudou (Shift + clique): quantas andam juntas (0 = nenhum grupo) */
+  grupoMudou?(n: number): void;
 }
 
 interface Hit {
@@ -349,6 +351,8 @@ export class RoomView {
   info: RoomInfo | null = null;
   users = new Map<number, ClientUser>();
   myId = 0;
+  /** as peças andando em grupo (Shift + clique junta e tira; 09/10, o Felipe): a comandada e as outras, e o clique no chão manda todas */
+  grupo = new Set<number>();
   selection: Selection = null;
   placement: Placement | null = null;
   private painter = new Painter();
@@ -471,6 +475,7 @@ export class RoomView {
     this.particles.setRoom(this.map, info.particles);
     // mantém a peça ativa se ela estiver nesta cena
     this.myId = users.some((u) => u.id === myId) ? myId : 0;
+    this.grupo.clear();
     this.users.clear();
     for (const u of users) this.addUser(u);
     this.selection = null;
@@ -1246,7 +1251,23 @@ export class RoomView {
 
     if (hit?.kind === 'user') {
       if (this.aoClicarPeca?.(hit.id)) return;
-      // clicar numa peça passa a controlá-la
+      // Shift + clique: junta a peça ao grupo (ou tira); o clique no chão manda o grupo inteiro
+      if (shift && !this.watchOnly) {
+        if (this.myId && this.users.has(this.myId)) this.grupo.add(this.myId);
+        if (this.grupo.has(hit.id) && this.grupo.size > 1) {
+          this.grupo.delete(hit.id);
+          if (this.myId === hit.id) this.myId = [...this.grupo][0] ?? 0;
+        } else {
+          this.grupo.add(hit.id);
+          this.myId = hit.id;
+        }
+        if (this.grupo.size < 2) this.grupo.clear();
+        this.events.grupoMudou?.(this.grupo.size);
+        this.select({ kind: 'user', id: this.myId });
+        return;
+      }
+      // clicar numa peça passa a controlá-la (e desfaz o grupo)
+      if (this.grupo.size) (this.grupo.clear(), this.events.grupoMudou?.(0));
       this.myId = hit.id;
       this.select({ kind: 'user', id: hit.id });
       return;
@@ -1524,7 +1545,7 @@ export class RoomView {
         retrato: this.retratoDe(u),
         pv: this.pvDe?.(u.id) ?? undefined,
         vez: !!m?.vez.has(u.id),
-        escolhida: !this.watchOnly && (u.id === this.myId || (sel?.kind === 'user' && sel.id === u.id)),
+        escolhida: !this.watchOnly && (u.id === this.myId || this.grupo.has(u.id) || (sel?.kind === 'user' && sel.id === u.id)),
         caido: !!m?.deitadas.has(u.id),
         mira: m?.mira === u.id,
         naArea: !!m?.naArea.has(u.id),
@@ -2139,7 +2160,7 @@ export class RoomView {
                 }
             } else if (!deitada) desenharSombraPes(ctx, sx, sy, Math.round(rx * 0.86), Math.round(ry * 0.86));
             // anel na cor do personagem (no combate, na cor do lado): fino, em volta da sombra; a peça ativa pulsa
-            const active = u.id === this.myId;
+            const active = u.id === this.myId || (!this.watchOnly && this.grupo.has(u.id));
             const pulse = active ? 1 + Math.sin(now / 260) * 0.06 : 1;
             const corBase = marcas?.bases.get(u.id) ?? u.color;
             // no combate, a base pintada do kit (agente ou inimigo); fora dele, o anel na cor do personagem

@@ -96,13 +96,54 @@ function startPlace(defId: string, invId?: number) {
   shell?.setPlacement(`Colocando ${name}: clique para colocar · R ou botão direito gira · Shift coloca vários · Esc cancela`);
 }
 
+/**
+ * O grupo anda junto (09/10, o Felipe): cada peça vai para uma casa livre perto do destino, sem empilhar. As casas saem
+ * de uma busca a partir do destino (as mais perto primeiro); a peça mais perto do destino fica com a casa do clique, e
+ * as outras, em ordem de distância, com as seguintes.
+ */
+function andarEmGrupo(x: number, y: number) {
+  const map = app.view.map;
+  if (!map) return;
+  const ids = [...app.view.grupo].filter((id) => app.view.users.has(id));
+  const doGrupo = new Set(ids);
+  const ocupadas = new Set([...app.view.users.values()].filter((u) => !doGrupo.has(u.id)).map((u) => `${u.x},${u.y}`));
+  const casas: { x: number; y: number }[] = [];
+  const vistas = new Set([`${x},${y}`]);
+  const fila = [{ x, y }];
+  while (fila.length && casas.length < ids.length) {
+    const c = fila.shift()!;
+    if (map.walkState(c.x, c.y) === 'walk' && !ocupadas.has(`${c.x},${c.y}`)) casas.push(c);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+      const n = { x: c.x + dx, y: c.y + dy };
+      const k = `${n.x},${n.y}`;
+      if (vistas.has(k) || map.floorHeight(n.x, n.y) === null) continue;
+      vistas.add(k);
+      // não atravessa parede nem móvel na busca (a casa do lado de lá de um armário não é "perto")
+      if (map.walkState(n.x, n.y) === 'blocked') continue;
+      fila.push(n);
+    }
+  }
+  const dist = (id: number) => {
+    const u = app.view.users.get(id)!;
+    return Math.hypot(u.x - x, u.y - y);
+  };
+  ids.sort((a, b) => dist(a) - dist(b)).forEach((id, i) => {
+    const c = casas[i] ?? { x, y };
+    net.send({ t: 'tokenWalk', tokenId: id, x: c.x, y: c.y });
+  });
+}
+
 const view = new RoomView(canvas, {
   walk: (x, y) => {
     // jogador só acompanha
     if (!app.isGm) return;
     const id = app.view.myId;
+    if (app.view.grupo.size > 1) return andarEmGrupo(x, y);
     if (id) net.send({ t: 'tokenWalk', tokenId: id, x, y });
     else toast('Clique num personagem para comandá-lo.');
+  },
+  grupoMudou: (n) => {
+    if (n > 1) toast(`${n} peças andando juntas. Clique no chão para mandar o grupo; Shift + clique numa peça junta ou tira; clique sem Shift desfaz.`);
   },
   lookAt: () => {},
   placeFloor: (p, x, y, keep) => {

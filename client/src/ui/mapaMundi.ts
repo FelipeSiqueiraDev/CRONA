@@ -1,5 +1,4 @@
 import type { LugarInfo } from '@crona/shared';
-import { desenharBrasil, MAPA_H, MAPA_W } from '../render/mapaBrasil';
 import { arteDoMapa, SPRITE_CENTRO, SPRITE_H, SPRITE_W, spriteDoLugar } from '../render/lugarSprites';
 import type { App } from './app';
 import { h } from './dom';
@@ -10,12 +9,15 @@ import { sfx } from './sfx';
  * O mapa-múndi (07/10): uma ilhazinha por LUGAR (a Base da Ordem, a Fazenda Olhos de Águia, o Orfanato...), no estilo
  * pixel art limpo das referências do Felipe. Clicar num lugar mostra o nome e os botões; o mestre arrasta as ilhas para
  * arrumar o mapa. Dois jeitos de abrir: para olhar (Abrir / Viajar para cá) ou para ESCOLHER o destino da viagem.
- * A tela é pequena (320 × 180) e cresce com pixels grandes; os nomes são texto de verdade por cima.
+ * A tela é pequena e cresce com pixels grandes; os nomes são texto de verdade por cima.
+ *
+ * Revisto em 09/10 (o Felipe): sem o Brasil, as estradinhas e as nuvens atrás (muita informação, tudo embolado). O
+ * fundo é neutro e escuro, para a atenção ficar nos lugares; a tela ficou menor (288 × 162), então cada ilha ocupa
+ * um quarto da largura e é ampliada em pixel inteiro (nítida); e as ilhas que se encostam se afastam sozinhas.
  */
 
-const W = MAPA_W;
-const H = MAPA_H;
-const MAR = '#3fb1d6';
+const W = 288;
+const H = 162;
 
 export interface OpcoesMapa {
   /** abrir só para escolher o destino da viagem: o botão vira "Escolher este destino" */
@@ -34,38 +36,56 @@ const aleat = (n: number) => {
   return s - Math.floor(s);
 };
 
-/** O fundo parado: o mar, as ondinhas e as estradas pontilhadas entre os lugares. */
-function fundo(c: HTMLCanvasElement, lugares: LugarInfo[]) {
+/** O fundo parado: neutro, escuro, um pouco mais claro no meio (a luz em cima dos lugares) e uma névoa de pontinhos. */
+function fundo(c: HTMLCanvasElement) {
   const ctx = c.getContext('2d')!;
-  ctx.fillStyle = MAR;
+  const g = ctx.createRadialGradient(W / 2, H * 0.55, 10, W / 2, H * 0.55, W * 0.65);
+  g.addColorStop(0, '#2a2f3a');
+  g.addColorStop(1, '#0f1117');
+  ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
-  // o mar com uns tracinhos mais claros e mais escuros
-  for (let i = 0; i < 300; i++) {
-    ctx.fillStyle = aleat(i) < 0.5 ? '#48bbdf' : '#38a7cc';
-    ctx.fillRect(Math.floor(aleat(i + 1000) * W), Math.floor(aleat(i + 2000) * H), 3 + Math.floor(aleat(i + 3000) * 4), 1);
+  for (let i = 0; i < 140; i++) {
+    ctx.fillStyle = aleat(i) < 0.5 ? 'rgba(255,255,255,0.05)' : 'rgba(255,230,180,0.04)';
+    ctx.fillRect(Math.floor(aleat(i + 1000) * W), Math.floor(aleat(i + 2000) * H), 1, 1);
   }
-  // o Brasil flutuando
-  desenharBrasil(ctx);
-  // a estradinha pontilhada ligando cada lugar ao seguinte, por cima da terra
-  const pts = [...lugares].sort((a, b) => a.x - b.x);
-  ctx.fillStyle = '#fff3d2';
-  for (let i = 0; i + 1 < pts.length; i++) {
-    const a = pts[i];
-    const b = pts[i + 1];
-    const ax = a.x * W;
-    const ay = a.y * H + 4;
-    const bx = b.x * W;
-    const by = b.y * H + 4;
-    const cx = (ax + bx) / 2;
-    const cy = (ay + by) / 2 + 10;
-    const n = Math.max(14, Math.round(Math.hypot(bx - ax, by - ay) / 4));
-    for (let k = 0; k <= n; k++) {
-      const t = k / n;
-      const x = (1 - t) * (1 - t) * ax + 2 * (1 - t) * t * cx + t * t * bx;
-      const y = (1 - t) * (1 - t) * ay + 2 * (1 - t) * t * cy + t * t * by;
-      if (k % 2 === 0) ctx.fillRect(Math.round(x), Math.round(y), 2, 2);
+}
+
+/**
+ * Onde cada ilha fica de verdade: a posição do mestre, mas as que se encostam se afastam (umas voltas empurrando os
+ * pares que se sobrepõem), sem sair da tela.
+ */
+function arrumar(ls: LugarInfo[]): Map<number, { x: number; y: number }> {
+  const ps = ls.map((l) => ({ id: l.id, x: l.x * W, y: l.y * H }));
+  const MX = SPRITE_W + 6;
+  const MY = SPRITE_H - 6;
+  for (let volta = 0; volta < 40; volta++) {
+    let mexeu = false;
+    for (let a = 0; a < ps.length; a++)
+      for (let b = a + 1; b < ps.length; b++) {
+        const dx = ps[b].x - ps[a].x;
+        const dy = ps[b].y - ps[a].y;
+        const ox = MX - Math.abs(dx);
+        const oy = MY - Math.abs(dy);
+        if (ox <= 0 || oy <= 0) continue;
+        mexeu = true;
+        // empurra pelo eixo que precisa de menos (metade para cada um)
+        if (ox / MX < oy / MY) {
+          const s = (dx >= 0 ? 1 : -1) * (ox / 2 + 0.5);
+          ps[a].x -= s;
+          ps[b].x += s;
+        } else {
+          const s = (dy >= 0 ? 1 : -1) * (oy / 2 + 0.5);
+          ps[a].y -= s;
+          ps[b].y += s;
+        }
+      }
+    for (const p of ps) {
+      p.x = Math.max(SPRITE_CENTRO[0] + 2, Math.min(W - (SPRITE_W - SPRITE_CENTRO[0]) - 2, p.x));
+      p.y = Math.max(SPRITE_CENTRO[1] + 2, Math.min(H - (SPRITE_H - SPRITE_CENTRO[1]) - 4, p.y));
     }
+    if (!mexeu) break;
   }
+  return new Map(ps.map((p) => [p.id, { x: p.x, y: p.y }]));
 }
 
 /** Abre o mapa-múndi. */
@@ -82,58 +102,39 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
   bg.width = W;
   bg.height = H;
   let bgChave = '';
+  let pos = new Map<number, { x: number; y: number }>();
   let raf = 0;
-  const nuvens = Array.from({ length: 7 }, (_, i) => ({ x: aleat(i + 70) * W, y: 14 + aleat(i + 80) * (H - 40), v: 1.4 + aleat(i + 90) * 2, t: 0.8 + aleat(i + 95) * 0.6, chove: aleat(i + 99) < 0.45 }));
 
   const lugares = () => app.state.lugares;
   const eu = () => app.isGm;
 
-  const nuvem = (x: number, y: number, t: number, chove: boolean, now: number) => {
-    const bx = Math.round(x);
-    const by = Math.round(y);
-    const s = t > 1.1 ? 1 : 0;
-    // a nuvem de pixel: três camadas, a de baixo um pouco azulada
-    ctx.fillStyle = '#d8eef7';
-    ctx.fillRect(bx - 9 - s, by + 1, 19 + s * 2, 3);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(bx - 8 - s, by - 2, 17 + s * 2, 3);
-    ctx.fillRect(bx - 4, by - 5, 8, 3);
-    ctx.fillRect(bx - 2 - s, by - 7, 5, 2);
-    if (chove) {
-      ctx.fillStyle = 'rgba(255,255,255,0.75)';
-      for (let k = 0; k < 5; k++) {
-        const f = (now / 90 + k * 3) % 9;
-        ctx.fillRect(bx - 7 + k * 3, by + 5 + Math.floor(f), 1, 2);
-      }
-    }
-  };
-  const brilhos = Array.from({ length: 10 }, (_, i) => ({ x: Math.floor(aleat(i + 300) * W), y: Math.floor(aleat(i + 310) * H), f: aleat(i + 320) * 6 }));
+  const brilhos = Array.from({ length: 18 }, (_, i) => ({ x: Math.floor(aleat(i + 300) * W), y: Math.floor(aleat(i + 310) * H), f: aleat(i + 320) * 6 }));
 
   const desenhar = (now: number) => {
     const ls = lugares();
-    const chave = ls.map((l) => `${l.id}:${l.x.toFixed(3)}:${l.y.toFixed(3)}`).join('|');
-    if (chave !== bgChave) {
-      bgChave = chave;
-      fundo(bg, ls);
+    if (!bgChave) {
+      bgChave = 'ok';
+      fundo(bg);
     }
     ctx.drawImage(bg, 0, 0);
-    // os brilhinhos no mar, piscando
+    // uns pontinhos de luz piscando devagar no fundo
     for (const b of brilhos) {
-      const a = Math.sin(now / 600 + b.f);
-      if (a < 0.3) continue;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(b.x, b.y - 1, 1, 3);
-      ctx.fillRect(b.x - 1, b.y, 3, 1);
+      const a = Math.sin(now / 900 + b.f);
+      if (a < 0.6) continue;
+      ctx.fillStyle = 'rgba(255,240,210,0.35)';
+      ctx.fillRect(b.x, b.y, 1, 1);
     }
+    pos = arrumar(ls);
     // as ilhas, de trás para a frente, balançando de leve (cada uma no seu tempo)
-    for (const l of [...ls].sort((a, b) => a.y - b.y)) {
+    for (const l of [...ls].sort((a, b) => pos.get(a.id)!.y - pos.get(b.id)!.y)) {
       const spr = spriteDoLugar(l.icone, l.nome);
-      const bob = Math.round(Math.sin(now / 900 + l.id * 1.7) * 2) - 6;
-      const x = Math.round(l.x * W - SPRITE_CENTRO[0]);
-      const y = Math.round(l.y * H - SPRITE_CENTRO[1]) + bob;
-      // a sombra no chão, embaixo da ilha que flutua (ela sobe e desce, a sombra fica)
-      ctx.fillStyle = 'rgba(20,30,40,0.28)';
-      const yb = Math.round(l.y * H - SPRITE_CENTRO[1]);
+      const p = pos.get(l.id)!;
+      const bob = Math.round(Math.sin(now / 900 + l.id * 1.7) * 2) - 3;
+      const x = Math.round(p.x - SPRITE_CENTRO[0]);
+      const y = Math.round(p.y - SPRITE_CENTRO[1]) + bob;
+      // a sombra embaixo da ilha que flutua (ela sobe e desce, a sombra fica)
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      const yb = Math.round(p.y - SPRITE_CENTRO[1]);
       ctx.fillRect(x + 14, yb + SPRITE_H - 4, SPRITE_W - 28, 3);
       ctx.fillRect(x + 18, yb + SPRITE_H - 5, SPRITE_W - 36, 1);
       if (l.id === sel) {
@@ -144,7 +145,7 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
       ctx.drawImage(spr, x, y);
       if (l.aqui) {
         // a bandeirinha de quem está aqui (a pintada, arte/mapa/aqui.png, com o pé no mesmo ponto)
-        const fx = Math.round(l.x * W) + 14;
+        const fx = Math.round(p.x) + 14;
         const fy = y + 10;
         const bandeira = arteDoMapa('aqui');
         if (bandeira) {
@@ -157,11 +158,10 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
         ctx.fillRect(fx + 1, fy, 6, 4);
       }
     }
-    // as nuvens passando por cima
-    for (const n of nuvens) {
-      n.x += n.v / 60;
-      if (n.x > W + 20) n.x = -20;
-      nuvem(n.x, n.y, n.t, n.chove, now);
+    // o nome de cada lugar acompanha a ilha (afastada ou não)
+    for (const pino of pinos.children as HTMLCollectionOf<HTMLElement>) {
+      const q = pos.get(Number(pino.dataset.id));
+      if (q) (pino.style.left = `${(q.x / W) * 100}%`), (pino.style.top = `${(q.y / H) * 100}%`);
     }
     raf = requestAnimationFrame(desenhar);
   };
@@ -201,6 +201,7 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
             class: `mm-pino${l.id === sel ? ' on' : ''}${l.aqui ? ' aqui' : ''}`,
             type: 'button',
             style: `left:${l.x * 100}%;top:${l.y * 100}%`,
+            'data-id': String(l.id),
             'aria-label': l.nome,
           },
           h('span', { class: 'mm-nome' }, l.nome),
