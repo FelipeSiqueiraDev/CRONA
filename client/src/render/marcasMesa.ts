@@ -24,13 +24,17 @@ export const COR_GIZ: Record<CorGiz, string> = {
   sangue: '#e2483d',
   ouro: '#f4c45a',
 };
-/** o ponto no azul de HUD do ícone do Apontar (arte/icones/mesa-apontar.png) */
-const COR_PONTO = '#8fd0ff';
-const BRILHO_PONTO = 'rgba(90, 168, 255, 0.95)';
-/** o ícone do Apontar, que flutua em cima do ponto (sem ele, o losango) */
-const ICONE_PONTO = new Image();
-ICONE_PONTO.decoding = 'async';
-ICONE_PONTO.src = '/arte/icones/mesa-apontar.png';
+const COR_PONTO = '#ffd27a';
+/**
+ * O cristal pintado (arte/efeitos/ponto-cristal.png, pedido ao Códex): 8 quadros de 96 × 144 lado a lado,
+ * o cristal girando um quarto de volta (o octaedro se repete a cada 90°). Sem ele, o desenhado em código.
+ */
+const CRISTAL = new Image();
+CRISTAL.decoding = 'async';
+fetch('/api/arte')
+  .then((r) => r.json() as Promise<{ arquivos: string[] }>)
+  .then((j) => j.arquivos.includes('/arte/efeitos/ponto-cristal.png') && (CRISTAL.src = '/arte/efeitos/ponto-cristal.png'))
+  .catch(() => {});
 
 /** O traço que o mestre está fazendo agora (só na tela dele). */
 export interface Rascunho {
@@ -190,8 +194,8 @@ function desenharTraco(ctx: CanvasRenderingContext2D, p: Projecao, m: Traco, alf
 }
 
 /**
- * O ponto de atenção: anéis azuis abrindo no chão, um feixe de luz subindo (no isométrico) e o ícone do
- * Apontar flutuando em cima, girando devagar como uma moeda. Entra rápido e some no fim.
+ * O ponto de atenção: anéis dourados abrindo no chão, um feixe de luz subindo (no isométrico) e um
+ * cristal lapidado que flutua e gira em cima. Entra rápido e some no fim.
  */
 function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, idade: number) {
   const px = p.px;
@@ -220,22 +224,22 @@ function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, ida
     ctx.lineWidth = (5 * (1 - t) + 1.2) * px;
     ctx.strokeStyle = COR_PONTO;
     ctx.shadowBlur = 10 * p.dpr;
-    ctx.shadowColor = BRILHO_PONTO;
+    ctx.shadowColor = 'rgba(255, 190, 90, 0.9)';
     ctx.stroke();
   }
   // o chão aceso embaixo
   ctx.shadowBlur = 0;
   ctx.globalAlpha = a * (0.4 + 0.15 * Math.sin(idade / 200));
   anel(0.55);
-  ctx.fillStyle = 'rgba(143, 208, 255, 0.45)';
+  ctx.fillStyle = 'rgba(255, 214, 140, 0.55)';
   ctx.fill();
   // o feixe de luz (isométrico)
   if (p.alto) {
     const h = p.alto;
     const w = 12 * px;
     const g = ctx.createLinearGradient(cx, cy, cx, cy - h);
-    g.addColorStop(0, 'rgba(160, 215, 255, 0.5)');
-    g.addColorStop(1, 'rgba(160, 215, 255, 0)');
+    g.addColorStop(0, 'rgba(255, 220, 150, 0.55)');
+    g.addColorStop(1, 'rgba(255, 220, 150, 0)');
     ctx.globalAlpha = a * (0.75 + 0.25 * Math.sin(idade / 160));
     ctx.fillStyle = g;
     ctx.beginPath();
@@ -246,36 +250,130 @@ function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, ida
     ctx.closePath();
     ctx.fill();
   }
-  // em cima, balançando: o ícone do Apontar (gira como moeda: a largura vai e volta, nunca some)
+  // o cristal que flutua e gira em cima
   const sobe = (p.alto ? p.alto * 0.62 : 26 * px) + Math.sin(idade / 190) * 4 * px;
-  const s = 10 * px * (0.6 + 0.4 * entra);
-  const lx = cx;
-  const ly = cy - sobe;
+  const s = 13 * px * (0.6 + 0.4 * entra);
   ctx.globalAlpha = a;
-  if (ICONE_PONTO.complete && ICONE_PONTO.naturalWidth) {
-    const lado = 56 * px * (0.6 + 0.4 * entra);
-    const giro = 0.35 + 0.65 * Math.abs(Math.cos(idade / 520));
-    ctx.translate(lx, ly);
-    ctx.scale(giro, 1);
-    ctx.shadowBlur = 14 * p.dpr;
-    ctx.shadowColor = BRILHO_PONTO;
-    ctx.drawImage(ICONE_PONTO, -lado / 2, -lado / 2, lado, lado);
+  desenharCristal(ctx, cx, cy - sobe, s, idade, p.dpr, px);
+  ctx.restore();
+}
+
+/**
+ * O cristal do ponto: um octaedro de ouro (quatro faces em cima, quatro embaixo) girando devagar, cada
+ * face com a luz de cima à esquerda, o contorno escuro como o das peças do mapa, o brilho por dentro e
+ * uma estrelinha que passa de vez em quando.
+ */
+function desenharCristal(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, idade: number, dpr: number, px: number) {
+  const giro = idade / 900;
+  if (CRISTAL.complete && CRISTAL.naturalWidth) {
+    const q = Math.floor(((giro % (Math.PI / 2)) / (Math.PI / 2)) * 8) % 8;
+    const w = s * 2.6;
+    const h = w * 1.5;
+    ctx.save();
+    ctx.shadowBlur = 14 * dpr;
+    ctx.shadowColor = 'rgba(255, 190, 90, 0.9)';
+    ctx.drawImage(CRISTAL, q * 96, 0, 96, 144, x - w / 2, y - h * 0.47, w, h);
     ctx.restore();
     return;
   }
-  ctx.beginPath();
-  ctx.moveTo(lx, ly - s * 1.5);
-  ctx.lineTo(lx + s, ly);
-  ctx.lineTo(lx, ly + s * 1.5);
-  ctx.lineTo(lx - s, ly);
-  ctx.closePath();
-  ctx.fillStyle = COR_PONTO;
-  ctx.shadowBlur = 12 * p.dpr;
-  ctx.shadowColor = BRILHO_PONTO;
+  const alto = s * 1.7;
+  const baixo = s * 1.9;
+  // a cintura: quatro pontas em volta, achatadas (vista de cima e de lado ao mesmo tempo)
+  const cintura = [0, 1, 2, 3].map((k) => {
+    const ang = giro + (k * Math.PI) / 2;
+    return { x: Math.cos(ang) * s, y: Math.sin(ang) * s * 0.32, z: Math.sin(ang) };
+  });
+  const topo = { x: 0, y: -alto };
+  const pe = { x: 0, y: baixo };
+  // a luz vem de cima à esquerda: o tom de cada face sai do lado para onde ela olha
+  const tom = (mx: number, emCima: boolean) => {
+    const luz = (emCima ? 0.62 : 0.18) + -mx * 0.38;
+    return Math.max(0, Math.min(1, luz));
+  };
+  const cor = (t: number) => {
+    // do ouro escuro ao quase branco
+    const r = Math.round(122 + t * 133);
+    const g = Math.round(58 + t * 183);
+    const b = Math.round(10 + t * 160);
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+  ctx.save();
+  ctx.translate(x, y);
+  // a silhueta (a ponta mais à esquerda e a mais à direita da cintura): o brilho em volta e, no fim, o contorno
+  const esq = cintura.reduce((m, q) => (q.x < m.x ? q : m));
+  const dir = cintura.reduce((m, q) => (q.x > m.x ? q : m));
+  const silhueta = () => {
+    ctx.beginPath();
+    ctx.moveTo(topo.x, topo.y);
+    ctx.lineTo(dir.x, dir.y);
+    ctx.lineTo(pe.x, pe.y);
+    ctx.lineTo(esq.x, esq.y);
+    ctx.closePath();
+  };
+  ctx.shadowBlur = 16 * dpr;
+  ctx.shadowColor = 'rgba(255, 190, 90, 0.95)';
+  ctx.fillStyle = 'rgba(255, 214, 140, 0.9)';
+  silhueta();
   ctx.fill();
   ctx.shadowBlur = 0;
-  ctx.lineWidth = 1.4 * px;
-  ctx.strokeStyle = 'rgba(60, 36, 8, 0.85)';
+  // as faces da frente (as de trás ficam escondidas), de trás para a frente
+  const faces: { a: (typeof cintura)[number]; b: (typeof cintura)[number]; z: number }[] = [];
+  for (let k = 0; k < 4; k++) {
+    const a = cintura[k];
+    const b = cintura[(k + 1) % 4];
+    faces.push({ a, b, z: (a.z + b.z) / 2 });
+  }
+  faces.sort((f, g) => f.z - g.z);
+  ctx.lineJoin = 'round';
+  for (const f of faces) {
+    if (f.z < -0.05) continue;
+    const mx = (f.a.x + f.b.x) / 2 / s;
+    for (const emCima of [true, false]) {
+      const ponta = emCima ? topo : pe;
+      ctx.beginPath();
+      ctx.moveTo(ponta.x, ponta.y);
+      ctx.lineTo(f.a.x, f.a.y);
+      ctx.lineTo(f.b.x, f.b.y);
+      ctx.closePath();
+      const t = tom(mx, emCima);
+      const grad = ctx.createLinearGradient(ponta.x, ponta.y, (f.a.x + f.b.x) / 2, (f.a.y + f.b.y) / 2);
+      grad.addColorStop(0, cor(Math.min(1, t + 0.18)));
+      grad.addColorStop(1, cor(Math.max(0, t - 0.12)));
+      ctx.fillStyle = grad;
+      ctx.fill();
+      // a aresta clara entre as faces
+      ctx.strokeStyle = `rgba(255, 246, 214, ${0.25 + 0.35 * t})`;
+      ctx.lineWidth = 0.9 * px;
+      ctx.stroke();
+    }
+  }
+  // o contorno escuro por fora (o do resto do mapa)
+  silhueta();
+  ctx.strokeStyle = 'rgba(52, 30, 6, 0.95)';
+  ctx.lineWidth = 1.6 * px;
   ctx.stroke();
+  // o reflexo na face de cima e a estrelinha que passa
+  ctx.fillStyle = 'rgba(255, 255, 240, 0.75)';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.18, -alto * 0.62);
+  ctx.lineTo(-s * 0.05, -alto * 0.78);
+  ctx.lineTo(-s * 0.32, -alto * 0.3);
+  ctx.closePath();
+  ctx.fill();
+  const pisca = (idade % 1700) / 1700;
+  if (pisca < 0.22) {
+    const e = Math.sin((pisca / 0.22) * Math.PI);
+    const r = s * 0.9 * e;
+    const sx = s * 0.35;
+    const sy = -alto * 0.45;
+    ctx.strokeStyle = `rgba(255, 255, 245, ${0.9 * e})`;
+    ctx.lineWidth = 1.2 * px;
+    ctx.beginPath();
+    ctx.moveTo(sx - r, sy);
+    ctx.lineTo(sx + r, sy);
+    ctx.moveTo(sx, sy - r);
+    ctx.lineTo(sx, sy + r);
+    ctx.stroke();
+  }
   ctx.restore();
 }
