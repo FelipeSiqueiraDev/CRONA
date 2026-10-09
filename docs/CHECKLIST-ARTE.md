@@ -179,6 +179,18 @@ O pedido completo, peça por peça, com as medidas, está na pasta da arte do GP
   - **casarão:** o vão da escada.
 - [ ] ✱ **O calabouço** (`calabouco.zip`): alçapão aberto, escada de mão, tanque com corpo (três modelos), mesa de contenção, pilha de crânios, tocha de parede, estandarte
 
+## Orfanato Filhos do Dragão: queimado, o Ninho dos transtornados (09/10)
+
+O orfanato pegou fogo e virou a base ("Ninho") de um bando de transtornados, que mora lá e faz do lugar casa de tortura (LR p. 303). O pedido completo está no `PEDIDO-UNICO-CODEX.txt`, seções 0D e 0E. Os gabaritos ficam em `gabaritos/pedidos/orfanato/` e `gabaritos/pedidos/orfanato-queimado/` (sai de `scripts/3d/pedidos/orfanato-queimado.json`). Hoje tudo é desenhado em código; o Claude encaixa a arte.
+
+- [ ] ✱ **Teste de dentro** (`orfanato-queimado-teste.zip`): `piso-orfanato-queimado.png`, `parede-orfanato-queimada.png`, `fogueira.png` e `fogueira-apagada.png`
+- [ ] **Peças novas** (`orfanato-queimado.zip`): colchão no chão, escombros, viga queimada, ganchos de carne, cama de ferro queimada
+- [ ] **Móveis da casa queimados** (`orfanato-queimado.zip`): armário de cozinha, prateleira, estante de livros, guarda-roupa arrombado, cômoda, mesa do refeitório
+- [ ] **A vista de cima** de cada peça (`<nome>-cima.png`)
+- [ ] **De fora, queimado** (`orfanato-teste.zip`, `orfanato-fora.zip`): o prédio comprido (telhado caído, fuligem nas janelas) e o anexo de concreto, com as versões abertas e as vistas de cima
+- Sem letras: as frases de sangue da parede o jogo escreve em código.
+- O alvo de dardos de parede **não** volta para o pedido: a arte saiu de perfil, e o desenho em código ficou melhor.
+
 ## Para depois: o tabuleiro
 
 - [x] **Tepes — quatro poses idle de referência em estilo 32 bits, com luz neutra:** `personagens/tepes/tabuleiro-32bits/idle-desarmado.png`, `idle-armado.png`, `idle-armado-machucado.png`, `idle-desarmado-machucado.png` (PNG RGBA, 1024×1536). Imagens estáticas escolhidas por Felipe, no modelo realista; ficam no tabuleiro (a pose muda com o Armado e com os PV) até chegarem as chibi. Formato em [ARTE.md](ARTE.md).
