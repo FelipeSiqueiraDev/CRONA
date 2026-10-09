@@ -333,6 +333,25 @@ Ainda falta (pedido do Felipe):
 - **Som no celular:** o navegador só libera o som quando o dedo solta (`audioCelular.ts`); no iPhone, o modo reprodução
   (o silencioso não cala mais).
 
+## 09/10: a arte do Códex entrando (no ar)
+
+- **Ícones:** abas do painel (`painel-*`) e ferramentas da mesa com a Viagem (`mesa-*`).
+- **Apontar:** o cristal ficou em código, lapidado e girando (o Felipe gostou e NÃO quer arte do Códex nele).
+- **Fliperama:** o gabinete pintado no celular (`arte/bar/`, entra pelo `arteBar.ts`); a alavanca virou um joystick
+  visto de cima (a bola vermelha, recortada da arte, segue o dedão; diagonal vale), setas de ouro acendem, A e
+  Menu/Sair maiores. O do mapa refeito encorpado (0,74 × 0,74 × 1,85 m, `moveis-bar.json`).
+- **Itens no chão:** contorno fino no ouro do Apontar (`itemNoChao.ts`).
+- **Viagem:** as 8 artes de chegada; o dioraminha com a arte em pixel (`arte/viagem/pixel/`: a van com rodas e os
+  agentes nos bancos, carros da outra mão, árvores de dia/noite, postes, cercas, arbustos, placa, pedras, flores); a
+  van de cima na janela de quem vai; as ilhas de cada lugar no mapa-múndi (`arte/mapa/lugar-<lugar>.png`, por nome).
+- **Rituais:** 25 artes (`arte/rituais/`), no celular.
+- **Falta importar (móveis):** tecnologia cheia (+ cima), posto da enfermaria, altar e pedra do sacrifício, corpos,
+  calabouço (tanques, mesa de contenção, crânios, estandarte, tocha, alçapão, escada de mão), camas e beliches (+ cima),
+  bancadas do laboratório, peças inteiras, quadros e brinquedos da fazenda, Agatha teste, casarão/celeiro/mantimentos
+  abertos, paredes do calabouço e do celeiro, vistas de cima da fazenda. Decisão pendente do Felipe: pôr nas salas
+  (sobe SEDE_REV/FAZENDA_REV e desfaz ajustes à mão) ou só no catálogo para ele posicionar.
+- `van-mapa.png` está em `arte/mapa/`, sem uso ainda (a barra do trajeto não existe).
+
 ## Noite de 08/10: o MAPA mais limpo (no ar, `e5e89cd`)
 
 - **PERSONAGEM (esquerda) só com comandos do tabuleiro**, em grupos (Mover, Postura, Peça, Cena). PV, PE, SAN e a
