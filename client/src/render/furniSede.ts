@@ -947,6 +947,121 @@ export const SEDE_BUILDERS: Record<string, Builder> = {
     return V(nodes);
   },
 
+  /**
+   * A parede interna do orfanato queimado (09/10): como as paredes dos cômodos, o lambri de madeira embaixo e o reboco
+   * em cima, só que rachada e preta de fuligem (mais forte embaixo, onde o fogo subiu, e no alto, onde a fumaça parou).
+   */
+  parede_reboco(def, _s, seed) {
+    const [reboco, madeira, fuligem] = def.colors;
+    const H = def.height / Z_PER_M;
+    const b: LBox = [0, 0.22, 0, 1, 0, H];
+    const r = rng(seed + 101);
+    const rachas = Array.from({ length: 2 }, () => ({ a: 0.15 + r() * 0.7, z: 0.9 + r() * 0.35, ok: r() < 0.6 }));
+    return V([
+      N(b, (p) => {
+        p.box(b, reboco, { edge: 0.12, top: shade(fuligem, 0.15) });
+        for (const f of FACES) {
+          if (!p.m.visible(f)) continue;
+          const [a0, a1] = faceRange(b, f);
+          const w = a1 - a0;
+          p.withFace(b, f, (ctx) => {
+            // o lambri de madeira embaixo, com as juntas
+            ctx.fillStyle = madeira;
+            ctx.fillRect(a0, 0, w, H * 0.42);
+            ctx.fillStyle = shade(madeira, 0.18);
+            ctx.fillRect(a0, H * 0.4, w, H * 0.025);
+            ctx.fillStyle = shade(madeira, -0.25);
+            for (let a = a0 + 0.25; a < a1 - 0.05; a += 0.5) ctx.fillRect(a - 0.01, 0.04, 0.02, H * 0.34);
+            // a fuligem: forte embaixo, some no meio, volta no alto
+            const g = ctx.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, rgba(fuligem, 0.85));
+            g.addColorStop(0.35, rgba(fuligem, 0.3));
+            g.addColorStop(0.7, rgba(fuligem, 0.12));
+            g.addColorStop(1, rgba(fuligem, 0.6));
+            ctx.fillStyle = g;
+            ctx.fillRect(a0, 0, w, H);
+            // as rachaduras no reboco
+            if (w < 0.5) return;
+            ctx.strokeStyle = 'rgba(20,14,10,0.65)';
+            ctx.lineWidth = 0.018;
+            for (const c of rachas) {
+              if (!c.ok) continue;
+              const x = a0 + w * c.a;
+              ctx.beginPath();
+              ctx.moveTo(x, c.z);
+              ctx.lineTo(x + 0.07, c.z + 0.12);
+              ctx.lineTo(x - 0.02, c.z + 0.24);
+              ctx.stroke();
+            }
+          });
+        }
+      }),
+    ]);
+  },
+
+  /**
+   * A porta de madeira de um quartinho do orfanato (09/10): o batente, a folha de tábuas chamuscada embaixo (o fogo
+   * subiu pelo chão), a maçaneta, as marcas de unha e a mão de sangue. Mesma mecânica da porta de aço da cela.
+   */
+  porta_quarto(def, state, seed) {
+    const [madeira, carvao, sangue] = def.colors;
+    const open = state === 1;
+    const r = rng(seed + 97);
+    const marcas = Array.from({ length: 4 }, () => ({ k: 0.3 + r() * 0.4, z: 0.7 + r() * 0.6, len: 0.25 + r() * 0.3 }));
+    const nodes: FNode[] = [
+      B([0, 0.15, 0, 0.08, 0, 2.2], shade(madeira, -0.2), { edge: 0.2 }),
+      B([0, 0.15, 0.92, 1, 0, 2.2], shade(madeira, -0.2), { edge: 0.2 }),
+      B([0, 0.15, 0.08, 0.92, 2.08, 2.2], shade(madeira, -0.2), { edge: 0.3 }),
+    ];
+    const folha = (p: Painter, f: LBox, face: LFace, v0: number, v1: number) => {
+      p.box(f, madeira, { edge: 0.18 });
+      p.withFace(f, face, (ctx) => {
+        const w = v1 - v0;
+        const a = (k: number) => v0 + w * k;
+        // as tábuas
+        ctx.fillStyle = shade(madeira, -0.18);
+        for (const k of [0.25, 0.5, 0.75]) ctx.fillRect(a(k) - 0.008, 0.02, 0.016, 2.04);
+        // o queimado subindo do chão
+        const g = ctx.createLinearGradient(0, 0, 0, 1.1);
+        g.addColorStop(0, rgba(carvao, 0.95));
+        g.addColorStop(1, rgba(carvao, 0));
+        ctx.fillStyle = g;
+        ctx.fillRect(v0, 0.02, w, 1.1);
+        // as marcas de unha e a mão de sangue
+        ctx.strokeStyle = 'rgba(20,12,8,0.7)';
+        ctx.lineWidth = 0.012;
+        for (const m of marcas) {
+          ctx.beginPath();
+          ctx.moveTo(a(m.k), m.z + m.len);
+          ctx.lineTo(a(m.k + 0.04), m.z);
+          ctx.stroke();
+        }
+        ctx.fillStyle = rgba(sangue, 0.85);
+        ctx.beginPath();
+        ctx.ellipse(a(0.62), 1.32, w * 0.07, 0.09, 0, 0, Math.PI * 2);
+        ctx.fill();
+        for (const k of [0.56, 0.6, 0.64, 0.68]) ctx.fillRect(a(k), 1.38, 0.022, 0.1);
+        ctx.fillRect(a(0.6), 1.05, 0.012, 0.22);
+      });
+    };
+    if (!open)
+      nodes.push(
+        N([0.03, 0.12, 0.08, 0.92, 0, 2.08], (p) => {
+          folha(p, [0.03, 0.12, 0.08, 0.92, 0.02, 2.08], 'front', 0.08, 0.92);
+          p.box([0.0, 0.15, 0.76, 0.84, 1.0, 1.06], '#8a7a4a', { edge: 0.35 });
+        }),
+      );
+    else
+      nodes.push(
+        N([0.15, 0.95, 0.84, 0.93, 0, 2.08], (p) => {
+          // aberta: gira 90° e encosta no batente
+          folha(p, [0.15, 0.95, 0.85, 0.92, 0.02, 2.08], p.m.visible('right') ? 'right' : 'left', 0.15, 0.95);
+          p.box([0.8, 0.88, 0.83, 0.94, 1.0, 1.06], '#8a7a4a', { edge: 0.35 });
+        }),
+      );
+    return V(nodes);
+  },
+
   /** Sujeira no chão: mancha, bitucas, tampinhas e um papel amassado. */
   dirt(def, _s, seed) {
     const [stain, bits] = def.colors;

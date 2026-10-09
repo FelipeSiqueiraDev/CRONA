@@ -342,13 +342,18 @@ Ainda falta (pedido do Felipe):
   `iwall` com janelas e a porta, a estradinha de terra, árvores, o anexo como bloco de parede), Salão, Refeitório, Sala de
   Estudos, Quarto da Diretora, Banheiros, Ala dos Dormitórios (12 quartinhos com divisória baixa `iwall_low`; as de 2,4 m
   viravam labirinto) e o Anexo.
-- **O orfanato queimou e virou o Ninho dos transtornados (09/10, noite; `ORFANATO_REV` 8).** "Ninho" é como eles chamam
+- **O orfanato queimou e virou o Ninho dos transtornados (09/10, noite; `ORFANATO_REV` 10).** "Ninho" é como eles chamam
   a base (não é ninho de bicho). Pelo livro (LR p. 303): culto desorganizado, invade lugar abandonado para MORAR e faz
   dele casa de tortura; canibalismo, tortura e mutilação no dia a dia. Então: tudo escuro, fumaça e cinza no ar, sem luz
   elétrica (velas, tochas, a fogueira); escombros do teto, vigas caídas, fuligem no chão e nas paredes; sangue por todo
   lado; o salão é a sala comum (fogueira no chão, colchões em volta, crânios de troféu); o refeitório é o açougue
   (ganchos de carne, corpo na mesa); a sala de estudos é a sala de tortura (mesa de contenção, ferramentas, correntes);
   os dormitórios têm camas queimadas, colchões no chão e um quartinho-jaula com grade; o anexo é o abatedouro.
+  - **Cada quartinho é um quarto de verdade (o Felipe, 09/10):** parede inteira em volta (`parede_orfanato`: lambri
+    de madeira, reboco rachado e fuligem, desenhada em código) e a porta de madeira `porta_quarto`, com a mecânica da
+    porta da cela (`cela: true`, em `celas.ts`): fechada, ninguém passa e o quarto fica no escuro; aberta, acende e a
+    parede da frente fica transparente. Umas começam abertas, outras fechadas; a jaula tem a porta de grade
+    (`cell_door`). A área aberta do fim do corredor tem 4 fileiras para a parede alta não tapar a escrita.
   - **As frases** (`FRASES`) estão escritas com sangue na parede do fim do corredor dos dormitórios, na área aberta
     (as duas fileiras de cima, sem quartinho; a ala virou `planBottom(13, 25, 6)`): `escrita_sangue` (300 × 122,
     desenhada em código, letra por letra, com o sangue escorrendo; o texto inteiro vai na pista Examinar).

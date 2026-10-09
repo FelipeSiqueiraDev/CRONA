@@ -21,7 +21,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * cada cômodo é uma cena, a porta principal numa parede do fundo; subiu ORFANATO_REV, o orfanato é refeito no lugar.
  */
 export const ORFANATO = "Orfanato · ";
-export const ORFANATO_REV = 8;
+export const ORFANATO_REV = 10;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -92,6 +92,15 @@ function patioPiso(): FloorSeed[] {
   f.push(["porteira", 11, 21, 4]);
   return f;
 }
+
+// ------------------------------------------------------------------ as cenas
+
+/** A ala dos dormitórios: a área aberta do fim do corredor (4 fileiras e a parede dos primeiros quartos), os seis quartos
+ * de cada lado (3 fileiras e a parede) e o quarto da direita que virou jaula. */
+const ALA_FIM = 5;
+const ALA_CELA = 4;
+const ALA_JAULA = 4;
+const ALA_H = ALA_FIM + 6 * ALA_CELA - 1;
 
 // ------------------------------------------------------------------ as cenas
 
@@ -325,8 +334,8 @@ const CENAS: CenaSpec[] = [
     key: "dormitorios",
     name: ORFANATO + "Ala dos Dormitórios",
     description:
-      "O corredor comprido dos dormitórios, o coração do Ninho: doze quartinhos queimados dos dois lados, onde o bando dorme amontoado, nas camas de ferro retorcidas e nos colchões largados no chão; o teto caído em cima de alguns; um quartinho fechado com grades, a jaula de quem ainda está vivo; crânios empilhados, sangue por todo lado. No fim do corredor, na parede, as frases escritas com sangue.",
-    layout: planBottom(13, 25, 6),
+      "O corredor comprido dos dormitórios, o coração do Ninho: doze quartinhos queimados dos dois lados, cada um com a sua porta, onde o bando dorme amontoado, nas camas de ferro retorcidas e nos colchões largados no chão; o teto caído em cima de alguns; um quarto com a porta trocada por uma grade, a jaula de quem ainda está vivo; crânios empilhados, sangue por todo lado. No fim do corredor, na parede, as frases escritas com sangue. No fim do corredor, na parede, as frases escritas com sangue.",
+    layout: planBottom(13, ALA_H, 6),
     andar: CASA,
     style: "madeira",
     ...QUEIMADO,
@@ -337,19 +346,20 @@ const CENAS: CenaSpec[] = [
       ["escrita_sangue", "r", 0, 6.5, 0.6, { icon: "inspect", title: "Escrito com sangue", text: FRASES, visible: true }],
       ["fuligem_parede", "r", 0, 1.8, 0.3],
       ["fuligem_parede", "r", 0, 11.2, 0.3],
-      ...[3, 11, 19].map((y): WallSeed => ["window_barred", "l", 0, y + 0.3, 2.2]),
-      ...[7, 15].map((y): WallSeed => ["fuligem_parede", "l", 0, y + 0.5, 0.3]),
-      // não tem luz: o fogo levou a fiação; as tochas que eles prenderam na parede
-      ...[5.5, 13.5, 21.5].map((y): WallSeed => ["tocha_parede", "l", 0, y, 2.4]),
+      // uma janela gradeada em um quarto sim, um não; fuligem nos outros
+      ...[0, 2, 4].map((i): WallSeed => ["window_barred", "l", 0, ALA_FIM + i * ALA_CELA + 1.5, 2.2]),
+      ...[1, 3, 5].map((i): WallSeed => ["fuligem_parede", "l", 0, ALA_FIM + i * ALA_CELA + 1.5, 0.3]),
+      // não tem luz: o fogo levou a fiação; a tocha que eles prenderam na parede da área aberta
+      ["tocha_parede", "l", 0, 2.0, 2.4],
     ],
-    links: [[6, 24, "salao"]],
+    links: [[6, ALA_H - 1, "salao"]],
     plan: { x: 0, y: 19 },
     chao: [
-      [6, 6, "Ursinho de Pelúcia", 1, "misc"],
-      [5, 10, "Trenzinho de Madeira", 1, "misc"],
-      [7, 15, "Soldadinhos de Chumbo", 0.5, "misc"],
-      [5, 19, "Pião de Madeira", 0.5, "misc"],
-      [7, 22, "Bolinhas de Gude", 0.5, "misc"],
+      [6, 8, "Ursinho de Pelúcia", 1, "misc"],
+      [5, 13, "Trenzinho de Madeira", 1, "misc"],
+      [7, 16, "Soldadinhos de Chumbo", 0.5, "misc"],
+      [6, 20, "Pião de Madeira", 0.5, "misc"],
+      [7, 24, "Bolinhas de Gude", 0.5, "misc"],
     ],
   },
   {
@@ -388,46 +398,46 @@ const CENAS: CenaSpec[] = [
 
 /**
  * A ala dos dormitórios: o corredor no meio (x 5 a 7), a entrada embaixo (do salão) e o corredor correndo até a área
- * aberta do fim (as duas fileiras de cima, sem quartinho), onde estão as frases na parede. Seis quartinhos de cada lado, de divisória baixa (dá para ver dentro), queimados: as camas
- * retorcidas, o teto caído em cima de alguns, os colchões de trapo onde os transtornados dormem, os crânios e o sangue.
+ * aberta do fim (as fileiras de cima, sem quarto), onde estão as frases na parede. Seis quartos de cada lado, cada um um
+ * quarto de verdade (o Felipe, 09/10): parede inteira em volta e a porta de madeira, que fecha como a porta da cela
+ * (fechada, ninguém passa e o quarto fica no escuro; aberta, acende e a parede da frente fica transparente). Queimados:
+ * as camas retorcidas, o teto caído em cima de alguns, os colchões onde os transtornados dormem, os crânios e o sangue.
+ * A área aberta tem 4 fileiras para a parede alta dos quartos não tapar a escrita.
  */
 function dormitorios(): FloorSeed[] {
-  const f: FloorSeed[] = [["portal", 6, 24, 0]];
-  const CELA = 4;
-  /** O quartinho da direita que virou jaula: a porta fechada com grade, quem está lá dentro ainda está vivo. */
-  const JAULA = 4;
-  /** As fileiras da área aberta do fim do corredor, antes do primeiro quartinho. */
-  const FIM = 2;
+  const f: FloorSeed[] = [["portal", 6, ALA_H - 1, 0]];
   for (let i = 0; i < 6; i++) {
-    const y0 = FIM + i * CELA;
-    // as divisórias: a do corredor, com o vão da porta no meio, e a de baixo (entre um quartinho e o outro)
+    const y0 = ALA_FIM + i * ALA_CELA;
+    // as paredes: a de cima (entre um quarto e o outro, ou entre o primeiro e a área aberta) e a do corredor, com a porta
+    for (const x of [0, 1, 2, 3, 4, 8, 9, 10, 11, 12]) f.push(["parede_orfanato", x, y0 - 1, 4]);
     for (let y = y0; y < y0 + 3; y++) {
-      if (y === y0 + 1) {
-        if (i === JAULA) f.push(["cell_bars", 8, y, 6]);
+      if (y !== y0 + 1) {
+        f.push(["parede_orfanato", 4, y, 2], ["parede_orfanato", 8, y, 6]);
         continue;
       }
-      f.push(["iwall_low", 4, y, 2]);
-      f.push(["iwall_low", 8, y, 6]);
+      // umas portas ficaram abertas, outras eles fecham; o quarto da jaula, com a porta de grade, sempre fechado
+      const aberta = (lado: number) => ((i + lado) % 3 === 0 ? 1 : 0);
+      f.push(["porta_quarto", 4, y, 2, undefined, aberta(0)]);
+      if (i === ALA_JAULA)
+        f.push(["cell_door", 8, y, 6, hint("Quarto trancado", "A porta de madeira foi trocada por uma grade, com corrente e cadeado. Lá dentro, alguém ainda respira.")]);
+      else f.push(["porta_quarto", 8, y, 6, undefined, aberta(1)]);
     }
-    if (i < 5) for (const x of [0, 1, 2, 3, 4, 8, 9, 10, 11, 12]) f.push(["iwall_low", x, y0 + 3, 4]);
-    // em dois quartinhos o teto caiu em cima da cama; nos outros, a cama queimada e o baú
+    // em dois quartos o teto caiu em cima da cama; nos outros, a cama queimada, o baú e o colchão no chão
     const desabou = (lado: number) => (i * 2 + lado) % 5 === 2;
-    if (desabou(0)) f.push(["escombros", 0, y0, 0], ["viga_queimada", 3, y0, 0]);
-    else f.push(["cama_queimada", 0, y0, 4], ["chest_army", 3, y0 + 2, 0]);
-    if (desabou(1)) f.push(["escombros", 11, y0, 0], ["viga_queimada", 9, y0, 0]);
-    else f.push(["cama_queimada", 12, y0, 4], ["chest_army", 9, y0 + 2, 0]);
-    // eles dormem amontoados: além da cama, um colchão no chão em cada quartinho, e os crânios de um deles
-    if (!desabou(0)) f.push(["colchao_chao", 1, y0 + 1, 0]);
-    if (!desabou(1) && i !== JAULA) f.push(["colchao_chao", 10, y0 + 1, 0]);
-    if (i % 2 === 1) f.push(["pilha_cranios", 2, y0 + 2, 0]);
-    // o sangue e a fuligem dos quartinhos e do corredor
+    if (desabou(0)) f.push(["escombros", 0, y0, 0], ["viga_queimada", 0, y0 + 2, 2]);
+    else f.push(["cama_queimada", 0, y0, 4], ["chest_army", 3, y0 + 2, 0], ["colchao_chao", 1, y0 + 1, 0]);
+    if (desabou(1)) f.push(["escombros", 11, y0, 0], ["viga_queimada", 10, y0 + 2, 2]);
+    else f.push(["cama_queimada", 12, y0, 4], ["chest_army", 9, y0 + 2, 0], ["colchao_chao", 10, y0 + 1, 0]);
+    if (i % 2 === 1 && !desabou(0)) f.push(["pilha_cranios", 2, y0 + 2, 0]);
+    // o sangue e a fuligem dos quartos e do corredor, e as velas do corredor (não tem luz)
     f.push(["blood_pool", 2, y0 + 1, 0], ["blood_drops", 10, y0 + 1, 0], ["fuligem", 1, y0 + 2, 0], ["cinzas", 11, y0 + 2, 0]);
     f.push(["blood_drops", 5 + (i % 3), y0 + 1, 0]);
+    f.push(i % 2 ? ["candles", 5, y0 + 2, 0] : ["candles", 7, y0, 0]);
   }
   // a área aberta do fim do corredor (a parede das frases): as velas acesas embaixo da escrita, os crânios, o sangue
   f.push(...de("candles", [3, 1], [6, 1], [9, 1]), ["pilha_cranios", 5, 1, 0], ["skull", 7, 1, 0], ["skull", 1, 1, 2]);
-  f.push(...de("blood_pool", [4, 0], [6, 0], [8, 1], [11, 0], [6, 3]), ...de("blood_drops", [2, 0], [10, 1], [5, 3]));
-  f.push(["trash_bin", 7, 14, 0], ["food_tray", 5, 16, 0]);
+  f.push(...de("blood_pool", [4, 0], [6, 0], [8, 1], [11, 0], [6, 3]), ...de("blood_drops", [2, 0], [10, 1], [5, 3], [8, 3]));
+  f.push(["trash_bin", 7, 18, 0], ["food_tray", 5, 16, 0]);
   return f;
 }
 
