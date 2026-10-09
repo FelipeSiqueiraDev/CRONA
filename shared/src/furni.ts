@@ -134,6 +134,14 @@ const FURNI_METERS: FurniDef[] = [
 
   // ---------- Laboratório ----------
   { id: 'lab_bench', name: 'Bancada de Laboratório', category: 'laboratorio', kind: 'lab_bench', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c', '#cfcabd'] },
+  // as bancadas inteiras do laboratório e as peças inteiras (09/10, arte do Códex)
+  { id: 'bancada_lab_parede', name: 'Bancada de Laboratório (parede)', category: 'laboratorio', kind: 'lab_bench', width: 4, depth: 1, height: 0.92, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c'] },
+  { id: 'bancada_lab_curta', name: 'Bancada de Laboratório (canto)', category: 'laboratorio', kind: 'lab_bench', width: 2, depth: 1, height: 0.92, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c'] },
+  { id: 'bancada_lab_ilha', name: 'Bancada de Laboratório (ilha)', category: 'laboratorio', kind: 'lab_bench', width: 4, depth: 1, height: 0.92, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c'] },
+  { id: 'mesa_vidro_lab', name: 'Mesa de Vidro do Laboratório', category: 'laboratorio', kind: 'mesa_vidro_lab', width: 1, depth: 3, height: 0.9, rotations: ALL, colors: ['#a8d0e0', '#3a3d42'], desc: 'Tubos de ensaio em duas fileiras, frascos coloridos e um bico de Bunsen.' },
+  { id: 'impressora_3d', name: 'Impressora 3D', category: 'laboratorio', kind: 'impressora_3d', width: 1, depth: 1, height: 1.3, rotations: ALL, colors: ['#2a2d33', '#ff8a3a'] },
+  { id: 'mesa_arsenal', name: 'Mesa Grande do Arsenal', category: 'arsenal', kind: 'table_big', width: 4, depth: 2, height: 0.92, stackable: true, rotations: ALL, colors: ['#2a3a2a', '#1f2219'] },
+  { id: 'poltrona_preta', name: 'Poltrona Preta', category: 'mobilia', kind: 'armchair', width: 1, depth: 1, height: 0.95, sit: true, rotations: ALL, colors: ['#1a1a1e', '#3a3a42'] },
   { id: 'tank', name: 'Tanque de Contenção', category: 'laboratorio', kind: 'tank', width: 2, depth: 2, height: 2.2, states: 2, rotations: ALL, colors: ['#2b2f33', '#3fe0c0'], desc: 'Clique duplo alterna a luz do tanque.' },
   { id: 'trolley', name: 'Carrinho de Laboratório', category: 'laboratorio', kind: 'trolley', width: 1, depth: 1, height: 0.95, rotations: ALL, colors: ['#7d848c', '#8a1414'] },
   { id: 'microscope', name: 'Microscópio', category: 'laboratorio', kind: 'microscope', width: 1, depth: 1, height: 0.42, rotations: ALL, colors: ['#d6d2c6', '#2a2a2a'] },
@@ -387,6 +395,8 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'mural_polaroids', name: 'Mural de Polaroids', category: 'parede', kind: 'board', w: 46, h: 31, colors: ['#8a6a4a', '#e8e0d0'] },
   { id: 'tela_cris', name: 'Tela do C.R.I.S', category: 'parede', kind: 'tv', w: 130, h: 72, colors: ['#0a1420', '#3fd0ff'], desc: 'A tela enorme do C.R.I.S, o sistema da Ordem que procura o paranormal.' },
   { id: 'tela_derrota', name: 'Tela de Derrota', category: 'parede', kind: 'tv', w: 56, h: 34, colors: ['#141418', '#ff5a5a'], desc: 'Um monitor na parede travado na tela de DERROTA de algum jogo.' },
+  { id: 'scanner_digital', name: 'Leitor de Digital', category: 'parede', kind: 'power_box', w: 10, h: 14, colors: ['#2a2d33', '#3fd0ff'] },
+  { id: 'tv_grande', name: 'TV Grande', category: 'parede', kind: 'tv', w: 72, h: 42, colors: ['#141418', '#3a5a8a'], desc: 'TV de tela fina, grande, presa na parede.' },
 ];
 
 /** Metros → unidades de altura (duas casas). */
