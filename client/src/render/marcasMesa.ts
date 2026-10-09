@@ -24,7 +24,13 @@ export const COR_GIZ: Record<CorGiz, string> = {
   sangue: '#e2483d',
   ouro: '#f4c45a',
 };
-const COR_PONTO = '#ffd27a';
+/** o ponto no azul de HUD do ícone do Apontar (arte/icones/mesa-apontar.png) */
+const COR_PONTO = '#8fd0ff';
+const BRILHO_PONTO = 'rgba(90, 168, 255, 0.95)';
+/** o ícone do Apontar, que flutua em cima do ponto (sem ele, o losango) */
+const ICONE_PONTO = new Image();
+ICONE_PONTO.decoding = 'async';
+ICONE_PONTO.src = '/arte/icones/mesa-apontar.png';
 
 /** O traço que o mestre está fazendo agora (só na tela dele). */
 export interface Rascunho {
@@ -184,8 +190,8 @@ function desenharTraco(ctx: CanvasRenderingContext2D, p: Projecao, m: Traco, alf
 }
 
 /**
- * O ponto de atenção: anéis dourados abrindo no chão, um feixe de luz subindo (no isométrico) e um
- * losango que balança em cima. Entra rápido e some no fim.
+ * O ponto de atenção: anéis azuis abrindo no chão, um feixe de luz subindo (no isométrico) e o ícone do
+ * Apontar flutuando em cima, girando devagar como uma moeda. Entra rápido e some no fim.
  */
 function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, idade: number) {
   const px = p.px;
@@ -214,22 +220,22 @@ function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, ida
     ctx.lineWidth = (5 * (1 - t) + 1.2) * px;
     ctx.strokeStyle = COR_PONTO;
     ctx.shadowBlur = 10 * p.dpr;
-    ctx.shadowColor = 'rgba(255, 190, 90, 0.9)';
+    ctx.shadowColor = BRILHO_PONTO;
     ctx.stroke();
   }
   // o chão aceso embaixo
   ctx.shadowBlur = 0;
   ctx.globalAlpha = a * (0.4 + 0.15 * Math.sin(idade / 200));
   anel(0.55);
-  ctx.fillStyle = 'rgba(255, 214, 140, 0.55)';
+  ctx.fillStyle = 'rgba(143, 208, 255, 0.45)';
   ctx.fill();
   // o feixe de luz (isométrico)
   if (p.alto) {
     const h = p.alto;
     const w = 12 * px;
     const g = ctx.createLinearGradient(cx, cy, cx, cy - h);
-    g.addColorStop(0, 'rgba(255, 220, 150, 0.55)');
-    g.addColorStop(1, 'rgba(255, 220, 150, 0)');
+    g.addColorStop(0, 'rgba(160, 215, 255, 0.5)');
+    g.addColorStop(1, 'rgba(160, 215, 255, 0)');
     ctx.globalAlpha = a * (0.75 + 0.25 * Math.sin(idade / 160));
     ctx.fillStyle = g;
     ctx.beginPath();
@@ -240,12 +246,23 @@ function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, ida
     ctx.closePath();
     ctx.fill();
   }
-  // o losango que balança em cima
+  // em cima, balançando: o ícone do Apontar (gira como moeda: a largura vai e volta, nunca some)
   const sobe = (p.alto ? p.alto * 0.62 : 26 * px) + Math.sin(idade / 190) * 4 * px;
   const s = 10 * px * (0.6 + 0.4 * entra);
   const lx = cx;
   const ly = cy - sobe;
   ctx.globalAlpha = a;
+  if (ICONE_PONTO.complete && ICONE_PONTO.naturalWidth) {
+    const lado = 56 * px * (0.6 + 0.4 * entra);
+    const giro = 0.35 + 0.65 * Math.abs(Math.cos(idade / 520));
+    ctx.translate(lx, ly);
+    ctx.scale(giro, 1);
+    ctx.shadowBlur = 14 * p.dpr;
+    ctx.shadowColor = BRILHO_PONTO;
+    ctx.drawImage(ICONE_PONTO, -lado / 2, -lado / 2, lado, lado);
+    ctx.restore();
+    return;
+  }
   ctx.beginPath();
   ctx.moveTo(lx, ly - s * 1.5);
   ctx.lineTo(lx + s, ly);
@@ -254,7 +271,7 @@ function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, ida
   ctx.closePath();
   ctx.fillStyle = COR_PONTO;
   ctx.shadowBlur = 12 * p.dpr;
-  ctx.shadowColor = 'rgba(255, 190, 90, 1)';
+  ctx.shadowColor = BRILHO_PONTO;
   ctx.fill();
   ctx.shadowBlur = 0;
   ctx.lineWidth = 1.4 * px;
