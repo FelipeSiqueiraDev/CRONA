@@ -215,8 +215,60 @@ function endurecer(c: HTMLCanvasElement) {
 
 const cache = new Map<IconeLugar, HTMLCanvasElement>();
 
+/**
+ * A ilha pintada do Códex (09/10, `arte/mapa/lugar-<lugar>.png`, em escala 4, 72 × 64 na escala 1): uma por LUGAR, pelo
+ * nome; o meio da grama de cada uma (do LEIA-ME) vai para o SPRITE_CENTRO. Lugar sem ilha própria e do tipo casa usa a
+ * casinha genérica. Enquanto carrega (ou se não existe), o desenho em código.
+ */
+const PASTA_MAPA = '/arte/mapa/';
+const CENTRO_ARTE: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'santo-berco': 43, 'generico-casa': 41 };
+const artes = new Map<string, HTMLCanvasElement | null>();
+let existentes: Set<string> | null = null;
+fetch('/api/arte')
+  .then((r) => r.json() as Promise<{ arquivos: string[] }>)
+  .then((j) => (existentes = new Set(j.arquivos)))
+  .catch(() => (existentes = new Set()));
+const slug = (nome: string) =>
+  nome
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+/** Uma imagem do mapa em escala 4, reduzida para a escala 1 (e, na ilha, com o meio da grama no SPRITE_CENTRO). */
+export function arteDoMapa(nome: string, centroY?: number): HTMLCanvasElement | null {
+  if (artes.has(nome)) return artes.get(nome)!;
+  if (!existentes) return null;
+  artes.set(nome, null);
+  const url = `${PASTA_MAPA}${nome}.png`;
+  if (!existentes.has(url)) return null;
+  const img = new Image();
+  img.onload = () => {
+    const w = Math.round(img.naturalWidth / 4);
+    const hh = Math.round(img.naturalHeight / 4);
+    const c = document.createElement('canvas');
+    const ilha = centroY !== undefined;
+    c.width = ilha ? SPRITE_W : w;
+    c.height = ilha ? SPRITE_H : hh;
+    const g = c.getContext('2d')!;
+    g.imageSmoothingEnabled = false;
+    g.drawImage(img, 0, ilha ? SPRITE_CENTRO[1] - centroY : 0, w, hh);
+    artes.set(nome, c);
+  };
+  img.src = url;
+  return null;
+}
+function ilhaPintada(icone: IconeLugar, nome?: string): HTMLCanvasElement | null {
+  const s = nome ? slug(nome) : '';
+  if (s && s in CENTRO_ARTE) return arteDoMapa(`lugar-${s}`, CENTRO_ARTE[s]);
+  if (icone === 'casa') return arteDoMapa('lugar-generico-casa', CENTRO_ARTE['generico-casa']);
+  return null;
+}
+
 /** O ícone do lugar (a ilha com a construção), pronto para desenhar na tela pequena do mapa. */
-export function spriteDoLugar(icone: IconeLugar): HTMLCanvasElement {
+export function spriteDoLugar(icone: IconeLugar, nome?: string): HTMLCanvasElement {
+  const pintada = ilhaPintada(icone, nome);
+  if (pintada) return pintada;
   let c = cache.get(icone);
   if (c) return c;
   c = document.createElement('canvas');

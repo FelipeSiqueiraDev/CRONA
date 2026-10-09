@@ -98,8 +98,25 @@ export function desenhoDaVan(): HTMLCanvasElement {
       const [cx, cy] = meioDoBanco(x, y);
       banco(ctx, cx, cy);
     }
+  // a van pintada do Códex (arte/viagem/pixel/van-de-cima.png, em escala 4, os bancos nos mesmos pontos): quando
+  // carrega, toma o lugar do desenho na mesma tela
+  void fetch('/api/arte')
+    .then((r) => r.json() as Promise<{ arquivos: string[] }>)
+    .then((j) => {
+      if (!j.arquivos.includes(VAN_ARTE)) return;
+      const img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, VAN_W, VAN_H);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, 0, 0, VAN_W, VAN_H);
+      };
+      img.src = VAN_ARTE;
+    })
+    .catch(() => {});
   return c;
 }
+
+const VAN_ARTE = '/arte/viagem/pixel/van-de-cima.png';
 
 /** A vanzinha de lado (40 × 22), para a barra do trajeto da tela de viagem: a frente à direita. */
 export function vanDeLado(): HTMLCanvasElement {

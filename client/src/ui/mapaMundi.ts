@@ -1,6 +1,6 @@
 import type { LugarInfo } from '@crona/shared';
 import { desenharBrasil, MAPA_H, MAPA_W } from '../render/mapaBrasil';
-import { SPRITE_CENTRO, SPRITE_H, SPRITE_W, spriteDoLugar } from '../render/lugarSprites';
+import { arteDoMapa, SPRITE_CENTRO, SPRITE_H, SPRITE_W, spriteDoLugar } from '../render/lugarSprites';
 import type { App } from './app';
 import { h } from './dom';
 import { botao, janela } from './fichaModal';
@@ -127,7 +127,7 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
     }
     // as ilhas, de trás para a frente, balançando de leve (cada uma no seu tempo)
     for (const l of [...ls].sort((a, b) => a.y - b.y)) {
-      const spr = spriteDoLugar(l.icone);
+      const spr = spriteDoLugar(l.icone, l.nome);
       const bob = Math.round(Math.sin(now / 900 + l.id * 1.7) * 2) - 6;
       const x = Math.round(l.x * W - SPRITE_CENTRO[0]);
       const y = Math.round(l.y * H - SPRITE_CENTRO[1]) + bob;
@@ -143,9 +143,14 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
       }
       ctx.drawImage(spr, x, y);
       if (l.aqui) {
-        // a bandeirinha de quem está aqui
+        // a bandeirinha de quem está aqui (a pintada, arte/mapa/aqui.png, com o pé no mesmo ponto)
         const fx = Math.round(l.x * W) + 14;
         const fy = y + 10;
+        const bandeira = arteDoMapa('aqui');
+        if (bandeira) {
+          ctx.drawImage(bandeira, fx - 1, fy + 11 - bandeira.height);
+          continue;
+        }
         ctx.fillStyle = '#2a1d2e';
         ctx.fillRect(fx, fy, 1, 11);
         ctx.fillStyle = '#e9a844';
