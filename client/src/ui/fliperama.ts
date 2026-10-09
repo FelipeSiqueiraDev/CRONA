@@ -160,7 +160,7 @@ export class Fliperama implements TelaDoBar {
   private fimEm = 0;
 
   constructor() {
-    this.tela = h('canvas', { class: 'flip-tela', width: W * ESC, height: H * ESC, 'aria-label': 'Tela do fliperama' }) as HTMLCanvasElement;
+    this.tela = h('canvas', { class: 'flip-tela', width: W * ESC, height: H * ESC, 'aria-label': 'Tela do Feliperama' }) as HTMLCanvasElement;
     this.d = this.tela.getContext('2d')!;
     this.jogoCv = h('canvas', { width: W, height: H }) as HTMLCanvasElement;
     this.g = this.jogoCv.getContext('2d')!;
@@ -173,8 +173,8 @@ export class Fliperama implements TelaDoBar {
       {
         class: `flip-som${musica.ligada ? '' : ' off'}`,
         type: 'button',
-        title: 'Música do fliperama',
-        'aria-label': 'Música do fliperama',
+        title: 'Música do Feliperama',
+        'aria-label': 'Música do Feliperama',
         onclick: () => {
           const on = musica.alternar();
           this.somBt.classList.toggle('off', !on);
@@ -208,7 +208,7 @@ export class Fliperama implements TelaDoBar {
           'header',
           { class: 'flip-letreiro' },
           h('div', { class: 'flip-lampadas', 'aria-hidden': 'true' }, ...Array.from({ length: 13 }, (_, i) => h('i', { style: `--i:${i}` }))),
-          h('b', null, 'FLIPERAMA'),
+          h('b', null, 'FELIPERAMA'),
           h('span', null, 'Suvaco Seco · Crédito 1'),
           h('div', { class: 'flip-listras', 'aria-hidden': 'true' }),
           this.somBt,
@@ -907,7 +907,7 @@ export class Fliperama implements TelaDoBar {
 
   /** O título: as letras ondulando e um brilho correndo por elas. */
   private titulo(g: CanvasRenderingContext2D, y: number) {
-    const t = 'FLIPERAMA';
+    const t = 'FELIPERAMA';
     const x0 = W / 2 - larguraTexto(t, 2) / 2;
     const brilho = (this.quadro >> 2) % 30;
     for (let i = 0; i < t.length; i++) {

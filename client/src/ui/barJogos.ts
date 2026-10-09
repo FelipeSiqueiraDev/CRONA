@@ -52,7 +52,7 @@ export interface TelaDoBar {
 }
 
 const reduzido = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-const NOME: Record<bar.TipoJogoBar, string> = { fliperama: 'Fliperama', dardos: 'Dardos', sinuca: 'Sinuca' };
+const NOME: Record<bar.TipoJogoBar, string> = { fliperama: 'Feliperama', dardos: 'Dardos', sinuca: 'Sinuca' };
 
 interface Aberta {
   tipo: bar.TipoJogoBar;

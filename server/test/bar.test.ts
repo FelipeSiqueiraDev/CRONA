@@ -143,7 +143,7 @@ describe('os jogos do bar: as mesas', () => {
     jogar('Cora Falcão', 'arcade');
     assert.match(gm.last('error')!.msg, /Já tem 2/);
     b.send({ t: 'barSair', mesa: movel('arcade').id, recorde: { jogo: 'PULA-PULA', pontos: 71 } });
-    assert.equal(gm.last('notice')!.msg, 'Catarina Albuquerque largou o fliperama (71 pontos no PULA-PULA).');
+    assert.equal(gm.last('notice')!.msg, 'Catarina Albuquerque largou o Feliperama (71 pontos no PULA-PULA).');
     assert.deepEqual(a.last('bar')!.jogadores, ['D.Tepes']);
   });
 

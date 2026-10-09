@@ -86,7 +86,9 @@ interface MesaBar {
   lugares: { tokenId: number; nome: string; fichaId?: number }[];
   log: Record<string, unknown>[];
 }
-const NOME_MESA: Record<bar.TipoJogoBar, string> = { fliperama: 'o fliperama', dardos: 'os dardos', sinuca: 'a sinuca' };
+const NOME_MESA: Record<bar.TipoJogoBar, string> = { fliperama: 'o Feliperama', dardos: 'os dardos', sinuca: 'a sinuca' };
+/** "no Feliperama", "nos dardos", "na sinuca" */
+const NOME_EM: Record<bar.TipoJogoBar, string> = { fliperama: 'no Feliperama', dardos: 'nos dardos', sinuca: 'na sinuca' };
 
 /** As chaves do combate que guardam o id de uma peça (as outras contas, como a rodada, ficam como estão). */
 const CHAVES_DE_PECA = new Set(['id', 'quem', 'alvo', 'ator', 'alvos', 'participantes', 'ids', 'de', 'para']);
@@ -1805,7 +1807,7 @@ export class Hotel implements HotelApi {
       this.tirarDaMesa(mesa, ja, 'O mestre chamou de volta para a mesa.');
       return c.send({ t: 'notice', msg: `${r.nome} largou ${jogo}.` });
     }
-    if (mesa && mesa.lugares.length >= bar.MAX_JOGADORES[r.tipo]) return c.send({ t: 'error', msg: `Já tem ${mesa.lugares.length} em ${jogo}: chame alguém de volta antes.` });
+    if (mesa && mesa.lugares.length >= bar.MAX_JOGADORES[r.tipo]) return c.send({ t: 'error', msg: `Já tem ${mesa.lugares.length} ${NOME_EM[r.tipo]}: chame alguém de volta antes.` });
     // a peça vai até o jogo, e o jogo só abre quando ela chega (09/10, o Felipe)
     const tokenId = m.tokenId;
     const itemId = m.itemId;
@@ -1825,10 +1827,10 @@ export class Hotel implements HotelApi {
       aqui.lugares.push({ tokenId, nome: r.nome, ...(f ? { fichaId: f.id } : {}) });
       this.mesaMudou(aqui);
       const msg = !f
-        ? `${r.nome} chegou em ${jogo}. Sem ficha de jogador, é um NPC: você joga por ele na sua tela.`
+        ? `${r.nome} chegou ${NOME_EM[r.tipo]}. Sem ficha de jogador, é um NPC: você joga por ele na sua tela.`
         : this.telasDaFicha(f.id).length
-          ? `${r.nome} chegou em ${jogo}: o jogo abriu no celular.`
-          : `${r.nome} chegou em ${jogo}, mas o celular do jogador não está conectado (abre quando conectar).`;
+          ? `${r.nome} chegou ${NOME_EM[r.tipo]}: o jogo abriu no celular.`
+          : `${r.nome} chegou ${NOME_EM[r.tipo]}, mas o celular do jogador não está conectado (abre quando conectar).`;
       c.send({ t: 'notice', msg });
     };
     c.send({ t: 'notice', msg: `${r.nome} está indo para ${jogo}.` });
