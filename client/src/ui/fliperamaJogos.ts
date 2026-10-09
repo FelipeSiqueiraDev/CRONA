@@ -592,7 +592,12 @@ interface Plataforma {
   vx: number;
   mola: boolean;
   quebrada: boolean;
+  /** no DIFÍCIL (09/10): quantos pulos ela ainda aguenta (racha a cada um e quebra no último); sem limite, null */
+  pulos: number | null;
 }
+
+/** Quantos pulos cada plataforma aguenta, por nível: só o difícil tem limite. */
+const PULOS_POR_NIVEL: (number | null)[] = [null, null, 3];
 
 /** O céu escurece conforme sobe: do azul ao preto das estrelas. */
 const CEU = ['#2c3c9c', '#34308c', '#2c1c64', '#180c34', '#000000'];
@@ -621,7 +626,7 @@ export class PulaPula implements Jogo {
     this.rnd = bar.sorteio(dupla?.semente ?? bar.novaSemente());
     this.estrelas = Array.from({ length: 34 }, () => ({ x: Math.floor(this.al(0, W)), y: this.al(0, H), cor: this.rnd() < 0.3 ? COR.amarelo : COR.claro }));
     if (dupla) this.outro = { p: 0, vivo: true };
-    this.plats.push({ x: W / 2 - 14, y: 176, w: 28, tipo: 'firme', vx: 0, mola: false, quebrada: false });
+    this.plats.push({ x: W / 2 - 14, y: 176, w: 28, tipo: 'firme', vx: 0, mola: false, quebrada: false, pulos: PULOS_POR_NIVEL[this.nivel] });
     this.gerar();
   }
 
@@ -643,9 +648,9 @@ export class PulaPula implements Jogo {
       this.proxY -= vao;
       const anda = this.rnd() < 0.08 + d * 0.32;
       const w = Math.round(22 - d * 4) + [4, 0, -3][this.nivel];
-      this.plats.push({ x: this.al(0, W - w), y: this.proxY, w, tipo: anda ? 'anda' : 'firme', vx: anda ? this.al(0.5, 0.9 + d) * (this.rnd() < 0.5 ? -1 : 1) : 0, mola: !anda && this.rnd() < 0.06, quebrada: false });
+      this.plats.push({ x: this.al(0, W - w), y: this.proxY, w, tipo: anda ? 'anda' : 'firme', vx: anda ? this.al(0.5, 0.9 + d) * (this.rnd() < 0.5 ? -1 : 1) : 0, mola: !anda && this.rnd() < 0.06, quebrada: false, pulos: PULOS_POR_NIVEL[this.nivel] });
       // a que quebra é de enfeite: nunca é o único caminho
-      if (this.rnd() < 0.1 + d * 0.2) this.plats.push({ x: this.al(0, W - w), y: this.proxY + vao / 2, w, tipo: 'quebra', vx: 0, mola: false, quebrada: false });
+      if (this.rnd() < 0.1 + d * 0.2) this.plats.push({ x: this.al(0, W - w), y: this.proxY + vao / 2, w, tipo: 'quebra', vx: 0, mola: false, quebrada: false, pulos: null });
     }
   }
 
@@ -682,6 +687,17 @@ export class PulaPula implements Jogo {
           continue;
         }
         this.y = p.y;
+        // no difícil, cada pulo racha a plataforma; no último ela quebra e cai (o pulo ainda vale)
+        if (p.pulos !== null) {
+          p.pulos--;
+          if (p.pulos <= 0) {
+            p.quebrada = true;
+            sfx.chip(220, 50, 0.18);
+            sfx.ruido(0.16, 700, 0.12);
+            fx.faiscas(p.x + p.w / 2, p.y - this.camY + 1, [p.tipo === 'anda' ? COR.azul : COR.verde, COR.claro], 14, 1.4, 0.12, 30);
+            fx.tremer(1.5);
+          } else sfx.ruido(0.05, 1800, 0.05);
+        }
         const mola = p.mola && Math.abs(this.x - (p.x + p.w / 2)) < 5;
         this.vy = mola ? -7.6 : -4.6;
         if (mola) sfx.chip(300, 1300, 0.22), fx.faiscas(this.x, p.y - this.camY - 3, [COR.amarelo, COR.branco], 12, 1.8, 0.02, 26), fx.tremer(2);
@@ -720,7 +736,7 @@ export class PulaPula implements Jogo {
         }
       }
     for (const p of this.plats) {
-      const x = Math.round(p.x);
+      let x = Math.round(p.x);
       const y = Math.round(p.y - this.camY);
       if (p.tipo === 'quebra') {
         g.fillStyle = COR.marrom;
@@ -736,10 +752,32 @@ export class PulaPula implements Jogo {
         }
         continue;
       }
+      // a que já quebrou (no difícil) cai em dois pedaços, na cor dela
+      if (p.quebrada) {
+        g.fillStyle = p.tipo === 'anda' ? COR.azul : COR.verde;
+        g.fillRect(x, y + 1, p.w / 2 - 1, 3);
+        g.fillRect(x + p.w / 2 + 1, y + 2, p.w / 2 - 1, 3);
+        continue;
+      }
+      // na última, treme um pixel para avisar
+      const xt = p.pulos === 1 && (quadro >> 2) % 2 === 0 ? x + 1 : x;
       g.fillStyle = p.tipo === 'anda' ? COR.azul : COR.verde;
-      g.fillRect(x, y, p.w, 4);
+      g.fillRect(xt, y, p.w, 4);
       g.fillStyle = p.tipo === 'anda' ? COR.azulClaro : COR.verdeClaro;
-      g.fillRect(x, y, p.w, 1);
+      g.fillRect(xt, y, p.w, 1);
+      if (p.pulos !== null) {
+        // as rachaduras (uma a cada pulo já dado) e as bolinhas do que falta
+        const dados = (PULOS_POR_NIVEL[this.nivel] ?? 0) - p.pulos;
+        g.fillStyle = COR.preto;
+        for (let k = 0; k < dados; k++) {
+          const rx = xt + Math.round(((k + 1) * p.w) / (dados + 2));
+          g.fillRect(rx, y + 1, 1, 2);
+          g.fillRect(rx + 1, y + 2, 1, 2);
+        }
+        g.fillStyle = p.pulos === 1 ? COR.vermelho : COR.amarelo;
+        for (let k = 0; k < p.pulos; k++) g.fillRect(xt + Math.round(p.w / 2) - p.pulos + k * 2, y + 5, 1, 1);
+      }
+      x = xt;
       if (p.mola) {
         const mx = x + Math.floor(p.w / 2) - 2;
         g.fillStyle = COR.claro;
