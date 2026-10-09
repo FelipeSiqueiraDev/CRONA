@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 19;
+export const FAZENDA_REV = 20;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -540,8 +540,8 @@ const CALABOUCO = "Calabouço";
 /**
  * O calabouço embaixo do celeiro: 16×14 de pedra. Desce-se pela escada de mão, reta, do
  * alçapão no teto até o chão (no fundo à esquerda); a "porta" é o vão do corredor escuro, no
- * meio da parede do fundo. No meio, o estrado redondo do altar, um degrau acima do chão
- * (altura 1, uns 60 cm).
+ * meio da parede do fundo. No meio, o estrado redondo do altar: o chão é plano, e o estrado é um
+ * móvel pisável de 0,61 m (09/10; antes a planta subia num bloco quadrado, feio).
  */
 function calaboucoPlan(): { heightmap: string; door: Door } {
   const W = 16;
@@ -549,12 +549,8 @@ function calaboucoPlan(): { heightmap: string; door: Door } {
   const rows = [
     Array.from({ length: W }, (_, x) => (x === 9 ? "0" : "x")).join(""),
   ];
-  for (let y = 1; y <= H; y++) {
-    let r = "";
-    for (let x = 0; x < W; x++)
-      r += Math.hypot(x + 0.5 - 9.5, y + 0.5 - 8.5) <= 2.6 ? "1" : "0";
-    rows.push(r);
-  }
+  // o chão é todo plano (09/10): quem sobe é o estrado do altar (o móvel pisável de 0,61 m), não a planta
+  for (let y = 1; y <= H; y++) rows.push("0".repeat(W));
   return { heightmap: rows.join("\n"), door: { x: 9, y: 0, dir: 4 } };
 }
 
@@ -1260,29 +1256,18 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["vitals_monitor", 5, 11, 4],
       ["papers", 4, 12, 0],
       ["trolley", 13, 9, 6],
-      // o estrado: o círculo de sangue no meio, o altar no fundo, velas e crânios na borda
-      ["sigil_floor", 8, 7, 0],
+      // o estrado redondo de pedra negra (o sigilo, as velas e os crânios já vêm nele) e, em cima, a pedra do sacrifício
+      ["estrado_altar", 7, 6, 4],
       [
-        "altar",
-        9,
-        6,
+        "pedra_sacrificio",
+        8,
+        8,
         4,
         oculta(
-          "Altar",
-          "Pedra escura, lisa de tanto uso. O círculo pintado em volta ainda está úmido: é sangue. Subir aqui dá a sensação de que alguma coisa olha de volta.",
+          "Pedra do sacrifício",
+          "Pedra escura, lisa de tanto uso, com argolas e correntes nas quatro pontas. O sulco do meio ainda está úmido: é sangue. Subir aqui dá a sensação de que alguma coisa olha de volta.",
         ),
       ],
-      ["blood_pool", 9, 8, 0],
-      ["blood_pool", 8, 10, 0],
-      ["blood_drops", 10, 10, 0],
-      ["candles", 8, 6, 0],
-      ["candles", 7, 8, 0],
-      ["candles", 11, 8, 0],
-      ["candles", 9, 10, 0],
-      ["skull", 7, 7, 2],
-      ["skull", 11, 7, 6],
-      ["skull", 7, 9, 2],
-      ["skull", 11, 9, 6],
       ["candelabra", 6, 11, 0],
       ["candelabra", 12, 11, 0],
       // o rastro de sangue até o corredor, as poças e o ralo
@@ -1298,7 +1283,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     wall: [
       // as telas em cima dos computadores (antes ficavam atrás dos racks), a câmera da escada e as arandelas
       ["monitor_wall", "l", 0, 5.5, 2.63],
-      ["cctv", "l", 0, 1.7, 3.9],
+      ["cctv", "l", 0, 1.7, 3.3],
       ["sconce", "l", 0, 9.0, 2.9],
       ["sconce", "r", 1, 8.5, 2.9],
       ["sconce", "r", 1, 15.4, 2.9],

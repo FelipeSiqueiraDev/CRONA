@@ -3,9 +3,9 @@
   "escala": 0.5,
   "limpar": 56,
   "moveis": [
-    {"def": "casarao", "folha": "client/public/arte/mobiliario/folhas/casarao.png", "W": 14, "D": 9, "real": [10.5, 6.75, 6.5], "como_esta": true, "largura": true, "giros": {"4": 0, "6": 1, "0": 2, "2": 3}},
-    {"def": "celeiro", "folha": "client/public/arte/mobiliario/folhas/celeiro.png", "W": 12, "D": 8, "real": [9.0, 6.0, 6.5], "como_esta": true, "largura": true, "giros": {"4": 0, "6": 1, "0": 2, "2": 3}},
-    {"def": "galpao", "folha": "client/public/arte/mobiliario/folhas/casa-mantimentos.png", "W": 8, "D": 6, "real": [6.0, 4.5, 4.6], "como_esta": true, "largura": true, "giros": {"4": 0, "6": 1, "0": 2, "2": 3}},
+    {"def": "casarao", "folha": "client/public/arte/mobiliario/folhas/casarao.png", "W": 14, "D": 9, "real": [10.5, 6.75, 6.5], "como_esta": true, "largura": true, "giros": {"4": 0, "6": 1, "0": 2, "2": 3}, "estados": {"1": "client/public/arte/mobiliario/folhas/casarao-aberto.png"}},
+    {"def": "celeiro", "folha": "client/public/arte/mobiliario/folhas/celeiro.png", "W": 12, "D": 8, "real": [9.0, 6.0, 6.5], "como_esta": true, "largura": true, "giros": {"4": 0, "6": 1, "0": 2, "2": 3}, "estados": {"1": "client/public/arte/mobiliario/folhas/celeiro-aberto.png"}},
+    {"def": "galpao", "folha": "client/public/arte/mobiliario/folhas/casa-mantimentos.png", "W": 8, "D": 6, "real": [6.0, 4.5, 4.6], "como_esta": true, "largura": true, "giros": {"4": 0, "6": 1, "0": 2, "2": 3}, "estados": {"1": "client/public/arte/mobiliario/folhas/casa-mantimentos-aberta.png"}},
     {"def": "fonte", "folha": "client/public/arte/mobiliario/folhas/fonte.png", "W": 3, "D": 3, "real": [2.25, 2.25, 2.17], "como_esta": true, "por": "imagem", "pisa": 1.59, "giros": {"4": 0, "6": 1, "0": 2, "2": 3}},
     {"def": "placa", "folha": "client/public/arte/mobiliario/folhas/placa.png", "real": [0.7, 0.15, 1.76], "como_esta": true, "por": "imagem", "pisa": 0.15, "giros": {"4": 0, "6": 1, "0": 2, "2": 3}}
   ]

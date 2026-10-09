@@ -345,11 +345,23 @@ Ainda falta (pedido do Felipe):
   agentes nos bancos, carros da outra mão, árvores de dia/noite, postes, cercas, arbustos, placa, pedras, flores); a
   van de cima na janela de quem vai; as ilhas de cada lugar no mapa-múndi (`arte/mapa/lugar-<lugar>.png`, por nome).
 - **Rituais:** 25 artes (`arte/rituais/`), no celular.
-- **Falta importar (móveis):** tecnologia cheia (+ cima), posto da enfermaria, altar e pedra do sacrifício, corpos,
-  calabouço (tanques, mesa de contenção, crânios, estandarte, tocha, alçapão, escada de mão), camas e beliches (+ cima),
-  bancadas do laboratório, peças inteiras, quadros e brinquedos da fazenda, Agatha teste, casarão/celeiro/mantimentos
-  abertos, paredes do calabouço e do celeiro, vistas de cima da fazenda. Decisão pendente do Felipe: pôr nas salas
-  (sobe SEDE_REV/FAZENDA_REV e desfaz ajustes à mão) ou só no catálogo para ele posicionar.
+- **Móveis importados (09/10, tarde; arte no jogo e defs novas no catálogo, NADA posicionado nas salas):**
+  - beliches (4 modelos), camas novas e as vistas de cima (`moveis-camas.json`);
+  - calabouço: `estrado_altar`, `pedra_sacrificio`, `tanque_corpo` (3), `mesa_contencao`, `pilha_cranios`,
+    `estandarte_sangue`, `tocha_parede`; a arte do alçapão aberto, da escada de mão e dos corpos (`moveis-calabouco.json`);
+  - as gêmeas vazias da fazenda (`!vazio`, `moveis-fazenda-vazios.json`) e as 46 vistas de cima da fazenda;
+  - tecnologia cheia e posto da enfermaria (`moveis-tecnologia-cheia.json`), com vazias e vistas de cima;
+  - bancadas inteiras do laboratório, mesa de vidro, impressora 3D, mesa do arsenal, poltrona preta, leitor de digital,
+    TV grande, alvo de dardos (`moveis-lab-inteiras.json`) e as vistas de cima que esperavam em `_aguardando-importar`;
+  - os 12 quadros da fazenda (`quadro_fazenda`, um modelo por peça) e os 23 brinquedos (ícones de item, pelo nome);
+  - os prédios da fazenda REFEITOS (os tortos foram para `_substituidas/predios-tortos-ate-09-10`), com a porta aberta
+    como estado 1 (clique duplo);
+  - paredes pintadas do calabouço e do celeiro; o teste da Agatha (balcão e estante de frascos, cheios e vazios, e o
+    estilo `loja`).
+- **Falta (código):** posicionar nas salas (sobe SEDE_REV/FAZENDA_REV: antes, levar os ajustes à mão do Felipe para o
+  seed); o estrado do altar pisável (a peça subir 0,61 m em cima dele); a porteira (a arte tem a área de 2,25 × 2,25 m
+  com a folha aberta; a def é 3 × 1) segue em código; itens de parede com inclinação um pouco diferente (o jogo endireita
+  na hora: quadros da fazenda, estandarte, telas).
 - `van-mapa.png` está em `arte/mapa/`, sem uso ainda (a barra do trajeto não existe).
 
 ## Noite de 08/10: o MAPA mais limpo (no ar, `e5e89cd`)

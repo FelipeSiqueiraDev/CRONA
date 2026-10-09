@@ -319,13 +319,13 @@ describe("Fazenda Olhos de Águia", () => {
 
   test("o calabouço: o altar no estrado, o corredor escuro e a sala de sangue", () => {
     const calabouco = cena("Calabouço");
-    const altar = calabouco.map.allItems().find((i) => i.defId === "altar")!;
-    assert.equal(
-      calabouco.map.floorHeight(altar.x, altar.y),
-      1,
-      "o estrado é um degrau acima",
-    );
-    assert.equal(calabouco.map.floorHeight(2, 3), 0);
+    // o chão é plano; o estrado é um móvel pisável (0,61 m = 1 unidade) e a pedra do sacrifício fica em cima dele
+    const estrado = calabouco.map.allItems().find((i) => i.defId === "estrado_altar")!;
+    const altar = calabouco.map.allItems().find((i) => i.defId === "pedra_sacrificio")!;
+    assert.equal(calabouco.map.floorHeight(9, 8), 0, "a planta não sobe");
+    assert.ok(Math.abs(calabouco.map.standHeight(estrado.x + 2, estrado.y + 1) - 1) < 0.01, "quem pisa no estrado sobe 1 unidade");
+    assert.equal(calabouco.map.standHeight(estrado.x, estrado.y), 0, "o canto da pegada (o estrado é redondo) fica no chão");
+    assert.ok(Math.abs(altar.z - 1) < 0.01, "a pedra fica em cima do estrado");
     // as pistas do calabouço começam escondidas dos jogadores
     assert.equal(altar.hint?.visible, false);
     const corredor = cena("Corredor Escuro");

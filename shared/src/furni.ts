@@ -160,7 +160,9 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'corpo_lencol', name: 'Corpo Coberto', category: 'ocultismo', kind: 'corpo', width: 1, depth: 3, height: 0.3, rotations: ALL, colors: ['#d8d0bc', '#6e1a14'], desc: 'Alguém deitado no chão, embaixo de um lençol encardido. Os pés aparecem.' },
   { id: 'corpo_saco', name: 'Saco de Cadáver', category: 'ocultismo', kind: 'corpo', width: 1, depth: 3, height: 0.3, rotations: ALL, colors: ['#1d1d22', '#8a8a90'], desc: 'Um saco de cadáver preto, fechado.' },
   // o calabouço (09/10, arte do Códex): o estrado redondo do altar, a pedra do sacrifício e o que sobrou do laboratório
-  { id: 'estrado_altar', name: 'Estrado do Altar', category: 'ocultismo', kind: 'estrado', width: 5, depth: 5, height: 0.61, rotations: ALL, colors: ['#2a2630', '#7a0d0d'], desc: 'O estrado redondo de pedra negra do calabouço, com o sigilo nas canaletas e velas e crânios na borda.' },
+  // pisável: quem pisa fica em cima dele (0,61 m), e ele se desenha no chão (atrás de quem está em cima); redondo, os
+  // quatro cantos da pegada ficam de fora
+  { id: 'estrado_altar', name: 'Estrado do Altar', category: 'ocultismo', kind: 'estrado', width: 5, depth: 5, height: 0.61, walkable: true, stackable: true, flat: true, vazio: [[0, 0], [4, 0], [0, 4], [4, 4]], rotations: ALL, colors: ['#2a2630', '#7a0d0d'], desc: 'O estrado redondo de pedra negra do calabouço, com o sigilo nas canaletas e velas e crânios na borda.' },
   { id: 'pedra_sacrificio', name: 'Pedra do Sacrifício', category: 'ocultismo', kind: 'pedra_sacrificio', width: 3, depth: 2, height: 1.0, rotations: ALL, colors: ['#3a3438', '#6e0b0b'], desc: 'A pedra do sacrifício: o tampo côncavo, as argolas e as correntes nas quatro pontas, o sangue seco.' },
   { id: 'tanque_corpo', name: 'Tanque com Corpo', category: 'laboratorio', kind: 'tanque_corpo', width: 2, depth: 2, height: 2.2, rotations: ALL, colors: ['#2b2f33', '#3fe0c0'], desc: 'Um cilindro de vidro grosso, cheio de líquido, com um corpo suspenso lá dentro.' },
   { id: 'mesa_contencao', name: 'Mesa de Contenção', category: 'laboratorio', kind: 'mesa_contencao', width: 2, depth: 3, height: 0.9, rotations: ALL, colors: ['#8a9096', '#3a3d42'], desc: 'Mesa de aço inox com as correias de couro para prender alguém deitado.' },
@@ -304,6 +306,9 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'cables_floor', name: 'Cabos no Chão', category: 'decoracao', kind: 'dirt', width: 3, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#1a1a1a', '#d8c8a0'] },
   { id: 'table_work', name: 'Mesa de Trabalho', category: 'escritorio', kind: 'table_big', width: 3, depth: 2, height: 0.78, stackable: true, rotations: ALL, colors: ['#1d1c20', '#141316', '#3a3a42'] },
   { id: 'counter_wood', name: 'Balcão de Madeira', category: 'mobilia', kind: 'table_big', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#4a3020', '#2e1d12', '#9a7a4a'] },
+  // a loja da Agatha (09/10, o teste do Códex; o resto da loja vem depois)
+  { id: 'balcao_loja', name: 'Balcão da Loja', category: 'mobilia', kind: 'counter', width: 6, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#5a3a24', '#c9a86a'], desc: 'O balcão comprido de madeira escura da loja da Agatha.' },
+  { id: 'estante_frascos', name: 'Estante de Frascos', category: 'mobilia', kind: 'shelf', width: 2, depth: 1, height: 2.2, rotations: ALL, colors: ['#4a3020', '#7ad0a0'], desc: 'Seis prateleiras de boticário: frascos, potes, ervas e coisas em conserva.' },
   { id: 'armchair_leather', name: 'Poltrona de Couro', category: 'mobilia', kind: 'armchair', width: 1, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#5a2e1c'] },
   { id: 'dirt', name: 'Sujeira', category: 'decoracao', kind: 'dirt', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#2a1d12', '#8a7a5a'] },
   // prisão
@@ -315,9 +320,9 @@ const FURNI_METERS: FurniDef[] = [
 
   // ---------- Fazenda (ao ar livre) ----------
   // os prédios vistos de fora: a porta deles é uma Entrada na frente (que leva para dentro)
-  { id: 'casarao', name: 'Casarão', category: 'fazenda', kind: 'casarao', width: 14, depth: 9, height: 6.5, xray: true, rotations: ALL, colors: ['#d9cbb0', '#8c3b26', '#4a3020', '#26323a'], desc: 'A casa grande, de dois andares, com a varanda na frente.' },
-  { id: 'celeiro', name: 'Celeiro', category: 'fazenda', kind: 'celeiro', width: 12, depth: 8, height: 6.5, xray: true, rotations: ALL, colors: ['#7c2f22', '#3e2e26', '#e2d8c4', '#4a2418'], desc: 'Baias, feno e a carroça.' },
-  { id: 'galpao', name: 'Casa de Mantimentos', category: 'fazenda', kind: 'galpao', width: 8, depth: 6, height: 4.6, xray: true, rotations: ALL, colors: ['#8a6a46', '#5e3424', '#3a281a', '#2b2622'], desc: 'Depósito de mantimentos e ferramentas, com o escritório do capataz.' },
+  { id: 'casarao', name: 'Casarão', category: 'fazenda', kind: 'casarao', width: 14, depth: 9, height: 6.5, xray: true, states: 2, rotations: ALL, colors: ['#d9cbb0', '#8c3b26', '#4a3020', '#26323a'], desc: 'A casa grande, de dois andares, com a varanda na frente.' },
+  { id: 'celeiro', name: 'Celeiro', category: 'fazenda', kind: 'celeiro', width: 12, depth: 8, height: 6.5, xray: true, states: 2, rotations: ALL, colors: ['#7c2f22', '#3e2e26', '#e2d8c4', '#4a2418'], desc: 'Baias, feno e a carroça.' },
+  { id: 'galpao', name: 'Casa de Mantimentos', category: 'fazenda', kind: 'galpao', width: 8, depth: 6, height: 4.6, xray: true, states: 2, rotations: ALL, colors: ['#8a6a46', '#5e3424', '#3a281a', '#2b2622'], desc: 'Depósito de mantimentos e ferramentas, com o escritório do capataz.' },
   { id: 'entrada_larga', name: 'Entrada Larga', category: 'fazenda', kind: 'entrada', width: 2, depth: 1, height: 0.02, walkable: true, portal: true, flat: true, rotations: ALL, colors: ['#7a6448'], desc: 'A entrada de um prédio, com a porta larga: pare em cima para entrar.' },
   { id: 'entrada', name: 'Entrada', category: 'fazenda', kind: 'entrada', width: 1, depth: 1, height: 0.02, walkable: true, portal: true, flat: true, rotations: ALL, colors: ['#7a6448'], desc: 'Pare em cima para entrar no lugar ligado (o mestre escolhe o destino).' },
   { id: 'porteira', name: 'Porteira', category: 'fazenda', kind: 'porteira', width: 3, depth: 1, height: 0, portal: true, states: 2, openState: 1, rotations: ALL, colors: ['#7a5a3a', '#3a2a1c'], desc: 'Aberta, quem para em cima sai para o lugar ligado. Clique duplo abre e fecha.' },

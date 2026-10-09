@@ -135,6 +135,9 @@
   "piso": {
    "arquivo": "piso-terra.png",
    "casas": 4
+  },
+  "parede": {
+   "arquivo": "parede-celeiro.png"
   }
  },
  "pier": {
@@ -147,6 +150,18 @@
   "piso": {
    "arquivo": "piso-calabouco.png",
    "casas": 4
+  },
+  "parede": {
+   "arquivo": "parede-calabouco.png"
+  }
+ },
+ "loja": {
+  "piso": {
+   "arquivo": "piso-loja.png",
+   "casas": 4
+  },
+  "parede": {
+   "arquivo": "parede-loja.png"
   }
  }
 }
