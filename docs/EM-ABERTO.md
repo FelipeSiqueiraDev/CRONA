@@ -292,8 +292,11 @@ Ainda falta (pedido do Felipe):
   - Testes: `server/test/bar.test.ts`. Arte pedida ao Códex: SEÇÃO 0C (o alvo, os dardos, a parede, a mesa, as bolas, o
     taco; gabaritos em `gabaritos/pedidos/bar-jogos/`). Ideias: recordes da mesa inteira, o mestre ver quem está jogando.
 - **A arte do gabinete do fliperama** foi para o Códex (SEÇÃO 0B do pedido, gabarito em
-  `gabaritos/pedidos/fliperama/`): 13 PNGs, a mesma máquina da folha do tabuleiro, de frente. Quando chegar: trocar o
-  gabinete de CSS pelas peças (a alavanca vira o direcional, com 4 zonas de toque; o botão grande vira o A).
+  `gabaritos/pedidos/fliperama/`): 13 PNGs, a mesma máquina da folha do tabuleiro, de frente. **O encaixe já está
+  pronto (08/10, noite):** as peças vão em `client/public/arte/bar/` e entram sozinhas, uma por uma (`arteBar.ts`;
+  o CSS no fim de `fliperama.css`): a alavanca vira o direcional (as setas viram zonas de toque invisíveis e a imagem
+  segue a direção apertada), o botão grande vira o A. Dardos e sinuca também (o alvo, os dardos, a parede, a mesa,
+  as bolas e o taco): só copiar os PNGs com os nomes do pedido. Conferir na prévia quando chegar.
 - **O fliperama do mapa refeito (F0, mesma seção):** o Felipe achou magrelo (0,62 m e ainda encolhido pelo `encaixe`).
   O novo enche a casa: 0,74 × 0,74 × 1,85 m (`scripts/3d/pedidos/fliperama.json`). Ao importar: trocar o `real` e o
   ponto da tela (`tela.giros`) na ficha de `moveis-bar.json`. Regra 12 nova no pedido: a referência de posição e
@@ -329,6 +332,22 @@ Ainda falta (pedido do Felipe):
   casarão (com as portas abertas); os quadros, os beliches e a cama D; o altar e a sala dos corpos do calabouço.
 - **Som no celular:** o navegador só libera o som quando o dedo solta (`audioCelular.ts`); no iPhone, o modo reprodução
   (o silencioso não cala mais).
+
+## Noite de 08/10: o MAPA mais limpo (no ar, `e5e89cd`)
+
+- **PERSONAGEM (esquerda) só com comandos do tabuleiro**, em grupos (Mover, Postura, Peça, Cena). PV, PE, SAN e a
+  mochila saíram de lá (ficam em PLAYERS e ITENS).
+- **Abas da direita:** PLAYERS, ITENS, INTERLÚDIO, com ícone (`painel-*.png` pedido ao Códex, seção 3 (D); até lá, um
+  do kit) e cada aba da largura do nome (o INTERLÚDIO não espreme mais).
+- **A marca de ouro desliza** entre as abas (`marcaOuro.ts`, um observador só para todas as barras: topo, painel da
+  direita, planta, mochila, gaveta do combate). Barra nova? Pôr o seletor na lista `BARRAS`.
+- **Respiro:** o Felipe achou tudo colado nas bordas. Fim do `hud.css`: `--h-respiro` (1,8rem) em toda janela do MAPA
+  e do COMBATE, `--h-respiro-card` nos cartões; as ferramentas do tabuleiro do combate longe da moldura.
+- **Pedido ao Códex:** seção 3 com o status certo (combate, mochila, interlúdio e celular chegaram; a logo saiu: o
+  Felipe fica com a dele), (D) novo com os 3 ícones das abas, e o `mesa-viagem.png` nas ferramentas da mesa.
+- **Esperando o Felipe:** exemplos de cartas para o visual "game retro" (ele quer **mais vertical e mais
+  minimalista**; ainda não é o que ele quer). Depois: o painel do Alvo em duas colunas com os valores explicados e a
+  ficha da ameaça (o lápis) em abas.
 
 ## Fazenda: a arte do Códex entrando (08/10, madrugada)
 
