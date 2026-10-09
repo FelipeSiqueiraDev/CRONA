@@ -333,6 +333,20 @@ Ainda falta (pedido do Felipe):
 - **Som no celular:** o navegador só libera o som quando o dedo solta (`audioCelular.ts`); no iPhone, o modo reprodução
   (o silencioso não cala mais).
 
+## 09/10 (tarde): o Orfanato Filhos do Dragão (no ar)
+
+- `server/src/seedOrfanato.ts`, no molde da Fazenda (usa `Terreno`, `montar`, `estilo`, `naPlanta`, `CenaSpec`
+  exportados de `seedFazenda.ts`); `ORFANATO_REV` refaz no lugar; `db.orfanatoRev`. Montado no `upgradeDb` e protegido
+  da limpeza das salas de exemplo. Teste: `server/test/orfanato.test.ts`.
+- Oito cenas, a partir da planta que o Felipe mandou (pequenas e cheias, o pedido dele): Pátio (ao ar livre: fachada de
+  `iwall` com janelas e a porta, a estradinha de terra, árvores, o anexo como bloco de parede), Salão, Refeitório, Sala de
+  Estudos, Quarto da Diretora, Banheiros, Ala dos Dormitórios (12 quartinhos com divisória baixa `iwall_low`; as de 2,4 m
+  viravam labirinto) e o Anexo.
+- Falta: o andar de cima (se a história pedir), a arte de fora do casarão (hoje a fachada é parede interna) e os
+  detalhes de história (o Felipe ajeita depois; ele disse para não se preocupar com a aventura).
+- **Ainda não posicionado nas salas da Sede** (a arte e as defs estão no catálogo): a tecnologia cheia (torre de CRTs,
+  mesa holográfica, telas do C.R.I.S e de DERROTA...) e o posto de enfermagem. Fazer subindo `SEDE_REV`.
+
 ## 09/10: a arte do Códex entrando (no ar)
 
 - **Ícones:** abas do painel (`painel-*`) e ferramentas da mesa com a Viagem (`mesa-*`).
