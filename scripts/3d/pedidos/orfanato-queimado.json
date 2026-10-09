@@ -1,0 +1,14 @@
+[
+ {"nome": "cama-queimada", "titulo": "Cama de ferro de criança, retorcida pelo fogo, colchão chamuscado", "casas": [1, 3], "real": [0.75, 2.0, 0.6]},
+ {"nome": "colchao-chao", "titulo": "Colchão largado no chão, afundado, encardido de sangue", "casas": [1, 2], "real": [0.75, 1.45, 0.15]},
+ {"nome": "fogueira", "titulo": "Fogueira no chão numa roda de pedras (acesa e apagada)", "casas": [2, 2], "real": [1.3, 1.3, 0.6]},
+ {"nome": "escombros", "titulo": "Monte de escombros do teto que desabou: telhas, reboco, madeira queimada", "casas": [2, 2], "real": [1.45, 1.45, 0.6]},
+ {"nome": "viga-queimada", "titulo": "Viga do telhado caída, carbonizada, com brasas nas rachaduras", "casas": [1, 3], "real": [0.3, 2.2, 0.3]},
+ {"nome": "gancho-carne", "titulo": "Travessa de ferro com ganchos de açougue e carne pendurada", "casas": [1, 2], "real": [0.5, 1.45, 1.9]},
+ {"nome": "armario-cozinha-queimado", "titulo": "Armário de cozinha queimado, portas caídas", "casas": [2, 1], "real": [1.45, 0.6, 1.9]},
+ {"nome": "prateleira-queimada", "titulo": "Prateleira de madeira queimada, tábuas caídas", "casas": [2, 1], "real": [1.45, 0.4, 2.2]},
+ {"nome": "estante-livros-queimada", "titulo": "Estante de livros queimada, livros virados cinza", "casas": [2, 1], "real": [1.45, 0.4, 2.2]},
+ {"nome": "guarda-roupa-queimado", "titulo": "Guarda-roupa queimado e arrombado por dentro", "casas": [2, 1], "real": [1.45, 0.6, 2.0]},
+ {"nome": "comoda-queimada", "titulo": "Cômoda queimada, gavetas reviradas", "casas": [2, 1], "real": [1.45, 0.5, 0.9]},
+ {"nome": "mesa-jantar-queimada", "titulo": "Mesa comprida do refeitório, queimada e suja de sangue", "casas": [4, 2], "real": [2.9, 1.3, 0.78]}
+]

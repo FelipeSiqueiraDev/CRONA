@@ -361,8 +361,11 @@ Ainda falta (pedido do Felipe):
   - **Peças novas em código:** `fogueira` (acende/apaga, luz de fogo), `colchao_chao`, `gancho_carne`, `cama_queimada`,
     `escombros` (monte com telhas e tábuas), `viga_queimada`, `fuligem`, `cinzas`, `fuligem_parede` (mancha: pode
     ficar atrás de móvel, `eManchaNaParede` em `paredes.ts`).
-  - Os móveis pintados (armários, prateleiras, a cama da diretora) ainda aparecem inteiros: pedir ao Códex versões
-    queimadas e o piso/parede queimados (ainda não pedido).
+  - **Pedido ao Códex (09/10, noite):** seção 0E do `PEDIDO-UNICO-CODEX.txt` (piso e parede queimados, fogueira,
+    colchão, escombros, viga, ganchos, cama queimada e os móveis da casa queimados; gabaritos de
+    `scripts/3d/pedidos/orfanato-queimado.json`) e a 0D agora pede a fachada queimada. Quando chegar: fichas com
+    `def` novos (`*_queimado`) ou trocar os ids no `seedOrfanato.ts`, e o estilo de piso/parede "queimado".
+  - O alvo de dardos de parede voltou ao desenho em código (a arte do Códex saiu de perfil); o pedido diz para não refazer.
 - Falta: o andar de cima (se a história pedir), a arte de fora do casarão (hoje a fachada é parede interna) e os
   detalhes de história (o Felipe ajeita depois; ele disse para não se preocupar com a aventura).
 - **Ainda não posicionado nas salas da Sede** (a arte e as defs estão no catálogo): a tecnologia cheia (torre de CRTs,
