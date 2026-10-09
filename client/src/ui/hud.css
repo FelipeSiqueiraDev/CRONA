@@ -4020,3 +4020,121 @@ html:not(.modo-ficha) .vt-btn {
   padding: 0 !important;
   font: 700 1.9rem / 1 var(--r-corpo) !important;
 }
+
+/* ================================================================ a marca de ouro que desliza (marcaOuro.ts)
+   A barra de abas ganha uma peça só, atrás das abas, que vai de uma aba para a outra: a pílula de ouro
+   (abas da direita, da planta, da mochila) ou o fio de ouro embaixo (o topo, a gaveta do combate).
+   A aba ligada perde o próprio fundo: quem pinta é a marca. */
+.marca-ouro {
+  display: none;
+}
+html:not(.modo-ficha) .com-marca > .marca-ouro {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+html:not(.modo-ficha) .com-marca > :not(.marca-ouro) {
+  position: relative;
+  z-index: 1;
+}
+html:not(.modo-ficha) .com-marca > .marca-ouro.pilula {
+  border-radius: 0.55rem;
+  background: linear-gradient(#f6cf6a, #e9a944 50%, #c97f2c);
+  box-shadow:
+    inset 0 0.12rem 0 rgba(255, 240, 190, 0.7),
+    inset 0 -0.15rem 0 rgba(120, 60, 10, 0.5),
+    0 0 1rem rgba(233, 169, 68, 0.25);
+}
+html:not(.modo-ficha) .com-marca.marca-pilula > .on {
+  background: none !important;
+  box-shadow: none !important;
+}
+html:not(.modo-ficha) .com-marca > .marca-ouro.linha {
+  height: 0.28rem;
+  border-radius: 0.2rem;
+  background: var(--r-ouro-hi);
+  box-shadow: 0 0 1.2rem var(--r-ouro);
+}
+html:not(.modo-ficha) .com-marca.marca-linha > .on::after {
+  display: none !important;
+}
+
+/* as abas da direita (PLAYERS, ITENS, INTERLÚDIO): o ícone e o nome lado a lado, cada aba da largura
+   do nome dela (o INTERLÚDIO, mais comprido, não fica espremido) */
+html:not(.modo-ficha) .rpg-tabs .itab {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 1 0 auto !important;
+  height: 3.6rem !important;
+  padding: 0 0.9rem !important;
+  font: 600 1.2rem / 1 var(--r-pixel) !important;
+  letter-spacing: 0.03em !important;
+  white-space: nowrap;
+}
+html:not(.modo-ficha) .rpg-tabs .itab :is(.arte-ic, .ic) {
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+}
+html:not(.modo-ficha) .rpg-tabs .itab .arte-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: saturate(0.6) brightness(0.8) drop-shadow(0 0.1rem 0.15rem #000);
+  transition: filter 0.25s, transform 0.25s var(--h-ease);
+}
+html:not(.modo-ficha) .rpg-tabs .itab.on .arte-ic img {
+  filter: drop-shadow(0 0.1rem 0 rgba(255, 240, 190, 0.6));
+  transform: scale(1.08);
+}
+
+/* ================================================================ o respiro (08/10)
+   O Felipe: "tá tudo tão colado nas bordas". Toda janela tem o mesmo espaço entre a linha de dentro
+   da moldura e o conteúdo (--h-respiro), e os cartões dentro dela, um menor (--h-respiro-card).
+   Vem por último de propósito: manda nos paddings espalhados pelas camadas de baixo. */
+:root {
+  --h-respiro: 1.8rem;
+  --h-respiro-card: 1.2rem;
+}
+/* MAPA: as janelas das colunas e as de baixo */
+html:not(.modo-ficha) .shell :is(.col-map, .col-rpg, .bottom) > .sheet {
+  padding: var(--h-respiro) !important;
+}
+html:not(.modo-ficha) .shell .col-map > .sheet.p-sala {
+  padding-block: 1.2rem !important;
+}
+html:not(.modo-ficha) .rpg-player {
+  padding: 1rem var(--h-respiro-card) !important;
+}
+/* COMBATE: o título e o corpo de cada janela, a gaveta e as abas dela */
+html:not(.modo-ficha) .cb-p > .cb-tit {
+  margin-inline: var(--h-respiro) !important;
+  padding-top: 1.4rem !important;
+}
+html:not(.modo-ficha) .cb-p > :is(.cb-ini-corpo, .cb-res-corpo, .cb-alvo-corpo, .cb-pend-corpo, .cb-reg-corpo) {
+  padding: 1rem var(--h-respiro) var(--h-respiro) !important;
+}
+html:not(.modo-ficha) .cb-gaveta > .cb-gav-abas {
+  padding-inline: var(--h-respiro) !important;
+  padding-top: 0.9rem !important;
+}
+/* as ferramentas por cima do tabuleiro do COMBATE: longe da moldura, como no MAPA */
+html:not(.modo-ficha) .cb-tab > .cb-tab-ferr {
+  top: 1.6rem !important;
+  right: 1.8rem !important;
+}
+html:not(.modo-ficha) .cb-tab > .cb-tab-cena {
+  left: 1.8rem !important;
+}
+html:not(.modo-ficha) .cb-tab > .cb-tab-clima {
+  left: 1.8rem !important;
+  bottom: 1.6rem !important;
+}
+html:not(.modo-ficha) .rpg-body > .rpg-player:last-child {
+  margin-bottom: 0 !important;
+}

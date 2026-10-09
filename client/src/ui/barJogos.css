@@ -529,3 +529,8 @@
     transition: none;
   }
 }
+
+/* a parede pintada atrás do alvo (arte/bar/dardos-parede.png, quando chegar: arteBar.ts) */
+.bj-dardos.tem-parede .bj-palco {
+  background: var(--a-dardos-parede) center / cover no-repeat;
+}

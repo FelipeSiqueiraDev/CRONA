@@ -45,6 +45,7 @@ import { RoomSettingsWin } from './ui/roomSettings';
 import { forgetGmKey, readGmKey, tableName, tableRequested } from './session/access';
 import { montarTemas } from './ui/temaUi';
 import { NEVOA_NA_TELA } from './ui/ferramentasMesa';
+import { ligarMarcaOuro } from './ui/marcaOuro';
 
 const LAST_ROOM = 'crona.lastRoom';
 const HOME_SEEN = 'crona.homeSeen';
@@ -195,6 +196,8 @@ const telaFicha = fichaMode
   : null;
 /** os jogos do bar em que o mestre joga por um NPC (janelinha no canto) */
 const barMestre = shell ? new BarJogos(app, 'mestre') : null;
+// a marca de ouro das abas desliza de uma aba para a outra (em toda tela)
+ligarMarcaOuro();
 if (shell) {
   shell.mountCanvas(canvas);
   root.append(shell.el);

@@ -97,12 +97,16 @@ Formato em [ARTE.md](ARTE.md) (Itens, "Arte pintada dos itens"). O que está mar
 
 Nada novo: usa os retratos, os ícones e as folhas da FICHAS. Os cartões de resumo ilustrados da referência (dados, grimório, maleta, fotos) só entram se um dia a tela do celular for por cartões.
 
-**O fliperama (08/10):** o gabinete de frente, em peças (corpo, moldura da tela, letreiro, painel, botão grande, alavanca em 5 posições e o botãozinho), pedido na SEÇÃO 0B do `PEDIDO-UNICO-CODEX.txt` com o gabarito `gabaritos/pedidos/fliperama/gabarito-fliperama.png`. Os jogos continuam em código.
+**O fliperama (08/10):** o gabinete de frente, em peças (corpo, moldura da tela, letreiro, painel, botão grande, alavanca em 5 posições e o botãozinho), pedido na SEÇÃO 0B do `PEDIDO-UNICO-CODEX.txt` com o gabarito `gabaritos/pedidos/fliperama/gabarito-fliperama-celular.png`. Os jogos continuam em código. **Vão em `client/public/arte/bar/` e entram sozinhos** (`arteBar.ts`), peça por peça; a alavanca troca de imagem com a direção apertada.
 - [ ] fliperama-corpo, -moldura, -letreiro, -painel, -botao (+ apertado), -alavanca-centro/cima/baixo/esq/dir, -mini (+ apertado)
 
-**Dardos e sinuca (08/10):** SEÇÃO 0C do pedido, gabaritos em `gabaritos/pedidos/bar-jogos/`.
+**Dardos e sinuca (08/10):** SEÇÃO 0C do pedido, gabaritos em `gabaritos/pedidos/bar-jogos/`. **Vão em `client/public/arte/bar/` e entram sozinhos** (o alvo, os dardos, a parede, a mesa, as bolas e o taco; os números o jogo escreve).
 - [ ] dardos-alvo, dardo-ouro/azul/vermelho/verde, dardos-parede
 - [ ] sinuca-mesa, sinuca-bola-0 a 15, sinuca-taco
+
+**As abas do painel da direita e a viagem (08/10):** seção 3 (D) e (C) do pedido. Entram sozinhos em `client/public/arte/icones/`.
+- [ ] painel-players, painel-itens, painel-interludio (128×128)
+- [ ] mesa-viagem (128×128, junto das ferramentas da mesa)
 
 ## 5. Tela COMBATE
 

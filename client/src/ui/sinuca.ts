@@ -19,6 +19,7 @@ import { musica } from './chiptune';
 import { botaoMusica } from './dardos';
 import { h } from './dom';
 import { sfx } from './sfx';
+import { imagemDoBar } from './arteBar';
 
 const S = bar.sinuca;
 const curto = (n: string) => n.split(/\s+/)[0] ?? n;
@@ -404,6 +405,48 @@ export class Sinuca implements TelaDoBar {
     g.beginPath();
     g.roundRect(ox - bw + 4 * dpr, oy - bw + 8 * dpr, S.LARGURA * k + bw * 2, S.COMPRIMENTO * k + bw * 2, bw * 0.8);
     g.fill();
+    // a mesa pintada (arte/bar/sinuca-mesa.png, 944 × 1744: 8 px por unidade, a borda de 72 = BORDA)
+    const mesa = imagemDoBar('sinuca-mesa');
+    if (mesa) g.drawImage(mesa, ox - bw, oy - bw, S.LARGURA * k + bw * 2, S.COMPRIMENTO * k + bw * 2);
+    else this.mesaDesenhada(g, ox, oy, k, dpr, X, Y);
+    const bolas = this.rodando ? this.rodando.mundo.bolas : this.estocada ? this.estocada.mundo.bolas : this.e.bolas;
+    // a mira: a linha até a primeira bola, a bola fantasma e para onde a bola acertada vai
+    const parado = !this.rodando && !this.estocada && this.e.vencedor === null;
+    const minha = parado && this.minhaVez();
+    const dir = minha ? this.mira : parado ? this.miraOutro : null;
+    if (dir) this.linhaDeMira(g, bolas, dir, X, Y, k, dpr, agora);
+    // as bolas entrando na caçapa: vão para o centro dela, encolhendo e escurecendo
+    for (const c of this.caindo) {
+      const t = Math.min(1, (agora - c.t0) / QUEDA);
+      const x = c.x + (Math.max(-1, Math.min(S.LARGURA + 1, c.cx)) - c.x) * t;
+      const y = c.y + (Math.max(-1, Math.min(S.COMPRIMENTO + 1, c.cy)) - c.y) * t;
+      g.globalAlpha = 1 - t * 0.7;
+      this.bola(g, c.n, X(x), Y(y), S.RAIO * k * (1 - t * 0.55), dpr);
+      g.globalAlpha = 1;
+    }
+    for (const b of bolas) if (!b.fora) this.bola(g, b.n, X(b.x), Y(b.y), S.RAIO * k, dpr);
+    // o taco: mirando, recuando com a força, ou avançando na estocada
+    const est = this.estocada;
+    if (est) {
+      const t = Math.min(1, (agora - est.t0) / ESTOCADA);
+      this.taco(g, X(this.branca().x), Y(this.branca().y), est.dir, est.forca * (1 - t * t), k, dpr);
+    } else if (dir) this.taco(g, X(this.branca().x), Y(this.branca().y), dir, minha ? this.forca : (this.miraOutro?.f ?? 0), k, dpr);
+    // a luz do lustre em cima da mesa, balançando devagar
+    const lx = X(50) + Math.sin(agora / 2600) * 6 * k;
+    const ly = Y(100) + Math.cos(agora / 3400) * 4 * k;
+    const luz = g.createRadialGradient(lx, ly, 20 * k, lx, ly, 150 * k);
+    luz.addColorStop(0, 'rgba(255, 236, 190, 0.13)');
+    luz.addColorStop(0.5, 'rgba(255, 220, 160, 0.03)');
+    luz.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
+    g.fillStyle = luz;
+    g.fillRect(-20 * dpr, -20 * dpr, W + 40 * dpr, H + 40 * dpr);
+    g.restore();
+    this.festa.desenhar(g, W, H);
+  }
+
+  /** A mesa desenhada em código (até a pintada chegar). */
+  private mesaDesenhada(g: CanvasRenderingContext2D, ox: number, oy: number, k: number, dpr: number, X: (x: number) => number, Y: (y: number) => number) {
+    const bw = BORDA * k;
     const madeira = g.createLinearGradient(ox - bw, 0, ox + S.LARGURA * k + bw, 0);
     madeira.addColorStop(0, '#4a2a12');
     madeira.addColorStop(0.5, '#6a3c1c');
@@ -456,39 +499,6 @@ export class Sinuca implements TelaDoBar {
       g.arc(cx, cy, c.r * k * 0.82, 0, Math.PI * 2);
       g.fill();
     }
-    const bolas = this.rodando ? this.rodando.mundo.bolas : this.estocada ? this.estocada.mundo.bolas : this.e.bolas;
-    // a mira: a linha até a primeira bola, a bola fantasma e para onde a bola acertada vai
-    const parado = !this.rodando && !this.estocada && this.e.vencedor === null;
-    const minha = parado && this.minhaVez();
-    const dir = minha ? this.mira : parado ? this.miraOutro : null;
-    if (dir) this.linhaDeMira(g, bolas, dir, X, Y, k, dpr, agora);
-    // as bolas entrando na caçapa: vão para o centro dela, encolhendo e escurecendo
-    for (const c of this.caindo) {
-      const t = Math.min(1, (agora - c.t0) / QUEDA);
-      const x = c.x + (Math.max(-1, Math.min(S.LARGURA + 1, c.cx)) - c.x) * t;
-      const y = c.y + (Math.max(-1, Math.min(S.COMPRIMENTO + 1, c.cy)) - c.y) * t;
-      g.globalAlpha = 1 - t * 0.7;
-      this.bola(g, c.n, X(x), Y(y), S.RAIO * k * (1 - t * 0.55), dpr);
-      g.globalAlpha = 1;
-    }
-    for (const b of bolas) if (!b.fora) this.bola(g, b.n, X(b.x), Y(b.y), S.RAIO * k, dpr);
-    // o taco: mirando, recuando com a força, ou avançando na estocada
-    const est = this.estocada;
-    if (est) {
-      const t = Math.min(1, (agora - est.t0) / ESTOCADA);
-      this.taco(g, X(this.branca().x), Y(this.branca().y), est.dir, est.forca * (1 - t * t), k, dpr);
-    } else if (dir) this.taco(g, X(this.branca().x), Y(this.branca().y), dir, minha ? this.forca : (this.miraOutro?.f ?? 0), k, dpr);
-    // a luz do lustre em cima da mesa, balançando devagar
-    const lx = X(50) + Math.sin(agora / 2600) * 6 * k;
-    const ly = Y(100) + Math.cos(agora / 3400) * 4 * k;
-    const luz = g.createRadialGradient(lx, ly, 20 * k, lx, ly, 150 * k);
-    luz.addColorStop(0, 'rgba(255, 236, 190, 0.13)');
-    luz.addColorStop(0.5, 'rgba(255, 220, 160, 0.03)');
-    luz.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
-    g.fillStyle = luz;
-    g.fillRect(-20 * dpr, -20 * dpr, W + 40 * dpr, H + 40 * dpr);
-    g.restore();
-    this.festa.desenhar(g, W, H);
   }
 
   private linhaDeMira(g: CanvasRenderingContext2D, bolas: bar.sinuca.Bola[], d: { x: number; y: number }, X: (x: number) => number, Y: (y: number) => number, k: number, dpr: number, agora: number) {
@@ -550,6 +560,14 @@ export class Sinuca implements TelaDoBar {
     g.beginPath();
     g.arc(x + r * 0.25, y + r * 0.3, r, 0, Math.PI * 2);
     g.fill();
+    // a bola pintada (arte/bar/sinuca-bola-<n>.png, 64 × 64, a bola com 60 de diâmetro): o número por cima
+    const arte = imagemDoBar(`sinuca-bola-${n}`);
+    if (arte) {
+      const lado = r * 2 * (64 / 60);
+      g.drawImage(arte, x - lado / 2, y - lado / 2, lado, lado);
+      this.numeroDaBola(g, n, x, y, r, dpr, false);
+      return;
+    }
     const cor = S.corDa(n);
     const listrada = n >= 9;
     g.save();
@@ -570,11 +588,18 @@ export class Sinuca implements TelaDoBar {
     g.fillStyle = brilho;
     g.fillRect(x - r, y - r, r * 2, r * 2);
     g.restore();
+    this.numeroDaBola(g, n, x, y, r, dpr, true);
+  }
+
+  /** O número no meio da bola (na pintada, o círculo branco já vem nela). */
+  private numeroDaBola(g: CanvasRenderingContext2D, n: number, x: number, y: number, r: number, dpr: number, circulo: boolean) {
     if (n > 0 && r > 5 * dpr) {
-      g.fillStyle = '#f4f1e6';
-      g.beginPath();
-      g.arc(x, y, r * 0.45, 0, Math.PI * 2);
-      g.fill();
+      if (circulo) {
+        g.fillStyle = '#f4f1e6';
+        g.beginPath();
+        g.arc(x, y, r * 0.45, 0, Math.PI * 2);
+        g.fill();
+      }
       g.fillStyle = '#141414';
       g.font = `700 ${Math.round(r * 0.62)}px 'Roboto Condensed', sans-serif`;
       g.textAlign = 'center';
@@ -591,6 +616,20 @@ export class Sinuca implements TelaDoBar {
     const y0 = by - d.y * recuo;
     const x1 = x0 - d.x * comp;
     const y1 = y0 - d.y * comp;
+    // o taco pintado (arte/bar/sinuca-taco.png, 960 × 48, a ponta à direita): deitado na direção da tacada
+    const arte = imagemDoBar('sinuca-taco');
+    if (arte) {
+      const grosso = comp * (48 / 960);
+      g.save();
+      g.translate(x0, y0);
+      g.rotate(Math.atan2(d.y, d.x));
+      // a sombra no pano, depois o taco
+      g.fillStyle = 'rgba(0,0,0,0.3)';
+      g.fillRect(-comp + 3 * dpr, -grosso * 0.3 + 4 * dpr, comp, grosso * 0.6);
+      g.drawImage(arte, -comp, -grosso / 2, comp, grosso);
+      g.restore();
+      return;
+    }
     g.save();
     g.lineCap = 'round';
     g.strokeStyle = 'rgba(0,0,0,0.3)';

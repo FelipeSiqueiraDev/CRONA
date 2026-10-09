@@ -27,8 +27,6 @@ import {
   type FloorStyle,
   type Loot,
   type LootKind,
-  espacosDoItemFicha,
-  kindDoItem,
   regras,
   type Objective,
   type PartyMember,
@@ -107,7 +105,13 @@ const INSP_TABS: InspTab[] = ['desc', 'inter', 'items'];
 
 /** Abas do painel da direita (controle do RPG). */
 type RpgTab = 'PLAYERS' | 'INTERLÚDIO' | 'ITENS';
-const RPG_TABS: RpgTab[] = ['PLAYERS', 'INTERLÚDIO', 'ITENS'];
+const RPG_TABS: RpgTab[] = ['PLAYERS', 'ITENS', 'INTERLÚDIO'];
+const ABA_ARTE: Record<RpgTab, string[]> = {
+  PLAYERS: ['/arte/icones/painel-players.png', '/arte/icones/titulo-identificacao.png'],
+  ITENS: ['/arte/icones/painel-itens.png', '/arte/icones/titulo-inventario.png'],
+  INTERLÚDIO: ['/arte/icones/painel-interludio.png', '/arte/icones/il-dormir.png'],
+};
+const ABA_LINHA: Record<RpgTab, NomeIcone> = { PLAYERS: 'pessoa', ITENS: 'mochila', INTERLÚDIO: 'lua' };
 
 function loadThumb(id: number): string | null {
   try {
@@ -1156,6 +1160,8 @@ export class Shell {
                 this.renderRpg(true);
               },
             },
+            // o ícone pintado da aba (arte/icones/painel-<nome>.png); até chegar, um do kit ou o de linha
+            arteOu(ABA_ARTE[t], ic(ABA_LINHA[t])),
             h('span', null, t),
             t === this.rpgTab ? tabRing() : null,
           ),
@@ -1889,7 +1895,7 @@ export class Shell {
     let data: unknown = null;
     if (sel?.kind === 'user') {
       const u = view.users.get(sel.id);
-      data = u ? [u.name, u.look, u.color, view.myId === sel.id] : null;
+      data = u ? [u.name, u.look, u.color, view.myId === sel.id, !!u.agachado, !!u.alto, !!view.map?.leitoItem(u.x, u.y)] : null;
     } else if (sel) data = this.selection()?.item ?? null;
     else {
       const map = view.map;
@@ -1904,12 +1910,7 @@ export class Shell {
     const key = sel ? `${sel.kind}${sel.id}` : `none${this.app.state.room?.id ?? 0}`;
     const fresh = key !== this.inspKey;
     const sig = this.inspState();
-    if (!force && !fresh && sig === this.inspSig) {
-      // só os números do agente mudaram: acerta no lugar, sem refazer o cartão (o retrato não reinicia)
-      const q = sel?.kind === 'user' ? this.campaign?.party.find((x) => x.id === sel.id) : undefined;
-      if (q) this.inspBody.querySelector<VitaisVivos>('.vitals')?.atualizar?.(q);
-      return;
-    }
+    if (!force && !fresh && sig === this.inspSig) return;
     this.inspSig = sig;
     const prevTab = this.inspTab;
     if (fresh) {
@@ -1963,7 +1964,7 @@ export class Shell {
     body.querySelectorAll('.itabs').forEach((t) => enter(t, 'up', 180, 360));
     this.drawRing(body, 380);
     body.querySelectorAll('.ipane > *').forEach((c, i) => enter(c, 'left', 260 + i * 70, 420));
-    body.querySelectorAll('.insp-tip, .tools, .tool-sel').forEach((c) => enter(c, 'fade', 300, 400));
+    body.querySelectorAll('.insp-tip, .tk-grupo').forEach((c, i) => enter(c, 'up', 260 + i * 70, 380));
   }
 
   private animateTabSwitch(body: HTMLElement, prev: InspTab) {
@@ -2565,79 +2566,60 @@ export class Shell {
     }
   }
 
+  /** O painel PERSONAGEM: só os comandos do tabuleiro (PV, PE, SAN e a mochila ficam em PLAYERS e ITENS, à direita). */
   private renderTokenInspector(body: HTMLElement, id: number) {
     const view = this.app.view;
     const u = view.users.get(id)!;
     const p = this.campaign?.party.find((x) => x.id === id);
     const color = p?.color ?? u.color;
     const net = this.app.net;
-    const carried: { l: Loot; from: string }[] = [];
     const ficha = this.fichasMapa.find((f) => f.personagem && f.personagem === u.look.charId);
     const map = view.map;
-    if (map) for (const it of [...map.allItems(), ...map.allWallItems()]) for (const l of it.loot ?? []) if (l.holder?.toLowerCase() === u.name.toLowerCase()) carried.push({ l, from: anyFurniName(it.defId) });
     const active = view.myId === id;
-    const ratio = p && p.capacity ? p.load / p.capacity : 0;
-    const load = p
-      ? h('div', { class: 'tk-load' }, h('span', null, `Carga ${fmt(p.load)} / ${fmt(p.capacity)}`), h('div', { class: `g-bar ${level(ratio)}` }, h('i', { style: `--w:${Math.min(100, ratio * 100)}%` })))
-      : null;
     body.append(
       h(
         'div',
         { class: 'insp-head' },
         this.polaroid(this.livePortrait(u.look, 262, p)),
-        this.headText(
-          u.name.toUpperCase(),
-          (active ? 'Sob seu comando: clique no chão para andar.' : 'Clique em Comandar (ou no retrato dele) para mover este personagem.') + (this.gm ? ' Q e E giram.' : ''),
-          load,
-        ),
+        this.headText(u.name.toUpperCase(), active ? 'Sob seu comando: clique no chão para andar.' : 'Clique em Comandar (ou no retrato) para mover esta peça.' + (this.gm ? ' Q e E giram.' : '')),
       ),
     );
-    const tools = h('div', { class: 'tools' });
-    const tool = (label: string, fn: () => void) => h('button', { class: 'tool', onclick: () => (sfx.click(), fn()) }, label);
-    if (!active) tools.append(tool('Comandar', () => view.setActive(id)));
-    tools.append(tool('Centralizar', () => view.focusUser(id)));
-    if (this.gm) {
-      tools.append(
-        h('button', { class: 'tool', title: 'Girar para a esquerda (Q)', onclick: () => this.turnToken(id, false) }, '↺ Girar'),
-        h('button', { class: 'tool', title: 'Girar para a direita (E)', onclick: () => this.turnToken(id, true) }, 'Girar ↻'),
-        this.stateTool('Armado', !!p?.armed, ficha ? 'Vem da mão: empunha a arma da mochila ou guarda as armas' : 'Com a arma na mão (retrato armado)', () => net.send({ t: 'tokenEdit', tokenId: id, armed: !p?.armed })),
-        ...(map?.leitoItem(u.x, u.y)
-          ? [this.stateTool('Na cama de cima', !!u.alto, 'Escalar o beliche: sobe pela escadinha para a cama de cima (e desce de volta)', () => net.send({ t: 'tokenEdit', tokenId: id, alto: !u.alto }))]
-          : []),
-        this.stateTool('Agachado', !!u.agachado, 'De cócoras (furtivo, atrás de um móvel): o corpo tem 1,0 m e um móvel mais baixo já dá cobertura', () => net.send({ t: 'tokenEdit', tokenId: id, agachado: !u.agachado })),
-        tool('Editar', () => this.tokenWin.open({ id, name: u.name, look: u.look, color, capacity: p?.capacity ?? 10 })),
-        tool('Remover', async () => (await askNote(`TIRAR ${u.name.toUpperCase()}?`, `${u.name} sai do tabuleiro. Os itens que carrega continuam registrados.`, 'Tirar do tabuleiro', true)) && net.send({ t: 'tokenRemove', tokenId: id })),
-      );
-    }
-    body.append(tools);
-    if (p) body.append(this.vitalsPanel(id, p));
+    const tool = (label: string, fn: () => void, title?: string) => h('button', { class: 'tool', title, onclick: () => (sfx.click(), fn()) }, label);
+    const grupo = (nome: string, ...bts: (HTMLElement | null)[]) => {
+      const lista = bts.filter((b): b is HTMLElement => !!b);
+      return lista.length ? h('div', { class: 'tk-grupo' }, h('span', { class: 'tk-rot' }, nome), h('div', { class: 'tools' }, ...lista)) : null;
+    };
+    const blocos = [
+      grupo(
+        'Mover',
+        active ? null : tool('Comandar', () => view.setActive(id), 'Os cliques no chão passam a mover esta peça'),
+        tool('Centralizar', () => view.focusUser(id), 'A câmera vai até a peça'),
+        this.gm ? h('button', { class: 'tool', title: 'Girar para a esquerda (Q)', onclick: () => this.turnToken(id, false) }, '↺ Girar') : null,
+        this.gm ? h('button', { class: 'tool', title: 'Girar para a direita (E)', onclick: () => this.turnToken(id, true) }, 'Girar ↻') : null,
+      ),
+      this.gm
+        ? grupo(
+            'Postura',
+            this.stateTool('Armado', !!p?.armed, ficha ? 'Vem da mão: empunha a arma da mochila ou guarda as armas' : 'Com a arma na mão (retrato armado)', () => net.send({ t: 'tokenEdit', tokenId: id, armed: !p?.armed })),
+            this.stateTool('Agachado', !!u.agachado, 'De cócoras (furtivo, atrás de um móvel): o corpo tem 1,0 m e um móvel mais baixo já dá cobertura', () => net.send({ t: 'tokenEdit', tokenId: id, agachado: !u.agachado })),
+            map?.leitoItem(u.x, u.y) ? this.stateTool('Cama de cima', !!u.alto, 'Escalar o beliche: sobe pela escadinha para a cama de cima (e desce de volta)', () => net.send({ t: 'tokenEdit', tokenId: id, alto: !u.alto })) : null,
+          )
+        : null,
+      this.gm
+        ? grupo(
+            'Peça',
+            ficha ? tool('Mochila', () => (sfx.paper(), this.abrirItens(id)), 'Abre a mochila na aba ITENS') : null,
+            tool('Editar', () => this.tokenWin.open({ id, name: u.name, look: u.look, color, capacity: p?.capacity ?? 10 }), 'Nome, aparência, cor e carga'),
+            tool('Remover', async () => (await askNote(`TIRAR ${u.name.toUpperCase()}?`, `${u.name} sai do tabuleiro. Os itens que carrega continuam registrados.`, 'Tirar do tabuleiro', true)) && net.send({ t: 'tokenRemove', tokenId: id }), 'Tira a peça do tabuleiro'),
+          )
+        : null,
+    ];
+    for (const b of blocos) if (b) body.append(b);
     if (this.gm) {
       const sc = h('select', { class: 'tool-sel', 'aria-label': 'Levar para outra cena' }, h('option', { value: '' }, 'Levar para outra cena…'), ...this.sceneList().filter((r) => r.id !== this.app.state.room?.id).map((r) => h('option', { value: String(r.id) }, r.name)));
       sc.addEventListener('change', () => sc.value && net.send({ t: 'tokenScene', tokenId: id, roomId: Number(sc.value) }));
-      body.append(sc);
+      body.append(h('div', { class: 'tk-grupo' }, h('span', { class: 'tk-rot' }, 'Cena'), sc));
     }
-    if (ficha) {
-      // com ficha, a mochila dela (um inventário só): o resto se faz na aba ITENS
-      const inv = ficha.ficha.inventario;
-      body.append(h('div', { class: 'itabs' }, h('span', { class: 'itab on' }, h('span', null, `MOCHILA (${inv.length})`), tabRing())));
-      const pane = h('div', { class: 'ipane' });
-      if (!inv.length) pane.append(h('p', { class: 'empty' }, 'Mochila vazia.'));
-      const lugar = { mao: 'na mão', vestido: 'vestido', mochila: 'na mochila' } as const;
-      for (const it of inv) {
-        const icone = it.tipo === 'cena' ? lootIcon((it.tipoCena as LootKind) || 'misc', 52) : lootIcon(kindDoItem(it), 52);
-        pane.append(h('div', { class: 'icard' }, h('div', { class: 'ic-icon' }, icone), h('div', { class: 'ic-text' }, h('b', null, regras.nomeDoItem(it)), h('small', null, `${fmt(espacosDoItemFicha(it))} esp. | ${lugar[regras.lugarDoItem(it)]}${(it.qtd ?? 1) > 1 ? ` · x${it.qtd}` : ''}`))));
-      }
-      pane.append(h('button', { class: 'add-item', onclick: () => (sfx.paper(), this.abrirItens(id)) }, 'Abrir na aba ITENS'));
-      body.append(pane);
-      return;
-    }
-    body.append(h('div', { class: 'itabs' }, h('span', { class: 'itab on' }, h('span', null, `CARREGANDO (${carried.length})`), tabRing())));
-    const pane = h('div', { class: 'ipane' });
-    if (!carried.length) pane.append(h('p', { class: 'empty' }, 'Nada nas mãos (itens desta cena).'));
-    carried.forEach(({ l, from }) =>
-      pane.append(h('div', { class: 'icard' }, h('div', { class: 'ic-icon' }, lootIcon(l.kind, 52)), h('div', { class: 'ic-text' }, h('b', null, l.name), h('small', null, `Espaços: ${fmt(l.espacos)} | ${lootKindLabel(l.kind)} · ${from}`)))),
-    );
-    body.append(pane);
   }
 
   /** Abre a aba ITENS na mochila do agente (id da peça). */
@@ -2697,72 +2679,6 @@ export class Shell {
       );
     });
     clear(el).append(...rows);
-  }
-
-  /** Ficha no inspetor do personagem: PV, PE e SAN com − e + (Shift = de 5 em 5) e o total editável. */
-  private vitalsPanel(id: number, p: PartyMember) {
-    const net = this.app.net;
-    const wrap = h('div', { class: 'vitals' }) as VitaisVivos;
-    const linhas: { k: VitalKey; n: HTMLElement; fill: HTMLElement; total: HTMLElement }[] = [];
-    const v0 = p.vitals ?? DEFAULT_VITALS;
-    for (const k of VITAL_KEYS) {
-      const cur = v0[k];
-      const max = v0[`${k}Max`];
-      const change = (delta: number) => (e: MouseEvent) => {
-        sfx.click();
-        net.send({ t: 'vitals', tokenId: id, key: k, delta: e.shiftKey ? delta * 5 : delta });
-      };
-      const total = h('input', { class: 'vt-max', type: 'number', min: '1', max: '999', value: String(max), 'aria-label': `${VITAL_NAME[k]} total`, title: 'Total' });
-      total.addEventListener('change', () => {
-        const n = Number(total.value);
-        if (Number.isFinite(n) && n >= 1) net.send({ t: 'vitals', tokenId: id, key: k, max: n });
-      });
-      const w = Math.max(0, Math.min(100, (cur / max) * 100));
-      const n = h('strong', { class: 'vt-n' }, String(cur));
-      const fill = h('i', { style: `--w:${w}%` });
-      const maxFixo = h('span', null, String(max));
-      wrap.append(
-        h(
-          'div',
-          { class: `vt ${k}` },
-          h('b', { class: 'vt-k', title: VITAL_NAME[k] }, VITAL_LABEL[k]),
-          this.gm ? h('button', { class: 'vt-btn', title: `Tirar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Tirar ${VITAL_NAME[k]}`, onclick: change(-1) }, '−') : null,
-          n,
-          h('span', { class: 'vt-bar' }, fill),
-          this.gm ? total : maxFixo,
-          this.gm ? h('button', { class: 'vt-btn', title: `Dar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Dar ${VITAL_NAME[k]}`, onclick: change(1) }, '+') : null,
-        ),
-      );
-      linhas.push({ k, n, fill, total: this.gm ? total : maxFixo });
-    }
-    // as condições que saem pelo PV e pela SAN: o bloco só se refaz quando elas mudam
-    const conds = h('div', { style: 'display:contents' });
-    let chave = '';
-    const pintaConds = (q: PartyMember) => {
-      const labels = conditionLabels(vitalConditions(q.vitals));
-      const k = JSON.stringify(labels);
-      if (k === chave) return;
-      chave = k;
-      conds.replaceChildren(...(labels.length ? [h('div', { class: 'vt-conds' }, ...labels.map((l) => h('span', { class: 'vt-cond' }, l)))] : []));
-    };
-    pintaConds(p);
-    wrap.append(conds);
-    // acerta os números e as barras no lugar (nada é recriado: a tela não pisca)
-    wrap.atualizar = (q) => {
-      const v = q.vitals ?? DEFAULT_VITALS;
-      for (const l of linhas) {
-        const cur = v[l.k];
-        const max = v[`${l.k}Max`];
-        const t = String(cur);
-        if (l.n.textContent !== t) l.n.textContent = t;
-        l.fill.style.setProperty('--w', `${Math.max(0, Math.min(100, (cur / max) * 100))}%`);
-        if (l.total instanceof HTMLInputElement) {
-          if (document.activeElement !== l.total) l.total.value = String(max);
-        } else if (l.total.textContent !== String(max)) l.total.textContent = String(max);
-      }
-      pintaConds(q);
-    };
-    return wrap;
   }
 
   /** Barras da carta de PLAYERS: PV, PE e SAN com − e + (Shift: de 5 em 5); clicar na barra muda o total. */

@@ -15,6 +15,7 @@ import { h } from './dom';
 import { musica, type NomeMusica } from './chiptune';
 import { Atravessa, COR, curto, fx, H, JOGOS, larguraTexto, Pong, PulaPula, semAcento, texto, W, type Botao, type Entrada, type Jogo } from './fliperamaJogos';
 import { sfx } from './sfx';
+import { vestirComArte } from './arteBar';
 
 const PASSO = 1000 / 60;
 /** a tela de verdade: 4 pixels de tela para cada pixel do jogo (o brilho e o rastro do tubo precisam de espaço) */
@@ -194,6 +195,16 @@ export class Fliperama implements TelaDoBar {
       ),
     );
     this.el.addEventListener('contextmenu', (e) => e.preventDefault());
+    // o gabinete pintado (arte/bar/fliperama-*.png), peça por peça, quando o Códex entregar
+    void vestirComArte(this.el, {
+      corpo: ['fliperama-corpo'],
+      moldura: ['fliperama-moldura'],
+      letreiro: ['fliperama-letreiro'],
+      painel: ['fliperama-painel'],
+      botao: ['fliperama-botao', 'fliperama-botao-apertado'],
+      alavanca: ['fliperama-alavanca-centro', 'fliperama-alavanca-cima', 'fliperama-alavanca-baixo', 'fliperama-alavanca-esq', 'fliperama-alavanca-dir'],
+      mini: ['fliperama-mini', 'fliperama-mini-apertado'],
+    });
   }
 
   // ---------------------------------------------------------------- a mesa

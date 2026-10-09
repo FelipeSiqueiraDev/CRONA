@@ -694,6 +694,38 @@ html:not(.modo-ficha) .p-insp .tools {
   gap: 0.6rem;
   margin: 0.4rem 0 1rem;
 }
+/* o painel do PERSONAGEM só com os comandos do tabuleiro: em grupos (Mover, Postura, Peça, Cena),
+   o nome do grupo em pixel com um fio de ouro até a borda, e os botões em três colunas */
+html:not(.modo-ficha) .p-insp .tk-grupo {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0 0 1.2rem;
+}
+html:not(.modo-ficha) .p-insp .tk-rot {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font: 600 1.15rem / 1 var(--r-pixel);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--r-ouro);
+}
+html:not(.modo-ficha) .p-insp .tk-rot::after {
+  content: '';
+  flex: 1;
+  height: 0.12rem;
+  background: linear-gradient(90deg, rgba(233, 169, 68, 0.45), transparent);
+}
+html:not(.modo-ficha) .p-insp .tk-grupo .tools {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+html:not(.modo-ficha) .p-insp .tk-grupo .tool {
+  width: 100%;
+}
+html:not(.modo-ficha) .p-insp .tk-grupo .tool-sel {
+  width: 100%;
+}
 html:not(.modo-ficha) .tool {
   min-height: 3.4rem;
   padding: 0.4rem 0.6rem;

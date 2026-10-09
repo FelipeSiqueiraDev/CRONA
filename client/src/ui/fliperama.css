@@ -11,6 +11,8 @@
   --f-corpo-2: #0a0820;
   --f-friso: #6a5aff;
   --f-brilho: #5ad8ff;
+  /* a borda da moldura em volta da tela (a pintada, quando chega, é mais larga) */
+  --f-borda-tela: var(--s2);
   /* a tela: a maior que cabe na largura e na altura, sobrando o letreiro e os controles */
   --tela-l: min(calc(var(--u) * 84), calc((100cqh - var(--u) * 76) * 160 / 192));
   position: absolute;
@@ -110,7 +112,7 @@
   box-sizing: content-box;
   width: var(--tela-l);
   aspect-ratio: 160 / 192;
-  padding: var(--s2);
+  padding: var(--f-borda-tela);
   border-radius: calc(var(--u) * 2.6);
   background: #040404;
   border: var(--borda) solid #2a2450;
@@ -139,7 +141,7 @@
 /* as linhas do tubo (uma a cada dois pixels do jogo) e o canto escuro do vidro */
 .flip-crt {
   position: absolute;
-  inset: var(--s2);
+  inset: var(--f-borda-tela);
   overflow: hidden;
   border-radius: calc(var(--u) * 1.4);
   pointer-events: none;
@@ -164,9 +166,9 @@
 /* o granulado do tubo (o canvas pequeno, trocado a cada dois quadros) */
 .flip-ruido {
   position: absolute;
-  inset: var(--s2);
-  width: calc(100% - var(--s2) * 2);
-  height: calc(100% - var(--s2) * 2);
+  inset: var(--f-borda-tela);
+  width: calc(100% - var(--f-borda-tela) * 2);
+  height: calc(100% - var(--f-borda-tela) * 2);
   border-radius: calc(var(--u) * 1.4);
   image-rendering: pixelated;
   pointer-events: none;
@@ -177,7 +179,7 @@
 /* o vidro curvo: um reflexo no canto de cima e a borda mais escura */
 .flip-vidro {
   position: absolute;
-  inset: var(--s2);
+  inset: var(--f-borda-tela);
   border-radius: calc(var(--u) * 1.4);
   pointer-events: none;
   background:
@@ -470,4 +472,148 @@
   .bar-conteudo:not(.hidden) .flip-tela {
     animation: none;
   }
+}
+
+/* =====================================================================
+   O GABINETE PINTADO (arte/bar/fliperama-*.png, seção 0B do pedido ao Códex)
+   Cada peça entra sozinha quando chega (arteBar.ts põe a classe tem-<peça> e a variável --a-<arquivo>).
+   As medidas são as do gabarito (gabarito-fliperama-celular.png, 960 de largura): o letreiro 960 × 220,
+   a moldura 768 × 896 com o buraco de 640 × 768 a 64 da borda, o painel 960 × 440 com a alavanca, os
+   dois mini e o botão nos lugares dele.
+   ===================================================================== */
+.flip.tem-corpo .flip-gabinete {
+  background: var(--a-fliperama-corpo) center top / 100% auto repeat-y;
+  box-shadow: none;
+}
+.flip.tem-letreiro .flip-letreiro {
+  flex: none;
+  width: calc(100% + var(--s4) * 2);
+  margin-inline: calc(var(--s4) * -1);
+  aspect-ratio: 960 / 220;
+  justify-content: center;
+  padding: 0;
+  background: var(--a-fliperama-letreiro) center / 100% 100% no-repeat;
+}
+.flip.tem-letreiro :is(.flip-lampadas, .flip-listras) {
+  display: none;
+}
+.flip.tem-moldura {
+  --f-borda-tela: calc(var(--tela-l) * 0.1);
+}
+.flip.tem-moldura .flip-moldura {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: 0 0 calc(var(--u) * 5) rgba(90, 216, 255, 0.18);
+}
+.flip.tem-moldura .flip-moldura::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: var(--a-fliperama-moldura) center / 100% 100% no-repeat;
+}
+.flip.tem-moldura .flip-vidro {
+  display: none;
+}
+/* o painel: as peças por cima, nos lugares do gabarito (em % do painel de 960 × 440) */
+.flip.tem-painel .flip-controles {
+  position: relative;
+  display: block;
+  flex: none;
+  width: calc(100% + var(--s4) * 2);
+  margin-inline: calc(var(--s4) * -1);
+  aspect-ratio: 960 / 440;
+  background: var(--a-fliperama-painel) center / 100% 100% no-repeat;
+}
+.flip.tem-painel .flip-dpad {
+  position: absolute;
+  left: 4.17%;
+  top: 13.64%;
+  width: 33.33%;
+  height: 72.73%;
+  --c: auto;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+}
+.flip.tem-painel .flip-meio {
+  position: absolute;
+  left: 41.67%;
+  top: 25.9%;
+  width: 16.67%;
+  height: 50.5%;
+  padding: 0;
+  justify-content: space-between;
+}
+.flip.tem-painel .flip-a {
+  position: absolute;
+  left: 68.54%;
+  top: 24.55%;
+  width: 23.33%;
+  height: auto;
+  aspect-ratio: 1;
+  margin: 0;
+}
+/* a alavanca: as setas viram áreas de toque invisíveis, e a imagem acompanha a direção apertada */
+.flip.tem-alavanca .flip-dpad {
+  filter: drop-shadow(0 calc(var(--u) * 1) calc(var(--u) * 1.5) rgba(0, 0, 0, 0.5));
+  background: var(--a-fliperama-alavanca-centro) center / 100% 100% no-repeat;
+}
+.flip.tem-alavanca .flip-dpad:has(.s-cima.on) {
+  background-image: var(--a-fliperama-alavanca-cima);
+}
+.flip.tem-alavanca .flip-dpad:has(.s-baixo.on) {
+  background-image: var(--a-fliperama-alavanca-baixo);
+}
+.flip.tem-alavanca .flip-dpad:has(.s-esq.on) {
+  background-image: var(--a-fliperama-alavanca-esq);
+}
+.flip.tem-alavanca .flip-dpad:has(.s-dir.on) {
+  background-image: var(--a-fliperama-alavanca-dir);
+}
+.flip.tem-alavanca :is(.flip-seta, .flip-dpad-meio),
+.flip.tem-alavanca .flip-seta.on {
+  background: none;
+  box-shadow: none;
+}
+.flip.tem-alavanca .flip-seta i {
+  display: none;
+}
+/* o botão grande: a imagem solta e a apertada (o A escrito por cima) */
+.flip.tem-botao .flip-a,
+.flip.tem-botao .flip-a.on {
+  border: 0;
+  border-radius: 50%;
+  background: var(--a-fliperama-botao) center / 100% 100% no-repeat;
+  box-shadow: none;
+  transform: none;
+}
+.flip.tem-botao .flip-a.on {
+  background-image: var(--a-fliperama-botao-apertado);
+}
+.flip.tem-botao .flip-a span {
+  color: rgba(60, 30, 6, 0.75);
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.5);
+}
+/* os dois mini (Menu e Sair): a peça de 160 × 72 e o nome embaixo */
+.flip.tem-mini .flip-mini i,
+.flip.tem-mini .flip-mini:active i {
+  width: calc(var(--u) * 14);
+  height: auto;
+  aspect-ratio: 160 / 72;
+  border-radius: 0;
+  background: var(--a-fliperama-mini) center / 100% 100% no-repeat;
+  box-shadow: none;
+  transform: none;
+}
+.flip.tem-mini .flip-mini:active i {
+  background-image: var(--a-fliperama-mini-apertado);
+}
+.flip.tem-painel.tem-mini .flip-mini i {
+  width: 100%;
+}
+/* com o letreiro, a moldura e o painel pintados, a tela é a maior que cabe entre eles
+   (a moldura tem 1,2 × a largura da tela e 1,4 × de altura; letreiro + painel = 660/960 da largura) */
+.flip.tem-moldura.tem-letreiro.tem-painel {
+  --tela-l: min(calc((min(100cqw, 480px) - var(--s4) * 2) / 1.2), calc((100cqh - min(100cqw, 480px) * 0.6875 - var(--s3) * 3) / 1.4));
 }

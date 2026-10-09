@@ -18,10 +18,13 @@ import type { Dados, Mesa, TelaDoBar } from './barJogos';
 import { musica } from './chiptune';
 import { h } from './dom';
 import { sfx } from './sfx';
+import { imagemDoBar, vestirComArte } from './arteBar';
 
 const D = bar.dardos;
 /** a cor das penas do dardo de cada lugar */
 const CORES = ['#e9a944', '#4f9bff', '#f0503f', '#79d98f'];
+/** o nome de cada cor no arquivo do dardo pintado */
+const NOME_COR = ['ouro', 'azul', 'vermelho', 'verde'];
 const curto = (n: string) => n.split(/\s+/)[0] ?? n;
 /** quanto tempo o dardo leva da mão até o alvo */
 const VOO = 340;
@@ -92,6 +95,8 @@ export class Dardos implements TelaDoBar {
       this.aviso,
       h('footer', { class: 'bj-rodape' }, this.nova, h('button', { class: 'bj-bt sair', type: 'button', onclick: () => this.m?.sair() }, 'Sair')),
     );
+    // a parede de lambri atrás do alvo (arte/bar/dardos-parede.png), quando chegar
+    void vestirComArte(this.el, { parede: ['dardos-parede'] });
     this.cv.addEventListener('pointerdown', (e) => {
       if (!this.minhaVez() || this.voando || this.p.vencedor !== null) return;
       try {
@@ -408,6 +413,15 @@ export class Dardos implements TelaDoBar {
   /** O alvo de verdade: os setores pretos e creme, os anéis vermelhos e verdes e os números em volta. */
   private alvo(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, dpr: number) {
     const A = bar.dardos.ANEL;
+    const fatia = (Math.PI * 2) / 20;
+    // o alvo pintado (arte/bar/dardos-alvo.png): 1024 × 1024, o centro no meio e o duplo de fora com raio 400
+    const arte = imagemDoBar('dardos-alvo');
+    if (arte) {
+      const lado = r * (1024 / 400);
+      g.drawImage(arte, cx - lado / 2, cy - lado / 2, lado, lado);
+      this.numeros(g, cx, cy, r, fatia);
+      return;
+    }
     // a borda preta com os números
     g.fillStyle = '#141414';
     g.beginPath();
@@ -416,7 +430,6 @@ export class Dardos implements TelaDoBar {
     g.strokeStyle = '#6b6b6b';
     g.lineWidth = 2 * dpr;
     g.stroke();
-    const fatia = (Math.PI * 2) / 20;
     const anel = (r0: number, r1: number, cor: (i: number) => string) => {
       for (let i = 0; i < 20; i++) {
         const a0 = -Math.PI / 2 - fatia / 2 + i * fatia;
@@ -464,7 +477,11 @@ export class Dardos implements TelaDoBar {
     g.beginPath();
     g.arc(cx, cy, r * 1.22, 0, Math.PI * 2);
     g.fill();
-    // os números
+    this.numeros(g, cx, cy, r, fatia);
+  }
+
+  /** Os números em volta do alvo (o anel liso de fora). */
+  private numeros(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, fatia: number) {
     g.fillStyle = '#f3e9d8';
     g.font = `700 ${Math.round(r * 0.13)}px 'Pixel Numeros', 'Pixelify Sans', monospace`;
     g.textAlign = 'center';
@@ -482,6 +499,14 @@ export class Dardos implements TelaDoBar {
     g.translate(x, y);
     if (giro) g.rotate(giro);
     g.globalAlpha *= 1 - alfa * 0.3;
+    // o dardo pintado (arte/bar/dardo-<cor>.png, 128 × 128, a ponta no pixel 16, 112): do tamanho do desenhado
+    const arte = imagemDoBar(`dardo-${NOME_COR[CORES.indexOf(cor)] ?? 'ouro'}`);
+    if (arte) {
+      const e = (27 * k) / 96;
+      g.drawImage(arte, -16 * e, -112 * e, 128 * e, 128 * e);
+      g.restore();
+      return;
+    }
     g.fillStyle = 'rgba(0,0,0,0.35)';
     g.beginPath();
     g.ellipse(3 * k, 3 * k, 4 * k, 2 * k, 0, 0, Math.PI * 2);
