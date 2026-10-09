@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 49;
+export const SEDE_REV = 50;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -529,7 +529,7 @@ const ROOMS: RoomSpec[] = [
     lamp: 'fluorescent',
     name: SEDE + 'Sala de Tecnologia',
     was: [SEDE + 'Sala de Reunião'],
-    description: 'A mesa em U com os três postos na parede do fundo, embaixo do painel das câmeras; os servidores, a impressora e as fitas na parede da esquerda; o quadro branco no meio do carpete roxo.',
+    description: 'A sala mais da hora da Sede, cheia de telas: a mesa em U com os três postos embaixo da tela enorme do C.R.I.S, o painel de telas, a torre de monitores de tubo, a mesa holográfica no meio do carpete roxo, a bancada de eletrônica com o ferro de solda fumegando, os servidores, um monitor travado na tela de DERROTA e a lixeira transbordando de embalagens.',
     layout: planBottom(13, 10, 10),
     floorName: 'Subsolo',
     style: 'carpete',
@@ -539,28 +539,41 @@ const ROOMS: RoomSpec[] = [
       ['portal', 10, 9, 0],
       // a mesa em U na parede do fundo: os três postos, cada um com a sua cadeira dentro do U
       ['desk_u', 4, 0, 4],
-      ['chair_office', 5, 1, 0],
-      ['chair_office', 6, 1, 0],
-      ['chair_office', 8, 1, 0],
-      // na parede da esquerda: os servidores com o nobreak, a impressora, as fitas e o bebedouro
-      ['server_rack', 0, 1, 2],
+      ['cadeira_gamer', 5, 1, 0],
+      ['cadeira_gamer', 6, 1, 0],
+      ['cadeira_gamer', 8, 1, 0],
+      // ao lado da mesa em U: a torre de monitores de tubo e o frigobar de energético
+      ['torre_crt', 10, 0, 4],
+      ['frigobar_energetico', 12, 0, 4],
+      // na parede da esquerda: o rack moderno e o servidor com o nobreak, a impressora, as fitas e o bebedouro
+      ['rack_moderno', 0, 1, 2],
       ['server_rack', 0, 2, 2],
       ['ups', 0, 3, 2],
       ['cables_floor', 1, 2, 4],
       ['printer_dot', 0, 5, 2],
       ['media_shelf', 0, 7, 2],
       ['water_cooler', 0, 9, 2],
-      // o quadro branco no meio, virado para a sala, e as caixas de peças no canto
-      ['whiteboard', 5, 5, 4],
+      // no meio, a mesa holográfica com duas cadeiras; na parede da direita, a bancada de eletrônica; as caixas de
+      // peças e a lixeira transbordando nos cantos
+      ['mesa_holografica', 5, 5, 4],
+      ['cadeira_gamer', 4, 6, 2],
+      ['cadeira_gamer', 7, 5, 6],
+      ['bancada_eletronica', 11, 4, 6],
+      ['cadeira_gamer', 10, 5, 2],
       ['parts_boxes', 11, 8, 4],
       ['parts_boxes', 12, 8, 6],
+      ['lixeira_lanches', 9, 8, 0],
       ...lamps([3, 3], [6, 2], [8, 7]),
     ],
     wall: [
-      ['monitor_wall', 'r', 0, 8, 2.63],
-      ['shelf_wall', 'r', 0, 4.8, 2.45],
+      // a tela enorme do C.R.I.S em cima da mesa em U (o sistema da Ordem que procura o paranormal) e o painel de telas
+      ['tela_cris', 'r', 0, 7.0, 1.9],
+      ['painel_telas', 'r', 0, 2.4, 2.3],
       ['ac_wall', 'r', 0, 11.6, 3.9],
-      ['shelf_wall', 'l', 0, 5, 2.63],
+      // na parede da esquerda: o monitor travado na tela de DERROTA, o mural de polaroids e a prateleira
+      ['tela_derrota', 'l', 0, 4.4, 2.6],
+      ['mural_polaroids', 'l', 0, 8.0, 2.6],
+      ['shelf_wall', 'l', 0, 6.2, 3.3],
     ],
     links: [[10, 9, 'corredor']],
   },
@@ -731,17 +744,11 @@ const ROOMS: RoomSpec[] = [
       ['medical_cabinet', 15, 1, 4],
       ['cabinet_file', 18, 1, 4],
       ['sink', 19, 1, 4],
-      // o posto da enfermagem no canto de baixo: o balcão em L, com a mesa e o computador dentro
-      ['lab_bench', 13, 10, 2],
-      ['lab_bench', 14, 10, 4],
-      ['lab_bench', 16, 10, 4],
-      ['lab_bench', 18, 10, 4],
-      ['desk_metal', 16, 12, 4],
-      ['computer_old', 16, 12, 4],
-      ['chair_office', 16, 13, 0],
+      // o posto da enfermagem no canto de baixo: um balcão só, inteiro, com o computador em cima (09/10, arte do Códex)
+      ['posto_enfermagem', 13, 11, 4],
       // o carrinho no corredor entre os cubículos
       ['trolley', 7, 7, 0],
-      ...lamps([4, 7], [10, 7], [16, 5], [17, 12]),
+      ...lamps([4, 7], [10, 7], [16, 5], [16, 9]),
     ],
     wall: [
       ['clock', 'r', 1, 19.5, 3.54],
