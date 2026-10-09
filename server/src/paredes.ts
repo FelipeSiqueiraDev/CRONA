@@ -10,6 +10,12 @@ import type { RoomData } from './db';
  * nenhuma sala montada fica com o defeito.
  */
 
+/**
+ * As manchas pintadas na própria parede (a fuligem do incêndio, 09/10): podem passar atrás do móvel, como uma mancha de
+ * verdade passa; não são consertadas nem contam como defeito.
+ */
+export const eManchaNaParede = (defId: string) => getWallFurni(defId)?.kind === 'fuligem';
+
 /** O pedaço da parede (ao longo dela, em casas) e a altura (base e topo) do item. */
 function extensao(w: Pick<WallItem, 'defId' | 'pos' | 'z'>) {
   const d = getWallFurni(w.defId);
@@ -52,6 +58,7 @@ export function desencostarItensDeParede(room: RoomData): string[] {
   const map = new RoomMap(room.heightmap, room.door);
   const feito: string[] = [];
   for (const w of room.wallItems) {
+    if (eManchaNaParede(w.defId)) continue;
     const topo = topoNaFrente(room.items, w);
     if (!topo) continue;
     const livre = (pos: number, z: number) =>

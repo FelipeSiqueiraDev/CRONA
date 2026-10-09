@@ -1,28 +1,42 @@
-import { getFurni, RoomMap, type Hint } from "@crona/shared";
+import { getFurni, RoomMap, type FloorItem, type Hint } from "@crona/shared";
 import type { Database, RoomData } from "./db";
 import { plan, type FloorSeed, type WallSeed } from "./seed";
-import { planBottom, planTop } from "./seedSede";
+import { planBottom } from "./seedSede";
 import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
 
 /**
- * O Orfanato Filhos do Dragão (09/10), o terceiro lugar da campanha: um casarão antigo e triste, comprido, com o
- * refeitório em cima, o salão no meio (com a sala de estudos, o quarto da diretora e os banheiros do lado) e a ala dos
- * dormitórios embaixo, doze quartinhos dos dois lados do corredor; fora, o pátio com as árvores, a estradinha de terra e
- * o anexo de concreto do fundo, onde ninguém devia entrar. A planta que serviu de base ficou com o Felipe.
+ * O Orfanato Filhos do Dragão (09/10), o terceiro lugar da campanha: um casarão comprido, de um andar só, com o refeitório
+ * numa ponta, o salão no meio (com a sala de estudos, o quarto da diretora e os banheiros do lado) e a ala dos dormitórios,
+ * doze quartinhos dos dois lados do corredor; fora, o pátio com as árvores, a estradinha de terra e o anexo de concreto.
+ *
+ * O ORFANATO PEGOU FOGO (o Felipe, 09/10): está todo destruído e queimado, cheio de escombros, o teto caído, fuligem nas
+ * paredes e cinza no chão. E virou o NINHO dos transtornados ("ninho" é como eles chamam a base deles, não ninho de bicho).
+ * O livro (LR p. 303): o culto dos transtornados é desorganizado, uma histeria coletiva; eles invadem lugares abandonados
+ * para MORAR e fazem do lugar inteiro uma casa de tortura e agonia, sem nenhuma sutileza: canibalismo, tortura e
+ * mutilação são o dia a dia. Então o orfanato é a casa de um bando selvagem: a fogueira no salão, os colchões largados
+ * por todo canto, o açougue no refeitório, a sala de tortura, a jaula com quem ainda está vivo, o sangue por todo lado e,
+ * no fim do corredor dos dormitórios, as frases escritas com sangue.
  *
  * Cômodos pequenos e cheios (o Felipe: "cuidado com as salas ENORMES com um monte de espaço"). Mesmo jeito da Fazenda:
  * cada cômodo é uma cena, a porta principal numa parede do fundo; subiu ORFANATO_REV, o orfanato é refeito no lugar.
  */
 export const ORFANATO = "Orfanato · ";
-export const ORFANATO_REV = 3;
+export const ORFANATO_REV = 8;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
-const lamps = (...at: [number, number][]): FloorSeed[] => at.map(([x, y]) => ["ceiling_lamp", x, y, 0] as FloorSeed);
+const de = (id: string, ...at: [number, number][]): FloorSeed[] => at.map(([x, y]) => [id, x, y, 0] as FloorSeed);
 const linha = (id: string, rot: number, ...at: [number, number][]): FloorSeed[] => at.map(([x, y]) => [id, x, y, rot] as FloorSeed);
 
 const CASA = "Orfanato";
 const FORA = "Pátio do Orfanato";
+
+/** As frases dos transtornados, escritas com sangue na parede do fim do corredor dos dormitórios. */
+export const FRASES =
+  "O Diabo observa e recompensa a dor extrema.\nO Sangue é o caminho para os desejos mais profundos.\nO corpo é o canal da revelação e o sofrimento é o idioma dos escolhidos.";
+
+/** O clima de dentro: escuro, a luz baixa e suja, a fumaça e a cinza ainda no ar. */
+const QUEIMADO = { darkness: 0.66, fog: 0.22, ambient: "#7a5a46", particles: ["smoke", "dust"] as CenaSpec["particles"] };
 
 // ------------------------------------------------------------------ o pátio (de fora)
 
@@ -33,8 +47,9 @@ function terrenoPatio(): Terreno {
   // a estradinha de terra: do portão até a porta da frente, e o ramal até o anexo do fundo
   t.linha([[12.5, 21], [12.5, 14], [11.5, 9], [12.5, 1]], "d", 2);
   t.linha([[12.5, 12], [16, 11], [18.5, 10.5]], "d", 2);
-  // o chão gasto em volta da árvore seca do balanço
+  // o chão gasto em volta da árvore seca do balanço e o chão queimado na frente da fachada (o fogo saiu pelas janelas)
   t.disco(5.5, 15.5, 2.4, 1.8, "d");
+  t.disco(12.5, 2.5, 7, 2.2, "d");
   return t;
 }
 const T_PATIO = terrenoPatio();
@@ -56,17 +71,24 @@ function patioPiso(): FloorSeed[] {
       f.push([x === 20 && y === 8 ? "iwall_window" : "iwall", x, y, 2]);
     }
   f.push(["iwall_door", 20, 10, 2], ["entrada", 19, 10, 2]);
-  // as árvores (grandes, nos cantos e no fundo) e os arbustos na beira da fachada
+  // as árvores (grandes, nos cantos e no fundo) e os arbustos
   for (const [x, y] of [
     [1, 4], [3, 3], [23, 4], [1, 20], [3, 19], [24, 18], [22, 20], [17, 17], [8, 5], [16, 4], [1, 10], [24, 14],
   ] as [number, number][])
     f.push(["arvore", x, y, 0]);
   f.push(["arvore", 5, 14, 0]);
-  for (const [x, y] of [[4, 1], [9, 1], [16, 1], [21, 1], [10, 7], [18, 14], [7, 19]] as [number, number][]) f.push(["arbusto", x, y, 0]);
+  for (const [x, y] of [[10, 7], [18, 14], [7, 19]] as [number, number][]) f.push(["arbusto", x, y, 0]);
+  // o que o fogo jogou para fora: telhas e madeira queimada na frente da fachada, a viga que caiu da varanda
+  f.push(["escombros", 4, 1, 0], ["escombros", 19, 2, 2], ["viga_queimada", 8, 1, 2], ["rubble", 15, 2, 0]);
+  f.push(...de("fuligem", [6, 2], [11, 2], [14, 2], [17, 1], [9, 3]), ...de("cinzas", [5, 3], [10, 2], [16, 3], [21, 1]));
+  // o rastro de sangue do anexo até a porta da frente
+  f.push(...de("blood_drops", [18, 10], [16, 11], [14, 11], [13, 8], [12, 5], [13, 3]), ...de("blood_pool", [19, 11]));
   // o banco debaixo da árvore seca e o caixote de brinquedos esquecido
   f.push(["bench", 6, 17, 4], ["crate_wood", 8, 15, 0]);
-  // a cerca da frente, com o portão no meio
-  for (let x = 0; x <= 25; x++) if (x < 11 || x > 13) f.push(["cerca", x, 21, 4]);
+  // do lado do anexo, os ganchos de carne ao ar livre, o tambor do lixo e o corpo largado
+  f.push(["gancho_carne", 17, 8, 2], ["trash_bin", 18, 13, 0], ["corpo_lencol", 15, 13, 2]);
+  // a cerca da frente, com o portão no meio (tombada aqui e ali)
+  for (let x = 0; x <= 25; x++) if ((x < 11 || x > 13) && x !== 4 && x !== 19) f.push(["cerca", x, 21, 4]);
   f.push(["porteira", 11, 21, 4]);
   return f;
 }
@@ -78,16 +100,17 @@ const CENAS: CenaSpec[] = [
     key: "patio",
     name: ORFANATO + "Pátio",
     description:
-      "O pátio da frente: o casarão comprido e triste, de janelas gradeadas, a estradinha de terra do portão até a porta, a árvore seca com o banco embaixo e, no fundo à direita, o anexo de concreto onde ninguém devia entrar.",
+      "O pátio da frente do orfanato que pegou fogo e virou a casa dos transtornados: a fachada comprida enegrecida, as janelas gradeadas estouradas, telhas e madeira queimada caídas na frente, a estradinha de terra do portão até a porta, a árvore seca com o banco embaixo e, no fundo à direita, o anexo de concreto, com ganchos de carne do lado de fora. Um rastro de sangue liga o anexo à porta.",
     layout: { heightmap: T_PATIO.planta(), door: { x: 12, y: 20, dir: 0 } },
     andar: FORA,
     style: "grama",
     aberto: true,
     terreno: T_PATIO.texto(),
-    darkness: 0.18,
-    ambient: "#c8b48a",
-    particles: ["dust"],
+    darkness: 0.3,
+    ambient: "#a8967a",
+    particles: ["dust", "smoke"],
     floor: patioPiso(),
+    wall: [],
     links: [
       [12, 1, "salao"],
       [13, 1, "salao"],
@@ -101,13 +124,11 @@ const CENAS: CenaSpec[] = [
     key: "salao",
     name: ORFANATO + "Salão",
     description:
-      "O salão do meio: o balcão em L onde as freiras davam as tarefas, as prateleiras de potes, o tapete persa gasto, o sofá e as poltronas. Para cima, o refeitório; do lado, a sala de estudos, o quarto da diretora e os banheiros; para baixo, a ala dos dormitórios.",
+      "O salão do meio, destruído pelo fogo e agora a sala comum do bando: o teto caiu num canto, as vigas queimadas atravessam o chão, o balcão em L está carbonizado e, no meio, uma fogueira acesa no chão de taco, com colchões imundos em volta e os crânios empilhados como troféu. Cheira a fumaça, carne e sangue. Para cima, o refeitório; do lado, a sala de estudos, o quarto da diretora e os banheiros; para baixo, a ala dos dormitórios.",
     layout: plan(12, 10, 5),
     andar: CASA,
     style: "taco",
-    darkness: 0.42,
-    ambient: "#b08a60",
-    particles: ["dust"],
+    ...QUEIMADO,
     floor: [
       ["portal", 1, 5, 2],
       ["portal", 9, 0, 4],
@@ -115,39 +136,40 @@ const CENAS: CenaSpec[] = [
       ["portal", 12, 5, 6],
       ["portal", 12, 8, 6],
       ["portal", 6, 9, 0],
-      // atrás do balcão: as prateleiras de potes e o armário
+      // o que sobrou atrás do balcão e o balcão em L, queimado
       ["prateleira", 1, 0, 4],
-      ["prateleira", 3, 0, 4],
       ["armario_cozinha", 5, 0, 4],
-      // o balcão em L e as banquetas
       ["counter_wood", 1, 2, 4],
       ["counter_wood", 3, 2, 4],
       ["counter_wood", 5, 2, 2],
-      ["stool", 2, 3, 0],
       ["stool", 3, 3, 0],
-      ["stool", 4, 3, 0],
-      // a sala de estar: o tapete, o sofá, as poltronas e a mesinha do meio
-      ["rug_ornate", 7, 3, 0],
-      ["sofa_velvet", 7, 2, 4],
-      ["armchair", 10, 4, 6],
-      ["armchair", 10, 5, 6],
-      ["table_small", 8, 4, 0],
-      ["chair_wood", 7, 7, 0],
-      ["floor_lamp", 11, 1, 0],
-      ["bookshelf", 10, 0, 4],
-      ["plant", 1, 8, 0],
-      ["plant", 12, 0, 0],
-      ["candelabra", 2, 7, 0],
-      ["books_stack", 2, 1, 0],
-      ...lamps([3, 5], [8, 5], [9, 8]),
+      // o teto que caiu no canto de cima e as vigas atravessadas no chão
+      ["escombros", 10, 0, 0],
+      ["escombros", 3, 6, 2],
+      ["viga_queimada", 11, 5, 0],
+      // a sala comum do bando: a fogueira no meio do chão, os colchões em volta e a pilha de crânios, o troféu deles
+      ["fogueira", 7, 3, 0],
+      ["colchao_chao", 5, 4, 2],
+      ["colchao_chao", 9, 5, 0],
+      ["colchao_chao", 6, 6, 0],
+      ["pilha_cranios", 9, 7, 0],
+      ["skull", 7, 6, 2],
+      ["food_tray", 8, 6, 0],
+      ["trash_bin", 1, 9, 0],
+      ["armchair", 10, 3, 6, oculta("Poltrona", "O estofado foi rasgado por dentro, com as unhas. Lá dentro, cabelo de criança amarrado com fita.")],
+      ["candelabra", 2, 8, 0],
+      ...de("blood_pool", [2, 4], [6, 8], [10, 2]),
+      ...de("blood_drops", [4, 4], [5, 5], [7, 8], [10, 7], [11, 1], [1, 7]),
+      ...de("fuligem", [2, 1], [4, 1], [6, 2], [9, 2], [1, 9]),
+      ...de("cinzas", [3, 5], [5, 7], [8, 8], [10, 8]),
     ],
     wall: [
-      ["clock", "r", 0, 8.5, 3.45],
-      ["painting", "r", 0, 6.4, 3.22],
-      ["window_barred", "l", 1, 2.5, 2.2],
+      ["fuligem_parede", "r", 0, 2.6, 0.3],
+      ["fuligem_parede", "r", 0, 7.5, 0.3],
+      ["fuligem_parede", "l", 1, 1.8, 0.3],
       ["window_barred", "l", 1, 8.5, 2.2],
-      ["sconce", "l", 1, 4.0, 2.9],
-      ["sconce", "l", 1, 7.0, 2.9],
+      ["sigil_scratch", "l", 1, 3.4, 2.4],
+      ["tally_marks", "r", 0, 5.0, 2.6],
     ],
     links: [
       [1, 5, "patio"],
@@ -158,45 +180,46 @@ const CENAS: CenaSpec[] = [
       [6, 9, "dormitorios"],
     ],
     plan: { x: 0, y: 8 },
-    chao: [[11, 7, "Boneca de Pano", 0.5, "misc"]],
+    chao: [[4, 8, "Boneca de Pano", 0.5, "misc"]],
   },
   {
     key: "refeitorio",
     name: ORFANATO + "Refeitório",
     description:
-      "O refeitório comprido: a cozinha encostada na parede do fundo (o fogão a lenha, a pia, os armários) e as duas mesas compridas com os bancos de madeira, onde trinta crianças comiam em silêncio.",
+      "O refeitório comprido, onde o fogo começou, virou o açougue do bando: a cozinha do fundo derreteu, mas o fogão a lenha voltou a ser aceso; o teto desabou em cima de uma das mesas compridas, e na outra, coberta de sangue, há facas, ossos raspados e um corpo pela metade. Nos ganchos, pendurado, o que eles comem.",
     layout: planBottom(14, 6, 9),
     andar: CASA,
     style: "taco",
-    darkness: 0.45,
-    ambient: "#b08a60",
-    particles: ["dust", "smoke"],
+    ...QUEIMADO,
+    darkness: 0.7,
     floor: [
       ["portal", 9, 5, 0],
-      // a cozinha, na parede do fundo
+      // a cozinha queimada, na parede do fundo
       ["armario_cozinha", 0, 0, 4],
-      ["fogao_lenha", 2, 0, 4, undefined, 1],
+      ["fogao_lenha", 2, 0, 4],
       ["pia_cozinha", 4, 0, 4],
-      ["prateleira", 6, 0, 4],
       ["armario_cozinha", 8, 0, 4],
-      ["prateleira", 12, 0, 4],
-      // as duas mesas compridas, com os bancos dos dois lados
-      ["mesa_jantar", 1, 2, 4],
-      ["mesa_jantar", 7, 2, 4],
-      ...linha("bench", 4, [1, 1], [3, 1], [7, 1], [9, 1]),
-      ...linha("bench", 0, [1, 4], [3, 4], [7, 4], [9, 4]),
-      ["chair_wood", 11, 2, 6],
-      ["candles", 2, 2, 0],
-      ["candles", 9, 3, 0],
-      ["crate_wood", 13, 3, 0],
+      // uma mesa comprida inteira, que virou a bancada do açougue; a outra soterrada pelo teto
+      ["mesa_jantar", 1, 2, 4, oculta("Mesa", "Facas, um cutelo, ossos raspados e um corpo aberto pela metade. Ao lado, pratos com restos. Comem aqui mesmo.")],
+      ...linha("bench", 0, [1, 4]),
+      ["corpo_lencol", 1, 1, 2],
+      // os ganchos de carne, no canto da cozinha
+      ["gancho_carne", 11, 2, 0],
+      ["gancho_carne", 6, 1, 0],
+      ["escombros", 8, 2, 0],
+      ["viga_queimada", 10, 4, 2],
       ["barrel", 13, 4, 0],
-      ["crate_wood", 12, 5, 0],
-      ...lamps([5, 3], [11, 3]),
+      ["crate_wood", 13, 3, 0],
+      ...de("blood_pool", [3, 3], [5, 4], [12, 4]),
+      ...de("blood_drops", [2, 5], [6, 5], [10, 4], [8, 5], [12, 2]),
+      ...de("fuligem", [1, 0], [3, 0], [6, 0], [7, 1], [12, 0], [13, 1]),
+      ...de("cinzas", [0, 2], [5, 1], [11, 4], [6, 4]),
     ],
     wall: [
-      ["clock", "r", 0, 10.5, 3.45],
-      ["window_barred", "l", 0, 2.5, 2.2],
-      ["quadro_fazenda", "r", 0, 11.2, 2.6],
+      ["fuligem_parede", "r", 0, 3.0, 0.3],
+      ["fuligem_parede", "r", 0, 6.0, 0.3],
+      ["fuligem_parede", "r", 0, 11.0, 0.3],
+      ["fuligem_parede", "l", 0, 2.5, 0.3],
     ],
     links: [[9, 5, "salao"]],
     plan: { x: 0, y: 0 },
@@ -205,59 +228,62 @@ const CENAS: CenaSpec[] = [
     key: "estudos",
     name: ORFANATO + "Sala de Estudos",
     description:
-      "A sala de estudos: as estantes de livros velhos, o quadro com as contas pela metade e as duas mesas redondas com as cadeiras empurradas, como se tivessem saído correndo.",
+      "A sala de estudos virou a sala de tortura: no meio, uma mesa de aço com as correias, o chão embaixo preto de sangue; a mesa das ferramentas encostada; as correntes na parede. As estantes caídas, os livros virados cinza. No quadro, por cima das contas pela metade, alguém riscou o mesmo símbolo, várias vezes.",
     layout: plan(7, 6, 2),
     andar: CASA,
     style: "carpete",
-    darkness: 0.45,
-    ambient: "#b08a60",
+    ...QUEIMADO,
     floor: [
       ["portal", 1, 2, 2],
       ["bookshelf", 1, 0, 4],
-      ["bookshelf", 3, 0, 4],
-      ["whiteboard", 5, 0, 4],
-      ["table_round", 3, 2, 0],
-      ["table_round", 6, 2, 0],
-      ["chair_wood", 2, 3, 2],
-      ["chair_wood", 3, 4, 0],
-      ["chair_wood", 5, 2, 6],
-      ["chair_wood", 6, 4, 0],
-      ["chair_wood", 7, 1, 4],
-      ["books_stack", 1, 5, 0],
-      ["table_chess", 7, 5, 0],
-      ...lamps([3, 2], [6, 3]),
+      ["whiteboard", 5, 0, 4, oculta("Quadro", "As contas de uma aula de matemática e, por cima delas, o mesmo símbolo riscado com carvão, cada vez maior, até rasgar o quadro.")],
+      ["mesa_contencao", 3, 2, 4, oculta("Mesa de tortura", "As correias estão frouxas de tanto uso. Embaixo, um balde, unhas e dentes.")],
+      ["table_tools", 6, 3, 6],
+      ["chair_wood", 6, 5, 0],
+      ["viga_queimada", 1, 3, 0],
+      ...de("books_stack", [5, 4], [7, 5]),
+      ...de("blood_pool", [5, 2], [3, 5]),
+      ...de("blood_drops", [4, 1], [2, 4], [6, 1]),
+      ...de("fuligem", [3, 0], [4, 0], [1, 1]),
+      ...de("cinzas", [2, 1], [5, 5]),
     ],
-    wall: [["window_barred", "l", 1, 4.5, 2.2]],
+    wall: [
+      ["fuligem_parede", "r", 0, 3.5, 0.3],
+      ["chains_wall", "l", 1, 4.0, 2.4],
+      ["window_barred", "l", 1, 5.1, 2.2],
+    ],
     links: [[1, 2, "salao"]],
     plan: { x: 13, y: 8 },
-    chao: [[4, 5, "Blocos de Montar", 1, "misc"]],
+    chao: [[2, 5, "Blocos de Montar", 1, "misc"]],
   },
   {
     key: "diretora",
     name: ORFANATO + "Quarto da Diretora",
     description:
-      "O quarto da diretora: a cama arrumada demais, o guarda-roupa trancado, a cômoda e a escrivaninha com as cartas que ela nunca mandou.",
+      "O quarto da diretora, o único que o fogo quase não pegou, e por isso o pior: a cama coberta de sangue velho, o guarda-roupa arrombado por dentro e a escrivaninha com as cartas que ela nunca mandou.",
     layout: plan(6, 6, 3),
     andar: CASA,
     style: "taco",
-    darkness: 0.5,
-    ambient: "#a87a50",
+    ...QUEIMADO,
+    darkness: 0.6,
     floor: [
       ["portal", 1, 3, 2],
-      ["guarda_roupa", 1, 0, 4, oculta("Guarda-roupa", "Trancado por dentro. Pela fresta, vê-se um hábito de freira pendurado e, no fundo, uma caixa de metal com um cadeado novo.")],
+      ["guarda_roupa", 1, 0, 4, oculta("Guarda-roupa", "Arrombado POR DENTRO: as portas estão estufadas para fora. Lá dentro, um hábito de freira rasgado e uma caixa de metal com um cadeado novo.")],
       ["comoda", 3, 0, 4],
       ["nightstand", 5, 0, 4],
-      ["cama_solteiro", 6, 0, 4],
+      ["cama_solteiro", 6, 0, 4, oculta("Cama", "O colchão está ensopado de sangue velho, endurecido. Há marcas de unha na cabeceira, de dentro para fora.")],
       ["rug_worn", 3, 2, 0],
-      ["desk_wood", 1, 5, 0, oculta("Escrivaninha", "Cartas para a Ordem, datadas e assinadas, nenhuma enviada. A última termina no meio de uma frase.")],
+      ["desk_wood", 1, 5, 0, oculta("Escrivaninha", "Cartas para a Ordem, datadas e assinadas, nenhuma enviada. A última termina no meio de uma frase: \"eles não estão mais doentes, estão\"")],
       ["chair_wood", 2, 4, 4],
       ["cabinet_file", 6, 5, 0],
       ["candles", 5, 1, 0],
-      ...lamps([4, 3]),
+      ...de("blood_pool", [5, 2], [4, 4]),
+      ...de("blood_drops", [3, 1], [6, 4], [2, 2], [3, 5]),
+      ...de("fuligem", [6, 3]),
     ],
     wall: [
       ["mirror", "r", 0, 4.0, 2.72],
-      ["painting", "l", 1, 1.7, 2.54],
+      ["tally_marks", "l", 1, 1.7, 2.6],
       ["window_barred", "l", 1, 5.0, 2.2],
     ],
     links: [[1, 3, "salao"]],
@@ -266,30 +292,31 @@ const CENAS: CenaSpec[] = [
   {
     key: "banheiros",
     name: ORFANATO + "Banheiros",
-    description: "Os banheiros das crianças: os vasos em fila com as divisórias, as duas banheiras de ferro e as pias de pedra. O chão nunca seca.",
+    description:
+      "Os banheiros das crianças: os vasos quebrados, uma divisória caída, e as duas banheiras de ferro cheias até a borda de uma água escura que não é água. O chão nunca secou.",
     layout: plan(8, 6, 3),
     andar: CASA,
     style: "xadrez",
-    darkness: 0.48,
+    ...QUEIMADO,
+    darkness: 0.68,
     floor: [
       ["portal", 1, 3, 2],
       ["toilet", 1, 0, 4],
       ["stall_panel", 2, 0, 4],
       ["toilet", 3, 0, 4],
-      ["stall_panel", 4, 0, 4],
       ["toilet", 5, 0, 4],
-      ["banheira", 7, 0, 4],
+      ["banheira", 7, 0, 4, oculta("Banheira", "Cheia até a borda de sangue escuro, frio. Lá no fundo, alguma coisa encosta na mão de quem procura.")],
       ["banheira", 8, 0, 4],
       ["sink", 8, 3, 6],
-      ["sink", 8, 4, 6],
-      ["puddle", 4, 3, 0],
-      ["puddle", 6, 4, 0],
-      ["crate_wood", 1, 5, 0],
-      ...lamps([4, 2]),
+      ["escombros", 4, 3, 0],
+      ...de("blood_pool", [7, 2], [8, 2], [3, 2], [6, 4]),
+      ...de("blood_drops", [2, 2], [5, 1], [6, 2], [7, 5], [2, 4]),
+      ...de("puddle", [3, 4], [5, 5]),
+      ...de("fuligem", [4, 0], [6, 0]),
     ],
     wall: [
       ["mirror", "l", 1, 1.5, 2.72],
-      ["mirror", "l", 1, 5.0, 2.72],
+      ["fuligem_parede", "r", 0, 6.0, 0.3],
     ],
     links: [[1, 3, "salao"]],
     plan: { x: 13, y: 20 },
@@ -298,37 +325,42 @@ const CENAS: CenaSpec[] = [
     key: "dormitorios",
     name: ORFANATO + "Ala dos Dormitórios",
     description:
-      "O corredor comprido dos dormitórios: doze quartinhos, seis de cada lado, cada um com a cama de ferro, o baú e a mesinha. As portas ficam abertas; em alguns, os brinquedos ainda estão no chão.",
-    layout: planTop(13, 23, 6),
+      "O corredor comprido dos dormitórios, o coração do Ninho: doze quartinhos queimados dos dois lados, onde o bando dorme amontoado, nas camas de ferro retorcidas e nos colchões largados no chão; o teto caído em cima de alguns; um quartinho fechado com grades, a jaula de quem ainda está vivo; crânios empilhados, sangue por todo lado. No fim do corredor, na parede, as frases escritas com sangue.",
+    layout: planBottom(13, 25, 6),
     andar: CASA,
     style: "madeira",
-    darkness: 0.52,
-    ambient: "#a8805a",
-    particles: ["dust"],
+    ...QUEIMADO,
+    darkness: 0.72,
     floor: dormitorios(),
     wall: [
+      // no fim do corredor, as frases escritas com sangue (o texto inteiro vai na pista)
+      ["escrita_sangue", "r", 0, 6.5, 0.6, { icon: "inspect", title: "Escrito com sangue", text: FRASES, visible: true }],
+      ["fuligem_parede", "r", 0, 1.8, 0.3],
+      ["fuligem_parede", "r", 0, 11.2, 0.3],
       ...[3, 11, 19].map((y): WallSeed => ["window_barred", "l", 0, y + 0.3, 2.2]),
-      ["painting", "r", 1, 10.5, 2.54],
+      ...[7, 15].map((y): WallSeed => ["fuligem_parede", "l", 0, y + 0.5, 0.3]),
+      // não tem luz: o fogo levou a fiação; as tochas que eles prenderam na parede
+      ...[5.5, 13.5, 21.5].map((y): WallSeed => ["tocha_parede", "l", 0, y, 2.4]),
     ],
-    links: [[6, 1, "salao"]],
+    links: [[6, 24, "salao"]],
     plan: { x: 0, y: 19 },
     chao: [
-      [2, 6, "Ursinho de Pelúcia", 1, "misc"],
-      [10, 10, "Trenzinho de Madeira", 1, "misc"],
-      [2, 14, "Soldadinhos de Chumbo", 0.5, "misc"],
-      [10, 18, "Pião de Madeira", 0.5, "misc"],
-      [1, 22, "Bolinhas de Gude", 0.5, "misc"],
+      [6, 6, "Ursinho de Pelúcia", 1, "misc"],
+      [5, 10, "Trenzinho de Madeira", 1, "misc"],
+      [7, 15, "Soldadinhos de Chumbo", 0.5, "misc"],
+      [5, 19, "Pião de Madeira", 0.5, "misc"],
+      [7, 22, "Bolinhas de Gude", 0.5, "misc"],
     ],
   },
   {
     key: "anexo",
     name: ORFANATO + "Anexo",
     description:
-      "O anexo de concreto do fundo do pátio: dois leitos de ferro com as correias, um saco de cadáver no canto, o ralo no meio e sangue que ninguém limpou. Não é enfermaria.",
+      "O anexo de concreto do fundo do pátio, que o fogo não pegou: dois leitos de ferro com as correias, um saco de cadáver no canto, o ralo no meio entupido e sangue que ninguém limpou. É aqui que os transtornados trazem o que caçam.",
     layout: plan(7, 5, 2),
     andar: FORA,
     style: "concreto",
-    darkness: 0.62,
+    darkness: 0.66,
     fog: 0.15,
     ambient: "#8a4a40",
     particles: ["dust"],
@@ -340,47 +372,73 @@ const CENAS: CenaSpec[] = [
       ["hospital_bed", 5, 0, 4],
       ["corpo_saco", 7, 0, 4],
       ["drain", 4, 3, 0],
-      ["blood_pool", 3, 3, 0],
-      ["blood_pool", 5, 4, 0],
-      ["blood_drops", 2, 4, 0],
-      ["blood_drops", 6, 3, 0],
-      ...lamps([4, 2]),
+      ...de("blood_pool", [3, 3], [5, 4], [2, 3], [6, 3]),
+      ...de("blood_drops", [2, 4], [6, 4], [4, 1], [1, 3], [7, 4]),
+      ["candelabra", 6, 1, 0],
     ],
     wall: [
       ["chains_wall", "r", 0, 2.0, 2.4],
       ["cage_lamp", "l", 1, 3.5, 3.2],
+      ["sigil_scratch", "r", 0, 6.0, 2.4],
     ],
     links: [[1, 2, "patio"]],
     plan: { x: 20, y: 7 },
   },
 ];
 
-/** A ala dos dormitórios: o corredor no meio (x 5 a 7) e seis quartinhos de cada lado, separados por paredes. */
+/**
+ * A ala dos dormitórios: o corredor no meio (x 5 a 7), a entrada embaixo (do salão) e o corredor correndo até a área
+ * aberta do fim (as duas fileiras de cima, sem quartinho), onde estão as frases na parede. Seis quartinhos de cada lado, de divisória baixa (dá para ver dentro), queimados: as camas
+ * retorcidas, o teto caído em cima de alguns, os colchões de trapo onde os transtornados dormem, os crânios e o sangue.
+ */
 function dormitorios(): FloorSeed[] {
-  const f: FloorSeed[] = [["portal", 6, 1, 4]];
+  const f: FloorSeed[] = [["portal", 6, 24, 0]];
   const CELA = 4;
+  /** O quartinho da direita que virou jaula: a porta fechada com grade, quem está lá dentro ainda está vivo. */
+  const JAULA = 4;
+  /** As fileiras da área aberta do fim do corredor, antes do primeiro quartinho. */
+  const FIM = 2;
   for (let i = 0; i < 6; i++) {
-    const y0 = 1 + i * CELA;
-    // as divisórias dos quartinhos (baixas: dá para ver quem está dentro): a do corredor, com o vão da porta no meio, e
-    // a de baixo, entre um e outro
+    const y0 = FIM + i * CELA;
+    // as divisórias: a do corredor, com o vão da porta no meio, e a de baixo (entre um quartinho e o outro)
     for (let y = y0; y < y0 + 3; y++) {
-      if (y === y0 + 1) continue;
+      if (y === y0 + 1) {
+        if (i === JAULA) f.push(["cell_bars", 8, y, 6]);
+        continue;
+      }
       f.push(["iwall_low", 4, y, 2]);
       f.push(["iwall_low", 8, y, 6]);
     }
     if (i < 5) for (const x of [0, 1, 2, 3, 4, 8, 9, 10, 11, 12]) f.push(["iwall_low", x, y0 + 3, 4]);
-    // o quartinho da esquerda: a cama na parede, a mesinha e o baú
-    f.push(["cama_solteiro", 0, y0, 4], ["table_small", 2, y0, 0], ["chest_army", 3, y0 + 2, 0]);
-    // o da direita, espelhado
-    f.push(["cama_solteiro", 12, y0, 4], ["table_small", 10, y0, 0], ["chest_army", 9, y0 + 2, 0]);
-    // a luz do corredor, uma sim, uma não
-    if (i % 2 === 0) f.push(["ceiling_lamp", 6, y0 + 1, 0]);
+    // em dois quartinhos o teto caiu em cima da cama; nos outros, a cama queimada e o baú
+    const desabou = (lado: number) => (i * 2 + lado) % 5 === 2;
+    if (desabou(0)) f.push(["escombros", 0, y0, 0], ["viga_queimada", 3, y0, 0]);
+    else f.push(["cama_queimada", 0, y0, 4], ["chest_army", 3, y0 + 2, 0]);
+    if (desabou(1)) f.push(["escombros", 11, y0, 0], ["viga_queimada", 9, y0, 0]);
+    else f.push(["cama_queimada", 12, y0, 4], ["chest_army", 9, y0 + 2, 0]);
+    // eles dormem amontoados: além da cama, um colchão no chão em cada quartinho, e os crânios de um deles
+    if (!desabou(0)) f.push(["colchao_chao", 1, y0 + 1, 0]);
+    if (!desabou(1) && i !== JAULA) f.push(["colchao_chao", 10, y0 + 1, 0]);
+    if (i % 2 === 1) f.push(["pilha_cranios", 2, y0 + 2, 0]);
+    // o sangue e a fuligem dos quartinhos e do corredor
+    f.push(["blood_pool", 2, y0 + 1, 0], ["blood_drops", 10, y0 + 1, 0], ["fuligem", 1, y0 + 2, 0], ["cinzas", 11, y0 + 2, 0]);
+    f.push(["blood_drops", 5 + (i % 3), y0 + 1, 0]);
   }
-  f.push(["plant", 5, 23, 0], ["bench", 6, 23, 0]);
+  // a área aberta do fim do corredor (a parede das frases): as velas acesas embaixo da escrita, os crânios, o sangue
+  f.push(...de("candles", [3, 1], [6, 1], [9, 1]), ["pilha_cranios", 5, 1, 0], ["skull", 7, 1, 0], ["skull", 1, 1, 2]);
+  f.push(...de("blood_pool", [4, 0], [6, 0], [8, 1], [11, 0], [6, 3]), ...de("blood_drops", [2, 0], [10, 1], [5, 3]));
+  f.push(["trash_bin", 7, 14, 0], ["food_tray", 5, 16, 0]);
   return f;
 }
 
 // ------------------------------------------------------------------ montagem
+
+/** O que sobrou dos móveis aparece vazio, revirado (a arte "!vazio" do Códex, quando existe). */
+const SAQUEADOS = new Set(["armario_cozinha", "prateleira", "comoda", "nightstand", "mesa_jantar", "mesa_cozinha", "bookshelf"]);
+
+function arruinar(room: RoomData) {
+  for (const it of room.items) if (SAQUEADOS.has(it.defId)) (it as FloorItem).vazio = true;
+}
 
 function ligar(built: Map<string, RoomData>) {
   for (const spec of CENAS) {
@@ -404,6 +462,7 @@ export function seedOrfanato(db: Database) {
   for (const spec of CENAS) {
     const room = montar(db, spec);
     estilo(room, spec);
+    arruinar(room);
     built.set(spec.key, room);
   }
   ligar(built);
@@ -437,6 +496,7 @@ function rebuildOrfanato(db: Database): boolean {
       db.rooms.push(room);
     }
     estilo(room, spec);
+    arruinar(room);
     built.set(spec.key, room);
   }
   ligar(built);

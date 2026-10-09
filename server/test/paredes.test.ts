@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { footprint, getFurni, getWallFurni } from '@crona/shared';
 import { seedDb, upgradeDb } from '../src/seed';
+import { eManchaNaParede } from '../src/paredes';
 
 /**
  * Item de parede atrás de móvel (08/10, pedido do Felipe): a TV, o quadro ou o painel de monitores na mesma parede em
@@ -17,7 +18,7 @@ test('nenhum item de parede fica atrás de um móvel encostado na mesma parede',
   for (const room of db.rooms) {
     for (const w of room.wallItems) {
       const wd = getWallFurni(w.defId);
-      if (!wd) continue;
+      if (!wd || eManchaNaParede(w.defId)) continue;
       // o pedaço da parede que o item ocupa (32 px por casa ao longo da parede) e a altura da base dele
       const meia = wd.w / 32 / 2;
       const a0 = w.pos - meia;

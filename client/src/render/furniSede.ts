@@ -1,6 +1,6 @@
 import { Z_PER_M } from '@crona/shared';
 import { rgba, rng, shade } from './color';
-import { B, drawers, faceRange, lightIf, N, V, wallBlock, type Builder, type FNode } from './furniKit';
+import { B, drawers, faceRange, lightIf, N, V, wallBlock, WARM, type Builder, type FNode } from './furniKit';
 import { OUTLINE, type LBox, type LFace, type Painter } from './painter';
 
 /*
@@ -968,6 +968,152 @@ export const SEDE_BUILDERS: Record<string, Builder> = {
           }
         }),
       ),
+    ]);
+  },
+
+  /** A viga do telhado que caiu no incêndio: comprida, carbonizada, rachada, com brasas ainda nas rachaduras. */
+  viga(def, _s, seed) {
+    const [carvao, brasa] = def.colors;
+    const D = def.depth;
+    const r = rng(seed + 31);
+    const torta = (r() - 0.5) * 0.3;
+    const b: LBox = [0.12, D - 0.12, 0.32 + torta, 0.68 + torta, 0, 0.3];
+    return V([
+      B(b, carvao, { edge: 0.06 }),
+      N(b, (p) => {
+        for (let i = 0; i < 4; i++) {
+          const u = 0.4 + r() * (D - 0.8);
+          p.line([u, 0.36 + torta, 0.31], [u + 0.25 + r() * 0.3, 0.64 + torta, 0.31], i % 2 ? brasa : shade(carvao, 0.25), 2);
+        }
+      }),
+    ]);
+  },
+
+  // ---------------------------------------------------------------- o covil dos transtornados (09/10, o Orfanato)
+  /** A fogueira no meio do chão: a roda de pedras, a lenha (e o que mais foi parar lá) em brasa e o fogo. */
+  fogueira(def, state, seed) {
+    const [pedra, lenha] = def.colors;
+    const on = state === 0;
+    const r = rng(seed + 41);
+    return V(
+      [
+        N([0.1, 1.9, 0.1, 1.9, 0, 0.6], (p) => {
+          p.disc(1, 1, 0.82, 0.005, '#16110d', OUTLINE);
+          // a lenha cruzada no meio
+          for (let i = 0; i < 4; i++) {
+            const a = (i / 4) * Math.PI + r() * 0.4;
+            const dx = Math.cos(a) * 0.5;
+            const dy = Math.sin(a) * 0.5;
+            p.line([1 - dx, 1 - dy, 0.06], [1 + dx, 1 + dy, 0.14], i % 2 ? lenha : shade(lenha, -0.3), 5);
+          }
+          if (on) for (let i = 0; i < 5; i++) p.disc(0.8 + r() * 0.4, 0.8 + r() * 0.4, 0.06, 0.12, '#ff7a2a');
+          // a roda de pedras, de trás para a frente
+          const pedras = Array.from({ length: 11 }, (_, i) => (i / 11) * Math.PI * 2)
+            .map((a) => ({ u: 1 + Math.cos(a) * 0.72, v: 1 + Math.sin(a) * 0.72 }))
+            .sort((a, b) => a.u + a.v - (b.u + b.v));
+          for (const s of pedras) p.cyl(s.u, s.v, 0.11 + r() * 0.04, 0, 0.1 + r() * 0.06, shade(pedra, (r() - 0.5) * 0.3), { top: shade(pedra, 0.15) });
+          if (on) {
+            p.flame(1, 1, 0.14, 2.4);
+            p.flame(0.9, 1.08, 0.12, 1.6);
+            p.flame(1.1, 0.92, 0.12, 1.5);
+          }
+        }),
+      ],
+      lightIf(on, { u: 1, v: 1, z: 0.6, radius: 230, color: WARM, intensity: 1, flicker: 0.22, kind: 'fire' }),
+    );
+  },
+
+  /** O colchão largado no chão, onde um deles dorme: afundado, encardido, com as manchas e o trapo por cima. */
+  colchao(def, _s, seed) {
+    const [pano, mancha] = def.colors;
+    const D = def.depth;
+    const r = rng(seed + 53);
+    const b: LBox = [0.06, D - 0.06, 0.1, 0.9, 0, 0.14];
+    return V([
+      B(b, pano, { edge: 0.05 }),
+      N(b, (p) => {
+        for (let i = 0; i < 3; i++) p.disc(0.4 + r() * (D - 0.8), 0.3 + r() * 0.4, 0.12 + r() * 0.14, 0.145, rgba(mancha, 0.55 + r() * 0.3));
+        // o trapo jogado por cima
+        p.line([0.3, 0.2, 0.16], [0.9, 0.75, 0.16], shade(pano, -0.35), 6);
+      }),
+    ]);
+  },
+
+  /** O varal de ganchos de carne: duas estacas, a travessa e o que está pendurado nela, pingando. */
+  gancho(def, _s, seed) {
+    const [ferro, carne] = def.colors;
+    const D = def.depth;
+    const r = rng(seed + 67);
+    const H = 1.9;
+    const nodes: FNode[] = [
+      B([0.12, 0.24, 0.44, 0.56, 0, H], ferro, { edge: 0.05 }),
+      B([D - 0.24, D - 0.12, 0.44, 0.56, 0, H], ferro, { edge: 0.05 }),
+      B([0.12, D - 0.12, 0.46, 0.54, H - 0.06, H], shade(ferro, 0.1)),
+    ];
+    const n = 3;
+    for (let i = 0; i < n; i++) {
+      const u = 0.45 + (i * (D - 0.9)) / (n - 1);
+      const comp = 0.5 + r() * 0.35;
+      const z1 = H - 0.22;
+      const z0 = z1 - comp;
+      nodes.push(
+        N([u - 0.2, u + 0.2, 0.3, 0.7, z0 - 0.05, H], (p) => {
+          p.line([u, 0.5, H - 0.06], [u, 0.5, z1], '#2a2420', 1.5);
+          p.cyl(u, 0.5, 0.11 + r() * 0.05, z0, z1, shade(carne, (r() - 0.5) * 0.2), { top: shade(carne, 0.2) });
+          p.line([u + 0.04, 0.5, z0], [u + 0.04, 0.5, z0 - 0.04 - r() * 0.1], '#6e0c0c', 1.5);
+        }),
+      );
+    }
+    return V(nodes);
+  },
+
+  /**
+   * Os escombros do teto que desabou no incêndio: um monte em camadas de reboco e cinza, as telhas quebradas por cima,
+   * os pedaços soltos e as tábuas carbonizadas espetadas para fora.
+   */
+  escombros(def, _s, seed) {
+    const [cinza, carvao, telha] = def.colors;
+    const r = rng(seed + 83);
+    const W = def.width;
+    const D = def.depth;
+    const jit = () => (r() - 0.5) * 0.12;
+    // o monte: camadas cada vez menores, de baixo para cima (a altura de cada ponto sai daqui)
+    const camadas: [LBox, string][] = (
+      [[0.08, 0.1], [0.28, 0.22], [0.5, 0.34]] as [number, number][]
+    ).map(([m, z], k) => [[m + jit(), D - m + jit(), m + jit(), W - m + jit(), k === 0 ? 0 : [0, 0.1, 0.22][k], z], shade(cinza, -0.12 + k * 0.06)]);
+    const altura = (u: number, v: number) => {
+      const borda = Math.min(u, D - u, v, W - v);
+      return borda > 0.5 ? 0.34 : borda > 0.28 ? 0.22 : 0.1;
+    };
+    // as telhas quebradas e os pedaços soltos por cima do monte
+    const pedacos = Array.from({ length: 16 }, (_, i) => {
+      const u = 0.2 + r() * (D - 0.4);
+      const v = 0.2 + r() * (W - 0.4);
+      const z = altura(u, v);
+      const sz = 0.07 + r() * 0.12;
+      const eTelha = i % 3 === 0;
+      const h = eTelha ? 0.03 : 0.05 + r() * 0.1;
+      const b: LBox = [u, Math.min(D - 0.05, u + sz * (eTelha ? 1.6 : 1)), v, Math.min(W - 0.05, v + sz), z, z + h];
+      return { b, cor: eTelha ? shade(telha, (r() - 0.5) * 0.2) : shade(cinza, (r() - 0.5) * 0.3) };
+    });
+    const tabuas = Array.from({ length: 3 }, (_, i) => {
+      const u0 = 0.3 + r() * (D - 0.6);
+      const v0 = 0.3 + r() * (W - 0.6);
+      const u1 = Math.max(0.05, Math.min(D - 0.05, u0 + (r() - 0.5) * 1.2));
+      const v1 = Math.max(0.05, Math.min(W - 0.05, v0 + (r() - 0.5) * 1.2));
+      return { a: [u0, v0, 0.12] as [number, number, number], b: [u1, v1, 0.4 + r() * 0.35] as [number, number, number], cor: i % 2 ? carvao : shade(carvao, 0.2) };
+    });
+    // tudo num nó só, na ordem certa: o monte de baixo para cima, depois os pedaços de trás para a frente
+    return V([
+      N([0, D, 0, W, 0, 0.8], (p) => {
+        for (const [b, cor] of camadas) p.box(b, cor, { edge: 0.06 });
+        const fundo = (b: LBox) => {
+          const [x, y] = p.m.xy((b[0] + b[1]) / 2, (b[2] + b[3]) / 2);
+          return x + y;
+        };
+        for (const { b, cor } of pedacos.sort((a, c) => fundo(a.b) - fundo(c.b))) p.box(b, cor, { edge: 0.12 });
+        for (const t of tabuas) p.line(t.a, t.b, t.cor, 5);
+      }),
     ]);
   },
 

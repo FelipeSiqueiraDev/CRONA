@@ -39,12 +39,22 @@ describe("Orfanato Filhos do Dragão", () => {
     assert.equal(vistos.size, salas.length, "alguma sala ficou sem caminho");
   });
 
-  test("os doze quartinhos: doze camas na ala, e o vão da porta de cada um livre para o corredor", () => {
+  test("os doze quartinhos: em cada um a cama queimada ou o teto caído, e o vão da porta livre para o corredor", () => {
     const ala = porNome("Ala dos Dormitórios");
-    assert.equal(ala.items.filter((i) => i.defId === "cama_solteiro").length, 12);
     for (let i = 0; i < 6; i++) {
-      const y = 2 + i * 4;
-      for (const x of [4, 8]) assert.ok(!ala.items.some((it) => it.x === x && it.y === y), `a porta em ${x},${y} está tapada`);
+      const y0 = 2 + i * 4;
+      for (const [x0, x1] of [[0, 3], [9, 12]]) {
+        const dentro = ala.items.filter((it) => it.x >= x0 && it.x <= x1 && it.y >= y0 && it.y < y0 + 3);
+        assert.ok(dentro.some((it) => it.defId === "cama_queimada" || it.defId === "escombros"), `quartinho ${i} (x ${x0}) vazio`);
+      }
+      for (const x of [4, 8]) assert.ok(!ala.items.some((it) => it.x === x && it.y === y0 + 1 && it.defId !== "cell_bars"), `a porta em ${x},${y0 + 1} está tapada`);
     }
+  });
+
+  test("o fim do corredor tem as frases escritas com sangue, com o texto inteiro na pista", () => {
+    const ala = porNome("Ala dos Dormitórios");
+    const escrita = ala.wallItems.find((w) => w.defId === "escrita_sangue");
+    assert.ok(escrita, "falta a escrita de sangue");
+    assert.match(escrita.hint?.text ?? "", /sofrimento é o idioma dos escolhidos/);
   });
 });

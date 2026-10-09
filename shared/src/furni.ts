@@ -286,6 +286,16 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'oil_stain', name: 'Mancha de Óleo', category: 'decoracao', kind: 'dirt', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#1a1a14', '#3a3a2a'] },
   // depósito
   { id: 'rubble', name: 'Entulho', category: 'armazenamento', kind: 'rubble', width: 2, depth: 2, height: 0.5, rotations: ALL, colors: ['#5a5550', '#4a3222'] },
+  // o incêndio (09/10, o Orfanato): a fuligem e as cinzas no chão, os escombros queimados e a viga do telhado que caiu
+  { id: 'fuligem', name: 'Fuligem', category: 'decoracao', kind: 'blood', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#120e0b'] },
+  { id: 'cinzas', name: 'Cinzas', category: 'decoracao', kind: 'dirt', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#2a2622', '#7a746c'] },
+  { id: 'escombros', name: 'Escombros Queimados', category: 'armazenamento', kind: 'escombros', width: 2, depth: 2, height: 0.6, rotations: ALL, colors: ['#4a4440', '#1a110a', '#6a3226'], desc: 'O teto que desabou no incêndio: telha, reboco e madeira carbonizada.' },
+  { id: 'viga_queimada', name: 'Viga Queimada', category: 'armazenamento', kind: 'viga', width: 1, depth: 3, height: 0.3, rotations: ALL, colors: ['#22160e', '#d8642a'], desc: 'Uma viga do telhado que caiu no incêndio, ainda com brasas nas rachaduras.' },
+  // o covil dos transtornados (09/10, o Orfanato; LR p. 303): eles moram onde invadem, e o lugar vira casa de tortura
+  { id: 'fogueira', name: 'Fogueira', category: 'iluminacao', kind: 'fogueira', width: 2, depth: 2, height: 0.6, states: 2, rotations: [0], colors: ['#4a4440', '#2a1a10'], desc: 'Uma fogueira acesa no chão, numa roda de pedras. Clique duplo acende/apaga.' },
+  { id: 'cama_queimada', name: 'Cama Queimada', category: 'mobilia', kind: 'bed', width: 1, depth: 3, height: 0.5, rotations: ALL, colors: ['#4a3a30', '#1c1410', '#6a5a48'], desc: 'Uma cama de ferro do orfanato, retorcida pelo fogo, com o colchão chamuscado.' },
+  { id: 'colchao_chao', name: 'Colchão no Chão', category: 'mobilia', kind: 'colchao', width: 1, depth: 2, height: 0.14, rotations: ALL, colors: ['#7a6e58', '#4a1010'], desc: 'Um colchão largado no chão, afundado e encardido de sangue. Alguém dorme aqui.' },
+  { id: 'gancho_carne', name: 'Ganchos de Carne', category: 'ocultismo', kind: 'gancho', width: 1, depth: 2, height: 1.9, rotations: ALL, colors: ['#3a3430', '#8a3a30'], desc: 'Uma travessa de ferro com ganchos de açougue. O que está pendurado neles não é de boi.' },
   { id: 'console', name: 'Bancada de Computadores', category: 'escritorio', kind: 'console', width: 2, depth: 1, height: 0.78, stackable: true, states: 2, rotations: ALL, colors: ['#2e2a36', '#8a78c0', '#7fd0ff'], desc: 'Dois monitores e teclado. Clique duplo liga/desliga.' },
   // a Sala de Tecnologia cheia e o posto da enfermaria (09/10, arte do Códex)
   { id: 'cadeira_gamer', name: 'Cadeira Gamer', category: 'escritorio', kind: 'chair', width: 1, depth: 1, height: 1.3, rotations: ALL, colors: ['#3a1a5a', '#141418'] },
@@ -403,6 +413,8 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'scanner_digital', name: 'Leitor de Digital', category: 'parede', kind: 'power_box', w: 10, h: 14, colors: ['#2a2d33', '#3fd0ff'] },
   { id: 'tv_grande', name: 'TV Grande', category: 'parede', kind: 'tv', w: 72, h: 42, colors: ['#141418', '#3a5a8a'], desc: 'TV de tela fina, grande, presa na parede.' },
   { id: 'quadro_fazenda', name: 'Quadro da Fazenda', category: 'parede', kind: 'painting', w: 36, h: 30, colors: ['#8a6a3a', '#3a2a1a'], desc: 'Um dos doze quadros do casarão: o pasto, a família em sépia, o cavalo, o bordado, o rio na neblina...' },
+  { id: 'escrita_sangue', name: 'Escrita de Sangue', category: 'parede', kind: 'escrita', w: 300, h: 122, colors: ['#b01212'], desc: 'Frases escritas com sangue na parede, à mão.' },
+  { id: 'fuligem_parede', name: 'Fuligem na Parede', category: 'parede', kind: 'fuligem', w: 70, h: 110, colors: ['#0f0c0a'], desc: 'As marcas pretas que o fogo deixou subindo pela parede.' },
 ];
 
 /** Metros → unidades de altura (duas casas). */

@@ -504,6 +504,81 @@ const draws: Record<string, Draw> = {
     ctx.fill();
   },
 
+  /**
+   * A escrita de sangue (09/10, o Orfanato): as frases dos transtornados, escritas à mão com o dedo, letra por letra
+   * torta, e o sangue escorrendo das linhas. O texto inteiro também vai na pista da parede (Examinar).
+   */
+  escrita(ctx, d, _state, seed) {
+    const [cor] = d.colors;
+    const linhas = [
+      'O DIABO OBSERVA E RECOMPENSA',
+      'A DOR EXTREMA.',
+      'O SANGUE É O CAMINHO PARA',
+      'OS DESEJOS MAIS PROFUNDOS.',
+      'O CORPO É O CANAL DA REVELAÇÃO',
+      'E O SOFRIMENTO É O IDIOMA',
+      'DOS ESCOLHIDOS.',
+    ];
+    const r = rng(seed + 5);
+    // o tamanho da letra sai da altura da peça: sete linhas, com o espaço do sangue escorrendo entre elas
+    const lh = d.h / 7.2;
+    const fs = Math.round(lh * 0.72);
+    ctx.save();
+    ctx.font = `700 ${fs}px Georgia, "Times New Roman", serif`;
+    ctx.textBaseline = 'top';
+    ctx.lineJoin = 'round';
+    linhas.forEach((l, i) => {
+      const y = 1 + i * lh;
+      // cada linha começa num canto diferente e sai torta, como escrita à mão na parede
+      let x = 2 + r() * 6;
+      const inclina = (r() - 0.5) * 0.012;
+      for (const ch of l) {
+        ctx.save();
+        ctx.translate(x, y + (x - 2) * inclina + (r() - 0.5) * 0.9);
+        ctx.rotate((r() - 0.5) * 0.12);
+        // o contorno escuro do sangue seco e o sangue vivo por cima
+        ctx.strokeStyle = rgba(shade(cor, -0.55), 0.9);
+        ctx.lineWidth = 1.6;
+        ctx.strokeText(ch, 0, 0);
+        ctx.fillStyle = rgba(cor, 0.82 + r() * 0.18);
+        ctx.fillText(ch, 0, 0);
+        ctx.restore();
+        x += ctx.measureText(ch).width + 0.4;
+      }
+      // o sangue escorrendo das letras
+      ctx.fillStyle = rgba(cor, 0.85);
+      for (let k = 0; k < 4; k++) {
+        const dx = 4 + r() * Math.max(10, x - 8);
+        const len = 2 + r() * lh * 0.9;
+        ctx.fillRect(dx, y + fs * 0.85, 1.1, len);
+        ctx.beginPath();
+        ctx.arc(dx + 0.55, y + fs * 0.85 + len, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+    ctx.restore();
+  },
+
+  /** A fuligem do incêndio na parede: manchas pretas subindo do chão, mais fortes embaixo. */
+  fuligem(ctx, d, _state, seed) {
+    const [cor] = d.colors;
+    const r = rng(seed + 11);
+    for (let i = 0; i < 7; i++) {
+      const x = d.w * (0.15 + r() * 0.7);
+      const y = d.h * (0.35 + r() * 0.6);
+      const rx = d.w * (0.18 + r() * 0.3);
+      const ry = d.h * (0.25 + r() * 0.35);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, Math.max(rx, ry));
+      g.addColorStop(0, rgba(cor, 0.75));
+      g.addColorStop(0.6, rgba(cor, 0.35));
+      g.addColorStop(1, rgba(cor, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  },
+
   extinguisher(ctx, d) {
     const [red, black] = d.colors;
     frameRect(ctx, 1, 6, d.w - 2, d.h - 7, red);
