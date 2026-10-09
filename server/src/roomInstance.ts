@@ -723,6 +723,9 @@ export class RoomInstance {
       case 'resizeItem':
         if (isInt(m.id) && isNum(m.escala)) this.resizeItem(u, m.id, m.escala);
         break;
+      case 'quebrarItem':
+        if (isInt(m.id) && typeof m.quebrado === 'boolean') this.quebrarItem(u, m.id, m.quebrado);
+        break;
       case 'swapItem':
         if (isInt(m.id) && typeof m.defId === 'string') this.swapItem(u, m.id, m.defId);
         break;
@@ -968,6 +971,20 @@ export class RoomInstance {
     this.broadcastFloor('itemUpdate', novo);
   }
 
+  /** Destrói ou conserta um móvel (o mestre): quebrado, aparece carbonizado e torto, não senta nem liga, tapa metade. */
+  private quebrarItem(u: RoomUser, id: number, quebrado: boolean) {
+    const c = u.client;
+    if (!this.canBuild(c)) return this.err(c, 'Sem permissão.');
+    const it = this.map.getItem(id);
+    const def = it ? getFurni(it.defId) : undefined;
+    if (!it || !def) return;
+    if (def.portal || def.flat) return this.err(c, 'Isto não quebra.');
+    const novo: FloorItem = { ...it, quebrado: quebrado || undefined };
+    this.map.updateItem(novo);
+    this.persist();
+    this.broadcastFloor('itemUpdate', novo);
+  }
+
   /**
    * Troca o móvel por outro do catálogo no mesmo lugar: no mesmo giro, se der; senão no primeiro que
    * couber. Não coube de jeito nenhum: o antigo fica onde estava.
@@ -1021,6 +1038,7 @@ export class RoomInstance {
     if (floor) {
       const def = getFurni(floor.defId);
       if (!def?.states || def.states < 2) return;
+      if (floor.quebrado && !def.portal) return this.err(u.client, `${def.name} está quebrado: não funciona.`);
       const it = { ...floor, state: (floor.state + 1) % def.states };
       // porta: não fecha com alguém no vão
       if (def.openState !== undefined && it.state !== def.openState && this.usersOn(this.map.tilesFor(floor.defId, floor.x, floor.y, floor.rot)))

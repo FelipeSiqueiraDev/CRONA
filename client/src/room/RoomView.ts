@@ -1740,7 +1740,7 @@ export class RoomView {
     }
     // o que cai fora da tela não é desenhado (a fazenda tem centenas de mobis); a luz deles continua valendo
     const vista = { x0: -this.cam.x / z - 120, y0: -this.cam.y / z - 200, x1: (this.vw - this.cam.x) / z + 120, y1: (this.vh - this.cam.y) / z + 120 };
-    const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number; vazio?: boolean }, alpha: number, selected: boolean, ghost: boolean) => {
+    const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number; vazio?: boolean; quebrado?: boolean }, alpha: number, selected: boolean, ghost: boolean) => {
       const def = getFurni(it.defId);
       if (!def) return;
       const base = furniVisual(def, it.state, it.id);
@@ -1787,7 +1787,18 @@ export class RoomView {
             painter.state = it.state;
             painter.seed = it.id;
             ctx.globalAlpha = nodeAlpha;
-            node.draw(painter);
+            if (it.quebrado) {
+              // destruído: carbonizado (escuro, queimado) e torto, tombando para um lado sobre a base
+              ctx.save();
+              const [bx, by] = iso(it.x + footprint(def, rot).sx / 2, it.y + footprint(def, rot).sy / 2, it.z);
+              const giro = (((it.id * 2654435761) >>> 0) % 2 ? 1 : -1) * (0.05 + (((it.id * 40503) >>> 0) % 5) * 0.012);
+              ctx.translate(bx, by);
+              ctx.rotate(giro);
+              ctx.translate(-bx, -by);
+              ctx.filter = 'brightness(0.42) sepia(0.6) saturate(0.55) contrast(1.15)';
+              node.draw(painter);
+              ctx.restore();
+            } else node.draw(painter);
             if (cela) escurecerForma(ctx, sil, cela.escuro);
             ctx.globalAlpha = 1;
             if (selected) {

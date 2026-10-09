@@ -383,6 +383,8 @@ export type ClientMsg =
   | { t: 'pickup'; id: number }
   /** muda o tamanho do desenho de um quadro (parede) ou de um tapete (chão): de 0,5 a 3 */
   | { t: 'resizeItem'; id: number; escala: number }
+  /** destruir ou consertar um móvel (o mestre): ver `FloorItem.quebrado` */
+  | { t: 'quebrarItem'; id: number; quebrado: boolean }
   /** troca o móvel por outro do catálogo, no mesmo lugar (e no mesmo giro, se der) */
   | { t: 'swapItem'; id: number; defId: string }
   | { t: 'use'; id: number }

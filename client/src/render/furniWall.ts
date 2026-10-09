@@ -520,44 +520,93 @@ const draws: Record<string, Draw> = {
       'DOS ESCOLHIDOS.',
     ];
     const r = rng(seed + 5);
-    // o tamanho da letra sai da altura da peça: sete linhas, com o espaço do sangue escorrendo entre elas
+    const escuro = shade(cor, -0.55);
     const lh = d.h / 7.2;
     ctx.save();
-    // a letra enche a parede: a maior linha cabe na largura, sem passar da altura da linha
-    ctx.font = '700 10px Georgia, "Times New Roman", serif';
-    const larga = Math.max(...linhas.map((l) => ctx.measureText(l).width + l.length * 0.4));
-    const fs = Math.max(6, Math.min(Math.round(lh * 0.78), Math.floor((10 * (d.w - 10)) / larga)));
-    ctx.font = `700 ${fs}px Georgia, "Times New Roman", serif`;
     ctx.textBaseline = 'top';
     ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    // a letra de dedo: grossa e sem serifa, do tamanho que enche a parede
+    const fonte = (px: number) => `900 ${px}px Impact, "Arial Black", "Franklin Gothic Heavy", sans-serif`;
+    ctx.font = fonte(10);
+    const larga = Math.max(...linhas.map((l) => ctx.measureText(l).width + l.length * 0.6));
+    const fs = Math.max(6, Math.min(Math.round(lh * 0.8), Math.floor((10 * (d.w - 12)) / larga)));
+    // as marcas de mão: a palma e os dedos borrados, escorregando, onde o dedo foi molhado de novo
+    const mao = (x: number, y: number, s: number, giro: number, a: number) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(giro);
+      ctx.fillStyle = rgba(cor, a);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s * 0.42, s * 0.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      for (let k = 0; k < 4; k++) {
+        ctx.beginPath();
+        ctx.ellipse(-s * 0.32 + k * s * 0.21, -s * 0.72 - (k === 1 || k === 2 ? s * 0.1 : 0), s * 0.08, s * 0.24, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.ellipse(s * 0.5, -s * 0.12, s * 0.08, s * 0.2, -0.9, 0, Math.PI * 2);
+      ctx.fill();
+      // o arrasto da mão escorregando
+      ctx.fillStyle = rgba(cor, a * 0.35);
+      ctx.fillRect(-s * 0.38, 0, s * 0.76, s * (0.6 + r() * 0.8));
+      ctx.restore();
+    };
+    mao(d.w * 0.05, d.h * 0.78, fs * 1.6, -0.25, 0.75);
+    mao(d.w * 0.93, d.h * 0.3, fs * 1.4, 0.3, 0.6);
     linhas.forEach((l, i) => {
       const y = 1 + i * lh;
-      // cada linha centralizada, um pouco fora do lugar e torta, como escrita à mão na parede
-      const largura = ctx.measureText(l).width + l.length * 0.4;
-      let x = Math.max(2, (d.w - largura) / 2 + (r() - 0.5) * 8);
-      const inclina = (r() - 0.5) * 0.012;
+      ctx.font = fonte(fs);
+      const largura = ctx.measureText(l).width + l.length * 0.6;
+      let x = Math.max(2, (d.w - largura) / 2 + (r() - 0.5) * 10);
+      const inclina = (r() - 0.5) * 0.03;
+      // o sangue no dedo: forte no começo de cada palavra, falhando até a próxima molhada
+      let carga = 1;
       for (const ch of l) {
+        if (ch === ' ') {
+          carga = Math.min(1, carga + 0.55 + r() * 0.3);
+          x += fs * 0.32;
+          continue;
+        }
+        const tam = Math.round(fs * (0.88 + r() * 0.26));
+        ctx.font = fonte(tam);
+        const yy = y + (x - 2) * inclina + (r() - 0.5) * 1.8 + (fs - tam) * 0.6;
         ctx.save();
-        ctx.translate(x, y + (x - 2) * inclina + (r() - 0.5) * 0.9);
-        ctx.rotate((r() - 0.5) * 0.12);
-        // o contorno escuro do sangue seco e o sangue vivo por cima
-        ctx.strokeStyle = rgba(shade(cor, -0.55), 0.9);
-        ctx.lineWidth = 1.6;
-        ctx.strokeText(ch, 0, 0);
-        ctx.fillStyle = rgba(cor, 0.82 + r() * 0.18);
-        ctx.fillText(ch, 0, 0);
+        ctx.translate(x, yy);
+        ctx.rotate((r() - 0.5) * 0.22);
+        const a = 0.35 + carga * 0.6;
+        // o borrão do dedo (duas passadas fora do lugar), o contorno do sangue secando e o miolo vivo
+        ctx.fillStyle = rgba(cor, a * 0.3);
+        ctx.fillText(ch, -0.8 + r() * 0.6, 0.6);
+        ctx.fillText(ch, 0.7, -0.4 + r() * 0.6);
+        if (carga >= 0.5) {
+          ctx.strokeStyle = rgba(escuro, a * 0.85);
+          ctx.lineWidth = Math.max(1.2, tam * 0.11);
+          ctx.strokeText(ch, 0, 0);
+          ctx.fillStyle = rgba(cor, a);
+          ctx.fillText(ch, 0, 0);
+        } else {
+          // o dedo seco: a letra sai só riscada, falhando
+          ctx.setLineDash([1.4 + r(), 1 + r() * 1.2]);
+          ctx.strokeStyle = rgba(cor, a + 0.15);
+          ctx.lineWidth = Math.max(1.4, tam * 0.16);
+          ctx.strokeText(ch, 0, 0);
+          ctx.setLineDash([]);
+        }
         ctx.restore();
-        x += ctx.measureText(ch).width + 0.4;
-      }
-      // o sangue escorrendo das letras
-      ctx.fillStyle = rgba(cor, 0.85);
-      for (let k = 0; k < 4; k++) {
-        const dx = 4 + r() * Math.max(10, x - 8);
-        const len = 2 + r() * lh * 0.9;
-        ctx.fillRect(dx, y + fs * 0.85, 1.1, len);
-        ctx.beginPath();
-        ctx.arc(dx + 0.55, y + fs * 0.85 + len, 1.2, 0, Math.PI * 2);
-        ctx.fill();
+        // o sangue escorrendo das letras molhadas
+        if (carga > 0.6 && r() < 0.32) {
+          const len = 2 + r() * lh * 1.1;
+          const dx = x + r() * tam * 0.5;
+          ctx.fillStyle = rgba(cor, 0.8);
+          ctx.fillRect(dx, yy + tam * 0.85, 0.9 + r() * 0.6, len);
+          ctx.beginPath();
+          ctx.arc(dx + 0.6, yy + tam * 0.85 + len, 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        x += ctx.measureText(ch).width + 0.6;
+        carga = Math.max(0.12, carga - 0.09 - r() * 0.05);
       }
     });
     ctx.restore();

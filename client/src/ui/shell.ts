@@ -2159,6 +2159,13 @@ export class Shell {
         }),
       );
     if (floor) bts.append(this.botaoObj('Trocar', null, 'trocar', () => this.acts.trocar(floor.id, floor.defId)));
+    // destruído: carbonizado e torto, não senta nem liga, tapa metade (o orfanato queimado)
+    if (floor && fdef && !fdef.portal && !fdef.flat)
+      bts.append(
+        floor.quebrado
+          ? this.botaoObj('Consertar', null, 'ok', () => net.send({ t: 'quebrarItem', id: floor.id, quebrado: false }))
+          : this.botaoObj('Destruir', null, 'chama', () => net.send({ t: 'quebrarItem', id: floor.id, quebrado: true })),
+      );
     if (kind === 'wall' || fdef?.flat) {
       const e = item.escala ?? 1;
       const passo = (d: number) => net.send({ t: 'resizeItem', id: item.id, escala: Math.round((e + d) * 100) / 100 });

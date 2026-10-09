@@ -4,7 +4,7 @@
  * outras peças, posição elevada, flanquear e as áreas de ritual e granada.
  * Tudo em casas do CRONA (1 casa = 0,75 m).
  */
-import { combate as cb, getFurni, RoomMap, Z_PER_M } from '@crona/shared';
+import { alturaQueTapa, combate as cb, getFurni, RoomMap, Z_PER_M } from '@crona/shared';
 
 export interface Casa {
   x: number;
@@ -77,7 +77,7 @@ export function cobertura(map: RoomMap, a: Casa, b: Casa, outras: Casa[], agacha
         if (it.state === def.openState) continue;
         return { tipo: 'total', casa: c, nome: def.name.toLowerCase() };
       }
-      const alto = it.z - piso + def.height;
+      const alto = it.z - piso + alturaQueTapa(it, def);
       const metros = alto / Z_PER_M;
       const nome = `${def.name.toLowerCase()} (${fmtM(metros)})`;
       // tapa o corpo todo: o alvo não pode ser atingido por aí

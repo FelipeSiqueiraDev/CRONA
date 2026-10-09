@@ -118,6 +118,16 @@ export interface FloorItem {
   lock?: ItemLock;
   /** tamanho do desenho (quadro na parede, tapete no chão), 1 = o do catálogo; o mestre muda no painel do objeto */
   escala?: number;
+  /**
+   * destruído (09/10, o orfanato queimado): aparece carbonizado e torto; não senta, não liga nem abre, e tapa só metade
+   * da altura (cobertura). O mestre liga e desliga no painel do objeto.
+   */
+  quebrado?: boolean;
+}
+
+/** A altura que o móvel tapa de verdade: o quebrado, só a metade. */
+export function alturaQueTapa(it: Pick<FloorItem, 'quebrado'>, def: { height: number }): number {
+  return it.quebrado ? def.height * 0.5 : def.height;
 }
 
 export interface WallItem {
@@ -250,7 +260,7 @@ export class RoomMap {
   /** Item de assento no tile (se houver). */
   sitItem(x: number, y: number): FloorItem | undefined {
     const cell = this.itemsAt(x, y);
-    for (let i = cell.length - 1; i >= 0; i--) if (getFurni(cell[i].defId)?.sit) return cell[i];
+    for (let i = cell.length - 1; i >= 0; i--) if (getFurni(cell[i].defId)?.sit && !cell[i].quebrado) return cell[i];
     return undefined;
   }
 
@@ -260,7 +270,8 @@ export class RoomMap {
     for (const it of this.itemsAt(x, y)) {
       const def = getFurni(it.defId);
       if (!def) continue;
-      if (def.sit) sit = true;
+      // a cadeira quebrada não senta: tapa a casa como um móvel qualquer
+      if (def.sit && !it.quebrado) sit = true;
       // porta aberta deixa passar; fechada (ou trancada), bloqueia, mesmo a passagem de pisar em cima
       else if (def.openState !== undefined ? it.state !== def.openState : !def.walkable) return 'blocked';
     }
@@ -283,7 +294,7 @@ export class RoomMap {
       const def = getFurni(it.defId);
       if (!def) continue;
       const t = it.z + def.height;
-      if (def.sit) seat = def.leitos?.length ? it.z + def.leitos[alto ? def.leitos.length - 1 : 0] : t;
+      if (def.sit && !it.quebrado) seat = def.leitos?.length ? it.z + def.leitos[alto ? def.leitos.length - 1 : 0] : t;
       if (t > top) top = t;
     }
     return seat ?? top;

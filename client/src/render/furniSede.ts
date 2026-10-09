@@ -1104,6 +1104,11 @@ export const SEDE_BUILDERS: Record<string, Builder> = {
     ]);
   },
 
+  /** A passagem aberta (09/10): divisão de cena sem porta, no mesmo ambiente (o corredor do orfanato e o salão). Nada desenhado. */
+  passagem() {
+    return V([]);
+  },
+
   // ---------------------------------------------------------------- o covil dos transtornados (09/10, o Orfanato)
   /** A fogueira no meio do chão: a roda de pedras, a lenha (e o que mais foi parar lá) em brasa e o fogo. */
   fogueira(def, state, seed) {
