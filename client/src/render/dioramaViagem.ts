@@ -59,6 +59,65 @@ const ILHA: Pt[] = (() => {
   return pts;
 })();
 
+/**
+ * A arte em pixel do Códex (09/10, `arte/viagem/pixel/`, seção 1 do pedido): entregue em escala 4 (cada pixel da arte é
+ * um bloco 4 × 4) e reduzida aqui para a escala 1, a da ilha. Peça que não chegou: o desenho em código continua.
+ */
+const PASTA_PIXEL = '/arte/viagem/pixel/';
+const pixelArte = new Map<string, HTMLCanvasElement | null>();
+let existentes: Set<string> | null = null;
+fetch('/api/arte')
+  .then((r) => r.json() as Promise<{ arquivos: string[] }>)
+  .then((j) => (existentes = new Set(j.arquivos)))
+  .catch(() => (existentes = new Set()));
+function pixel(nome: string): HTMLCanvasElement | null {
+  if (pixelArte.has(nome)) return pixelArte.get(nome)!;
+  if (!existentes) return null;
+  pixelArte.set(nome, null);
+  const url = `${PASTA_PIXEL}${nome}.png`;
+  if (!existentes.has(url)) return null;
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth / 4);
+    c.height = Math.round(img.naturalHeight / 4);
+    const g = c.getContext('2d')!;
+    g.imageSmoothingEnabled = false;
+    g.drawImage(img, 0, 0, c.width, c.height);
+    pixelArte.set(nome, c);
+  };
+  img.src = url;
+  return null;
+}
+/** a van: os dois eixos de cá, o meio deles, o encaixe da roda e o meio de cada banco (escala 1, do LEIA-ME do Códex) */
+const VAN = {
+  eixos: [
+    [9, 22],
+    [33, 34],
+  ] as Pt[],
+  meio: [21, 28] as Pt,
+  roda: [4, 5] as Pt,
+  bancos: [
+    [19, 13],
+    [14, 16],
+    [27, 18],
+    [23, 21],
+    [36, 22],
+    [31, 25],
+  ] as Pt[],
+};
+/** os carros da outra mão: os eixos (o meio deles fica no meio das rodas de cá) e qual roda usam */
+const CARROS: { nome: string; eixos: [Pt, Pt]; roda: 'carro' | 'caminhao' }[] = [
+  { nome: 'sedan-vermelho', eixos: [[5, 12], [17, 18]], roda: 'carro' },
+  { nome: 'taxi-amarelo', eixos: [[5, 12], [17, 18]], roda: 'carro' },
+  { nome: 'sedan-branco', eixos: [[6, 12], [18, 18]], roda: 'carro' },
+  { nome: 'picape-azul', eixos: [[7, 13], [19, 19]], roda: 'carro' },
+  { nome: 'caminhaozinho', eixos: [[9, 22], [29, 32]], roda: 'caminhao' },
+];
+const ENCAIXE_RODA = { carro: [2, 3] as Pt, caminhao: [4, 5] as Pt };
+/** a beira da estrada: o ponto da peça que pisa no chão (escala 1) */
+const PE_BEIRA: Record<string, Pt> = { arvore: [10, 28], arbusto: [6, 6], poste: [4, 26], cerca: [11, 8], placa: [7, 14], pedras: [3, 3], flores: [3, 3] };
+
 function dentro(x: number, y: number): boolean {
   let d = false;
   for (let i = 0, j = ILHA.length - 1; i < ILHA.length; j = i++) {
@@ -163,10 +222,12 @@ export class DioramaViagem {
     ctx.fillRect(hx, hy, 1, 1);
   }
 
-  private arvore(ctx: CanvasRenderingContext2D, x: number, y: number, tam: number, tipo: number) {
+  private arvore(ctx: CanvasRenderingContext2D, x: number, y: number, tam: number, tipo: number, escuro = false) {
     const [bx, by] = this.p(x, y, 0);
     ctx.fillStyle = 'rgba(0,0,0,0.22)';
     ctx.fillRect(bx - 4, by, 9, 2);
+    const arte = (escuro && pixel(`arvore-noite-${tipo + 1}`)) || pixel(`arvore-${tipo + 1}`);
+    if (arte) return void ctx.drawImage(arte, bx - PE_BEIRA.arvore[0], by - PE_BEIRA.arvore[1]);
     ctx.fillStyle = CONTORNO;
     ctx.fillRect(bx - 1, by - 6 * tam, 4, 6 * tam + 1);
     ctx.fillStyle = '#6a4632';
@@ -197,6 +258,23 @@ export class DioramaViagem {
 
   private poste(ctx: CanvasRenderingContext2D, x: number, y: number, aceso: boolean) {
     const [bx, by] = this.p(x, y, 0);
+    const arte = (aceso && pixel('poste-aceso')) || pixel('poste');
+    if (arte) {
+      ctx.drawImage(arte, bx - PE_BEIRA.poste[0], by - PE_BEIRA.poste[1]);
+      if (aceso)
+        this.luzes.push(() => {
+          // depois da tinta da noite: a lâmpada acesa de novo por cima e o cone de luz no chão
+          ctx.drawImage(arte, bx - PE_BEIRA.poste[0], by - PE_BEIRA.poste[1]);
+          ctx.fillStyle = 'rgba(255,233,160,0.2)';
+          ctx.beginPath();
+          ctx.moveTo(bx + 2, by - 23);
+          ctx.lineTo(bx + 13, by + 4);
+          ctx.lineTo(bx - 9, by + 4);
+          ctx.closePath();
+          ctx.fill();
+        });
+      return;
+    }
     ctx.fillStyle = CONTORNO;
     ctx.fillRect(bx - 1, by - 26, 3, 26);
     ctx.fillRect(bx - 1, by - 27, 8, 3);
@@ -219,8 +297,10 @@ export class DioramaViagem {
       });
   }
 
-  private arbusto(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  private arbusto(ctx: CanvasRenderingContext2D, x: number, y: number, i = 0) {
     const [bx, by] = this.p(x, y, 0);
+    const arte = pixel(`arbusto-${(i % 2) + 1}`);
+    if (arte) return void ctx.drawImage(arte, bx - PE_BEIRA.arbusto[0], by - PE_BEIRA.arbusto[1]);
     const bolas: [number, number, number][] = [
       [-3, -2, 3],
       [3, -2, 3],
@@ -246,12 +326,23 @@ export class DioramaViagem {
 
   private cerca(ctx: CanvasRenderingContext2D, x: number, y: number) {
     const [bx, by] = this.p(x, y, 0);
+    const arte = pixel('cerca');
+    if (arte) return void ctx.drawImage(arte, bx - PE_BEIRA.cerca[0], by - PE_BEIRA.cerca[1]);
     ctx.fillStyle = CONTORNO;
     ctx.fillRect(bx - 1, by - 8, 3, 8);
     ctx.fillStyle = '#9a7448';
     ctx.fillRect(bx, by - 7, 1, 7);
     ctx.fillRect(bx - 6, by - 6, 13, 1);
     ctx.fillRect(bx - 6, by - 3, 13, 1);
+  }
+
+  /** Uma peça pequena da beira (a placa, as pedras, as flores): só com a arte; sem ela, nada. */
+  private detalhe(ctx: CanvasRenderingContext2D, nome: string, x: number, y: number) {
+    const arte = pixel(nome);
+    if (!arte) return;
+    const [bx, by] = this.p(x, y, 0);
+    const pe = PE_BEIRA[nome] ?? [0, 0];
+    ctx.drawImage(arte, bx - pe[0], by - pe[1]);
   }
 
   /**
@@ -276,6 +367,24 @@ export class DioramaViagem {
         this.faceX(ctx, x1 + 3.2, y0 + 0.8, y0 + 1.7, z + 4, z + 6, '#fff6c8');
         this.faceX(ctx, x1 + 3.2, y1 - 1.7, y1 - 0.8, z + 4, z + 6, '#fff6c8');
       });
+    // a van pintada (arte/viagem/pixel/van-corpo.png e as 4 rodas): as rodas primeiro, o corpo por cima (o para-lama
+    // cobre o pneu) e os agentes nos bancos dela; o corpo treme com o motor, as rodas não
+    const corpo = (escuro && pixel('van-noite')) || pixel('van-corpo');
+    const rodas = [1, 2, 3, 4].map((i) => pixel(`roda-${i}`));
+    if (corpo && rodas.every(Boolean)) {
+      const [mx, my] = this.p(18, y1, 4.6);
+      const ox = mx - VAN.meio[0];
+      const oy = my - VAN.meio[1];
+      const roda = rodas[((Math.floor(this.pos * 1.4) % 4) + 4) % 4]!;
+      for (const [ex, ey] of VAN.eixos) ctx.drawImage(roda, ox + ex - VAN.roda[0], oy + ey - VAN.roda[1]);
+      const sobe = z - 4;
+      ctx.drawImage(corpo, ox, oy - sobe);
+      VAN.bancos.forEach(([bx, by], k) => {
+        const q = figuras[k];
+        if (q) this.sentado(ctx, q, ox + bx, oy + by - sobe);
+      });
+      return;
+    }
     // o piso
     this.chao(ctx, x0, x1, y0, y1, z, '#4a4d58', true);
     // a parede de lá (vista por dentro) e a de trás (por dentro), com as janelas
@@ -297,18 +406,8 @@ export class DioramaViagem {
         this.caixa(ctx, fx - 0.5, fx, fy - 0.8, fy + 0.9, z, z + 10, '#5d5d6e', '#44444f', '#3a3a44');
         const q = figuras[k++];
         if (q) {
-          // o agente sentado: o boneco do tabuleiro, pequeno, com o quadril no assento e as pernas escondidas
           const [px, py] = this.p(fx + 0.9, fy + 0.1, z + 4);
-          const alturaPessoa = 19;
-          const e = alturaPessoa / Math.max(1, q.ay);
-          const pes = py + Math.round(alturaPessoa * 0.42);
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(px - 20, pes - alturaPessoa - 20, 40, alturaPessoa + 20 - Math.round(alturaPessoa * 0.42) + 1);
-          ctx.clip();
-          ctx.imageSmoothingEnabled = true;
-          ctx.drawImage(q.canvas, px - q.ax * e, pes - q.ay * e, q.w * e, q.h * e);
-          ctx.restore();
+          this.sentado(ctx, q, px, py);
         }
       }
     // o painel na frente dos bancos da frente
@@ -335,6 +434,20 @@ export class DioramaViagem {
     this.roda(ctx, 22.6, y1, 4.6, ang);
   }
 
+  /** O agente sentado: o boneco do tabuleiro, pequeno, com o quadril no assento (px, py) e as pernas escondidas. */
+  private sentado(ctx: CanvasRenderingContext2D, q: SpriteFrame, px: number, py: number) {
+    const alturaPessoa = 19;
+    const e = alturaPessoa / Math.max(1, q.ay);
+    const pes = py + Math.round(alturaPessoa * 0.42);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(px - 20, pes - alturaPessoa - 20, 40, alturaPessoa + 20 - Math.round(alturaPessoa * 0.42) + 1);
+    ctx.clip();
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(q.canvas, px - q.ax * e, pes - q.ay * e, q.w * e, q.h * e);
+    ctx.restore();
+  }
+
   /** Um carro na outra mão, de vez em quando, indo para o outro lado. */
   private carro(ctx: CanvasRenderingContext2D, escuro: boolean) {
     const ciclo = 80;
@@ -349,6 +462,20 @@ export class DioramaViagem {
     const cor = cores[n % cores.length];
     const z = 3;
     this.chao(ctx, x0 - 0.3, x0 + len + 0.6, y0 + 0.5, y1 + 0.9, 0, 'rgba(0,0,0,0.28)');
+    // o carro pintado (arte/viagem/pixel/): um por vez, em rodízio; as rodas por cima do corpo, nos eixos dele
+    const c = CARROS[n % CARROS.length];
+    const corpoArte = pixel(c.nome);
+    const rodasArte = [1, 2, 3, 4].map((i) => pixel(`roda-${c.roda}-${i}`));
+    if (corpoArte && rodasArte.every(Boolean)) {
+      const [mx, my] = this.p(x0 + len / 2, y1, 3.3);
+      const ox = Math.round(mx - (c.eixos[0][0] + c.eixos[1][0]) / 2);
+      const oy = Math.round(my - (c.eixos[0][1] + c.eixos[1][1]) / 2);
+      ctx.drawImage(corpoArte, ox, oy);
+      const r = rodasArte[((Math.floor(this.pos * 1.9) % 4) + 4) % 4]!;
+      const enc = ENCAIXE_RODA[c.roda];
+      for (const [ex, ey] of c.eixos) ctx.drawImage(r, ox + ex - enc[0], oy + ey - enc[1]);
+      return;
+    }
     this.caixa(ctx, x0, x0 + len, y0, y1, z, z + 6, cor, cor, cor);
     this.caixa(ctx, x0 + 1.8, x0 + 5.4, y0 + 0.4, y1 - 0.4, z + 6, z + 10, '#e6e8ec', '#8cc4de', '#8cc4de');
     // as lanternas de trás (o carro vai para lá: a traseira fica para cá), acesas no escuro
@@ -717,12 +844,16 @@ export class DioramaViagem {
         if (dentro(x, y) && dentro(x + 1.5, y) && dentro(x - 1.5, y)) f(x, i);
       }
     };
-    passa(6, 8, 1.6, (x, i) => this.arvore(ctx, x, 1.6 + aleat(i, 40) * 0.6, 1, i % 3));
+    passa(6, 8, 1.6, (x, i) => this.arvore(ctx, x, 1.6 + aleat(i, 40) * 0.6, 1, i % 3, escuro));
     if (!terra) passa(3, 14, 3.4, (x) => this.poste(ctx, x, 3.4, escuro));
     else passa(10, 4, 3.3, (x) => this.cerca(ctx, x, 3.3));
+    // a placa verde da estrada, de vez em quando (só com a arte)
+    if (!terra) passa(1, 46, 3.9, (x) => this.detalhe(ctx, 'placa', x, 3.9));
     this.carro(ctx, escuro);
     this.van(ctx, now, escuro, figuras);
-    passa(5, 8, 19.4, (x) => this.arbusto(ctx, x, 19.4));
-    passa(3, 13, 20.6, (x, i) => this.arvore(ctx, x, 20.6, 0.75, (i + 1) % 3));
+    // pedrinhas e flores na grama de cá (só com a arte)
+    passa(6, 7, 18.4, (x, i) => this.detalhe(ctx, i % 2 ? 'flores' : 'pedras', x, 18.4 + aleat(i, 41) * 0.8));
+    passa(5, 8, 19.4, (x, i) => this.arbusto(ctx, x, 19.4, i));
+    passa(3, 13, 20.6, (x, i) => this.arvore(ctx, x, 20.6, 0.75, (i + 1) % 3, escuro));
   }
 }
