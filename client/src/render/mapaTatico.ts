@@ -1058,6 +1058,15 @@ export type PosTatica = (id: number) => { x: number; y: number } | null;
  */
 export function marcasNoChao(ctx: CanvasRenderingContext2D, m: MarcasCombate | null, pos: PosTatica, mouse: Casa | null, now: number) {
   ctx.save();
+  // o movimento: as casas aonde dá para ir (a do mouse, mais forte)
+  if (m?.passos?.length) {
+    ctx.fillStyle = `rgba(80, 200, 255, ${0.16 + 0.05 * Math.sin(now / 380)})`;
+    for (const c of m.passos) ctx.fillRect(c.x + 0.06, c.y + 0.06, 0.88, 0.88);
+    if (mouse && m.passos.some((c) => c.x === mouse.x && c.y === mouse.y)) {
+      ctx.fillStyle = 'rgba(120, 230, 255, 0.5)';
+      ctx.fillRect(mouse.x + 0.04, mouse.y + 0.04, 0.92, 0.92);
+    }
+  }
   if (m?.alcance) {
     const p = pos(m.alcance.id);
     if (p) {
