@@ -397,6 +397,7 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'tela_derrota', name: 'Tela de Derrota', category: 'parede', kind: 'tv', w: 56, h: 34, colors: ['#141418', '#ff5a5a'], desc: 'Um monitor na parede travado na tela de DERROTA de algum jogo.' },
   { id: 'scanner_digital', name: 'Leitor de Digital', category: 'parede', kind: 'power_box', w: 10, h: 14, colors: ['#2a2d33', '#3fd0ff'] },
   { id: 'tv_grande', name: 'TV Grande', category: 'parede', kind: 'tv', w: 72, h: 42, colors: ['#141418', '#3a5a8a'], desc: 'TV de tela fina, grande, presa na parede.' },
+  { id: 'quadro_fazenda', name: 'Quadro da Fazenda', category: 'parede', kind: 'painting', w: 36, h: 30, colors: ['#8a6a3a', '#3a2a1a'], desc: 'Um dos doze quadros do casarão: o pasto, a família em sépia, o cavalo, o bordado, o rio na neblina...' },
 ];
 
 /** Metros → unidades de altura (duas casas). */

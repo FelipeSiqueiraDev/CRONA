@@ -1,0 +1,259 @@
+{
+ "destino": "client/public/arte/mobiliario",
+ "escala": 0.5,
+ "limpar": 56,
+ "moveis": [
+  {
+   "def": "quadro_fazenda",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-1.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~02",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-2.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~03",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-3.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~04",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-4.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~05",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-5.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~06",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-6.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~07",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-7.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~08",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-8.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~09",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-9.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~10",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-10.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~11",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-11.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "quadro_fazenda~12",
+   "folha": "client/public/arte/mobiliario/folhas/quadro-fazenda-12.png",
+   "real": [
+    0.7,
+    0.05,
+    0.57
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  }
+ ]
+}
