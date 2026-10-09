@@ -759,23 +759,46 @@ export class PulaPula implements Jogo {
         g.fillRect(x + p.w / 2 + 1, y + 2, p.w / 2 - 1, 3);
         continue;
       }
-      // na última, treme um pixel para avisar
-      const xt = p.pulos === 1 && (quadro >> 2) % 2 === 0 ? x + 1 : x;
-      g.fillStyle = p.tipo === 'anda' ? COR.azul : COR.verde;
-      g.fillRect(xt, y, p.w, 4);
-      g.fillStyle = p.tipo === 'anda' ? COR.azulClaro : COR.verdeClaro;
-      g.fillRect(xt, y, p.w, 1);
-      if (p.pulos !== null) {
-        // as rachaduras (uma a cada pulo já dado) e as bolinhas do que falta
-        const dados = (PULOS_POR_NIVEL[this.nivel] ?? 0) - p.pulos;
-        g.fillStyle = COR.preto;
-        for (let k = 0; k < dados; k++) {
-          const rx = xt + Math.round(((k + 1) * p.w) / (dados + 2));
-          g.fillRect(rx, y + 1, 1, 2);
-          g.fillRect(rx + 1, y + 2, 1, 2);
+      // no difícil, o estrago de cada pulo dado: 0 inteira; 1 racha e perde uma lasca; 2 escurece, racha de lado a lado,
+      // perde lascas nas pontas, a metade da direita cede um pixel e ela treme (a próxima quebra)
+      const dano = p.pulos === null ? 0 : (PULOS_POR_NIVEL[this.nivel] ?? 0) - p.pulos;
+      const xt = dano >= 2 && (quadro >> 2) % 2 === 0 ? x + 1 : x;
+      const corpo = p.tipo === 'anda' ? (dano >= 2 ? '#3c58b8' : COR.azul) : dano >= 2 ? '#3c8a3c' : COR.verde;
+      const brilho = p.tipo === 'anda' ? COR.azulClaro : COR.verdeClaro;
+      const meio = Math.round(p.w / 2);
+      if (dano >= 2) {
+        // em dois pedaços, a da direita já cedendo
+        g.fillStyle = corpo;
+        g.fillRect(xt, y, meio, 4);
+        g.fillRect(xt + meio, y + 1, p.w - meio, 4);
+        g.fillStyle = brilho;
+        g.fillRect(xt + 1, y, meio - 2, 1);
+        g.fillRect(xt + meio + 1, y + 1, p.w - meio - 3, 1);
+      } else {
+        g.fillStyle = corpo;
+        g.fillRect(xt, y, p.w, 4);
+        g.fillStyle = brilho;
+        g.fillRect(xt, y, p.w, 1);
+      }
+      if (dano >= 1) {
+        // as lascas que faltam (pintadas com o céu) e a rachadura em zigue-zague
+        g.fillStyle = CEU[faixa];
+        g.fillRect(xt, y, 2, 1);
+        g.fillRect(xt, y + 3, 1, 1);
+        if (dano >= 2) {
+          g.fillRect(xt + p.w - 2, y + 1, 2, 2);
+          g.fillRect(xt + p.w - 1, y + 3, 1, 2);
+          g.fillRect(xt + 5, y + 3, 2, 1);
         }
-        g.fillStyle = p.pulos === 1 ? COR.vermelho : COR.amarelo;
-        for (let k = 0; k < p.pulos; k++) g.fillRect(xt + Math.round(p.w / 2) - p.pulos + k * 2, y + 5, 1, 1);
+        g.fillStyle = COR.preto;
+        const rx = xt + Math.round(p.w * 0.3);
+        g.fillRect(rx, y, 1, 2);
+        g.fillRect(rx + 1, y + 2, 1, 2);
+        if (dano >= 2) {
+          g.fillRect(xt + meio - 1, y, 1, 5);
+          g.fillRect(xt + meio + 3, y + 2, 1, 2);
+          g.fillRect(xt + meio + 4, y + 3, 1, 1);
+        }
       }
       x = xt;
       if (p.mola) {
