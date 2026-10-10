@@ -6,6 +6,7 @@ import {
   getWallFurni,
   LOOT_KINDS,
   lootKindLabel,
+  lootParaItem,
   MAX_TOKEN_NAME,
   nextRotation,
   parseHeightmap,
@@ -44,6 +45,7 @@ import { clear, h, icon, toast, Win } from './dom';
 import { HintEditor, HintViewer } from './infostand';
 import { characterPicker, lookEditor } from './lookEditor';
 import { logIcon, lootIcon } from './lootIcons';
+import { arteDoItem } from './arteItem';
 import { brushSweep, brushWash, bump, countUp, drawStroke, eraseDraw, enter, floatText, flyArc, fxLayer, leave, pencilDraw, reduced, shake, stamp, tilt, typeInto, wait, wipeIn } from './motion';
 import { askNote, promptNote } from './note';
 import { abrirMapaMundi } from './mapaMundi';
@@ -3104,7 +3106,8 @@ export class Shell {
       el.title = s ? `${s.l.name} (${lootKindLabel(s.l.kind)})` : '';
       clear(el);
       if (!s) return;
-      const ic = lootIcon(s.l.kind, 44);
+      // a arte do item, a mesma do chão e da mochila (a pintada, o ícone e, sem arte, o desenho do tipo)
+      const ic = arteDoItem(lootParaItem(s.l), 'caixa', 'q-arte');
       el.append(ic, h('span', { class: 'q-tag', 'aria-hidden': 'true' }, h('b', null, s.l.name), h('small', null, `${fmt(s.l.espacos)} esp.`)));
       if (more) el.append(h('b', { class: 'q-more' }, `+${more}`));
       if (!reduced()) {

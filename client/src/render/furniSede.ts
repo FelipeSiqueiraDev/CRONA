@@ -1104,6 +1104,110 @@ export const SEDE_BUILDERS: Record<string, Builder> = {
     ]);
   },
 
+  /**
+   * O prédio do orfanato queimado visto de fora (10/10, até chegar a arte do Códex): comprido, de um andar, o reboco
+   * manchado, as janelas gradeadas a cada 3 casas com a fuligem subindo, o telhado de duas águas caído em vários
+   * trechos (os caibros pretos aparecendo), a chaminé e a porta carbonizada no meio da ponta da frente.
+   */
+  predio_queimado(def, _s, seed) {
+    const [reboco, telha, madeira, fuligem] = def.colors;
+    const W = def.width;
+    const D = def.depth;
+    const H = 3.4;
+    const TOPO = H + 2.0;
+    const r = rng(seed + 211);
+    const corpo: LBox = [0.15, D - 0.15, 0.15, W - 0.15, 0, H];
+    const buracos = Array.from({ length: 7 }, () => ({ u0: 1 + r() * (D - 6), du: 2 + r() * 3.5, lado: r() < 0.5 ? 0 : 1, f0: 0.15 + r() * 0.3, f1: 0.55 + r() * 0.4 }));
+    return V([
+      N([0, D, 0, W, 0, TOPO + 1.4], (p) => {
+        p.box(corpo, reboco, { edge: 0.06, top: shade(fuligem, 0.1) });
+        for (const f of FACES) {
+          if (!p.m.visible(f)) continue;
+          const [a0, a1] = faceRange(corpo, f);
+          p.withFace(corpo, f, (ctx) => {
+            // a barra de pedra embaixo, as manchas grandes de queimado e o reboco caído em placas
+            ctx.fillStyle = shade(reboco, -0.32);
+            ctx.fillRect(a0, 0, a1 - a0, 0.5);
+            for (let k = 0; k < Math.max(2, (a1 - a0) / 6); k++) {
+              const cx = a0 + r() * (a1 - a0);
+              const g = ctx.createRadialGradient(cx, 0.4, 0.2, cx, 0.8, 1.8 + r() * 1.4);
+              g.addColorStop(0, rgba(fuligem, 0.55));
+              g.addColorStop(1, rgba(fuligem, 0));
+              ctx.fillStyle = g;
+              ctx.fillRect(cx - 3, 0, 6, H);
+              ctx.fillStyle = shade(reboco, -0.22);
+              ctx.fillRect(a0 + r() * (a1 - a0), 0.7 + r() * 2, 0.5 + r() * 0.7, 0.3 + r() * 0.4);
+            }
+            // as janelas gradeadas a cada 3 casas, com a fuligem subindo de cada uma
+            const porta = f === 'front' ? [W / 2 - 0.85, W / 2 + 0.85] : null;
+            for (let a = a0 + 1.5; a < a1 - 1; a += 3) {
+              if (porta && a > porta[0] - 1 && a < porta[1] + 1) continue;
+              // a fuligem que o fogo soltou pela janela: uma mancha subindo, mais forte embaixo
+              const alto = 1.3 + r() * 0.9;
+              const g = ctx.createRadialGradient(a, 2.0, 0.1, a, 2.0 + alto * 0.4, alto);
+              g.addColorStop(0, rgba(fuligem, 0.9));
+              g.addColorStop(0.55, rgba(fuligem, 0.45));
+              g.addColorStop(1, rgba(fuligem, 0));
+              ctx.fillStyle = g;
+              ctx.beginPath();
+              ctx.ellipse(a + (r() - 0.5) * 0.3, 2.0 + alto * 0.45, 0.75 + r() * 0.5, alto * 0.62, 0, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = '#0d0a09';
+              ctx.fillRect(a - 0.45, 1.0, 0.9, 1.0);
+              ctx.fillStyle = shade(madeira, -0.2);
+              for (const k of [-0.25, 0, 0.25]) ctx.fillRect(a + k - 0.03, 1.0, 0.06, 1.0);
+              ctx.fillRect(a - 0.5, 0.95, 1.0, 0.07);
+            }
+            // a porta da frente, carbonizada e entreaberta, com a fuligem em volta
+            if (porta) {
+              ctx.fillStyle = rgba(fuligem, 0.8);
+              ctx.fillRect(porta[0] - 0.3, 0, porta[1] - porta[0] + 0.6, 2.8);
+              ctx.fillStyle = shade(madeira, -0.35);
+              ctx.fillRect(porta[0], 0, porta[1] - porta[0], 2.3);
+              ctx.fillStyle = '#050403';
+              ctx.fillRect((porta[0] + porta[1]) / 2 - 0.08, 0, 0.32, 2.3);
+            }
+          });
+        }
+        // o telhado de duas águas, a cumeeira no meio da largura; a água mais perto da câmera por último
+        const beiral = 0.35;
+        const u0 = -beiral;
+        const u1 = D + beiral;
+        const v0 = -beiral;
+        const v1 = W + beiral;
+        const vm = W / 2;
+        const agua = (lado: 0 | 1) => {
+          const vb = lado === 0 ? v0 : v1;
+          const cor = shade(telha, lado === 0 ? -0.05 : 0.08);
+          p.poly([[u0, vb, H], [u1, vb, H], [u1, vm, TOPO], [u0, vm, TOPO]], cor, OUTLINE, 1);
+          // as fiadas de telha
+          for (let k = 1; k < 6; k++) {
+            const t = k / 6;
+            const v = vb + (vm - vb) * t;
+            p.line([u0, v, H + (TOPO - H) * t], [u1, v, H + (TOPO - H) * t], shade(cor, -0.18), 1);
+          }
+          // os buracos do teto que caiu, com os caibros queimados atravessando
+          for (const b of buracos.filter((x) => x.lado === lado)) {
+            const pt = (u: number, f: number): [number, number, number] => [u, vb + (vm - vb) * f, H + (TOPO - H) * f];
+            p.poly([pt(b.u0, b.f0), pt(b.u0 + b.du, b.f0), pt(b.u0 + b.du * 0.85, b.f1), pt(b.u0 + 0.2, b.f1)], '#0b0807', shade(fuligem, 0.2), 1);
+            for (let u = b.u0 + 0.4; u < b.u0 + b.du - 0.2; u += 0.75) p.line(pt(u, b.f0 - 0.05), pt(u, b.f1 + 0.05), shade(madeira, -0.3), 2);
+          }
+        };
+        const perto = (lado: 0 | 1) => {
+          const [, y] = p.m.p(D / 2, lado === 0 ? v0 : v1, H);
+          return y;
+        };
+        const ordem: (0 | 1)[] = perto(0) < perto(1) ? [0, 1] : [1, 0];
+        for (const l of ordem) agua(l);
+        // as empenas (os triângulos das pontas) que a câmera vê
+        for (const [u, f] of [[D - 0.15, 'front'], [0.15, 'back']] as [number, LFace][])
+          if (p.m.visible(f)) p.poly([[u, 0.15, H], [u, W - 0.15, H], [u, vm, TOPO - 0.1]], shade(reboco, -0.12), OUTLINE, 1);
+        // a chaminé
+        p.box([D * 0.32, D * 0.32 + 0.7, W * 0.62, W * 0.62 + 0.7, H, TOPO + 1.2], shade(reboco, -0.25), { edge: 0.1, top: '#0b0807' });
+      }),
+    ]);
+  },
+
   /** A passagem aberta (09/10): divisão de cena sem porta, no mesmo ambiente (o corredor do orfanato e o salão). Nada desenhado. */
   passagem() {
     return V([]);

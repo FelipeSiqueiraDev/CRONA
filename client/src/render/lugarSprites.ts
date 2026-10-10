@@ -1,4 +1,5 @@
 import type { IconeLugar } from '@crona/shared';
+import { arteCarregada } from '../ui/icons';
 
 /**
  * Os ícones do mapa-múndi (07/10), desenhados em código no estilo das referências do Felipe: uma ilhazinha isométrica
@@ -224,10 +225,7 @@ const PASTA_MAPA = '/arte/mapa/';
 const CENTRO_ARTE: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'tiradentes': 43, 'igarape': 43, 'santo-berco': 43, 'generico-casa': 41 };
 const artes = new Map<string, HTMLCanvasElement | null>();
 let existentes: Set<string> | null = null;
-fetch('/api/arte')
-  .then((r) => r.json() as Promise<{ arquivos: string[] }>)
-  .then((j) => (existentes = new Set(j.arquivos)))
-  .catch(() => (existentes = new Set()));
+void arteCarregada.then((s) => (existentes = s));
 const slug = (nome: string) =>
   nome
     .normalize('NFD')
@@ -258,6 +256,28 @@ export function arteDoMapa(nome: string, centroY?: number): HTMLCanvasElement | 
   img.src = url;
   return null;
 }
+/**
+ * A ilha em alta definição (10/10, pedida ao Códex: `lugar-<lugar>-hd.png`, 288 × 256 com detalhe de verdade, e não
+ * blocos de 4): a imagem inteira, desenhada no lugar da de escala 1 com todo o detalhe. `dy` = o deslocamento para o
+ * meio da grama cair no SPRITE_CENTRO (o mesmo centro da ilha de escala 1, em pixels dela).
+ */
+const hds = new Map<string, HTMLImageElement | null>();
+export function ilhaHD(nome?: string): { img: HTMLImageElement; dy: number } | null {
+  const s = nome ? slug(nome) : '';
+  if (!s || !(s in CENTRO_ARTE) || !existentes) return null;
+  const url = `${PASTA_MAPA}lugar-${s}-hd.png`;
+  if (!hds.has(s)) {
+    hds.set(s, null);
+    if (existentes.has(url)) {
+      const img = new Image();
+      img.onload = () => hds.set(s, img);
+      img.src = url;
+    }
+  }
+  const img = hds.get(s);
+  return img ? { img, dy: SPRITE_CENTRO[1] - CENTRO_ARTE[s] } : null;
+}
+
 function ilhaPintada(icone: IconeLugar, nome?: string): HTMLCanvasElement | null {
   const s = nome ? slug(nome) : '';
   if (s && s in CENTRO_ARTE) return arteDoMapa(`lugar-${s}`, CENTRO_ARTE[s]);

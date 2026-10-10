@@ -1,5 +1,5 @@
 import type { LugarInfo } from '@crona/shared';
-import { arteDoMapa, SPRITE_CENTRO, SPRITE_H, SPRITE_W, spriteDoLugar } from '../render/lugarSprites';
+import { arteDoMapa, ilhaHD, SPRITE_CENTRO, SPRITE_H, SPRITE_W, spriteDoLugar } from '../render/lugarSprites';
 import type { App } from './app';
 import { h } from './dom';
 import { botao, janela } from './fichaModal';
@@ -98,6 +98,17 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
   const painel = h('div', { class: 'mm-info hidden' });
   palco.append(painel);
   const ctx = tela.getContext('2d')!;
+  // nítido (10/10): o canvas tem o tamanho de verdade na tela, em múltiplo inteiro da arte, e desenha com a escala k:
+  // cada pixel da arte vira um bloco igual (sem a ampliação do navegador alternando 2 e 3 pixels)
+  let k = 0;
+  const ajustar = () => {
+    const largura = palco.getBoundingClientRect().width * (window.devicePixelRatio || 1);
+    const novo = Math.max(1, Math.round(largura / W));
+    if (novo === k) return;
+    k = novo;
+    tela.width = W * k;
+    tela.height = H * k;
+  };
   const bg = document.createElement('canvas');
   bg.width = W;
   bg.height = H;
@@ -111,6 +122,9 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
   const brilhos = Array.from({ length: 18 }, (_, i) => ({ x: Math.floor(aleat(i + 300) * W), y: Math.floor(aleat(i + 310) * H), f: aleat(i + 320) * 6 }));
 
   const desenhar = (now: number) => {
+    ajustar();
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.imageSmoothingEnabled = false;
     const ls = lugares();
     if (!bgChave) {
       bgChave = 'ok';
@@ -142,7 +156,13 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
         ctx.fillRect(x + 6, y + SPRITE_H - 17, SPRITE_W - 12, 1);
         ctx.fillRect(x + 6, y + SPRITE_H - 9, SPRITE_W - 12, 1);
       }
-      ctx.drawImage(spr, x, y);
+      // a ilha em alta definição, quando chegar (o detalhe inteiro); senão a de escala 1, em pixels grandes
+      const hd = ilhaHD(l.nome);
+      if (hd) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(hd.img, x, y + hd.dy, SPRITE_W, SPRITE_H);
+        ctx.imageSmoothingEnabled = false;
+      } else ctx.drawImage(spr, x, y);
       if (l.aqui) {
         // a bandeirinha de quem está aqui (a pintada, arte/mapa/aqui.png, com o pé no mesmo ponto)
         const fx = Math.round(p.x) + 14;

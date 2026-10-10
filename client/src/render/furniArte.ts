@@ -156,17 +156,28 @@ let lista: Record<string, MovelArte> | null = null;
 const modelos = new Map<string, string[]>();
 const imagens = new Map<string, Imagens | 'carregando' | 'erro'>();
 
-// o tabuleiro se pinta de novo a cada quadro: a arte aparece assim que chega
-void fetch('/arte/mobiliario/moveis.json')
-  .then((r) => (r.ok ? (r.json() as Promise<Record<string, MovelArte>>) : {}))
-  .then((j) => {
-    lista = j;
-    for (const chave of Object.keys(j).sort()) {
-      const i = chave.indexOf('~');
-      if (i > 0) modelos.set(chave.slice(0, i), [...(modelos.get(chave.slice(0, i)) ?? []), chave]);
-    }
-  })
-  .catch(() => (lista = {}));
+// o tabuleiro se pinta de novo a cada quadro: a arte aparece assim que chega. Falhou (o servidor reiniciando bem na
+// hora): tenta de novo, em vez de passar a sessão inteira com os móveis no desenho de código (10/10)
+function carregarLista(tentativa = 0) {
+  void fetch('/arte/mobiliario/moveis.json', { cache: 'no-cache' })
+    .then((r) => {
+      if (!r.ok) throw new Error(String(r.status));
+      return r.json() as Promise<Record<string, MovelArte>>;
+    })
+    .then((j) => {
+      lista = j;
+      modelos.clear();
+      for (const chave of Object.keys(j).sort()) {
+        const i = chave.indexOf('~');
+        if (i > 0) modelos.set(chave.slice(0, i), [...(modelos.get(chave.slice(0, i)) ?? []), chave]);
+      }
+    })
+    .catch(() => {
+      if (tentativa < 20) setTimeout(() => carregarLista(tentativa + 1), Math.min(15000, 1500 * (tentativa + 1)));
+      else lista = {};
+    });
+}
+carregarLista();
 
 /** O material de cada piso, para a arte de material (a porta de metal no arsenal e na prisão). */
 const MATERIAL: Record<string, string> = { metal: 'metal', cela: 'metal' };
@@ -209,7 +220,11 @@ function pronta(arquivo: string): Imagens | null {
       g.drawImage(normal, 0, 0);
       imagens.set(url, { normal, espelho, largura: larguraDoDesenho(normal) });
     };
-    img.onerror = () => imagens.set(url, 'erro');
+    // falhou (o servidor reiniciando, a rede piscando): tenta de novo daqui a pouco, em vez de ficar sem arte até o F5
+    img.onerror = () => {
+      imagens.set(url, 'erro');
+      setTimeout(() => imagens.get(url) === 'erro' && imagens.delete(url), 4000);
+    };
     img.src = url;
   }
   return null;

@@ -143,10 +143,21 @@ export function temIcone(nome: string): boolean {
  * imagem que está na lista; sem ela, fica o desenho padrão.
  */
 let lista: Set<string> | null = null;
-export const arteCarregada: Promise<Set<string>> = fetch('/api/arte')
-  .then((r) => (r.ok ? (r.json() as Promise<{ arquivos: string[] }>) : { arquivos: [] }))
-  .then((j) => (lista = new Set(j.arquivos)))
-  .catch(() => (lista = new Set<string>()));
+/** Pede a lista; falhou (o servidor reiniciando bem na hora): tenta de novo, em vez de ficar sem arte até o F5 (10/10). */
+function pedirLista(tentativa = 0): Promise<Set<string>> {
+  return fetch('/api/arte', { cache: 'no-cache' })
+    .then((r) => {
+      if (!r.ok) throw new Error(String(r.status));
+      return r.json() as Promise<{ arquivos: string[] }>;
+    })
+    .then((j) => (lista = new Set(j.arquivos)))
+    .catch(() =>
+      tentativa < 20
+        ? new Promise<void>((ok) => setTimeout(ok, Math.min(15000, 1500 * (tentativa + 1)))).then(() => pedirLista(tentativa + 1))
+        : (lista = new Set<string>()),
+    );
+}
+export const arteCarregada: Promise<Set<string>> = pedirLista();
 
 /** A imagem existe? */
 export async function existeArte(url: string): Promise<boolean> {

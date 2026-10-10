@@ -24,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * orfanato é refeito no lugar (e a cena que saiu da montagem é apagada).
  */
 export const ORFANATO = "Orfanato · ";
-export const ORFANATO_REV = 15;
+export const ORFANATO_REV = 16;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -65,9 +65,9 @@ const PX = 2;
 const PY = 2;
 const PW = PX + PREDIO_W + 2 + 9;
 const PH = PY + PREDIO_H + 2 + 3;
-/** a porta do prédio no pátio: no fim do corredor dos quartos, na parede de baixo */
+/** a porta do prédio no pátio: no fim do corredor dos quartos, na ponta de baixo (PORTA_Y é a última fileira do prédio) */
 const PORTA_X = PX + 1 + ALA_COR_X + 2;
-const PORTA_Y = PY + PREDIO_H + 1;
+const PORTA_Y = PY + PREDIO_H;
 /** o anexo de concreto, no canto de cima à direita */
 const AX = PX + PREDIO_W + 3;
 const AY = PY + 1;
@@ -88,29 +88,10 @@ const T_PATIO = terrenoPatio();
 /** As paredes de fora do prédio e do anexo, a porta, as árvores, a estradinha, o que o fogo jogou para fora. */
 function patioPiso(): FloorSeed[] {
   const f: FloorSeed[] = [];
-  const x0 = PX;
-  const x1 = PX + PREDIO_W + 1;
-  const y0 = PY;
-  const y1 = PY + PREDIO_H + 1;
-  // as paredes de fora do prédio, com as janelas gradeadas a cada 3 casas e a porta no fim do corredor dos quartos
-  for (let x = x0; x <= x1; x++) {
-    f.push([x % 3 === 0 && x > x0 && x < x1 ? "iwall_window" : "iwall", x, y0, 4]);
-    if (x === PORTA_X || x === PORTA_X + 1) continue;
-    f.push([x % 3 === 0 && x > x0 && x < x1 ? "iwall_window" : "iwall", x, y1, 0]);
-  }
-  for (let y = y0 + 1; y < y1; y++) {
-    const janela = y % 3 === 0;
-    f.push([janela ? "iwall_window" : "iwall", x0, y, 2], [janela ? "iwall_window" : "iwall", x1, y, 6]);
-  }
-  f.push(["iwall_door", PORTA_X, y1, 0], ["iwall_door", PORTA_X + 1, y1, 0]);
+  const y1 = PORTA_Y;
+  // o prédio queimado inteiro, um mobi só (desenhado em código até chegar a arte do Códex), e a entrada na porta da frente
+  f.push(["orfanato_predio", PX + 1, PY + 1, 0]);
   f.push(["entrada", PORTA_X, y1 + 1, 0], ["entrada", PORTA_X + 1, y1 + 1, 0]);
-  // dentro das paredes, o que se vê de cima: o teto que caiu, as vigas, a cinza
-  for (let k = 0; k < 9; k++) {
-    const ex = PX + 2 + ((k * 5) % (PREDIO_W - 3));
-    const ey = PY + 3 + k * 5;
-    f.push(k % 2 ? ["viga_queimada", ex, ey, 2] : ["escombros", ex, ey, 0]);
-  }
-  for (let k = 0; k < 14; k++) f.push(["cinzas", PX + 2 + ((k * 7) % (PREDIO_W - 2)), PY + 2 + k * 3, 0]);
   // o anexo de concreto: um bloco de parede, a porta do lado da estradinha
   for (let y = AY; y <= AY + 5; y++)
     for (let x = AX; x <= AX + 4; x++) {
@@ -130,7 +111,7 @@ function patioPiso(): FloorSeed[] {
   f.push(...de("fuligem", [PORTA_X - 1, y1 + 1], [PORTA_X + 2, y1 + 2]), ...de("cinzas", [PORTA_X - 2, y1 + 2], [PORTA_X + 3, y1 + 2]));
   // o rastro de sangue do anexo até a porta, pela estradinha, e os ganchos de carne do lado do anexo
   f.push(...de("blood_pool", [AX - 1, AY + 5]), ...de("blood_drops", [AX - 2, AY + 8], [AX - 2, 16], [AX - 2, 26], [AX - 3, 38], [PORTA_X + 4, PORTA_Y + 2], [PORTA_X + 1, PORTA_Y + 2]));
-  f.push(["gancho_carne", AX + 1, AY + 7, 2], ["trash_bin", AX - 3, AY + 2, 0], ["corpo_lencol", AX + 3, AY + 9, 2]);
+  f.push(["gancho_carne", AX + 1, AY + 7, 2], ["trash_bin", AX - 1, AY + 1, 0], ["corpo_lencol", AX + 3, AY + 9, 2]);
   // a cerca de baixo, com a porteira da estradinha (tombada aqui e ali)
   for (let x = 0; x < PW; x++) if ((x < PW - 6 || x > PW - 4) && x % 7 !== 3) f.push(["cerca", x, PH - 1, 4]);
   f.push(["porteira", PW - 6, PH - 1, 4]);

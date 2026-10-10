@@ -42,7 +42,9 @@ async function trabalhar() {
       // já convertido e mais novo que o PNG: pula (a segunda vez é rápida)
       const destino = copia(p);
       if (fs.existsSync(destino) && fs.statSync(destino).mtimeMs >= fs.statSync(p).mtimeMs) continue;
-      const buf = await sharp(p).webp({ quality: 88, alphaQuality: 100, effort: 4 }).toBuffer();
+      // pixel art (as ilhas do mapa, a viagem em pixel): sem perda, senão os blocos borram (10/10)
+      const pixel = /[\\/](mapa|pixel)[\\/]/i.test(p);
+      const buf = await sharp(p).webp(pixel ? { lossless: true, effort: 5 } : { quality: 88, alphaQuality: 100, effort: 4 }).toBuffer();
       const tam = fs.statSync(p).size;
       antes += tam;
       // só vale a cópia se ela for bem menor

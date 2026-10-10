@@ -282,7 +282,8 @@ html {
   top: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  /* mais juntos desde que o mapa-múndi entrou (10/10): sobra espaço para o nome do lugar */
+  gap: 1.2rem;
 }
 .tb2-bt {
   width: 5.2rem;
