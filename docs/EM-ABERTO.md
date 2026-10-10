@@ -17,10 +17,14 @@ Falta, na ordem:
 2. **Igarapé**: outra cidadezinha parecida com Tiradentes (cenas + pedir ao Códex a ilha e as duas chegadas).
 3. **Santo Berço**: o lugar de Morte, medieval, espiral, lodo, cristais. A pesquisa e o plano estão em
    [`SANTO-BERCO.md`](SANTO-BERCO.md). Cada cômodo uma cena.
-4. **Monstros com ficha única e várias aparências**: uma entidade ligada a uma ficha (do livro ou adaptada); 10 em
-   campo têm os mesmos atributos (salvo edição manual), e cada peça escolhe uma das aparências. O primeiro: o
-   **Existido** (LR p. 238, Conhecimento; já está em `ameacasLivro.ts`), versões masculina e feminina, a partir da
-   ilustração que o Felipe fez (corpos esqueléticos cobertos de escrita dourada brilhando, olhos acesos).
+4. **Monstros: FEITO o bestiário (10/10).** Botão CRIATURAS na barra do tabuleiro (`client/src/ui/bestiario.ts`):
+   cada criatura (`shared/src/bestiario.ts`, `db.bestiario`) tem uma ficha (do livro ou adaptada), os PV, as
+   aparências e a marca `flutua`. "Colocar em campo" põe N peças (aparência escolhida ou "variadas"), cada uma com os
+   próprios PV e condições; a ficha do combate é a da criatura (`fichasDasAmeacas` no `hotel.ts`), salvo a peça que
+   o mestre editou no combate. No painel da peça, o grupo "Aparência" troca a cara. O Existido (LR p. 238) já vem no
+   bestiário, masculino e feminino, flutuando. **Falta a arte** (pedida ao Códex, seção 0H: `personagens/existido-
+   masculino` e `-feminino`, 8 direções e retrato; e o ícone `mesa-criaturas.png`). Quando chegar: registrar o
+   personagem (CharacterDef com a folha na pasta) para o `charDaArte` achar e montar as poses (`arte:poses`).
 5. **Ilustrações de momento** (a Agatha na loja, a Ivete na loja de armas, o começo de um combate): a imagem toma a
    tela (mestre e mesa), como as da viagem. O Felipe quer primeiro pensar o USO no tabuleiro (proposta na conversa).
 6. A escrita de sangue: o Felipe quer ela bem rústica; se a letra de código não bastar, pedir ao Códex uma imagem.

@@ -1,5 +1,6 @@
 import { desencostarItensDeParede } from './paredes';
 import {
+  existidoPadrao,
   footprint,
   getFurni,
   getLayout,
@@ -702,6 +703,13 @@ function vanNoLugar(db: Database): boolean {
   return mudou;
 }
 
+/** O bestiário começa com o primeiro monstro do Felipe, o Existido (10/10); depois é do mestre (apagar não traz de volta). */
+function bestiarioInicial(db: Database): boolean {
+  if (db.bestiario) return false;
+  db.bestiario = [existidoPadrao()];
+  return true;
+}
+
 export function upgradeDb(db: Database): boolean {
   const v = db.seedVersion ?? 1;
   // a Sede e a fazenda mudam de montagem sem esperar versão nova do banco
@@ -713,7 +721,8 @@ export function upgradeDb(db: Database): boolean {
     const temas = temasDosAgentes(db);
     const van = vanNoLugar(db);
     const paredes = paredesLivres(db);
-    return sede || fazenda || orfanato || cores || temas || van || paredes;
+    const bestiario = bestiarioInicial(db);
+    return sede || fazenda || orfanato || cores || temas || van || paredes || bestiario;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';
@@ -789,6 +798,7 @@ export function upgradeDb(db: Database): boolean {
   coresDosAgentes(db);
   temasDosAgentes(db);
   paredesLivres(db);
+  bestiarioInicial(db);
   db.seedVersion = SEED_VERSION;
   return true;
 }

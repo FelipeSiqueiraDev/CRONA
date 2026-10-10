@@ -2602,7 +2602,16 @@ export class Shell {
       const lista = bts.filter((b): b is HTMLElement => !!b);
       return lista.length ? h('div', { class: 'tk-grupo' }, h('span', { class: 'tk-rot' }, nome), h('div', { class: 'tools' }, ...lista)) : null;
     };
+    // a peça é uma criatura do bestiário: trocar a aparência (as outras peças da mesma criatura continuam como estão)
+    const cr = u.criatura ? this.app.state.bestiario.find((c) => c.id === u.criatura!.id) : undefined;
+    if (u.criatura && !cr) this.app.net.send({ t: 'bestiario' });
     const blocos = [
+      cr && this.gm && cr.aparencias.length > 1
+        ? grupo(
+            'Aparência',
+            ...cr.aparencias.map((a) => this.stateTool(a.nome, u.criatura?.aparencia === a.id, `${cr.nome}: a aparência ${a.nome} (a ficha é a mesma)`, () => net.send({ t: 'pecaAparencia', tokenId: id, aparencia: a.id }))),
+          )
+        : null,
       grupo(
         'Mover',
         active ? null : tool('Comandar', () => view.setActive(id), 'Os cliques no chão passam a mover esta peça'),

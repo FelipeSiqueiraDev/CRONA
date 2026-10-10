@@ -450,6 +450,10 @@ net.onMessage = (m: ServerMsg) => {
       app.state.lugares = m.lugares;
       app.emit('lugares');
       break;
+    case 'bestiario':
+      app.state.bestiario = m.criaturas;
+      app.emit('bestiario');
+      break;
     case 'roomList':
       app.state.rooms = m.rooms;
       // a ficha do jogador não abre o tabuleiro

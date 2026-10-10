@@ -3,6 +3,7 @@ import type { AcaoCombate, Combate, FichaAmeaca } from './combate/tipos';
 import type { RollResult } from './dice';
 import type { FloorItem, FloorStyle, Hint, ParticleKind, WallItem } from './room';
 import type { LugarInfo } from './lugares';
+import type { Criatura } from './bestiario';
 import type { ViagemInfo } from './viagem';
 import type { CampaignState, LootKind } from './rpg';
 import type { PapelConta, Role, Session, SessionAction, Token } from './session';
@@ -271,6 +272,10 @@ export interface UserInfo extends UserStatus {
   agachado?: boolean;
   /** na cama de cima do beliche (a de baixo é a de sempre) */
   alto?: boolean;
+  /** flutua (a criatura que anda sem tocar o chão, como o Existido) */
+  flutua?: boolean;
+  /** a peça é uma criatura do bestiário: qual e com que aparência */
+  criatura?: { id: string; aparencia: string };
 }
 
 export interface RoomSummary {
@@ -429,6 +434,12 @@ export type ClientMsg =
   | { t: 'combate'; a: AcaoCombate }
   /** ficha rápida de uma ameaça (peça), preenchida pelo mestre; null apaga */
   | { t: 'ameaca'; tokenId: number; ficha: FichaAmeaca | null }
+  /** o bestiário (só o mestre): pedir a lista, gravar ou apagar uma criatura, pôr N peças dela na cena, trocar a cara de uma peça */
+  | { t: 'bestiario' }
+  | { t: 'criaturaSalvar'; criatura: Criatura }
+  | { t: 'criaturaApagar'; id: string }
+  | { t: 'criaturaColocar'; criaturaId: string; aparencia: string; quantidade: number }
+  | { t: 'pecaAparencia'; tokenId: number; aparencia: string }
   | { t: 'roomFx'; lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; tatico?: boolean }
   /** ponto de atenção ou desenho rápido para a mesa (só o mestre; some sozinho) */
   | { t: 'marca'; marca: MarcaMesa }
@@ -545,4 +556,6 @@ export type ServerMsg =
   /** os documentos: todos para o mestre, os da ficha para o jogador */
   | { t: 'docs'; docs: Documento[] }
   /** combate da campanha (a mesa recebe só a ordem, a rodada e a vez); null = sem combate */
-  | { t: 'combate'; combate: Combate | null; podeDesfazer?: boolean; ameacas?: Record<string, FichaAmeaca> };
+  | { t: 'combate'; combate: Combate | null; podeDesfazer?: boolean; ameacas?: Record<string, FichaAmeaca> }
+  /** o bestiário inteiro (para o mestre) */
+  | { t: 'bestiario'; criaturas: Criatura[] };

@@ -96,6 +96,10 @@ export interface ClientUser {
   agachado?: boolean;
   /** na cama de cima do beliche */
   alto?: boolean;
+  /** flutua um pouco acima do chão (o Existido) */
+  flutua?: boolean;
+  /** a criatura do bestiário que a peça é, e a aparência */
+  criatura?: { id: string; aparencia: string };
   anim: { fx: number; fy: number; fz: number; tx: number; ty: number; tz: number; start: number } | null;
   waveUntil: number;
   phase: number;
@@ -659,6 +663,8 @@ export class RoomView {
       dance: u.dance,
       agachado: u.agachado,
       alto: u.alto,
+      flutua: u.flutua,
+      criatura: u.criatura,
       anim: u.mv ? { fx: u.x, fy: u.y, fz: u.z, tx: u.mv.x, ty: u.mv.y, tz: u.mv.z, start: performance.now() } : null,
       waveUntil: 0,
       phase: Math.random() * 10,
@@ -2221,6 +2227,9 @@ export class RoomView {
           ctx.scale(ESCALA_ARTE_PESSOA, ESCALA_ARTE_PESSOA * (u.agachado ? 0.72 : 1));
           ctx.translate(-sx, -sy);
           const dance = u.dance ? -Math.abs(Math.sin((now * Math.PI) / 320 + u.phase)) * 4 : 0;
+          // flutuando (o Existido, 10/10): o corpo uns 20 cm acima do chão, subindo e descendo devagar; a sombra e o
+          // anel ficam no chão (desenhados antes), e é isso que mostra que ele não pisa
+          if (u.flutua && !deitada) ctx.translate(0, -(11 + Math.sin(now / 650 + u.phase) * 2.5));
           // giro: afina de lado e volta, com um pulinho, a partir dos pés
           const tt = u.turnAt ? (now - u.turnAt) / TURN_MS : 1;
           const turning = tt < 1;

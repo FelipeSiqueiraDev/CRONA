@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import {
   HORAS_VIAGEM,
   type ViagemInfo,
+  type PecaCriatura,
   directionTo,
   evalRoll,
   findPath,
@@ -164,7 +165,7 @@ interface RoomUser {
   /** chegou por esta passagem: não teleporta até sair do tile */
   arrivedAt: Point | null;
   /** cor, limite de carga, estado do retrato e ficha (PV/PE/SAN) da peça */
-  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; alto?: boolean; vitals?: Vitals };
+  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; alto?: boolean; vitals?: Vitals; criatura?: PecaCriatura; flutua?: boolean };
 }
 
 const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v);
@@ -292,7 +293,7 @@ export class RoomInstance {
       // nasce "chegando": em cima de uma passagem, só atravessa depois de sair dela e voltar
       // (sem isso, a peça salva em cima de uma porta trocava de cena a cada reinício)
       arrivedAt: { x: sx, y: sy },
-      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, agachado: t.agachado, alto: t.alto, vitals: sanitizeVitals(t.vitals) },
+      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, agachado: t.agachado, alto: t.alto, vitals: sanitizeVitals(t.vitals), ...(t.criatura ? { criatura: t.criatura } : {}), ...(t.flutua ? { flutua: true } : {}) },
     };
     this.users.set(u.client.id, u);
     this.settle(u);
@@ -400,7 +401,58 @@ export class RoomInstance {
     if (u.meta?.agachado) t.agachado = true;
     if (u.meta?.alto) t.alto = true;
     if (u.meta?.vitals) t.vitals = u.meta.vitals;
+    if (u.meta?.criatura) t.criatura = u.meta.criatura;
+    if (u.meta?.flutua) t.flutua = true;
     return t;
+  }
+
+  /**
+   * Põe várias peças de uma vez (as criaturas do bestiário): cada uma na casa livre mais perto da porta, sem empilhar
+   * (uma busca a partir da porta, que pula as casas ocupadas e as que acabaram de ganhar peça).
+   */
+  colocarVarias(lista: TokenData[]) {
+    const d = this.data.door;
+    const usadas = new Set([...this.users.values()].map((u) => `${u.x},${u.y}`));
+    const vistas = new Set([`${d.x},${d.y}`]);
+    const fila = [{ x: d.x, y: d.y }];
+    const casas: Point[] = [];
+    while (fila.length && casas.length < lista.length) {
+      const c = fila.shift()!;
+      if (this.map.walkState(c.x, c.y) === 'walk' && !usadas.has(`${c.x},${c.y}`) && !getFurni(this.map.topItem(c.x, c.y)?.defId ?? '')?.portal) casas.push(c);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const n = { x: c.x + dx, y: c.y + dy };
+        const k = `${n.x},${n.y}`;
+        if (vistas.has(k) || this.map.walkState(n.x, n.y) === 'blocked') continue;
+        vistas.add(k);
+        fila.push(n);
+      }
+    }
+    lista.forEach((t, i) => {
+      const c = casas[i] ?? d;
+      const u = this.spawnToken({ ...t, x: c.x, y: c.y }, null);
+      this.broadcast({ t: 'userJoin', user: this.userInfo(u) });
+    });
+    this.saveTokens();
+  }
+
+  /** A cara nova de uma peça de criatura (o boneco e, se houver, a arte). */
+  trocarAparencia(tokenId: number, criatura: PecaCriatura, look: AvatarLook): boolean {
+    const u = this.users.get(-tokenId);
+    if (!u) return false;
+    u.meta ??= {};
+    u.meta.criatura = criatura;
+    u.client.look = look;
+    this.broadcast({ t: 'userLeave', id: u.client.id });
+    this.broadcast({ t: 'userJoin', user: this.userInfo(u) });
+    this.saveTokens();
+    return true;
+  }
+
+  /** A criatura de cada peça desta cena (para a ficha do combate). */
+  criaturasDasPecas(): Map<number, PecaCriatura> {
+    const out = new Map<number, PecaCriatura>();
+    for (const u of this.users.values()) if (u.meta?.criatura) out.set(-u.client.id, u.meta.criatura);
+    return out;
   }
 
   private saveTokens() {
@@ -498,7 +550,7 @@ export class RoomInstance {
   }
 
   private userInfo(u: RoomUser): UserInfo {
-    return { ...this.status(u), name: u.client.name ?? '?', look: u.client.look, color: u.meta?.color, ...(u.meta?.agachado ? { agachado: true } : {}), ...(u.meta?.alto ? { alto: true } : {}) };
+    return { ...this.status(u), name: u.client.name ?? '?', look: u.client.look, color: u.meta?.color, ...(u.meta?.agachado ? { agachado: true } : {}), ...(u.meta?.alto ? { alto: true } : {}), ...(u.meta?.flutua ? { flutua: true } : {}), ...(u.meta?.criatura ? { criatura: u.meta.criatura } : {}) };
   }
 
   private status(u: RoomUser): UserStatus {

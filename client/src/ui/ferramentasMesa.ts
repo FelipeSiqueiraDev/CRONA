@@ -1,3 +1,4 @@
+import { abrirBestiario } from './bestiario';
 import { contarNevoa, NEVOA_RAIO_MAX, NEVOA_RAIO_PADRAO, type CorGiz, type FormaTraco } from '@crona/shared';
 import type { FerramentaMesa } from '../room/RoomView';
 import type { App } from './app';
@@ -81,6 +82,12 @@ export class FerramentasMesa {
           { class: 'bv', type: 'button', title: 'Viagem: os agentes na van, a estrada passando; fica até você decidir chegar', 'aria-label': 'Viagem', onclick: () => (sfx.click(), this.aoViagem?.()) },
           arteOu(['/arte/icones/mesa-viagem.png'], ic('van')),
           h('span', null, 'VIAGEM'),
+        ),
+        h(
+          'button',
+          { class: 'bv', type: 'button', title: 'Criaturas: o bestiário (uma ficha, várias aparências) e pôr várias em campo', 'aria-label': 'Criaturas', onclick: () => (sfx.click(), abrirBestiario(app)) },
+          arteOu(['/arte/icones/mesa-criaturas.png'], ic('caveira')),
+          h('span', null, 'CRIATURAS'),
         ),
       ),
       this.opcoes,

@@ -1,3 +1,4 @@
+import type { Criatura, PecaCriatura } from '@crona/shared';
 import type { ViagemInfo, IconeLugar, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
@@ -68,6 +69,10 @@ export interface TokenData {
   alto?: boolean;
   /** PV, PE e SAN (atual e total) */
   vitals?: Vitals;
+  /** a peça é uma criatura do bestiário (a ficha vem dela) e a cara que ela tem */
+  criatura?: PecaCriatura;
+  /** flutua (a criatura que anda sem tocar o chão) */
+  flutua?: boolean;
 }
 
 export interface UserData {
@@ -125,6 +130,8 @@ export interface Database {
   fazendaRev?: number;
   /** versão da montagem do Orfanato Filhos do Dragão (seedOrfanato) */
   orfanatoRev?: number;
+  /** o bestiário (10/10): as criaturas, cada uma com uma ficha e várias aparências */
+  bestiario?: Criatura[];
   /** as salas e campanhas de exemplo antigas já foram tiradas (seed.ts, limparSalasDeExemplo) */
   limpezaExemplos?: boolean;
   /** fichas de personagem (motor de regras) */

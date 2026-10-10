@@ -3,6 +3,8 @@ import type { WebSocket } from 'ws';
 import {
   BANCOS_VAN,
   getFurni,
+  lerCriatura,
+  aparenciaDaVez,
   heightmapDaVan,
   isCenarioViagem,
   iconePeloNome,
@@ -70,7 +72,7 @@ import {
   URL_MAPA_RE,
 } from '@crona/shared';
 import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSessao, SENHA_MIN, type Conta } from './contas';
-import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type UserData } from './db';
+import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type TokenData, type UserData } from './db';
 import { RoomInstance, type Client, type HotelApi } from './roomInstance';
 import { refreshPortraits } from './portraits';
 import { limparSalasDeExemplo, seedDb, SYSTEM_OWNER, upgradeDb } from './seed';
@@ -309,8 +311,97 @@ export class Hotel implements HotelApi {
         if (t.vitals) vitais.set(t.token.id, { ...t.vitals });
       }
     }
-    const ameacas = this.campaignFor(Math.min(...group)).ameacas ?? {};
+    const ameacas = this.fichasDasAmeacas(group, this.campaignFor(Math.min(...group)));
     return { agora: Date.now(), cena, pecas, vitais: (id) => vitais.get(id) ?? null, ameaca: (id) => ameacas[String(id)] ?? null };
+  }
+
+  /**
+   * As fichas das ameaças da campanha, por peça: a que o mestre editou para aquela peça (`ameacas`) ou, sem ela, a da
+   * criatura do bestiário que a peça é (10 Existidos leem a mesma ficha).
+   */
+  private fichasDasAmeacas(group: number[], camp: CampaignData): Record<string, cmb.FichaAmeaca> {
+    const out: Record<string, cmb.FichaAmeaca> = {};
+    const bestiario = new Map((this.db.bestiario ?? []).map((c) => [c.id, c]));
+    for (const id of group)
+      for (const [tokenId, pc] of this.rooms.get(id)?.criaturasDasPecas() ?? []) {
+        const c = bestiario.get(pc.id);
+        if (c) out[String(tokenId)] = c.ficha;
+      }
+    return { ...out, ...(camp.ameacas ?? {}) };
+  }
+
+  // ---------- o bestiário (10/10) ----------
+  private bestiarioPara(c: Client) {
+    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [] });
+  }
+
+  private bestiarioMudou() {
+    this.save();
+    this.touch();
+    for (const o of this.clients.values()) this.bestiarioPara(o);
+    // as fichas do combate (a da criatura mudou): os mestres recebem de novo
+    this.touch();
+  }
+
+  /** A arte de uma aparência: o personagem (folha) da pasta arte/personagens/<arte>/, se o Códex já entregou. */
+  private charDaArte(arte?: string): number | null {
+    if (!arte) return null;
+    const ch = this.db.characters.find((x) => x.sheet.includes(`/personagens/${arte}/`));
+    return ch ? ch.id : null;
+  }
+
+  private bestiarioMsg(c: Client, m: Record<string, unknown>) {
+    if (c.role !== 'gm') return;
+    if (m.t === 'bestiario') return this.bestiarioPara(c);
+    this.db.bestiario ??= [];
+    if (m.t === 'criaturaSalvar') {
+      const cr = lerCriatura(m.criatura);
+      if (!cr) return c.send({ t: 'error', msg: 'Criatura inválida: confira o nome, a ficha, os PV e as aparências.' });
+      const i = this.db.bestiario.findIndex((x) => x.id === cr.id);
+      if (i >= 0) this.db.bestiario[i] = cr;
+      else this.db.bestiario.push(cr);
+      return this.bestiarioMudou();
+    }
+    if (m.t === 'criaturaApagar' && typeof m.id === 'string') {
+      this.db.bestiario = this.db.bestiario.filter((x) => x.id !== m.id);
+      return this.bestiarioMudou();
+    }
+    const room = c.room;
+    if (!room) return;
+    if (m.t === 'criaturaColocar') {
+      const cr = this.db.bestiario.find((x) => x.id === m.criaturaId);
+      if (!cr) return c.send({ t: 'error', msg: 'Criatura não encontrada.' });
+      const n = typeof m.quantidade === 'number' && Number.isInteger(m.quantidade) ? Math.max(1, Math.min(20, m.quantidade)) : 1;
+      if (room.tokenList().length + n > 30) return c.send({ t: 'error', msg: 'Máximo de 30 peças por cena.' });
+      const escolha = typeof m.aparencia === 'string' ? m.aparencia : 'variadas';
+      const lista: TokenData[] = [];
+      let k = 1;
+      for (let i = 0; i < n; i++) {
+        while (this.tokenNameTaken(room.data.id, `${cr.nome} ${k}`) || lista.some((t) => t.name === `${cr.nome} ${k}`)) k++;
+        const ap = aparenciaDaVez(cr, escolha, i);
+        lista.push({
+          id: this.nextItemId(),
+          name: `${cr.nome} ${k}`,
+          look: { ...ap.look, charId: this.charDaArte(ap.arte) },
+          x: room.data.door.x,
+          y: room.data.door.y,
+          dir: room.data.door.dir,
+          color: '#b3261e',
+          vitals: { pv: cr.pv, pvMax: cr.pv, pe: 0, peMax: 0, san: 0, sanMax: 0 },
+          criatura: { id: cr.id, aparencia: ap.id },
+          ...(cr.flutua ? { flutua: true } : {}),
+        });
+      }
+      room.colocarVarias(lista);
+      return c.send({ t: 'notice', msg: `${n} ${n === 1 ? cr.nome : `${cr.nome}s`} em campo, todos com a mesma ficha.` });
+    }
+    if (m.t === 'pecaAparencia' && typeof m.tokenId === 'number' && typeof m.aparencia === 'string') {
+      const pc = room.criaturasDasPecas().get(m.tokenId);
+      const cr = pc && this.db.bestiario.find((x) => x.id === pc.id);
+      const ap = cr?.aparencias.find((a) => a.id === m.aparencia);
+      if (!cr || !ap) return;
+      room.trocarAparencia(m.tokenId, { id: cr.id, aparencia: ap.id }, { ...ap.look, charId: this.charDaArte(ap.arte) });
+    }
   }
 
   /** Uma ação da tela de combate (só o mestre). */
@@ -1195,7 +1286,7 @@ export class Hotel implements HotelApi {
         const cb = camp.combate ?? null;
         const podeDesfazer = role === 'gm' && (this.desfazeres.get(key)?.length ?? 0) > 0;
         // as fichas das ameaças são só do mestre (DC-4)
-        cj = JSON.stringify({ t: 'combate', combate: role === 'gm' ? cb : cmb.visaoMesa(cb), ...(role === 'gm' ? { podeDesfazer, ameacas: camp.ameacas ?? {} } : {}) });
+        cj = JSON.stringify({ t: 'combate', combate: role === 'gm' ? cb : cmb.visaoMesa(cb), ...(role === 'gm' ? { podeDesfazer, ameacas: this.fichasDasAmeacas(group, camp) } : {}) });
         combates.set(sk, cj);
       }
       if (cj !== c.lastCombate) {
@@ -1744,6 +1835,13 @@ export class Hotel implements HotelApi {
         return;
       case 'ameaca':
         this.ameacaSalvar(c, m);
+        return;
+      case 'bestiario':
+      case 'criaturaSalvar':
+      case 'criaturaApagar':
+      case 'criaturaColocar':
+      case 'pecaAparencia':
+        this.bestiarioMsg(c, m);
         return;
     }
     c.room?.handle(c, m);
