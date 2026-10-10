@@ -1,15 +1,18 @@
 /* A janela CRIATURAS (o bestiário, 10/10): os cards das criaturas em cima, a escolhida embaixo (os cards das
-   aparências e o "colocar em campo"). O card em si (papel, pregador, quadro, plaquinha, rodapé) vem de cards.css. */
+   aparências e o "colocar em campo"). O card em si (a janela azul-noite, o losango, a casa de item, o botão de ouro) vem de cards.css. */
 .bs-topo {
   justify-content: flex-start !important;
 }
-.card-v.escolhido {
-  --card-pe: #8ec58a;
-  box-shadow: 0 0.45rem 0 #1e140e, 0 0 0 0.3rem #ffd27a, 0 0.9rem 1.4rem rgba(0, 0, 0, 0.45);
-}
 .card-v.bs-nova {
-  --card-papel: #d9ccb1;
-  --card-pe: #c9b994;
+  border-style: dashed;
+}
+.card-v.bs-nova .card-pe {
+  background: transparent;
+  border-color: rgba(161, 136, 115, 0.6);
+  box-shadow: none;
+  color: var(--r-texto-2, #cdbfa9);
+  text-shadow: none;
+  animation: none;
 }
 .bs-boneco {
   width: 9rem;
@@ -32,12 +35,12 @@
   margin: 0 -0.6rem;
 }
 .bs-livro {
-  width: calc(100% - 1.6rem);
+  width: 100%;
   padding: 0.4rem 0.5rem;
   border-radius: 0.5rem;
-  border: 0.2rem solid #3a2a20;
-  background: #fff8e6;
-  color: #3a2a20;
+  border: 0.2rem solid #a18873;
+  background: #060c16;
+  color: var(--r-texto, #f3e9d8);
   font: 700 1.1rem / 1.2 var(--r-corpo, sans-serif);
 }
 .bs-detalhe {
@@ -115,16 +118,16 @@
   min-width: 0;
   padding: 0.25rem 0.4rem;
   border-radius: 0.35rem;
-  border: 0.15rem solid rgba(58, 42, 32, 0.35);
-  background: #fff8e6;
-  color: #3a2a20;
+  border: 0.15rem solid rgba(161, 136, 115, 0.5);
+  background: #060c16;
+  color: var(--r-texto, #f3e9d8);
   font: 700 1.05rem / 1 var(--r-corpo, sans-serif);
 }
 .bs-ap-edita input[type='color'] {
   width: 2rem;
   height: 2rem;
   padding: 0;
-  border: 0.15rem solid #3a2a20;
+  border: 0.15rem solid #a18873;
   border-radius: 0.35rem;
   background: none;
   cursor: pointer;
@@ -162,9 +165,9 @@
   width: 3.2rem;
   height: 3.2rem;
   border-radius: 0.5rem;
-  border: 0.2rem solid #3a2a20;
-  background: #efe4cc;
-  color: #3a2a20;
+  border: 0.2rem solid #a18873;
+  background: #060c16;
+  color: var(--r-texto, #f3e9d8);
   font: 700 1.7rem / 1 var(--r-corpo, sans-serif);
   cursor: pointer;
 }
