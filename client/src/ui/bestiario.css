@@ -1,97 +1,77 @@
-/* A janela CRIATURAS (o bestiário, 10/10): a lista à esquerda, a criatura escolhida à direita */
-.bs {
-  display: grid;
-  grid-template-columns: 19rem minmax(0, 1fr);
-  gap: 1.6rem;
-  min-height: 34rem;
+/* A janela CRIATURAS (o bestiário, 10/10): os cards das criaturas em cima, a escolhida embaixo (os cards das
+   aparências e o "colocar em campo"). O card em si (papel, pregador, quadro, plaquinha, rodapé) vem de cards.css. */
+.bs-topo {
+  justify-content: flex-start !important;
 }
-.bs-lista {
+.card-v.escolhido {
+  --card-pe: #8ec58a;
+  box-shadow: 0 0.45rem 0 #1e140e, 0 0 0 0.3rem #ffd27a, 0 0.9rem 1.4rem rgba(0, 0, 0, 0.45);
+}
+.card-v.bs-nova {
+  --card-papel: #d9ccb1;
+  --card-pe: #c9b994;
+}
+.bs-boneco {
+  width: 9rem;
+  height: 9rem;
+  image-rendering: pixelated;
+}
+.card-quadro .bs-boneco {
+  width: 8rem !important;
+  height: 8rem !important;
+}
+/* "variadas": as caras lado a lado, menores */
+.bs-varias {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  max-height: 52rem;
-  overflow: auto;
-  padding-right: 0.4rem;
+  align-items: flex-end;
+  justify-content: center;
 }
-.bs-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-  padding: 0.9rem 1.1rem;
-  border: 0.15rem solid rgba(161, 136, 115, 0.35);
-  border-radius: 0.5rem;
-  background: rgba(0, 0, 0, 0.25);
-  color: var(--r-texto, #e8dfcc);
-  text-align: left;
-  cursor: pointer;
-}
-.bs-item b {
-  font: 700 1.45rem / 1.1 var(--r-pixel, monospace);
-}
-.bs-item small {
-  font: 500 1.1rem / 1.2 var(--r-corpo, sans-serif);
-  color: var(--r-texto-3, #a59a87);
-}
-.bs-item:hover {
-  border-color: rgba(227, 169, 76, 0.6);
-}
-.bs-item.on {
-  border-color: var(--r-ouro-hi, #e8b45a);
-  background: rgba(227, 169, 76, 0.12);
+.bs-varias .bs-boneco {
+  width: 4.4rem !important;
+  height: 6rem !important;
+  margin: 0 -0.6rem;
 }
 .bs-livro {
-  margin-top: 0.4rem;
-  padding: 0.7rem 0.8rem;
+  width: calc(100% - 1.6rem);
+  padding: 0.4rem 0.5rem;
   border-radius: 0.5rem;
-  border: 0.15rem dashed rgba(161, 136, 115, 0.5);
-  background: transparent;
-  color: var(--r-texto, #e8dfcc);
-  font: 600 1.2rem / 1.2 var(--r-corpo, sans-serif);
+  border: 0.2rem solid #3a2a20;
+  background: #fff8e6;
+  color: #3a2a20;
+  font: 700 1.1rem / 1.2 var(--r-corpo, sans-serif);
 }
 .bs-detalhe {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  min-width: 0;
+  margin-top: 1.4rem;
+  padding-top: 1.2rem;
+  border-top: 0.15rem dashed rgba(161, 136, 115, 0.35);
 }
-.bs-cab {
+.bs-ficha {
   display: flex;
-  align-items: baseline;
-  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.8rem;
 }
-.bs-cab h4 {
+.bs-ficha h4 {
   margin: 0;
   font: 700 2.2rem / 1 var(--r-pixel, monospace);
   color: var(--r-ouro-hi, #e8b45a);
 }
-.bs-cab small,
+.bs-ficha > small,
 .bs-vazio {
   color: var(--r-texto-3, #a59a87);
   font: 500 1.2rem / 1.3 var(--r-corpo, sans-serif);
 }
-.bs-detalhe h5 {
-  margin: 0.6rem 0 0;
-  font: 700 1.15rem / 1 var(--r-pixel, monospace);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--r-texto-2, #cbbfa8);
-}
-.bs-numeros {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1.6rem;
-}
-.bs-numeros > span,
-.bs-num {
+.bs-dado {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
   color: var(--r-texto, #e8dfcc);
   font: 700 1.4rem / 1.1 var(--r-corpo, sans-serif);
 }
-.bs-numeros small {
+.bs-dado small {
   font: 500 1.05rem / 1 var(--r-corpo, sans-serif);
   color: var(--r-texto-3, #a59a87);
 }
@@ -112,61 +92,52 @@
   font: 600 1.2rem / 1 var(--r-corpo, sans-serif);
   cursor: pointer;
 }
-.bs-aparencias {
+.bs-detalhe h5 {
+  margin: 0.4rem 0 0;
+  font: 700 1.15rem / 1 var(--r-pixel, monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--r-texto-2, #cbbfa8);
+}
+.bs-aps {
+  justify-content: flex-start !important;
+}
+/* a edição da aparência, dentro do card: o nome e as duas cores */
+.bs-ap-edita {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-.bs-ap {
-  display: grid;
-  grid-template-columns: 3rem minmax(0, 1fr) auto auto auto auto;
   align-items: center;
-  gap: 0.8rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: 0.5rem;
-  background: rgba(0, 0, 0, 0.22);
-}
-/* a amostra: a pele em cima, a roupa embaixo */
-.bs-amostra {
-  width: 2.6rem;
-  height: 2.6rem;
-  border-radius: 50%;
-  background: linear-gradient(180deg, var(--pele) 0 50%, var(--roupa) 50% 100%);
-  border: 0.15rem solid rgba(0, 0, 0, 0.6);
+  gap: 0.3rem;
+  padding: 0 0.6rem;
+  cursor: default;
 }
 .bs-ap-nome {
+  width: 6.8rem;
   min-width: 0;
-  padding: 0.4rem 0.6rem;
-  border-radius: 0.4rem;
-  border: 0.15rem solid transparent;
-  background: transparent;
-  color: var(--r-texto, #e8dfcc);
-  font: 700 1.3rem / 1 var(--r-corpo, sans-serif);
+  padding: 0.25rem 0.4rem;
+  border-radius: 0.35rem;
+  border: 0.15rem solid rgba(58, 42, 32, 0.35);
+  background: #fff8e6;
+  color: #3a2a20;
+  font: 700 1.05rem / 1 var(--r-corpo, sans-serif);
 }
-.bs-ap-nome:hover,
-.bs-ap-nome:focus {
-  border-color: rgba(161, 136, 115, 0.5);
-}
-.bs-ap input[type='color'] {
-  width: 2.6rem;
-  height: 2.6rem;
+.bs-ap-edita input[type='color'] {
+  width: 2rem;
+  height: 2rem;
   padding: 0;
-  border: 0;
+  border: 0.15rem solid #3a2a20;
+  border-radius: 0.35rem;
   background: none;
   cursor: pointer;
 }
-.bs-ap-arte {
-  color: var(--r-texto-3, #a59a87);
-  font: 500 1rem / 1 var(--r-corpo, sans-serif);
-}
 .bs-x {
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 2rem;
+  height: 2rem;
   border: 0;
   border-radius: 50%;
-  background: rgba(179, 38, 30, 0.25);
-  color: #f0c2bc;
-  font-size: 1.6rem;
+  background: #b3261e;
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 1;
   cursor: pointer;
 }
 .bs-campo {
@@ -174,25 +145,13 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 1.2rem;
+  margin-top: 0.6rem;
 }
-.bs-escolha {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.bs-chip {
-  padding: 0.55rem 1.1rem;
-  border-radius: 99rem;
-  border: 0.15rem solid rgba(161, 136, 115, 0.5);
-  background: transparent;
-  color: var(--r-texto, #e8dfcc);
-  font: 700 1.2rem / 1 var(--r-corpo, sans-serif);
-  cursor: pointer;
-}
-.bs-chip.on {
-  border-color: var(--r-ouro-hi, #e8b45a);
-  background: rgba(227, 169, 76, 0.18);
-  color: var(--r-ouro-hi, #e8b45a);
+.bs-campo-rot {
+  font: 700 1.15rem / 1 var(--r-pixel, monospace);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--r-texto-2, #cbbfa8);
 }
 .bs-qtd {
   display: flex;
@@ -200,31 +159,21 @@
   gap: 0.8rem;
 }
 .bs-qtd button {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 0.4rem;
-  border: 0.15rem solid rgba(161, 136, 115, 0.5);
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--r-texto, #e8dfcc);
-  font: 700 1.6rem / 1 var(--r-corpo, sans-serif);
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.5rem;
+  border: 0.2rem solid #3a2a20;
+  background: #efe4cc;
+  color: #3a2a20;
+  font: 700 1.7rem / 1 var(--r-corpo, sans-serif);
   cursor: pointer;
 }
 .bs-qtd b {
-  min-width: 2.4rem;
+  min-width: 2.6rem;
   text-align: center;
-  font: 700 1.8rem / 1 var(--r-pixel, monospace);
+  font: 700 2rem / 1 var(--r-pixel, monospace);
   color: var(--r-texto, #e8dfcc);
 }
 .bs-apagar {
-  margin-top: auto;
-  display: flex;
-  justify-content: flex-end;
-}
-@media (max-width: 700px) {
-  .bs {
-    grid-template-columns: 1fr;
-  }
-  .bs-lista {
-    max-height: 18rem;
-  }
+  margin-left: auto;
 }

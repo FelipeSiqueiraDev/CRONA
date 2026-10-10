@@ -1,0 +1,181 @@
+/*
+ * O card vertical (10/10, as referências do Felipe: os cards de loja de jogo, de papel com pregador): o pregador de
+ * madeira no topo, o nome com contorno, o quadro do ícone, a plaquinha com o detalhe e o rodapé colorido com o que
+ * gasta. Vale para as ações do turno (.vez-acao) e para os cartões das armas e opções (.vez-cartao).
+ */
+:is(.vez-acoes, .vez-cartoes, .cards-v) {
+  /* em pé: estreitos e altos, quantos couberem na linha, e a última linha também no meio */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem 1.3rem;
+  padding: 1.2rem 0.4rem 0.6rem;
+}
+:is(.vez-acoes, .vez-cartoes, .cards-v) > * {
+  flex: 0 0 14.6rem;
+}
+:is(.vez-acao, .vez-cartao, .card-v) {
+  --card-papel: #efe4cc;
+  --card-borda: #3a2a20;
+  --card-pe: #f0bf4c;
+  --card-pe-txt: #3a2a20;
+  --card-quadro: #d9cdb2;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 21rem;
+  padding: 1.6rem 0 0;
+  border: 0.3rem solid var(--card-borda);
+  border-radius: 1.1rem;
+  background: var(--card-papel);
+  box-shadow: 0 0.45rem 0 #1e140e, 0 0.9rem 1.4rem rgba(0, 0, 0, 0.45);
+  color: var(--card-borda);
+  text-align: center;
+  cursor: pointer;
+  overflow: visible;
+  transition:
+    transform 0.18s var(--h-ease),
+    box-shadow 0.18s var(--h-ease),
+    filter 0.2s;
+  animation: vez-sobe 0.4s var(--h-ease) both;
+}
+/* o pregador de madeira, preso na borda de cima */
+:is(.vez-acao, .vez-cartao, .card-v)::before {
+  content: '';
+  position: absolute;
+  top: -1.3rem;
+  left: 50%;
+  width: 2.2rem;
+  height: 2.4rem;
+  transform: translateX(-50%);
+  border: 0.25rem solid var(--card-borda);
+  border-radius: 0.3rem 0.3rem 0.15rem 0.15rem;
+  background: linear-gradient(90deg, #b8843a, #d9a556 45%, #b07a32);
+}
+:is(.vez-acao, .vez-cartao, .card-v)::after {
+  content: '';
+  position: absolute;
+  top: 0.6rem;
+  left: 50%;
+  width: 3.6rem;
+  height: 0.9rem;
+  transform: translateX(-50%);
+  border-radius: 99rem;
+  background: var(--card-borda);
+}
+.vez-acao:nth-child(2) {
+  animation-delay: 0.04s;
+}
+.vez-acao:nth-child(3) {
+  animation-delay: 0.08s;
+}
+.vez-acao:nth-child(4) {
+  animation-delay: 0.12s;
+}
+.vez-acao:nth-child(5) {
+  animation-delay: 0.16s;
+}
+.vez-acao:nth-child(6) {
+  animation-delay: 0.2s;
+}
+@keyframes vez-sobe {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+:is(.vez-acao, .vez-cartao, .card-v):hover:not(:disabled) {
+  transform: translateY(-0.4rem) rotate(-0.6deg);
+  box-shadow: 0 0.85rem 0 #1e140e, 0 1.4rem 2rem rgba(0, 0, 0, 0.5), 0 0 0 0.25rem rgba(255, 210, 122, 0.55);
+}
+:is(.vez-acao, .vez-cartao, .card-v):active:not(:disabled) {
+  transform: translateY(0.15rem);
+  box-shadow: 0 0.2rem 0 #1e140e;
+}
+:is(.vez-acao, .vez-cartao, .card-v):focus-visible {
+  outline: 0.3rem solid #ffd27a;
+  outline-offset: 0.3rem;
+}
+/* o nome: claro com contorno escuro, como na referência */
+:is(.vez-acao, .vez-cartao, .card-v) .card-tit {
+  margin-top: 0.4rem;
+  padding: 0 0.8rem;
+  font: 700 1.55rem / 1.1 var(--r-pixel);
+  letter-spacing: 0.03em;
+  color: #fff8e6;
+  text-shadow:
+    0.15rem 0 0 var(--card-borda),
+    -0.15rem 0 0 var(--card-borda),
+    0 0.15rem 0 var(--card-borda),
+    0 -0.15rem 0 var(--card-borda),
+    0.12rem 0.12rem 0 var(--card-borda),
+    -0.12rem -0.12rem 0 var(--card-borda),
+    0.12rem -0.12rem 0 var(--card-borda),
+    -0.12rem 0.12rem 0 var(--card-borda),
+    0 0.3rem 0 var(--card-borda);
+}
+/* o quadro do ícone: a moldura arredondada, um brilho no meio */
+.card-quadro {
+  display: grid;
+  place-items: center;
+  width: 9rem;
+  height: 9rem;
+  border: 0.25rem solid #5a4636;
+  border-radius: 1.1rem;
+  background: radial-gradient(circle at 50% 42%, rgba(255, 236, 170, 0.85), transparent 62%), var(--card-quadro);
+  box-shadow: inset 0 -0.35rem 0 rgba(0, 0, 0, 0.12);
+}
+.card-quadro :is(.arte-ic, img, .ic, svg) {
+  width: 6.4rem !important;
+  height: 6.4rem !important;
+  object-fit: contain;
+  color: var(--card-borda);
+  filter: drop-shadow(0 0.2rem 0 rgba(0, 0, 0, 0.25));
+}
+/* a plaquinha escura com o detalhe */
+.card-placa {
+  max-width: calc(100% - 1.6rem);
+  padding: 0.35rem 0.9rem;
+  border-radius: 0.6rem;
+  background: #3e3029;
+  color: #f4ecdb !important;
+  font: 600 1.05rem / 1.25 var(--r-corpo) !important;
+}
+/* o rodapé colorido: o que a ação gasta, com o recorte de papel embaixo */
+.card-pe {
+  align-self: stretch;
+  margin-top: auto;
+  padding: 0.75rem 0.6rem 0.85rem;
+  border-top: 0.25rem solid var(--card-borda);
+  border-radius: 0 0 0.75rem 0.75rem;
+  background: var(--card-pe);
+  color: var(--card-pe-txt);
+  font: 700 1.25rem / 1 var(--r-pixel);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+/* os jeitos de cada card */
+.vez-acao.a-atacar {
+  --card-quadro: #e8c9a4;
+}
+.vez-acao.a-habilidade {
+  --card-quadro: #b8cde6;
+}
+.vez-acao.a-passar {
+  --card-pe: #8ec58a;
+}
+.vez-cartao.investida {
+  --card-pe: #f08a5a;
+}
+:is(.vez-acao.usada, .vez-cartao.travado, .card-v.travado) {
+  --card-pe: #9b9186;
+  --card-pe-txt: #f4ecdb;
+  filter: saturate(0.35) brightness(0.8);
+  cursor: default;
+}
+:is(.vez-acao.usada, .vez-cartao.travado, .card-v.travado) .card-placa {
+  background: #5b2a22;
+}
+

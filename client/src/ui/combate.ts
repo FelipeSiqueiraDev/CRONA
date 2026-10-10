@@ -410,13 +410,17 @@ export class CombateScreen {
       const f = this.fichaDe(ator.id)?.ficha;
       return f ? !!custoPoder(p, f) : false;
     });
+    // o card vertical (10/10, as referências do Felipe): o pregador, o nome, o quadro do ícone, a plaquinha com o
+    // detalhe e o rodapé com o que a ação gasta (dourado: dá; cinza: já foi)
+    const CUSTO: Record<string, string> = { atacar: 'Ação padrão', movimento: 'Movimento', item: 'Movimento', habilidade: 'Gasta PE', outras: 'Varia', passar: 'Fim do turno' };
     const botaoMenu = (id: string, rotulo: string, pintado: string, icone: NomeIcone, sub: string, ok: boolean, fazer: () => void, motivo?: string) =>
       h(
         'button',
         { class: `vez-acao a-${id}${ok ? '' : ' usada'}`, type: 'button', title: ok ? sub : (motivo ?? sub), onclick: () => (sfx.click(), fazer()) },
-        h('span', { class: 'vez-acao-ic' }, arteOu([`/arte/icones/${pintado}.png`], ic(icone))),
-        h('b', null, rotulo),
-        h('small', null, ok ? sub : (motivo ?? sub)),
+        h('b', { class: 'card-tit' }, rotulo),
+        h('span', { class: 'vez-acao-ic card-quadro' }, arteOu([`/arte/icones/${pintado}.png`], ic(icone))),
+        h('small', { class: 'card-placa' }, ok ? sub : (motivo ?? sub)),
+        h('span', { class: 'card-pe' }, ok ? CUSTO[id] ?? 'Ação' : 'Já usada'),
       );
     return h(
       'div',
@@ -442,8 +446,10 @@ export class CombateScreen {
       h(
         'button',
         { class: `vez-cartao ${cls}${fazer ? '' : ' travado'}`, type: 'button', disabled: !fazer, title: fazer ? sub : motivo, onclick: () => fazer && (sfx.click(), fazer()) },
-        h('span', { class: 'vez-cartao-ic' }, arte),
-        h('span', { class: 'vez-cartao-txt' }, h('b', null, nome), h('small', null, fazer ? sub : (motivo ?? sub))),
+        h('b', { class: 'card-tit' }, nome),
+        h('span', { class: 'vez-cartao-ic card-quadro' }, arte),
+        h('small', { class: 'card-placa' }, fazer ? sub : (motivo ?? sub)),
+        h('span', { class: 'card-pe' }, fazer ? (cls === 'investida' ? 'Ação completa' : 'Escolher') : 'Indisponível'),
       );
     const lista: HTMLElement[] = [];
     armas.forEach((a, i) => {
@@ -549,8 +555,10 @@ export class CombateScreen {
           h(
             'button',
             { class: 'vez-cartao', type: 'button', onclick: () => (sfx.click(), this.acaoDoLivro(c, ator, o, alvo), this.irPara('menu')) },
-            h('span', { class: 'vez-cartao-ic' }, ic(o.id === 'levantar' ? 'seta' : o.id === 'mirar' ? 'mira' : 'girarD')),
-            h('span', { class: 'vez-cartao-txt' }, h('b', null, o.nome), h('small', null, o.dica)),
+            h('b', { class: 'card-tit' }, o.nome),
+            h('span', { class: 'vez-cartao-ic card-quadro' }, ic(o.id === 'levantar' ? 'seta' : o.id === 'mirar' ? 'mira' : 'girarD')),
+            h('small', { class: 'card-placa' }, o.dica),
+            h('span', { class: 'card-pe' }, 'Escolher'),
           ),
         ),
       ),
