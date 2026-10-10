@@ -11,7 +11,7 @@ describe("Orfanato Filhos do Dragão", () => {
   const porNome = (n: string) => salas.find((r) => r.name === ORFANATO + n)!;
 
   test("o lugar existe: o pátio, o casarão e o anexo, numa campanha com o nome do lugar", () => {
-    for (const n of ["Pátio", "Refeitório", "Salão", "Cozinha", "Depósito", "Quarto da Diretora", "Sanitários", "Banheiro", "Sala de Banho", "Ala dos Dormitórios", "Anexo"])
+    for (const n of ["Pátio", "Enfermaria", "Salão", "Cozinha", "Depósito", "Quarto da Diretora", "Sanitários", "Banheiro", "Sala de Banho", "Ala dos Dormitórios", "Sala de Cirurgia"])
       assert.ok(porNome(n), `falta ${n}`);
     const camp = db.campaigns?.[String(Math.min(...salas.map((r) => r.id)))];
     assert.equal(camp?.title, "Orfanato Filhos do Dragão");

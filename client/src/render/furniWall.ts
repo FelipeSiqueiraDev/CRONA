@@ -2,6 +2,20 @@ import type { WallFurniDef } from '@crona/shared';
 import { rgba, rng, shade } from './color';
 import { drawBlood, drawSigil, type LightKind } from './furniFloor';
 import { drawFlame, OUTLINE } from './painter';
+import { arteCarregada } from '../ui/icons';
+
+/**
+ * A escrita de sangue pintada pelo Códex (10/10, pedida: arte/paredes/escrita-sangue-orfanato.png, de frente, chapada,
+ * fundo transparente): quando existe, vai na parede no lugar da letra de código (a parede inclina sozinha).
+ */
+const ESCRITA_PINTADA = '/arte/paredes/escrita-sangue-orfanato.png';
+let escritaPintada: HTMLImageElement | null = null;
+void arteCarregada.then((lista) => {
+  if (!lista.has(ESCRITA_PINTADA)) return;
+  const img = new Image();
+  img.onload = () => (escritaPintada = img);
+  img.src = ESCRITA_PINTADA;
+});
 
 /** Luz em coordenadas locais do item (px a partir do canto superior esquerdo). */
 export interface WallLight {
@@ -509,6 +523,10 @@ const draws: Record<string, Draw> = {
    * torta, e o sangue escorrendo das linhas. O texto inteiro também vai na pista da parede (Examinar).
    */
   escrita(ctx, d, _state, seed) {
+    if (escritaPintada) {
+      ctx.drawImage(escritaPintada, 0, 0, d.w, d.h);
+      return;
+    }
     const [cor] = d.colors;
     const linhas = [
       'O DIABO OBSERVA E RECOMPENSA',

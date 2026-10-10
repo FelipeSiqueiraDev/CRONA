@@ -378,6 +378,14 @@ Ainda falta (pedido do Felipe):
     (corredor de 6 casas) com os 12 quartos ("Orfanato · Quarto 1" a 12, o 10 é a jaula). O Pátio tem o prédio comprido
     (paredes de fora, o miolo queimado), o anexo no canto de cima à direita, a estradinha pela direita e a porta no fim
     da ala. A "sala de estudos" (inventada) e os "Banheiros" de antes são apagados no rebuild.
+  - **Revisto em 10/10 (o Felipe):** o Salão é o **refeitório grande das crianças** (14 × 16, duas fileiras de mesas
+    compridas com bancos, o balcão da comida no canto, a fogueira e os colchões do bando no fundo; na planta, vaza
+    para a esquerda do prédio). Cada **quarto** é de duas crianças: duas camas de ferro, o criado-mudo e o armário. A
+    sala de cima é a **Enfermaria** (caminhas de lona, `catre`, onde as crianças se recuperavam dos rituais), e o
+    anexo é a **Sala de Cirurgia** dos rituais (o círculo no chão, a mesa de contenção, macas tombadas, aparelhos
+    quebrados). Sem saco de cadáver. O pátio tem o prédio inteiro desenhado em código (`orfanato_predio`).
+  - **A escrita**: pedida ao Códex (0G, urgente: `arte/paredes/escrita-sangue-orfanato.png`, de frente, transparente);
+    o gancho já existe em `furniWall.ts` (com a imagem, sai a letra de código).
   - **As frases** (`FRASES`) estão escritas com sangue na parede comprida do Salão, a área aberta onde o corredor dos
     quartos termina: `escrita_sangue` (340 × 136, desenhada em código; o texto inteiro vai na pista Examinar).
   - **Peças novas em código:** `fogueira` (acende/apaga, luz de fogo), `colchao_chao`, `gancho_carne`, `cama_queimada`,
