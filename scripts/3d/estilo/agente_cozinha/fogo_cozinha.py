@@ -399,13 +399,16 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
         frente = (Y > yb + g.get('luz_y0', -0.03)) & (c.obj >= 0) & ~vao
         if g.get('luz_fora'):
             a0, a1, b0, b1, zf = g['luz_fora']
-            frente &= ~((X > a0) & (X < a1) & (Y > b0) & (Y < b1) & (Z > zf))
+            fora = (X > a0) & (X < a1) & (Y > b0) & (Y < b1) & (Z > zf)
         # o raio dos anéis encolhe com a luz (as brasas sozinhas só esquentam a beira da boca)
         R = g.get('raio_luz', 0.5 + 1.2 * lz)
         k = ((np.clip(1 - d3 / R, 0, 1) ** 0.8 * (0.3 + 0.8 * olha) + 0.5 * np.clip(1 - d3 / (0.3 + 0.32 * lz), 0, 1))
              * (0.4 + 0.6 * lz))
         k = np.minimum(np.floor(k * 4) / 4, 1.0)
         k = np.where(frente, k, 0.0)
+        if g.get('luz_fora'):
+            # na frente do próprio fogão a luz é mais fraca (só esquenta: não vira marrom)
+            k = np.where(fora, np.floor(k * g.get('luz_fora_k', 0.0) * 4) / 4, k)
         cor = _luz_quente(cor, k)
     return np.clip(cor, 0, 255)
 

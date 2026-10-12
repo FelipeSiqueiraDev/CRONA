@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 sys.path.insert(0, AQUI)
 import numpy as np                          # noqa: E402
 from PIL import Image                       # noqa: E402
-from motor import Cena, MUNDO, tela, ruido, emissivo, KX, KY, KZ, VISTA   # noqa: E402
+from motor import Cena, MUNDO, tela, ruido, emissivo, suave, KX, KY, KZ, VISTA   # noqa: E402
 import base_estilo as BE                    # noqa: E402
 from base_estilo import (hx, coords, liso, madeira, tabuas, mad2, tab2, vol, _tom, _cru, _fac, _poligono_rodado,  # noqa: E402
                          _disco, _fita, _pau, _barra, _p1_malha, _p1_mat_rampa, _p1_rampa, _MAD, _ponta_tabuas,
@@ -41,7 +41,8 @@ c = None
 pegadas = []
 luzes = set()
 vidros = []          # o vidro dos armários: caixas no mundo (o que se vê por trás dele fica tingido)
-fades = []           # objetos que somem para o fundo acima de uma altura (a chaminé, os fios das lâmpadas)
+fades = []           # objetos que somem para o fundo acima de uma altura (a chaminé)
+fades_atras = []     # os que somem para o que está atrás deles (o fio das lâmpadas)
 lampadas = []        # o meio da lâmpada (para a luz)
 itens_peq = []       # objetos pequenos nos tampos (a sombrinha de contato)
 
@@ -130,6 +131,16 @@ def parede(eixo):
         # a cal: clareia em 2 degraus para cima
         out = np.where((z > 2.0)[:, None], _tom(pint, 1.04), out)
         out = np.where((z < 1.75)[:, None], _tom(pint, 0.97), out)
+        # a cal gasta: manchas grandes e suaves em dois degraus (pixel limpo: a borda segue a grade 1 px x 1 px)
+        qa, qz = np.floor(a / PH) * PH, np.floor(z / PZ) * PZ
+        s = suave(qa + (3.1 if eixo == 'x' else 11.7), qz * 1.6, 0.55, 9) * 0.65 + suave(qa, qz * 2.0, 0.22, 4) * 0.35
+        out = np.where((s > 0.66)[:, None], _tom(out, 0.95), out)
+        out = np.where((s > 0.76)[:, None], _tom(out, 0.95), out)
+        # as lasquinhas (2 px deitados, a sombra embaixo) e a sujeira escura logo embaixo da viga
+        ia_, iz_ = np.floor(a / (2 * PH)), np.floor(z / PZ)
+        lasca = ruido(ia_, iz_, 5.0) > 0.996
+        out = np.where(lasca[:, None], _tom(pint, 0.82), out)
+        out = np.where(((z > ALTO - 2 * PZ))[:, None], _tom(out, 0.9), out)
         # o azulejo
         ia, iz = np.floor(a / TA), np.floor(z / TZ)
         ga, gz = a - ia * TA, z - iz * TZ
@@ -164,6 +175,10 @@ def sala():
     c.caixa((0, LX, 0, LY, -0.28, 0), {'cima': ladrilho(), '*': madeira('#94552c', veio=False)}, M, o)
     caixa((-ESP, LX, -ESP, 0, 0, ALTO), {'frente': parede('x'), '*': liso('#8a5230')}, tipo=2)
     caixa((-ESP, 0, 0, LY, 0, ALTO), {'dir': parede('y'), '*': liso('#8a5230')}, tipo=2)
+    # o rodapé de madeira encerada nas duas paredes (a quina de cima clara)
+    RDP = _pau('#6e4026', '#8a5434', quina=1.3, b=(0, 0, 0, 0, 0, 0.09))
+    caixa((0, LX, 0, 0.018, 0, 0.09), RDP, tipo=2)
+    caixa((0, 0.018, 0.018, LY, 0, 0.09), RDP, tipo=2)
     # a viga grossa em cima e os pilares (no canto de trás e nas duas pontas)
     MOLD = ['#b5733e', '#ad6c3a']
     VG = tabuas(MOLD, 0.6, 9, '#7a4222', ponta=False)
@@ -242,9 +257,17 @@ def tora_y(cx, cz, r, y0, y1, casca='#5a3a22', miolo='#c89a62', lados=8, oid=Non
         fp([(xa, y0, za), (xb, y0, zb), (xb, y1, zb), (xa, y1, za)], nn, liso('#%02x%02x%02x' % tuple(np.clip(cc * k, 0, 255).astype(int))), o)
 
     def ponta(L, n, P):
-        rr = np.hypot(P[:, 0] - cx, P[:, 2] - cz) / r
+        # no pixel: a casca (1 px), o alburno claro, o anel escuro no meio e o miolo
+        rx = (P[:, 0] - cx) * 32
+        rz = (P[:, 2] - cz) * 39.2
+        rr = np.hypot(rx, rz)
+        R = r * 32
         out = np.tile(cm, (len(P), 1))
-        out = np.where((rr > 0.72)[:, None], _tom(cm, 0.8), out)
+        out = np.where((rr < R * 0.62)[:, None], _tom(cm, 0.94), out)
+        out = np.where((np.abs(rr - R * 0.5) < 0.55)[:, None], _tom(cm, 0.72), out)
+        out = np.where((rr < 0.9)[:, None], _tom(cm, 0.66), out)
+        out = np.where(((rr > R - 1.1) & (rx + rz > 0))[:, None], _tom(cm, 1.08), out)
+        out = np.where((rr > R - 0.9)[:, None] & ~((rx + rz > 0)[:, None]), _tom(cc, 1.2), out)
         return out
     fp([(x, y1, z) for (x, z) in pts], (0, 1, 0), emissivo(ponta), o)
     return o
@@ -254,7 +277,7 @@ def tora_y(cx, cz, r, y0, y1, casca='#5a3a22', miolo='#c89a62', lados=8, oid=Non
 # o fogão a lenha (2 x 1 casas, giro 4: a frente para +y, encostado no fundo; altura 0,85 m; aceso)
 # =====================================================================================================================
 FOG = dict(x0=1.5, x1=3.0, yb=0.70, zc=0.79, zt=0.85)
-FORN = dict(m=2.6, bw=0.2, zp=0.36, bt=0.66, yb=0.70, yf=0.28)      # a boca da fornalha
+FORN = dict(m=2.6, bw=0.24, zp=0.38, bt=0.7, yb=0.70, yf=0.26)      # a boca da fornalha
 CHAM = (1.55, 1.89, 0.0, 0.34)                                          # a chaminé (x0, x1, y0, y1)
 BOCAS = ((2.62, 0.43), (2.12, 0.45))                                    # as bocas da chapa (a 1ª, em cima do fogo, aberta)
 FURO = 0.095                                                            # o buraco da boca aberta
@@ -264,7 +287,7 @@ def fogao(aceso=True):
     x0, x1, yb, zc, zt = FOG['x0'], FOG['x1'], FOG['yb'], FOG['zc'], FOG['zt']
     m, bw, zp, bt, yf = FORN['m'], FORN['bw'], FORN['zp'], FORN['bt'], FORN['yf']
     # ---- o corpo de alvenaria: azulejinho creme, a barra vermelha embaixo ----
-    nicho = (1.68, 2.2, 0.06, 0.25)                  # o nicho da lenha embaixo do forno
+    nicho = (1.66, 2.2, 0.05, 0.33)                  # o nicho da lenha embaixo do forno
     corpo = c.novo_obj(3)
     AZF = azulejinho()
     face_com_furos('y', yb, x0 + 0.03, x1 - 0.03, 0.1, zc, [(m - bw, m + bw, zp, bt), (nicho[0], nicho[1], 0.1, nicho[3])], AZF, corpo)
@@ -316,7 +339,7 @@ def fogao(aceso=True):
         _barra(b, '#34302d', '#4a4541', quina=1.3)
     # a portinhola da fornalha aberta para baixo (presa embaixo): fica deitada na frente da boca, de ferro fundido
     # com a moldura em relevo, o losango e a tramela de latão; não tapa o fogo nem o forno
-    dz0, dlen, desp = zp - e, 0.3, 0.022
+    dz0, dlen, desp = zp - e, 0.22, 0.022
     dx0, dx1 = m - bw - e + 0.008, m + bw + e - 0.008
 
     def portinhola(L, n, P):
@@ -339,25 +362,32 @@ def fogao(aceso=True):
         _barra((xx, xx + 0.03, yb, yb + 0.03, dz0 - desp - 0.004, dz0 + 0.004), '#2a2624', '#4a4541', quina=False)
 
     # ---- o cinzeiro embaixo da fornalha (as frestas em brasa) ----
-    zc0, zc1 = 0.1, 0.28
+    zc0, zc1 = 0.08, 0.3
 
     def cinzeiro(L, n, P):
         out = np.tile(hx('#36322f'), (len(P), 1))
         if n[1] > 0.5:
             z = P[:, 2]
             X = P[:, 0]
-            for k in range(2):
-                zz = zc0 + 0.06 + k * 0.05
-                fr = (z > zz) & (z <= zz + PZ) & (np.abs(X - m) < bw - 0.07)
-                out = np.where(fr[:, None], hx('#b8481e') if aceso else hx('#141210'), out)
-                out = np.where(((z > zz + PZ) & (z <= zz + 2 * PZ) & (np.abs(X - m) < bw - 0.06))[:, None], hx('#4e4844'), out)
-            out = np.where((np.abs(X - m) < 0.02)[:, None] & (z > zc1 - 0.045)[:, None] & (z < zc1 - 0.02)[:, None], hx('#c89a3e'), out)
+            # as três frestas em brasa (2 px: a de cima mais viva, pulsando com o fogo)
+            pul = 0.5 + 0.5 * math.sin(2 * math.pi * FOGO_T['t'])
+            for k in range(3):
+                zz = zc0 + 0.02 + k * 0.042
+                lar = np.abs(X - m) < bw - 0.06
+                fr1 = (z > zz) & (z <= zz + PZ) & lar
+                fr2 = (z > zz + PZ) & (z <= zz + 2 * PZ) & lar
+                if aceso:
+                    out = np.where(fr1[:, None], hx('#c8481c'), out)
+                    out = np.where(fr2[:, None], hx('#ffb040') if (pul > 0.5) != (k == 1) else hx('#f08a2a'), out)
+                else:
+                    out = np.where((fr1 | fr2)[:, None], hx('#141210'), out)
+                out = np.where(((z > zz + 2 * PZ) & (z <= zz + 3 * PZ) & lar)[:, None], hx('#4e4844'), out)
         return out
     o = c.novo_obj(3)
     c.caixa((m - bw + 0.01, m + bw - 0.01, yb, yb + 0.018, zc0, zc1), {'frente': emissivo(cinzeiro), '*': _pau('#2e2a28', '#4a4541', quina=1.3, b=(0, 0, 0, 0, zc0, zc1))}, M, o)
 
     # ---- o forno: a porta de ferro com a moldura, o puxador e o termômetro ----
-    fx0, fx1, fz0, fz1 = 1.62, 2.2, 0.33, 0.68
+    fx0, fx1, fz0, fz1 = 1.62, 2.24, 0.39, 0.72
 
     def forno(L, n, P):
         out = np.tile(hx('#3a3532'), (len(P), 1))
@@ -386,12 +416,11 @@ def fogao(aceso=True):
     fp([(nx0, 0.32, nz0), (nx1, 0.32, nz0), (nx1, yb, nz0), (nx0, yb, nz0)], (0, 0, 1), liso('#2e2016'), on)
     fp([(nx0, 0.32, nz0), (nx1, 0.32, nz0), (nx1, 0.32, nz1), (nx0, 0.32, nz1)], (0, 1, 0), liso('#22170f'), on)
     fp([(nx0, 0.32, nz0), (nx0, yb, nz0), (nx0, yb, nz1), (nx0, 0.32, nz1)], (1, 0, 0), liso('#3a2a1e'), on)
-    r = 0.05
-    pilha = c.novo_obj(3)            # a pilha é um objeto só: sem contorno entre as toras (só a casca escura entre elas)
-    for k, xx in enumerate((nx0 + 0.07, nx0 + 0.18, nx0 + 0.29, nx0 + 0.4)):
-        tora_y(xx, nz0 + r, r, 0.36, yb - 0.02 - 0.012 * (k % 2), oid=pilha, casca=('#6a4428', '#5a3a22')[k % 2], miolo=('#e6bf86', '#dcb27a')[k % 2])
-    for k, xx in enumerate((nx0 + 0.125, nx0 + 0.235, nx0 + 0.345)):
-        tora_y(xx, nz0 + 2.7 * r, r * 0.95, 0.36, yb - 0.03 - 0.015 * (k % 2), oid=pilha, casca=('#5a3a22', '#6a4428')[k % 2], miolo=('#dcb27a', '#e8c48c')[k % 2])
+    # três toras grandes embaixo e uma em cima, encaixada (as pontas claras com os anéis e a casca escura)
+    r = 0.078
+    for k, xx in enumerate((nx0 + 0.095, nx0 + 0.265, nx0 + 0.435)):
+        tora_y(xx, nz0 + r, r, 0.36, yb - 0.015 - 0.02 * (k % 2), casca=('#5e3c22', '#6a4428', '#553620')[k], miolo=('#e8c48c', '#dcb47a', '#e4be84')[k], lados=12)
+    tora_y(nx0 + 0.18, nz0 + r + 1.62 * r, r * 0.92, 0.36, yb - 0.035, casca='#6a4428', miolo='#eccb94', lados=12)
 
     # ---- o varão de latão na frente da chapa, com o pano de prato xadrez ----
     for xx in (x0 + 0.05, x1 - 0.07):
@@ -1096,6 +1125,50 @@ def espada_sao_jorge(x, y):
             c.face_plana([(cx_ + s * k, cy_ - s * k, zz) for (s, zz) in quad], (k, k, 0), emissivo(f), M, of)
 
 
+def tapete_tranca(xc, yc, r=0.6):
+    """O tapete redondo de trança de retalhos: os anéis de cores, cada um com a trança em diagonal, a borda escura."""
+    cores = np.stack([hx(x) for x in ('#a8443a', '#c89a48', '#4e6a8a', '#e2d2ae', '#6e7c4a', '#b8604a', '#d8b878')])
+    pa = 3 * PH                                   # a largura de cada anel (3 px)
+
+    def f(L, n, P):
+        dx, dy = P[:, 0] - xc, P[:, 1] - yc
+        rr = np.hypot(dx, dy)
+        anel = np.floor(rr / pa)
+        ang = np.arctan2(dy, dx)
+        out = cores[(anel.astype(int) * 3) % len(cores)]
+        # a trança: os gomos em diagonal, um claro e um escuro, desencontrados de anel para anel
+        g = np.floor(ang * rr / (2 * PH) + anel * 0.5 + (rr % pa) / pa)
+        out = np.where((g % 2 == 0)[:, None], _tom(out, 1.08), _tom(out, 0.9))
+        out = np.where((rr % pa < PH * 0.8)[:, None], _tom(out, 0.78), out)
+        out = np.where((rr > r - 1.6 * PH)[:, None], hx('#5a2e22'), out)
+        return out
+    o = c.novo_obj(3)
+    c.cilindro(xc, yc, r, 0.0, 0.014, liso('#4a2620'), M, o, lados=40, tampa_mat=emissivo(f))
+
+
+def banquinho(x, y, cor='#8a5230'):
+    """O banquinho de madeira encostado na parede, com a bacia de ágata em cima."""
+    s, d, h = 0.36, 0.3, 0.4
+    caixa((x, x + s, y, y + d, h - 0.04, h), {'cima': tab2(['#b07440', '#a86e3c'], d / 2, '#5a2c16', eixo=0, seed=81, org=y), '*': _pau(cor, quina=False)}, sombra=False)
+    for (a, b) in ((x + 0.03, y + 0.03), (x + s - 0.07, y + 0.03), (x + 0.03, y + d - 0.07), (x + s - 0.07, y + d - 0.07)):
+        _barra((a, a + 0.04, b, b + 0.04, 0, h - 0.04), '#6a3c22', '#8a5230', quina=False)
+    _barra((x + 0.05, x + s - 0.05, y + d - 0.06, y + d - 0.04, 0.12, 0.15), '#6a3c22', quina=False)
+    pegadas.append((x, x + s, y, y + d))
+    # a bacia esmaltada (branca com a borda azul) e o pano dobrado dentro
+    bx, by = x + s / 2, y + d / 2
+    o = c.novo_obj(3)
+    _poligono_rodado(bx, by, [(h, 0.1), (h + 0.05, 0.15), (h + 0.07, 0.17)], vol(bx, by, '#ece6da', brilho=0.4,
+                     faixas=lambda P, b: np.where((P[:, 2] > h + 0.07 - 1.2 * PZ)[:, None], hx('#3e5f8e'), b)), o, lados=24)
+
+    def dentro(L, n, P):
+        rr = np.hypot(P[:, 0] - bx, P[:, 1] - by)
+        out = np.where((rr > 0.15)[:, None], hx('#3e5f8e'), hx('#c8c2b6'))
+        pano = (np.abs(P[:, 0] - bx - 0.02) < 0.06) & (np.abs(P[:, 1] - by + 0.01) < 0.05)
+        return np.where(pano[:, None], np.where(((np.floor(P[:, 0] / (2 * PH)) + np.floor(P[:, 1] / (2 * PH))) % 2 == 0)[:, None], hx('#b8402e'), hx('#f0e6d6')), out)
+    _disco(bx, by, h + 0.07, 0.17, emissivo(dentro), o, lados=24)
+    itens_peq.append((bx - 0.17, bx + 0.17, by - 0.17, by + 0.17, h))
+
+
 # =====================================================================================================================
 # as coisas de parede: a prateleira com os potes e as panelas penduradas, a natureza-morta, o relógio, o alho
 # =====================================================================================================================
@@ -1327,30 +1400,39 @@ def tabua_colheres(yc, zt):
            liso('#c8925a'), oc_)
 
 
-def lampada(x, y, zc=2.7):
-    """A lâmpada pendurada de esmalte (o prato branco com a borda azul e a lâmpada acesa) e o fio que sobe."""
+def lampada(x, y, zc=2.3):
+    """
+    A lâmpada pendurada de esmalte: a cúpula branca com a borda azul, a lâmpada acesa, o soquete preto e o fio que
+    sobe e some aos poucos (em degraus, para o que está atrás dele) antes da viga.
+    """
     o = c.novo_obj(3)
-    _poligono_rodado(x, y, [(zc, 0.2), (zc + 0.05, 0.15), (zc + 0.11, 0.06), (zc + 0.14, 0.035)],
-                     vol(x, y, '#ece6d6', brilho=0.3, faixas=lambda P, b: np.where((P[:, 2] < zc + PZ * 1.5)[:, None], hx('#3e5f8e'), b)), o, lados=24,
-                     tampa_mat=liso('#d8d2c2'))
+    perfil = [(zc, 0.2), (zc + 0.03, 0.18), (zc + 0.08, 0.12), (zc + 0.13, 0.055), (zc + 0.15, 0.04)]
+
+    def esmalte(P, b):
+        zz = P[:, 2] - zc
+        b = np.where((zz < 1.5 * PZ)[:, None], hx('#3e5f8e'), b)
+        return np.where(((zz > 0.115) & (zz < 0.115 + PZ))[:, None], hx('#3e5f8e'), b)
+    _poligono_rodado(x, y, perfil, vol(x, y, '#ece6d6', brilho=0.35, faixas=esmalte), o, lados=26, tampa_mat=liso('#d8d2c2'))
+    c.cilindro(x, y, 0.025, zc + 0.15, zc + 0.2, vol(x, y, '#2a2624', brilho=0.3), M, o, lados=10, tampa_mat=liso('#3a3634'))
     ob = c.novo_obj(3, contorno=False)
     luzes.add(ob)
-    c.elipsoide(np.array([x, y, zc - 0.015]), np.array([0.045, 0.045, 0.04]), liso('#fff2c0'), ob)
-    of = c.novo_obj(3, sombra=False)
-    c.caixa((x - 0.008, x + 0.008, y - 0.008, y + 0.008, zc + 0.14, ALTO + 0.38), liso('#2a2420'), M, of)
-    lampadas.append(((x, y, zc - 0.1), 1.8, 0.45))
+    c.elipsoide(np.array([x, y, zc - 0.012]), np.array([0.05, 0.05, 0.04]), liso('#fff4c8'), ob)
+    of = c.novo_obj(3, sombra=False, contorno=False)
+    c.caixa((x - 0.012, x + 0.012, y - 0.012, y + 0.012, zc + 0.2, ALTO - 0.01), liso('#2a2420'), M, of)
+    fades_atras.append((of, ALTO - 0.16, 0.15))
+    lampadas.append(((x, y, zc - 0.02), 0.62, 0.55))
 
 
 # =====================================================================================================================
 # a montagem de um quadro
 # =====================================================================================================================
 def nova_cena():
-    global c, pegadas, luzes, vidros, fades, lampadas, itens_peq
+    global c, pegadas, luzes, vidros, fades, fades_atras, lampadas, itens_peq
     cantos = np.array([[x, y, z] for x in (-0.5, LX + 0.3) for y in (-0.5, LY + 0.3) for z in (-0.35, ALTO + 1.2)])
     S = tela(cantos)
     x0, y0 = int(S[:, 0].min()) - 4, int(S[:, 1].min()) - 4
     c = Cena(x0, y0, int(S[:, 0].max() - x0) + 4, int(S[:, 1].max() - y0) + 4)
-    pegadas, luzes, vidros, fades, lampadas, itens_peq = [], set(), [], [], [], []
+    pegadas, luzes, vidros, fades, fades_atras, lampadas, itens_peq = [], set(), [], [], [], [], []
     BE.ligar(globals())
 
 
@@ -1375,6 +1457,10 @@ def montar_moveis(t):
     fruteira(4.62, 3.0, 0.9405)
     # a planta (9,5) no canto da frente
     espada_sao_jorge(7.12, 4.12)
+    # enfeites que não são móveis do seed (o chão livre da metade da direita): o tapete de trança na frente da porta
+    # (casas 8..9 x 2..3, longe das cadeiras) e o banquinho com a bacia encostado no fundo, embaixo das panelas
+    tapete_tranca(6.86, 2.5, 0.6)
+    banquinho(6.88, 0.05)
     # as lâmpadas do teto (4,2) e (8,2)
     lampada(4.5 * CASA, 2.5 * CASA)
     lampada(8.5 * CASA, 2.5 * CASA)
@@ -1389,13 +1475,14 @@ def montar_moveis(t):
 
 
 FOGO_ACESO = {'v': True}
+FOGO_T = {'t': 0.0}
 
 
 def _fogo(cor, t, forca):
     from fogo_cozinha import desenhar_fogo
     g = dict(FORN)
-    g.update(esc=0.62, r_tora=0.032, raio_luz=1.7, chama_dx=0.02, chama_y=0.32)
-    g.update(luz_y0=0.05, luz_fora=(1.45, 3.05, 0.0, 1.08, 0.03))
+    g.update(esc=0.75, r_tora=0.036, raio_luz=2.0, chama_dx=0.03, chama_y=0.32)
+    g.update(luz_y0=0.0, luz_fora=(1.45, 3.05, 0.0, 1.1, 0.03), luz_fora_k=0.5)
     cor = desenhar_fogo(cor, c, t=t, forca=forca, geo=g, fumaca_chamine=0.0)
     from fogo_cozinha import chamas_boca
     return chamas_boca(cor, c, t, forca, BOCAS[0], FURO, FOG['zt'], luz=(0.85, 0.45))
@@ -1483,6 +1570,18 @@ def acabamento(t, forca, tj=None):
         m = (obj == oid) & (Z > zf)
         k = np.ceil(np.clip((Z - zf) / alto, 0, 1) * 5) / 5
         cor = np.where(m[..., None], cor * (1 - k[..., None]) + fundo * k[..., None], cor)
+    # o fio da lâmpada some em degraus para o que está atrás dele (a cor do vizinho de lado, que não é o fio)
+    for (oid, zf, alto) in fades_atras:
+        m = (obj == oid)
+        if not m.any():
+            continue
+        atras = cor.copy()
+        for dx in (3, -3, 4, -4):
+            vz = np.roll(cor, dx, axis=1)
+            vo = np.roll(obj, dx, axis=1)
+            atras = np.where((m & (vo != oid) & (np.roll(m, dx, axis=1) == False) & (atras == cor).all(-1))[..., None], vz, atras)
+        k = np.ceil(np.clip((Z - zf) / alto, 0, 1) * 4) / 4
+        cor = np.where((m & (Z > zf))[..., None], cor * (1 - k[..., None]) + atras * k[..., None], cor)
     if FOGO['ok']:
         cor = FOGO['f'](cor, t, forca)
     for (L0, raio, forca_l) in lampadas:
@@ -1492,13 +1591,19 @@ def acabamento(t, forca, tj=None):
     return cor
 
 
-def luz_lampada(cor, L0, raio, forca_l):
-    """A luz morna da lâmpada pendurada: clareia em anéis (em degraus) o que está embaixo dela."""
+def luz_lampada(cor, L0, tg, forca_l):
+    """
+    O cone de luz morna da lâmpada: o que está embaixo dela e voltado para cima (o tampo, o chão) clareia numa mancha
+    redonda que abre com a distância (tg = a abertura do cone), em 3 degraus; e um halo fraco em volta da cúpula.
+    """
     P = c.mundoP
-    d = np.linalg.norm(P - np.array(L0), axis=-1)
-    s = np.clip(1 - d / raio, 0, 1) ** 1.3 * forca_l
-    s = np.where(c.obj >= 0, np.floor(s * 4) / 4, 0)
-    return cor + (np.array([255.0, 214.0, 150.0]) - cor * 0.3) * s[..., None] * 0.22
+    L0 = np.array(L0)
+    dz = L0[2] - P[..., 2]
+    rh = np.hypot(P[..., 0] - L0[0], P[..., 1] - L0[1])
+    raio = np.maximum(dz, 0.05) * tg + 0.12
+    s = np.clip(1 - rh / raio, 0, 1) ** 0.8 * np.clip(1.3 - dz / 3.0, 0, 1) * forca_l
+    s = np.where((c.obj >= 0) & (c.nz > 0.6) & (dz > 0.3), np.floor(s * 3 + 0.25) / 3, 0)
+    return cor + (np.array([255.0, 222.0, 160.0]) - cor * 0.3) * s[..., None] * 0.3
 
 
 import janela_cozinha as _JC  # noqa: E402
@@ -1510,6 +1615,7 @@ def montar(t=0.0, forca=1.0, tj=None):
     """Um quadro: t = o instante do fogo (0..1, loop), tj = o da cortina (padrão: t), forca = o fogo (1 aceso, 0 apagado)."""
     tj = t if tj is None else tj
     FOGO_ACESO['v'] = forca > 0.3
+    FOGO_T['t'] = t
     nova_cena()
     sala()
     montar_moveis(tj)
