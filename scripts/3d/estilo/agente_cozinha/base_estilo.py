@@ -30,6 +30,7 @@ def ligar(g):
 
 
 
+
 def hx(h):
     h = h.lstrip('#')
     return np.array([int(h[i:i + 2], 16) for i in (0, 2, 4)], float)
@@ -96,6 +97,7 @@ def tabuas(cores, larg, comp, junta, eixo=0, seed=0, ponta=True, veio=True):
             jun |= h < ep
             out = np.where(((h > ep) & (h < 2 * ep))[:, None], out * 1.1 + 4, out)
         return np.where(jun[:, None], jc, out)
+    return emissivo(f)
 
 
 
@@ -206,6 +208,7 @@ def _p1_mat_rampa(R, lo, hi, tipo=3, extra=None):
             idx = idx + extra(L, np.asarray(n, float) / np.linalg.norm(n), P)
         idx = np.clip(np.round(idx), 0, len(R) - 1).astype(int)
         return _p1_final(R[idx], n, tipo)
+    return emissivo(f)
 
 
 
@@ -423,6 +426,7 @@ def _barra(b, cor, topo=None, oid=None, quina=1.32):
     return o
 
 
+
 # ---------------------------------------------------------------- a mesa ----------------------------------------------------------------
 MESA_TAB = ['#8e4a2c', '#86442a', '#965230', '#7e4026']
 
@@ -438,6 +442,7 @@ def _ponta_tabuas(cor, larg, org, junta='#4a2414'):
         out = np.where(((g >= larg - PH))[:, None], _tom(c0, 1.08), out)
         return np.where((g < PH)[:, None], jc, out)
     return emissivo(f)
+
 
 
 
@@ -460,12 +465,14 @@ def caneca(mx, my, z, mr=0.064, mh=0.13):
 
 
 
+
 def _garrafa(cx, cy, z):
     """A garrafa de vidro verde-escuro: o corpo, o ombro, o gargalo e a rolha; a risca de brilho do vidro."""
     o = c.novo_obj(3)
     m = vol(cx, cy, '#3e5e44', brilho=0.45)
     _poligono_rodado(cx, cy, [(z, 0.04), (z + 0.14, 0.04), (z + 0.17, 0.028), (z + 0.19, 0.016), (z + 0.24, 0.016)], m, o, lados=16)
     c.cilindro(cx, cy, 0.014, z + 0.24, z + 0.27, vol(cx, cy, '#b8865a'), M, o, lados=12, tampa_mat=liso('#c89a6a'))
+
 
 
 # ---------------------------------------------------------------- o barril, os potes e as plantas ----------------------------------------------------------------
@@ -542,3 +549,9 @@ def pote_barro(x, y, z, r=0.09, h=0.16):
         rr = np.hypot(P[:, 0] - x, P[:, 1] - y)
         return _vao(np.where((rr > r * 0.6 - 0.016)[:, None], hx('#c47a4a'), hx('#3a2014')), P)
     _disco(x, y, z + h, r * 0.6, emissivo(boca), o, lados=20)
+
+
+
+# ----- a madeira -----
+_MAD = _p1_rampa(['#3a1e10', '#4a2716', '#5c321b', '#6e3e22', '#80492a', '#925531', '#a46239', '#b47040', '#c4824c', '#d29658'])
+

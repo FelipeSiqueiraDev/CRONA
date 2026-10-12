@@ -396,7 +396,7 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
         para = luzc - P
         para /= np.maximum(np.linalg.norm(para, axis=-1, keepdims=True), 1e-6)
         olha = np.clip((c.nrm * para).sum(-1), 0, 1)
-        frente = (Y > yb - 0.03) & (c.obj >= 0) & ~vao
+        frente = (Y > yb + g.get('luz_y0', -0.03)) & (c.obj >= 0) & ~vao
         # o raio dos anéis encolhe com a luz (as brasas sozinhas só esquentam a beira da boca)
         R = g.get('raio_luz', 0.5 + 1.2 * lz)
         k = ((np.clip(1 - d3 / R, 0, 1) ** 0.8 * (0.3 + 0.8 * olha) + 0.5 * np.clip(1 - d3 / (0.3 + 0.32 * lz), 0, 1))
@@ -409,3 +409,93 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
 
 # o nome de antes (a primeira versão no vão 3D)
 desenhar_fogo2 = desenhar_fogo
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# a boca aberta da chapa (só da cozinha): as argolas tiradas, o fogo lambendo para cima pelo buraco
+# ---------------------------------------------------------------------------------------------------------------------
+BRASA_BOCA = paleta('#4a1a10', '#8a2c14', '#d0541c', '#f89434', '#ffd060')
+
+
+def _linguas_boca(sx, sy, bx, by, t, fl, meia):
+    """As línguas baixas e largas que saem do buraco da boca (tons 1..5), espalhadas pela largura do buraco."""
+    nivel = np.zeros(sx.shape, int)
+    if fl <= 0:
+        return nivel
+    # (posição na largura, largura px, altura px, tom máximo, fase, frequência)
+    linguas = [(-0.7, 6.0, 8.0, 3, 0.10, 2), (-0.25, 8.0, 14.0, 5, 0.45, 1), (0.25, 7.5, 11.5, 4, 0.78, 2),
+               (0.72, 5.5, 8.0, 3, 0.30, 1), (0.0, 9.0, 7.0, 4, 0.6, 3)]
+    tons = [(1.0, 1.0, 0.0), (0.78, 0.82, 0.4), (0.58, 0.64, 0.8), (0.4, 0.46, 1.1), (0.24, 0.28, 1.4)]
+    for (px, w, hgt, tmax, fase, fr) in linguas:
+        a = TAU * (fr * t + fase)
+        hh = hgt * (0.82 + 0.18 * math.sin(a) + 0.06 * math.sin(2 * a + 1.1)) * (0.35 + 0.65 * fl)
+        ww = w * (0.95 + 0.05 * math.cos(a + 0.7))
+        tm = max(1, int(round(tmax * (0.4 + 0.6 * fl))))
+        v = np.clip((by - sy) / max(hh, 1e-6), 0, 1)
+        bal = (0.9 * math.sin(a + 0.4) * v ** 1.5 + 0.4 * np.sin(2 * a + 2.0 + 5 * v) * v ** 2)
+        for k, (fw, fh, sobe) in enumerate(tons[:tm]):
+            g = _gota(sx - bal, sy, bx + px * meia, by - sobe, ww * fw, hh * fh)
+            nivel = np.where(g > 0, np.maximum(nivel, k + 1), nivel)
+    return nivel
+
+
+def chamas_boca(cor, c, t, forca, centro, raio, zt, esc=0.45, luz=(0.9, 0.55)):
+    """
+    O buraco da boca aberta (centro x, y; raio; zt = o alto da chapa): o fundo em brasa pulsando (pedaços), as
+    chamas subindo do buraco por cima da chapa (sem tapar o que está na frente delas) e a luz do fogo em volta,
+    também na parede de trás. luz = (raio da luz em m, força).
+    """
+    forca = float(np.clip(forca, 0, 1))
+    fl, br, lz = _faixas(forca)
+    cor = cor.copy()
+    h, w = c.obj.shape
+    P = c.mundoP
+    X, Y, Z = P[..., 0], P[..., 1], P[..., 2]
+    bx0, by0 = centro
+    rr = np.hypot(X - bx0, Y - by0)
+    # 1. o buraco: a brasa em pedaços (as frestas acesas pulsam), apagado vira cinza
+    furo = (c.obj >= 0) & (np.abs(Z - zt) < 0.006) & (rr < raio)
+    if furo.any():
+        ii, jj = np.nonzero(furo)
+        Q = P[ii, jj]
+        gi, gj = np.floor(Q[:, 0] / 0.045), np.floor(Q[:, 1] / 0.045)
+        r0 = ruido(gi, gj, 31.0)
+        pul = 0.5 + 0.5 * np.sin(TAU * (t + r0))
+        borda = (np.abs((Q[:, 0] / 0.045) % 1 - 0.5) > 0.36) | (np.abs((Q[:, 1] / 0.045) % 1 - 0.5) > 0.36)
+        k = np.where(borda, 3 + (pul > 0.5), 1 + (r0 > 0.6) + (pul > 0.7)).astype(int)
+        k = np.clip(np.round(k * br + 0.0).astype(int), 0, 4)
+        # a beira do buraco (a espessura da chapa, do lado de trás) fica escura
+        ka = rr[ii, jj] > raio - 0.02
+        out = np.where(ka[:, None], hx('#1c1716'), BRASA_BOCA[k])
+        cor[ii, jj] = out if br > 0.02 else np.where(ka[:, None], hx('#1c1716'), CINZA[1])
+    # 2. as chamas: na tela, do meio do buraco para cima; só onde nada mais perto da câmera está na frente
+    if fl > 0:
+        C = np.array([bx0, by0, zt])
+        bx, by = _tela(c, C)
+        bx, by = float(bx), float(by) + 1
+        x0, x1 = int(bx - 14), int(bx + 15)
+        y0, y1 = int(by - 26), int(by + 3)
+        x0, y0, x1, y1 = max(0, x0), max(0, y0), min(w, x1), min(h, y1)
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        niv = np.zeros((h, w), int)
+        nv = _linguas_boca(xx + 0.5, yy + 0.5, bx, by, t, fl, raio * 32 * 1.2)
+        prof_ch = C @ VISTA
+        livre = (c.prof[y0:y1, x0:x1] < prof_ch + 0.02) | (c.obj[y0:y1, x0:x1] < 0)
+        # embaixo da linha do buraco as chamas não aparecem (estão dentro da chapa)
+        sx_rel = (xx + 0.5 - bx) / (raio * 32 * 1.42)
+        dentro_furo = (yy + 0.5 - by) < -1 + 0 * sx_rel
+        niv[y0:y1, x0:x1] = np.where(livre & (dentro_furo | (np.abs(sx_rel) < 1) & ((yy + 0.5 - by) < raio * 16 * 1.42 * np.sqrt(np.clip(1 - sx_rel ** 2, 0, 1)) - 1)), nv, 0)
+        niv = _limpar(niv)
+        cor = np.where((niv > 0)[..., None], CHAMA[np.clip(niv - 1, 0, 4)], cor)
+    # 3. a luz do fogo da boca em volta (a parede de trás, a chaminé, a chaleira, a chapa), em anéis
+    if lz > 0:
+        L0 = np.array([bx0, by0, zt + 0.12])
+        pulso = 1 + 0.05 * math.sin(TAU * t) + 0.03 * math.sin(TAU * 3 * t + 0.8)
+        d3 = np.linalg.norm(P - L0, axis=-1) / pulso
+        k = np.clip(1 - d3 / luz[0], 0, 1) ** 1.5 * luz[1] * lz
+        # em degraus com o pontilhado ordenado na borda (sem o círculo duro)
+        Bm = np.tile(np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]) / 16.0, (h // 4 + 1, w // 4 + 1))[:h, :w]
+        k = np.minimum(np.floor(k * 4 + Bm * 0.9) / 4, 1.0)
+        k = np.where((c.obj >= 0) & ~furo, k, 0.0)
+        cor = _luz_quente(cor, k)
+    return np.clip(cor, 0, 255)
