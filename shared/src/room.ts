@@ -1,5 +1,5 @@
 import { STACK_LIMIT, WALL_PX_PER_TILE, Z_PX } from './constants';
-import { footprint, getFurni, getWallFurni, ocupa } from './furni';
+import { footprint, getFurni, getWallFurni, ocupa, type FurniDef } from './furni';
 import { parseHeightmap, type Heightmap } from './heightmap';
 import { computeWalls, type Door, type WallInfo } from './walls';
 import type { ItemAction, Loot } from './rpg';
@@ -271,15 +271,33 @@ export class RoomMap {
   walkState(x: number, y: number): WalkState {
     if (this.floorHeight(x, y) === null) return 'blocked';
     let sit = false;
+    // embaixo da mesa vazada se passa (abaixado): ela e o que está em cima dela não tapam a casa
+    const mesa = this.mesaDaCasa(x, y);
+    const topo = mesa && mesa.def.vao === 'vazada' ? mesa.it.z + mesa.def.height - 0.01 : Infinity;
     for (const it of this.itemsAt(x, y)) {
       const def = getFurni(it.defId);
       if (!def) continue;
+      if (mesa && (it === mesa.it ? def.vao === 'vazada' : it.z >= topo)) continue;
       // a cadeira quebrada não senta: tapa a casa como um móvel qualquer
       if (def.sit && !it.quebrado) sit = true;
       // porta aberta deixa passar; fechada (ou trancada), bloqueia, mesmo a passagem de pisar em cima
       else if (def.openState !== undefined ? it.state !== def.openState : !def.walkable) return 'blocked';
     }
     return sit ? 'sit' : 'walk';
+  }
+
+  /** A mesa com vão embaixo nesta casa (`vao`), se houver. */
+  mesaDaCasa(x: number, y: number): { it: FloorItem; def: FurniDef } | undefined {
+    for (const it of this.itemsAt(x, y)) {
+      const def = getFurni(it.defId);
+      if (def?.vao && !it.quebrado) return { it, def };
+    }
+    return undefined;
+  }
+
+  /** A casa fica embaixo de uma mesa vazada: quem está aqui está abaixado, escondido atrás dela. */
+  sobMesa(x: number, y: number): boolean {
+    return this.mesaDaCasa(x, y)?.def.vao === 'vazada';
   }
 
   /** O mobi de camas de andares (beliche) neste tile, se houver. */
@@ -294,9 +312,13 @@ export class RoomMap {
     if (!cell.length) return f;
     let top = f;
     let seat: number | null = null;
+    // embaixo da mesa: a mesa e o que está em cima dela não contam (a peça fica no chão)
+    const mesa = this.mesaDaCasa(x, y);
+    const topoMesa = mesa ? mesa.it.z + mesa.def.height - 0.01 : Infinity;
     for (const it of cell) {
       const def = getFurni(it.defId);
       if (!def) continue;
+      if (mesa && (it === mesa.it || it.z >= topoMesa)) continue;
       const t = it.z + def.height;
       if (def.sit && !it.quebrado) seat = def.leitos?.length ? it.z + def.leitos[alto ? def.leitos.length - 1 : 0] : t;
       if (t > top) top = t;
@@ -329,10 +351,26 @@ export class RoomMap {
           z = Math.max(z, h);
           continue;
         }
-        for (const it of this.itemsAt(tx, ty)) {
-          if (it.id === ignoreId) continue;
+        const cell = this.itemsAt(tx, ty).filter((it) => it.id !== ignoreId);
+        // a mesa com vão: a cadeira e a banqueta encaixam embaixo dela, no chão
+        const mesa = cell.map((it) => ({ it, d: getFurni(it.defId) })).find((m) => m.d?.vao && !m.it.quebrado);
+        const encaixa = (d: FurniDef, m: { it: FloorItem; d?: FurniDef }) => !!d.sit && !d.vao && d.height < (m.d?.height ?? 0) && m.it.z <= h + 0.01;
+        if (mesa && encaixa(def, mesa)) {
+          // embaixo dela, só ela (e o que estiver em cima): a casa precisa estar livre no chão
+          const embaixo = cell.some((it) => {
+            const idef = getFurni(it.defId);
+            return it !== mesa.it && idef && !idef.flat && it.z < mesa.it.z + (mesa.d?.height ?? 0) - 0.01;
+          });
+          if (embaixo) return fail('Já tem algo embaixo da mesa.');
+          z = Math.max(z, h);
+          continue;
+        }
+        for (const it of cell) {
           const idef = getFurni(it.defId);
           if (!idef) continue;
+          // a cadeira encaixada embaixo da mesa não conta: o que vai para a mesa fica em cima dela
+          const sob = def.vao ? !!idef.sit && idef.height < def.height && it.z <= h + 0.01 : mesa && it !== mesa.it && encaixa(idef, mesa);
+          if (sob) continue;
           if (!idef.stackable) return fail('Não dá para empilhar aqui.');
           tileTop = Math.max(tileTop, it.z + idef.height);
         }

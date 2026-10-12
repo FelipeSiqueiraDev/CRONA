@@ -43,6 +43,7 @@ Este guia é para o Claude que pega o CRONA do zero, numa conversa nova ou noutr
 - Mostre o resultado pronto (uma captura, o teste passando), não a depuração.
 - Coisa grande se combina antes, e a decisão fica registrada no documento da área.
 - Não proponha voltar atrás no que o Felipe já decidiu.
+- **No fim de cada bloco de trabalho, sempre a lista de pendências** (pedido do Felipe, 12/10): o que ficou faltando do que foi feito e o que vem na fila. Na resposta a ele e no `EM-ABERTO.md`.
 
 **Visual**
 - **As telas seguem as referências** de `docs/referencias/` exatamente: botões, bordas, fonte, espaçamento. Confira por recortes lado a lado.

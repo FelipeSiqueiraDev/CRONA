@@ -10,10 +10,7 @@ Destruir/Consertar no painel do objeto); as frases com letra de dedo; **andar em
 **mapa-múndi** sem o Brasil, ilhas maiores; a arte da cidadezinha virou **Tiradentes**.
 
 Falta, na ordem:
-1. **Mesas do tamanho certo** (o Felipe: as mesas ficam pequeninas, parecem mesa de centro; deviam ser mesas de
-   escritório grandes) e **o vão embaixo da mesa**: a casa da mesa deixa de ser sólida no tabuleiro, a cadeira encaixa
-   embaixo e a peça pode se esconder ali. Mexe no `canPlace`, no `walkState` e na ordem de desenho. Ver também a
-   `table_small` (0,55 m, baixa demais).
+1. ~~**Mesas do tamanho certo** e **o vão embaixo da mesa**.~~ **Feito em 12/10** (branch `claude/mesas`, abaixo).
 2. **Igarapé**: outra cidadezinha parecida com Tiradentes (cenas + pedir ao Códex a ilha e as duas chegadas).
 3. **Santo Berço**: o lugar de Morte, medieval, espiral, lodo, cristais. A pesquisa e o plano estão em
    [`SANTO-BERCO.md`](SANTO-BERCO.md). Cada cômodo uma cena.
@@ -154,6 +151,16 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - O Alt + arrastar do mestre continua mudando o cômodo de lugar na planta.
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
+
+## Feito em 12/10 (na nuvem, branch `claude/mesas`): as mesas maiores e o vão embaixo
+
+- **Maiores (o Felipe: "todas um pouco maiores, e a altura"):** no catálogo, `aumento` (1,2; a mesinha baixa, 1,35) faz a arte crescer por igual em volta do meio da pegada (`encaixe` em `furniArte.ts`), e a `height` já vem multiplicada (o que vai em cima fica no tampo novo). A pegada no chão não muda: a borda passa um pouco por cima das casas vizinhas. A caixa da ordem de desenho e do clique cresce junto (`RoomView.ts`).
+- **O vão (`vao` no catálogo):** `'vazada'` (só pernas: mesa de trabalho, de reunião, de jantar, da cozinha, de bar, redonda, de xadrez, a mesinha, a de contenção) e `'fundo'` (gaveteiro, painel ou caixas embaixo: as escrivaninhas, a do Veríssimo, a das ferramentas, a do arsenal, a bancada de armas, a mesa de vidro). A mesa em U ficou como estava (monitores nas bordas).
+  - A cadeira e a banqueta **encaixam embaixo** das duas (`canPlace`: no chão, uma por casa); o que vai para a mesa continua indo para o tampo, mesmo com a cadeira embaixo.
+  - Na **vazada** se passa por baixo (`walkState` = `walk`; o caminho custa mais, `sobMesa` em `pathfinding.ts`: só passa por baixo quando é o que sobra) e se para ali, **escondido**: a peça fica no chão (`standHeight`), abaixada (0,62 da altura) e desenhada antes da mesa (`sob` na ordenação, `render/sort.ts`). Clicar na mesa vazada leva a peça comandada para baixo dela, como a cadeira. Na **com fundo**, ninguém atravessa.
+- **Banco antigo:** o que estava em cima de uma mesa na altura antiga sobe junto (`mesasMaisAltas`, uma vez só, `db.mesasAltas`).
+- Testes: `server/test/mesas.test.ts`.
+- **Falta / para conferir com o Felipe:** se 1,2 ficou bom (é um número só por mesa no `furni.ts`); as cadeiras não cresceram (a mesa a 0,96 m perto do assento de 0,46 m); a cadeira encaixada embaixo da escrivaninha não deixa sentar (a mesa com fundo bloqueia a casa); a vista tática desenha a peça embaixo da mesa por cima dela (sem esconder).
 
 ## Feito em 12/10 (na nuvem, branch `claude/artes-no-lugar`): a arte nova nas salas
 

@@ -125,7 +125,8 @@ export function findPath(map: RoomMap, start: Point, goal: Point, blocked: (x: n
       if (diag && (map.walkState(cx + dx, cy) === 'blocked' || map.walkState(cx, cy + dy) === 'blocked')) continue;
       const nz = map.standHeight(nx, ny);
       if (nz - cz > MAX_STEP_UP || cz - nz > MAX_STEP_DOWN) continue;
-      const cost = g[ci] + (diag ? Math.SQRT2 : 1);
+      // passar por baixo da mesa (abaixado) custa mais: só quando é o caminho que sobra
+      const cost = g[ci] + (diag ? Math.SQRT2 : 1) + (map.sobMesa(nx, ny) && !isGoal ? 2.5 : 0);
       if (cost < g[ni]) {
         g[ni] = cost;
         came[ni] = ci;

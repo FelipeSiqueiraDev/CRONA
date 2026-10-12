@@ -727,7 +727,8 @@ export function upgradeDb(db: Database): boolean {
     const van = vanNoLugar(db);
     const paredes = paredesLivres(db);
     const bestiario = bestiarioInicial(db);
-    return sede || fazenda || orfanato || cores || temas || van || paredes || bestiario;
+    const mesas = mesasMaisAltas(db);
+    return sede || fazenda || orfanato || cores || temas || van || paredes || bestiario || mesas;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';
@@ -804,7 +805,38 @@ export function upgradeDb(db: Database): boolean {
   temasDosAgentes(db);
   paredesLivres(db);
   bestiarioInicial(db);
+  mesasMaisAltas(db);
   db.seedVersion = SEED_VERSION;
+  return true;
+}
+
+/**
+ * As mesas cresceram (12/10, `aumento` no catálogo): o que estava em cima de uma delas, na altura
+ * antiga do tampo, sobe junto (e o que estava em cima disso também). Uma vez só (`db.mesasAltas`);
+ * o que já está na altura nova não é tocado.
+ */
+export function mesasMaisAltas(db: Database): boolean {
+  if (db.mesasAltas) return false;
+  for (const r of db.rooms) {
+    const subiu = new Set<number>();
+    for (const mesa of [...r.items].sort((a, b) => a.z - b.z)) {
+      const def = getFurni(mesa.defId);
+      if (!def?.aumento || def.aumento === 1) continue;
+      const antiga = def.height / def.aumento;
+      const delta = def.height - antiga;
+      const fp = footprint(def, mesa.rot);
+      const dentro = (it: FloorItem) => it.x >= mesa.x && it.y >= mesa.y && it.x < mesa.x + fp.sx && it.y < mesa.y + fp.sy;
+      for (const it of r.items) {
+        if (it === mesa || subiu.has(it.id) || !dentro(it)) continue;
+        // só o que ficou afundado: do tampo antigo até abaixo do novo (o que já está no novo fica)
+        if (it.z < mesa.z + antiga - 0.03 || it.z >= mesa.z + def.height - 0.03) continue;
+        it.z = Math.round((it.z + delta) * 1000) / 1000;
+        subiu.add(it.id);
+      }
+    }
+  }
+  db.mesasAltas = true;
+  // a marca nova precisa ser gravada, mesmo sem nada para subir
   return true;
 }
 

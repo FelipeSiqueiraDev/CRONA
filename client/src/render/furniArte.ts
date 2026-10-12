@@ -147,6 +147,12 @@ function encaixe(chave: string, a: MovelArte, def: FurniDef, prontas: Imagens[])
     e.f = f < 0.99 ? f : 1;
     e.base = [bw * e.f, bd * e.f];
   }
+  // a mesa maior que a pegada (o `aumento` do catálogo): cresce por igual em volta do meio dela
+  const aum = def.aumento ?? 1;
+  if (aum !== 1) {
+    e.f *= aum;
+    if (e.base) e.base = [e.base[0] * aum, e.base[1] * aum];
+  }
   encaixes.set(chave, e);
   return e;
 }
@@ -444,7 +450,7 @@ function lugar(p: Painter, img: HTMLCanvasElement, ax: number, ay: number, k: nu
   const [bx, by] = centro ? iso((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, w.z0) : iso(w.x1, w.y1, w.z0);
   const r = { x: bx - ax * k, y: by - ay * k, w: img.width * k, h: img.height * k };
   const f = aj?.enc.f ?? 1;
-  if (f >= 1) return r;
+  if (f === 1) return r;
   const [px, py] = pivo(p, aj!.encosta);
   return { x: px + (r.x - px) * f, y: py + (r.y - py) * f, w: r.w * f, h: r.h * f };
 }

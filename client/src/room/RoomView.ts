@@ -1288,7 +1288,8 @@ export class RoomView {
       const def = it ? getFurni(it.defId) : undefined;
       if (it && def) {
         if (dbl) this.events.use(it.id);
-        if (def.walkable || def.sit) {
+        // como a cadeira: a mesa vazada leva a peça para baixo dela (abaixada, escondida)
+        if (def.walkable || def.sit || def.vao === 'vazada') {
           const fp = footprint(def, it.rot);
           const inside = tile && tile.x >= it.x && tile.y >= it.y && tile.x < it.x + fp.sx && tile.y < it.y + fp.sy;
           const target = inside ? tile! : { x: it.x, y: it.y };
@@ -1780,8 +1781,20 @@ export class RoomView {
       const floorH = map.floorHeight(it.x, it.y) ?? 0;
       const flat = !!def.flat && it.z <= floorH + 0.05 && !ghost;
       let topZ = it.z + def.height;
+      // a cadeira (ou banqueta) encaixada embaixo da mesa, no chão: a mesa vem por cima dela
+      const encaixada = !!def.sit && it.z <= floorH + 0.01 && !!map.mesaDaCasa(it.x, it.y) && !ghost;
       for (const node of vis.nodes) {
         const box = m.box(node.b);
+        if (def.aumento && def.aumento !== 1) {
+          // a mesa maior que a pegada: a caixa (ordem de desenho e clique) cresce junto com a arte
+          const cx = (box.x0 + box.x1) / 2;
+          const cy = (box.y0 + box.y1) / 2;
+          const k = def.aumento;
+          box.x0 = cx + (box.x0 - cx) * k;
+          box.x1 = cx + (box.x1 - cx) * k;
+          box.y0 = cy + (box.y0 - cy) * k;
+          box.y1 = cy + (box.y1 - cy) * k;
+        }
         if (box.z1 > topZ) topZ = box.z1;
         const sil = boxSilhouette(box);
         let sx0 = Infinity;
@@ -1804,6 +1817,7 @@ export class RoomView {
         const nodeAlpha = (xray ? alpha * 0.28 : alpha) * (cela ? 1 - 0.72 * cela.transp : 1);
         const d: Drawable = {
           box: node.ordem ? m.box(node.ordem) : box,
+          sob: encaixada,
           sx0: sx0 - 12,
           sx1: sx1 + 12,
           sy0: sy0 - 24,
@@ -2082,6 +2096,8 @@ export class RoomView {
       // ~1,75 m de altura para a ordem de desenho
       const box: WBox = { x0: cx - half, x1: cx + half, y0: cy - half, y1: cy + half, z0: baseZ, z1: baseZ + ALTURA_PESSOA };
       const deitada = !!marcas?.deitadas.has(u.id);
+      // embaixo da mesa vazada: abaixada, escondida atrás dela (a mesa vem por cima na ordem de desenho)
+      const sob = !deitada && map.sobMesa(Math.round(p.x), Math.round(p.y));
       const fy = u.sit === 2 ? sy - 8 : sy;
       const door = this.door;
       const clip = !!door && (door.seg.wall === 'l' ? cx < door.seg.plane : cy < door.seg.plane);
@@ -2209,6 +2225,7 @@ export class RoomView {
         });
       const d: Drawable = {
         box,
+        sob,
         sx0: sx - 40,
         sx1: sx + 40,
         sy0: sy - HE - 30,
@@ -2224,7 +2241,7 @@ export class RoomView {
           // a pessoa na escala do tabuleiro, a partir dos pés (de cócoras, mais baixa)
           ctx.save();
           ctx.translate(sx, sy);
-          ctx.scale(ESCALA_ARTE_PESSOA, ESCALA_ARTE_PESSOA * (u.agachado ? 0.72 : 1));
+          ctx.scale(ESCALA_ARTE_PESSOA, ESCALA_ARTE_PESSOA * (sob ? 0.62 : u.agachado ? 0.72 : 1));
           ctx.translate(-sx, -sy);
           const dance = u.dance ? -Math.abs(Math.sin((now * Math.PI) / 320 + u.phase)) * 4 : 0;
           // flutuando (o Existido, 10/10): o corpo uns 20 cm acima do chão, subindo e descendo devagar; a sombra e o

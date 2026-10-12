@@ -128,6 +128,8 @@ export interface Database {
   sedeRev?: number;
   /** os temas dos quatro agentes já foram postos (uma vez só: depois, quem escolhe é o jogador) */
   temasAgentes?: boolean;
+  /** o que estava em cima das mesas já subiu com elas (12/10, as mesas maiores) */
+  mesasAltas?: boolean;
   /** versão da montagem da Fazenda Olhos de Águia (seedFazenda) */
   fazendaRev?: number;
   /** versão da montagem do Orfanato Filhos do Dragão (seedOrfanato) */

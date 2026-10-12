@@ -11,6 +11,15 @@ export interface Drawable {
   poly?: [number, number][];
   draw(): void;
   depth?: number;
+  /** está embaixo de uma mesa (a cadeira encaixada, a peça escondida): vem antes da caixa que o cobre */
+  sob?: boolean;
+}
+
+/** O meio da caixa p fica dentro da caixa q, vista de cima. */
+function dentro(p: WBox, q: WBox) {
+  const cx = (p.x0 + p.x1) / 2;
+  const cy = (p.y0 + p.y1) / 2;
+  return cx > q.x0 + EPS && cx < q.x1 - EPS && cy > q.y0 + EPS && cy < q.y1 - EPS;
 }
 
 const EPS = 1e-3;
@@ -71,7 +80,9 @@ export function sortDrawables(list: Drawable[]): Drawable[] {
       const b = list[j];
       if (a.sx1 <= b.sx0 || b.sx1 <= a.sx0 || a.sy1 <= b.sy0 || b.sy1 <= a.sy0) continue;
       if (a.poly && b.poly && !polysOverlap(a.poly, b.poly)) continue;
-      if (cmp(a.box, b.box) < 0) {
+      // embaixo da mesa: a mesa (e o que está em cima dela) cobre quem está embaixo
+      const sob = a.sob && !b.sob && dentro(a.box, b.box) ? -1 : b.sob && !a.sob && dentro(b.box, a.box) ? 1 : 0;
+      if (sob ? sob < 0 : cmp(a.box, b.box) < 0) {
         out[i].push(j);
         indeg[j]++;
       } else {
