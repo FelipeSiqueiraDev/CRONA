@@ -182,6 +182,15 @@ ficava no meio da casa de 0,75 m (um palmo longe da parede) e a peça acelerava 
   cadeiras e banquetas ganharam o mesmo `aumento` (1,2; a `height` do assento junto: cadeira 0,55 m, banqueta de
   balcão 0,9). O encaixe da cadeira (`tampo` e o ramo da cadeira em `ajusteDoMovel`) vale também para a mesa maior
   que as casas: a cadeira vai para a borda do tampo (para frente ou para trás) e o assento entra ~19 cm embaixo dele.
+- **A cadeira com os pés no ângulo do tabuleiro (o Felipe: "o ângulo não tá batendo, as pernas da frente voando"):**
+  o gerador desenhou a cadeira de madeira com a câmera um pouco girada; no giro 6 (a da ponta da mesa), os três pés
+  que aparecem inclinavam +0,66 e −0,40 em vez de ±0,5, e a base não seguia as linhas do piso. O `moveis.py` ganhou a
+  opção `"pes"`: mede os pés (`pes_do_desenho`) e endireita o desenho como o `retificar` (as verticais ficam em pé),
+  até a base cair no losango 2:1. Refeita a `chair_wood` (`moveis-rituais.json`). Medidor e folha de conferência:
+  os pés achados e a linha 2:1 certa por cima de cada giro (feitos na conversa; a conta está no `moveis.py`).
+  Medi as outras cadeiras e banquetas: as redondas não têm esse problema; a de plástico do bar (giros 4 e 2) é um
+  pouco torta, mas endireitada ela alargava e ficava apertada na mesinha, e ficou como estava. O medidor engana nas
+  mesas (tampo e travessas), então elas não foram medidas assim.
 - As bancadas novas do Laboratório não tinham a 3ª cor (o desenho por código, enquanto a arte carrega, quebrava).
 - Testes: `server/test/andar.test.ts`.
 - **Falta / para conferir com o Felipe:** o tamanho do ladrilho (um por casa ficou como nas referências; o de 37 cm

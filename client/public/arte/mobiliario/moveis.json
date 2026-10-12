@@ -3163,23 +3163,23 @@
   "giros": {
    "4": {
     "arquivo": "chair_wood/giro-4.png",
-    "ax": 42.5,
-    "ay": 143.8
+    "ax": 46.0,
+    "ay": 142.1
    },
    "6": {
     "arquivo": "chair_wood/giro-6.png",
-    "ax": 42.5,
-    "ay": 125.7
+    "ax": 45.5,
+    "ay": 131.2
    },
    "0": {
     "arquivo": "chair_wood/giro-0.png",
-    "ax": 42.5,
-    "ay": 123.7
+    "ax": 45.5,
+    "ay": 130.2
    },
    "2": {
     "arquivo": "chair_wood/giro-2.png",
-    "ax": 43.0,
-    "ay": 142.6
+    "ax": 45.5,
+    "ay": 143.3
    }
   },
   "real": [
