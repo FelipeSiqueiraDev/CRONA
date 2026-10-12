@@ -138,6 +138,27 @@ MOLDES = {
 }
 
 
+def apertar(cam, mask, MV):
+    """
+    A caixa da câmera justa no desenho: o ajuste do moveis.py prefere cobrir o desenho com folga (uns 5%), e a folga
+    encolhia o móvel moldado (cada giro de um jeito). Aqui a caixa inteira cresce ou encolhe por igual até ter a
+    largura do desenho, e o centro vai para o centro dele. Por igual, para não deformar (esticar só a altura entortava
+    a cadeira de costas, que o gerador desenhou mais baixa).
+    """
+    ys, xs = np.nonzero(mask)
+    c = dict(cam)
+    u, v = MV.proj(MV.cantos(c['W'], c['D'], c['H']), c)
+    k = (xs.max() - xs.min() + 1) / (u.max() - u.min())
+    c['W'] *= k
+    c['D'] *= k
+    c['H'] *= k
+    u, v = MV.proj(MV.cantos(c['W'], c['D'], c['H']), c)
+    c['u0'] += (xs.min() + xs.max() + 1) / 2 - (u.min() + u.max()) / 2
+    # embaixo, o pé do desenho no chão da caixa
+    c['v0'] += ys.max() + 1 - v.max()
+    return c
+
+
 def pintura_do_codex(nome, estado, recorta=False):
     """
     Veste o molde com a pintura do Códex: para cada giro, acha a câmera com que o desenho foi feito (a do
@@ -167,8 +188,9 @@ def pintura_do_codex(nome, estado, recorta=False):
                 rec = rec[:, ::-1].copy()
             troca = rot in (2, 6)
             wr, dr, hr = (real[1], real[0], real[2]) if troca else tuple(real)
-            cam, _ = MV.ajustar_camera(rec[:, :, 3] > 100, wr, dr, hr, livre='proporcao')
-            cache[rot] = (rec, cam)
+            mask = rec[:, :, 3] > 100
+            cam, _ = MV.ajustar_camera(mask, wr, dr, hr, livre='proporcao')
+            cache[rot] = (rec, apertar(cam, mask, MV))
         return cache[rot]
 
     def pintar(c, rot):
