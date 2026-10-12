@@ -345,8 +345,13 @@ export interface SceneInfo {
   /** ao ar livre: a planta desenha o terreno (grama, estrada, água) no lugar da pedra */
   aberto?: boolean;
   terreno?: string;
-  /** os prédios do lugar (casas que ocupam e o nome), para a planta de quem está ao ar livre */
-  marcos?: { x: number; y: number; w: number; h: number; nome: string }[];
+  /**
+   * os prédios do lugar (casas que ocupam e o nome), para a planta de quem está ao ar livre:
+   * `kind` é o desenho do mobi (casarao, celeiro...) e `entra`, a cena que a entrada dele abre
+   */
+  marcos?: { x: number; y: number; w: number; h: number; nome: string; kind?: string; entra?: number }[];
+  /** o resto do que está no chão ao ar livre, para o minimapa desenhar: [kind, x, y, w, h] */
+  simbolos?: [string, number, number, number, number][];
 }
 
 export interface InvItem {
@@ -462,6 +467,14 @@ export type ClientMsg =
   /** o mapa-múndi: a lista dos lugares; o mestre arrasta um ícone para outro ponto do mapa */
   | { t: 'lugares' }
   | { t: 'lugarMover'; id: number; x: number; y: number }
+  /**
+   * o minimapa: as peças vão para a cena. Sem `tokens`, todos os agentes da campanha; com
+   * `tokens`, só essas (o grupo dividido, ou a peça arrastada). `entrar` (padrão sim): o
+   * mestre e a mesa vão junto.
+   */
+  | { t: 'grupoPara'; roomId: number; tokens?: number[]; entrar?: boolean }
+  /** o minimapa: o mestre marca a cena como visitada ou não (`roomId` sem valor = todas da campanha) */
+  | { t: 'visitada'; roomId?: number; campanha?: number; visitada: boolean }
   | { t: 'setLink'; id: number; roomId: number | null }
   | { t: 'sendTo'; userId: number | 'all'; roomId: number }
   | { t: 'tokenAdd'; name: string; look: AvatarLook; color?: string; capacity?: number }

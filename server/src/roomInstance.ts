@@ -461,14 +461,39 @@ export class RoomInstance {
     this.hotel.touch();
   }
 
-  /** Os prédios da cena ao ar livre (mobis grandes que não se pisa), para a planta. */
+  /** Mobi grande que não se pisa: um prédio, na planta de quem está ao ar livre. */
+  private ehMarco(def: ReturnType<typeof getFurni>) {
+    return !!def && !def.walkable && def.width * def.depth >= 20;
+  }
+
+  /**
+   * Os prédios da cena ao ar livre, para a planta. A cena de dentro (`entra`) é a da passagem
+   * encostada no prédio (a Entrada na frente da porta).
+   */
   marcos() {
-    const out: { x: number; y: number; w: number; h: number; nome: string }[] = [];
+    const out: { x: number; y: number; w: number; h: number; nome: string; kind?: string; entra?: number }[] = [];
+    const itens = this.map.allItems();
+    for (const it of itens) {
+      const def = getFurni(it.defId);
+      if (!def || !this.ehMarco(def)) continue;
+      const fp = footprint(def, it.rot);
+      const encostada = itens.find((p) => {
+        if (!p.link || !getFurni(p.defId)?.portal) return false;
+        return p.x >= it.x - 1 && p.x <= it.x + fp.sx && p.y >= it.y - 1 && p.y <= it.y + fp.sy;
+      });
+      out.push({ x: it.x, y: it.y, w: fp.sx, h: fp.sy, nome: def.name, kind: def.kind, ...(encostada?.link ? { entra: encostada.link } : {}) });
+    }
+    return out;
+  }
+
+  /** O resto do chão ao ar livre (árvore, cerca, plantação...), para o minimapa: [kind, x, y, w, h]. */
+  simbolos() {
+    const out: [string, number, number, number, number][] = [];
     for (const it of this.map.allItems()) {
       const def = getFurni(it.defId);
-      if (!def || def.walkable || def.width * def.depth < 20) continue;
+      if (!def || def.interno || def.hidden || this.ehMarco(def)) continue;
       const fp = footprint(def, it.rot);
-      out.push({ x: it.x, y: it.y, w: fp.sx, h: fp.sy, nome: def.name });
+      out.push([def.kind, it.x, it.y, fp.sx, fp.sy]);
     }
     return out;
   }

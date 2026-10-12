@@ -12,6 +12,7 @@ import './ui/requisicao.css';
 import './ui/entrada.css';
 import './ui/mapaMundi.css';
 import './ui/kit.css';
+import './ui/minimapa.css';
 import './ui/jogador.css';
 import './ui/fliperama.css';
 import './ui/barJogos.css';

@@ -102,6 +102,8 @@ export interface CampaignData {
   notas?: NotaPlanta[];
   /** onde este lugar fica no mapa-múndi, o ícone e a sala de entrada (sem valor, valem os padrões) */
   lugar?: { x: number; y: number; icone?: IconeLugar; entrada?: number };
+  /** as cenas onde um agente já pisou (o minimapa apaga as outras); o mestre também marca */
+  visitadas?: number[];
 }
 
 export interface Database {

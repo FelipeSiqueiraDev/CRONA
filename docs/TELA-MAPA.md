@@ -24,6 +24,8 @@ Resumo:
 
 ### Planta do andar
 
+> **Desde 12/10 a planta é o minimapa** (`client/src/ui/minimapa.ts`): níveis Terreno › Prédio › Andar › Cômodo, cartão com Entrar e Levar o grupo, visitado/não visitado, lista de lugares e a planta grande na tecla M, no visual do HUD (azul-noite, borda bege, ouro). A tabela abaixo é do tempo do papel. Ver `EM-ABERTO.md` (12/10).
+
 | Elemento | Como faço | Precisa de você |
 |---|---|---|
 | Papel envelhecido, rasgado, com a folha de trás | imagem | **arte:** `papel-planta.png` |
