@@ -152,6 +152,24 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 12/10 (na nuvem, branch `claude/arte-codigo`): estudos do estilo pixel art só por código
+
+O Felipe mandou salas isométricas em pixel art "cozy" (uma de madeira com lareira) e quer o tabuleiro nesse jeito, sem
+o Códex. Os estudos estão em `scripts/3d/estilo/` (ver o README de lá) e as prévias em `docs/estilo/`.
+
+- **O caminho que deu certo:** desenhar direto no pixel (ESC abaixo de 1), cada material com a cor de base e a luz de
+  cada face no acabamento, contorno de 1 px, brilho na quina, sombra macia embaixo dos móveis; as peças desenhadas
+  com cuidado (pixel limpo, sem pixel solto). Filtro por cima do render liso não serve (`estilo.py`, descartado).
+- **A sala de madeira** (`sala4.py`, 7 x 7 casas): lareira de pedra com o capelo em rampa e o fogo animado (aceso,
+  apagando, a fumaça), a chaminé que atravessa a viga e some (sai da casa), sofá, estantes, mesa em nogueira com 6
+  cadeiras, porta, quadro, relógio, teclado, a janela com a cortina no vento e o sol no chão. GIF em
+  `docs/estilo/4-sala-viva.gif`. Pode virar cenário padrão (uma casa na cidade).
+- **Comparação com o Códex moldado:** o molde (`scripts/3d/codigo/exportar.py --codex --caixa`) acerta o ângulo, mas
+  não as proporções que o gerador desenhou erradas; o estilo por código fica certo em tudo.
+- **Em andamento:** o casarão da fazenda visto de fora e a cozinha da fazenda no estilo novo (com a planta do seed).
+- **Falta:** levar ao jogo (exportador nos 4 giros, chão, parede, animações no tabuleiro); a mancha do sol longe da
+  janela, as pregas da cortina, as últimas brasas em pontinhos, a cortina encostando na porta.
+
 ## Feito em 12/10 (na nuvem, branch `claude/arte-codigo`): a arte dos móveis feita por código
 
 O Felipe quer o tabuleiro "perfeito e completo pelo código". A auditoria dos ângulos achou 42 móveis tortos (a arte
