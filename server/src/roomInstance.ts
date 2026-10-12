@@ -33,6 +33,9 @@ import {
   sceneGrid,
   sceneShortName,
   TICK_MS,
+  MEIO_PASSO_MS,
+  BATIDAS_RETO,
+  BATIDAS_DIAGONAL,
   tileCenter,
   tilesByDistance,
   tileToPoint,
@@ -158,6 +161,10 @@ interface RoomUser {
   /** quantos passos a peça já esperou porque outra peça tapava o caminho (o grupo andando junto) */
   esperando?: number;
   next: Point | null;
+  /** quantas batidas do relógio (meio passo) faltam para chegar em `next` */
+  falta?: number;
+  /** quanto o passo de agora leva, em ms */
+  passoMs?: number;
   sit: 0 | 1 | 2;
   dance: boolean;
   dirty: boolean;
@@ -248,7 +255,7 @@ export class RoomInstance {
 
   private ensureTimer() {
     if (!this.hotel.timers) return;
-    if (!this.timer && (this.viewers.size || this.users.size)) this.timer = setInterval(() => this.step(), TICK_MS);
+    if (!this.timer && (this.viewers.size || this.users.size)) this.timer = setInterval(() => this.step(true), MEIO_PASSO_MS);
   }
 
   /** Cria a peça na cena (na passagem que liga a `fromRoomId`, ou na posição salva, ou na porta). */
@@ -589,7 +596,7 @@ export class RoomInstance {
       sit: u.sit,
       dance: u.dance,
     };
-    if (u.next) s.mv = { x: u.next.x, y: u.next.y, z: this.map.standHeight(u.next.x, u.next.y) };
+    if (u.next) s.mv = { x: u.next.x, y: u.next.y, z: this.map.standHeight(u.next.x, u.next.y), ms: u.passoMs ?? TICK_MS };
     return s;
   }
 
@@ -666,11 +673,19 @@ export class RoomInstance {
     }
   }
 
-  /** Um passo do tabuleiro (a cada TICK_MS). Público para os testes. */
-  step() {
+  /**
+   * Um passo do tabuleiro. O relógio chama a cada meio passo (`meio`): a peça só chega na casa
+   * seguinte quando acabam as batidas do passo dela (2 no reto, 3 na diagonal). Sem `meio` (os
+   * testes), todo mundo dá o passo inteiro de uma vez.
+   */
+  step(meio = false) {
     const now = Date.now();
     const updates: UserStatus[] = [];
     for (const u of this.users.values()) {
+      if (u.next && meio && (u.falta ?? 0) > 1) {
+        u.falta = (u.falta ?? 0) - 1;
+        continue;
+      }
       if (u.next) {
         u.x = u.next.x;
         u.y = u.next.y;
@@ -689,10 +704,10 @@ export class RoomInstance {
           delete u.aoChegar;
           chegou?.();
         } else {
-          const path = findPath(this.map, u, u.goal, (x, y) => this.occupied(x, y, u.client.id));
+          const path = findPath(this.map, u, u.goal, (x, y) => this.occupied(x, y, u.client.id), u.dir);
           // só outra peça no caminho (o grupo andando junto, alguém parado na porta): espera uns passos e tenta de novo
           const soPecas = (!path || !path.length) && (u.esperando ?? 0) < 8 && !!findPath(this.map, u, u.goal, () => false)?.length;
-          if (soPecas) u.esperando = (u.esperando ?? 0) + 1;
+          if (soPecas) u.esperando = (u.esperando ?? 0) + (meio ? 0.5 : 1);
           else if (!path || !path.length) {
             // não dá para chegar (o caminho fechou): fica onde está, e o que esperava a chegada acontece assim mesmo
             delete u.esperando;
@@ -707,6 +722,9 @@ export class RoomInstance {
             const step = path![0];
             u.dir = u.headDir = directionTo(u, step);
             u.next = step;
+            const diagonal = step.x !== u.x && step.y !== u.y;
+            u.falta = diagonal ? BATIDAS_DIAGONAL : BATIDAS_RETO;
+            u.passoMs = u.falta * MEIO_PASSO_MS;
             u.sit = 0;
             if (u.meta?.alto) u.meta.alto = false;
             u.headResetAt = 0;

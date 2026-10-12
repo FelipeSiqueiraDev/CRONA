@@ -623,12 +623,18 @@ function padrao(ctx: CanvasRenderingContext2D, img: HTMLImageElement, o: Pt, px:
   return p;
 }
 
-/** O chão com a textura vista de cima: uma volta dela cobre casas x casas (um fio a mais, sem frestas entre as casas). */
-function pintorPiso(ctx: CanvasRenderingContext2D, img: HTMLImageElement, casas: number): Pintor<[number, number, number]> {
+/**
+ * O chão com a textura vista de cima: uma volta dela cobre casas x casas (um fio a mais, sem frestas entre as
+ * casas), com o pixel `origem` (o cruzamento dos rejuntes) na quina das casas: o rejunte segue a grade.
+ */
+function pintorPiso(ctx: CanvasRenderingContext2D, t: { img: HTMLImageElement; casas: number; origem: [number, number] }): Pintor<[number, number, number]> {
+  const { img, casas } = t;
   const W = img.naturalWidth;
   const H = img.naturalHeight;
+  const u0 = (-t.origem[0] * casas) / W;
+  const v0 = (-t.origem[1] * casas) / H;
   return ([x, y, h]) => {
-    const p = padrao(ctx, img, iso(0, 0, h), iso(casas / W, 0, h), iso(0, casas / H, h));
+    const p = padrao(ctx, img, iso(u0, v0, h), iso(u0 + casas / W, v0, h), iso(u0, v0 + casas / H, h));
     if (!p) return;
     const e = 0.012;
     poly(ctx, quad(x - e, y - e, x + 1 + e, y + 1 + e, h));
@@ -674,7 +680,7 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
   // texturas desenhadas do estilo do cômodo (chão e parede), quando já chegaram
   const tPiso = texturaPiso(style);
   const tParede = texturaParede(style);
-  const pintarPiso = tPiso ? pintorPiso(ctx, tPiso.img, tPiso.casas) : undefined;
+  const pintarPiso = tPiso ? pintorPiso(ctx, tPiso) : undefined;
   const pintarParede = tParede ? pintorParede(ctx, map, tParede.img) : undefined;
   // ao ar livre, o chão de cada casa pode ser outro (terreno): o desenho e a textura de cada estilo
   const linhas = terreno ? terreno.replace(/\r/g, '').split('\n') : undefined;
@@ -684,7 +690,7 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
     if (!t || t === 'agua' || t === style) return [look, pintarPiso];
     if (!pintores.has(t)) {
       const tt = texturaPiso(t);
-      pintores.set(t, tt ? pintorPiso(ctx, tt.img, tt.casas) : undefined);
+      pintores.set(t, tt ? pintorPiso(ctx, tt) : undefined);
     }
     return [floorLook(t), pintores.get(t)];
   };

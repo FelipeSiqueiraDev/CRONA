@@ -100,7 +100,7 @@ export interface ClientUser {
   flutua?: boolean;
   /** a criatura do bestiário que a peça é, e a aparência */
   criatura?: { id: string; aparencia: string };
-  anim: { fx: number; fy: number; fz: number; tx: number; ty: number; tz: number; start: number } | null;
+  anim: { fx: number; fy: number; fz: number; tx: number; ty: number; tz: number; start: number; ms: number } | null;
   waveUntil: number;
   phase: number;
   color: string;
@@ -665,7 +665,7 @@ export class RoomView {
       alto: u.alto,
       flutua: u.flutua,
       criatura: u.criatura,
-      anim: u.mv ? { fx: u.x, fy: u.y, fz: u.z, tx: u.mv.x, ty: u.mv.y, tz: u.mv.z, start: performance.now() } : null,
+      anim: u.mv ? { fx: u.x, fy: u.y, fz: u.z, tx: u.mv.x, ty: u.mv.y, tz: u.mv.z, start: performance.now(), ms: u.mv.ms ?? TICK_MS } : null,
       waveUntil: 0,
       phase: Math.random() * 10,
       color: u.color ?? playerColorFor(u.name),
@@ -695,7 +695,7 @@ export class RoomView {
       const cur = this.userPos(u, now);
       const far = Math.abs(cur.x - s.x) > 1.5 || Math.abs(cur.y - s.y) > 1.5;
       const f = far ? { x: s.x, y: s.y, z: s.z } : cur;
-      u.anim = { fx: f.x, fy: f.y, fz: f.z, tx: s.mv.x, ty: s.mv.y, tz: s.mv.z, start: now };
+      u.anim = { fx: f.x, fy: f.y, fz: f.z, tx: s.mv.x, ty: s.mv.y, tz: s.mv.z, start: now, ms: s.mv.ms ?? TICK_MS };
     } else if (u.anim && !(u.anim.tx === s.x && u.anim.ty === s.y)) u.anim = null;
     else if (u.anim) u.anim.tz = s.z;
     // saiu do lugar: já não está na cama de cima
@@ -739,7 +739,56 @@ export class RoomView {
     const hx = (larguraEmX ? tr.real[0] : tr.real[1]) / M_POR_CASA / 2;
     const hy = (larguraEmX ? tr.real[1] : tr.real[0]) / M_POR_CASA / 2;
     if (hx * 2 > fp.sx - 0.05 && hy * 2 > fp.sy - 0.05) return null;
-    return { cx: s.x + fp.sx / 2, cy: s.y + fp.sy / 2, hx, hy, topo: s.z + def.height };
+    const [ex, ey] = this.map ? this.encostoNaParede(this.map, s) : [0, 0];
+    return { cx: s.x + fp.sx / 2 + ex, cy: s.y + fp.sy / 2 + ey, hx, hy, topo: s.z + def.height };
+  }
+
+  /**
+   * O móvel encostado na parede (12/10, o Felipe, com as salas de referência): o desenho tem a medida de verdade e
+   * fica no meio das casas dele, então o armário de 0,5 m de fundo numa casa de 0,75 m ficava a um palmo da parede,
+   * como se flutuasse. Quando as costas dele dão para a parede (a casa de trás não é chão), ele vai até ela; no canto,
+   * vai também para o lado da parede. Só o desenho: a casa continua a mesma.
+   */
+  private encostoNaParede(map: RoomMap, it: FloorItem): [number, number] {
+    const def = getFurni(it.defId);
+    if (!def || (def.sit && !def.leitos) || def.walkable || def.portal || def.vao === 'vazada' || /^(portal|cell_|bars|iwall)/.test(def.kind)) return [0, 0];
+    if (it.z > (map.floorHeight(it.x, it.y) ?? 0) + 0.05) return [0, 0];
+    const tr = tamanhoReal(it.defId);
+    if (!tr || tr.encosta) return [0, 0];
+    const fp = footprint(def, it.rot);
+    const larguraEmX = it.rot === 0 || it.rot === 4;
+    const folgaX = Math.max(0, (fp.sx - (larguraEmX ? tr.real[0] : tr.real[1]) / M_POR_CASA) / 2);
+    const folgaY = Math.max(0, (fp.sy - (larguraEmX ? tr.real[1] : tr.real[0]) / M_POR_CASA) / 2);
+    if (folgaX < 0.03 && folgaY < 0.03) return [0, 0];
+    // a parede do lado (-1 ou +1, em x ou em y): nenhuma casa da pegada tem chão do outro lado
+    const fora = (x: number, y: number) => map.floorHeight(x, y) === null;
+    const lado = (ax: 'x' | 'y', s: -1 | 1) => {
+      const n = ax === 'x' ? fp.sy : fp.sx;
+      for (let i = 0; i < n; i++) {
+        const x = ax === 'x' ? (s < 0 ? it.x - 1 : it.x + fp.sx) : it.x + i;
+        const y = ax === 'y' ? (s < 0 ? it.y - 1 : it.y + fp.sy) : it.y + i;
+        if (!fora(x, y)) return false;
+      }
+      return true;
+    };
+    // as costas: o lado contrário da frente (giro 4: a frente para +y, as costas em -y)
+    const costas: ['x' | 'y', -1 | 1] = it.rot === 4 ? ['y', -1] : it.rot === 0 ? ['y', 1] : it.rot === 2 ? ['x', -1] : ['x', 1];
+    if (!lado(...costas)) return [0, 0];
+    let dx = 0;
+    let dy = 0;
+    if (costas[0] === 'x') dx = costas[1] * folgaX;
+    else dy = costas[1] * folgaY;
+    // no canto: a lateral que dá para a outra parede (só uma delas)
+    const outro = costas[0] === 'x' ? 'y' : 'x';
+    const folga = outro === 'x' ? folgaX : folgaY;
+    if (folga >= 0.03) {
+      const menos = lado(outro, -1);
+      const mais = lado(outro, 1);
+      const d = menos && !mais ? -folga : mais && !menos ? folga : 0;
+      if (outro === 'x') dx = d;
+      else dy = d;
+    }
+    return [dx, dy];
   }
 
   private ajusteDoMovel(map: RoomMap, it: FloorItem, fundo = 0): [number, number] {
@@ -769,6 +818,9 @@ export class RoomView {
           const ny = Math.max(t.cy - t.hy + ihy, Math.min(t.cy + t.hy - ihy, cy));
           r = [nx - cx, ny - cy];
         } else if (apoio) r = this.ajusteDoMovel(map, apoio, fundo + 1);
+      } else if (!def.sit || def.leitos) {
+        // a cama também (a cabeceira na parede), e quem está deitado nela vai junto
+        r = this.encostoNaParede(map, it);
       } else if (def.sit && !def.leitos && def.width === 1 && def.depth === 1) {
         // a cadeira: a mesa na casa da frente dela (para onde quem senta olha)
         const [fx, fy] = it.rot === 4 ? [0, 1] : it.rot === 0 ? [0, -1] : it.rot === 2 ? [1, 0] : [-1, 0];
@@ -795,7 +847,7 @@ export class RoomView {
 
   private userPos(u: ClientUser, now: number) {
     if (u.anim) {
-      const t = (now - u.anim.start) / TICK_MS;
+      const t = (now - u.anim.start) / u.anim.ms;
       const k = Math.min(1, Math.max(0, t));
       const [fx, fy] = this.vis(u.anim.fx, u.anim.fy);
       const [tx, ty] = this.vis(u.anim.tx, u.anim.ty);
@@ -2043,7 +2095,7 @@ export class RoomView {
         delete u.passoDesde;
         delete u.passoLen;
       }
-      const casas = p.moving && u.anim ? (u.casas ?? 0) + (u.passoLen ?? 1) * Math.min(1, Math.max(0, (now - u.anim.start) / TICK_MS)) : 0;
+      const casas = p.moving && u.anim ? (u.casas ?? 0) + (u.passoLen ?? 1) * Math.min(1, Math.max(0, (now - u.anim.start) / u.anim.ms)) : 0;
       let bq: SpriteFrame | null = null;
       let bpes: PeQuadro[] | null = null;
       // o boneco filmado em 3D (andar completo, parado respirando, sentado, dançando): vale no lugar de tudo

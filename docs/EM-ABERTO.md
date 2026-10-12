@@ -152,6 +152,34 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 12/10 (na nuvem, branch `claude/piso-e-andar`): o piso na grade, o móvel na parede e o andar
+
+O Felipe mandou duas salas de referência (a padaria e o banheiro isométricos, `cozy`): o ladrilho do chão é a casa do
+tabuleiro, o rejunte segue as paredes, e cada móvel ocupa as casas dele encostado na parede. Aqui, a textura cobria
+3,53 casas por volta (o ladrilho de 33 cm cortava as casas e passava torto pelos móveis), o armário de 0,5 m de fundo
+ficava no meio da casa de 0,75 m (um palmo longe da parede) e a peça acelerava na diagonal e andava em zigue-zague.
+
+- **Piso na grade:** `texturas.json` ganhou `origem` (o pixel onde cruzam os rejuntes) e a volta passou a um número
+  inteiro de casas: ladrilho, azulejo e xadrez com **um ladrilho por casa** (8 por volta, `casas: 8`), o concreto com
+  uma placa por casa, a madeira com duas tábuas por casa e a loja com uma (`casas: 4`). O rejunte cai nas quinas das
+  casas e nas paredes (`pintorPiso`, `roomStatic.ts`). Taco, carpete, metal, musgo, pedra e o chão de fora ficaram
+  como estavam (não têm grade). Textura nova com grade: medir quantos ladrilhos tem a volta e onde cai o rejunte.
+- **Móvel encostado na parede** (`encostoNaParede`, `RoomView.ts`): o móvel com a medida de verdade menor que as
+  casas dele, com as costas para a parede (nenhuma casa de chão atrás), vai até ela; no canto, vai também para a
+  parede do lado. Só o desenho (a casa é a mesma); o tampo da mesa encostada vai junto (o que está em cima e a cadeira
+  acompanham). Fora: cadeira, a mesa vazada, a porta e as peças da linha da parede.
+- **O andar:** o relógio do servidor bate a cada meio passo (`MEIO_PASSO_MS`); o passo reto leva 2 batidas (500 ms)
+  e a diagonal 3 (750 ms): a peça anda sempre a ~2 casas por segundo (antes, 2,8 na diagonal). O status manda quanto
+  o passo leva (`mv.ms`) e o tabuleiro anima nesse tempo. O caminho (`findPath`) desempata pelo que vira menos (o
+  estado é a casa e a direção da chegada) e continua na direção em que a peça já vinha (`dirInicial`).
+  `step()` sem argumento (os testes) continua dando o passo inteiro.
+- As bancadas novas do Laboratório não tinham a 3ª cor (o desenho por código, enquanto a arte carrega, quebrava).
+- Testes: `server/test/andar.test.ts`.
+- **Falta / para conferir com o Felipe:** o tamanho do ladrilho (um por casa ficou como nas referências; o de 37 cm
+  é `casas: 4`); o cartão do agente balança enquanto anda e, na diagonal, para de balançar no fim do passo
+  (`markWalking` em `shell.ts` conta 620 ms; não mexi na interface, ver a regra do Felipe); as camas e móveis no
+  meio da sala continuam no meio das casas.
+
 ## Feito em 12/10 (na nuvem, branch `claude/mesas`): as mesas maiores e o vão embaixo
 
 - **Maiores (o Felipe: "todas um pouco maiores, e a altura"):** no catálogo, `aumento` (1,2; a mesinha baixa, 1,35) faz a arte crescer por igual em volta do meio da pegada (`encaixe` em `furniArte.ts`), e a `height` já vem multiplicada (o que vai em cima fica no tampo novo). A pegada no chão não muda: a borda passa um pouco por cima das casas vizinhas. A caixa da ordem de desenho e do clique cresce junto (`RoomView.ts`).

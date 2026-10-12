@@ -2,7 +2,11 @@
  "madeira": {
   "piso": {
    "arquivo": "piso-madeira.png",
-   "casas": 3.5
+   "casas": 4,
+   "origem": [
+    41,
+    0
+   ]
   },
   "parede": {
    "arquivo": "parede-lambri.png"
@@ -11,7 +15,11 @@
  "ladrilho": {
   "piso": {
    "arquivo": "piso-ladrilho.png",
-   "casas": 3.53
+   "casas": 8,
+   "origem": [
+    2,
+    2
+   ]
   },
   "parede": {
    "arquivo": "parede-hospital.png"
@@ -20,7 +28,11 @@
  "concreto": {
   "piso": {
    "arquivo": "piso-concreto.png",
-   "casas": 3.53
+   "casas": 4,
+   "origem": [
+    4,
+    4
+   ]
   },
   "parede": {
    "arquivo": "parede-pedra.png"
@@ -29,7 +41,11 @@
  "xadrez": {
   "piso": {
    "arquivo": "piso-xadrez.png",
-   "casas": 2.35
+   "casas": 8,
+   "origem": [
+    78,
+    78
+   ]
   },
   "parede": {
    "arquivo": "parede-banheiro.png"
@@ -47,7 +63,11 @@
  "azulejo": {
   "piso": {
    "arquivo": "piso-azulejo.png",
-   "casas": 3.53
+   "casas": 8,
+   "origem": [
+    0,
+    0
+   ]
   },
   "parede": {
    "arquivo": "parede-laboratorio.png"
@@ -158,7 +178,11 @@
  "loja": {
   "piso": {
    "arquivo": "piso-loja.png",
-   "casas": 4
+   "casas": 4,
+   "origem": [
+    239,
+    0
+   ]
   },
   "parede": {
    "arquivo": "parede-loja.png"

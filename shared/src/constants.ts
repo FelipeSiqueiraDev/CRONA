@@ -1,5 +1,13 @@
 /** Duração de um passo (servidor autoritativo, igual ao ciclo clássico de 500ms). */
 export const TICK_MS = 500;
+/**
+ * O passo na diagonal anda √2 casas: leva mais tempo, para a peça andar sempre na mesma velocidade
+ * (12/10: antes a diagonal levava os mesmos 500 ms e a peça acelerava 40% nela). O relógio do
+ * servidor bate a cada meio passo; o reto leva 2 batidas, a diagonal 3 (750 ms, perto de 707).
+ */
+export const MEIO_PASSO_MS = TICK_MS / 2;
+export const BATIDAS_RETO = 2;
+export const BATIDAS_DIAGONAL = 3;
 /** Diferença máxima de altura para subir um degrau. */
 export const MAX_STEP_UP = 1.5;
 /** Diferença máxima de altura para descer. */

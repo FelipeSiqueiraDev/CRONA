@@ -8,10 +8,15 @@ import type { FloorStyle } from '@crona/shared';
  *   { "<estilo>": { "piso": { "arquivo", "casas" }, "parede": { "arquivo" } } }
  * casas: quantas casas uma volta do piso cobre; a parede vai do chão ao topo, e a
  * largura de uma volta sai da proporção da imagem.
+ * origem: o pixel da textura onde cruzam dois rejuntes (ou duas emendas), que vai para a
+ * quina de uma casa. Com `casas` inteiro e o número de ladrilhos da volta, cada ladrilho
+ * fica com um tamanho que cabe certinho nas casas e o rejunte segue a grade e as paredes,
+ * como num tabuleiro de verdade (12/10: antes a volta era 3,53 casas, e o rejunte cortava
+ * as casas e passava torto pelos móveis).
  */
 
 interface Estilo {
-  piso?: { arquivo: string; casas: number };
+  piso?: { arquivo: string; casas: number; origem?: [number, number] };
   parede?: { arquivo: string };
 }
 
@@ -50,11 +55,11 @@ export function versaoTexturas() {
   return versao;
 }
 
-export function texturaPiso(estilo: FloorStyle | undefined): { img: HTMLImageElement; casas: number } | null {
+export function texturaPiso(estilo: FloorStyle | undefined): { img: HTMLImageElement; casas: number; origem: [number, number] } | null {
   const e = estilo ? lista?.[estilo]?.piso : undefined;
   if (!e) return null;
   const img = carregar(e.arquivo);
-  return img ? { img, casas: e.casas } : null;
+  return img ? { img, casas: e.casas, origem: e.origem ?? [0, 0] } : null;
 }
 
 export function texturaParede(estilo: FloorStyle | undefined): { img: HTMLImageElement } | null {

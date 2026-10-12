@@ -146,9 +146,9 @@ const FURNI_METERS: FurniDef[] = [
   // ---------- Laboratório ----------
   { id: 'lab_bench', name: 'Bancada de Laboratório', category: 'laboratorio', kind: 'lab_bench', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c', '#cfcabd'] },
   // as bancadas inteiras do laboratório e as peças inteiras (09/10, arte do Códex)
-  { id: 'bancada_lab_parede', name: 'Bancada de Laboratório (parede)', category: 'laboratorio', kind: 'lab_bench', width: 4, depth: 1, height: 0.92, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c'] },
-  { id: 'bancada_lab_curta', name: 'Bancada de Laboratório (canto)', category: 'laboratorio', kind: 'lab_bench', width: 2, depth: 1, height: 0.92, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c'] },
-  { id: 'bancada_lab_ilha', name: 'Bancada de Laboratório (ilha)', category: 'laboratorio', kind: 'lab_bench', width: 4, depth: 1, height: 0.92, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c'] },
+  { id: 'bancada_lab_parede', name: 'Bancada de Laboratório (parede)', category: 'laboratorio', kind: 'lab_bench', width: 4, depth: 1, height: 0.92, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c', '#cfcabd'] },
+  { id: 'bancada_lab_curta', name: 'Bancada de Laboratório (canto)', category: 'laboratorio', kind: 'lab_bench', width: 2, depth: 1, height: 0.92, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c', '#cfcabd'] },
+  { id: 'bancada_lab_ilha', name: 'Bancada de Laboratório (ilha)', category: 'laboratorio', kind: 'lab_bench', width: 4, depth: 1, height: 0.92, stackable: true, rotations: ALL, colors: ['#2f3338', '#8d949c', '#cfcabd'] },
   { id: 'mesa_vidro_lab', name: 'Mesa de Vidro do Laboratório', category: 'laboratorio', kind: 'mesa_vidro_lab', width: 1, depth: 3, height: 1.08, vao: 'fundo', aumento: 1.2, rotations: ALL, colors: ['#a8d0e0', '#3a3d42'], desc: 'Tubos de ensaio em duas fileiras, frascos coloridos e um bico de Bunsen.' },
   { id: 'impressora_3d', name: 'Impressora 3D', category: 'laboratorio', kind: 'impressora_3d', width: 1, depth: 1, height: 1.3, rotations: ALL, colors: ['#2a2d33', '#ff8a3a'] },
   { id: 'mesa_arsenal', name: 'Mesa Grande do Arsenal', category: 'arsenal', kind: 'table_big', width: 4, depth: 2, height: 1.1, vao: 'fundo', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#2a3a2a', '#1f2219'] },

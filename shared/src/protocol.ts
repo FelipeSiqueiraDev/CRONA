@@ -259,8 +259,8 @@ export interface UserStatus {
   /** 0 em pé, 1 sentado em mobi, 2 sentado no chão */
   sit: 0 | 1 | 2;
   dance: boolean;
-  /** próximo tile (andando) */
-  mv?: { x: number; y: number; z: number };
+  /** próximo tile (andando); ms: quanto o passo leva (a diagonal, mais; sem ele, TICK_MS) */
+  mv?: { x: number; y: number; z: number; ms?: number };
 }
 
 export interface UserInfo extends UserStatus {
