@@ -139,18 +139,13 @@ def mesa(c, p):
             cor = np.where(pr[:, None], hexa('#3a332e')[None, :], cor)
         return cor
     lado = tabuas('#7d5330', larg=0.06, eixo='b', var=0.04, veio=False, junta_escura=0.85, seed=6)
-    c.caixa((0, Wm, 0, Dm, 0.72, 0.78), {'cima': tampo, '*': lado}, p, o)
-    # a saia e as pernas grossas
+    # o tampo grosso (7 cm) e só as quatro pernas nas quinas: nada embaixo, para a cadeira entrar livre por baixo
+    c.caixa((0, Wm, 0, Dm, 0.71, 0.78), {'cima': tampo, '*': lado}, p, o)
     pernas = liso('#7a4f2d')
-    ins = 0.1
-    c.caixa((ins, Wm - ins, ins, Dm - ins, 0.6, 0.72), {'*': liso('#6e4628')}, p, o)
-    for uu in (ins, Wm - ins - 0.1):
-        for vv in (ins, Dm - ins - 0.1):
-            c.caixa((uu, uu + 0.1, vv, vv + 0.1, 0, 0.6), {'*': pernas}, p, o)
-    # as travessas embaixo
-    c.caixa((ins + 0.1, Wm - ins - 0.1, Dm / 2 - 0.035, Dm / 2 + 0.035, 0.12, 0.2), {'*': liso('#6a4427')}, p, o)
-    for uu in (ins, Wm - ins - 0.1):
-        c.caixa((uu + 0.02, uu + 0.08, ins + 0.1, Dm - ins - 0.1, 0.14, 0.2), {'*': liso('#6a4427')}, p, o)
+    ins, lp = 0.05, 0.09
+    for uu in (ins, Wm - ins - lp):
+        for vv in (ins, Dm - ins - lp):
+            c.caixa((uu, uu + lp, vv, vv + lp, 0, 0.71), {'*': pernas}, p, o)
     return (0, Wm, 0, Dm)
 
 
