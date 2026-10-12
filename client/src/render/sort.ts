@@ -1,4 +1,4 @@
-import type { WBox } from './painter';
+import type { WBox } from './caixa';
 
 export interface Drawable {
   box: WBox;
@@ -80,8 +80,10 @@ export function sortDrawables(list: Drawable[]): Drawable[] {
       const b = list[j];
       if (a.sx1 <= b.sx0 || b.sx1 <= a.sx0 || a.sy1 <= b.sy0 || b.sy1 <= a.sy0) continue;
       if (a.poly && b.poly && !polysOverlap(a.poly, b.poly)) continue;
-      // embaixo da mesa: a mesa (e o que está em cima dela) cobre quem está embaixo
-      const sob = a.sob && !b.sob && dentro(a.box, b.box) ? -1 : b.sob && !a.sob && dentro(b.box, a.box) ? 1 : 0;
+      // embaixo da mesa: a mesa cobre quem está embaixo, e o que está acima do tampo vem depois dele
+      // também (senão a caneca na mesa, a mesa e a cadeira encaixada fecham um círculo)
+      const cobre = (s: Drawable, o: Drawable) => dentro(s.box, o.box) || o.box.z0 >= s.box.z1 - EPS;
+      const sob = a.sob && !b.sob && cobre(a, b) ? -1 : b.sob && !a.sob && cobre(b, a) ? 1 : 0;
       if (sob ? sob < 0 : cmp(a.box, b.box) < 0) {
         out[i].push(j);
         indeg[j]++;

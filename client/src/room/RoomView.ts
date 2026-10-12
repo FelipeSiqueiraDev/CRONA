@@ -1777,16 +1777,22 @@ export class RoomView {
       const [ax, ay] = ghost ? [0, 0] : this.ajusteDoMovel(map, it as FloorItem);
       const ix = it.x + ax;
       const iy = it.y + ay;
+      // A ordem de desenho vem da casa de verdade do móvel (a pegada no chão), nunca do desenho: a
+      // cadeira que desliza para baixo do tampo e a mesa maior que a pegada (`aumento`) cruzavam as
+      // caixas, e o desempate deixava a cadeira de trás por cima da mesa (12/10). Com as pegadas, peças
+      // em casas diferentes sempre têm um lado que as separa, e a ordem sai certa ao montar e ao mover.
+      m.set(it.rot, def.width, def.depth, it.x, it.y, it.z);
+      const ordens = vis.nodes.map((node) => m.box(node.ordem ?? node.b));
       m.set(it.rot, def.width, def.depth, ix, iy, it.z);
       const floorH = map.floorHeight(it.x, it.y) ?? 0;
       const flat = !!def.flat && it.z <= floorH + 0.05 && !ghost;
       let topZ = it.z + def.height;
       // a cadeira (ou banqueta) encaixada embaixo da mesa, no chão: a mesa vem por cima dela
       const encaixada = !!def.sit && it.z <= floorH + 0.01 && !!map.mesaDaCasa(it.x, it.y) && !ghost;
-      for (const node of vis.nodes) {
+      for (const [n, node] of vis.nodes.entries()) {
         const box = m.box(node.b);
         if (def.aumento && def.aumento !== 1) {
-          // a mesa maior que a pegada: a caixa (ordem de desenho e clique) cresce junto com a arte
+          // a mesa maior que a pegada: o contorno (clique e quem se cruza na tela) cresce junto com a arte
           const cx = (box.x0 + box.x1) / 2;
           const cy = (box.y0 + box.y1) / 2;
           const k = def.aumento;
@@ -1816,7 +1822,7 @@ export class RoomView {
         const cela = ghost ? undefined : celas?.mobi.get(it.id);
         const nodeAlpha = (xray ? alpha * 0.28 : alpha) * (cela ? 1 - 0.72 * cela.transp : 1);
         const d: Drawable = {
-          box: node.ordem ? m.box(node.ordem) : box,
+          box: ordens[n],
           sob: encaixada,
           sx0: sx0 - 12,
           sx1: sx1 + 12,
