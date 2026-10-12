@@ -169,6 +169,12 @@ vidro e metal, chanfro nas quinas e contorno; desenha 4 vezes maior e reduz.
   Mover (a prévia segue o mouse, o R gira, o clique solta), a caneca pousa no tampo novo (0,94 m), a pessoa atrás da
   mesa fica atrás e embaixo dela fica abaixada e escondida. A sombra no chão é forte o bastante para aparecer com a
   luz somada do jogo (`lighting.ts` soma a luz das lâmpadas por cima de tudo, o que clareia as sombras).
+- **Fogão:** o estado estava trocado (o catálogo e a Sede usam 0 apagado, 1 aceso); refeito.
+- **Moldar o Códex (teste, ainda fora do jogo):** a pintura do Códex vestida na caixa da medida de verdade, na câmera
+  exata (`exportar.py --codex --caixa`, ver o README). Testado na Cozinha (armário, fogão, pia, mesa, cadeira): no
+  jogo, tudo assenta no ângulo do tabuleiro e mantém o desenho do Códex. Esperando o Felipe escolher: Códex moldado
+  ou só código. Se for o moldado, dá para passar os 42 tortos da auditoria do mesmo jeito (os redondos, a árvore e
+  os de parede precisam de outro molde).
 - **Falta:** os outros ~210 móveis (por cômodo); a vista de cima (mapa tático) feita pelo motor; os itens de parede;
   a lâmpada do teto; o que está em cima da mesa não acompanha quando ela sai do lugar (já era assim); a luz do jogo
   ser multiplicada em vez de somada (as sombras ficariam mais fiéis).

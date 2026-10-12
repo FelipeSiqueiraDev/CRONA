@@ -27,3 +27,4 @@ docs/ref-jogador-*.webp
 client/public/arte/**/*.png.webp
 client/public/arte-leve/
 .previas-codex/
+__pycache__/

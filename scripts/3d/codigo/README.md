@@ -19,3 +19,19 @@ Gerar: `python exportar.py [móvel ...]` (precisa de numpy e Pillow; sem nome, t
 No `moveis.json`, a arte por código vem com `exato: true` (o jogo usa a medida `real` direto, sem medir o
 desenho, que tem a sombra no chão dentro) e `codigo: true`. O modelo é feito no tamanho de base: o jogo
 aplica o `aumento` do catálogo por cima, centra na pegada e encosta na parede como faz com a arte desenhada.
+
+## Moldar a arte do Códex (`--codex --caixa`)
+
+A arte do gerador vem com a câmera um pouco girada ou alta (o móvel sai torto no tabuleiro). Moldar põe a pintura
+dele na geometria exata:
+
+- **Molde caixa** (`--caixa`): o molde é a caixa da medida de verdade (`real` da ficha em `scripts/3d/fichas/`). Para
+  cada giro, acha a câmera com que o desenho foi feito (`ajustar_camera` do `moveis.py`) e, para cada pixel da caixa
+  desenhada na câmera do tabuleiro, leva o ponto para a câmera do desenho e pega a cor. O que o desenho não tem vira
+  vazio (o vão entre os pés, a quina da cornija). A sombra vem da caixa (móvel maciço) ou do modelo do código
+  esticado para a caixa (mesa e cadeira: `MOLDES`, o terceiro campo).
+- **Molde do modelo** (só `--codex`): o mesmo, com o modelo do código no lugar da caixa. Só serve quando o modelo tem
+  a forma do desenho; onde não tem, sobra a cor do modelo.
+
+`python exportar.py armario_cozinha --codex --caixa --destino <pasta>` gera numa pasta à parte (com uma cópia do
+`moveis.json`), para comparar antes de trocar a arte do jogo. As folhas e a ficha de cada um ficam em `MOLDES`.
