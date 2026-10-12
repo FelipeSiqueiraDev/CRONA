@@ -114,6 +114,8 @@ export interface FloorItem {
   actions?: ItemAction[];
   /** o móvel mostra a arte VAZIA ("<defId>!vazio"), se houver: para lugares abandonados. Nada liga isso sozinho (ainda não há botão do mestre) */
   vazio?: boolean;
+  /** o desenho escolhido entre os modelos do móvel ("05" = a arte `quadro_fazenda~05`); sem ele, sorteia pelo id */
+  modelo?: string;
   /** fechadura com senha (passagem secreta) */
   lock?: ItemLock;
   /** tamanho do desenho (quadro na parede, tapete no chão), 1 = o do catálogo; o mestre muda no painel do objeto */
@@ -146,6 +148,8 @@ export interface WallItem {
   actions?: ItemAction[];
   /** levaram tudo: mostra a arte vazia, se houver */
   vazio?: boolean;
+  /** o desenho escolhido entre os modelos do móvel ("05" = a arte `quadro_fazenda~05`); sem ele, sorteia pelo id */
+  modelo?: string;
   /** tamanho do desenho (quadro na parede, tapete no chão), 1 = o do catálogo; o mestre muda no painel do objeto */
   escala?: number;
 }

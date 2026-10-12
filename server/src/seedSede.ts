@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 50;
+export const SEDE_REV = 51;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -277,12 +277,12 @@ const ROOMS: RoomSpec[] = [
       ['chair_office', 31, 5, 6],
       ['cabinet_file', 33, 0, 4],
       ['cabinet_file', 34, 0, 4],
-      // perto da escada, onde se chega: o canto de conversa, duas poltronas frente a frente e a mesa
-      // de xadrez no meio (arrumado pelo Felipe no jogo, 05/10; o tapete redondo preto e branco da
-      // série vem na arte nova)
-      ['armchair', 3, 12, 2],
+      // perto da escada, onde se chega: o canto de conversa, as duas poltronas pretas da série frente
+      // a frente e a mesa de xadrez no meio (arrumado pelo Felipe no jogo, 05/10; o tapete redondo
+      // preto e branco da série ainda não chegou)
+      ['poltrona_preta', 3, 12, 2],
       ['table_chess', 5, 12, 4],
-      ['armchair', 7, 12, 6],
+      ['poltrona_preta', 7, 12, 6],
       ['bench', 10, 13, 0],
       ['bench', 13, 13, 0],
       ['floor_lamp', 5, 13, 0],
@@ -293,7 +293,9 @@ const ROOMS: RoomSpec[] = [
     ],
     wall: [
       ['board_investigation', 'r', 0, 12.0, 2.36],
-      ['screen', 'r', 0, 21.5, 2.45],
+      // as TVs grandes de tela fina da série, na parede do fundo
+      ['tv_grande', 'r', 0, 21.5, 2.45],
+      ['tv_grande', 'r', 0, 30.0, 2.45],
       ['clock', 'r', 0, 18.2, 3.54],
       ['pipes', 'r', 0, 26.0, 3.81],
       ['sconce', 'l', 1, 11.6, 2.9],
@@ -487,7 +489,7 @@ const ROOMS: RoomSpec[] = [
     particles: ['dust'],
     lamp: 'fluorescent',
     name: SEDE + 'Laboratório',
-    description: 'O laboratório do Renan, com cara de clínica: bancadas nas paredes e duas bancadas compridas no meio, microscópios, frascos e o quadro branco.',
+    description: 'O laboratório do Renan, com cara de clínica: bancadas nas paredes e duas bancadas compridas no meio, microscópios, frascos, a mesa de vidro com os tubos de ensaio, a impressora 3D e o quadro branco; o leitor de digital na parede, perto da porta.',
     layout: planBottom(9, 10, 6),
     floorName: 'Subsolo',
     style: 'azulejo',
@@ -495,30 +497,32 @@ const ROOMS: RoomSpec[] = [
     plan: { x: 30, y: -3 },
     floor: [
       ['portal', 6, 9, 0],
-      // como na planta da série: as bancadas na parede do fundo e na da esquerda, e duas bancadas
-      // compridas no meio, paralelas, com o corredor entre elas; o quadro branco no fundo
-      ['lab_bench', 0, 0, 4],
+      // como na planta da série, com as bancadas inteiras do Códex (12/10): a de canto no fundo,
+      // a de parede inteira na esquerda e as duas ilhas compridas no meio, com o corredor entre
+      // elas; o quadro branco e a impressora 3D no fundo; a mesa de vidro na parede da direita
+      ['bancada_lab_curta', 0, 0, 4],
       ['stool_lab', 0, 1, 0],
       ['whiteboard', 3, 0, 4],
+      ['impressora_3d', 6, 0, 4],
       ['cabinet_file', 7, 0, 4],
       ['cabinet_file', 8, 0, 4],
-      ['lab_bench', 0, 3, 2],
-      ['chair_office', 1, 3, 6],
-      ['lab_bench', 0, 5, 2],
-      ['lab_bench', 3, 3, 2],
-      ['lab_bench', 3, 5, 2],
-      ['lab_bench', 5, 3, 6],
-      ['lab_bench', 5, 5, 6],
+      ['bancada_lab_parede', 0, 3, 2],
+      ['chair_office', 1, 4, 6],
+      ['bancada_lab_ilha', 3, 3, 2],
+      ['bancada_lab_ilha', 5, 3, 6],
       ['stool_lab', 4, 4, 0],
       ['stool_lab', 4, 6, 0],
+      ['mesa_vidro_lab', 8, 3, 0],
       ['chair_office', 6, 2, 0],
-      ['trolley', 7, 6, 0],
+      ['trolley', 7, 7, 0],
       ...lamps([2, 2], [4, 5], [7, 3]),
     ],
     wall: [
       // o quadro de investigação em cima dos arquivos (atrás do quadro branco, ele sumia)
       ['board_investigation', 'r', 0, 7.5, 2.4],
       ['notes_wall', 'l', 0, 6.5, 2.36],
+      // o leitor de digital, perto da porta
+      ['scanner_digital', 'l', 0, 8.6, 1.3],
     ],
     links: [[6, 9, 'corredor']],
   },
@@ -762,7 +766,7 @@ const ROOMS: RoomSpec[] = [
     particles: ['dust'],
     lamp: 'fluorescent',
     name: SEDE + 'Arsenal',
-    description: 'Os armários de armas dos dois lados da porta, os de munição e os baús nas paredes, e a bancada em U onde tudo é limpo e conferido.',
+    description: 'Os armários de armas dos dois lados da porta, os de munição e os baús nas paredes, e a mesa grande no meio, onde tudo é limpo e conferido.',
     layout: planTop(14, 10, 6),
     floorName: 'Subsolo',
     style: 'metal',
@@ -784,11 +788,11 @@ const ROOMS: RoomSpec[] = [
       ['locker_ammo', 0, 6, 2],
       ['chest_army', 0, 8, 2],
       ['chest_army', 0, 10, 2, undefined, 1],
-      // a bancada em U no meio, as bancadas viradas para dentro, com as banquetas
-      ['gun_table', 4, 4, 4],
-      ['gun_table', 7, 4, 4],
-      ['gun_table', 4, 5, 2],
-      ['gun_table', 9, 5, 6],
+      // a mesa grande do Códex no meio (no lugar das bancadas pequenas, que saíam tortas), com as
+      // banquetas dos dois lados
+      ['mesa_arsenal', 5, 4, 4],
+      ['stool_metal', 6, 3, 0],
+      ['stool_metal', 7, 3, 0],
       ['stool_metal', 6, 6, 0],
       ['stool_metal', 7, 6, 0],
       ['oil_stain', 6, 8, 0],

@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 20;
+export const FAZENDA_REV = 21;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -728,7 +728,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ...lamps([3, 5], [3, 9]),
     ],
     wall: [
-      ["painting", "r", 1, 5.5, 2.54],
+      ["quadro_fazenda", "r", 1, 5.5, 2.54],
       ["clock", "r", 1, 1.4, 3.45],
       ["sconce", "l", 0, 4.5, 2.9],
       ["sconce", "l", 0, 7.5, 2.9],
@@ -778,6 +778,8 @@ const CENAS_BRUTAS: CenaSpec[] = [
     ],
     wall: [
       ["shelf_wall", "r", 0, 8.5, 3.22],
+      // a natureza-morta das frutas, em cima do fogão
+      ["quadro_fazenda~02", "r", 0, 3.0, 2.54],
       ["clock", "l", 0, 4.5, 3.45],
     ],
     links: [[9, 3, "hall"]],
@@ -808,7 +810,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ...lamps([2, 5], [5, 6]),
     ],
     wall: [
-      ["painting", "l", 1, 5.5, 2.54],
+      ["quadro_fazenda~03", "l", 1, 5.5, 2.54],
       ["sconce", "l", 1, 1.6, 2.9],
       ["sconce", "l", 1, 6.4, 2.9],
       ["clock", "r", 0, 4.5, 3.45],
@@ -857,7 +859,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["crate_wood", 8, 5, 0],
       ...lamps([5, 3]),
     ],
-    wall: [["painting", "r", 0, 2.2, 2.63]],
+    wall: [["quadro_fazenda~12", "r", 0, 2.2, 2.63]],
     // os brinquedos espalhados pelo chão: itens que os jogadores podem pegar
     chao: [
       [1, 0, "Casinha de Brinquedo", 2, "misc"],
@@ -896,7 +898,9 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ...lamps([5, 4]),
     ],
     wall: [
-      ["painting", "r", 0, 6.5, 2.54],
+      ["quadro_fazenda~04", "r", 0, 6.5, 2.54],
+      // o mapa da fazenda, desenhado à mão, na mesma parede da gravura do casarão
+      ["quadro_fazenda~09", "r", 0, 8.0, 2.54],
       ["clock", "l", 1, 2.0, 3.45],
       ["sconce", "l", 1, 6.5, 2.9],
     ],
@@ -928,7 +932,9 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ...lamps([2, 4]),
     ],
     wall: [
-      ["painting", "l", 0, 4.8, 2.54],
+      ["quadro_fazenda~05", "l", 0, 4.8, 2.54],
+      // o rio na neblina, com a ponte, mais no fundo do corredor
+      ["quadro_fazenda~11", "l", 0, 8.5, 2.54],
       ["clock", "r", 1, 0.8, 3.45],
     ],
     links: [
@@ -965,7 +971,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ...lamps([5, 4]),
     ],
     wall: [
-      ["painting", "r", 0, 2.2, 2.63],
+      ["quadro_fazenda~06", "r", 0, 2.2, 2.63],
       ["mirror", "l", 1, 4.5, 2.18],
     ],
     links: [[1, 1, "corredor"]],
@@ -1012,7 +1018,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["chair_wood", 7, 4, 2],
       ...lamps([4, 3]),
     ],
-    wall: [["painting", "r", 0, 3.5, 2.63]],
+    wall: [["quadro_fazenda~07", "r", 0, 3.5, 2.63]],
     links: [[1, 4, "corredor"]],
     plan: { x: 1, y: 1, r: 2 },
   },
@@ -1035,7 +1041,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["comoda", 1, 4, 2],
       ...lamps([5, 3]),
     ],
-    wall: [["painting", "r", 0, 2.5, 2.63]],
+    wall: [["quadro_fazenda~08", "r", 0, 2.5, 2.63]],
     links: [[1, 3, "corredor"]],
     plan: { x: 1, y: 8, r: 2 },
   },
@@ -1060,6 +1066,8 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ...lamps([5, 3]),
     ],
     links: [[1, 2, "corredor"]],
+    // os doze quadros do casarão: aqui, o bordado da cruz em cima da cama
+    wall: [["quadro_fazenda~10", "r", 0, 3.5, 2.63]],
     plan: { x: 20, y: 1 },
   },
   // ------------------------------------------------------------ casa de mantimentos e celeiro

@@ -186,8 +186,10 @@ const MATERIAL: Record<string, string> = { metal: 'metal', cela: 'metal' };
  * Qual arte vale para esta peça: a do material do cômodo, se houver; senão um dos modelos do
  * móvel, sorteado pelo número da peça (o mesmo sempre, e vizinhos costumam sair diferentes).
  */
-export function chaveDaArte(defId: string, seed: number, piso?: string, vazio = false): string {
+export function chaveDaArte(defId: string, seed: number, piso?: string, vazio = false, modelo?: string): string {
   if (!lista) return defId;
+  // o modelo que a montagem escolheu (os 12 quadros da fazenda, cada um o seu)
+  if (modelo && lista[`${defId}~${modelo}`]) return `${defId}~${modelo}`;
   // o móvel que ficou sem nada: a gêmea vazia ("mesa-gabinete-vazio"), se já chegou
   if (vazio && lista[`${defId}!vazio`]) return `${defId}!vazio`;
   const mat = piso ? MATERIAL[piso] : undefined;
@@ -235,8 +237,8 @@ function pronta(arquivo: string): Imagens | null {
  * ordem de quem fica na frente), ou null se ele não tem arte (ou ela ainda não chegou).
  * As luzes continuam as do desenho por código. state: o estado do móvel (0 = aceso).
  */
-export function visualComArte(def: FurniDef, base: FVisual, state = 0, seed = 0, rot?: number, piso?: string, escala = 1, vazio = false): FVisual | null {
-  const chave = chaveDaArte(def.id, seed, piso, vazio);
+export function visualComArte(def: FurniDef, base: FVisual, state = 0, seed = 0, rot?: number, piso?: string, escala = 1, vazio = false, modelo?: string): FVisual | null {
+  const chave = chaveDaArte(def.id, seed, piso, vazio, modelo);
   const salvo = lista?.[chave];
   if (!salvo) return null;
   // a porta: arte só nas paredes do fundo; nas da frente (que não aparecem), a soleira do desenho por código
@@ -338,8 +340,8 @@ export function tamanhoReal(defId: string): { real: [number, number, number]; en
  * Item de parede com arte: a vista daquela parede (e do estado), com o ponto onde ele
  * encosta na parede em (x, y). false se ele não tem arte (ou ela ainda não chegou).
  */
-export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: string, parede: 'l' | 'r', state: number, x: number, y: number, seed = 0, vazio = false): boolean {
-  const a = lista?.[chaveDaArte(defId, seed, undefined, vazio)];
+export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: string, parede: 'l' | 'r', state: number, x: number, y: number, seed = 0, vazio = false, modelo?: string): boolean {
+  const a = lista?.[chaveDaArte(defId, seed, undefined, vazio, modelo)];
   if (!a?.parede) return false;
   const vista = (state ? a.parede[`${parede}-${state}`] : undefined) ?? a.parede[parede];
   if (!vista) return false;

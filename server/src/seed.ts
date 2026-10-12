@@ -27,6 +27,7 @@ import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgen
 
 export const SYSTEM_OWNER = 'CRONA';
 
+/** `defId` pode trazer o modelo da arte: "quadro_fazenda~05" (sem ele, o jogo sorteia pelo id). */
 export type FloorSeed = [defId: string, x: number, y: number, rot: number, hint?: Hint, state?: number];
 export type WallSeed = [defId: string, wall: 'l' | 'r', plane: number, pos: number, z: number, hint?: Hint];
 
@@ -44,25 +45,29 @@ export function buildRoom(
   const layout = typeof layoutId === 'string' ? getLayout(layoutId)! : layoutId;
   const map = new RoomMap(layout.heightmap, layout.door);
   const items: FloorItem[] = [];
-  for (const [defId, x, y, rot, h, state] of floor) {
+  for (const [comModelo, x, y, rot, h, state] of floor) {
+    const [defId, modelo] = comModelo.split('~');
     const res = map.canPlace(defId, x, y, rot);
     if (!res.ok) {
       console.warn(`[seed] ${name}: ${defId} em ${x},${y} ignorado (${res.reason})`);
       continue;
     }
     const it: FloorItem = { id: db.nextItemId++, defId, x, y, z: res.z, rot, state: state ?? 0 };
+    if (modelo) it.modelo = modelo;
     if (h) it.hint = h;
     map.addItem(it);
     items.push(it);
   }
   const wallItems: WallItem[] = [];
-  for (const [defId, w, plane, pos, z, h] of wall) {
+  for (const [comModelo, w, plane, pos, z, h] of wall) {
+    const [defId, modelo] = comModelo.split('~');
     const res = map.canPlaceWall(defId, w, plane, pos, z);
     if (!res.ok) {
       console.warn(`[seed] ${name}: ${defId} na parede ${w}${plane}@${pos} ignorado (${res.reason})`);
       continue;
     }
     const it: WallItem = { id: db.nextItemId++, defId, wall: w, plane, pos, z, state: 0 };
+    if (modelo) it.modelo = modelo;
     if (h) it.hint = h;
     wallItems.push(it);
   }

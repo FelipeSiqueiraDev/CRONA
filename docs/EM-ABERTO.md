@@ -155,6 +155,18 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 12/10 (na nuvem, branch `claude/artes-no-lugar`): a arte nova nas salas
+
+O que tinha chegado do Códex em 09/10 e ainda não estava em sala nenhuma (o Felipe confirmou que não tinha mexido à mão nessas salas):
+
+- **Laboratório (Sede):** as bancadas inteiras (a de canto no fundo, a de parede na esquerda, as duas ilhas no meio), a mesa de vidro com os tubos na parede da direita, a impressora 3D ao lado do quadro branco e o leitor de digital na parede perto da porta.
+- **Arsenal:** a mesa grande no meio, no lugar da bancada em U de bancadas pequenas (que saíam tortas), com quatro banquetas.
+- **Salão:** as poltronas pretas no canto de conversa e duas TVs grandes na parede do fundo (uma no lugar da tela de projeção).
+- **Casarão da Fazenda:** os 12 quadros, cada um o seu: pôr do sol (Hall), natureza-morta (Cozinha), retrato da família (Sala de Jantar), gravura do casarão e mapa da fazenda (Escritório), cavalo e rio na neblina (Corredor de Cima), bordado de flores (Quarto Principal), galo (Quarto 1), pôr do sol comprido (Quarto 2), bordado da cruz (Quarto 3) e desenho de criança (Quarto das Crianças).
+- **Modelo escolhido:** a montagem agora escolhe o desenho entre os modelos de um móvel (`"quadro_fazenda~05"` no seed vira `defId` + `modelo: "05"`, no `FloorItem` e no `WallItem`; `chaveDaArte` usa o modelo antes do sorteio pelo id). Sem isso, os 12 quadros saíam repetidos.
+- `SEDE_REV` 51 (refaz só Laboratório, Arsenal e Salão) e `FAZENDA_REV` 21 (refaz a fazenda inteira).
+- **Ficaram de fora:** os 3 tanques com corpo (o calabouço não tem mais tanque, decisão de 08/10; se quiser em outro lugar, é só dizer) e as variações `~b`/`~c`/`~d` de beliche, camas e cadeira gamer (entram sozinhas no sorteio).
+
 ## Feito em 12/10: o minimapa entrou na branch, no visual do HUD
 
 A branch `claude/nuvem-continuacao` (PR #4) foi juntada na `claude/ferramentas-mesa`. **Conflitos e como ficaram:**

@@ -1343,7 +1343,7 @@ export class RoomView {
     return null;
   }
 
-  private drawWallItem(it: { id: number; wall: 'l' | 'r'; plane: number; pos: number; z: number; state: number; escala?: number; vazio?: boolean }, def: WallFurniDef, t: number, lights: Light[], alpha: number, outline: string | null) {
+  private drawWallItem(it: { id: number; wall: 'l' | 'r'; plane: number; pos: number; z: number; state: number; escala?: number; vazio?: boolean; modelo?: string }, def: WallFurniDef, t: number, lights: Light[], alpha: number, outline: string | null) {
     const ctx = this.ctx;
     const { ox, oy, k } = this.wallXform(it.wall, it.plane, it.pos, it.z, def);
     ctx.save();
@@ -1358,7 +1358,7 @@ export class RoomView {
       ctx.scale(e, e);
       ctx.translate(-px, -py);
     }
-    const comArte = desenharParedeComArte(ctx, def.id, it.wall, it.state, px, py, it.id, it.vazio);
+    const comArte = desenharParedeComArte(ctx, def.id, it.wall, it.state, px, py, it.id, it.vazio, it.modelo);
     ctx.transform(1, k, 0, 1, ox, oy);
     if (!comArte) drawWallFurni(ctx, def, it.state, it.id, t);
     if (outline) {
@@ -1767,11 +1767,11 @@ export class RoomView {
     }
     // o que cai fora da tela não é desenhado (a fazenda tem centenas de mobis); a luz deles continua valendo
     const vista = { x0: -this.cam.x / z - 120, y0: -this.cam.y / z - 200, x1: (this.vw - this.cam.x) / z + 120, y1: (this.vh - this.cam.y) / z + 120 };
-    const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number; vazio?: boolean; quebrado?: boolean }, alpha: number, selected: boolean, ghost: boolean) => {
+    const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number; vazio?: boolean; quebrado?: boolean; modelo?: string }, alpha: number, selected: boolean, ghost: boolean) => {
       const def = getFurni(it.defId);
       if (!def) return;
       const base = furniVisual(def, it.state, it.id);
-      const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio) ?? base;
+      const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio, it.modelo) ?? base;
       // a Operação Pede Mesa: o item escorrega para o tampo desenhado, a cadeira entra embaixo da mesa
       const [ax, ay] = ghost ? [0, 0] : this.ajusteDoMovel(map, it as FloorItem);
       const ix = it.x + ax;
