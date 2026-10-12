@@ -177,12 +177,18 @@ ficava no meio da casa de 0,75 m (um palmo longe da parede) e a peça acelerava 
   `furniArte.ts`) era um trapézio recortado; agora são 6 camadas do cone, cada uma mais estreita (a borda se desfaz),
   a luz pousa no chão numa mancha redonda e o ar em volta da lâmpada acende. O brilho na lâmpada (`brilhar`) cai em
   degraus suaves, sem o disco recortado. As forças ficam nos números do `feixe` (cone 0,5, mancha 0,34).
+- **Mesa e cadeira em harmonia (o Felipe: "mais encaixadinho, mais bonito"):** com a mesa 1,2× maior e a cadeira na
+  medida antiga, o encosto ficava abaixo do tampo e a cadeira parecia de criança, solta a meio palmo da mesa. As
+  cadeiras e banquetas ganharam o mesmo `aumento` (1,2; a `height` do assento junto: cadeira 0,55 m, banqueta de
+  balcão 0,9). O encaixe da cadeira (`tampo` e o ramo da cadeira em `ajusteDoMovel`) vale também para a mesa maior
+  que as casas: a cadeira vai para a borda do tampo (para frente ou para trás) e o assento entra ~19 cm embaixo dele.
 - As bancadas novas do Laboratório não tinham a 3ª cor (o desenho por código, enquanto a arte carrega, quebrava).
 - Testes: `server/test/andar.test.ts`.
 - **Falta / para conferir com o Felipe:** o tamanho do ladrilho (um por casa ficou como nas referências; o de 37 cm
   é `casas: 4`); o cartão do agente balança enquanto anda e, na diagonal, para de balançar no fim do passo
   (`markWalking` em `shell.ts` conta 620 ms; não mexi na interface, ver a regra do Felipe); as camas e móveis no
-  meio da sala continuam no meio das casas.
+  meio da sala continuam no meio das casas; sofás e poltronas não cresceram (só as cadeiras e banquetas, que ficam
+  junto das mesas).
 
 ## Feito em 12/10 (na nuvem, branch `claude/mesas`): as mesas maiores e o vão embaixo
 

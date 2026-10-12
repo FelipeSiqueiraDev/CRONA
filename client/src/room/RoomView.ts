@@ -728,7 +728,7 @@ export class RoomView {
   private ajustes = new Map<number, [number, number]>();
   private ajustesQuadro = -1;
 
-  /** O tampo desenhado de uma mesa (centro e meia medida, em casas), se ele for menor que as casas dela. */
+  /** O tampo desenhado de uma mesa (centro e meia medida, em casas): menor que as casas dela ou, com `aumento`, maior. */
   private tampo(s: FloorItem) {
     const def = getFurni(s.defId);
     if (!def || !def.stackable || def.sit || def.walkable || def.height < 0.85 || def.height > 1.75) return null;
@@ -738,7 +738,6 @@ export class RoomView {
     const larguraEmX = s.rot === 0 || s.rot === 4;
     const hx = (larguraEmX ? tr.real[0] : tr.real[1]) / M_POR_CASA / 2;
     const hy = (larguraEmX ? tr.real[1] : tr.real[0]) / M_POR_CASA / 2;
-    if (hx * 2 > fp.sx - 0.05 && hy * 2 > fp.sy - 0.05) return null;
     const [ex, ey] = this.map ? this.encostoNaParede(this.map, s) : [0, 0];
     return { cx: s.x + fp.sx / 2 + ex, cy: s.y + fp.sy / 2 + ey, hx, hy, topo: s.z + def.height };
   }
@@ -828,15 +827,17 @@ export class RoomView {
         const t = mesa ? this.tampo(mesa) : null;
         if (t) {
           const meia = (tr ? tr.real[1] : 0.5) / M_POR_CASA / 2;
-          const encaixa = 0.2; // quanto o assento entra embaixo do tampo (0,15 m)
+          const encaixa = 0.25; // quanto o assento entra embaixo do tampo (~0,19 m)
           const c = fx ? it.x + 0.5 : it.y + 0.5;
           const lado = fx ? it.y + 0.5 : it.x + 0.5;
           const [tc, th, lc, lh] = fx ? [t.cx, t.hx, t.cy, t.hy] : [t.cy, t.hy, t.cx, t.hx];
           if (Math.abs(lado - lc) <= lh + 0.1) {
             const borda = tc - (fx || fy) * th;
             const alvo = borda - (fx || fy) * (meia - encaixa);
-            const d = Math.max(0, Math.min(0.7, (alvo - c) * (fx || fy)));
-            if (d > 0.02) r = fx ? [d * fx, 0] : [0, d * fy];
+            // para a mesa (o tampo menor que as casas) ou para trás (a mesa com `aumento`, que entra na casa dela):
+            // o assento fica sempre um pouco embaixo da borda, nem longe nem dentro da mesa
+            const d = Math.max(-0.45, Math.min(0.7, (alvo - c) * (fx || fy)));
+            if (Math.abs(d) > 0.02) r = fx ? [d * fx, 0] : [0, d * fy];
           }
         }
       }

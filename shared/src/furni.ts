@@ -93,6 +93,8 @@ export interface FurniDef {
   /**
    * A arte maior que a pegada, por igual (largura e altura; a `height` já vem com ela): as mesas
    * pareciam de centro perto das pessoas. A borda passa um pouco por cima das casas vizinhas.
+   * As cadeiras e banquetas crescem junto (12/10): com a mesa a 0,96 m e a cadeira na medida
+   * antiga, o encosto ficava abaixo do tampo e a cadeira parecia de criança.
    */
   aumento?: number;
   rotations: number[];
@@ -122,7 +124,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'desk_u', name: 'Mesa em U', category: 'escritorio', kind: 'desk', width: 6, depth: 4, height: 0.78, vazio: [1, 2, 3, 4].flatMap((u) => [1, 2, 3].map((v) => [u, v] as [number, number])), aberto: ['frente'], rotations: ALL, colors: ['#2a2a30', '#b05ae0'], desc: 'Três postos com três monitores cada, teclados acesos de roxo, fones, fitas e uns cristais esquisitos no meio das pastas.' },
   { id: 'desk_wood', name: 'Mesa de Escritório', category: 'escritorio', kind: 'desk', width: 2, depth: 1, height: 0.96, vao: 'fundo', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#4b3120', '#2f1f15', '#b8955a'] },
   { id: 'desk_metal', name: 'Mesa Metálica', category: 'escritorio', kind: 'desk', width: 2, depth: 1, height: 0.96, vao: 'fundo', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#3c4046', '#2a2d31', '#8a9098'] },
-  { id: 'chair_office', name: 'Cadeira de Escritório', category: 'escritorio', kind: 'office_chair', width: 1, depth: 1, height: 0.5, sit: true, rotations: ALL, colors: ['#242329', '#131216'] },
+  { id: 'chair_office', name: 'Cadeira de Escritório', category: 'escritorio', kind: 'office_chair', width: 1, depth: 1, height: 0.6, aumento: 1.2, sit: true, rotations: ALL, colors: ['#242329', '#131216'] },
   { id: 'monitor', name: 'Monitor', category: 'escritorio', kind: 'monitor', width: 1, depth: 1, height: 0.45, states: 2, rotations: ALL, colors: ['#1b1d21', '#5fd3ff'], desc: 'Clique duplo liga/desliga.' },
   { id: 'monitor_green', name: 'Monitor de Radar', category: 'escritorio', kind: 'monitor', width: 1, depth: 1, height: 0.42, states: 2, rotations: ALL, colors: ['#1b1d21', '#4fe39a'] },
   // a enfermaria tem os dela (com arte): o monitor do radar, os frascos do laboratório e os computadores dos outros cômodos ficam como estão
@@ -137,9 +139,9 @@ const FURNI_METERS: FurniDef[] = [
   // ---------- Mobília ----------
   { id: 'table_meeting', name: 'Mesa de Reunião', category: 'mobilia', kind: 'table_big', width: 3, depth: 2, height: 0.96, vao: 'vazada', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#3f2a1b', '#2b1c12', '#9a7a4a'] },
   { id: 'table_small', name: 'Mesinha', category: 'mobilia', kind: 'table', width: 1, depth: 1, height: 0.74, vao: 'vazada', aumento: 1.35, stackable: true, rotations: ALL, colors: ['#4b3120', '#2f1f15'] },
-  { id: 'chair_wood', name: 'Cadeira de Madeira', category: 'mobilia', kind: 'chair', width: 1, depth: 1, height: 0.46, sit: true, rotations: ALL, colors: ['#5a3a24', '#3d2718'] },
-  { id: 'stool', name: 'Banqueta', category: 'mobilia', kind: 'stool', width: 1, depth: 1, height: 0.55, sit: true, rotations: ALL, colors: ['#3a2a24', '#1d1a18'] },
-  { id: 'stool_lab', name: 'Banqueta de Laboratório', category: 'laboratorio', kind: 'stool', width: 1, depth: 1, height: 0.62, sit: true, rotations: ALL, colors: ['#1d1d1f', '#8d949c'], desc: 'Assento de vinil preto, rodinhas e o anel de apoio dos pés.' },
+  { id: 'chair_wood', name: 'Cadeira de Madeira', category: 'mobilia', kind: 'chair', width: 1, depth: 1, height: 0.55, aumento: 1.2, sit: true, rotations: ALL, colors: ['#5a3a24', '#3d2718'] },
+  { id: 'stool', name: 'Banqueta', category: 'mobilia', kind: 'stool', width: 1, depth: 1, height: 0.66, aumento: 1.2, sit: true, rotations: ALL, colors: ['#3a2a24', '#1d1a18'] },
+  { id: 'stool_lab', name: 'Banqueta de Laboratório', category: 'laboratorio', kind: 'stool', width: 1, depth: 1, height: 0.74, aumento: 1.2, sit: true, rotations: ALL, colors: ['#1d1d1f', '#8d949c'], desc: 'Assento de vinil preto, rodinhas e o anel de apoio dos pés.' },
   { id: 'sofa_leather', name: 'Sofá de Couro', category: 'mobilia', kind: 'sofa', width: 2, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#4a2320'] },
   { id: 'rug_worn', name: 'Tapete Gasto', category: 'mobilia', kind: 'rug', width: 2, depth: 3, height: 0.03, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#4a1c1c', '#8a6a3a'] },
 
@@ -241,9 +243,9 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'bar_cabinet', name: 'Armarinho', category: 'bar', kind: 'nightstand', width: 1, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#4a3020', '#c9a86a'] },
   { id: 'ashtray', name: 'Cinzeiro', category: 'bar', kind: 'mug', width: 1, depth: 1, height: 0.05, rotations: ALL, colors: ['#8a8a8a'] },
   { id: 'beer_glass', name: 'Copo', category: 'bar', kind: 'mug', width: 1, depth: 1, height: 0.15, rotations: ALL, colors: ['#e8d8a0'] },
-  { id: 'stool_bar', name: 'Banqueta de Balcão', category: 'bar', kind: 'stool_high', width: 1, depth: 1, height: 0.75, sit: true, rotations: ALL, colors: ['#6a1a16', '#1d1a18'] },
+  { id: 'stool_bar', name: 'Banqueta de Balcão', category: 'bar', kind: 'stool_high', width: 1, depth: 1, height: 0.9, aumento: 1.2, sit: true, rotations: ALL, colors: ['#6a1a16', '#1d1a18'] },
   { id: 'table_bar', name: 'Mesa de Bar', category: 'bar', kind: 'table', width: 1, depth: 1, height: 0.9, vao: 'vazada', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#b08a3a', '#4a3420'] },
-  { id: 'chair_bar', name: 'Cadeira de Bar', category: 'bar', kind: 'chair', width: 1, depth: 1, height: 0.46, sit: true, rotations: ALL, colors: ['#a8842e', '#5a4020'] },
+  { id: 'chair_bar', name: 'Cadeira de Bar', category: 'bar', kind: 'chair', width: 1, depth: 1, height: 0.55, aumento: 1.2, sit: true, rotations: ALL, colors: ['#a8842e', '#5a4020'] },
   { id: 'sofa_booth', name: 'Sofá Vermelho', category: 'bar', kind: 'sofa', width: 2, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#7a1c1a'] },
   { id: 'armchair_red', name: 'Poltrona Vermelha', category: 'bar', kind: 'armchair', width: 1, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#8a1c1a'] },
   { id: 'sideboard', name: 'Aparador', category: 'bar', kind: 'table_big', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#4a3020', '#2e1d12', '#9a7a4a'], desc: 'Aparador de madeira escura, com garrafas e copos em cima.' },
@@ -259,7 +261,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'table_round', name: 'Mesa Redonda', category: 'mobilia', kind: 'table_round', width: 2, depth: 2, height: 0.91, vao: 'vazada', aumento: 1.2, stackable: true, rotations: [0], colors: ['#5a3a20', '#2a1d14'] },
   { id: 'table_chess', name: 'Mesa de Xadrez', category: 'mobilia', kind: 'table_chess', width: 1, depth: 1, height: 0.86, vao: 'vazada', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#2a2622', '#d8d0c0'] },
   { id: 'armchair', name: 'Poltrona', category: 'mobilia', kind: 'armchair', width: 1, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#2a2826'] },
-  { id: 'chair_red', name: 'Cadeira Estofada', category: 'mobilia', kind: 'chair', width: 1, depth: 1, height: 0.46, sit: true, rotations: ALL, colors: ['#8a1c1a', '#2a1d14'] },
+  { id: 'chair_red', name: 'Cadeira Estofada', category: 'mobilia', kind: 'chair', width: 1, depth: 1, height: 0.55, aumento: 1.2, sit: true, rotations: ALL, colors: ['#8a1c1a', '#2a1d14'] },
   { id: 'altar', name: 'Altar de Pedra', category: 'ocultismo', kind: 'altar', width: 2, depth: 1, height: 0.6, stackable: true, rotations: ALL, colors: ['#4a4540', '#7a0d0d'], desc: 'Altar baixo de pedra antiga, com cera escorrida e restos de oferendas.' },
   // o escritório do Veríssimo (peças inteiras, 06/10): madeira escura nobre e o vermelho, como um conjunto
   { id: 'shelf_verissimo', name: 'Estante do Veríssimo', category: 'escritorio', kind: 'bookshelf', width: 6, depth: 1, height: 2.6, rotations: ALL, colors: ['#4a2a18', '#2a1810'], desc: 'A estante que pega a parede inteira: livros de couro, pastas da Ordem, um globo, chaves antigas e, dobrado num canto, um pedaço de capuz amarelo.' },
@@ -296,7 +298,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'weapon_rack', name: 'Armário de Armas', category: 'arsenal', kind: 'weapon_rack', width: 2, depth: 1, height: 2.0, rotations: ALL, colors: ['#2a2d31', '#1a1c1f'] },
   { id: 'gun_table', name: 'Bancada de Armas', category: 'arsenal', kind: 'table_big', width: 3, depth: 1, height: 1.08, vao: 'fundo', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#2a3a2a', '#1f2219', '#6a7a5a'] },
   { id: 'locker_ammo', name: 'Armário de Munição', category: 'arsenal', kind: 'locker', width: 1, depth: 1, height: 1.9, states: 2, rotations: ALL, colors: ['#5a6a3a', '#2a2d1e'], desc: 'Aço verde-oliva com cadeado. Clique duplo abre: caixas de munição e carregadores.' },
-  { id: 'stool_metal', name: 'Banqueta Giratória', category: 'arsenal', kind: 'stool', width: 1, depth: 1, height: 0.6, sit: true, rotations: ALL, colors: ['#8a5a3a', '#5a6a3a'] },
+  { id: 'stool_metal', name: 'Banqueta Giratória', category: 'arsenal', kind: 'stool', width: 1, depth: 1, height: 0.72, aumento: 1.2, sit: true, rotations: ALL, colors: ['#8a5a3a', '#5a6a3a'] },
   { id: 'oil_stain', name: 'Mancha de Óleo', category: 'decoracao', kind: 'dirt', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#1a1a14', '#3a3a2a'] },
   // depósito
   { id: 'rubble', name: 'Entulho', category: 'armazenamento', kind: 'rubble', width: 2, depth: 2, height: 0.5, rotations: ALL, colors: ['#5a5550', '#4a3222'] },
@@ -313,7 +315,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'gancho_carne', name: 'Ganchos de Carne', category: 'ocultismo', kind: 'gancho', width: 1, depth: 2, height: 1.9, rotations: ALL, colors: ['#3a3430', '#8a3a30'], desc: 'Uma travessa de ferro com ganchos de açougue. O que está pendurado neles não é de boi.' },
   { id: 'console', name: 'Bancada de Computadores', category: 'escritorio', kind: 'console', width: 2, depth: 1, height: 0.78, stackable: true, states: 2, rotations: ALL, colors: ['#2e2a36', '#8a78c0', '#7fd0ff'], desc: 'Dois monitores e teclado. Clique duplo liga/desliga.' },
   // a Sala de Tecnologia cheia e o posto da enfermaria (09/10, arte do Códex)
-  { id: 'cadeira_gamer', name: 'Cadeira Gamer', category: 'escritorio', kind: 'chair', width: 1, depth: 1, height: 1.3, rotations: ALL, colors: ['#3a1a5a', '#141418'] },
+  { id: 'cadeira_gamer', name: 'Cadeira Gamer', category: 'escritorio', kind: 'chair', width: 1, depth: 1, height: 1.56, aumento: 1.2, rotations: ALL, colors: ['#3a1a5a', '#141418'] },
   { id: 'rack_moderno', name: 'Rack de Servidores Moderno', category: 'escritorio', kind: 'server', width: 1, depth: 2, height: 2.0, rotations: ALL, colors: ['#141418', '#3fd0ff'] },
   { id: 'lixeira_lanches', name: 'Lixeira Transbordando', category: 'escritorio', kind: 'lixeira_lanches', width: 1, depth: 1, height: 0.6, rotations: ALL, colors: ['#3a3d42', '#e0a040'] },
   { id: 'torre_crt', name: 'Torre de Monitores CRT', category: 'escritorio', kind: 'torre_crt', width: 2, depth: 1, height: 1.8, rotations: ALL, colors: ['#c8c0a8', '#5ad8ff'], desc: 'Seis monitores de tubo empilhados e um videocassete, todos ligados.' },
