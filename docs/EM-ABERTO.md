@@ -173,6 +173,10 @@ ficava no meio da casa de 0,75 m (um palmo longe da parede) e a peça acelerava 
   o passo leva (`mv.ms`) e o tabuleiro anima nesse tempo. O caminho (`findPath`) desempata pelo que vira menos (o
   estado é a casa e a direção da chegada) e continua na direção em que a peça já vinha (`dirInicial`).
   `step()` sem argumento (os testes) continua dando o passo inteiro.
+- **Os feixes de luz macios (o Felipe: "muito duros, queria mais um aspecto de luz"):** o feixe da lâmpada (`feixe`,
+  `furniArte.ts`) era um trapézio recortado; agora são 6 camadas do cone, cada uma mais estreita (a borda se desfaz),
+  a luz pousa no chão numa mancha redonda e o ar em volta da lâmpada acende. O brilho na lâmpada (`brilhar`) cai em
+  degraus suaves, sem o disco recortado. As forças ficam nos números do `feixe` (cone 0,5, mancha 0,34).
 - As bancadas novas do Laboratório não tinham a 3ª cor (o desenho por código, enquanto a arte carrega, quebrava).
 - Testes: `server/test/andar.test.ts`.
 - **Falta / para conferir com o Felipe:** o tamanho do ladrilho (um por casa ficou como nas referências; o de 37 cm

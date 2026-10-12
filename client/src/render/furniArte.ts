@@ -559,7 +559,10 @@ function brilhar(p: Painter, r: { x: number; y: number }, k: number, x: number, 
   const cy = r.y + y * k;
   const rr = raio * k;
   const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+  // a queda é suave (o miolo forte some rápido e a borda vai devagar): sem o disco recortado em volta da lâmpada
   grad.addColorStop(0, rgba(cor, forca));
+  grad.addColorStop(0.25, rgba(cor, forca * 0.45));
+  grad.addColorStop(0.6, rgba(cor, forca * 0.12));
   grad.addColorStop(1, rgba(cor, 0));
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
@@ -611,27 +614,60 @@ function desenharGiro(
   if (ang) p.ctx.restore();
 }
 
-/** O feixe de luz da lâmpada (x, y, o brilho dela na tela) até o chão embaixo, no meio da casa: suave, some antes de chegar. */
+/**
+ * O feixe de luz da lâmpada (x, y, o brilho dela na tela) até o chão embaixo, no meio da casa. Ar com luz, e não um
+ * cone recortado (12/10, o Felipe: "os feixes estão muito duros"): várias camadas do cone, cada uma mais estreita e
+ * fraca, somam um miolo claro que se desfaz para os lados; a luz some descendo e pousa no chão numa mancha redonda
+ * (deitada no isométrico), mais forte embaixo da lâmpada.
+ */
 function feixe(p: Painter, x: number, y: number, raio: number, cor: string, forca: number) {
   const [bx, by] = p.m.p(0.5, 0.5, 0);
   if (by <= y) return;
   const topo = Math.min(18, raio * 0.45);
-  const base = topo * 3.2;
+  const base = topo * 3.4;
   const ctx = p.ctx;
-  const g = ctx.createLinearGradient(0, y, 0, by + base * 0.4);
-  g.addColorStop(0, rgba(cor, 0.26 * forca));
-  g.addColorStop(0.7, rgba(cor, 0.09 * forca));
-  g.addColorStop(1, rgba(cor, 0));
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
-  ctx.fillStyle = g;
+  // a mancha no chão: primeiro, para o cone passar por cima dela
+  const rx = base * 1.5;
+  ctx.save();
+  ctx.translate(bx, by);
+  ctx.scale(1, 0.5);
+  const poca = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+  poca.addColorStop(0, rgba(cor, 0.34 * forca));
+  poca.addColorStop(0.4, rgba(cor, 0.16 * forca));
+  poca.addColorStop(1, rgba(cor, 0));
+  ctx.fillStyle = poca;
   ctx.beginPath();
-  ctx.moveTo(x - topo, y);
-  ctx.lineTo(x + topo, y);
-  ctx.lineTo(bx + base, by);
-  ctx.quadraticCurveTo(bx, by + base * 0.5, bx - base, by);
-  ctx.closePath();
+  ctx.arc(0, 0, rx, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+  // o cone em camadas: a de fora larga e quase invisível, a de dentro estreita; juntas, a borda se desfaz
+  const CAMADAS = 6;
+  for (let c = 0; c < CAMADAS; c++) {
+    const e = 1 - c / CAMADAS; // largura: de 1 até 1/6
+    const t = topo * (0.35 + 0.65 * e);
+    const b = base * e;
+    const g = ctx.createLinearGradient(0, y, 0, by + b * 0.25);
+    const a = (0.5 / CAMADAS) * forca;
+    g.addColorStop(0, rgba(cor, a));
+    g.addColorStop(0.6, rgba(cor, a * 0.55));
+    g.addColorStop(1, rgba(cor, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(x - t, y);
+    ctx.lineTo(x + t, y);
+    ctx.lineTo(bx + b, by);
+    ctx.quadraticCurveTo(bx, by + b * 0.5, bx - b, by);
+    ctx.closePath();
+    ctx.fill();
+  }
+  // o ar em volta da lâmpada acende um pouco
+  const halo = ctx.createRadialGradient(x, y, 0, x, y, topo * 2.2);
+  halo.addColorStop(0, rgba(cor, 0.16 * forca));
+  halo.addColorStop(1, rgba(cor, 0));
+  ctx.fillStyle = halo;
+  ctx.fillRect(x - topo * 2.2, y - topo * 2.2, topo * 4.4, topo * 4.4);
   ctx.restore();
 }
 
