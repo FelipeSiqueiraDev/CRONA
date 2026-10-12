@@ -115,6 +115,7 @@ luzes = set()          # os objetos que brilham (sem luz de face nem sombra)
 CELULAS = []           # (oids, fn(P, N) -> ids, opções): as juntas de 1 px desenhadas no pixel
 pegadas = []           # (x0, x1, y0, y1, forca) a sombra de contato no chão
 VIDROS = {}            # oid -> 'escuro' | 'aceso' | 'fogo'
+JANELAS_LUZ = []       # (face, a0, a1, z0, z1, tipo): as janelas acesas
 
 
 def obj(tipo=3, contorno=True, sombra=True):
@@ -323,6 +324,7 @@ def janela(face, a, z0, w, h, kind='escuro'):
     VIDROS[ov] = kind
     if kind != 'escuro':
         luzes.add(ov)
+        JANELAS_LUZ.append((face, a0, a1, z0, z0 + h, kind))
     c.caixa(bx(a0, a1, -0.02, 0.004, z0, z0 + h), mat_vidro(kind, a0, a1, z0, z0 + h, 'x' if face == 'y' else 'y'), M, ov)
     o = obj(3)
     m = liso(CAL)
@@ -659,94 +661,213 @@ O_LAMP, P_LAMP = lampiao(MEIO + 0.86, 1.62)
 O_LAMP2, P_LAMP2 = lampiao(MEIO - 0.86, 1.62)
 o_cap = caixa((MEIO - 0.45, MEIO + 0.45, HY1 + 0.15, HY1 + 0.6, 0.42, 0.435), liso('#8a5a3a'), contorno=False)
 
-# ---------- a lenha empilhada no lado da cozinha (as pontas das toras para +x)
-LX0, LX1, LY0, LY1 = HX1 + 0.08, HX1 + 0.5, HY0 + 0.25, LADO_Y[0] - 0.55
+# ---------- a lenha empilhada embaixo da janela da cozinha (as toras deitadas em x: as pontas viradas para +x)
+LX0, LX1, LY0, LY1 = HX1 + 0.04, HX1 + 0.5, HY0 + 0.1, LADO_Y[0] + 0.72
+LZ1 = 0.88
+LR = 0.1           # o raio das toras
 o_len = obj(3)
 
 
+def _toras(y, z):
+    """A tora de cada ponto (em fiadas desencontradas): o id, o meio (y, z) e a distância normalizada ao meio."""
+    fila = np.floor(z / (LR * 1.74))
+    off = (fila % 2) * LR
+    col = np.floor((y - LY0 + off) / (2 * LR))
+    cy = col * 2 * LR + LR - off + LY0
+    cz = fila * LR * 1.74 + LR
+    # cada tora um pouco mais grossa ou mais fina
+    rr = LR * (0.86 + 0.12 * ruido(col, fila, 2.0))
+    d = np.hypot(y - cy, z - cz) / rr
+    return fila * 1000 + col, cy, cz, d, fila, col
+
+
 def mat_lenha(L, n, P):
-    if abs(n[0]) < 0.5:
-        return np.tile(hx('#6a4628'), (len(P), 1))
-    r = 0.085
     y, z = P[:, 1], P[:, 2]
-    fila = np.floor(z / (r * 1.75))
-    off = (fila % 2) * r
-    cy = np.floor((y - LY0 + off) / (2 * r)) * 2 * r + r - off + LY0
-    cz = fila * r * 1.75 + r * 0.95
-    d = np.hypot(y - cy, (z - cz) * 1.0) / r
-    kk = ruido(np.floor((y - LY0 + off) / (2 * r)), fila, 4.0)
-    cort = np.where((kk > 0.5)[:, None], hx('#d9b07a'), hx('#c99c66'))
-    out = np.where((d < 0.82)[:, None], cort, np.where((d < 1.0)[:, None], hx('#5a3a22'), hx('#2a1a10')))
-    out = np.where(((d < 0.38) & (d > 0.2))[:, None], cort * 0.88, out)
+    tid, cy, cz, d, fila, col = _toras(y, z)
+    k = ruido(col, fila, 4.0)
+    if abs(n[0]) > 0.5:
+        # a ponta serrada: a madeira clara, o anel do cerne, o miolo, a casca escura em volta e o vão escuro
+        claro = np.where((k > 0.66)[:, None], hx('#e8c48a'), np.where((k > 0.33)[:, None], hx('#dcb27a'), hx('#d0a46c')))
+        out = np.tile(hx('#1e130c'), (len(P), 1))
+        out = np.where((d < 1.0)[:, None], hx('#4a2e1a'), out)
+        out = np.where((d < 0.8)[:, None], claro, out)
+        out = np.where(((d < 0.56) & (d > 0.4))[:, None], claro * 0.84, out)
+        out = np.where((d < 0.16)[:, None], hx('#9a6638'), out)
+        # a luz em cima à esquerda da ponta (o corte não é chapado)
+        out = np.where(((d < 0.8) & (d > 0.5) & (z > cz + LR * 0.3) & (y > cy))[:, None], np.minimum(claro * 1.08 + 6, 255), out)
+        return out
+    # a casca: o lado (frente, +y) e o topo mostram as toras deitadas, com riscas ao longo de x
+    if abs(n[2]) > 0.5:
+        g = ((y - LY0) / (2 * LR)) % 1
+    else:
+        g = ((z / (LR * 1.74)) % 1)
+    out = np.tile(hx('#6e4a2c'), (len(P), 1))
+    out = np.where((g < 0.18)[:, None], hx('#2a1a10'), out)
+    out = np.where(((g > 0.25) & (g < 0.45))[:, None], hx('#86603a'), out)
+    risca = (np.sin(P[:, 0] * 60 + np.floor(g * 3) * 2.1) > 0.7) & (g > 0.5)
+    out = np.where(risca[:, None], hx('#563820'), out)
     return out
 
 
-c.caixa((LX0, LX1, LY0, LY1, 0, 1.0), emissivo(mat_lenha), M, o_len)
-caixa((LX0 - 0.04, LX1 + 0.12, LY0 - 0.08, LY1 + 0.08, 1.0, 1.06), liso('#6a4a30'))
+c.caixa((LX0, LX1, LY0, LY1, 0, LZ1), emissivo(mat_lenha), M, o_len)
+# as toras de cima, soltas (a pilha não termina reta)
+for (yy_, zz_) in ((LY0 + 0.35, LZ1), (LY0 + 0.75, LZ1), (LY0 + 1.3, LZ1)):
+    c.caixa((LX0 + 0.02, LX1 - 0.02, yy_, yy_ + 2 * LR, zz_, zz_ + 1.5 * LR), emissivo(mat_lenha), M, o_len)
 pegadas.append((LX0, LX1, LY0, LY1, 0.7))
-# o toco de rachar lenha com o machado
+# o toco de rachar lenha com o machado e umas achas no chão
+TOCO = (HX1 + 1.05, LY1 + 0.35)
 o_toco = obj(3)
-c.cilindro(HX1 + 0.95, LY1 + 0.1, 0.2, 0, 0.42, liso('#7a5232'), M, o_toco, lados=16, tampa_mat=liso('#c9a06a'))
-caixa((HX1 + 0.9, HX1 + 0.94, LY1 + 0.05, LY1 + 0.36, 0.42, 0.46), liso('#9a9aa0'))
-caixa((HX1 + 0.92, HX1 + 0.96, LY1 + 0.3, LY1 + 0.34, 0.42, 0.95), liso('#8a6040'))
-pegadas.append((HX1 + 0.75, HX1 + 1.15, LY1 - 0.1, LY1 + 0.3, 0.6))
+
+
+def toco_topo(L, n, P):
+    d = np.hypot(P[:, 0] - TOCO[0], P[:, 1] - TOCO[1]) / 0.22
+    out = np.where((d > 0.86)[:, None], hx('#5a3a22'), hx('#d8b47c'))
+    out = np.where(((d > 0.45) & (d < 0.58))[:, None], hx('#c09a64'), out)
+    return out
+
+
+c.cilindro(TOCO[0], TOCO[1], 0.22, 0, 0.44, mat_lenha_lado := liso('#6a4a2e'), M, o_toco, lados=18, tampa_mat=emissivo(toco_topo))
+o_m = obj(3)
+c.face_plana([(TOCO[0] - 0.04, TOCO[1] - 0.02, 0.44), (TOCO[0] + 0.05, TOCO[1] + 0.07, 0.44), (TOCO[0] + 0.05, TOCO[1] + 0.07, 0.6),
+              (TOCO[0] - 0.04, TOCO[1] - 0.02, 0.6)], (0.7, -0.7, 0), liso('#a8a8b0'), M, o_m)
+caixa((TOCO[0] - 0.02, TOCO[0] + 0.02, TOCO[1] + 0.0, TOCO[1] + 0.04, 0.58, 1.05), liso('#9a6a40'))
+for (ax, ay, ang) in ((TOCO[0] + 0.45, TOCO[1] + 0.1, 0.3), (TOCO[0] + 0.3, TOCO[1] + 0.42, -0.6)):
+    caixa((ax - 0.2, ax + 0.2, ay - 0.05, ay + 0.05, 0, 0.08), {'*': liso('#7a5232'), 'dir': liso('#d8b47c'), 'esq': liso('#d8b47c')})
+REDONDAS.append((TOCO[0], TOCO[1], 0.26, 0.0, 0.6))
 
 # ================================================================ o jardim ==========================================
+def _cachos(ob, cx, cy, zc, R, Rz, n, rmin, rmax, rng, achata=0.85, cor='#4a7434', corte=None):
+    """
+    A copa em cachos: um miolo e n cachos pequenos espalhados pela casca (mais em cima e na frente, que é o que se
+    vê), cada um com a sua luz: a borda fica recortada em dentes e os vãos entre os cachos ficam escuros.
+    """
+    m = mat_folhas(cor)
+    c.elipsoide((cx, cy, zc), (R * 0.82, R * 0.82, Rz * 0.82), m, ob, corte_z=corte)
+    for i in range(n):
+        u = rng.normal(size=3)
+        u[2] = abs(u[2]) * 0.8 + 0.1 if rng.random() < 0.75 else -abs(u[2]) * 0.6
+        u[0] += 0.25
+        u[1] += 0.25
+        u /= np.linalg.norm(u)
+        p = (cx + u[0] * R * 0.86, cy + u[1] * R * 0.86, zc + u[2] * Rz * 0.86)
+        rr = rmin + (rmax - rmin) * rng.random()
+        c.elipsoide(p, (rr, rr, rr * achata), m, ob, corte_z=corte)
+
+
 def arbusto(cx, cy, r=0.42, h=0.78, flores=None, seed=0):
-    """O arbusto: uma bola grande e quatro ou cinco menores em volta (a borda fica cheia de calombos)."""
+    """O arbusto: o miolo e uns vinte cachos de folha (a borda em dentes)."""
     o = obj(3)
     FOLHAS.append(o)
-    FOLHA_Q[o] = 0.085
+    FOLHA_Q[o] = 0.06
     rng = np.random.default_rng(seed + 21)
-    c.elipsoide((cx, cy, h * 0.5), (r * 0.9, r * 0.9, h * 0.52), mat_folhas('#4e7a38'), o, corte_z=0.0)
-    for i in range(5):
-        a_ = 2 * math.pi * i / 5 + rng.random() * 0.8
-        d = r * (0.45 + 0.15 * rng.random())
-        rr = r * (0.42 + 0.12 * rng.random())
-        zc = h * (0.32 + 0.4 * rng.random())
-        c.elipsoide((cx + d * math.cos(a_), cy + d * math.sin(a_), zc), (rr, rr, rr * 0.92), mat_folhas('#4e7a38'), o, corte_z=0.0)
-    c.elipsoide((cx - 0.05, cy + 0.05, h * 0.86), (r * 0.5, r * 0.5, r * 0.4), mat_folhas('#4e7a38'), o)
+    _cachos(o, cx, cy, h * 0.5, r, h * 0.5, 34, r * 0.18, r * 0.3, rng, cor='#4e7a38', corte=0.0)
     if flores:
         FLORES_EM.append((o, flores))
     REDONDAS.append((cx, cy, r * 1.05, 0.0, 0.7))
 
 
-for k, (bx_, by_, fl) in enumerate(((14, 18, '#8fb0f0'), (16, 18, None), (23, 18, '#f090b0'), (25, 18, None), (17, 21, None), (23, 21, '#f6f2e2'))):
+for k, (bx_, by_, fl) in enumerate(((14, 18, '#9ab8f8'), (16, 18, None), (23, 18, '#f890b4'), (25, 18, None), (17, 21, '#fff6e0'), (23, 21, '#f8f0d8'))):
     arbusto((bx_ + 0.5) * C, (by_ + 0.5) * C, flores=fl, seed=k)
 
 
 def arvore(cx, cy, H=5.6, R=1.5, seed=4):
-    """A árvore do terreiro: o tronco que abre em dois galhos e a copa em nuvens de folha."""
+    """A árvore do terreiro: o tronco que abre em galhos e a copa em cachos (dentes na borda, vãos escuros)."""
     o = obj(3)
-    c.cilindro(cx, cy, 0.19, 0, H * 0.5, liso('#6a4a30'), M, o, lados=14, r1=0.13, tampa=False)
+
+    def casca(L, n, P, cx=cx, cy=cy):
+        a = np.arctan2(P[:, 1] - cy, P[:, 0] - cx)
+        lado = (P[:, 0] - cx) * -0.7 + (P[:, 1] - cy) * 0.7
+        out = np.tile(hx('#5e4029'), (len(P), 1))
+        out = np.where((lado > 0.06)[:, None], hx('#7c5636'), out)
+        out = np.where((lado < -0.06)[:, None], hx('#4a3020'), out)
+        veio = (np.sin(a * 9 + P[:, 2] * 3.0) > 0.85)
+        return np.where(veio[:, None], out * 0.8, out)
+    c.cilindro(cx, cy, 0.19, 0, H * 0.5, emissivo(casca), M, o, lados=14, r1=0.13, tampa=False)
     c.cilindro(cx, cy, 0.3, 0, 0.12, liso('#6a4a30'), M, o, lados=14, r1=0.19, tampa=False)
-    for (dx, dy) in ((0.35, -0.1), (-0.3, 0.15)):
-        g = [(cx, cy, H * 0.42), (cx + dx, cy + dy, H * 0.62)]
-        k = 1 / math.sqrt(2)
-        (x0_, y0_, z0_), (x1_, y1_, z1_) = g
+    k = 1 / math.sqrt(2)
+    for (dx, dy, dz) in ((0.45, -0.15, 0.2), (-0.4, 0.2, 0.15), (0.1, 0.35, 0.3)):
+        (x0_, y0_, z0_), (x1_, y1_, z1_) = (cx, cy, H * 0.4), (cx + dx, cy + dy, H * (0.62 + dz * 0.3))
         c.face_plana([(x0_ - 0.07 * k, y0_ + 0.07 * k, z0_), (x0_ + 0.07 * k, y0_ - 0.07 * k, z0_),
-                      (x1_ + 0.05 * k, y1_ - 0.05 * k, z1_), (x1_ - 0.05 * k, y1_ + 0.05 * k, z1_)], (k, k, 0), liso('#5e4028'), M, o)
+                      (x1_ + 0.04 * k, y1_ - 0.04 * k, z1_), (x1_ - 0.04 * k, y1_ + 0.04 * k, z1_)], (k, k, 0), liso('#5e4028'), M, o)
     ob = obj(3)
     FOLHAS.append(ob)
-    FOLHA_Q[ob] = 0.15
+    FOLHA_Q[ob] = 0.075
     rng = np.random.default_rng(seed)
     zc = H * 0.68
-    c.elipsoide((cx, cy, zc), (R * 0.95, R * 0.95, R * 0.75), mat_folhas('#4a7434'), ob)
-    for i in range(8):
-        a_ = i / 8 * 2 * math.pi + rng.random() * 0.5
-        d = R * (0.62 + 0.15 * rng.random())
-        rr = R * (0.42 + 0.1 * rng.random())
-        c.elipsoide((cx + d * math.cos(a_), cy + d * math.sin(a_), zc + (rng.random() - 0.55) * R * 0.5), (rr, rr, rr * 0.85),
-                    mat_folhas('#4a7434'), ob)
-    for i in range(4):
-        a_ = i / 4 * 2 * math.pi + 0.6
-        c.elipsoide((cx + R * 0.35 * math.cos(a_), cy + R * 0.35 * math.sin(a_), zc + R * 0.55), (R * 0.45, R * 0.45, R * 0.38),
-                    mat_folhas('#4a7434'), ob)
+    # três massas (a copa não é uma bola só) e os cachos em cada uma
+    for (ox, oy, oz, kr) in ((0, 0, 0, 0.95), (-R * 0.5, R * 0.3, -R * 0.3, 0.68), (R * 0.35, -R * 0.4, R * 0.25, 0.7), (-R * 0.1, -R * 0.1, R * 0.6, 0.6)):
+        _cachos(ob, cx + ox, cy + oy, zc + oz, R * kr, R * 0.9 * kr, int(90 * kr), R * 0.09, R * 0.16, rng)
     REDONDAS.append((cx, cy, 0.4, 0.0, 0.6))
 
 
 arvore(12.3 * C, 22.4 * C)
 arvore(29.5 * C, 9.0 * C, H=5.2, R=1.35, seed=9)
+
+
+# ---------- o poço de pedra (na frente, à direita da trilha): a boca redonda, os dois esteios, o sarilho e o telhadinho
+PX_, PY_ = 27.6 * C, 23.4 * C
+
+
+def poco():
+    o = obj(3)
+    lados = 24
+    fn = lambda P, N: np.where(np.hypot(P[:, 0] - PX_, P[:, 1] - PY_) > 0.5,
+                               (np.floor((np.arctan2(P[:, 1] - PY_, P[:, 0] - PX_) + 4 + 0.2 * (np.floor(P[:, 2] / 0.15) % 2)) / 0.4)
+                                + 100 * np.floor(P[:, 2] / 0.15)).astype(np.int64), -1)
+    c.cilindro(PX_, PY_, 0.56, 0, 0.72, mat_cel(['#b3ac9e', '#a59e90', '#bdb6a8'], fn, 4), M, o, lados=lados, tampa=False)
+    celulas([o], fn, '#6e675a')
+    ob = obj(3)
+
+    def boca(L, n, P):
+        rr = np.hypot(P[:, 0] - PX_, P[:, 1] - PY_)
+        out = np.where((rr > 0.44)[:, None], hx('#cbc4b6'), hx('#16120f'))
+        return np.where(((rr < 0.44) & (rr > 0.36) & (P[:, 1] - PY_ < -0.1))[:, None], hx('#2c3a40'), out)
+    c.face_plana([(PX_ + 0.6 * math.cos(2 * math.pi * i / lados), PY_ + 0.6 * math.sin(2 * math.pi * i / lados), 0.78) for i in range(lados)],
+                 (0, 0, 1), emissivo(boca), M, ob)
+    c.cilindro(PX_, PY_, 0.6, 0.72, 0.78, liso('#c4bdb0'), M, ob, lados=lados, tampa=False)
+    mad = liso('#7a5232')
+    for dx in (-0.62, 0.56):
+        caixa((PX_ + dx, PX_ + dx + 0.07, PY_ - 0.04, PY_ + 0.04, 0.3, 1.75), {'*': mad, 'cima': liso('#8e6440')})
+    # o sarilho (a trave com a corda enrolada), a manivela, a corda e o balde
+    caixa((PX_ - 0.6, PX_ + 0.6, PY_ - 0.035, PY_ + 0.035, 1.42, 1.5), liso('#8e6440'))
+    caixa((PX_ - 0.2, PX_ + 0.2, PY_ - 0.06, PY_ + 0.06, 1.4, 1.52), liso('#c8b088'), contorno=True)
+    caixa((PX_ + 0.63, PX_ + 0.67, PY_ - 0.02, PY_ + 0.02, 1.3, 1.48), liso('#3a3030'))
+    caixa((PX_ - 0.012, PX_ + 0.012, PY_ - 0.012, PY_ + 0.012, 1.0, 1.42), liso('#c8b088'), contorno=False)
+    ob2 = obj(3)
+    c.cilindro(PX_, PY_, 0.1, 0.84, 1.0, liso('#8a6a48'), M, ob2, lados=12, r1=0.12, tampa_mat=liso('#3a2a20'))
+    # o telhadinho de duas águas (telha), a cumeeira em x
+    tel = mat_telha_v()
+    ot = obj(3)
+    for sg in (1, -1):
+        pts = [(PX_ - 0.78, PY_, 2.05), (PX_ + 0.78, PY_, 2.05), (PX_ + 0.78, PY_ + sg * 0.55, 1.68), (PX_ - 0.78, PY_ + sg * 0.55, 1.68)]
+        if sg < 0:
+            pts = pts[::-1]
+        nn = np.array([0, sg * 0.37, 0.55]); nn /= np.linalg.norm(nn)
+        c.face_plana(pts, tuple(nn), liso('#a4492a'), M, ot)
+    c.face_plana([(PX_ + 0.78, PY_ - 0.55, 1.68), (PX_ + 0.78, PY_ + 0.55, 1.68), (PX_ + 0.78, PY_, 2.05)], (1, 0, 0), liso('#7a5232'), M, ot)
+    celulas([ot], lambda P, N: np.where(N[:, 2] > 0.5, (np.floor((P[:, 0] + 50) / TL_COL) + 4096 * np.floor(np.abs(P[:, 1] - PY_) / 0.14)).astype(np.int64), -1),
+            TELHA_J, luz=1.16, sombra=0.72)
+    REDONDAS.append((PX_, PY_, 0.66, 0.0, 0.6))
+
+
+poco()
+
+
+def pedra(x, y, r, seed=0):
+    """Uma pedra no chão (meio enterrada)."""
+    o = obj(3)
+    k = 0.85 + 0.3 * ruido(seed, 1.0)
+    c.elipsoide((x, y, r * 0.1), (r, r * k, r * 0.62), lambda Pc, N, P: np.tile(hx('#a8a296'), (len(P), 1)), o, corte_z=0.0)
+    REDONDAS.append((x, y, r * 1.05, 0.0, 0.6))
+
+
+for i, (x, y, r) in enumerate(((11.6, 13.2, 0.16), (11.9, 13.6, 0.1), (31.0, 18.5, 0.2), (30.7, 19.0, 0.11), (26.4, 24.6, 0.13),
+                               (13.6, 24.6, 0.14), (24.6, 9.0, 0.12), (22.8, 24.9, 0.1))):
+    pedra(x * C, y * C, r, i)
+# os canteiros de flor soltos na grama (moitinhas floridas)
+for k, (x, y, fl) in enumerate(((25.6, 20.4, '#f6d860'), (26.3, 21.2, '#f890b4'), (24.9, 22.9, '#c4b0ff'), (29.6, 22.2, '#fff6e0'),
+                                (11.4, 16.6, '#f6d860'), (14.6, 23.9, '#f890b4'))):
+    arbusto(x * C, y * C, r=0.22, h=0.36, flores=fl, seed=40 + k)
 
 
 # ---------- a fonte do pátio (3 x 3 casas em 19, 22): a bacia de pedra, a água, a coluna e a taça de cima
@@ -769,10 +890,14 @@ def fonte():
     anel = [(FX + 1.06 * math.cos(2 * math.pi * i / lados), FY + 1.06 * math.sin(2 * math.pi * i / lados), 0.48) for i in range(lados)]
     c.cilindro(FX, FY, 1.06, 0.42, 0.48, liso('#cfc8ba'), M, ob, lados=lados, tampa=False)
 
-    def borda(L, n, P):
-        rr = np.hypot(P[:, 0] - FX, P[:, 1] - FY)
-        return np.where((rr > 0.9)[:, None], hx('#d8d1c3'), hx('#2a5a70'))
-    c.face_plana(anel, (0, 0, 1), emissivo(borda), M, ob)
+    # o anel de cima da borda em gomos (um polígono só cobriria a água)
+    for i in range(lados):
+        a0_, a1_ = 2 * math.pi * i / lados, 2 * math.pi * (i + 1) / lados
+        c.face_plana([(FX + 0.9 * math.cos(a0_), FY + 0.9 * math.sin(a0_), 0.48), (FX + 1.06 * math.cos(a0_), FY + 1.06 * math.sin(a0_), 0.48),
+                      (FX + 1.06 * math.cos(a1_), FY + 1.06 * math.sin(a1_), 0.48), (FX + 0.9 * math.cos(a1_), FY + 0.9 * math.sin(a1_), 0.48)],
+                     (0, 0, 1), liso('#d8d1c3'), M, ob)
+    # a parede de dentro da bacia (o lado de trás aparece, escuro)
+    c.cilindro(FX, FY, 0.9, 0.4, 0.48, liso('#8a8476'), M, ob, lados=lados, tampa=False)
     O_AGUA = obj(3, contorno=False)
     lim = [(FX + 0.9 * math.cos(2 * math.pi * i / lados), FY + 0.9 * math.sin(2 * math.pi * i / lados), 0.4) for i in range(lados)]
     c.face_plana(lim, (0, 0, 1), liso('#4f8ea6'), M, O_AGUA)
@@ -815,7 +940,7 @@ SOL = np.array([0.62, -0.3, -0.72])
 SOL /= np.linalg.norm(SOL)
 
 
-FOLHA_PAL = [hx(x) for x in ('#24401e', '#2f5226', '#3d6a2e', '#4f8236', '#669c40', '#86b44e', '#a6c860')]
+FOLHA_PAL = [hx(x) for x in ('#213b1c', '#2e5126', '#406e30', '#58903c', '#7aae4a', '#a2c85e')]
 
 
 def folhagem(cor, aceso):
@@ -849,13 +974,24 @@ def folhagem(cor, aceso):
                 mm = d < best
                 best = np.where(mm, d, best)
                 bid = np.where(mm, (cc[:, 0] * 73856093 + cc[:, 1] * 19349663 + cc[:, 2] * 83492791 + of * 7).astype(np.int64), bid)
-    Ld = -SOL
-    l = np.clip(Nf @ Ld, 0, 1) * 0.7 + np.clip(Nf[:, 2], 0, 1) * 0.3
-    l = l * (0.42 + 0.58 * aceso[ys, xs])
+    Ld = np.array([-0.55, 0.25, 0.8])
+    Ld /= np.linalg.norm(Ld)
+    l_cacho = np.clip(Nf @ Ld, 0, 1)
+    # a copa inteira: a posição do pixel na copa (em cima à esquerda acende, embaixo à direita escurece)
+    l_copa = np.zeros(len(Pf))
+    for o_ in np.unique(of):
+        mo = of == o_
+        Q = Pf[mo]
+        cen = (Q.max(0) + Q.min(0)) / 2
+        ext = np.maximum((Q.max(0) - Q.min(0)) / 2, 1e-3)
+        u = (Q - cen) / ext
+        l_copa[mo] = np.clip(0.5 + 0.5 * (u @ Ld) * 1.1, 0, 1)
+    l = 0.12 + 0.88 * (l_cacho * 0.5 + l_copa * 0.5)
+    l = l * (0.45 + 0.55 * aceso[ys, xs])
     u, inv = np.unique(bid, return_inverse=True)
     lc = np.bincount(inv, l) / np.bincount(inv)
     L = 0.7 * lc[inv] + 0.3 * l
-    lvl = np.digitize(L, [0.16, 0.3, 0.44, 0.58, 0.72, 0.86])
+    lvl = np.digitize(L, [0.17, 0.3, 0.44, 0.6, 0.77])
     ids = np.full((h, w), -1, np.int64)
     ids[ys, xs] = bid
     nv = np.full((h, w), -1)
@@ -899,30 +1035,44 @@ def base_render():
         cor = np.where(ac[..., None], np.minimum(cor * kl + 4, 255), cor)
         cor = np.where(so[..., None], cor * ks, cor)
         cor = np.where(junta[..., None], jc, cor)
-    # ----- a luz de cada face (topo 1,0; +y 0,86; +x 0,66) e o tom quente do sol baixo
+    # ----- a luz de cada face. No sol: topo 1,0, +y 0,9. A face de costas (+x) e o que está na sombra do sol não ficam
+    # cinza: o creme na sombra puxa para o lilás quente (o céu azul por cima do laranja), em degraus que clareiam
+    # para baixo (a luz que o chão rebate na parede).
     topo = nz > 0.6
     esq = ~topo & (ny >= nx)
-    f = np.where(topo, 1.0, np.where(esq, 0.86, 0.66))
     luz_m = np.isin(ob, list(luzes))
-    quente = np.array([14.0, 4.0, -12.0])
-    cor = np.where(luz_m[..., None], cor, cor * f[..., None] + (1 - f[..., None]) * quente)
-    # ----- a sombra do sol (macia, em 3 degraus) e o tom frio da sombra
+    f = np.where(topo, 1.0, np.where(esq, 0.9, 1.0))
+    cor = np.where(luz_m[..., None], cor, cor * f[..., None])
     aceso = c.sombra_direcional(SOL, res=0.02, vies=0.02, raio=1)
     aceso = np.round(aceso * 2) / 2
     costas = (nrm @ SOL) > -0.02
-    k = (1 - aceso) * 0.42
-    k = np.where(costas | luz_m, 0, k)
-    sombra_c = np.array([40.0, 46.0, 78.0])
-    cor = cor * (1 - k[..., None]) + sombra_c * k[..., None] * 0.6
+    X, Y, Z = P[..., 0], P[..., 1], P[..., 2]
+    # quanto de sombra: a face de costas inteira; a sombra projetada em 3 degraus
+    k = np.where(costas, 1.0, 1 - aceso)
+    k = np.where(luz_m | (ob < 0), 0, k)
+    # a tinta da sombra (multiplica): lilás quente; no chão e nas folhas, mais azulada e mais funda
+    T_PAREDE = np.array([0.64, 0.57, 0.67])
+    T_CHAO = np.array([0.62, 0.66, 0.80])
+    T_VARANDA = np.array([0.76, 0.64, 0.66])       # embaixo da varanda: a sombra quente (o deck e a parede rebatem)
+    sob_varanda = (Y > HY1 - 0.02) & (Y < YFR + 0.3) & (X > DECK[0] - 0.2) & (X < DECK[1] + 0.2) & (Z < 3.2) & ~topo
+    sob_varanda |= (Y > HY1 - 0.02) & (Y < YFR) & (np.abs(Z - 0.42) < 0.03) & (X > DECK[0]) & (X < DECK[1])
+    tint = np.where((tipo == 1)[..., None], T_CHAO, T_PAREDE)
+    tint = np.where(sob_varanda[..., None], T_VARANDA, tint)
+    # o degradê em degraus na parede de costas: embaixo mais claro e mais quente (o chão rebate), em cima mais frio
+    paredes = ~topo & (tipo == 3)
+    rebate = np.where(paredes, np.clip(1 - Z / 2.4, 0, 1), 0)
+    rebate = np.floor(rebate * 3) / 3
+    tint = tint + rebate[..., None] * np.array([0.13, 0.08, -0.02])
+    sombra_k = 1 - k[..., None] * (1 - tint)
+    cor = cor * sombra_k
     # no sol, um quentinho (fim de tarde)
-    sol_m = (aceso > 0.9) & ~costas & ~luz_m & (ob >= 0)
-    cor = np.where(sol_m[..., None], cor * np.array([1.04, 1.0, 0.94]) + np.array([6.0, 3.0, 0.0]), cor)
+    sol_m = (k < 0.1) & ~luz_m & (ob >= 0)
+    cor = np.where(sol_m[..., None], cor * np.array([1.04, 1.0, 0.93]) + np.array([6.0, 3.0, 0.0]), cor)
     c._aceso = np.where(costas, 0.0, aceso)
     # ----- as folhas
     cor, c._folha, fol = folhagem(cor, c._aceso)
     # ----- a sombra de contato no chão (o pé da casa, as plantas, o banco)
     chao = (tipo == 1) & topo
-    X, Y, Z = P[..., 0], P[..., 1], P[..., 2]
     dpe = np.maximum(np.maximum(HX0 - X, X - HX1), np.maximum(HY0 - Y, Y - DECK[3]))
     cor = np.where((chao & (dpe < 0.12))[..., None], cor * 0.8, np.where((chao & (dpe < 0.3))[..., None], cor * 0.9, cor))
     dentro = np.zeros((h, w), bool)
@@ -983,49 +1133,111 @@ def luz_quente(cor, P0, raio, forca, cor_l=(255, 200, 120), so=None, degraus=4, 
     return cor + (cl - cor * 0.4) * s[..., None] * 0.45
 
 
-def fumaca_loop(sx, sy, bx, by, t, n=7, vida=2, altura=140, raio=(3.2, 14.0), onda=2.6, vento=42.0, seed=0.0):
+def manchas_de_luz(cor, pisca, t):
+    """A luz das janelas acesas e dos lampiões em manchas de degraus (na parede, no deck, no chão e no guarda-corpo)."""
+    P, ob, nrm = c.mundoP, c.obj, c.nrm
+    X, Y, Z = P[..., 0], P[..., 1], P[..., 2]
+    topo = nrm[..., 2] > 0.6
+    nao_luz = ~np.isin(ob, list(luzes)) & (ob >= 0)
+    s_tot = np.zeros(X.shape)
+    cor_tot = np.zeros(X.shape + (3,))
+
+    def soma(s_, cl):
+        nonlocal s_tot, cor_tot
+        s_ = np.where(nao_luz, s_, 0)
+        novo = s_ > s_tot
+        cor_tot = np.where(novo[..., None], np.array(cl, float), cor_tot)
+        s_tot = np.maximum(s_tot, s_)
+    for (face, a0, a1, z0, z1, kind) in JANELAS_LUZ:
+        forca = pisca if kind == 'fogo' else 1.0
+        cl = (255, 190, 104) if kind == 'aceso' else (255, 146, 64)
+        if face == 'y':
+            lat, sai = X, Y - HY1
+        else:
+            lat, sai = Y, X - HX1
+        # na parede: o halo em volta da moldura (2 degraus)
+        parede = (np.abs(sai) < 0.07) & ~topo
+        dl = np.maximum(np.maximum(a0 - lat, lat - a1), 0)
+        dz = np.maximum(np.maximum(z0 - Z, Z - z1), 0)
+        dd = np.maximum(dl, dz * 0.8)
+        soma(np.where(parede & (dd > 0.02), np.where(dd < 0.16, 0.5, np.where(dd < 0.32, 0.25, 0)), 0) * forca, cl)
+        # no chão / deck: o retângulo de luz que abre para fora (3 degraus)
+        chao = topo & (sai > 0.02) & (sai < 1.6) & (Z < z0 - 0.3)
+        abre = 0.12 + sai * 0.35
+        dentro = (lat > a0 - abre) & (lat < a1 + abre)
+        nivel = np.where(sai < 0.5, 0.8, np.where(sai < 1.0, 0.5, 0.25))
+        soma(np.where(chao & dentro, nivel, 0) * forca * (0.3 if z0 > 2 else 1.0), cl)
+        # o que está de pé perto, na frente da janela (guarda-corpo, pilar, banco, lenha)
+        perto = ~topo & (sai > 0.3) & (sai < 1.4) & dentro & (Z < z1)
+        soma(np.where(perto, 0.3, 0) * forca, cl)
+    for p_ in (P_LAMP, P_LAMP2):
+        lx, lz = p_[0], p_[2]
+        parede = (np.abs(Y - HY1) < 0.07) & ~topo
+        d = np.hypot(X - lx, (Z - lz) * 0.9)
+        soma(np.where(parede, np.where(d < 0.26, 0.55, np.where(d < 0.48, 0.34, np.where(d < 0.75, 0.16, 0))), 0), (255, 206, 120))
+        deck = topo & (np.abs(Z - 0.42) < 0.03)
+        d = np.hypot(X - lx, (Y - HY1 - 0.25) * 1.2)
+        soma(np.where(deck, np.where(d < 0.45, 0.6, np.where(d < 0.85, 0.35, np.where(d < 1.25, 0.15, 0))), 0), (255, 206, 120))
+    return cor + (cor_tot - cor * 0.42) * (s_tot * 0.5)[..., None]
+
+
+FUM_TONS = np.stack([hx('#78737a'), hx('#9a9599'), hx('#b9b4b3'), hx('#e2ded8'), hx('#f6f3ee')])
+
+
+def fumaca(cor, bx, by, t, n=6, vida=2, altura=150, raio=(3.0, 15.0), onda=2.4, vento=46.0):
     """
-    A fumaça em loop perfeito: n bolotas por volta, cada uma leva `vida` voltas para subir `altura` px; a j e a j+n
-    fazem o mesmo caminho (t e t + 1 dão o mesmo quadro). As bolotas se somam numa densidade (a coluna fica inteira
-    embaixo e se desfaz em fiapos no alto); devolve o nível de cada pixel (0 nada, 1 borda rala, 2 meio, 3 miolo).
+    A fumaça em loop perfeito (t e t + 1 dão o mesmo quadro): n bolotas por volta, cada uma leva `vida` voltas para
+    subir `altura` px. Cada bolota é uma bola com volume em 4 tons (a luz em cima à esquerda, a sombra embaixo à
+    direita, o contorno suave embaixo); as novas são desenhadas primeiro e as mais velhas (mais altas) por cima,
+    então a sombra de baixo de cada bolota pousa sobre a de baixo. Velha, ela clareia e se desfaz em pedaços.
     """
-    dens = np.zeros(np.shape(sx))
+    h, w = cor.shape[:2]
+    lc = np.zeros((h, w, 3))
+    la = np.zeros((h, w))
+    puffs = []
     for j in range(n * vida):
         i = j % n
         q = ((t + j / n) / vida) % 1
-        jx = (ruido(i, 6.0 + seed) - 0.5) * 3
-        fase = ruido(i, 7.0 + seed)
-        cx = bx + jx + onda * math.sin(2 * math.pi * (q * 1.1 + fase)) * (0.3 + q) + vento * q ** 1.6
-        cy = by - q * altura * (0.8 + 0.2 * q)
+        fase = ruido(i, 7.0)
+        cx = bx + (ruido(i, 6.0) - 0.5) * 3 + onda * math.sin(2 * math.pi * (q * 1.1 + fase)) * (0.2 + q) + vento * q ** 1.6
+        cy = by - q * altura * (0.75 + 0.25 * q)
         rad = raio[0] + (raio[1] - raio[0]) * q ** 0.7
-        forca = (1 - q) ** 1.3 * min(1.0, q * 10) * 1.25
-        for k in range(3):
-            ang = 2 * math.pi * (ruido(i, k, 8.0 + seed) + 0.2 * q)
-            dd = 0.0 if k == 0 else rad * 0.6
-            rk = rad * (1.0 if k == 0 else 0.6 + 0.2 * ruido(i, k, 9.0))
-            ox, oy = cx + dd * math.cos(ang), cy + dd * math.sin(ang) * 0.7
-            d = np.hypot((sx - ox) / rk, (sy - oy) / (rk * 0.85))
-            dens += np.clip(1 - d, 0, 1) ** 0.6 * forca * (1.0 if k == 0 else 0.7)
-    return dens
-
-
-def fumaca_cor(reg, dens):
-    """A fumaça em 3 tons com a borda acesa em cima à esquerda (o sol) e a de baixo à direita na sombra."""
-    nv = np.digitize(dens, [0.18, 0.5, 0.95])
-    # sem degrau sozinho de 1 px
-    for _ in range(2):
-        vz = np.stack([viz(nv, dy, dx, 0) for dy, dx in ((0, 1), (1, 0), (0, -1), (-1, 0))])
-        nv = np.where(nv > vz.max(0), vz.max(0), nv)
-        nv = np.where((nv > 0) & ((vz > 0).sum(0) <= 1), 0, nv)
-    aceso = (nv > 0) & (viz(nv, -2, -2, 0) < nv)
-    sombra = (nv > 0) & (viz(nv, 2, 2, 0) < nv) & ~aceso
-    tons = np.stack([hx('#000000'), hx('#a7a3a4'), hx('#c6c2bf'), hx('#e6e2dc')])
-    alfa = np.array([0.0, 0.6, 0.85, 0.95])
-    cor = tons[nv]
-    cor = np.where(aceso[..., None], np.minimum(cor * 1.07 + 6, 250), cor)
-    cor = np.where(sombra[..., None], cor * 0.82, cor)
-    a = alfa[nv][..., None]
-    return reg + (cor - reg) * a
+        puffs.append((q, cx, cy, rad, i))
+    for (q, cx, cy, rad, i) in sorted(puffs, key=lambda p_: p_[0]):
+        if q < 0.03:
+            continue
+        x0, x1 = max(0, int(cx - rad * 1.3) - 1), min(w, int(cx + rad * 1.3) + 2)
+        y0, y1 = max(0, int(cy - rad * 1.3) - 1), min(h, int(cy + rad * 1.3) + 2)
+        if x0 >= x1 or y0 >= y1:
+            continue
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        dx, dy = xx + 0.5 - cx, yy + 0.5 - cy
+        th = np.arctan2(dy, dx)
+        rr = rad * (1 + 0.13 * np.sin(3 * th + 6.28 * ruido(i, 1.0)) + 0.08 * np.sin(5 * th + 6.28 * ruido(i, 2.0)))
+        d = np.hypot(dx, dy / 0.9) / rr
+        dentro = d < 1
+        # velha: some em pedaços (blocos de 3 px), da borda para dentro
+        if q > 0.55:
+            bl = ruido(np.floor(xx / 3) + i * 17, np.floor(yy / 3), 3.0)
+            dentro &= bl > (q - 0.55) * 2.1 * (0.4 + 0.6 * d)
+        sproj = (dx * 0.55 + dy * 0.85) / rr
+        dl = np.hypot(dx + 0.36 * rr, dy + 0.4 * rr) / rr
+        tom = np.full(d.shape, 2)
+        tom = np.where(sproj > 0.18, 1, tom)
+        tom = np.where(dl < 0.62, 3, tom)
+        tom = np.where(dl < 0.3, 4, tom)
+        tom = np.where((d > 0.82) & (sproj > 0.0), 0, tom)
+        # velha, ela clareia (perde a sombra forte)
+        if q > 0.6:
+            tom = np.maximum(tom, 1)
+        a = 1.0 if q < 0.5 else (0.78 if q < 0.68 else (0.56 if q < 0.84 else 0.34))
+        sub = (slice(y0, y1), slice(x0, x1))
+        lc[sub] = np.where(dentro[..., None], FUM_TONS[tom], lc[sub])
+        la[sub] = np.where(dentro, a, la[sub])
+    # sem pixel solto
+    vz = np.stack([viz(la, dy, dx, 0.0) for dy, dx in ((0, 1), (1, 0), (0, -1), (-1, 0))])
+    la = np.where((la > 0) & ((vz > 0).sum(0) <= 1), 0, la)
+    return cor + (lc - cor) * (la * 0.92)[..., None]
 
 
 def mapa_terreno():
@@ -1038,18 +1250,32 @@ def mapa_terreno():
     return c._ter
 
 
-TUFOS = [
-    # d = o pé (escuro), m = o meio, l = a ponta (clara)
-    ["l...l", "m.l.m", ".dmd."],
-    ["..l..", ".lml.", "md.dm"],
-    ["l.l..", "m.m.l", ".dmdm"],
-    [".l.", "lml", "dmd"],
-    ["l..l", "ml.m", "dmdd"],
-]
+def _molde_tufo(rng):
+    """Um tufo de capim sorteado: 2 a 5 folhas de 2 a 5 px, as de fora tortas para fora, o pé escuro e a ponta clara."""
+    k = int(rng.integers(2, 6))
+    larg = k + int(rng.integers(0, 3))
+    xs_ = np.linspace(0, larg - 1, k).round().astype(int)
+    px = []
+    for b, x in enumerate(xs_):
+        meio = 1 - abs(b - (k - 1) / 2) / max(1, (k - 1) / 2)
+        hb = int(2 + round(meio * rng.integers(1, 4)))
+        torto = -1 if b == 0 else (1 if b == k - 1 else 0)
+        for y in range(hb):
+            dx = torto if (y >= hb - 1 and hb > 2) else 0
+            ch = 'd' if y == 0 else ('l' if y == hb - 1 else 'm')
+            px.append((x + dx - larg // 2, -y, ch))
+    return px
+
+
+_RNG_T = np.random.default_rng(5)
+TUFOS = [_molde_tufo(_RNG_T) for _ in range(40)]
 
 
 def tufos(cor, t=0.0):
-    """Os tufos de capim e as florzinhas na grama (no pixel, depois do contorno). t balança a ponta de uns tufos."""
+    """
+    O capim e as florzinhas (no pixel, depois do contorno). Os tufos são sorteados (40 moldes, espelhados, em três
+    tons) e se juntam em manchas (o ruído decide onde há capim alto); t balança a ponta de uns tufos.
+    """
     ob = c.obj
     h, w = ob.shape
     ter = mapa_terreno()
@@ -1058,42 +1284,40 @@ def tufos(cor, t=0.0):
     rng = np.random.default_rng(11)
     out = cor.copy()
     pts = []
-    passo = 0.3
-    for gx in np.arange(GX0 + 0.1, GX1 - 0.1, passo):
-        for gy in np.arange(GY0 + 0.1, GY1 - 0.1, passo):
-            pts.append((gx + rng.random() * passo, gy + rng.random() * passo, rng.integers(0, len(TUFOS)), rng.random(), rng.random()))
-    for (x, y, k, r1, r2) in pts:
-        # mais tufos onde a grama é mais alta (as manchas) e na beira da terra
-        dens = suave(x, y, 1.1, 41)
-        if r1 > 0.25 + 0.75 * dens:
+    passo = 0.22
+    for gx in np.arange(GX0 + 0.05, GX1 - 0.05, passo):
+        for gy in np.arange(GY0 + 0.05, GY1 - 0.05, passo):
+            pts.append((gx + rng.random() * passo, gy + rng.random() * passo, int(rng.integers(0, len(TUFOS))), rng.random(),
+                        rng.random(), rng.random() < 0.5, rng.random()))
+    for (x, y, k, r1, r2, espelho, r3) in pts:
+        dens = suave(x, y, 1.0, 41) * 0.7 + suave(x, y, 0.35, 42) * 0.3
+        if r1 > (dens - 0.3) * 1.6:
             continue
         sx, sy = tela(np.array([x, y, 0.0]))
         px, py = int(sx - c.x0), int(sy - c.y0)
-        if not (3 <= px < w - 4 and 4 <= py < h - 2):
+        if not (4 <= px < w - 5 and 6 <= py < h - 2) or not grama[py, px]:
             continue
-        if not grama[py, px]:
-            continue
-        st = TUFOS[k]
         base = cor[py, px]
-        sway = 1 if math.sin(2 * math.pi * (t + r2)) > 0.55 else 0
-        hh = len(st)
-        for j, row in enumerate(st):
-            for i, ch in enumerate(row):
-                if ch == '.':
-                    continue
-                xx = px + i - len(row) // 2 + (sway if j == 0 else 0)
-                yy = py + j - hh + 1
-                if not (0 <= xx < w and 0 <= yy < h) or not (grama[yy, xx] or terra[yy, xx]):
-                    continue
-                if ch == 'd':
-                    out[yy, xx] = base * 0.74 + np.array([-2, 2, -4])
-                elif ch == 'm':
-                    out[yy, xx] = base * 0.88
-                else:
-                    out[yy, xx] = np.minimum(base * 1.14 + np.array([10, 10, -2]), 255)
+        # o tom do tufo: o capim mais seco (amarelado), o comum e o mais verde
+        tint = np.array([1.08, 1.04, 0.86]) if r3 < 0.2 else (np.array([0.95, 1.02, 0.95]) if r3 > 0.75 else np.ones(3))
+        sway = 1 if math.sin(2 * math.pi * (t + r2)) > 0.5 else 0
+        for (dx, dy, ch) in TUFOS[k]:
+            dx = -dx if espelho else dx
+            if ch == 'l' and r2 > 0.6:
+                dx += sway
+            xx, yy = px + dx, py + dy
+            if not (0 <= xx < w and 0 <= yy < h) or not (grama[yy, xx] or terra[yy, xx]):
+                continue
+            if ch == 'd':
+                v = base * 0.74 + np.array([-2, 2, -4])
+            elif ch == 'm':
+                v = base * 0.9
+            else:
+                v = np.minimum(base * 1.13 + np.array([10, 10, -2]), 255)
+            out[yy, xx] = v * tint
     # as florzinhas em grupinhos (3 px: a pétala clara em cima, o miolo, o talo escuro)
     cores = [(hx('#fbf6e8'), hx('#f2d36a')), (hx('#f6d860'), hx('#e8a838')), (hx('#f0a8c8'), hx('#d87098')), (hx('#c4b4f4'), hx('#9480d8'))]
-    for g in range(110):
+    for g in range(140):
         x = GX0 + rng.random() * (GX1 - GX0)
         y = GY0 + rng.random() * (GY1 - GY0)
         cp, cm = cores[rng.integers(0, 4)]
@@ -1113,25 +1337,29 @@ def tufos(cor, t=0.0):
 
 
 def flores_pixel(cor):
-    """As flores nos arbustos e nos vasos: uma por tufo aceso (2 px), no alto de cada tufo."""
+    """As flores nos arbustos e nas moitas: uma por tufo de folha (a cruzinha de 5 px com o miolo), mais no alto."""
     out = cor.copy()
     if c._folha is None:
         return out
     ids, nv = c._folha
     ob = c.obj
-    cima, esq, dir_ = viz(ids, -1, 0, -2), viz(ids, 0, -1, -2), viz(ids, 0, 1, -2)
+    h, w = ob.shape
+    cima, esq = viz(ids, -1, 0, -2), viz(ids, 0, -1, -2)
     for (o, cf) in FLORES_EM:
-        m = (ob == o) & (nv >= 2)
-        sel = m & (cima != ids) & (esq != ids) & (dir_ == ids) & (ruido(ids % 100003 * 0.37, 9.1) > 0.45)
+        m = (ob == o) & (nv >= 1)
+        sel = m & (nv >= 2) & (cima != ids) & (esq != ids) & (ruido(ids % 100003 * 0.37, 9.1) > 0.62)
         ys, xs = np.nonzero(sel)
         cfc = hx(cf)
+        miolo = np.array([200.0, 120.0, 40.0]) if cf == '#f6d860' else np.array([238.0, 196.0, 80.0])
         for y, x in zip(ys, xs):
-            k = 1.0 if nv[y, x] >= 4 else 0.82
-            out[y, x] = cfc * k
-            if x + 1 < out.shape[1]:
-                out[y, x + 1] = cfc * k * 0.85
-            if y + 1 < out.shape[0] and m[y + 1, x]:
-                out[y + 1, x] = cfc * k * 0.7
+            y, x = y + 1, x + 1
+            if not (1 <= y < h - 1 and 1 <= x < w - 1) or not m[y, x]:
+                continue
+            k = 1.0 if nv[y, x] >= 3 else 0.82
+            for (dy, dx, kk) in ((-1, 0, 1.06), (0, -1, 1.0), (0, 1, 0.86), (1, 0, 0.74)):
+                if m[y + dy, x + dx]:
+                    out[y + dy, x + dx] = np.minimum(cfc * k * kk, 255)
+            out[y, x] = miolo * k
     return out
 
 
@@ -1149,20 +1377,38 @@ def agua(cor, t):
     perto = m & (r < 0.24)
     out = np.where(perto[..., None], np.minimum(cor * 1.25 + 20, 255), out)
     # o reflexo do céu (uma faixa clara do lado de trás)
-    ref = m & ((P[..., 0] - FX) * 0.6 - (P[..., 1] - FY) > 0.45) & ((P[..., 0] - FX) * 0.6 - (P[..., 1] - FY) < 0.58)
+    ref = m & ((P[..., 0] - FX) * 0.6 - (P[..., 1] - FY) > 0.5) & ((P[..., 0] - FX) * 0.6 - (P[..., 1] - FY) < 0.6) & (r > 0.45)
     out = np.where(ref[..., None], hx('#9cd0dc'), out)
-    # os pingos: da borda da taça até a água (2 px, descendo)
+    # a água que cai da taça: 10 fios (1 px, azul-claro meio transparente) com as gotas brancas descendo e o respingo
+    h, w = cor.shape[:2]
     for i in range(10):
         a_ = 2 * math.pi * i / 10 + 0.3
-        q = (t * 2 + ruido(i, 3.3)) % 1
-        z = 1.12 - q * 0.72
-        rr = 0.43 + q * 0.12
-        Pq = np.array([FX + rr * math.cos(a_), FY + rr * math.sin(a_), z])
-        sx, sy = tela(Pq)
+        topo = np.array([FX + 0.44 * math.cos(a_), FY + 0.44 * math.sin(a_), 1.12])
+        base = np.array([FX + 0.6 * math.cos(a_), FY + 0.6 * math.sin(a_), 0.4])
+
+        def queda(u):
+            return topo + (base - topo) * np.array([u ** 0.5, u ** 0.5, u])
+        for k in range(26):
+            Pq = queda(k / 25)
+            sx, sy = tela(Pq)
+            px, py = int(sx - c.x0), int(sy - c.y0)
+            if 0 <= px < w and 0 <= py < h and (Pq @ VISTA) > c.prof[py, px] - 0.03:
+                out[py, px] = out[py, px] * 0.45 + hx('#d6f2f8') * 0.55
+        for f in range(2):
+            q = (t * 2 + ruido(i, 3.3) + f * 0.5) % 1
+            Pq = queda(q)
+            sx, sy = tela(Pq)
+            px, py = int(sx - c.x0), int(sy - c.y0)
+            if 1 <= px < w and 1 <= py < h - 1 and (Pq @ VISTA) > c.prof[py, px] - 0.03:
+                out[py, px] = hx('#ffffff')
+                out[py + 1, px] = hx('#bfe6f2')
+        # o respingo no pé do fio (pisca)
+        sx, sy = tela(base)
         px, py = int(sx - c.x0), int(sy - c.y0)
-        if 0 <= px < cor.shape[1] and 1 <= py < cor.shape[0] and (Pq @ VISTA) > c.prof[py, px] - 0.02:
-            out[py, px] = hx('#e6f6fa')
-            out[py - 1, px] = hx('#a8d8e6')
+        if (t * 2 + ruido(i, 5.5)) % 1 < 0.5 and 2 <= px < w - 2 and 1 <= py < h and (base @ VISTA) > c.prof[py, px] - 0.05:
+            for dx_ in (-1, 1):
+                out[py - 1, px + dx_] = hx('#f4fbfd')
+            out[py, px] = hx('#e0f4fa')
     return out
 
 
@@ -1177,23 +1423,10 @@ def quadro(t=0.0):
     ob = c.obj
     # o fundo
     cor = np.where((ob >= 0)[..., None], cor, FUNDO)
-    # a luz quente das janelas acesas e do lampião (no chão, no deck, no peitoril e no guarda-corpo; não na parede)
+    # a luz quente das janelas acesas e dos lampiões, em manchas de 3 degraus: na parede em volta da janela, no
+    # deck ou no chão na frente dela (a mancha abre conforme se afasta) e no guarda-corpo
     pisca = 0.82 + 0.18 * (0.5 + 0.5 * math.sin(2 * math.pi * t * 2)) * (0.6 + 0.4 * math.sin(2 * math.pi * t * 3 + 1))
-    for ov, kind in VIDROS.items():
-        if kind == 'escuro':
-            continue
-        m = ob == ov
-        if not m.any():
-            continue
-        Pm = c.mundoP[m].mean(0)
-        nn = np.round(c.nrm[m].mean(0))
-        e = 0 if abs(nn[0]) > 0.5 else 1
-        p0 = Pm + nn * 0.45 - np.array([0, 0, 0.35])
-        cor = luz_quente(cor, p0, 1.5, 0.75 * (pisca if kind == 'fogo' else 1.0),
-                         cor_l=(255, 196, 110) if kind == 'aceso' else (255, 150, 70), plano=(e, Pm[e], 1),
-                         so=c.nrm[..., 2] > 0.6)
-    for p in (P_LAMP, P_LAMP2):
-        cor = luz_quente(cor, p, 1.25, 0.8 * (0.94 + 0.06 * math.sin(2 * math.pi * t * 4)), plano=(1, HY1 + 0.02, 1))
+    cor = manchas_de_luz(cor, pisca, t)
     # o fogo na janela da cozinha: o vidro todo tremula
     m = ob == O_COZINHA
     cor = np.where(m[..., None], cor * (0.86 + 0.16 * pisca), cor)
@@ -1202,12 +1435,7 @@ def quadro(t=0.0):
     cor = agua(cor, t)
     # a fumaça da chaminé
     bx, by = tela(TOPO_CHAMINE)
-    bx, by = bx - c.x0, by - c.y0
-    x0, y0, x1, y1 = int(bx - 40), int(by - 165), int(bx + 100), int(by + 4)
-    x0, y0 = max(0, x0), max(0, y0)
-    yy, xx = np.mgrid[y0:y1, x0:x1]
-    dens = fumaca_loop(xx + 0.5, yy + 0.5, bx, by - 1, t)
-    cor[y0:y1, x0:x1] = fumaca_cor(cor[y0:y1, x0:x1], dens)
+    cor = fumaca(cor, bx - c.x0, by - c.y0 - 1, t)
     return np.clip(cor, 0, 255)
 
 
@@ -1240,7 +1468,7 @@ if __name__ == '__main__':
     img = quadro(0.0)[E[1]:E[3], E[0]:E[2]]
     salvar(img, saida, 2)
     salvar(img, os.path.join(AQUI, 'casarao_1x.png'))
-    recorte(img, E, TOPO_CHAMINE + np.array([0.6, 0, 1.6]), 170, 170, 'zoom_chamine.png')
+    recorte(img, E, TOPO_CHAMINE + np.array([0.9, 0, 2.2]), 190, 200, 'zoom_chamine.png')
     recorte(img, E, (MEIO, YFR, 1.5), 220, 150, 'zoom_varanda.png')
     recorte(img, E, (HX1, (HY0 + HY1) / 2, 2.6), 170, 230, 'zoom_lado.png')
     recorte(img, E, (MEIO - 3.5, YFR + 2.0, 0.3), 220, 140, 'zoom_jardim.png')
@@ -1258,4 +1486,12 @@ if __name__ == '__main__':
         px, py = int(sx - c.x0 - E[0]), int(sy - c.y0 - E[1])
         r = [q.crop((px - 85, py - 85, px + 85, py + 85)).resize((680, 680), Image.NEAREST) for q in quadros]
         r[0].save(os.path.join(AQUI, 'chamine_fumaca.gif'), save_all=True, append_images=r[1:], duration=150, loop=0, disposal=2)
+        # a versão leve: 1x, uma paleta só para todos os quadros (sem dither), cada quadro guarda só o que mudou
+        mosaico = Image.new('RGB', (quadros[0].width, quadros[0].height * 3))
+        for k_, f_ in enumerate((0, 4, 8)):
+            mosaico.paste(quadros[f_], (0, quadros[0].height * k_))
+        pal = mosaico.quantize(colors=255, method=Image.Quantize.MEDIANCUT)
+        leves = [q.quantize(palette=pal, dither=Image.Dither.NONE) for q in quadros]
+        leves[0].save(os.path.join(AQUI, 'casarao_leve.gif'), save_all=True, append_images=leves[1:], duration=150, loop=0,
+                      optimize=True, disposal=1)
         print('gif ok')

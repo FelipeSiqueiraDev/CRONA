@@ -55,7 +55,7 @@ ZR = 2.38                  # a altura do varão
 ZC0, ZC1 = 1.12, 2.37      # a cortina: a barra de baixo e o alto (presa no varão)
 LARG = 0.36                # a largura de cada folha da cortina (franzida)
 PREGAS = 3                 # as pregas de cada folha
-SOL = np.array([1.5, 0.3, -1.0])      # o sentido em que a luz anda (de fora para dentro e para baixo), no quadro da parede
+SOL = np.array([2.4, 0.35, -1.0])     # o sentido em que a luz anda (de fora para dentro e para baixo), no quadro da parede
 SOL = SOL / np.linalg.norm(SOL)
 SOL_W = _w(SOL)                         # o mesmo sentido no mundo
 COR_SOL = np.array([255.0, 228.0, 168.0])
@@ -405,7 +405,7 @@ def luz_janela(cor, c, t):
     q = np.zeros((h, w))
     q[idx] = _degraus(acc)
     # no chão pousa inteira; nos móveis um pouco menos (já têm a luz da face)
-    forca = np.where(c.tipo == 1, 1.0, 0.7)[..., None]
+    forca = np.where(c.tipo == 1, 1.0, 0.9)[..., None]
     k = q[..., None] * forca
     # clareia sem lavar a cor: a madeira no sol fica mais clara e mais quente (não bege)
     cor = cor * (1 + 0.24 * k) + np.array([28.0, 24.0, 8.0]) * k

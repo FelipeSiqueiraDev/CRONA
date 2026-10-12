@@ -337,9 +337,9 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
         out[idx] = oc
 
     # ---------- 3. as chamas (num plano atrás da tora do meio; só nos pixels do vão: o arco recorta) ----------
-    bx, by = _tela(c, np.array([m - 0.15 * g.get('esc', 1.0), yb - rec * 0.75, z0 + 0.2 * g.get('esc', 1.0)]))
+    bx, by = _tela(c, np.array([m + g.get('chama_dx', -0.15 * g.get('esc', 1.0)), yb - rec * g.get('chama_y', 0.75), z0 + 0.2 * g.get('esc', 1.0)]))
     bx, by = float(bx), float(by)
-    s_chama = (P0[:, 1] - (yb - rec * 0.75)) / VISTA[1]
+    s_chama = (P0[:, 1] - (yb - rec * g.get('chama_y', 0.75))) / VISTA[1]
     nivel_px = np.maximum(_chamas2(sx, sy, bx, by, t, fl, esc=g.get('esc', 1.0)), _soltas2(sx, sy, bx, by, t, fl, esc=g.get('esc', 1.0)))
     niv = np.zeros((h, w), int)
     niv[ii, jj] = np.where(s_chama < s_sup, nivel_px, 0)
@@ -397,6 +397,9 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
         para /= np.maximum(np.linalg.norm(para, axis=-1, keepdims=True), 1e-6)
         olha = np.clip((c.nrm * para).sum(-1), 0, 1)
         frente = (Y > yb + g.get('luz_y0', -0.03)) & (c.obj >= 0) & ~vao
+        if g.get('luz_fora'):
+            a0, a1, b0, b1, zf = g['luz_fora']
+            frente &= ~((X > a0) & (X < a1) & (Y > b0) & (Y < b1) & (Z > zf))
         # o raio dos anéis encolhe com a luz (as brasas sozinhas só esquentam a beira da boca)
         R = g.get('raio_luz', 0.5 + 1.2 * lz)
         k = ((np.clip(1 - d3 / R, 0, 1) ** 0.8 * (0.3 + 0.8 * olha) + 0.5 * np.clip(1 - d3 / (0.3 + 0.32 * lz), 0, 1))
@@ -492,10 +495,9 @@ def chamas_boca(cor, c, t, forca, centro, raio, zt, esc=0.45, luz=(0.9, 0.55)):
         L0 = np.array([bx0, by0, zt + 0.12])
         pulso = 1 + 0.05 * math.sin(TAU * t) + 0.03 * math.sin(TAU * 3 * t + 0.8)
         d3 = np.linalg.norm(P - L0, axis=-1) / pulso
-        k = np.clip(1 - d3 / luz[0], 0, 1) ** 1.5 * luz[1] * lz
-        # em degraus com o pontilhado ordenado na borda (sem o círculo duro)
-        Bm = np.tile(np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]) / 16.0, (h // 4 + 1, w // 4 + 1))[:h, :w]
-        k = np.minimum(np.floor(k * 4 + Bm * 0.9) / 4, 1.0)
+        k = np.clip(1 - d3 / luz[0], 0, 1) ** 1.3 * luz[1] * lz
+        # em 3 degraus fracos (pixel limpo: sem pontilhado)
+        k = np.minimum(np.floor(k * 3 + 0.35) / 3, 1.0) * 0.8
         k = np.where((c.obj >= 0) & ~furo, k, 0.0)
         cor = _luz_quente(cor, k)
     return np.clip(cor, 0, 255)
