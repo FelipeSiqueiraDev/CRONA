@@ -67,6 +67,11 @@ export interface MovelArte {
   /** encostado no fundo da casa (a prateleira na parede), em vez de no meio */
   encosta?: boolean;
   /**
+   * arte feita por código (scripts/3d/codigo): o desenho já vem na medida de verdade (`real`), centrado na pegada,
+   * com a sombra no chão dentro da imagem. O jogo não mede a largura do desenho (a sombra entraria na conta).
+   */
+  exato?: boolean;
+  /**
    * o móvel visto de cima (mapa tático), com a frente para baixo; a imagem tem a pegada inteira e
    * a caixa diz onde o móvel está nela, em pixels (scripts/3d/cima.py): o jogo põe a caixa no
    * tamanho de verdade dele
@@ -135,7 +140,8 @@ function encaixe(chave: string, a: MovelArte, def: FurniDef, prontas: Imagens[])
   const salvo = encaixes.get(chave);
   if (salvo) return salvo;
   const e: Encaixe = { f: 1, base: null };
-  if (a.real && prontas.length && !DA_PAREDE.test(def.kind) && !COPA.test(def.kind)) {
+  if (a.exato && a.real) e.base = [a.real[0], a.real[1]];
+  else if (a.real && prontas.length && !DA_PAREDE.test(def.kind) && !COPA.test(def.kind)) {
     const [rw, rd] = a.real;
     const larguras = prontas.map((im) => im.largura * a.escala).sort((x, y) => x - y);
     const medida = larguras[Math.floor(larguras.length / 2)];

@@ -152,6 +152,27 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 12/10 (na nuvem, branch `claude/arte-codigo`): a arte dos móveis feita por código
+
+O Felipe quer o tabuleiro "perfeito e completo pelo código". A auditoria dos ângulos achou 42 móveis tortos (a arte
+do gerador vem com a câmera girada ou alta), e endireitar distorce. Em vez de pedir arte nova, os móveis passam a ser
+modelos em código (`scripts/3d/codigo/`, ver o README de lá): o motor desenha na câmera exata do tabuleiro, com a luz
+de cada face, a sombra macia da luz de cima (no móvel e no chão, dentro da imagem), redondos lisos, brilho de louça,
+vidro e metal, chanfro nas quinas e contorno; desenha 4 vezes maior e reduz.
+
+- **Primeiro lote (a Cozinha do casarão):** armário de cozinha, fogão a lenha (aceso e apagado), pia, mesa da cozinha,
+  cadeira de madeira, caixote, barril e planta. `python scripts/3d/codigo/exportar.py` escreve os giros e o
+  `moveis.json` (com `exato: true` e `codigo: true`; a vista de cima do mapa tático continua a antiga).
+- **No jogo (`furniArte.ts`):** `exato` faz o encaixe usar a medida `real` direto, sem medir o desenho (a sombra no
+  chão entraria na conta e encolheria o móvel).
+- **Conferido no jogo:** as 4 posições de giro (a mesa assenta nas casas e a sombra gira junto), mover pelo botão
+  Mover (a prévia segue o mouse, o R gira, o clique solta), a caneca pousa no tampo novo (0,94 m), a pessoa atrás da
+  mesa fica atrás e embaixo dela fica abaixada e escondida. A sombra no chão é forte o bastante para aparecer com a
+  luz somada do jogo (`lighting.ts` soma a luz das lâmpadas por cima de tudo, o que clareia as sombras).
+- **Falta:** os outros ~210 móveis (por cômodo); a vista de cima (mapa tático) feita pelo motor; os itens de parede;
+  a lâmpada do teto; o que está em cima da mesa não acompanha quando ela sai do lugar (já era assim); a luz do jogo
+  ser multiplicada em vez de somada (as sombras ficariam mais fiéis).
+
 ## Feito em 12/10 (na nuvem, branch `claude/piso-e-andar`): o piso na grade, o móvel na parede e o andar
 
 O Felipe mandou duas salas de referência (a padaria e o banheiro isométricos, `cozy`): o ladrilho do chão é a casa do

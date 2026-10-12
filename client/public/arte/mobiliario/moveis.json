@@ -167,20 +167,35 @@
  },
  "crate_wood": {
   "escala": 0.5,
-  "frente": {
-   "arquivo": "crate_wood/frente.png",
-   "ax": 65.0,
-   "ay": 141.0,
-   "lado": "esquerda",
-   "ancora": "quina"
+  "giros": {
+   "4": {
+    "arquivo": "crate_wood/giro-4.png",
+    "ax": 92.5,
+    "ay": 139.5
+   },
+   "2": {
+    "arquivo": "crate_wood/giro-2.png",
+    "ax": 92.5,
+    "ay": 139.5
+   },
+   "0": {
+    "arquivo": "crate_wood/giro-0.png",
+    "ax": 92.5,
+    "ay": 139.5
+   },
+   "6": {
+    "arquivo": "crate_wood/giro-6.png",
+    "ax": 92.5,
+    "ay": 139.5
+   }
   },
-  "costas": {
-   "arquivo": "crate_wood/costas.png",
-   "ax": 65.0,
-   "ay": 141.0,
-   "lado": "esquerda",
-   "ancora": "quina"
-  }
+  "real": [
+   0.6,
+   0.6,
+   0.8
+  ],
+  "exato": true,
+  "codigo": true
  },
  "hospital_bed": {
   "escala": 0.5,
@@ -422,30 +437,32 @@
   "giros": {
    "4": {
     "arquivo": "plant/giro-4.png",
-    "ax": 60.0,
-    "ay": 136.1
+    "ax": 65.5,
+    "ay": 117.5
    },
    "2": {
     "arquivo": "plant/giro-2.png",
-    "ax": 55.0,
-    "ay": 136.1
+    "ax": 77.5,
+    "ay": 128.5
    },
    "0": {
     "arquivo": "plant/giro-0.png",
-    "ax": 60.5,
-    "ay": 136.1
+    "ax": 75.5,
+    "ay": 121.5
    },
    "6": {
     "arquivo": "plant/giro-6.png",
-    "ax": 59.5,
-    "ay": 136.1
+    "ax": 87.5,
+    "ay": 118.5
    }
   },
   "real": [
-   0.5,
-   0.5,
-   1.1
+   0.698,
+   0.771,
+   0.741
   ],
+  "exato": true,
+  "codigo": true,
   "cima": {
    "arquivo": "plant/cima.png",
    "caixa": [
@@ -3163,30 +3180,32 @@
   "giros": {
    "4": {
     "arquivo": "chair_wood/giro-4.png",
-    "ax": 46.0,
-    "ay": 142.1
-   },
-   "6": {
-    "arquivo": "chair_wood/giro-6.png",
-    "ax": 45.5,
-    "ay": 131.2
-   },
-   "0": {
-    "arquivo": "chair_wood/giro-0.png",
-    "ax": 45.5,
-    "ay": 130.2
+    "ax": 61.5,
+    "ay": 148.5
    },
    "2": {
     "arquivo": "chair_wood/giro-2.png",
-    "ax": 45.5,
-    "ay": 143.3
+    "ax": 83.5,
+    "ay": 148.5
+   },
+   "0": {
+    "arquivo": "chair_wood/giro-0.png",
+    "ax": 83.5,
+    "ay": 132.5
+   },
+   "6": {
+    "arquivo": "chair_wood/giro-6.png",
+    "ax": 61.5,
+    "ay": 132.5
    }
   },
   "real": [
-   0.45,
-   0.45,
-   0.9
+   0.43,
+   0.43,
+   0.95
   ],
+  "exato": true,
+  "codigo": true,
   "cima": {
    "arquivo": "chair_wood/cima.png",
    "caixa": [
@@ -6548,30 +6567,32 @@
   "giros": {
    "4": {
     "arquivo": "armario_cozinha/giro-4.png",
-    "ax": 117.5,
-    "ay": 306.3
-   },
-   "6": {
-    "arquivo": "armario_cozinha/giro-6.png",
-    "ax": 53.5,
-    "ay": 304.3
-   },
-   "0": {
-    "arquivo": "armario_cozinha/giro-0.png",
-    "ax": 117.5,
-    "ay": 306.3
+    "ax": 198.5,
+    "ay": 291.5
    },
    "2": {
     "arquivo": "armario_cozinha/giro-2.png",
-    "ax": 53.5,
-    "ay": 307.3
+    "ax": 149.5,
+    "ay": 291.5
+   },
+   "0": {
+    "arquivo": "armario_cozinha/giro-0.png",
+    "ax": 213.5,
+    "ay": 284.5
+   },
+   "6": {
+    "arquivo": "armario_cozinha/giro-6.png",
+    "ax": 134.5,
+    "ay": 284.5
    }
   },
   "real": [
-   1.5,
-   0.5,
-   1.9
+   1.54,
+   0.53,
+   1.93
   ],
+  "exato": true,
+  "codigo": true,
   "cima": {
    "arquivo": "armario_cozinha/cima.png",
    "caixa": [
@@ -6938,56 +6959,58 @@
   "giros": {
    "4": {
     "arquivo": "fogao_lenha/giro-4.png",
-    "ax": 128.0,
-    "ay": 159.0
-   },
-   "6": {
-    "arquivo": "fogao_lenha/giro-6.png",
-    "ax": 64.0,
-    "ay": 160.0
-   },
-   "0": {
-    "arquivo": "fogao_lenha/giro-0.png",
-    "ax": 128.0,
-    "ay": 161.0
+    "ax": 172.5,
+    "ay": 317.0
    },
    "2": {
     "arquivo": "fogao_lenha/giro-2.png",
-    "ax": 64.0,
-    "ay": 161.0
+    "ax": 109.5,
+    "ay": 362.0
+   },
+   "0": {
+    "arquivo": "fogao_lenha/giro-0.png",
+    "ax": 239.5,
+    "ay": 343.0
+   },
+   "6": {
+    "arquivo": "fogao_lenha/giro-6.png",
+    "ax": 136.5,
+    "ay": 297.0
    }
   },
+  "real": [
+   1.56,
+   0.73,
+   2.7
+  ],
+  "exato": true,
+  "codigo": true,
   "estados": {
    "1": {
     "giros": {
      "4": {
       "arquivo": "fogao_lenha/giro-4-1.png",
-      "ax": 128.0,
-      "ay": 195.5
-     },
-     "6": {
-      "arquivo": "fogao_lenha/giro-6-1.png",
-      "ax": 64.0,
-      "ay": 192.0
-     },
-     "0": {
-      "arquivo": "fogao_lenha/giro-0-1.png",
-      "ax": 128.0,
-      "ay": 185.4
+      "ax": 172.5,
+      "ay": 317.0
      },
      "2": {
       "arquivo": "fogao_lenha/giro-2-1.png",
-      "ax": 64.0,
-      "ay": 202.2
+      "ax": 109.5,
+      "ay": 362.0
+     },
+     "0": {
+      "arquivo": "fogao_lenha/giro-0-1.png",
+      "ax": 239.5,
+      "ay": 343.0
+     },
+     "6": {
+      "arquivo": "fogao_lenha/giro-6-1.png",
+      "ax": 136.5,
+      "ay": 297.0
      }
     }
    }
   },
-  "real": [
-   1.5,
-   0.75,
-   0.85
-  ],
   "cima": {
    "arquivo": "fogao_lenha/cima.png",
    "caixa": [
@@ -7042,23 +7065,23 @@
   "giros": {
    "4": {
     "arquivo": "mesa_cozinha/giro-4.png",
-    "ax": 192.0,
-    "ay": 236.0
-   },
-   "6": {
-    "arquivo": "mesa_cozinha/giro-6.png",
-    "ax": 128.0,
-    "ay": 238.0
-   },
-   "0": {
-    "arquivo": "mesa_cozinha/giro-0.png",
-    "ax": 192.0,
-    "ay": 241.0
+    "ax": 232.5,
+    "ay": 240.5
    },
    "2": {
     "arquivo": "mesa_cozinha/giro-2.png",
-    "ax": 128.0,
-    "ay": 238.0
+    "ax": 168.5,
+    "ay": 240.5
+   },
+   "0": {
+    "arquivo": "mesa_cozinha/giro-0.png",
+    "ax": 232.5,
+    "ay": 240.5
+   },
+   "6": {
+    "arquivo": "mesa_cozinha/giro-6.png",
+    "ax": 168.5,
+    "ay": 240.5
    }
   },
   "real": [
@@ -7066,6 +7089,8 @@
    1.5,
    0.78
   ],
+  "exato": true,
+  "codigo": true,
   "cima": {
    "arquivo": "mesa_cozinha/cima.png",
    "caixa": [
@@ -7120,30 +7145,32 @@
   "giros": {
    "4": {
     "arquivo": "pia_cozinha/giro-4.png",
-    "ax": 121.5,
-    "ay": 168.2
-   },
-   "6": {
-    "arquivo": "pia_cozinha/giro-6.png",
-    "ax": 57.5,
-    "ay": 173.2
-   },
-   "0": {
-    "arquivo": "pia_cozinha/giro-0.png",
-    "ax": 121.5,
-    "ay": 177.2
+    "ax": 171.5,
+    "ay": 189.5
    },
    "2": {
     "arquivo": "pia_cozinha/giro-2.png",
-    "ax": 57.5,
-    "ay": 172.2
+    "ax": 107.5,
+    "ay": 189.5
+   },
+   "0": {
+    "arquivo": "pia_cozinha/giro-0.png",
+    "ax": 171.5,
+    "ay": 189.5
+   },
+   "6": {
+    "arquivo": "pia_cozinha/giro-6.png",
+    "ax": 107.5,
+    "ay": 189.5
    }
   },
   "real": [
-   1.5,
-   0.6,
-   0.9
+   1.54,
+   0.62,
+   1.125
   ],
+  "exato": true,
+  "codigo": true,
   "cima": {
    "arquivo": "pia_cozinha/cima.png",
    "caixa": [
@@ -10366,5 +10393,37 @@
     98
    ]
   }
+ },
+ "barrel": {
+  "escala": 0.5,
+  "giros": {
+   "4": {
+    "arquivo": "barrel/giro-4.png",
+    "ax": 84.5,
+    "ay": 152.5
+   },
+   "2": {
+    "arquivo": "barrel/giro-2.png",
+    "ax": 84.5,
+    "ay": 152.5
+   },
+   "0": {
+    "arquivo": "barrel/giro-0.png",
+    "ax": 84.5,
+    "ay": 152.5
+   },
+   "6": {
+    "arquivo": "barrel/giro-6.png",
+    "ax": 84.5,
+    "ay": 152.5
+   }
+  },
+  "real": [
+   0.58,
+   0.576,
+   1.0
+  ],
+  "exato": true,
+  "codigo": true
  }
 }
