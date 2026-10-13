@@ -207,7 +207,7 @@ def _faixas(m, folga=20):
     return out
 
 
-def limpar_grade(f, passo=8.0, cores=128, sufixo='_g'):
+def limpar_grade(f, passo=8.0, cores=128, sufixo='_g', altura=None):
     """Separa os bonecos na imagem grande (linhas e colunas) e reduz cada um pela grade dele."""
     A = np.asarray(Image.open(f).convert('RGBA')).astype(float)
     base = os.path.splitext(f)[0] + sufixo
@@ -216,13 +216,13 @@ def limpar_grade(f, passo=8.0, cores=128, sufixo='_g'):
         a = A.copy()
         a[:r0, ..., 3] = 0
         a[r1:, ..., 3] = 0
-        b, r = _limpar_linha(a, passo, cores, base, k0)
+        b, r = _limpar_linha(a, passo, cores, base, k0, altura)
         res += r
         k0 += len(r)
     return base, res
 
 
-def _limpar_linha(a, passo, cores, base, k0):
+def _limpar_linha(a, passo, cores, base, k0, altura=None):
     col = (a[..., 3] > 127).any(0)
     xs = np.nonzero(col)[0]
     grupos, ini = [], xs[0]
@@ -237,7 +237,20 @@ def _limpar_linha(a, passo, cores, base, k0):
         ys = np.nonzero((sub[..., 3] > 127).any(1))[0]
         sy0 = max(0, ys.min() - 4)
         sub = sub[sy0:ys.max() + 5]
-        n = solto(paleta(reduzir_grade(sub, passo), cores))
+        # altura: todos os bonecos com a mesma altura (o passo de cada um sai da altura dele na imagem grande)
+        if altura:
+            # grade uniforme com exatamente `altura` linhas do pé à cabeça (todas as poses da mesma altura)
+            alto = ys.max() - ys.min() + 1
+            p = alto / altura
+            larg = sub.shape[1]
+            nx = int(np.ceil(larg / p))
+            ox_ = (larg - nx * p) / 2
+            cx = np.round(ox_ + np.arange(nx + 1) * p).astype(int).clip(0, larg)
+            cy = np.round(np.arange(altura + 1) * p + (ys.min() - sy0)).astype(int)
+            reduzir_grade.cortes = (cx, cy)
+            n = solto(paleta(_por_cortes(sub, cx, cy), cores))
+        else:
+            n = solto(paleta(reduzir_grade(sub, passo), cores))
         cx, cy = reduzir_grade.cortes
         ys2 = np.nonzero((n[..., 3] > 0).any(1))[0]; xs2 = np.nonzero((n[..., 3] > 0).any(0))[0]
         n = n[ys2.min():ys2.max() + 1, xs2.min():xs2.max() + 1]
@@ -302,3 +315,19 @@ def desenhar_olhos(n, olhos):
         for x in range(int(xa) + 3, int(xb) - 2):
             p(x, int(round((ya + yb) / 2)) - 1, ARO)
     return n
+
+
+def _por_cortes(a, cx, cy):
+    out = np.zeros((len(cy) - 1, len(cx) - 1, 4))
+    for i in range(len(cy) - 1):
+        for j in range(len(cx) - 1):
+            y0, y1, x0, x1 = cy[i], cy[i + 1], cx[j], cx[j + 1]
+            my, mx = max(1, (y1 - y0) // 4), max(1, (x1 - x0) // 4)
+            blk = a[y0 + my:y1 - my, x0 + mx:x1 - mx].reshape(-1, 4)
+            if not len(blk):
+                continue
+            op = blk[blk[:, 3] > 127]
+            if len(op) * 2 >= len(blk):
+                out[i, j, :3] = np.median(op[:, :3], 0)
+                out[i, j, 3] = 255
+    return out
