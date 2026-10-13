@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 21;
+export const FAZENDA_REV = 22;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -758,11 +758,11 @@ const CENAS_BRUTAS: CenaSpec[] = [
     particles: ["dust", "smoke"],
     floor: [
       ["portal", 9, 3, 6],
-      ["armario_cozinha", 0, 0, 4],
+      // o armário do canto em L (13/10, pedido do Felipe: um móvel só, no lugar de dois armários)
+      ["armario_cozinha_l", 0, 0, 4],
       ["fogao_lenha", 2, 0, 4, undefined, 1],
       ["pia_cozinha", 4, 0, 4],
       ["armario_cozinha", 6, 0, 4],
-      ["armario_cozinha", 0, 1, 2],
       ["crate_wood", 0, 4, 0],
       ["barrel", 0, 5, 0],
       ["mesa_cozinha", 4, 3, 0],

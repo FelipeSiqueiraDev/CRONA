@@ -375,6 +375,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'guarda_roupa', name: 'Guarda-roupa', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 2.0, rotations: ALL, colors: ['#5a3a24', '#c9a86a'] },
   { id: 'comoda', name: 'Cômoda', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#6a4428', '#c9a86a'] },
   { id: 'armario_cozinha', name: 'Armário de Cozinha', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 1.9, rotations: ALL, colors: ['#e2d6bc', '#5a4a3a'] },
+  { id: 'armario_cozinha_l', name: 'Armário de Cozinha em L', category: 'casa', kind: 'armario', width: 2, depth: 3, height: 1.9, vazio: [[1, 1], [1, 2]], rotations: ALL, colors: ['#e2d6bc', '#5a4a3a'], desc: 'O armário do canto da cozinha, num móvel só: o braço do fundo e o da esquerda com o balcão contínuo e o louceiro em cima.' },
   { id: 'fogao_lenha', name: 'Fogão a Lenha', category: 'casa', kind: 'fogao', width: 2, depth: 1, height: 0.85, states: 2, rotations: ALL, colors: ['#c8bca4', '#2a2420'], desc: 'Clique duplo acende/apaga.' },
   { id: 'pia_cozinha', name: 'Pia de Cozinha', category: 'casa', kind: 'pia_cozinha', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#e2d6bc', '#9aa4a8'] },
   { id: 'mesa_jantar', name: 'Mesa de Jantar', category: 'casa', kind: 'mesa', width: 4, depth: 2, height: 0.94, vao: 'vazada', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#6a4428', '#4a2e1a'] },
