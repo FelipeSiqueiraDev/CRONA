@@ -1679,11 +1679,12 @@ def acabamento(t, forca, tj=None):
     if vidros:
         sx = np.arange(w)[None, :] + c.x0
         sy = np.arange(h)[:, None] + c.y0
-        reflexo = ((sx + sy) % 17 < 2) | ((sx + sy) % 17 == 4)
+        # os reflexos: duas riscas em diagonal (2 px e 1 px) a cada 26 px, leves (a louça atrás continua legível)
+        reflexo = ((sx + sy) % 26 < 2) | ((sx + sy) % 26 == 4)
         for (a0, a1, b0, b1, z0, z1) in vidros:
             m = (obj >= 0) & (X > a0) & (X < a1) & (Y > b0) & (Y < b1) & (Z > z0) & (Z < z1)
-            cor = np.where(m[..., None], cor * 0.86 + np.array([196.0, 222.0, 226.0]) * 0.14, cor)
-            cor = np.where((m & reflexo)[..., None], cor * 0.8 + np.array([240.0, 250.0, 250.0]) * 0.2, cor)
+            cor = np.where(m[..., None], cor * 0.92 + np.array([196.0, 222.0, 226.0]) * 0.08, cor)
+            cor = np.where((m & reflexo)[..., None], cor * 0.84 + np.array([240.0, 250.0, 250.0]) * 0.16, cor)
 
     # o fundo; o que passa da viga (a chaminé, os fios) some para ele aos poucos
     fundo = np.array([214.0, 214.0, 210.0])
