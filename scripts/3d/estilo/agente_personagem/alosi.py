@@ -20,7 +20,7 @@ import math
 import os
 import sys
 
-os.environ['ESC'] = '1'
+os.environ['ESC'] = os.environ.get('ALOSI_ESC', '1')
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(AQUI, '..', '..', 'codigo'))
 import numpy as np                                   # noqa: E402
