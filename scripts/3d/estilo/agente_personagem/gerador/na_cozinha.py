@@ -16,13 +16,16 @@ def um(n):
 
 def montar(noite):
     import na_cozinha as NC
-    lug = [((5.9, 3.3), 1), ((6.7, 1.45), 2), ((2.3, 1.35), 3)]
+    # no meio de casas livres (casa x 0,75 m), ao lado das cadeiras: (8,3) à direita da (7,3), (4,5) à esquerda
+    # da (5,5), (2,1) na frente do fogão
+    lug = [(((8 + 0.5) * 0.75, (3 + 0.5) * 0.75), 1), (((4 + 0.5) * 0.75, (5 + 0.5) * 0.75), 2),
+           (((2 + 0.5) * 0.75, (1 + 0.5) * 0.75), 3)]
     img = None
     # um de cada vez: a função recebe um sprite e uma lista de lugares
     os.environ['NOITE'] = '1' if noite else '0'
     import importlib, janela_cozinha, cozinha
     importlib.reload(janela_cozinha); importlib.reload(cozinha)
-    from motor import tela
+    from motor import tela, VISTA, KZ
     img = np.array(cozinha.montar(0.0, 1.0)).astype(float)
     c = cozinha.c
     for (x, y), n in lug:
@@ -35,7 +38,13 @@ def montar(noite):
         s = np.repeat(np.repeat(spr, k, 0), k, 1).astype(float)
         h, w = s.shape[:2]
         x0, y0 = px - w // 2, py - h + 2
-        a = s[..., 3:4] / 255.0
+        # a frente e o trás: cada linha do boneco tem a profundidade do ponto dele (de pé no meio da casa, um
+        # pouco para a frente pela grossura do corpo); o que a cena tem mais perto da câmera tapa o boneco
+        z = (py - (y0 + np.arange(h))) / KZ
+        dprof = (np.array([x, y, 0.0]) @ VISTA) + z * VISTA[2] + 0.12
+        cena = c.prof[y0:y0 + h, x0:x0 + w]
+        frente = dprof[:, None] >= cena - 0.01
+        a = s[..., 3:4] / 255.0 * frente[..., None]
         cor = s[..., :3] * (0.6 if noite else 1.0) + (np.array([24, 8, 34]) * 0.4 if noite else 0)
         img[y0:y0 + h, x0:x0 + w] = img[y0:y0 + h, x0:x0 + w] * (1 - a) + cor * a
     return Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
