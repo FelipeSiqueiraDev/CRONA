@@ -3,6 +3,13 @@ import os, sys, subprocess
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
 import numpy as np
+
+
+def pe_x(spr):
+    """A âncora: o meio dos pés (a média dos pixels opacos das 6 linhas de baixo), não o meio da caixa."""
+    a = spr[-6:, :, 3] > 0
+    return int(round(np.nonzero(a)[1].mean()))
+
 from PIL import Image
 import cena
 
@@ -27,7 +34,7 @@ for k, n in enumerate(ordem):
     img = fundo.copy()
     spr = bon[n]
     h, w = spr.shape[:2]
-    x0, y0 = px - w // 2, py - h + 2
+    x0, y0 = px - pe_x(spr), py - h + 2
     z = (py - (y0 + np.arange(h))) / KZ
     dprof = (np.array([x, y, 0.0]) @ VISTA) + z * VISTA[2] + 0.12
     fr = dprof[:, None] >= c.prof[y0:y0 + h, x0:x0 + w] - 0.01

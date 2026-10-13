@@ -17,7 +17,14 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(AQUI, '..', '..', 'agente_cozinha'))
 sys.path.insert(0, os.path.join(AQUI, '..', '..', '..', 'codigo'))
 os.environ.setdefault('AUMENTO', '1.0')
-import numpy as np                 # noqa: E402
+import numpy as np
+
+
+def pe_x(spr):
+    """A âncora: o meio dos pés (a média dos pixels opacos das 6 linhas de baixo), não o meio da caixa."""
+    a = spr[-6:, :, 3] > 0
+    return int(round(np.nonzero(a)[1].mean()))
+                 # noqa: E402
 from PIL import Image              # noqa: E402
 
 CASA = 0.75
@@ -95,7 +102,7 @@ def montar(bonecos, lugares, saida):
             sx, sy = tela(np.array([x, y, 0.0]))
             px, py = int(round(sx - c.x0)), int(round(sy - c.y0))
             h, w = spr.shape[:2]
-            x0, y0 = px - w // 2, py - h + 2
+            x0, y0 = px - pe_x(spr), py - h + 2
             cor = spr[..., :3].copy()
             if noite:
                 # a luz da cena onde ele pisa: noite / dia no chão em volta dos pés (fora da sombra dele)
