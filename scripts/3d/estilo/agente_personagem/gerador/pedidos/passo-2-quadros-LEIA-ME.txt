@@ -1,0 +1,41 @@
+ALOSI - O ANDAR (as 6 direções que faltam)
+==========================================
+
+Cada pasta é UM pedido ao gerador de imagem, num CHAT NOVO.
+Anexe as 3 imagens da pasta, NA ORDEM (1, 2, 3), e cole o prompt abaixo.
+
+  1-base-<dir>.png         a pose parada aprovada dessa direção (o desenho que ele vai EDITAR)
+  2-guia-passo-<dir>.png   o guia: o boneco 3D na câmera do jogo (pé direito na frente / parado / pé esquerdo na frente)
+  3-andar-aprovado.png     a folha do andar que deu certo (costas), para ele copiar o jeito de andar
+
+Pastas:
+  1-e   lado direito
+  2-se  3/4 frente direita
+  3-s   frente
+  4-sw  3/4 frente esquerda
+  5-w   lado esquerdo
+  6-nw  3/4 costas esquerda
+
+Ele devolve 2 quadros lado a lado: o pé direito na frente e o pé esquerdo na frente.
+O andar fica com 4 quadros (pé direito, parado, pé esquerdo, parado); o sobe-e-desce eu ponho por código.
+
+Se sair ruim: NÃO corrija no mesmo chat. Abra outro chat novo e mande de novo.
+Se sair achatado (igual nos dois quadros), mande mesmo assim: dá para corrigir por código.
+Quando sair, mande a imagem no chat do Claude (pode ser uma por vez).
+
+
+PROMPT (o mesmo para todas as pastas)
+-------------------------------------
+
+Image 1 is my approved pixel art character standing. EDIT this exact drawing; do not redraw or restyle it.
+Image 2 is a pose guide with the same camera angle: frame 1 = right foot forward, frame 2 = standing, frame 3 = left foot forward.
+Image 3 is an approved walk sheet of this same character (other directions): match its walking motion, leg spread and arm swing.
+
+Make 2 new frames of the SAME character from image 1:
+- Frame A: legs, feet and arm swing of guide frame 1 (right foot forward, left arm forward).
+- Frame B: legs, feet and arm swing of guide frame 3 (left foot forward, right arm forward).
+
+Everything else must stay IDENTICAL to image 1: the same head, hair, face, glasses, jacket, colors, outline, pixel size, the same height and proportions. Only the legs, feet and arms change. Do not squash, stretch or shrink the character.
+
+Output: the two frames side by side (Frame A left, Frame B right), each the same size as image 1, feet on the same baseline.
+Pixel art: crisp square pixels, no anti-aliasing, no blur. Background fully transparent (or solid flat pure magenta #FF00FF). No floor, no shadow, no text.

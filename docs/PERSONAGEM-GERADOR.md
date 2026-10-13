@@ -103,6 +103,23 @@ python3 andar.py andar_1_n_ne.png n ne andar.mp4                # o andar de uma
 python3 ../guia_andar.py <pasta>                                # os guias do andar
 ```
 
+## Onde parou (13/10, fim da conversa)
+
+- **Andar das costas (`n`, `ne`): pronto, 6 quadros, aprovado** ("ficou ótimo").
+- **Tentativas que não serviram para as outras 6 direções:** uma direção por imagem (saíam diferentes entre si), todas
+  juntas (o gerador achata para caber) e o "passo de 2 quadros" editando a pose parada (`passo_s*.png`: o Felipe achou
+  duro; 4 quadros com o parado no meio não convenceram). **Vale o andar de 6 quadros.**
+- **Pedido em andamento:** a mesma receita da folha das costas, 2 direções por pedido, chat novo cada um, com a folha
+  aprovada como 4ª imagem. O pacote (`alosi-andar-6-quadros.zip`) tem 3 pastas `1-e-se`, `2-s-sw`, `3-w-nw`, cada uma
+  com `1-modelo.png` (= `alosi_gerador_guia.png`), `2-mapa-estilo.png` (= `entrada/6-mapa-estilo.png`),
+  `3-guia.png` (= `entrada/andar/guia-andar-<n>-<dir>-<dir>.png`) e `4-andar-aprovado.png`
+  (= `entrada/andar/0-andar-aprovado.png`). O LEIA-ME com o prompt: `gerador/pedidos/andar-6-quadros-LEIA-ME.txt`.
+- **Quando as folhas chegarem:** `python3 andar.py <folha.png> <dir1> <dir2> saida.mp4` (limpa, harmoniza e faz o
+  vídeo). Se vier achatada, corrigir a proporção pela pose parada da mesma direção (`alosi_gerador_guia_90_<n>.png`:
+  comparar a largura do tronco e a altura da cabeça, e reduzir com passos diferentes em x e em y). Depois, o vídeo nas
+  8 direções pela cozinha.
+- `cena.harmonizar` agora só clareia a linha escura fina (o cinto e a calça ficam).
+
 ## O que falta
 
 1. As 6 direções do andar que faltam (o Felipe manda as imagens do gerador; `andar.py` limpa e monta).

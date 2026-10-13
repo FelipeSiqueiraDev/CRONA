@@ -1,0 +1,36 @@
+ALOSI - O ANDAR DE 6 QUADROS (a mesma receita da folha das costas, que deu certo)
+================================================================================
+
+São 3 pedidos, cada um num CHAT NOVO. Cada pasta = 1 pedido = 2 direções (2 linhas x 6 quadros).
+Anexe as 4 imagens da pasta NA ORDEM (1, 2, 3, 4) e cole o prompt abaixo.
+
+  1-modelo.png          a Alosi nas 8 direções paradas (aprovada)
+  2-mapa-estilo.png     o estilo e o tamanho do pixel do mapa
+  3-guia.png            o guia do andar daquela pasta (2 linhas x 6 quadros, o boneco 3D na câmera do jogo)
+  4-andar-aprovado.png  a folha das costas que deu certo (para ele copiar o jeito, o tamanho e o traço)
+
+Pastas:
+  1-e-se   lado direito + 3/4 frente direita
+  2-s-sw   frente + 3/4 frente esquerda
+  3-w-nw   lado esquerdo + 3/4 costas esquerda
+
+Se sair ACHATADO: mande mesmo assim (eu corrijo a proporção por código, medindo pela pose parada da mesma direção).
+Se sair DIFERENTE do boneco: abra outro chat novo e mande de novo (não corrija no mesmo chat).
+Pode mandar uma pasta de cada vez no chat do Claude.
+
+
+PROMPT (o mesmo para as 3 pastas)
+---------------------------------
+
+I am attaching 4 images:
+1. The CHARACTER MODEL (8 standing directions of this young man; this is the approved design: face, messy dark-brown hair, round glasses, off-white hooded jacket, gold zipper and cross, black belt with gold chain, dark trousers, brown boots, dark-red book on HIS RIGHT HIP; proportions, colors and pixel art style).
+2. The ROOM STYLE (the pixel art style and pixel size to match).
+3. A WALK GUIDE sheet: 2 rows x 6 columns. Each row is one walking direction, each column one frame of a looping walk cycle, drawn with the exact isometric camera of the game.
+4. An APPROVED WALK SHEET of this same character in two other directions: match it exactly (same size per frame, same pixel style, same outline, same walking motion).
+
+Redraw the WALK GUIDE frame by frame as the character from image 1. For EACH frame, copy EXACTLY from the guide: the body direction, the camera angle, the position of each leg and foot, the arm swing and the body bob. Copy ONLY pose and angle from the guide; the hair, face and clothes come from image 1 (ignore the guide's helmet-like hair and its purple ground shadow).
+
+Keep the same layout (2 rows x 6 columns, same order), every frame the same height as in image 4, feet on the same baseline in each row. Do NOT squash or shrink the frames to fit: make the image as wide as needed. The character must be identical in all 12 frames; only legs, arms, a slight bounce of the hair and the book, and the 1-pixel body bob change. The book is always on his right hip (do not mirror): when he faces left it is on the far side, mostly hidden.
+
+Pixel art rules: same pixel size and style as image 4: crisp square pixels on a regular grid, 1-pixel dark warm-brown outline, flat 3-5 tone shading, light from the top-left. NO anti-aliasing, NO blur, NO stray pixels.
+BACKGROUND: fully transparent (or solid flat pure magenta #FF00FF). No floor, no shadow, no text, no numbers.
