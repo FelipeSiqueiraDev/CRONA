@@ -128,6 +128,19 @@ folhas juntas: os 48 quadros em `andar8/andar-<dir>-<0..5>.png` (90 px, harmoniz
 vídeo das 8 direções no lugar e o vídeo pela cozinha. As alturas no gerador variam só ~5% entre as folhas. O
 gerador fechou os olhos no 5º quadro da frente (`s`): os olhos voltam do 4º (`olhos_de`).
 
+## No jogo (13/10)
+
+A Alosi nova está no tabuleiro: `client/public/arte/personagens/alosi/tabuleiro-3d/` (o formato do boneco v2, `anim.json`
+lido por `findBoneco`), gravado por `gerador/exportar_jogo.py`: `parado` (a pose aprovada respirando, 4 quadros, 420 ms)
+e `andar` (os 6 quadros de `andar8/`) nas 8 direções, `escala` = 1/0,91 (pixel 1:1 no zoom 1), os pés de cada quadro
+achados na imagem. Vale no lugar das poses antigas (`tabuleiro-32bits/`, que ficaram). Vídeo: `docs/estilo/alosi-no-jogo.mp4`.
+
+**Pedidos em andamento** (pacote `alosi-acoes.zip`; LEIA-ME em `gerador/pedidos/acoes-LEIA-ME.txt`; os guias em
+`gerador/entrada/acoes/`, feitos por `../guia_acoes.py`): **sentado** (4 diagonais), **abrir o armário** (4 diagonais x
+3 quadros) e **andar agachado** (8 direções x 6, 4 folhas). No jogo: `sentado` já é tocado quando a peça está na
+cadeira (`sentadoReal` no RoomView); `agachado` e `abrir` ainda precisam de código (o tabuleiro hoje achata a peça
+agachada em 72%; o `abrir` precisa de um gatilho quando o mobi ao lado abre).
+
 ## O que falta
 
 1. As 6 direções do andar que faltam (o Felipe manda as imagens do gerador; `andar.py` limpa e monta).
