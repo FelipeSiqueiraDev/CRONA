@@ -43,7 +43,8 @@ Este guia é para o Claude que pega o CRONA do zero, numa conversa nova ou noutr
 - Mostre o resultado pronto (uma captura, o teste passando), não a depuração.
 - Coisa grande se combina antes, e a decisão fica registrada no documento da área.
 - Não proponha voltar atrás no que o Felipe já decidiu.
-- **No fim de cada bloco de trabalho, sempre a lista de pendências** (pedido do Felipe, 12/10): o que ficou faltando do que foi feito e o que vem na fila. Na resposta a ele e no `EM-ABERTO.md`.
+- **A lista de pendências só quando um assunto termina** (revisto em 13/10; antes, 12/10, era no fim de cada bloco): no meio de um assunto, nada de lista, a não ser que ele peça. Ao fechar o assunto, a lista na resposta e no `EM-ABERTO.md`.
+- **Os arquivos (imagens, vídeos) sempre no fim da resposta, depois do resumo** (13/10). Animação vai em vídeo MP4 (os GIFs não animam para ele): `ffmpeg -i x.gif -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2:flags=neighbor,format=yuv420p" -c:v libx264 x.mp4`.
 
 **Visual**
 - **As telas seguem as referências** de `docs/referencias/` exatamente: botões, bordas, fonte, espaçamento. Confira por recortes lado a lado.
