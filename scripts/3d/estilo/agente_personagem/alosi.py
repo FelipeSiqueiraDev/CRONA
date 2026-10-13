@@ -320,7 +320,7 @@ def montar(J):
         bal, cot = J['braco'][lado]
         Ob = T0 + np.array([0.205 * s, -0.01, 0.12])
         # o braço sai um pouco do corpo (o vão entre o braço e o tronco)
-        ab = 0.11
+        ab = J.get('abre', 0.11)
         Cv = Ob + 0.2 * np.array([math.sin(ab) * s, math.sin(bal), -math.cos(bal)])
         bal2 = bal + cot
         Pu = Cv + 0.16 * np.array([math.sin(0.04) * s, math.sin(bal2), -math.cos(bal2)])

@@ -9,6 +9,8 @@ chat, anexe as imagens da próxima pasta e cole o prompt dela. Se uma sair ruim,
   2-mapa-estilo.png     o estilo e o tamanho do pixel do mapa
   3-guia.png            o guia da pose (o boneco 3D na câmera do jogo; o cabelo dele é "capacete": ignorar)
   4-andar-aprovado.png  (só no agachado) o andar normal aprovado dessas direções
+  5-referencia-movimento.png (só no agachado) o andar agachado de verdade (o vídeo que o Felipe achou), de frente e
+                        de costas: só para o gerador entender o movimento
 
 Mande cada resultado no chat do Claude.
 
@@ -33,8 +35,8 @@ Pixel art: crisp square pixels, 1-pixel dark warm-brown outline, flat 3-5 tone s
 
 PROMPT 3 - pastas 3, 4, 5 e 6 (agachado; o mesmo prompt nas 4)
 ---------------------------------------------------------------
-Image 1 is the approved character (8 standing directions), image 2 the pixel art style and pixel size to match, image 3 a WALK GUIDE: 2 rows x 6 frames, each row one direction, drawn with the exact camera of the game. Image 4 is the APPROVED normal walk of this character in these same 2 directions.
+Image 1 is the approved character (8 standing directions), image 2 the pixel art style and pixel size to match, image 3 a WALK GUIDE: 2 rows x 6 frames, each row one direction, drawn with the exact camera of the game. Image 4 is the APPROVED normal walk of this character in these same 2 directions. Image 5 is a MOTION REFERENCE only (a 3D sneak walk seen from the front and from behind): use it to understand the movement, never its style, character or camera.
 
-Draw the SAME 2 directions x 6 frames as a CROUCHED SNEAKING WALK (walking carefully so as not to be seen): knees deeply bent, hips low, back hunched forward, head lowered and slightly forward, arms bent and held close to the body, small careful steps. The whole figure about 75% of the standing height. Copy the direction, camera angle and the position of each leg and foot from the guide; the hair, face, glasses, clothes, colors, outline and pixel size from images 1 and 4 (the same character as image 4, just crouched).
+Draw the SAME 2 directions x 6 frames as a CROUCHED SNEAKING WALK, like image 5: knees deeply bent and the feet a bit wider apart than in the normal walk, hips low, the back hunched forward (about 35 degrees), but the HEAD UP, looking forward (not at the floor); the arms loose and away from the body, elbows bent, forearms forward and the hands at knee height; short careful steps, the feet staying close to the floor, almost no up-and-down bounce. The whole figure about 75% of the standing height. Copy the direction, camera angle and the position of each leg, arm and foot from the guide; the hair, face, glasses, clothes, colors, outline and pixel size from images 1 and 4 (the same character as image 4, just crouched).
 Keep the layout (2 rows x 6 columns, same order as the guide), feet on the same baseline in each row. Do NOT squash or shrink the frames to fit: make the image as wide as needed. The book is always on his right hip (do not mirror).
 Pixel art: crisp square pixels, 1-pixel dark warm-brown outline, flat 3-5 tone shading, light from the top-left. NO anti-aliasing, NO blur, NO stray pixels. Background fully transparent (or solid flat pure magenta #FF00FF). No floor, no shadow, no text, no numbers.
