@@ -79,8 +79,43 @@ function loadArt(url: string): Promise<Art | null> {
               n++;
             }
         const cx = n ? sum / n : W / 2;
-        const ch = fh * 0.6;
-        res({ img, crop: { x: cx - ch / 2, y: y0 - fh * 0.03, w: ch, h: ch } });
+        // o rosto: a pele entre o alto da cabeça e o queixo. O recorte fecha nele, com os olhos um pouco
+        // acima do meio, e não no topo do cabelo (o cabelo volumoso puxava o retrato para o canto)
+        let px = 0;
+        let py = 0;
+        let pn = 0;
+        for (let y = Math.round(y0 + fh * 0.08); y < y0 + fh * 0.42; y += 2)
+          for (let x = 0; x < W; x += 2) {
+            const i = (y * W + x) * 4;
+            const r = d[i];
+            const g = d[i + 1];
+            const b = d[i + 2];
+            if (d[i + 3] > 200 && r > 110 && r > g && g > b && r - b > 35 && r - g < 90) {
+              px += x;
+              py += y;
+              pn++;
+            }
+          }
+        if (pn > 200) {
+          // a cabeça inteira, com folga em cima, e um pouco de ombro embaixo (antes fechava tanto que cortava o cabelo)
+          const ch = Math.min(fh * 0.64, W * 1.1);
+          const fx = px / pn;
+          const fy = py / pn;
+          // topo da cabeça: a primeira linha com corpo perto do rosto (arma levantada ao lado não conta)
+          const xa = Math.max(0, Math.round(fx - fh * 0.16));
+          const xb = Math.min(W - 1, Math.round(fx + fh * 0.16));
+          let top = y0;
+          topo: for (let y = y0; y < fy; y++)
+            for (let x = xa; x <= xb; x += 2)
+              if (d[(y * W + x) * 4 + 3] > 96) {
+                top = y;
+                break topo;
+              }
+          res({ img, crop: { x: fx - ch / 2, y: Math.min(top - fh * 0.045, fy - ch * 0.5), w: ch, h: ch } });
+          return;
+        }
+        const ch = fh * 0.64;
+        res({ img, crop: { x: cx - ch / 2, y: y0 - fh * 0.045, w: ch, h: ch } });
       };
       im.onerror = () => res(null);
       im.src = url;

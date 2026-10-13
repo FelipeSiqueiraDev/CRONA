@@ -1,0 +1,186 @@
+[
+ {
+  "nome": "celeiro",
+  "titulo": "Celeiro (REFAZER: a frente saiu torta)",
+  "casas": [
+   12,
+   8
+  ],
+  "real": [
+   9.0,
+   6.0,
+   6.5
+  ]
+ },
+ {
+  "nome": "casa-mantimentos",
+  "titulo": "Casa de mantimentos (REFAZER: torta)",
+  "casas": [
+   8,
+   6
+  ],
+  "real": [
+   6.0,
+   4.5,
+   4.6
+  ]
+ },
+ {
+  "nome": "casarao",
+  "titulo": "Casarão (REFAZER: a escada da varanda torta)",
+  "casas": [
+   14,
+   9
+  ],
+  "real": [
+   10.5,
+   6.75,
+   6.5
+  ]
+ },
+ {
+  "nome": "estrado-altar",
+  "titulo": "O altar do calabouço: o estrado redondo de pedra (pisável)",
+  "casas": [
+   5,
+   5
+  ],
+  "real": [
+   3.75,
+   3.75,
+   0.61
+  ]
+ },
+ {
+  "nome": "pedra-sacrificio",
+  "titulo": "A pedra do sacrifício (em cima do estrado)",
+  "casas": [
+   3,
+   2
+  ],
+  "real": [
+   2.2,
+   1.2,
+   1.0
+  ]
+ },
+ {
+  "nome": "porta-enrolar",
+  "titulo": "Porta de aço de enrolar do bar (3 casas)",
+  "parede": true,
+  "real": [
+   2.25,
+   0.25,
+   2.6
+  ],
+  "vao": [
+   2.05,
+   2.1
+  ]
+ },
+ {
+  "nome": "passagem-caverna",
+  "titulo": "Passagem de caverna do calabouço (2 casas, sem porta)",
+  "parede": true,
+  "real": [
+   1.5,
+   0.4,
+   2.5
+  ],
+  "vao": [
+   1.2,
+   2.1
+  ]
+ },
+ {
+  "nome": "eletroencefalografo",
+  "titulo": "Eletroencefalógrafo no carrinho",
+  "casas": [
+   1,
+   1
+  ],
+  "real": [
+   0.6,
+   0.5,
+   1.3
+  ]
+ },
+ {
+  "nome": "camera-tripe",
+  "titulo": "Câmera de fita no tripé",
+  "casas": [
+   1,
+   1
+  ],
+  "real": [
+   0.5,
+   0.5,
+   1.6
+  ]
+ },
+ {
+  "nome": "gravador-rolo",
+  "titulo": "Gravador de rolo no carrinho",
+  "casas": [
+   1,
+   1
+  ],
+  "real": [
+   0.6,
+   0.45,
+   0.95
+  ]
+ },
+ {
+  "nome": "corpo-lencol",
+  "titulo": "Corpo coberto por lençol (no chão)",
+  "casas": [
+   1,
+   3
+  ],
+  "real": [
+   0.6,
+   1.9,
+   0.3
+  ]
+ },
+ {
+  "nome": "corpo-saco",
+  "titulo": "Saco de cadáver (no chão)",
+  "casas": [
+   1,
+   3
+  ],
+  "real": [
+   0.6,
+   1.9,
+   0.3
+  ]
+ },
+ {
+  "nome": "monitor-suporte",
+  "titulo": "Monitor de sinais vitais no pé de rodinhas (hospital)",
+  "casas": [
+   1,
+   1
+  ],
+  "real": [
+   0.6,
+   0.6,
+   1.45
+  ]
+ },
+ {
+  "nome": "monitor-energia",
+  "titulo": "O mesmo monitor, tomado pela Energia",
+  "casas": [
+   1,
+   1
+  ],
+  "real": [
+   0.6,
+   0.6,
+   1.6
+  ]
+ }
+]

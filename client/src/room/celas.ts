@@ -22,7 +22,7 @@ export interface EfeitoCelas {
 }
 
 /** O que fecha a cela: as paredes e as portas (a grade também, nas celas antigas). */
-const PAREDES = new Set(['cell_front', 'cell_door_steel', 'cell_door', 'bars', 'iwall', 'iwall_window']);
+const PAREDES = new Set(['cell_front', 'cell_door_steel', 'cell_door', 'porta_quarto', 'bars', 'iwall', 'parede_reboco', 'iwall_window']);
 /** a cela é pequena: passou disso, a porta dá para o resto do cômodo */
 const MAX_CASAS = 48;
 

@@ -1,0 +1,45 @@
+import { arteDaIlustracao } from '@crona/shared';
+import { h } from './dom';
+import { sfx } from './sfx';
+
+/**
+ * A tela da viagem (07/10): na partida e na chegada, uma das pinturas da viagem cobre a tela de todo mundo (o mestre, a
+ * mesa e os celulares) por uns segundos, com o nome do destino e o som do carro saindo ou chegando. Toque para fechar.
+ */
+
+const DURACAO_MS = 6200;
+
+export function mostrarTelaViagem(fase: 'partida' | 'chegada', ilustracao: string, texto: string, reserva?: string) {
+  document.querySelector('.vg-tela')?.remove();
+  const img = h('img', { class: 'vg-tela-img', src: arteDaIlustracao(ilustracao), alt: '' }) as HTMLImageElement;
+  const legenda = h('div', { class: 'vg-tela-legenda' }, h('small', null, fase === 'partida' ? 'PARTIDA' : 'CHEGADA'), h('b', null, texto));
+  const tela = h('div', { class: 'vg-tela', role: 'dialog', 'aria-label': texto }, img, h('div', { class: 'vg-tela-vinheta' }), legenda);
+  // a pintura aproxima devagar enquanto está na tela
+  img.style.transformOrigin = fase === 'partida' ? '58% 55%' : '42% 50%';
+  let fechou = false;
+  const fechar = () => {
+    if (fechou) return;
+    fechou = true;
+    tela.classList.add('saindo');
+    setTimeout(() => tela.remove(), 900);
+  };
+  tela.addEventListener('pointerdown', fechar);
+  // a tela cobre NA HORA (08/10, o Felipe: "tem que vir sempre o loading antes da tela"): a cena troca por baixo dela,
+  // escondida; a pintura entra por cima do escuro quando carrega (no máximo um segundo e meio)
+  document.body.append(tela);
+  tela.classList.add('on');
+  if (fase === 'partida') sfx.carroPartindo();
+  else sfx.carroChegando();
+  let foi = false;
+  const vai = () => {
+    if (foi) return;
+    foi = true;
+    img.classList.add('pronta');
+    setTimeout(fechar, DURACAO_MS);
+  };
+  if (img.complete && img.naturalWidth) vai();
+  img.addEventListener('load', vai, { once: true });
+  // a arte de chegada do lugar ainda não existe: a ilustração da viagem que combina com ele
+  img.addEventListener('error', () => (reserva && !img.src.endsWith(arteDaIlustracao(reserva)) ? (img.src = arteDaIlustracao(reserva)) : vai()));
+  setTimeout(vai, 1500);
+}

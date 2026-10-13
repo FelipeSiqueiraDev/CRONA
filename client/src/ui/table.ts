@@ -1,3 +1,4 @@
+import { TelaDeViagem } from './telaDeViagem';
 import { combate as cb, type CampaignState } from '@crona/shared';
 import { COR_LADO, marcasVazias } from '../render/combateMarcas';
 import type { App } from './app';
@@ -40,7 +41,7 @@ export class TableScreen {
     const hint = h('div', { class: 'mesa-hint' }, 'Toque para tela cheia');
     this.combateEl = h('div', { class: 'mesa-combate hidden', 'aria-live': 'polite' });
     this.carimboEl = h('div', { class: 'mesa-carimbo', 'aria-live': 'polite' });
-    this.el = h('div', { class: 'mesa hidden' }, this.stage, this.combateEl, this.carimboEl, this.card, hint);
+    this.el = h('div', { class: 'mesa hidden' }, this.stage, new TelaDeViagem(app).el, this.combateEl, this.carimboEl, this.card, hint);
     // PV que mudou (caveira de quem está morrendo) acompanha
     app.session.subscribe(() => this.marcas());
     if (notice) this.el.append(h('div', { class: 'mesa-notice' }, notice));

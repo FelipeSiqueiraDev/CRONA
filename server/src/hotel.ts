@@ -1,6 +1,25 @@
 import crypto from 'node:crypto';
 import type { WebSocket } from 'ws';
 import {
+  BANCOS_VAN,
+  getFurni,
+  lerCriatura,
+  aparenciaDaVez,
+  heightmapDaVan,
+  isCenarioViagem,
+  iconePeloNome,
+  ambienteDoDestino,
+  artesDeChegada,
+  ILUSTRACOES_VIAGEM,
+  isClimaViagem,
+  sortearIlustracao,
+  posicaoInicial,
+  isHoraViagem,
+  moveisDaVan,
+  VAN,
+  type BancoVan,
+  type LugarInfo,
+  type ViagemInfo,
   DIR_KEYS,
   getLayout,
   MAX_NAME,
@@ -32,6 +51,7 @@ import {
   type Vitals,
   VITAL_LABEL,
   regras,
+  bar,
   combate as cmb,
   sanitizarFicha,
   sanitizarDocumento,
@@ -52,17 +72,51 @@ import {
   URL_MAPA_RE,
 } from '@crona/shared';
 import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSessao, SENHA_MIN, type Conta } from './contas';
-import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type UserData } from './db';
+import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type TokenData, type UserData } from './db';
 import { RoomInstance, type Client, type HotelApi } from './roomInstance';
 import { refreshPortraits } from './portraits';
-import { seedDb, SYSTEM_OWNER, upgradeDb } from './seed';
+import { limparSalasDeExemplo, seedDb, SYSTEM_OWNER, upgradeDb } from './seed';
 
 const NAME_RE = /^[\p{L}\p{N}_\-. ]+$/u;
 const STARTER: string[] = ['chair_wood', 'table_small', 'candles', 'crate_wood', 'plant'];
 
 /** Mensagens que mudam o tabuleiro: só o mestre manda (o resto recebe "Só o mestre..."). */
+/** Uma mesa do bar: o móvel (id), o jogo, quem joga em cada lugar (sem ficha = NPC do mestre) e as jogadas guardadas. */
+interface MesaBar {
+  id: number;
+  tipo: bar.TipoJogoBar;
+  lugares: { tokenId: number; nome: string; fichaId?: number }[];
+  log: Record<string, unknown>[];
+}
+const NOME_MESA: Record<bar.TipoJogoBar, string> = { fliperama: 'o Feliperama', dardos: 'os dardos', sinuca: 'a sinuca' };
+/** "no Feliperama", "nos dardos", "na sinuca" */
+const NOME_EM: Record<bar.TipoJogoBar, string> = { fliperama: 'no Feliperama', dardos: 'nos dardos', sinuca: 'na sinuca' };
+
+/** As chaves do combate que guardam o id de uma peça (as outras contas, como a rodada, ficam como estão). */
+const CHAVES_DE_PECA = new Set(['id', 'quem', 'alvo', 'ator', 'alvos', 'participantes', 'ids', 'de', 'para']);
+
+/** Troca os ids de peça pelo mapa: nos campos de peça, no "p:<id>" das entradas e nas chaves por id. */
+function trocarIds(v: unknown, mapa: Map<number, number>, chave?: string): unknown {
+  if (typeof v === 'number') return chave && CHAVES_DE_PECA.has(chave) ? (mapa.get(v) ?? v) : v;
+  if (typeof v === 'string') {
+    const m = /^p:(\d+)$/.exec(v);
+    return m && mapa.has(Number(m[1])) ? `p:${mapa.get(Number(m[1]))}` : v;
+  }
+  if (Array.isArray(v)) return v.map((x) => trocarIds(x, mapa, chave));
+  if (v && typeof v === 'object') {
+    const o: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v)) {
+      const nk = /^\d+$/.test(k) && mapa.has(Number(k)) ? String(mapa.get(Number(k))) : k;
+      o[nk] = trocarIds(x, mapa, k);
+    }
+    return o;
+  }
+  return v;
+}
+
 const GM_ONLY = new Set([
   'createRoom',
+  'barJogar',
   'charUpdate',
   'charDelete',
   'sendTo',
@@ -99,6 +153,10 @@ const GM_ONLY = new Set([
   'marca',
   'nevoa',
   'mapaImprovisado',
+  'mapaApagar',
+  'viagem',
+  'grupoPara',
+  'visitada',
   'setLink',
   'unlock',
   'relock',
@@ -147,6 +205,8 @@ export class Hotel implements HotelApi {
     const loaded = opts.db ? null : loadDb();
     this.db = opts.db ?? loaded ?? seedDb();
     let dirty = upgradeDb(this.db) || (!loaded && !opts.db);
+    // só em banco guardado (os testes montam o deles): tira as salas de exemplo antigas, uma vez
+    if (loaded && limparSalasDeExemplo(this.db)) dirty = true;
     if (!this.db.gmKey) {
       this.db.gmKey = crypto.randomBytes(9).toString('base64url');
       dirty = true;
@@ -198,6 +258,8 @@ export class Hotel implements HotelApi {
       (adj.get(b) ?? adj.set(b, new Set()).get(b)!).add(a);
     };
     for (const r of this.rooms.values()) for (const p of r.portals()) link(r.data.id, p.link);
+    // a Viagem pertence à campanha de onde partiu
+    for (const r of this.rooms.values()) if (r.data.viagem) link(r.data.id, r.data.viagem.origem);
     const seen = new Set([roomId]);
     const queue = [roomId];
     while (queue.length) for (const n of adj.get(queue.shift()!) ?? []) if (!seen.has(n)) (seen.add(n), queue.push(n));
@@ -234,6 +296,8 @@ export class Hotel implements HotelApi {
 
   // ---------- combate (docs/COMBATE.md) ----------
   /** estados anteriores do combate de cada campanha, para o "Desfazer" (só na memória), com os PV/PE/SAN que cada passo mudou */
+  /** as mesas do bar (o fliperama, o alvo, a sinuca), pelo id do móvel: quem joga em cada lugar e as jogadas guardadas */
+  private mesas = new Map<number, MesaBar>();
   private desfazeres = new Map<number, { combate: string; vitais: { id: number; antes: Vitals }[]; mochilas?: { fichaId: number; inventario: regras.ItemFicha[] }[]; largados?: number[] }[]>();
 
   /** Peças da campanha e os PV/SAN delas, para as regras do combate. */
@@ -249,8 +313,97 @@ export class Hotel implements HotelApi {
         if (t.vitals) vitais.set(t.token.id, { ...t.vitals });
       }
     }
-    const ameacas = this.campaignFor(Math.min(...group)).ameacas ?? {};
+    const ameacas = this.fichasDasAmeacas(group, this.campaignFor(Math.min(...group)));
     return { agora: Date.now(), cena, pecas, vitais: (id) => vitais.get(id) ?? null, ameaca: (id) => ameacas[String(id)] ?? null };
+  }
+
+  /**
+   * As fichas das ameaças da campanha, por peça: a que o mestre editou para aquela peça (`ameacas`) ou, sem ela, a da
+   * criatura do bestiário que a peça é (10 Existidos leem a mesma ficha).
+   */
+  private fichasDasAmeacas(group: number[], camp: CampaignData): Record<string, cmb.FichaAmeaca> {
+    const out: Record<string, cmb.FichaAmeaca> = {};
+    const bestiario = new Map((this.db.bestiario ?? []).map((c) => [c.id, c]));
+    for (const id of group)
+      for (const [tokenId, pc] of this.rooms.get(id)?.criaturasDasPecas() ?? []) {
+        const c = bestiario.get(pc.id);
+        if (c) out[String(tokenId)] = c.ficha;
+      }
+    return { ...out, ...(camp.ameacas ?? {}) };
+  }
+
+  // ---------- o bestiário (10/10) ----------
+  private bestiarioPara(c: Client) {
+    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [] });
+  }
+
+  private bestiarioMudou() {
+    this.save();
+    this.touch();
+    for (const o of this.clients.values()) this.bestiarioPara(o);
+    // as fichas do combate (a da criatura mudou): os mestres recebem de novo
+    this.touch();
+  }
+
+  /** A arte de uma aparência: o personagem (folha) da pasta arte/personagens/<arte>/, se o Códex já entregou. */
+  private charDaArte(arte?: string): number | null {
+    if (!arte) return null;
+    const ch = this.db.characters.find((x) => x.sheet.includes(`/personagens/${arte}/`));
+    return ch ? ch.id : null;
+  }
+
+  private bestiarioMsg(c: Client, m: Record<string, unknown>) {
+    if (c.role !== 'gm') return;
+    if (m.t === 'bestiario') return this.bestiarioPara(c);
+    this.db.bestiario ??= [];
+    if (m.t === 'criaturaSalvar') {
+      const cr = lerCriatura(m.criatura);
+      if (!cr) return c.send({ t: 'error', msg: 'Criatura inválida: confira o nome, a ficha, os PV e as aparências.' });
+      const i = this.db.bestiario.findIndex((x) => x.id === cr.id);
+      if (i >= 0) this.db.bestiario[i] = cr;
+      else this.db.bestiario.push(cr);
+      return this.bestiarioMudou();
+    }
+    if (m.t === 'criaturaApagar' && typeof m.id === 'string') {
+      this.db.bestiario = this.db.bestiario.filter((x) => x.id !== m.id);
+      return this.bestiarioMudou();
+    }
+    const room = c.room;
+    if (!room) return;
+    if (m.t === 'criaturaColocar') {
+      const cr = this.db.bestiario.find((x) => x.id === m.criaturaId);
+      if (!cr) return c.send({ t: 'error', msg: 'Criatura não encontrada.' });
+      const n = typeof m.quantidade === 'number' && Number.isInteger(m.quantidade) ? Math.max(1, Math.min(20, m.quantidade)) : 1;
+      if (room.tokenList().length + n > 30) return c.send({ t: 'error', msg: 'Máximo de 30 peças por cena.' });
+      const escolha = typeof m.aparencia === 'string' ? m.aparencia : 'variadas';
+      const lista: TokenData[] = [];
+      let k = 1;
+      for (let i = 0; i < n; i++) {
+        while (this.tokenNameTaken(room.data.id, `${cr.nome} ${k}`) || lista.some((t) => t.name === `${cr.nome} ${k}`)) k++;
+        const ap = aparenciaDaVez(cr, escolha, i);
+        lista.push({
+          id: this.nextItemId(),
+          name: `${cr.nome} ${k}`,
+          look: { ...ap.look, charId: this.charDaArte(ap.arte) },
+          x: room.data.door.x,
+          y: room.data.door.y,
+          dir: room.data.door.dir,
+          color: '#b3261e',
+          vitals: { pv: cr.pv, pvMax: cr.pv, pe: 0, peMax: 0, san: 0, sanMax: 0 },
+          criatura: { id: cr.id, aparencia: ap.id },
+          ...(cr.flutua ? { flutua: true } : {}),
+        });
+      }
+      room.colocarVarias(lista);
+      return c.send({ t: 'notice', msg: `${n} ${n === 1 ? cr.nome : `${cr.nome}s`} em campo, todos com a mesma ficha.` });
+    }
+    if (m.t === 'pecaAparencia' && typeof m.tokenId === 'number' && typeof m.aparencia === 'string') {
+      const pc = room.criaturasDasPecas().get(m.tokenId);
+      const cr = pc && this.db.bestiario.find((x) => x.id === pc.id);
+      const ap = cr?.aparencias.find((a) => a.id === m.aparencia);
+      if (!cr || !ap) return;
+      room.trocarAparencia(m.tokenId, { id: cr.id, aparencia: ap.id }, { ...ap.look, charId: this.charDaArte(ap.arte) });
+    }
   }
 
   /** Uma ação da tela de combate (só o mestre). */
@@ -262,6 +415,7 @@ export class Hotel implements HotelApi {
     const group = this.sceneGroup(room.data.id);
     const key = Math.min(...group);
     const camp = this.campaignFor(key);
+    this.religarCombate(group, camp);
     const pilha = this.desfazeres.get(key) ?? [];
     this.desfazeres.set(key, pilha);
     if (a.tipo === 'desfazer') {
@@ -419,6 +573,8 @@ export class Hotel implements HotelApi {
   private salaDoPersonagem(personagem: number | null | undefined, prefere?: RoomInstance | null): RoomInstance | undefined {
     if (!personagem) return undefined;
     if (prefere?.temPersonagem(personagem)) return prefere;
+    // cada campanha tem a sua peça do mesmo personagem: primeiro a campanha de quem está olhando
+    if (prefere) for (const id of this.sceneGroup(prefere.data.id)) if (this.rooms.get(id)?.temPersonagem(personagem)) return this.rooms.get(id);
     return [...this.rooms.values()].find((r) => r.temPersonagem(personagem));
   }
 
@@ -906,6 +1062,10 @@ export class Hotel implements HotelApi {
   }
 
   /** PV/PE/SAN de uma peça mudou no tabuleiro: a ficha ligada ao personagem acompanha. */
+  vitalEmOutraCena(roomId: number, userId: number, m: Record<string, unknown>) {
+    for (const id of this.sceneGroup(roomId)) if (id !== roomId && this.rooms.get(id)?.mudarVital(userId, m)) return;
+  }
+
   vitaisDaPeca(personagem: number | null | undefined, v: Vitals) {
     if (!personagem) return;
     const f = (this.db.fichas ?? []).find((x) => x.personagem === personagem);
@@ -961,9 +1121,12 @@ export class Hotel implements HotelApi {
       door: r.data.door,
       portals: r.portals(),
       users: r.userPositions(),
-      ...(r.data.aberto ? { aberto: true, terreno: r.data.terreno, marcos: r.marcos() } : {}),
+      ...(r.data.floorStyle ? { estilo: r.data.floorStyle } : {}),
+      ...(r.data.viagem ? { viagem: true } : {}),
+      ...(r.data.aberto ? { aberto: true, terreno: r.data.terreno, marcos: r.marcos(), simbolos: r.simbolos() } : {}),
     }));
     this.ensureLayout(camp, scenes);
+    this.marcarVisitas(camp, rooms);
     // grupo = as peças de todas as cenas da campanha
     const load = new Map<string, number>();
     for (const r of rooms) for (const l of r.heldLoot()) load.set(l.holder.toLowerCase(), (load.get(l.holder.toLowerCase()) ?? 0) + l.espacos);
@@ -997,7 +1160,18 @@ export class Hotel implements HotelApi {
       party: [...party.values()].sort((a, b) => (a.id ?? 0) > (b.id ?? 0) ? -1 : 1),
       scenes,
       notas: camp.notas ?? [],
+      visitadas: camp.visitadas ?? [],
     };
+  }
+
+  /** Cena onde um agente está passa a ser visitada (o minimapa deixa de apagá-la). */
+  private marcarVisitas(camp: CampaignData, rooms: RoomInstance[]) {
+    const set = new Set(camp.visitadas ?? []);
+    const antes = set.size;
+    for (const r of rooms) if (!set.has(r.data.id) && r.tokenList().some((t) => this.ehAgente(t.look?.charId))) set.add(r.data.id);
+    if (set.size === antes) return;
+    camp.visitadas = [...set].sort((a, b) => a - b);
+    this.save();
   }
 
   /** Planta: posiciona cenas novas lado a lado. */
@@ -1122,10 +1296,11 @@ export class Hotel implements HotelApi {
       if (cj === undefined) {
         const key = Math.min(...group);
         const camp = this.campaignFor(key);
+        this.religarCombate(group, camp);
         const cb = camp.combate ?? null;
         const podeDesfazer = role === 'gm' && (this.desfazeres.get(key)?.length ?? 0) > 0;
         // as fichas das ameaças são só do mestre (DC-4)
-        cj = JSON.stringify({ t: 'combate', combate: role === 'gm' ? cb : cmb.visaoMesa(cb), ...(role === 'gm' ? { podeDesfazer, ameacas: camp.ameacas ?? {} } : {}) });
+        cj = JSON.stringify({ t: 'combate', combate: role === 'gm' ? cb : cmb.visaoMesa(cb), ...(role === 'gm' ? { podeDesfazer, ameacas: this.fichasDasAmeacas(group, camp) } : {}) });
         combates.set(sk, cj);
       }
       if (cj !== c.lastCombate) {
@@ -1133,6 +1308,37 @@ export class Hotel implements HotelApi {
         c.send(JSON.parse(cj) as ServerMsg);
       }
     }
+  }
+
+  /**
+   * O combate guarda as peças pelo id. Quando a peça é recriada (a viagem para outra campanha, a Sede
+   * remontada), o id muda e o combate perdia o agente (sem retrato, sem PV, sem armas). O participante
+   * cujo id sumiu é religado à peça do grupo com o mesmo nome, e a ficha da ameaça vai junto.
+   */
+  private religarCombate(group: number[], camp: CampaignData) {
+    const c = camp.combate;
+    if (!c || c.fase === 'encerrado') return;
+    const pecas = group.flatMap((id) => this.rooms.get(id)?.tokensLive() ?? []);
+    const ids = new Set(pecas.map((p) => p.token.id));
+    const perdidos = c.participantes.filter((p) => !ids.has(p.id));
+    if (!perdidos.length) return;
+    const usados = new Set(c.participantes.filter((p) => ids.has(p.id)).map((p) => p.id));
+    const mapa = new Map<number, number>();
+    for (const p of perdidos) {
+      const nova = pecas.find((x) => !usados.has(x.token.id) && x.name.toLowerCase() === p.nome.toLowerCase());
+      if (!nova) continue;
+      mapa.set(p.id, nova.token.id);
+      usados.add(nova.token.id);
+    }
+    if (!mapa.size) return;
+    camp.combate = trocarIds(c, mapa) as typeof c;
+    if (camp.ameacas)
+      for (const [velho, novo] of mapa)
+        if (camp.ameacas[String(velho)] && !camp.ameacas[String(novo)]) {
+          camp.ameacas[String(novo)] = camp.ameacas[String(velho)];
+          delete camp.ameacas[String(velho)];
+        }
+    this.save();
   }
 
   /** Objetivos, título, planta e carga: só o mestre da cena atual. */
@@ -1544,6 +1750,33 @@ export class Hotel implements HotelApi {
       case 'mapaImprovisado':
         this.mapaImprovisado(c, m);
         return;
+      case 'mapaApagar':
+        this.mapaApagar(c, m);
+        return;
+      case 'viagem':
+        this.viagem(c, m);
+        return;
+      case 'barJogar':
+        this.barJogar(c, m);
+        return;
+      case 'barSair':
+        this.barSair(c, m);
+        return;
+      case 'barJogo':
+        this.barJogo(c, m);
+        return;
+      case 'lugares':
+        c.send({ t: 'lugares', lugares: this.lugares(c) });
+        return;
+      case 'lugarMover':
+        this.lugarMover(c, m);
+        return;
+      case 'grupoPara':
+        this.grupoPara(c, m);
+        return;
+      case 'visitada':
+        this.visitada(c, m);
+        return;
       case 'join': {
         const room = typeof m.roomId === 'number' ? this.rooms.get(m.roomId) : undefined;
         if (!room) return c.send({ t: 'error', msg: 'Quarto não encontrado.' });
@@ -1623,8 +1856,141 @@ export class Hotel implements HotelApi {
       case 'ameaca':
         this.ameacaSalvar(c, m);
         return;
+      case 'bestiario':
+      case 'criaturaSalvar':
+      case 'criaturaApagar':
+      case 'criaturaColocar':
+      case 'pecaAparencia':
+        this.bestiarioMsg(c, m);
+        return;
     }
     c.room?.handle(c, m);
+  }
+
+  // ---------- os jogos do bar (08/10) ----------
+  /** As telas de jogador abertas na ficha. */
+  private telasDaFicha(fichaId: number) {
+    return [...this.clients.values()].filter((o) => o.role !== 'gm' && o.fichaId === fichaId);
+  }
+
+  private mestres() {
+    return [...this.clients.values()].filter((o) => o.role === 'gm' && o.name);
+  }
+
+  /** Cada conexão que olha a mesa e os lugares dela (o jogador, o seu; o mestre, os dos NPCs). */
+  private telasDaMesa(mesa: MesaBar): { c: Client; eu: number[] }[] {
+    const out: { c: Client; eu: number[] }[] = [];
+    mesa.lugares.forEach((l, i) => {
+      if (l.fichaId !== undefined) for (const c of this.telasDaFicha(l.fichaId)) out.push({ c, eu: [i] });
+    });
+    const npcs = mesa.lugares.flatMap((l, i) => (l.fichaId === undefined ? [i] : []));
+    if (npcs.length) for (const c of this.mestres()) out.push({ c, eu: npcs });
+    return out;
+  }
+
+  private msgMesa(mesa: MesaBar, eu: number[]) {
+    return { t: 'bar' as const, mesa: mesa.id, tipo: mesa.tipo, jogadores: mesa.lugares.map((l) => l.nome), npc: mesa.lugares.map((l) => l.fichaId === undefined), eu, log: mesa.log };
+  }
+
+  /** Quem está na mesa mudou: todos recebem a mesa de novo (a partida volta para o começo). */
+  private mesaMudou(mesa: MesaBar) {
+    mesa.log = [];
+    for (const { c, eu } of this.telasDaMesa(mesa)) c.send(this.msgMesa(mesa, eu));
+  }
+
+  /** Tira um lugar da mesa: a tela de quem saiu fecha, os outros recebem a mesa nova. */
+  private tirarDaMesa(mesa: MesaBar, i: number, aviso?: string) {
+    const antes = this.telasDaMesa(mesa);
+    const [saiu] = mesa.lugares.splice(i, 1);
+    const ficam = new Set(this.telasDaMesa(mesa).map((x) => x.c));
+    for (const { c } of antes) if (!ficam.has(c)) c.send({ t: 'barFechar', mesa: mesa.id, ...(aviso && saiu.fichaId !== undefined ? { aviso } : {}) });
+    if (!mesa.lugares.length) this.mesas.delete(mesa.id);
+    else this.mesaMudou(mesa);
+  }
+
+  /**
+   * O mestre escolheu um agente e usou um jogo do bar: a peça vai até ele e o jogo abre no celular de
+   * quem joga com ela; a peça sem ficha é um NPC, e o mestre joga por ele na tela dele. Com a peça já
+   * jogando, o mesmo Usar chama de volta.
+   */
+  private barJogar(c: Client, m: Record<string, unknown>) {
+    const room = c.room;
+    if (!room || typeof m.tokenId !== 'number' || typeof m.itemId !== 'number') return;
+    const r = room.pecaNoJogo(c, m.tokenId, m.itemId);
+    if (typeof r === 'string') return c.send({ t: 'error', msg: r });
+    const jogo = NOME_MESA[r.tipo];
+    let mesa = this.mesas.get(m.itemId);
+    const ja = mesa?.lugares.findIndex((l) => l.tokenId === m.tokenId) ?? -1;
+    if (mesa && ja >= 0) {
+      this.tirarDaMesa(mesa, ja, 'O mestre chamou de volta para a mesa.');
+      return c.send({ t: 'notice', msg: `${r.nome} largou ${jogo}.` });
+    }
+    if (mesa && mesa.lugares.length >= bar.MAX_JOGADORES[r.tipo]) return c.send({ t: 'error', msg: `Já tem ${mesa.lugares.length} ${NOME_EM[r.tipo]}: chame alguém de volta antes.` });
+    // a peça vai até o jogo, e o jogo só abre quando ela chega (09/10, o Felipe)
+    const tokenId = m.tokenId;
+    const itemId = m.itemId;
+    const sentar = () => {
+      const f = this.fichaDoPersonagem(r.charId);
+      // a peça só joga uma coisa por vez
+      for (const outra of [...this.mesas.values()]) {
+        const i = outra.lugares.findIndex((l) => l.tokenId === tokenId || (f && l.fichaId === f.id));
+        if (i >= 0) this.tirarDaMesa(outra, i);
+      }
+      let aqui = this.mesas.get(itemId);
+      if (aqui && aqui.lugares.length >= bar.MAX_JOGADORES[r.tipo]) return c.send({ t: 'error', msg: `${r.nome} chegou, mas ${jogo} encheu enquanto andava.` });
+      if (!aqui) {
+        aqui = { id: itemId, tipo: r.tipo, lugares: [], log: [] };
+        this.mesas.set(aqui.id, aqui);
+      }
+      aqui.lugares.push({ tokenId, nome: r.nome, ...(f ? { fichaId: f.id } : {}) });
+      this.mesaMudou(aqui);
+      const msg = !f
+        ? `${r.nome} chegou ${NOME_EM[r.tipo]}. Sem ficha de jogador, é um NPC: você joga por ele na sua tela.`
+        : this.telasDaFicha(f.id).length
+          ? `${r.nome} chegou ${NOME_EM[r.tipo]}: o jogo abriu no celular.`
+          : `${r.nome} chegou ${NOME_EM[r.tipo]}, mas o celular do jogador não está conectado (abre quando conectar).`;
+      c.send({ t: 'notice', msg });
+    };
+    c.send({ t: 'notice', msg: `${r.nome} está indo para ${jogo}.` });
+    room.irAoJogo(tokenId, itemId, sentar);
+  }
+
+  /** O lugar de quem mandou a mensagem: o do jogador, ou o do NPC que o mestre disse. */
+  private lugarNaMesa(c: Client, mesa: MesaBar, de: unknown): number {
+    if (c.role === 'gm') return typeof de === 'number' && mesa.lugares[de] && mesa.lugares[de].fichaId === undefined ? de : -1;
+    return c.fichaId === undefined ? -1 : mesa.lugares.findIndex((l) => l.fichaId === c.fichaId);
+  }
+
+  /** Sair da mesa (o botão Sair): o mestre fica sabendo, e do recorde, se teve. */
+  private barSair(c: Client, m: Record<string, unknown>) {
+    const mesa = typeof m.mesa === 'number' ? this.mesas.get(m.mesa) : undefined;
+    if (!mesa) return c.send({ t: 'barFechar', mesa: typeof m.mesa === 'number' ? m.mesa : 0 });
+    const i = this.lugarNaMesa(c, mesa, m.lugar);
+    if (i < 0) return;
+    const nome = mesa.lugares[i].nome;
+    const jogo = NOME_MESA[mesa.tipo];
+    this.tirarDaMesa(mesa, i);
+    if (c.role === 'gm') return;
+    const rec = m.recorde as { jogo?: unknown; pontos?: unknown } | undefined;
+    const pontos = typeof rec?.pontos === 'number' && Number.isFinite(rec.pontos) ? Math.max(0, Math.floor(rec.pontos)) : 0;
+    const qual = typeof rec?.jogo === 'string' ? rec.jogo.replace(/[^\p{L}\p{N} -]/gu, '').slice(0, 20) : '';
+    const msg = pontos && qual ? `${nome} largou ${jogo} (${pontos} pontos no ${qual}).` : `${nome} largou ${jogo}.`;
+    for (const o of this.mestres()) o.send({ t: 'notice', msg });
+  }
+
+  /** Uma jogada: vai para os outros da mesa (e fica guardada, se pedir, para quem reconectar). */
+  private barJogo(c: Client, m: Record<string, unknown>) {
+    const mesa = typeof m.mesa === 'number' ? this.mesas.get(m.mesa) : undefined;
+    if (!mesa || !m.dados || typeof m.dados !== 'object' || Array.isArray(m.dados)) return;
+    const de = this.lugarNaMesa(c, mesa, m.de);
+    if (de < 0) return;
+    const dados = m.dados as Record<string, unknown>;
+    if (JSON.stringify(dados).length > 4000) return;
+    if (m.registrar === true) {
+      if (dados.tipo === 'comecar') mesa.log = [];
+      if (mesa.log.length < 3000) mesa.log.push({ de, dados });
+    }
+    for (const { c: o } of this.telasDaMesa(mesa)) if (o !== c) o.send({ t: 'barJogo', mesa: mesa.id, de, dados });
   }
 
   // ---------- contas (a tela de entrada) ----------
@@ -1730,6 +2096,9 @@ export class Hotel implements HotelApi {
       this.enviarFichas(c);
       this.enviarDocs(c);
     }
+    // o celular (ou o mestre) caiu no meio do jogo: a mesa do bar abre de novo
+    for (const mesa of this.mesas.values())
+      for (const t of this.telasDaMesa(mesa)) if (t.c === c) c.send(this.msgMesa(mesa, t.eu));
     if (this.persist) console.log(`[hotel] ${name} entrou (${role === 'gm' ? 'mestre' : 'jogador'})`);
   }
 
@@ -1765,6 +2134,53 @@ export class Hotel implements HotelApi {
    * da borda de baixo liga a cena nova à de agora (as duas ficam na mesma campanha, e quem pisa nela
    * volta). Com `levar`, os agentes da cena de agora vão junto, e o mestre (e a mesa) também.
    */
+  /**
+   * Leva o grupo para a cena (o "Levar o grupo" do minimapa): as peças chegam lá (pela
+   * passagem de onde vieram, como quem anda), e o mestre e a mesa abrem a cena. Sem `tokens`,
+   * vão os agentes de todas as cenas da campanha (NPCs e ameaças ficam); com `tokens`, só essas
+   * peças (o grupo dividido, ou a peça que o mestre arrastou no minimapa). `entrar: false`
+   * move sem trocar a cena.
+   */
+  private grupoPara(c: Client, m: Record<string, unknown>) {
+    const alvo = typeof m.roomId === 'number' ? this.rooms.get(m.roomId) : undefined;
+    if (!alvo) return c.send({ t: 'error', msg: 'Cena não encontrada.' });
+    const escolhidas = Array.isArray(m.tokens) ? new Set(m.tokens.filter((x): x is number => typeof x === 'number')) : null;
+    const nomes: string[] = [];
+    for (const id of this.sceneGroup(alvo.data.id)) {
+      const de = this.rooms.get(id);
+      if (!de || de === alvo) continue;
+      for (const t of de.tokenList())
+        if (escolhidas ? escolhidas.has(t.id) : this.ehAgente(t.look?.charId)) {
+          this.moveToken(de, t.id, alvo.data.id);
+          nomes.push(t.name);
+        }
+    }
+    const lugar = sceneShortName(alvo.data.name);
+    if (nomes.length) this.log(alvo.data.id, 'scene', escolhidas ? `${nomes.join(', ')} ${nomes.length > 1 ? 'foram' : 'foi'} para ${lugar}.` : `O grupo foi para ${lugar}.`);
+    this.save();
+    this.roomChanged();
+    if (m.entrar !== false) this.enter(c, alvo);
+    else this.touch();
+  }
+
+  /** O mestre marca uma cena (ou todas da campanha) como visitada ou não. */
+  private visitada(c: Client, m: Record<string, unknown>) {
+    const ref = typeof m.roomId === 'number' ? m.roomId : typeof m.campanha === 'number' ? m.campanha : c.room?.data.id;
+    if (ref === undefined || !this.rooms.has(ref)) return;
+    const group = this.sceneGroup(ref);
+    const camp = this.campaignFor(Math.min(...group));
+    const ids = typeof m.roomId === 'number' ? [m.roomId] : group;
+    const set = new Set(camp.visitadas ?? []);
+    for (const id of ids) {
+      if (m.visitada) set.add(id);
+      else set.delete(id);
+    }
+    camp.visitadas = [...set].sort((a, b) => a - b);
+    this.save();
+    this.touch();
+    this.pushNow();
+  }
+
   private mapaImprovisado(c: Client, m: Record<string, unknown>) {
     const de = c.room;
     if (!de) return c.send({ t: 'error', msg: 'Abra uma cena antes de criar o mapa.' });
@@ -1800,6 +2216,251 @@ export class Hotel implements HotelApi {
     this.save();
     this.roomChanged();
     this.enter(c, nova);
+  }
+
+  /** Apaga um mapa improvisado: as peças e quem estava nele voltam para a cena ligada pela Entrada. */
+  private mapaApagar(c: Client, m: Record<string, unknown>) {
+    const r = isInt(m.roomId) ? this.rooms.get(m.roomId) : undefined;
+    if (!r?.data.mapa) return c.send({ t: 'error', msg: 'Só um mapa improvisado pode ser apagado.' });
+    const id = r.data.id;
+    const volta = r.data.items.find((it) => getFurni(it.defId)?.kind === 'entrada' && it.link !== undefined)?.link;
+    const destino = (volta !== undefined && volta !== id ? this.rooms.get(volta) : undefined) ?? this.rooms.get(this.sceneGroup(id).find((x) => x !== id) ?? -1);
+    if (!destino) return c.send({ t: 'error', msg: 'O mapa não está ligado a nenhuma cena.' });
+    for (const t of r.tokenList()) this.moveToken(r, t.id, destino.data.id);
+    for (const o of this.clients.values())
+      if (o.room === r) {
+        r.leave(o);
+        destino.join(o);
+      }
+    this.rooms.delete(id);
+    this.db.rooms = this.db.rooms.filter((x) => x.id !== id);
+    for (const x of this.db.rooms) for (const it of x.items) if (it.link === id) delete it.link;
+    for (const camp of Object.values(this.db.campaigns ?? {})) {
+      if (camp.currentSceneId === id) camp.currentSceneId = destino.data.id;
+      delete camp.layout[id];
+    }
+    if (this.db.liveScene === id) this.db.liveScene = destino.data.id;
+    if (this.db.home === id) delete this.db.home;
+    this.log(destino.data.id, 'scene', `Mapa improvisado apagado: ${sceneShortName(r.data.name)}.`);
+    this.save();
+    this.roomChanged();
+    if (c.room !== destino) this.enter(c, destino);
+  }
+
+  // ---------- a Viagem (docs/VIAGEM.md) ----------
+
+  private viagem(c: Client, m: Record<string, unknown>) {
+    if (m.acao === 'iniciar') return this.viagemIniciar(c, m);
+    if (m.acao === 'ajustar') return this.viagemAjustar(c, m);
+    if (m.acao === 'chegar') return this.viagemChegar(c, m);
+  }
+
+  // ---------- o mapa-múndi: os lugares ----------
+  /** Os lugares do mundo: cada conjunto de salas ligadas (menos a van) é um lugar, com ícone, ponto no mapa e a sala de entrada. */
+  lugares(c?: Client): LugarInfo[] {
+    const vistos = new Set<number>();
+    const grupos: number[][] = [];
+    for (const r of [...this.rooms.values()].sort((a, b) => a.data.id - b.data.id)) {
+      if (r.data.viagem || vistos.has(r.data.id)) continue;
+      const g = this.sceneGroup(r.data.id).filter((id) => !this.rooms.get(id)?.data.viagem);
+      for (const id of g) vistos.add(id);
+      grupos.push(g.sort((a, b) => a - b));
+    }
+    // salas soltas com o mesmo nome de lugar ("Sede · Câmara do Selo", que só se alcança pela passagem secreta) são do mesmo lugar
+    const prefixo = (g: number[]) => {
+      const nomes = g.map((id) => this.rooms.get(id)?.data.name ?? '').filter((n) => n.includes('·'));
+      return nomes.length ? nomes[0].split('·')[0].trim().toLowerCase() : null;
+    };
+    for (let i = 0; i < grupos.length; i++)
+      for (let k = grupos.length - 1; k > i; k--) {
+        const p = prefixo(grupos[i]);
+        if (p && p === prefixo(grupos[k])) {
+          grupos[i] = [...grupos[i], ...grupos[k]].sort((a, b) => a - b);
+          grupos.splice(k, 1);
+        }
+      }
+    const aqui = c?.room && !c.room.data.viagem ? this.groupKey(c.room.data.id) : c?.room?.data.viagem ? this.groupKey(c.room.data.viagem.origem) : -1;
+    return grupos.map((g, i) => {
+      const key = g[0];
+      const camp = this.campaignFor(key);
+      const salas = g.map((id) => this.rooms.get(id)!).filter(Boolean);
+      const nome = camp.title || salas[0]?.data.name || 'Lugar';
+      // a entrada: a que o mestre escolheu; senão o Bar da Sede, a fazenda vista de fora, ou a primeira sala
+      const escolhida = camp.lugar?.entrada;
+      const entrada =
+        (escolhida !== undefined && g.includes(escolhida) ? escolhida : undefined) ??
+        salas.find((r) => /·\s*Bar$/.test(r.data.name))?.data.id ??
+        salas.find((r) => /·\s*Olhos de [AÁaá]guia$/.test(r.data.name))?.data.id ??
+        key;
+      const pos = posicaoInicial(nome, i);
+      return {
+        id: key,
+        nome,
+        icone: camp.lugar?.icone ?? iconePeloNome(nome),
+        x: camp.lugar?.x ?? pos[0],
+        y: camp.lugar?.y ?? pos[1],
+        entrada,
+        salas: salas.length,
+        aqui: key === aqui,
+      };
+    });
+  }
+
+  /** O mestre arrasta o ícone de um lugar para outro ponto do mapa. */
+  private lugarMover(c: Client, m: Record<string, unknown>) {
+    if (c.role !== 'gm') return c.send({ t: 'error', msg: 'Só o mestre mexe no mapa.' });
+    if (!isInt(m.id) || typeof m.x !== 'number' || typeof m.y !== 'number' || !Number.isFinite(m.x) || !Number.isFinite(m.y)) return;
+    const l = this.lugares(c).find((x) => x.id === m.id);
+    if (!l) return;
+    const camp = this.campaignFor(l.id);
+    camp.lugar = { ...(camp.lugar ?? {}), x: Math.max(0.08, Math.min(0.92, m.x)), y: Math.max(0.1, Math.min(0.9, m.y)) };
+    this.save();
+    c.send({ t: 'lugares', lugares: this.lugares(c) });
+  }
+
+  /** A pintura da partida ou da chegada, na tela de todo mundo (o mestre, a mesa e os celulares), com o som do carro. */
+  private telaDaViagem(fase: 'partida' | 'chegada', ilustracao: string, texto: string, reserva?: string) {
+    const msg: ServerMsg = { t: 'viagemTela', fase, ilustracao, texto, ...(reserva ? { reserva } : {}) };
+    for (const c of this.clients.values()) if (c.name) c.send(msg);
+  }
+
+  /** Os ajustes de uma Viagem que o mestre mandou (o que vier errado fica como estava). */
+  private viagemAjustes(m: Record<string, unknown>, base: ViagemInfo): ViagemInfo {
+    const v = { ...base };
+    if (isCenarioViagem(m.cenario)) v.cenario = m.cenario;
+    if (isHoraViagem(m.hora)) v.hora = m.hora;
+    if (typeof m.velocidade === 'number' && Number.isFinite(m.velocidade)) v.velocidade = Math.max(0, Math.min(1, m.velocidade));
+    if (isClimaViagem(m.clima)) v.clima = m.clima;
+    if (typeof m.ilustracao === 'string' && ILUSTRACOES_VIAGEM.some((i) => i.id === m.ilustracao)) v.ilustracao = m.ilustracao;
+    // o destino é uma cena: o nome dela vira o texto da faixa, e "Chegamos" abre exatamente ela
+    if (m.destinoId === null) {
+      delete v.destinoId;
+      delete v.destino;
+    } else if (isInt(m.destinoId)) {
+      const r = this.rooms.get(m.destinoId);
+      if (r && !r.data.viagem) {
+        // o destino é a sala de entrada do lugar; o texto é o nome do lugar
+        v.destinoId = r.data.id;
+        v.destino = (this.lugares().find((l) => l.entrada === r.data.id)?.nome ?? r.data.name).slice(0, 60);
+      }
+    } else if (typeof m.destino === 'string') {
+      const d = m.destino.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 60);
+      if (d) v.destino = d;
+      else delete v.destino;
+      delete v.destinoId;
+    }
+    return v;
+  }
+
+  /** A van parada com o mundo passando: leva os agentes para os bancos que o mestre escolheu e abre a cena para ele e para a mesa. */
+  private viagemIniciar(c: Client, m: Record<string, unknown>) {
+    const de = c.room;
+    if (!de) return c.send({ t: 'error', msg: 'Abra uma cena antes de começar a viagem.' });
+    if (de.data.viagem) return c.send({ t: 'error', msg: 'Já estão em viagem.' });
+    const lista = Array.isArray(m.bancos) ? m.bancos : [];
+    const group = this.sceneGroup(de.data.id);
+    // quem vai e onde senta: cada peça da campanha uma vez, cada banco uma vez
+    const vai: { id: number; name: string; de: RoomInstance; banco: BancoVan }[] = [];
+    const usados = new Set<number>();
+    const viram = new Set<number>();
+    for (const item of lista as { tokenId?: unknown; banco?: unknown }[]) {
+      if (!isInt(item?.tokenId) || !isInt(item?.banco) || usados.has(item.banco) || viram.has(item.tokenId)) continue;
+      const banco = BANCOS_VAN.find((b) => b.id === item.banco);
+      if (!banco) continue;
+      for (const id of group) {
+        const r = this.rooms.get(id);
+        const t = r?.tokenList().find((x) => x.id === item.tokenId);
+        if (!r || !t) continue;
+        vai.push({ id: t.id, name: t.name, de: r, banco });
+        usados.add(banco.id);
+        viram.add(item.tokenId);
+        break;
+      }
+    }
+    if (!vai.length) return c.send({ t: 'error', msg: 'Escolha quem vai e em que banco cada um senta.' });
+    const base: ViagemInfo = { cenario: 'rodovia', hora: 'dia', velocidade: 0.7, origem: de.data.id };
+    let sala = group.map((id) => this.rooms.get(id)).find((r) => r?.data.viagem);
+    if (!sala) {
+      const lugar = de.data.name.includes('·') ? de.data.name.split('·')[0].trim() : '';
+      const data: RoomData = {
+        id: this.db.nextRoomId++,
+        name: lugar ? `${lugar} · Viagem` : 'Viagem',
+        description: 'A van preta na estrada: a van fica parada na tela e o mundo passa por fora.',
+        owner: de.data.owner,
+        heightmap: heightmapDaVan(),
+        door: { x: 1, y: 1, dir: 2 },
+        items: moveisDaVan().map((mv) => ({ id: this.nextItemId(), defId: mv.defId, x: mv.x, y: mv.y, z: 0, rot: mv.rot, state: 0 })),
+        wallItems: [],
+        publicBuild: false,
+        darkness: 0,
+        aberto: true,
+        floorStyle: 'metal',
+        particles: [],
+        viagem: base,
+        ...(de.data.floor ? { floor: de.data.floor } : {}),
+      };
+      this.db.rooms.push(data);
+      sala = new RoomInstance(data, this);
+      this.rooms.set(data.id, sala);
+    }
+    // o destino da viagem anterior não vale para esta
+    const antes: ViagemInfo = { ...base, ...(sala.data.viagem ?? {}), origem: de.data.id };
+    delete antes.destino;
+    delete antes.destinoId;
+    const v = this.viagemAjustes(m, antes);
+    // sem cenário escolhido: a estrada de terra para o campo, a rodovia para o resto
+    if (!isCenarioViagem(m.cenario) && v.destino) v.cenario = ambienteDoDestino(v.destino) === 'rural' ? 'terra' : 'rodovia';
+    sala.definirViagem(v);
+    // a tela da partida, para todos, ANTES de qualquer peça sair do lugar (ela cobre a troca): uma pintura que combina
+    // com o destino
+    const ilustracao = sortearIlustracao(ambienteDoDestino(v.destino));
+    sala.data.viagem = { ...sala.data.viagem!, ilustracao };
+    this.telaDaViagem('partida', ilustracao, v.destino ? `Rumo a ${v.destino}` : 'A viagem começou');
+    for (const x of vai) {
+      const t = x.de.takeToken(x.id);
+      if (t) sala.putToken({ ...t, x: x.banco.x, y: x.banco.y, dir: VAN.giroBanco }, null);
+    }
+    this.log(sala.data.id, 'scene', `A viagem começou: ${vai.map((x) => x.name).join(', ')} na van.`);
+    this.save();
+    this.roomChanged();
+    this.enter(c, sala);
+  }
+
+  private viagemAjustar(c: Client, m: Record<string, unknown>) {
+    const r = c.room;
+    if (!r?.data.viagem) return c.send({ t: 'error', msg: 'Isto não é uma viagem.' });
+    r.definirViagem(this.viagemAjustes(m, r.data.viagem));
+    this.save();
+  }
+
+  /** Chegou: todos descem na cena escolhida (na porta dela) e a viagem fecha; a van fica pronta para a próxima. */
+  private viagemChegar(c: Client, m: Record<string, unknown>) {
+    const van = c.room;
+    if (!van?.data.viagem) return c.send({ t: 'error', msg: 'Isto não é uma viagem.' });
+    const dest = isInt(m.roomId) ? this.rooms.get(m.roomId) : undefined;
+    if (!dest || dest.data.viagem) return c.send({ t: 'error', msg: 'Escolha a cena de chegada.' });
+    const vindos = van.tokenList();
+    // a tela da chegada, para todos (outra pintura do mesmo lugar)
+    const lugar = this.lugares().find((l) => this.sceneGroup(dest.data.id).includes(l.id) || l.entrada === dest.data.id);
+    const nomeDest = lugar?.nome ?? dest.data.name;
+    // a arte de chegada do lugar (regra da casa: duas por lugar); se ainda não existe, a do jeito do lugar
+    const doLugar = artesDeChegada(nomeDest)[Math.floor(Math.random() * 2)];
+    this.telaDaViagem('chegada', doLugar, `Chegamos: ${nomeDest}`, sortearIlustracao(ambienteDoDestino(nomeDest), van.data.viagem.ilustracao));
+    // outra campanha tem as peças dela: quem chega no lugar delas é o grupo da viagem, e as de antes saem
+    const grupoDest = this.sceneGroup(dest.data.id);
+    if (!grupoDest.includes(van.data.id)) {
+      const charIds = new Set(vindos.map((t) => t.look?.charId).filter((x): x is number => !!x));
+      for (const id of grupoDest) {
+        const r = this.rooms.get(id);
+        if (!r || r === van) continue;
+        for (const t of r.tokenList()) if (t.look?.charId && charIds.has(t.look.charId)) r.takeToken(t.id);
+      }
+    }
+    for (const t of vindos) this.moveToken(van, t.id, dest.data.id);
+    this.log(dest.data.id, 'scene', `Chegaram: ${vindos.map((t) => t.name).join(', ') || 'ninguém'}.`);
+    this.save();
+    this.roomChanged();
+    this.enter(c, dest);
   }
 
   // ---------- personagens ----------

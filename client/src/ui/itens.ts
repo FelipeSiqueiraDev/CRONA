@@ -29,9 +29,9 @@ interface Agente {
 
 /** Os três tipos contados no topo, como na referência. */
 const TIPOS: { nome: string; icone: () => Element; conta: (it: regras.ItemFicha) => boolean }[] = [
-  { nome: 'Consumíveis', icone: () => lootIcon('potion', 26), conta: (it) => regras.consumivel(it) },
-  { nome: 'Chaves', icone: () => lootIcon('key', 26), conta: (it) => (it.tipo === 'cena' && it.tipoCena === 'key') || it.id === 'chaves' },
-  { nome: 'Ritualísticos', icone: () => ic('pentagrama'), conta: (it) => it.tipo === 'amaldicoado' || (it.tipo === 'equipamento' && cat.equipamento(it.id)?.grupo === 'paranormal') },
+  { nome: 'Consumíveis', icone: () => arteOu(['/arte/icones/cat-medicamento.png'], lootIcon('potion', 26)), conta: (it) => regras.consumivel(it) },
+  { nome: 'Chaves', icone: () => arteOu(['/arte/icones/chave.png', '/arte/icones/cadeado.png'], lootIcon('key', 26)), conta: (it) => (it.tipo === 'cena' && it.tipoCena === 'key') || it.id === 'chaves' },
+  { nome: 'Ritualísticos', icone: () => arteOu(['/arte/icones/cat-paranormal.png'], ic('pentagrama')), conta: (it) => it.tipo === 'amaldicoado' || (it.tipo === 'equipamento' && cat.equipamento(it.id)?.grupo === 'paranormal') },
 ];
 
 const LUGAR: Record<regras.LugarItem, string> = { mao: 'Na mão', vestido: 'Vestido', mochila: 'Na mochila' };
@@ -103,6 +103,8 @@ export class AbaItens {
             {
               class: `it-ag${a === ag ? ' on' : ''}`,
               type: 'button',
+              // o elemento do agente (o tema da ficha): a cor e o sigilo da carta
+              'data-tema': a.f?.tema ?? 'ordem',
               role: 'tab',
               'aria-selected': String(a === ag),
               title: a.p.name,
@@ -178,7 +180,7 @@ export class AbaItens {
         'div',
         { class: 'it-grade equipado' },
         ...naMao.map((it) => this.slot(a, it)),
-        ...Array.from({ length: Math.max(0, regras.MAOS - regras.maosOcupadas(inv)) }, () => h('div', { class: 'it-slot vazio', title: 'Mão livre' }, h('span', { class: 'it-arte' }, ic('mao')), h('span', { class: 'it-nome' }, 'Mão livre'))),
+        ...Array.from({ length: Math.max(0, regras.MAOS - regras.maosOcupadas(inv)) }, () => h('div', { class: 'it-slot vazio', title: 'Mão livre' }, h('span', { class: 'it-arte' }, arteOu(['/arte/icones/mao-livre.png'], ic('mao'))), h('span', { class: 'it-nome' }, 'Mão livre'))),
         ...vestidos.map((it) => this.slot(a, it)),
       ),
       h('h4', { class: 'insp-cab it-sec' }, 'MOCHILA'),
@@ -258,7 +260,7 @@ export class AbaItens {
     const outros = ags.filter((x) => x !== a && x.f);
     const enviar = (acao: AcaoMochila, extra: { para?: number; trocar?: boolean } = {}) => this.app.net.send({ t: 'mochila', fichaId: f.id, uid: it.uid!, acao, ...extra });
     const bt = (rotulo: string, icone: string, onclick: (e: MouseEvent) => void, extra = '', desligado = false) =>
-      h('button', { class: `it-bt${extra}`, type: 'button', disabled: desligado, onclick }, ic(icone), h('span', null, rotulo));
+      h('button', { class: `it-bt${extra}`, type: 'button', title: rotulo, disabled: desligado, onclick }, ic(icone), h('span', null, rotulo));
     const principal = this.acaoPrincipal(f, it, inf, lugar, enviar);
     const acoes = h(
       'div',

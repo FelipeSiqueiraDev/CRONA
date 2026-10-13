@@ -1,10 +1,14 @@
+import { desencostarItensDeParede } from './paredes';
 import {
+  existidoPadrao,
   footprint,
   getFurni,
   getLayout,
   getWallFurni,
+  heightmapDaVan,
   parseHeightmap,
   RoomMap,
+  VAN,
   WALL_HEIGHT,
   Z_PER_M,
   Z_PX,
@@ -17,11 +21,13 @@ import {
   type WallItem,
 } from '@crona/shared';
 import type { Database, RoomData, TokenData } from './db';
-import { montarFazenda } from './seedFazenda';
-import { coresDosAgentes, rebuildSede, seedSede, temasDosAgentes } from './seedSede';
+import { FAZENDA, montarFazenda, reporAgentesDaFazenda } from './seedFazenda';
+import { montarOrfanato, ORFANATO } from './seedOrfanato';
+import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgentes } from './seedSede';
 
 export const SYSTEM_OWNER = 'CRONA';
 
+/** `defId` pode trazer o modelo da arte: "quadro_fazenda~05" (sem ele, o jogo sorteia pelo id). */
 export type FloorSeed = [defId: string, x: number, y: number, rot: number, hint?: Hint, state?: number];
 export type WallSeed = [defId: string, wall: 'l' | 'r', plane: number, pos: number, z: number, hint?: Hint];
 
@@ -39,25 +45,29 @@ export function buildRoom(
   const layout = typeof layoutId === 'string' ? getLayout(layoutId)! : layoutId;
   const map = new RoomMap(layout.heightmap, layout.door);
   const items: FloorItem[] = [];
-  for (const [defId, x, y, rot, h, state] of floor) {
+  for (const [comModelo, x, y, rot, h, state] of floor) {
+    const [defId, modelo] = comModelo.split('~');
     const res = map.canPlace(defId, x, y, rot);
     if (!res.ok) {
       console.warn(`[seed] ${name}: ${defId} em ${x},${y} ignorado (${res.reason})`);
       continue;
     }
     const it: FloorItem = { id: db.nextItemId++, defId, x, y, z: res.z, rot, state: state ?? 0 };
+    if (modelo) it.modelo = modelo;
     if (h) it.hint = h;
     map.addItem(it);
     items.push(it);
   }
   const wallItems: WallItem[] = [];
-  for (const [defId, w, plane, pos, z, h] of wall) {
+  for (const [comModelo, w, plane, pos, z, h] of wall) {
+    const [defId, modelo] = comModelo.split('~');
     const res = map.canPlaceWall(defId, w, plane, pos, z);
     if (!res.ok) {
       console.warn(`[seed] ${name}: ${defId} na parede ${w}${plane}@${pos} ignorado (${res.reason})`);
       continue;
     }
     const it: WallItem = { id: db.nextItemId++, defId, wall: w, plane, pos, z, state: 0 };
+    if (modelo) it.modelo = modelo;
     if (h) it.hint = h;
     wallItems.push(it);
   }
@@ -173,7 +183,6 @@ function seedCasa(db: Database) {
       ['portal', 12, 4, 6],
     ],
     [
-      ['window_barred', 'r', 0, 7.9, 2],
       ['poster_sigil', 'l', 1, 7.0, 1.81],
       ['emergency_light', 'r', 0, 11.5, 2.9],
       ['clock', 'r', 0, 9.2, 3.08],
@@ -412,10 +421,8 @@ function seedMansao(db: Database) {
       ['portal', 5, 8, 0],
     ],
     [
-      ['window_barred', 'r', 0, 5.2, 2],
-      ['board_investigation', 'r', 0, 8.3, 1.63],
       ['sconce', 'l', 1, 4.5, 2.18],
-      ['sconce', 'r', 0, 2.6, 2.36],
+      ['sconce', 'r', 0, 5.5, 2.36],
       ['clock', 'l', 1, 7.4, 2.99],
     ],
     0.58,
@@ -641,15 +648,87 @@ function liftWallItems(r: RoomData) {
 }
 
 /** Aplica conteúdo novo em bancos antigos sem apagar nada. */
+/**
+ * Fica só a Sede (o bar e o subsolo) e a Fazenda (07/10, pedido do Felipe: "exclui tudo que não seja a base da Ordem,
+ * o bar e o subsolo completo, e a Fazenda"). Tira as salas e as campanhas de exemplo (a Base da Ordem antiga, o
+ * Saguão, a Sala de Interrogatório, a Casa Abandonada, a Mansão Alvarez e a Viagem delas) e repõe os quatro agentes
+ * no bar e na porteira se a limpeza os levou. Roda uma vez (`db.limpezaExemplos`). As fichas não se mexem.
+ */
+export function limparSalasDeExemplo(db: Database): boolean {
+  if (db.limpezaExemplos) return false;
+  // só quando a Sede e a Fazenda existem (um banco novo ainda vai montá-las)
+  if (!db.rooms.some((r) => r.name.startsWith(SEDE)) || !db.rooms.some((r) => r.name.startsWith(FAZENDA))) return false;
+  const ids = new Set(db.rooms.filter((r) => !r.name.startsWith(SEDE) && !r.name.startsWith(FAZENDA) && !r.name.startsWith(ORFANATO)).map((r) => r.id));
+  if (ids.size) {
+    db.rooms = db.rooms.filter((r) => !ids.has(r.id));
+    if (db.campaigns) for (const k of Object.keys(db.campaigns)) if (ids.has(Number(k))) delete db.campaigns[k];
+    const bar = db.rooms.find((r) => r.name === SEDE + 'Bar');
+    if (db.home !== undefined && ids.has(db.home)) {
+      if (bar) db.home = bar.id;
+      else delete db.home;
+    }
+    if (db.liveScene !== undefined && ids.has(db.liveScene)) delete db.liveScene;
+  }
+  // os agentes que ficaram sem lugar na Sede voltam para o bar
+  const bar = db.rooms.find((r) => r.name === SEDE + 'Bar');
+  if (bar) {
+    const nomes = new Set(db.rooms.filter((r) => r.name.startsWith(SEDE)).flatMap((r) => (r.tokens ?? []).map((t) => t.name)));
+    const charIdOf = (name: string) => db.characters.find((c) => c.name.toLowerCase() === name.toLowerCase())?.id ?? null;
+    const faltam = partyTokens(db, charIdOf).filter((t) => !nomes.has(t.name));
+    if (faltam.length) bar.tokens = [...(bar.tokens ?? []), ...faltam];
+  }
+  reporAgentesDaFazenda(db);
+  db.limpezaExemplos = true;
+  return true;
+}
+
+/**
+ * A van no lugar (07/10): o piso tem só as 6 casas de trás (as 2 da frente são o capô), os bancos andaram 2 casas para trás,
+ * o painel vira para os bancos e o console do meio saiu. Refaz as vans que já existem (as de 8 casas de piso).
+ */
+function vanNoLugar(db: Database): boolean {
+  let mudou = false;
+  for (const r of db.rooms) {
+    if (!r.viagem) continue;
+    const largura = r.heightmap.split(String.fromCharCode(10))[0]?.length ?? 0;
+    if (largura > VAN.piso) {
+      const recuo = largura - VAN.piso;
+      r.heightmap = heightmapDaVan();
+      r.items = r.items.filter((it) => it.defId !== 'van_console');
+      for (const it of r.items) if (it.defId === 'van_seat' || it.defId === 'van_dash') it.x = Math.max(0, it.x - recuo);
+      for (const t of r.tokens ?? []) t.x = Math.max(0, Math.min(VAN.piso - 1, t.x - recuo));
+      mudou = true;
+    }
+    for (const it of r.items)
+      if (it.defId === 'van_dash' && it.rot !== VAN.giroPainel) {
+        it.rot = VAN.giroPainel;
+        mudou = true;
+      }
+  }
+  return mudou;
+}
+
+/** O bestiário começa com o primeiro monstro do Felipe, o Existido (10/10); depois é do mestre (apagar não traz de volta). */
+function bestiarioInicial(db: Database): boolean {
+  if (db.bestiario) return false;
+  db.bestiario = [existidoPadrao()];
+  return true;
+}
+
 export function upgradeDb(db: Database): boolean {
   const v = db.seedVersion ?? 1;
   // a Sede e a fazenda mudam de montagem sem esperar versão nova do banco
   if (v >= SEED_VERSION) {
     const sede = rebuildSede(db);
     const fazenda = montarFazenda(db);
+    const orfanato = montarOrfanato(db);
     const cores = coresDosAgentes(db);
     const temas = temasDosAgentes(db);
-    return sede || fazenda || cores || temas;
+    const van = vanNoLugar(db);
+    const paredes = paredesLivres(db);
+    const bestiario = bestiarioInicial(db);
+    const mesas = mesasMaisAltas(db);
+    return sede || fazenda || orfanato || cores || temas || van || paredes || bestiario || mesas;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';
@@ -720,10 +799,56 @@ export function upgradeDb(db: Database): boolean {
   rebuildSede(db);
   // Fazenda Olhos de Águia: a fazenda de fora, os arredores e o interior das casas
   montarFazenda(db);
+  // o Orfanato Filhos do Dragão (09/10)
+  montarOrfanato(db);
   coresDosAgentes(db);
   temasDosAgentes(db);
+  paredesLivres(db);
+  bestiarioInicial(db);
+  mesasMaisAltas(db);
   db.seedVersion = SEED_VERSION;
   return true;
+}
+
+/**
+ * As mesas cresceram (12/10, `aumento` no catálogo): o que estava em cima de uma delas, na altura
+ * antiga do tampo, sobe junto (e o que estava em cima disso também). Uma vez só (`db.mesasAltas`);
+ * o que já está na altura nova não é tocado.
+ */
+export function mesasMaisAltas(db: Database): boolean {
+  if (db.mesasAltas) return false;
+  for (const r of db.rooms) {
+    const subiu = new Set<number>();
+    for (const mesa of [...r.items].sort((a, b) => a.z - b.z)) {
+      const def = getFurni(mesa.defId);
+      if (!def?.aumento || def.aumento === 1) continue;
+      const antiga = def.height / def.aumento;
+      const delta = def.height - antiga;
+      const fp = footprint(def, mesa.rot);
+      const dentro = (it: FloorItem) => it.x >= mesa.x && it.y >= mesa.y && it.x < mesa.x + fp.sx && it.y < mesa.y + fp.sy;
+      for (const it of r.items) {
+        if (it === mesa || subiu.has(it.id) || !dentro(it)) continue;
+        // só o que ficou afundado: do tampo antigo até abaixo do novo (o que já está no novo fica)
+        if (it.z < mesa.z + antiga - 0.03 || it.z >= mesa.z + def.height - 0.03) continue;
+        it.z = Math.round((it.z + delta) * 1000) / 1000;
+        subiu.add(it.id);
+      }
+    }
+  }
+  db.mesasAltas = true;
+  // a marca nova precisa ser gravada, mesmo sem nada para subir
+  return true;
+}
+
+/** Item de parede atrás de móvel encostado (o painel de monitores atrás dos racks): sobe ou escorrega, em toda sala. */
+function paredesLivres(db: Database): boolean {
+  let mudou = false;
+  for (const r of db.rooms) {
+    const feito = desencostarItensDeParede(r);
+    for (const f of feito) console.log(`[paredes] ${f}`);
+    if (feito.length) mudou = true;
+  }
+  return mudou;
 }
 
 export function seedDb(): Database {
@@ -808,7 +933,7 @@ export function seedDb(): Database {
         ['notes_wall', 'l', 1, 7.2, 1.81],
         ['sconce', 'l', 1, 8.9, 2.09],
         ['wall_shelf', 'r', 0, 2.0, 2.27],
-        ['antlers', 'r', 0, 4.0, 2.72],
+        ['antlers', 'r', 0, 2.0, 2.85],
         ['clock', 'r', 0, 6.0, 2.81],
         ['window_barred', 'r', 0, 8.0, 1.91],
         ['pipes', 'r', 0, 10.0, 3.54],

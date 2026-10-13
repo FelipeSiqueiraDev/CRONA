@@ -1,6 +1,6 @@
 import { Z_PER_M } from '@crona/shared';
 import { rgba, rng, shade } from './color';
-import { B, drawers, faceRange, lightIf, N, V, wallBlock, type Builder, type FNode } from './furniKit';
+import { B, drawers, faceRange, lightIf, N, V, wallBlock, WARM, type Builder, type FNode } from './furniKit';
 import { OUTLINE, type LBox, type LFace, type Painter } from './painter';
 
 /*
@@ -420,6 +420,46 @@ export const SEDE_BUILDERS: Record<string, Builder> = {
           }
         });
       }),
+    ]);
+  },
+
+  /** Beliche: duas camas de solteiro empilhadas, quatro postes, a escadinha no pé e a cabeceira no fundo. */
+  beliche(def) {
+    const [blanket, frame, sheet] = def.colors;
+    const D = def.depth;
+    const W = def.width;
+    const H = def.height;
+    const post = (u0: number, u1: number, v0: number, v1: number): LBox => [u0, u1, v0, v1, 0, H];
+    const posts: LBox[] = [
+      post(0.02, 0.1, 0.03, 0.12),
+      post(D - 0.1, D - 0.02, 0.03, 0.12),
+      post(0.02, 0.1, W - 0.12, W - 0.03),
+      post(D - 0.1, D - 0.02, W - 0.12, W - 0.03),
+    ];
+    // cada cama: estrado, colchão, travesseiro e cobertor; a de baixo perto do chão, a de cima um degrau (0,3 m) mais alta
+    // do que a conta de uma cama de beliche comum; os postes passam só um pouco da cama de cima, não vão até o teto
+    const cama = (z: number, cor: string): FNode[] => {
+      const base: LBox = [0.04, D - 0.04, 0.04, W - 0.04, z, z + 0.1];
+      const colchao: LBox = [0.1, D - 0.07, 0.07, W - 0.07, z + 0.1, z + 0.26];
+      const trav: LBox = [0.16, 0.62, 0.14, W - 0.14, z + 0.26, z + 0.36];
+      const manta: LBox = [0.8, D - 0.05, 0.05, W - 0.05, z + 0.1, z + 0.31];
+      return [
+        B(base, frame, { edge: 0.15 }),
+        B(colchao, sheet, { edge: 0.2 }),
+        B(trav, shade(sheet, 0.1), { edge: 0.3 }),
+        B(manta, cor, { edge: 0.2 }),
+      ];
+    };
+    // a grade de proteção da cama de cima e a escadinha no pé, do lado de fora
+    const grade: LBox = [0.1, D - 0.1, W - 0.1, W - 0.06, 1.4, 1.58];
+    const degraus: LBox[] = [0.3, 0.64, 0.98, 1.32].map((z): LBox => [D - 0.06, D + 0.02, 0.2, W - 0.2, z, z + 0.05]);
+    return V([
+      B([0.01, 0.08, 0.02, W - 0.02, 0, H], frame, { edge: 0.25 }),
+      ...posts.map((b) => B(b, frame)),
+      ...cama(0.28, blanket),
+      ...cama(1.28, shade(blanket, -0.12)),
+      B(grade, frame, { edge: 0.2 }),
+      ...degraus.map((b) => B(b, shade(frame, 0.12), { edge: 0.2 })),
     ]);
   },
 
@@ -907,6 +947,121 @@ export const SEDE_BUILDERS: Record<string, Builder> = {
     return V(nodes);
   },
 
+  /**
+   * A parede interna do orfanato queimado (09/10): como as paredes dos cômodos, o lambri de madeira embaixo e o reboco
+   * em cima, só que rachada e preta de fuligem (mais forte embaixo, onde o fogo subiu, e no alto, onde a fumaça parou).
+   */
+  parede_reboco(def, _s, seed) {
+    const [reboco, madeira, fuligem] = def.colors;
+    const H = def.height / Z_PER_M;
+    const b: LBox = [0, 0.22, 0, 1, 0, H];
+    const r = rng(seed + 101);
+    const rachas = Array.from({ length: 2 }, () => ({ a: 0.15 + r() * 0.7, z: 0.9 + r() * 0.35, ok: r() < 0.6 }));
+    return V([
+      N(b, (p) => {
+        p.box(b, reboco, { edge: 0.12, top: shade(fuligem, 0.15) });
+        for (const f of FACES) {
+          if (!p.m.visible(f)) continue;
+          const [a0, a1] = faceRange(b, f);
+          const w = a1 - a0;
+          p.withFace(b, f, (ctx) => {
+            // o lambri de madeira embaixo, com as juntas
+            ctx.fillStyle = madeira;
+            ctx.fillRect(a0, 0, w, H * 0.42);
+            ctx.fillStyle = shade(madeira, 0.18);
+            ctx.fillRect(a0, H * 0.4, w, H * 0.025);
+            ctx.fillStyle = shade(madeira, -0.25);
+            for (let a = a0 + 0.25; a < a1 - 0.05; a += 0.5) ctx.fillRect(a - 0.01, 0.04, 0.02, H * 0.34);
+            // a fuligem: forte embaixo, some no meio, volta no alto
+            const g = ctx.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, rgba(fuligem, 0.85));
+            g.addColorStop(0.35, rgba(fuligem, 0.3));
+            g.addColorStop(0.7, rgba(fuligem, 0.12));
+            g.addColorStop(1, rgba(fuligem, 0.6));
+            ctx.fillStyle = g;
+            ctx.fillRect(a0, 0, w, H);
+            // as rachaduras no reboco
+            if (w < 0.5) return;
+            ctx.strokeStyle = 'rgba(20,14,10,0.65)';
+            ctx.lineWidth = 0.018;
+            for (const c of rachas) {
+              if (!c.ok) continue;
+              const x = a0 + w * c.a;
+              ctx.beginPath();
+              ctx.moveTo(x, c.z);
+              ctx.lineTo(x + 0.07, c.z + 0.12);
+              ctx.lineTo(x - 0.02, c.z + 0.24);
+              ctx.stroke();
+            }
+          });
+        }
+      }),
+    ]);
+  },
+
+  /**
+   * A porta de madeira de um quartinho do orfanato (09/10): o batente, a folha de tábuas chamuscada embaixo (o fogo
+   * subiu pelo chão), a maçaneta, as marcas de unha e a mão de sangue. Mesma mecânica da porta de aço da cela.
+   */
+  porta_quarto(def, state, seed) {
+    const [madeira, carvao, sangue] = def.colors;
+    const open = state === 1;
+    const r = rng(seed + 97);
+    const marcas = Array.from({ length: 4 }, () => ({ k: 0.3 + r() * 0.4, z: 0.7 + r() * 0.6, len: 0.25 + r() * 0.3 }));
+    const nodes: FNode[] = [
+      B([0, 0.15, 0, 0.08, 0, 2.2], shade(madeira, -0.2), { edge: 0.2 }),
+      B([0, 0.15, 0.92, 1, 0, 2.2], shade(madeira, -0.2), { edge: 0.2 }),
+      B([0, 0.15, 0.08, 0.92, 2.08, 2.2], shade(madeira, -0.2), { edge: 0.3 }),
+    ];
+    const folha = (p: Painter, f: LBox, face: LFace, v0: number, v1: number) => {
+      p.box(f, madeira, { edge: 0.18 });
+      p.withFace(f, face, (ctx) => {
+        const w = v1 - v0;
+        const a = (k: number) => v0 + w * k;
+        // as tábuas
+        ctx.fillStyle = shade(madeira, -0.18);
+        for (const k of [0.25, 0.5, 0.75]) ctx.fillRect(a(k) - 0.008, 0.02, 0.016, 2.04);
+        // o queimado subindo do chão
+        const g = ctx.createLinearGradient(0, 0, 0, 1.1);
+        g.addColorStop(0, rgba(carvao, 0.95));
+        g.addColorStop(1, rgba(carvao, 0));
+        ctx.fillStyle = g;
+        ctx.fillRect(v0, 0.02, w, 1.1);
+        // as marcas de unha e a mão de sangue
+        ctx.strokeStyle = 'rgba(20,12,8,0.7)';
+        ctx.lineWidth = 0.012;
+        for (const m of marcas) {
+          ctx.beginPath();
+          ctx.moveTo(a(m.k), m.z + m.len);
+          ctx.lineTo(a(m.k + 0.04), m.z);
+          ctx.stroke();
+        }
+        ctx.fillStyle = rgba(sangue, 0.85);
+        ctx.beginPath();
+        ctx.ellipse(a(0.62), 1.32, w * 0.07, 0.09, 0, 0, Math.PI * 2);
+        ctx.fill();
+        for (const k of [0.56, 0.6, 0.64, 0.68]) ctx.fillRect(a(k), 1.38, 0.022, 0.1);
+        ctx.fillRect(a(0.6), 1.05, 0.012, 0.22);
+      });
+    };
+    if (!open)
+      nodes.push(
+        N([0.03, 0.12, 0.08, 0.92, 0, 2.08], (p) => {
+          folha(p, [0.03, 0.12, 0.08, 0.92, 0.02, 2.08], 'front', 0.08, 0.92);
+          p.box([0.0, 0.15, 0.76, 0.84, 1.0, 1.06], '#8a7a4a', { edge: 0.35 });
+        }),
+      );
+    else
+      nodes.push(
+        N([0.15, 0.95, 0.84, 0.93, 0, 2.08], (p) => {
+          // aberta: gira 90° e encosta no batente
+          folha(p, [0.15, 0.95, 0.85, 0.92, 0.02, 2.08], p.m.visible('right') ? 'right' : 'left', 0.15, 0.95);
+          p.box([0.8, 0.88, 0.83, 0.94, 1.0, 1.06], '#8a7a4a', { edge: 0.35 });
+        }),
+      );
+    return V(nodes);
+  },
+
   /** Sujeira no chão: mancha, bitucas, tampinhas e um papel amassado. */
   dirt(def, _s, seed) {
     const [stain, bits] = def.colors;
@@ -928,6 +1083,261 @@ export const SEDE_BUILDERS: Record<string, Builder> = {
           }
         }),
       ),
+    ]);
+  },
+
+  /** A viga do telhado que caiu no incêndio: comprida, carbonizada, rachada, com brasas ainda nas rachaduras. */
+  viga(def, _s, seed) {
+    const [carvao, brasa] = def.colors;
+    const D = def.depth;
+    const r = rng(seed + 31);
+    const torta = (r() - 0.5) * 0.3;
+    const b: LBox = [0.12, D - 0.12, 0.32 + torta, 0.68 + torta, 0, 0.3];
+    return V([
+      B(b, carvao, { edge: 0.06 }),
+      N(b, (p) => {
+        for (let i = 0; i < 4; i++) {
+          const u = 0.4 + r() * (D - 0.8);
+          p.line([u, 0.36 + torta, 0.31], [u + 0.25 + r() * 0.3, 0.64 + torta, 0.31], i % 2 ? brasa : shade(carvao, 0.25), 2);
+        }
+      }),
+    ]);
+  },
+
+  /**
+   * O prédio do orfanato queimado visto de fora (10/10, até chegar a arte do Códex): comprido, de um andar, o reboco
+   * manchado, as janelas gradeadas a cada 3 casas com a fuligem subindo, o telhado de duas águas caído em vários
+   * trechos (os caibros pretos aparecendo), a chaminé e a porta carbonizada no meio da ponta da frente.
+   */
+  predio_queimado(def, _s, seed) {
+    const [reboco, telha, madeira, fuligem] = def.colors;
+    const W = def.width;
+    const D = def.depth;
+    const H = 3.4;
+    const TOPO = H + 2.0;
+    const r = rng(seed + 211);
+    const corpo: LBox = [0.15, D - 0.15, 0.15, W - 0.15, 0, H];
+    const buracos = Array.from({ length: 7 }, () => ({ u0: 1 + r() * (D - 6), du: 2 + r() * 3.5, lado: r() < 0.5 ? 0 : 1, f0: 0.15 + r() * 0.3, f1: 0.55 + r() * 0.4 }));
+    return V([
+      N([0, D, 0, W, 0, TOPO + 1.4], (p) => {
+        p.box(corpo, reboco, { edge: 0.06, top: shade(fuligem, 0.1) });
+        for (const f of FACES) {
+          if (!p.m.visible(f)) continue;
+          const [a0, a1] = faceRange(corpo, f);
+          p.withFace(corpo, f, (ctx) => {
+            // a barra de pedra embaixo, as manchas grandes de queimado e o reboco caído em placas
+            ctx.fillStyle = shade(reboco, -0.32);
+            ctx.fillRect(a0, 0, a1 - a0, 0.5);
+            for (let k = 0; k < Math.max(2, (a1 - a0) / 6); k++) {
+              const cx = a0 + r() * (a1 - a0);
+              const g = ctx.createRadialGradient(cx, 0.4, 0.2, cx, 0.8, 1.8 + r() * 1.4);
+              g.addColorStop(0, rgba(fuligem, 0.55));
+              g.addColorStop(1, rgba(fuligem, 0));
+              ctx.fillStyle = g;
+              ctx.fillRect(cx - 3, 0, 6, H);
+              ctx.fillStyle = shade(reboco, -0.22);
+              ctx.fillRect(a0 + r() * (a1 - a0), 0.7 + r() * 2, 0.5 + r() * 0.7, 0.3 + r() * 0.4);
+            }
+            // as janelas gradeadas a cada 3 casas, com a fuligem subindo de cada uma
+            const porta = f === 'front' ? [W / 2 - 0.85, W / 2 + 0.85] : null;
+            for (let a = a0 + 1.5; a < a1 - 1; a += 3) {
+              if (porta && a > porta[0] - 1 && a < porta[1] + 1) continue;
+              // a fuligem que o fogo soltou pela janela: uma mancha subindo, mais forte embaixo
+              const alto = 1.3 + r() * 0.9;
+              const g = ctx.createRadialGradient(a, 2.0, 0.1, a, 2.0 + alto * 0.4, alto);
+              g.addColorStop(0, rgba(fuligem, 0.9));
+              g.addColorStop(0.55, rgba(fuligem, 0.45));
+              g.addColorStop(1, rgba(fuligem, 0));
+              ctx.fillStyle = g;
+              ctx.beginPath();
+              ctx.ellipse(a + (r() - 0.5) * 0.3, 2.0 + alto * 0.45, 0.75 + r() * 0.5, alto * 0.62, 0, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = '#0d0a09';
+              ctx.fillRect(a - 0.45, 1.0, 0.9, 1.0);
+              ctx.fillStyle = shade(madeira, -0.2);
+              for (const k of [-0.25, 0, 0.25]) ctx.fillRect(a + k - 0.03, 1.0, 0.06, 1.0);
+              ctx.fillRect(a - 0.5, 0.95, 1.0, 0.07);
+            }
+            // a porta da frente, carbonizada e entreaberta, com a fuligem em volta
+            if (porta) {
+              ctx.fillStyle = rgba(fuligem, 0.8);
+              ctx.fillRect(porta[0] - 0.3, 0, porta[1] - porta[0] + 0.6, 2.8);
+              ctx.fillStyle = shade(madeira, -0.35);
+              ctx.fillRect(porta[0], 0, porta[1] - porta[0], 2.3);
+              ctx.fillStyle = '#050403';
+              ctx.fillRect((porta[0] + porta[1]) / 2 - 0.08, 0, 0.32, 2.3);
+            }
+          });
+        }
+        // o telhado de duas águas, a cumeeira no meio da largura; a água mais perto da câmera por último
+        const beiral = 0.35;
+        const u0 = -beiral;
+        const u1 = D + beiral;
+        const v0 = -beiral;
+        const v1 = W + beiral;
+        const vm = W / 2;
+        const agua = (lado: 0 | 1) => {
+          const vb = lado === 0 ? v0 : v1;
+          const cor = shade(telha, lado === 0 ? -0.05 : 0.08);
+          p.poly([[u0, vb, H], [u1, vb, H], [u1, vm, TOPO], [u0, vm, TOPO]], cor, OUTLINE, 1);
+          // as fiadas de telha
+          for (let k = 1; k < 6; k++) {
+            const t = k / 6;
+            const v = vb + (vm - vb) * t;
+            p.line([u0, v, H + (TOPO - H) * t], [u1, v, H + (TOPO - H) * t], shade(cor, -0.18), 1);
+          }
+          // os buracos do teto que caiu, com os caibros queimados atravessando
+          for (const b of buracos.filter((x) => x.lado === lado)) {
+            const pt = (u: number, f: number): [number, number, number] => [u, vb + (vm - vb) * f, H + (TOPO - H) * f];
+            p.poly([pt(b.u0, b.f0), pt(b.u0 + b.du, b.f0), pt(b.u0 + b.du * 0.85, b.f1), pt(b.u0 + 0.2, b.f1)], '#0b0807', shade(fuligem, 0.2), 1);
+            for (let u = b.u0 + 0.4; u < b.u0 + b.du - 0.2; u += 0.75) p.line(pt(u, b.f0 - 0.05), pt(u, b.f1 + 0.05), shade(madeira, -0.3), 2);
+          }
+        };
+        const perto = (lado: 0 | 1) => {
+          const [, y] = p.m.p(D / 2, lado === 0 ? v0 : v1, H);
+          return y;
+        };
+        const ordem: (0 | 1)[] = perto(0) < perto(1) ? [0, 1] : [1, 0];
+        for (const l of ordem) agua(l);
+        // as empenas (os triângulos das pontas) que a câmera vê
+        for (const [u, f] of [[D - 0.15, 'front'], [0.15, 'back']] as [number, LFace][])
+          if (p.m.visible(f)) p.poly([[u, 0.15, H], [u, W - 0.15, H], [u, vm, TOPO - 0.1]], shade(reboco, -0.12), OUTLINE, 1);
+        // a chaminé
+        p.box([D * 0.32, D * 0.32 + 0.7, W * 0.62, W * 0.62 + 0.7, H, TOPO + 1.2], shade(reboco, -0.25), { edge: 0.1, top: '#0b0807' });
+      }),
+    ]);
+  },
+
+  /** A passagem aberta (09/10): divisão de cena sem porta, no mesmo ambiente (o corredor do orfanato e o salão). Nada desenhado. */
+  passagem() {
+    return V([]);
+  },
+
+  // ---------------------------------------------------------------- o covil dos transtornados (09/10, o Orfanato)
+  /** A fogueira no meio do chão: a roda de pedras, a lenha (e o que mais foi parar lá) em brasa e o fogo. */
+  fogueira(def, state, seed) {
+    const [pedra, lenha] = def.colors;
+    const on = state === 0;
+    const r = rng(seed + 41);
+    return V(
+      [
+        N([0.1, 1.9, 0.1, 1.9, 0, 0.6], (p) => {
+          p.disc(1, 1, 0.82, 0.005, '#16110d', OUTLINE);
+          // a lenha cruzada no meio
+          for (let i = 0; i < 4; i++) {
+            const a = (i / 4) * Math.PI + r() * 0.4;
+            const dx = Math.cos(a) * 0.5;
+            const dy = Math.sin(a) * 0.5;
+            p.line([1 - dx, 1 - dy, 0.06], [1 + dx, 1 + dy, 0.14], i % 2 ? lenha : shade(lenha, -0.3), 5);
+          }
+          if (on) for (let i = 0; i < 5; i++) p.disc(0.8 + r() * 0.4, 0.8 + r() * 0.4, 0.06, 0.12, '#ff7a2a');
+          // a roda de pedras, de trás para a frente
+          const pedras = Array.from({ length: 11 }, (_, i) => (i / 11) * Math.PI * 2)
+            .map((a) => ({ u: 1 + Math.cos(a) * 0.72, v: 1 + Math.sin(a) * 0.72 }))
+            .sort((a, b) => a.u + a.v - (b.u + b.v));
+          for (const s of pedras) p.cyl(s.u, s.v, 0.11 + r() * 0.04, 0, 0.1 + r() * 0.06, shade(pedra, (r() - 0.5) * 0.3), { top: shade(pedra, 0.15) });
+          if (on) {
+            p.flame(1, 1, 0.14, 2.4);
+            p.flame(0.9, 1.08, 0.12, 1.6);
+            p.flame(1.1, 0.92, 0.12, 1.5);
+          }
+        }),
+      ],
+      lightIf(on, { u: 1, v: 1, z: 0.6, radius: 230, color: WARM, intensity: 1, flicker: 0.22, kind: 'fire' }),
+    );
+  },
+
+  /** O colchão largado no chão, onde um deles dorme: afundado, encardido, com as manchas e o trapo por cima. */
+  colchao(def, _s, seed) {
+    const [pano, mancha] = def.colors;
+    const D = def.depth;
+    const r = rng(seed + 53);
+    const b: LBox = [0.06, D - 0.06, 0.1, 0.9, 0, 0.14];
+    return V([
+      B(b, pano, { edge: 0.05 }),
+      N(b, (p) => {
+        for (let i = 0; i < 3; i++) p.disc(0.4 + r() * (D - 0.8), 0.3 + r() * 0.4, 0.12 + r() * 0.14, 0.145, rgba(mancha, 0.55 + r() * 0.3));
+        // o trapo jogado por cima
+        p.line([0.3, 0.2, 0.16], [0.9, 0.75, 0.16], shade(pano, -0.35), 6);
+      }),
+    ]);
+  },
+
+  /** O varal de ganchos de carne: duas estacas, a travessa e o que está pendurado nela, pingando. */
+  gancho(def, _s, seed) {
+    const [ferro, carne] = def.colors;
+    const D = def.depth;
+    const r = rng(seed + 67);
+    const H = 1.9;
+    const nodes: FNode[] = [
+      B([0.12, 0.24, 0.44, 0.56, 0, H], ferro, { edge: 0.05 }),
+      B([D - 0.24, D - 0.12, 0.44, 0.56, 0, H], ferro, { edge: 0.05 }),
+      B([0.12, D - 0.12, 0.46, 0.54, H - 0.06, H], shade(ferro, 0.1)),
+    ];
+    const n = 3;
+    for (let i = 0; i < n; i++) {
+      const u = 0.45 + (i * (D - 0.9)) / (n - 1);
+      const comp = 0.5 + r() * 0.35;
+      const z1 = H - 0.22;
+      const z0 = z1 - comp;
+      nodes.push(
+        N([u - 0.2, u + 0.2, 0.3, 0.7, z0 - 0.05, H], (p) => {
+          p.line([u, 0.5, H - 0.06], [u, 0.5, z1], '#2a2420', 1.5);
+          p.cyl(u, 0.5, 0.11 + r() * 0.05, z0, z1, shade(carne, (r() - 0.5) * 0.2), { top: shade(carne, 0.2) });
+          p.line([u + 0.04, 0.5, z0], [u + 0.04, 0.5, z0 - 0.04 - r() * 0.1], '#6e0c0c', 1.5);
+        }),
+      );
+    }
+    return V(nodes);
+  },
+
+  /**
+   * Os escombros do teto que desabou no incêndio: um monte em camadas de reboco e cinza, as telhas quebradas por cima,
+   * os pedaços soltos e as tábuas carbonizadas espetadas para fora.
+   */
+  escombros(def, _s, seed) {
+    const [cinza, carvao, telha] = def.colors;
+    const r = rng(seed + 83);
+    const W = def.width;
+    const D = def.depth;
+    const jit = () => (r() - 0.5) * 0.12;
+    // o monte: camadas cada vez menores, de baixo para cima (a altura de cada ponto sai daqui)
+    const camadas: [LBox, string][] = (
+      [[0.08, 0.1], [0.28, 0.22], [0.5, 0.34]] as [number, number][]
+    ).map(([m, z], k) => [[m + jit(), D - m + jit(), m + jit(), W - m + jit(), k === 0 ? 0 : [0, 0.1, 0.22][k], z], shade(cinza, -0.12 + k * 0.06)]);
+    const altura = (u: number, v: number) => {
+      const borda = Math.min(u, D - u, v, W - v);
+      return borda > 0.5 ? 0.34 : borda > 0.28 ? 0.22 : 0.1;
+    };
+    // as telhas quebradas e os pedaços soltos por cima do monte
+    const pedacos = Array.from({ length: 16 }, (_, i) => {
+      const u = 0.2 + r() * (D - 0.4);
+      const v = 0.2 + r() * (W - 0.4);
+      const z = altura(u, v);
+      const sz = 0.07 + r() * 0.12;
+      const eTelha = i % 3 === 0;
+      const h = eTelha ? 0.03 : 0.05 + r() * 0.1;
+      const b: LBox = [u, Math.min(D - 0.05, u + sz * (eTelha ? 1.6 : 1)), v, Math.min(W - 0.05, v + sz), z, z + h];
+      return { b, cor: eTelha ? shade(telha, (r() - 0.5) * 0.2) : shade(cinza, (r() - 0.5) * 0.3) };
+    });
+    const tabuas = Array.from({ length: 3 }, (_, i) => {
+      const u0 = 0.3 + r() * (D - 0.6);
+      const v0 = 0.3 + r() * (W - 0.6);
+      const u1 = Math.max(0.05, Math.min(D - 0.05, u0 + (r() - 0.5) * 1.2));
+      const v1 = Math.max(0.05, Math.min(W - 0.05, v0 + (r() - 0.5) * 1.2));
+      return { a: [u0, v0, 0.12] as [number, number, number], b: [u1, v1, 0.4 + r() * 0.35] as [number, number, number], cor: i % 2 ? carvao : shade(carvao, 0.2) };
+    });
+    // tudo num nó só, na ordem certa: o monte de baixo para cima, depois os pedaços de trás para a frente
+    return V([
+      N([0, D, 0, W, 0, 0.8], (p) => {
+        for (const [b, cor] of camadas) p.box(b, cor, { edge: 0.06 });
+        const fundo = (b: LBox) => {
+          const [x, y] = p.m.xy((b[0] + b[1]) / 2, (b[2] + b[3]) / 2);
+          return x + y;
+        };
+        for (const { b, cor } of pedacos.sort((a, c) => fundo(a.b) - fundo(c.b))) p.box(b, cor, { edge: 0.12 });
+        for (const t of tabuas) p.line(t.a, t.b, t.cor, 5);
+      }),
     ]);
   },
 

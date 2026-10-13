@@ -1,7 +1,8 @@
 import { regras, type FichaSalva, type PartyMember } from '@crona/shared';
 import type { App } from './app';
+import { portraitCanvas } from '../render/portrait';
 import { h } from './dom';
-import { ic } from './icons';
+import { arteOu, ic, type NomeIcone } from './icons';
 import { askNote } from './note';
 import { sfx } from './sfx';
 
@@ -13,6 +14,10 @@ import { sfx } from './sfx';
  */
 /** os nomes curtos das ações, para caberem na coluna */
 const CURTO: Record<regras.AcaoInterludio, string> = { dormir: 'Dormir', relaxar: 'Relaxar', alimentar: 'Comer', exercitar: 'Exercício', ler: 'Ler', manutencao: 'Consertar', revisar: 'Revisar' };
+
+/** o ícone de cada ação: o pintado (il-<ação>.png, PROMPT-ICONES-E-LOGO) e, até chegar, um de linha */
+const ICONE: Record<regras.AcaoInterludio, NomeIcone> = { dormir: 'lua', relaxar: 'coracao', alimentar: 'frasco', exercitar: 'peso', ler: 'livro', manutencao: 'engrenagem', revisar: 'lupa' };
+const icAcao = (a: regras.AcaoInterludio) => arteOu([`/arte/icones/il-${a}.png`], ic(ICONE[a]));
 
 export class AbaInterludio {
   private app: App;
@@ -58,6 +63,8 @@ export class AbaInterludio {
         h(
           'button',
           { class: `il-chip${l.id === this.lugar ? ' on' : ''}`, type: 'button', role: 'radio', 'aria-checked': String(l.id === this.lugar), title: `${l.exemplo} (recuperação ×${String(l.vezes).replace('.', ',')})`, disabled: !gm, onclick: () => ((this.lugar = l.id), mudou()) },
+          // o pintado da condição (il-<lugar>.png): a barraca, a cama simples, o quarto bom, a suíte
+          arteOu([`/arte/icones/il-${l.id}.png`], h('span')),
           l.nome,
         ),
       ),
@@ -79,7 +86,7 @@ export class AbaInterludio {
         'div',
         { class: 'il-acoes' },
         ...regras.ACOES_INTERLUDIO.map((a) =>
-          h('button', { class: `il-chip${e.acoes.includes(a.id) ? ' on' : ''}`, type: 'button', 'aria-pressed': String(e.acoes.includes(a.id)), 'aria-label': a.nome, title: `${a.nome}: ${a.resumo}`, disabled: !gm, onclick: () => marcar(a.id) }, CURTO[a.id]),
+          h('button', { class: `il-chip il-acao${e.acoes.includes(a.id) ? ' on' : ''}`, type: 'button', 'aria-pressed': String(e.acoes.includes(a.id)), 'aria-label': a.nome, title: `${a.nome}: ${a.resumo}`, disabled: !gm, onclick: () => marcar(a.id) }, icAcao(a.id), h('span', null, CURTO[a.id])),
         ),
       );
       const prato = e.acoes.includes('alimentar')
@@ -97,6 +104,7 @@ export class AbaInterludio {
         return h(
           'span',
           { class: `il-bonus${v ? ' tem' : ''}`, title: `+1d6 num teste de ${attr} até o fim da missão (até ${max})` },
+          arteOu([`/arte/icones/il-bonus-${tipo}.png`], h('span')),
           `${nome} ${v}`,
           gm && v ? h('button', { class: 'il-usar', type: 'button', title: 'Gastar um (o jogador usou num teste)', 'aria-label': `Gastar um bônus de ${nome}`, onclick: () => (sfx.click(), this.app.net.send({ t: 'bonusInterludio', fichaId: f.id, tipo, delta: -1 })) }, ic('menos')) : null,
         );
@@ -107,6 +115,7 @@ export class AbaInterludio {
         h(
           'div',
           { class: 'il-cab' },
+          h('span', { class: 'il-foto' }, portraitCanvas(p.look, 44, { dir: 2 })),
           h('b', null, f.nome || p.name),
           h('span', { class: 'il-vit' }, `PV ${n.atual.pv}/${n.max.pv} · PE ${n.atual.pe}/${n.max.pe} · SAN ${n.atual.san}/${n.max.san}`),
         ),
@@ -126,7 +135,7 @@ export class AbaInterludio {
     const concluir = h(
       'button',
       {
-        class: 'pbtn primary il-concluir',
+        class: 'fx-bt forte il-concluir',
         type: 'button',
         disabled: !gm || !algum || !!erro,
         onclick: () => {
@@ -145,7 +154,7 @@ export class AbaInterludio {
     const zerar = h(
       'button',
       {
-        class: 'pbtn il-zerar',
+        class: 'fx-bt il-zerar',
         type: 'button',
         disabled: !gm || !nos.some((n) => n.bonus.exercicio || n.bonus.leitura),
         title: 'Os +1d6 guardados valem até o fim da missão',

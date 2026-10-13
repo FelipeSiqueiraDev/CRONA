@@ -2,6 +2,9 @@ import type { AvatarLook } from './avatar';
 import type { AcaoCombate, Combate, FichaAmeaca } from './combate/tipos';
 import type { RollResult } from './dice';
 import type { FloorItem, FloorStyle, Hint, ParticleKind, WallItem } from './room';
+import type { LugarInfo } from './lugares';
+import type { Criatura } from './bestiario';
+import type { ViagemInfo } from './viagem';
 import type { CampaignState, LootKind } from './rpg';
 import type { PapelConta, Role, Session, SessionAction, Token } from './session';
 import type { Documento } from './documentos';
@@ -10,6 +13,7 @@ import type { AcaoNevoa, MarcaMesa, NevoaCena } from './mesa';
 import type { TipoItemCatalogo } from './regras/ficha';
 import type { VitalKey } from './vitals';
 import type { Door } from './walls';
+import type { TipoJogoBar } from './bar';
 
 /**
  * Para onde a linha da folha de sprite está virada, na tela. As diagonais são
@@ -255,8 +259,8 @@ export interface UserStatus {
   /** 0 em pé, 1 sentado em mobi, 2 sentado no chão */
   sit: 0 | 1 | 2;
   dance: boolean;
-  /** próximo tile (andando) */
-  mv?: { x: number; y: number; z: number };
+  /** próximo tile (andando); ms: quanto o passo leva (a diagonal, mais; sem ele, TICK_MS) */
+  mv?: { x: number; y: number; z: number; ms?: number };
 }
 
 export interface UserInfo extends UserStatus {
@@ -264,6 +268,14 @@ export interface UserInfo extends UserStatus {
   look: AvatarLook;
   /** cor da peça (anel/retrato) */
   color?: string;
+  /** de cócoras (furtivo, atrás de um móvel): o corpo tem 1,0 m e não 1,8 m para a cobertura */
+  agachado?: boolean;
+  /** na cama de cima do beliche (a de baixo é a de sempre) */
+  alto?: boolean;
+  /** flutua (a criatura que anda sem tocar o chão, como o Existido) */
+  flutua?: boolean;
+  /** a peça é uma criatura do bestiário: qual e com que aparência */
+  criatura?: { id: string; aparencia: string };
 }
 
 export interface RoomSummary {
@@ -308,6 +320,8 @@ export interface RoomInfo {
   nevoa?: NevoaCena;
   /** mapa improvisado: a imagem que o mestre subiu, deitada no chão inteiro da cena */
   mapa?: string;
+  /** a Viagem: a van parada na tela e o mundo passando */
+  viagem?: ViagemInfo;
   /** o cliente atual pode construir/editar */
   canBuild: boolean;
   /** o cliente atual é o dono (mestre) */
@@ -324,11 +338,20 @@ export interface SceneInfo {
   door: Door;
   portals: { x: number; y: number; link: number }[];
   users: { id: number; name: string; x: number; y: number }[];
+  /** o piso do cômodo: a planta pinta o cômodo na cor dele (ladrilho, carpete, taco...) */
+  estilo?: FloorStyle;
+  /** a Viagem (a van): fora da planta */
+  viagem?: boolean;
   /** ao ar livre: a planta desenha o terreno (grama, estrada, água) no lugar da pedra */
   aberto?: boolean;
   terreno?: string;
-  /** os prédios do lugar (casas que ocupam e o nome), para a planta de quem está ao ar livre */
-  marcos?: { x: number; y: number; w: number; h: number; nome: string }[];
+  /**
+   * os prédios do lugar (casas que ocupam e o nome), para a planta de quem está ao ar livre:
+   * `kind` é o desenho do mobi (casarao, celeiro...) e `entra`, a cena que a entrada dele abre
+   */
+  marcos?: { x: number; y: number; w: number; h: number; nome: string; kind?: string; entra?: number }[];
+  /** o resto do que está no chão ao ar livre, para o minimapa desenhar: [kind, x, y, w, h] */
+  simbolos?: [string, number, number, number, number][];
 }
 
 export interface InvItem {
@@ -370,9 +393,21 @@ export type ClientMsg =
   | { t: 'pickup'; id: number }
   /** muda o tamanho do desenho de um quadro (parede) ou de um tapete (chão): de 0,5 a 3 */
   | { t: 'resizeItem'; id: number; escala: number }
+  /** destruir ou consertar um móvel (o mestre): ver `FloorItem.quebrado` */
+  | { t: 'quebrarItem'; id: number; quebrado: boolean }
   /** troca o móvel por outro do catálogo, no mesmo lugar (e no mesmo giro, se der) */
   | { t: 'swapItem'; id: number; defId: string }
   | { t: 'use'; id: number }
+  /**
+   * os jogos do bar (só o mestre): a peça vai até o fliperama, o alvo de dardos ou a sinuca e o jogo
+   * abre no celular de quem joga com ela (peça sem ficha = um NPC: o mestre joga na tela dele); de
+   * novo, com a mesma peça, ela sai do jogo
+   */
+  | { t: 'barJogar'; tokenId: number; itemId: number }
+  /** sair da mesa do bar (o jogador, ou o mestre pelo NPC do `lugar`); `recorde` = o melhor da vez */
+  | { t: 'barSair'; mesa: number; lugar?: number; recorde?: { jogo: string; pontos: number } }
+  /** uma jogada para os outros da mesa (o mestre diz de qual lugar de NPC); `registrar` = guardar para quem reconectar */
+  | { t: 'barJogo'; mesa: number; de?: number; dados: Record<string, unknown>; registrar?: boolean }
   | { t: 'setHint'; id: number; hint: Hint | null }
   | { t: 'roomSettings'; name: string; description: string; darkness: number; publicBuild: boolean; floor?: string; area?: string; floorStyle?: FloorStyle; ambient?: string | null; particles?: ParticleKind[] }
   /** senha de um mobi com fechadura: certa = ele desliza e abre a passagem */
@@ -404,6 +439,12 @@ export type ClientMsg =
   | { t: 'combate'; a: AcaoCombate }
   /** ficha rápida de uma ameaça (peça), preenchida pelo mestre; null apaga */
   | { t: 'ameaca'; tokenId: number; ficha: FichaAmeaca | null }
+  /** o bestiário (só o mestre): pedir a lista, gravar ou apagar uma criatura, pôr N peças dela na cena, trocar a cara de uma peça */
+  | { t: 'bestiario' }
+  | { t: 'criaturaSalvar'; criatura: Criatura }
+  | { t: 'criaturaApagar'; id: string }
+  | { t: 'criaturaColocar'; criaturaId: string; aparencia: string; quantidade: number }
+  | { t: 'pecaAparencia'; tokenId: number; aparencia: string }
   | { t: 'roomFx'; lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; tatico?: boolean }
   /** ponto de atenção ou desenho rápido para a mesa (só o mestre; some sozinho) */
   | { t: 'marca'; marca: MarcaMesa }
@@ -414,11 +455,31 @@ export type ClientMsg =
    * largura × altura casas, ligada à cena atual por uma Entrada; `levar` leva os agentes da cena atual
    */
   | { t: 'mapaImprovisado'; nome: string; url: string; largura: number; altura: number; levar?: boolean }
+  /** apaga um mapa improvisado (só o mestre): quem estava nele volta para a cena ligada */
+  | { t: 'mapaApagar'; roomId: number }
+  /**
+   * a Viagem (só o mestre): `iniciar` leva os agentes (cada um no banco que o mestre escolheu) para a van;
+   * `ajustar` muda o cenário, a hora, a velocidade e o destino; `chegar` leva todos à cena escolhida e a viagem acaba.
+   */
+  | { t: 'viagem'; acao: 'iniciar'; bancos: { tokenId: number; banco: number }[]; cenario?: string; hora?: string; clima?: string; velocidade?: number; destino?: string; destinoId?: number }
+  | { t: 'viagem'; acao: 'ajustar'; cenario?: string; hora?: string; clima?: string; velocidade?: number; destino?: string; destinoId?: number | null; ilustracao?: string }
+  | { t: 'viagem'; acao: 'chegar'; roomId: number }
+  /** o mapa-múndi: a lista dos lugares; o mestre arrasta um ícone para outro ponto do mapa */
+  | { t: 'lugares' }
+  | { t: 'lugarMover'; id: number; x: number; y: number }
+  /**
+   * o minimapa: as peças vão para a cena. Sem `tokens`, todos os agentes da campanha; com
+   * `tokens`, só essas (o grupo dividido, ou a peça arrastada). `entrar` (padrão sim): o
+   * mestre e a mesa vão junto.
+   */
+  | { t: 'grupoPara'; roomId: number; tokens?: number[]; entrar?: boolean }
+  /** o minimapa: o mestre marca a cena como visitada ou não (`roomId` sem valor = todas da campanha) */
+  | { t: 'visitada'; roomId?: number; campanha?: number; visitada: boolean }
   | { t: 'setLink'; id: number; roomId: number | null }
   | { t: 'sendTo'; userId: number | 'all'; roomId: number }
   | { t: 'tokenAdd'; name: string; look: AvatarLook; color?: string; capacity?: number }
   /** armed/hurt = estado do retrato (com arma, machucado) */
-  | { t: 'tokenEdit'; tokenId: number; name?: string; look?: AvatarLook; color?: string; capacity?: number; armed?: boolean; hurt?: boolean }
+  | { t: 'tokenEdit'; tokenId: number; name?: string; look?: AvatarLook; color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; alto?: boolean }
   | { t: 'tokenRemove'; tokenId: number }
   | { t: 'tokenWalk'; tokenId: number; x: number; y: number }
   | { t: 'tokenFace'; tokenId: number; dir: number }
@@ -446,6 +507,8 @@ export type ClientMsg =
   | { t: 'charDelete'; id: number };
 
 export type ServerMsg =
+  /** a tela da viagem: a pintura que aparece para todos na partida e na chegada (com o som do carro) */
+  | { t: 'viagemTela'; fase: 'partida' | 'chegada'; ilustracao: string; texto: string; reserva?: string }
   | { t: 'hello'; characters: CharacterDef[] }
   | { t: 'welcome'; id: number; name: string; look: AvatarLook; token: string; inventory: InvItem[]; home?: number; role: Role }
   /**
@@ -457,7 +520,17 @@ export type ServerMsg =
   | { t: 'conta'; ok: false; erro: string; expirou?: boolean }
   | { t: 'error'; msg: string }
   | { t: 'notice'; msg: string }
+  /**
+   * a mesa do bar de que você faz parte: o jogo, quem joga em cada lugar (npc = o mestre joga), os seus
+   * lugares e as jogadas guardadas desde o começo da partida (para quem reconecta)
+   */
+  | { t: 'bar'; mesa: number; tipo: TipoJogoBar; jogadores: string[]; npc: boolean[]; eu: number[]; log: Record<string, unknown>[] }
+  /** você saiu da mesa (ou o mestre chamou de volta) */
+  | { t: 'barFechar'; mesa: number; aviso?: string }
+  /** a jogada de outro lugar da mesa */
+  | { t: 'barJogo'; mesa: number; de: number; dados: Record<string, unknown> }
   | { t: 'roomList'; rooms: RoomSummary[] }
+  | { t: 'lugares'; lugares: LugarInfo[] }
   | { t: 'roomCreated'; id: number }
   | { t: 'roomEnter'; room: RoomInfo; items: FloorItem[]; wallItems: WallItem[]; users: UserInfo[] }
   /** conteúdo de outra cena da campanha (miniatura), sem entrar nela */
@@ -496,4 +569,6 @@ export type ServerMsg =
   /** os documentos: todos para o mestre, os da ficha para o jogador */
   | { t: 'docs'; docs: Documento[] }
   /** combate da campanha (a mesa recebe só a ordem, a rodada e a vez); null = sem combate */
-  | { t: 'combate'; combate: Combate | null; podeDesfazer?: boolean; ameacas?: Record<string, FichaAmeaca> };
+  | { t: 'combate'; combate: Combate | null; podeDesfazer?: boolean; ameacas?: Record<string, FichaAmeaca> }
+  /** o bestiário inteiro (para o mestre) */
+  | { t: 'bestiario'; criaturas: Criatura[] };

@@ -111,6 +111,8 @@ export interface CampaignState {
   scenes: SceneInfo[];
   /** anotações do mestre na planta, por andar */
   notas?: NotaPlanta[];
+  /** as cenas onde um agente já pisou (o minimapa apaga as outras) */
+  visitadas?: number[];
 }
 
 export const DEFAULT_CAPACITY = 10;

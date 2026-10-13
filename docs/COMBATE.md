@@ -437,7 +437,7 @@ O livro não diz em que ordem as coisas do começo do turno acontecem. Proposta 
 - se alguma reta desse canto até um canto da casa do alvo passa por parede, mobi alto ou outro ser, o alvo tem cobertura (+5);
 - a reta que só encosta na ponta ou corre ao longo do obstáculo não conta;
 - se todas as retas de todos os cantos batem em parede, porta fechada ou mobi que tape o corpo todo, é **cobertura total**;
-- proposta para os mobis (DC-11): altura de 0,8 m ou mais dá cobertura; de 1,8 m ou mais (estante, tanque) conta como parede. O mestre corrige na hora.
+- proposta para os mobis (DC-11, revista em 07/10 como DC-24, aprovada pelo Felipe): a altura do móvel contra a do corpo do alvo. O corpo tem **1,8 m em pé** e **1,0 m agachado** (o botão Agachado, no combate e no painel do personagem). O móvel ou escombro com **44% do corpo ou mais** (0,8 m em pé, 0,45 m agachado) dá cobertura (+5); com **o corpo inteiro ou mais** (1,8 m em pé, 1,0 m agachado) tapa tudo, e é cobertura total. O nome do móvel e a altura dele aparecem na chave e no tabuleiro. O mestre corrige na hora.
 
 **Linha de visão e linha de efeito** (p. 85, 120):
 - paredes, portas fechadas e mobis altos cortam as duas;
@@ -1284,6 +1284,7 @@ Os seis primeiros já estão no REGRAS.md (seção 13). Os outros são do combat
 | DC-9 | Posição elevada | 1 m ou mais acima do alvo |
 | DC-10 | Medida de alcance e área | em linha reta entre os centros (a outra opção: contar como no movimento, com a diagonal dobrada) |
 | DC-11 | Cobertura dos mobis | 0,8 m ou mais dá cobertura; 1,8 m ou mais conta como parede |
+| DC-24 | Cobertura pela altura e a postura | corpo de 1,8 m em pé e 1,0 m agachado; o móvel com 44% do corpo dá cobertura (+5) e com o corpo inteiro, cobertura total (aprovada pelo Felipe em 07/10; o animar de agachar e proteger-se vem com as animações) |
 | DC-12 | Escuridão da cena | até 0,5 nada; de 0,5 a 0,8, camuflagem; acima de 0,8, escuridão total (camuflagem total e cego sem visão no escuro) |
 | DC-13 | Dados extras no crítico | rajada, munição explosiva e os dados do SaH não multiplicam; o calibre grosso multiplica, porque vira dano da arma |
 | DC-14 | Limite de PE e reações fora do turno | vale do começo do seu turno até o começo do próximo |

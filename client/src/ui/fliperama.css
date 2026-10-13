@@ -1,0 +1,793 @@
+/* =====================================================================
+   O FLIPERAMA NO CELULAR DO JOGADOR (fliperama.ts; os jogos em fliperamaJogos.ts)
+   O gabinete do bar na linguagem da tela do jogador (--u, Pixelify, o ouro do botão forte),
+   com as cores do fliperama do tabuleiro: o corpo roxo-noite, o friso roxo e a tela ciano.
+   A tela do jogo é um canvas de 160 × 192 (a do Atari), ampliado sem borrar, com as linhas
+   do tubo por cima.
+   ===================================================================== */
+
+.flip {
+  --f-corpo-1: #16123a;
+  --f-corpo-2: #0a0820;
+  --f-friso: #6a5aff;
+  --f-brilho: #5ad8ff;
+  /* a borda da moldura em volta da tela (a pintada, quando chega, é mais larga) */
+  --f-borda-tela: var(--s2);
+  /* a tela: a maior que cabe na largura e na altura, sobrando o letreiro e os controles */
+  --tela-l: min(calc(var(--u) * 84), calc((100cqh - var(--u) * 76) * 160 / 192));
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  background: #02040a;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+/* ---------------------------------------------------------------- o gabinete */
+.flip-gabinete {
+  position: relative;
+  width: min(100%, 480px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s3);
+  padding: max(var(--s3), env(safe-area-inset-top)) var(--s4) max(var(--s4), env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background:
+    radial-gradient(ellipse 90% 40% at 50% 38%, rgba(90, 216, 255, 0.1), transparent 70%),
+    linear-gradient(var(--f-corpo-1), var(--f-corpo-2));
+  /* o friso de borracha dos lados do gabinete */
+  box-shadow:
+    inset calc(var(--u) * 0.9) 0 0 var(--f-friso),
+    inset calc(var(--u) * -0.9) 0 0 var(--f-friso),
+    inset calc(var(--u) * 1.6) 0 0 rgba(0, 0, 0, 0.5),
+    inset calc(var(--u) * -1.6) 0 0 rgba(0, 0, 0, 0.5);
+}
+
+/* o letreiro aceso */
+.flip-letreiro {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 0.8);
+  padding: var(--s2) 0 var(--s1);
+}
+.flip-letreiro b {
+  font: 700 var(--t-grande) / 1 var(--f-pixel);
+  letter-spacing: 0.08em;
+  color: var(--c-ouro-hi);
+  text-shadow:
+    0 calc(var(--u) * 0.55) 0 #1b0d03,
+    0 0 calc(var(--u) * 3) rgba(233, 169, 68, 0.55);
+  animation: flip-neon 7s infinite;
+}
+.flip-letreiro span {
+  font: 600 var(--t-meta) / 1 var(--f-pixel);
+  letter-spacing: 0.12em;
+  color: var(--c-texto-2);
+  text-transform: uppercase;
+}
+/* as listras do Atari */
+.flip-listras {
+  width: 62%;
+  height: calc(var(--u) * 3.4);
+  margin-top: calc(var(--u) * 0.6);
+  background: linear-gradient(
+    #d84848 0 18%,
+    transparent 18% 27%,
+    #e0803c 27% 45%,
+    transparent 45% 55%,
+    #e8b040 55% 73%,
+    transparent 73% 82%,
+    #ecec68 82% 100%
+  );
+}
+@keyframes flip-neon {
+  0%,
+  91%,
+  95%,
+  100% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.55;
+  }
+  94% {
+    opacity: 0.9;
+  }
+  96% {
+    opacity: 0.7;
+  }
+}
+
+/* a tela, na moldura preta do tubo */
+.flip-moldura {
+  position: relative;
+  box-sizing: content-box;
+  width: var(--tela-l);
+  aspect-ratio: 160 / 192;
+  padding: var(--f-borda-tela);
+  border-radius: calc(var(--u) * 2.6);
+  background: #040404;
+  border: var(--borda) solid #2a2450;
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 0.6) #000,
+    0 0 calc(var(--u) * 5) rgba(90, 216, 255, 0.22),
+    0 calc(var(--u) * 1.2) calc(var(--u) * 3) rgba(0, 0, 0, 0.6);
+}
+.flip-tela {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--u) * 1.4);
+  /* a tela já vem 4x maior: reduzir suave dá o leve borrado do tubo */
+  image-rendering: auto;
+  touch-action: none;
+  background: #000;
+  /* o tubo cintila de leve, como TV velha */
+  animation: flip-cintila 0.18s steps(2) infinite;
+}
+.bar-conteudo:not(.hidden) .flip-tela {
+  animation:
+    flip-liga 0.55s cubic-bezier(0.22, 1, 0.36, 1) both,
+    flip-cintila 0.18s steps(2) 0.55s infinite;
+}
+/* as linhas do tubo (uma a cada dois pixels do jogo) e o canto escuro do vidro */
+.flip-crt {
+  position: absolute;
+  inset: var(--f-borda-tela);
+  overflow: hidden;
+  border-radius: calc(var(--u) * 1.4);
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.2) 50%) 0 0 / 100% calc(100% / 96),
+    radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.06), transparent 55%, rgba(0, 0, 0, 0.42));
+  box-shadow:
+    inset 0 0 calc(var(--u) * 2.4) rgba(0, 0, 0, 0.75),
+    inset 0 0 calc(var(--u) * 6) rgba(0, 0, 0, 0.35);
+}
+/* a faixa clara que desce devagar pela tela (a do tubo velho) */
+.flip-crt::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22%;
+  background: linear-gradient(to bottom, transparent, rgba(190, 230, 255, 0.045) 45%, rgba(190, 230, 255, 0.07) 50%, rgba(190, 230, 255, 0.045) 55%, transparent);
+  animation: flip-faixa 8s linear infinite;
+}
+/* o granulado do tubo (o canvas pequeno, trocado a cada dois quadros) */
+.flip-ruido {
+  position: absolute;
+  inset: var(--f-borda-tela);
+  width: calc(100% - var(--f-borda-tela) * 2);
+  height: calc(100% - var(--f-borda-tela) * 2);
+  border-radius: calc(var(--u) * 1.4);
+  image-rendering: pixelated;
+  pointer-events: none;
+  /* overlay: some no preto e só granula o que está aceso */
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+}
+/* o vidro curvo: um reflexo no canto de cima e a borda mais escura */
+.flip-vidro {
+  position: absolute;
+  inset: var(--f-borda-tela);
+  border-radius: calc(var(--u) * 1.4);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 40% at 22% 8%, rgba(255, 255, 255, 0.08), transparent 60%),
+    radial-gradient(ellipse 130% 120% at 50% 50%, transparent 62%, rgba(0, 0, 0, 0.35) 100%);
+}
+@keyframes flip-cintila {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.975;
+  }
+}
+@keyframes flip-faixa {
+  0% {
+    transform: translateY(-110%);
+  }
+  100% {
+    transform: translateY(560%);
+  }
+}
+
+/* desligando: a imagem vira uma linha, a linha um ponto, e apaga */
+.flip.apagando .flip-tela {
+  animation: flip-desliga 0.5s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+.flip.apagando .flip-ruido,
+.flip.apagando .flip-crt::after {
+  opacity: 0;
+}
+@keyframes flip-desliga {
+  0% {
+    transform: none;
+    filter: none;
+  }
+  45% {
+    transform: scale(1, 0.012);
+    filter: brightness(4);
+  }
+  80% {
+    transform: scale(0.02, 0.012);
+    filter: brightness(6);
+  }
+  100% {
+    transform: scale(0, 0);
+    filter: brightness(0);
+  }
+}
+
+/* as lâmpadas do letreiro, piscando em fila */
+.flip-lampadas {
+  display: flex;
+  gap: calc(var(--u) * 2.4);
+  margin-bottom: calc(var(--u) * 0.6);
+}
+.flip-lampadas i {
+  width: calc(var(--u) * 1.3);
+  height: calc(var(--u) * 1.3);
+  border-radius: 50%;
+  background: #5a3a14;
+  animation: flip-lampada 1.3s steps(1) infinite;
+  animation-delay: calc(var(--i) * 0.1s);
+}
+@keyframes flip-lampada {
+  0%,
+  60% {
+    background: #5a3a14;
+    box-shadow: none;
+  }
+  70%,
+  100% {
+    background: var(--c-ouro-hi);
+    box-shadow: 0 0 calc(var(--u) * 1.6) rgba(255, 210, 122, 0.9);
+  }
+}
+
+/* o botão da música, no canto do letreiro */
+.flip-som {
+  position: absolute;
+  right: 0;
+  top: var(--s1);
+  width: calc(var(--u) * 9);
+  height: calc(var(--u) * 9);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: var(--borda) solid var(--c-borda-2);
+  border-radius: 50%;
+  background: rgba(5, 11, 20, 0.7);
+  color: var(--c-ouro-hi);
+  font: 700 calc(var(--u) * 4.4) / 1 var(--f-corpo);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s, color 0.2s;
+}
+.flip-som.off {
+  color: var(--c-texto-3);
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+/* o tubo ligando: uma linha clara que abre na tela inteira */
+@keyframes flip-liga {
+  0% {
+    transform: scale(1, 0.015);
+    filter: brightness(4);
+  }
+  45% {
+    transform: scale(1, 0.015);
+    filter: brightness(3);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ---------------------------------------------------------------- os controles */
+.flip-controles {
+  width: 100%;
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+.flip-controles button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  cursor: pointer;
+}
+
+/* o direcional: uma cruz só */
+.flip-dpad {
+  --c: calc(var(--u) * 10.5);
+  justify-self: start;
+  display: grid;
+  grid-template: repeat(3, var(--c)) / repeat(3, var(--c));
+  filter: drop-shadow(0 calc(var(--u) * 0.9) 0 #000) drop-shadow(0 calc(var(--u) * 1.2) calc(var(--u) * 2) rgba(0, 0, 0, 0.5));
+}
+.flip-seta,
+.flip-dpad-meio {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: linear-gradient(var(--c-noite-3), var(--c-noite-2));
+  box-shadow:
+    inset 0 calc(var(--u) * 0.45) 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 calc(var(--u) * 0.45) var(--c-borda-2);
+}
+.flip-seta.s-cima {
+  grid-area: 1 / 2;
+  border-radius: calc(var(--u) * 1.6) calc(var(--u) * 1.6) 0 0;
+}
+.flip-seta.s-esq {
+  grid-area: 2 / 1;
+  border-radius: calc(var(--u) * 1.6) 0 0 calc(var(--u) * 1.6);
+}
+.flip-seta.s-dir {
+  grid-area: 2 / 3;
+  border-radius: 0 calc(var(--u) * 1.6) calc(var(--u) * 1.6) 0;
+}
+.flip-seta.s-baixo {
+  grid-area: 3 / 2;
+  border-radius: 0 0 calc(var(--u) * 1.6) calc(var(--u) * 1.6);
+}
+.flip-dpad-meio {
+  grid-area: 2 / 2;
+  box-shadow: none;
+}
+.flip-seta i {
+  width: calc(var(--u) * 3.6);
+  height: calc(var(--u) * 3);
+  background: var(--c-texto-2);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.flip-seta.s-baixo i {
+  transform: rotate(180deg);
+}
+.flip-seta.s-esq i {
+  transform: rotate(-90deg);
+}
+.flip-seta.s-dir i {
+  transform: rotate(90deg);
+}
+.flip-seta.on {
+  background: linear-gradient(#f6cf6a, #c97f2c);
+}
+.flip-seta.on i {
+  background: var(--c-tinta-ouro);
+}
+
+/* Menu e Sair, no meio, como o select e o start */
+.flip-meio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  padding: 0 var(--s2);
+}
+.flip-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 1.2);
+  min-height: calc(var(--u) * 11);
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-texto-2);
+  font: 600 var(--t-mini) / 1 var(--f-pixel);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.flip-mini i {
+  width: calc(var(--u) * 12);
+  height: calc(var(--u) * 3.4);
+  border-radius: 99rem;
+  background: #2a2450;
+  box-shadow:
+    inset 0 calc(var(--u) * 0.4) 0 rgba(255, 255, 255, 0.12),
+    0 calc(var(--u) * 0.5) 0 #000;
+  transform: rotate(-14deg);
+  transition: transform 0.1s var(--ease);
+}
+.flip-mini:active i {
+  transform: rotate(-14deg) translateY(calc(var(--u) * 0.4));
+  box-shadow: inset 0 calc(var(--u) * 0.4) 0 rgba(255, 255, 255, 0.12);
+}
+
+/* o botão A: o ouro do botão forte da ficha */
+.flip-a {
+  justify-self: end;
+  width: calc(var(--u) * 21);
+  height: calc(var(--u) * 21);
+  margin-right: var(--s1);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  border: calc(var(--u) * 0.7) solid #3a1e08;
+  background: radial-gradient(circle at 38% 30%, #ffe39a 0, #f6cf6a 22%, #e9a944 55%, #c97f2c 100%);
+  box-shadow:
+    inset 0 calc(var(--u) * -1) 0 rgba(120, 60, 10, 0.55),
+    0 calc(var(--u) * 1.3) 0 #2b1606,
+    0 0 0 calc(var(--u) * 1.6) var(--f-corpo-2),
+    0 0 0 calc(var(--u) * 2.1) var(--c-borda-2),
+    0 calc(var(--u) * 2) calc(var(--u) * 3) rgba(0, 0, 0, 0.5);
+  transition:
+    transform 0.08s var(--ease),
+    box-shadow 0.08s var(--ease);
+}
+.flip-a span {
+  font: 700 calc(var(--u) * 8) / 1 var(--f-pixel);
+  color: var(--c-tinta-ouro);
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.6);
+}
+.flip-a.on {
+  transform: translateY(calc(var(--u) * 1));
+  box-shadow:
+    inset 0 calc(var(--u) * -0.5) 0 rgba(120, 60, 10, 0.55),
+    0 calc(var(--u) * 0.3) 0 #2b1606,
+    0 0 0 calc(var(--u) * 1.6) var(--f-corpo-2),
+    0 0 0 calc(var(--u) * 2.1) var(--c-borda-2);
+}
+
+/* o botão A respira de leve, chamando */
+.flip-a {
+  animation: flip-chama 2.6s ease-in-out infinite;
+}
+.flip-a.on {
+  animation: none;
+}
+@keyframes flip-chama {
+  0%,
+  100% {
+    filter: none;
+  }
+  50% {
+    filter: brightness(1.12) drop-shadow(0 0 calc(var(--u) * 2) rgba(255, 210, 122, 0.45));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-letreiro b,
+  .flip-tela,
+  .flip-crt::after,
+  .flip-lampadas i,
+  .flip-a,
+  .bar-conteudo:not(.hidden) .flip-tela {
+    animation: none;
+  }
+}
+
+/* =====================================================================
+   O GABINETE PINTADO (arte/bar/fliperama-*.png, seção 0B do pedido ao Códex)
+   Cada peça entra sozinha quando chega (arteBar.ts põe a classe tem-<peça> e a variável --a-<arquivo>).
+   As medidas são as do gabarito (gabarito-fliperama-celular.png, 960 de largura): o letreiro 960 × 220,
+   a moldura 768 × 896 com o buraco de 640 × 768 a 64 da borda, o painel 960 × 440 com a alavanca, os
+   dois mini e o botão nos lugares dele.
+   ===================================================================== */
+.flip.tem-corpo .flip-gabinete {
+  background: var(--a-fliperama-corpo) center top / 100% auto repeat-y;
+  box-shadow: none;
+}
+.flip.tem-letreiro .flip-letreiro {
+  flex: none;
+  width: calc(100% + var(--s4) * 2);
+  margin-inline: calc(var(--s4) * -1);
+  aspect-ratio: 960 / 220;
+  justify-content: center;
+  padding: 0;
+  background: var(--a-fliperama-letreiro) center / 100% 100% no-repeat;
+}
+.flip.tem-letreiro :is(.flip-lampadas, .flip-listras) {
+  display: none;
+}
+.flip.tem-moldura {
+  --f-borda-tela: calc(var(--tela-l) * 0.1);
+}
+.flip.tem-moldura .flip-moldura {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: 0 0 calc(var(--u) * 5) rgba(90, 216, 255, 0.18);
+}
+.flip.tem-moldura .flip-moldura::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: var(--a-fliperama-moldura) center / 100% 100% no-repeat;
+}
+.flip.tem-moldura .flip-vidro {
+  display: none;
+}
+/* o painel: as peças por cima, nos lugares do gabarito (em % do painel de 960 × 440) */
+.flip.tem-painel .flip-controles {
+  position: relative;
+  display: block;
+  flex: none;
+  width: calc(100% + var(--s4) * 2);
+  margin-inline: calc(var(--s4) * -1);
+  aspect-ratio: 960 / 440;
+  background: var(--a-fliperama-painel) center / 100% 100% no-repeat;
+}
+.flip.tem-painel .flip-controles {
+  /* a alavanca sobe acima da chapa (como num fliperama de verdade): espaço em cima para ela não encostar na tela */
+  margin-top: 12%;
+  margin-bottom: var(--s2);
+}
+/* maiores que no gabarito (o Felipe: "tudo pequenininho, sumido no meio do desenho"): a alavanca e o botão
+   passam um pouco da chapa, e o Menu e o Sair ganham o nome em destaque */
+.flip.tem-painel .flip-dpad {
+  position: absolute;
+  left: -3%;
+  top: -34%;
+  width: 56%;
+  height: auto;
+  aspect-ratio: 1;
+  --c: auto;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+}
+.flip.tem-painel .flip-meio {
+  position: absolute;
+  left: 44%;
+  top: 14%;
+  width: 19%;
+  height: 74%;
+  padding: 0;
+  gap: 0;
+  justify-content: space-between;
+}
+.flip.tem-painel .flip-a {
+  position: absolute;
+  left: 62%;
+  top: 2%;
+  width: 37%;
+  height: auto;
+  aspect-ratio: 1;
+  margin: 0;
+}
+/* a alavanca: as setas viram áreas de toque invisíveis, e a imagem acompanha a direção apertada */
+.flip.tem-alavanca .flip-dpad {
+  filter: drop-shadow(0 calc(var(--u) * 1) calc(var(--u) * 1.5) rgba(0, 0, 0, 0.5));
+  background: var(--a-fliperama-alavanca-centro) center / 100% 100% no-repeat;
+}
+.flip.tem-alavanca .flip-dpad:has(.s-cima.on) {
+  background-image: var(--a-fliperama-alavanca-cima);
+}
+.flip.tem-alavanca .flip-dpad:has(.s-baixo.on) {
+  background-image: var(--a-fliperama-alavanca-baixo);
+}
+.flip.tem-alavanca .flip-dpad:has(.s-esq.on) {
+  background-image: var(--a-fliperama-alavanca-esq);
+}
+.flip.tem-alavanca .flip-dpad:has(.s-dir.on) {
+  background-image: var(--a-fliperama-alavanca-dir);
+}
+.flip.tem-alavanca :is(.flip-seta, .flip-dpad-meio),
+.flip.tem-alavanca .flip-seta.on {
+  background: none;
+  box-shadow: none;
+}
+.flip.tem-alavanca .flip-dpad {
+  filter: drop-shadow(0 calc(var(--u) * 1.2) calc(var(--u) * 1.6) rgba(0, 0, 0, 0.65)) drop-shadow(0 0 calc(var(--u) * 2) rgba(255, 90, 90, 0.25));
+}
+/* as setinhas de ouro em volta da alavanca: mostram que ela vai para os quatro lados e acendem na direção apertada */
+.flip.tem-alavanca .flip-seta {
+  position: relative;
+}
+.flip.tem-alavanca .flip-seta i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: calc(var(--u) * 5.6);
+  height: calc(var(--u) * 4.6);
+  background: var(--c-ouro-hi);
+  filter: drop-shadow(0 0 0 #1b0d03) drop-shadow(calc(var(--u) * 0.45) 0 0 #1b0d03) drop-shadow(calc(var(--u) * -0.45) 0 0 #1b0d03) drop-shadow(0 calc(var(--u) * 0.6) 0 #1b0d03);
+  opacity: 0.9;
+  transition: opacity 0.1s;
+}
+.flip.tem-alavanca .flip-seta.on i {
+  opacity: 1;
+  background: #fff3c4;
+  filter: drop-shadow(0 0 calc(var(--u) * 1.6) rgba(255, 210, 122, 0.95));
+}
+/* o botão grande: a imagem solta e a apertada (o A escrito por cima) */
+.flip.tem-botao .flip-a,
+.flip.tem-botao .flip-a.on {
+  border: 0;
+  border-radius: 50%;
+  background: var(--a-fliperama-botao) center / 100% 100% no-repeat;
+  box-shadow: none;
+  transform: none;
+}
+.flip.tem-botao .flip-a.on {
+  background-image: var(--a-fliperama-botao-apertado);
+}
+.flip.tem-botao .flip-a span {
+  color: rgba(60, 30, 6, 0.75);
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.5);
+}
+/* os dois mini (Menu e Sair): a peça de 160 × 72 e o nome embaixo */
+.flip.tem-mini .flip-mini i,
+.flip.tem-mini .flip-mini:active i {
+  width: calc(var(--u) * 14);
+  height: auto;
+  aspect-ratio: 160 / 72;
+  border-radius: 0;
+  background: var(--a-fliperama-mini) center / 100% 100% no-repeat;
+  box-shadow: none;
+  transform: none;
+}
+.flip.tem-mini .flip-mini:active i {
+  background-image: var(--a-fliperama-mini-apertado);
+}
+.flip.tem-painel.tem-mini .flip-mini i {
+  width: 100%;
+}
+.flip.tem-painel .flip-mini {
+  gap: calc(var(--u) * 0.8);
+  min-height: 0;
+}
+.flip.tem-painel .flip-mini span {
+  font: 700 var(--t-meta) / 1 var(--f-pixel);
+  letter-spacing: 0.1em;
+  color: var(--c-ouro-hi);
+  text-shadow:
+    0 calc(var(--u) * 0.5) 0 #1b0d03,
+    0 0 calc(var(--u) * 1.5) rgba(0, 0, 0, 0.9);
+}
+.flip.tem-botao .flip-a {
+  filter: drop-shadow(0 calc(var(--u) * 1.2) calc(var(--u) * 1.6) rgba(0, 0, 0, 0.65));
+}
+.flip.tem-botao .flip-a span {
+  font-size: calc(var(--u) * 10);
+}
+/* com o letreiro, a moldura e o painel pintados, a tela é a maior que cabe entre eles
+   (a moldura tem 1,2 × a largura da tela e 1,4 × de altura; letreiro + painel + o espaço da alavanca = ~0,81 da largura) */
+.flip.tem-moldura.tem-letreiro.tem-painel {
+  --tela-l: min(calc((min(100cqw, 480px) - var(--s4) * 2) / 1.2), calc((100cqh - min(100cqw, 480px) * 0.69 - var(--s3) * 4) / 1.4));
+}
+/* o espaço que sobra (celular comprido) fica em volta da tela, e o painel desce para o pé do gabinete */
+.flip.tem-painel .flip-moldura {
+  margin-block: auto;
+}
+
+/* =====================================================================
+   A ALAVANCA VISTA DE CIMA (09/10): a base redonda de metal e a bola vermelha que segue o dedão.
+   Com a arte do Códex, a bola é a da própria alavanca pintada (recortada em círculo); sem ela, desenhada.
+   ===================================================================== */
+.flip .flip-joy {
+  position: relative;
+  display: block;
+  width: calc(var(--u) * 30);
+  height: calc(var(--u) * 30);
+  justify-self: start;
+  touch-action: none;
+  cursor: grab;
+  filter: drop-shadow(0 calc(var(--u) * 1) calc(var(--u) * 1.5) rgba(0, 0, 0, 0.6));
+}
+.flip.tem-alavanca .flip-dpad.flip-joy,
+.flip.tem-alavanca .flip-dpad.flip-joy:has(.on) {
+  background: none;
+}
+.flip-joy-base {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #07070c 0 30%, #1a1a24 31% 34%, transparent 35%),
+    radial-gradient(circle at 38% 30%, #4a4a5a, #22222c 55%, #101016 100%);
+  box-shadow:
+    inset 0 calc(var(--u) * 0.5) 0 rgba(255, 255, 255, 0.12),
+    inset 0 calc(var(--u) * -0.8) calc(var(--u) * 1.2) rgba(0, 0, 0, 0.7),
+    0 0 0 calc(var(--u) * 0.6) #08080c,
+    0 0 0 calc(var(--u) * 1.1) rgba(255, 210, 122, 0.35);
+}
+/* os quatro parafusos da base */
+.flip-joy-base::before {
+  content: '';
+  position: absolute;
+  inset: 9%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 0, #9a9aa6 0 4%, transparent 4.5%),
+    radial-gradient(circle at 50% 100%, #9a9aa6 0 4%, transparent 4.5%),
+    radial-gradient(circle at 0 50%, #9a9aa6 0 4%, transparent 4.5%),
+    radial-gradient(circle at 100% 50%, #9a9aa6 0 4%, transparent 4.5%);
+}
+.flip-joy-bola {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40%;
+  height: 40%;
+  margin: -20% 0 0 -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #ffd0c8 0 8%, #ff5a4a 22%, #c8201c 58%, #6a0a0a 100%);
+  box-shadow:
+    0 calc(var(--u) * 1.2) calc(var(--u) * 1.4) rgba(0, 0, 0, 0.55),
+    inset 0 calc(var(--u) * -0.6) calc(var(--u) * 0.8) rgba(60, 0, 0, 0.6);
+  transition: translate 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+/* a bola pintada: a da alavanca do Códex (o meio dela em 160, 100 da imagem de 320; uns 80 de diâmetro) */
+.flip.tem-alavanca .flip-joy-bola {
+  background: var(--a-fliperama-alavanca-centro) no-repeat;
+  background-size: 400% 400%;
+  background-position: 50% 25%;
+  image-rendering: pixelated;
+}
+.flip-joy.pegando {
+  cursor: grabbing;
+}
+.flip-joy.pegando .flip-joy-bola {
+  transition: none;
+  scale: 1.06;
+}
+/* as setinhas de ouro, nas quatro direções da base */
+.flip-joy-seta {
+  position: absolute;
+  width: calc(var(--u) * 5);
+  height: calc(var(--u) * 4);
+  background: var(--c-ouro-hi);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  filter: drop-shadow(0 calc(var(--u) * 0.5) 0 #1b0d03);
+  opacity: 0.75;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+.flip-joy-seta.s-cima {
+  top: -2%;
+  left: 50%;
+  translate: -50% 0;
+}
+.flip-joy-seta.s-baixo {
+  bottom: -2%;
+  left: 50%;
+  translate: -50% 0;
+  rotate: 180deg;
+}
+.flip-joy-seta.s-esq {
+  left: -2%;
+  top: 50%;
+  translate: 0 -50%;
+  rotate: -90deg;
+}
+.flip-joy-seta.s-dir {
+  right: -2%;
+  top: 50%;
+  translate: 0 -50%;
+  rotate: 90deg;
+}
+.flip-joy-seta.on {
+  opacity: 1;
+  background: #fff3c4;
+  filter: drop-shadow(0 0 calc(var(--u) * 1.6) rgba(255, 210, 122, 0.95));
+}
+/* no painel pintado: a alavanca na chapa, na caixa dela (sem a bola subindo: agora é vista de cima) */
+.flip.tem-painel .flip-dpad.flip-joy {
+  left: 1%;
+  top: 2%;
+  width: 44%;
+}
+.flip.tem-painel .flip-controles {
+  margin-top: 0;
+}

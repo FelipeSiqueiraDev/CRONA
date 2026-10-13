@@ -249,7 +249,8 @@ export class Trilha {
     if (!this.ac) this.montar();
     const ac = this.ac;
     if (!ac || !this.mestre) return;
-    if (ac.state === 'suspended') void ac.resume();
+    // suspenso (antes do gesto) ou interrompido (o iPhone, ao voltar de outro app)
+    if (ac.state !== 'running' && ac.state !== 'closed') void ac.resume();
     const t = ac.currentTime;
     this.mestre.gain.cancelScheduledValues(t);
     this.mestre.gain.setValueAtTime(this.mestre.gain.value, t);

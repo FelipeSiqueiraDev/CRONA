@@ -25,3 +25,6 @@ docs/ref-jogador-*.webp
 
 # as cópias leves da arte (scripts/webp.mjs), feitas no computador do jogo
 client/public/arte/**/*.png.webp
+client/public/arte-leve/
+.previas-codex/
+__pycache__/

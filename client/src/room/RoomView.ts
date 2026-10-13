@@ -2,6 +2,7 @@ import {
   DEFAULT_PARTICLE_LEVEL,
   footprint,
   getFurni,
+  ocupa,
   PILHA_CHAO,
   regras as regrasShared,
   getWallFurni,
@@ -9,6 +10,7 @@ import {
   RoomMap,
   TICK_MS,
   Z_PER_M,
+  M_POR_CASA,
   type AvatarLook,
   type ChatKind,
   type FloorItem,
@@ -31,7 +33,7 @@ import {
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
-import { desenharParedeComArte, visualComArte } from '../render/furniArte';
+import { desenharParedeComArte, tamanhoReal, visualComArte } from '../render/furniArte';
 import { furniVisual } from '../render/furniFloor';
 import { drawWallFurni, wallLights } from '../render/furniWall';
 import { drawHintGlyph, drawHintIcon } from '../render/hints';
@@ -39,6 +41,7 @@ import { iso, unIso } from '../render/iso';
 import { MarcasMesa } from '../render/marcasMesa';
 import { NevoaMesa } from '../render/nevoaMesa';
 import { imagemDoMapa } from '../render/mapaImagem';
+import { desenharItemNoChao } from '../render/itemNoChao';
 import { cameraVoo, casaNoPonto, desenharMesa, enquadrar, marcasNoChao, marcasPorCima, matrizNaAltura, passo, projetar, type CameraVoo, type Enquadre, type PecaTatica } from '../render/mapaTatico';
 import { portraitCanvas } from '../render/portrait';
 import { hash, hexToRgb, rgba } from '../render/color';
@@ -48,6 +51,7 @@ import { Particles } from '../render/particles';
 import { boxSilhouette, Mapper, Painter, pointInPoly, type WBox } from '../render/painter';
 import { buildStatic, doorClipPath, roomBounds, type StaticLayer } from '../render/roomStatic';
 import { versaoTexturas } from '../render/texturas';
+import { MundoViagem } from '../render/viagemMundo';
 import { Celas, escurecerChao, escurecerForma, escuroEm } from './celas';
 import { cmp, sortDrawables, type Drawable } from '../render/sort';
 import {
@@ -88,7 +92,15 @@ export interface ClientUser {
   headDir: number;
   sit: 0 | 1 | 2;
   dance: boolean;
-  anim: { fx: number; fy: number; fz: number; tx: number; ty: number; tz: number; start: number } | null;
+  /** de cócoras: a peça se mostra mais baixa (até chegar a animação própria) */
+  agachado?: boolean;
+  /** na cama de cima do beliche */
+  alto?: boolean;
+  /** flutua um pouco acima do chão (o Existido) */
+  flutua?: boolean;
+  /** a criatura do bestiário que a peça é, e a aparência */
+  criatura?: { id: string; aparencia: string };
+  anim: { fx: number; fy: number; fz: number; tx: number; ty: number; tz: number; start: number; ms: number } | null;
   waveUntil: number;
   phase: number;
   color: string;
@@ -277,6 +289,8 @@ export interface RoomEvents {
   openHint(kind: 'floor' | 'wall', id: number): void;
   /** um aviso curto para quem está mexendo no tabuleiro */
   aviso?(texto: string): void;
+  /** o grupo de peças mudou (Shift + clique): quantas andam juntas (0 = nenhum grupo) */
+  grupoMudou?(n: number): void;
 }
 
 interface Hit {
@@ -312,6 +326,8 @@ const BG = '#07060a';
 /** a pessoa (~1,78 m) em unidades de altura: a caixa dela na ordem de desenho e no raio-x */
 const ALTURA_PESSOA = 1.78 * Z_PER_M;
 const AMBER = 'rgba(255,196,90,0.95)';
+/** As lupinhas de pista em cima dos móveis (desligadas em 08/10; true traz de volta). */
+const MOSTRAR_LUPAS = false;
 
 export class RoomView {
   readonly canvas: HTMLCanvasElement;
@@ -339,6 +355,8 @@ export class RoomView {
   info: RoomInfo | null = null;
   users = new Map<number, ClientUser>();
   myId = 0;
+  /** as peças andando em grupo (Shift + clique junta e tira; 09/10, o Felipe): a comandada e as outras, e o clique no chão manda todas */
+  grupo = new Set<number>();
   selection: Selection = null;
   placement: Placement | null = null;
   private painter = new Painter();
@@ -353,6 +371,8 @@ export class RoomView {
   private followAt = 0;
   private bubbles = new Bubbles();
   private staticLayer: StaticLayer | null = null;
+  /** a Viagem: o mundo passando por fora da van (só nas cenas de viagem) */
+  private mundoViagem = new MundoViagem();
   private staticKey = '';
   private tilesFrontFirst: [number, number, number][] = [];
   private hits: Hit[] = [];
@@ -459,6 +479,7 @@ export class RoomView {
     this.particles.setRoom(this.map, info.particles);
     // mantém a peça ativa se ela estiver nesta cena
     this.myId = users.some((u) => u.id === myId) ? myId : 0;
+    this.grupo.clear();
     this.users.clear();
     for (const u of users) this.addUser(u);
     this.selection = null;
@@ -479,8 +500,11 @@ export class RoomView {
     if (!this.map) return;
     const b = roomBounds(this.map, !!this.info?.aberto);
     const f = this.frame_();
-    const bw = b.maxX - b.minX + 16;
-    const bh = b.maxY - b.minY + 16;
+    // a Viagem: a cena é só a van (o mundo passa por fora, como ilustração de um momento): a van enche o quadro,
+    // com só uma faixa de mundo em volta (antes 2,2: a van ficava pequena num mapa enorme)
+    const k = this.info?.viagem ? 1.3 : 1;
+    const bw = (b.maxX - b.minX) * k + 16;
+    const bh = (b.maxY - b.minY) * k + 16;
     const availW = f.w;
     const availH = f.h;
     // zoom contínuo: o quarto preenche o tabuleiro
@@ -637,7 +661,11 @@ export class RoomView {
       headDir: u.headDir,
       sit: u.sit,
       dance: u.dance,
-      anim: u.mv ? { fx: u.x, fy: u.y, fz: u.z, tx: u.mv.x, ty: u.mv.y, tz: u.mv.z, start: performance.now() } : null,
+      agachado: u.agachado,
+      alto: u.alto,
+      flutua: u.flutua,
+      criatura: u.criatura,
+      anim: u.mv ? { fx: u.x, fy: u.y, fz: u.z, tx: u.mv.x, ty: u.mv.y, tz: u.mv.z, start: performance.now(), ms: u.mv.ms ?? TICK_MS } : null,
       waveUntil: 0,
       phase: Math.random() * 10,
       color: u.color ?? playerColorFor(u.name),
@@ -667,9 +695,11 @@ export class RoomView {
       const cur = this.userPos(u, now);
       const far = Math.abs(cur.x - s.x) > 1.5 || Math.abs(cur.y - s.y) > 1.5;
       const f = far ? { x: s.x, y: s.y, z: s.z } : cur;
-      u.anim = { fx: f.x, fy: f.y, fz: f.z, tx: s.mv.x, ty: s.mv.y, tz: s.mv.z, start: now };
+      u.anim = { fx: f.x, fy: f.y, fz: f.z, tx: s.mv.x, ty: s.mv.y, tz: s.mv.z, start: now, ms: s.mv.ms ?? TICK_MS };
     } else if (u.anim && !(u.anim.tx === s.x && u.anim.ty === s.y)) u.anim = null;
     else if (u.anim) u.anim.tz = s.z;
+    // saiu do lugar: já não está na cama de cima
+    if (u.x !== s.x || u.y !== s.y) u.alto = false;
     // virou sem sair do lugar: efeito de giro
     if (!s.mv && !u.anim && s.dir !== u.dir) u.turnAt = now;
     u.x = s.x;
@@ -688,9 +718,137 @@ export class RoomView {
     return d.seg.wall === 'l' ? [x + 0.45, y] : [x, y + 0.45];
   }
 
+  /**
+   * Operação "Pede Mesa" (08/10, o Felipe): a mesa desenhada costuma ser menor que as casas dela (a de trabalho do
+   * calabouço ocupa 3 × 2 casas, 2,25 × 1,5 m, e o tampo tem 0,95 m de fundo). O item na casa de trás ficava no ar, do
+   * lado do tampo, e a cadeira ficava uma casa inteira longe da borda de verdade. Sem mexer na arte: o item em cima da
+   * mesa escorrega para dentro do tampo desenhado, e a cadeira virada para uma mesa entra um pouco embaixo dela (a peça
+   * sentada vai junto). O deslocamento é em casas, só no desenho; a casa de cada um continua a mesma.
+   */
+  private ajustes = new Map<number, [number, number]>();
+  private ajustesQuadro = -1;
+
+  /** O tampo desenhado de uma mesa (centro e meia medida, em casas): menor que as casas dela ou, com `aumento`, maior. */
+  private tampo(s: FloorItem) {
+    const def = getFurni(s.defId);
+    if (!def || !def.stackable || def.sit || def.walkable || def.height < 0.85 || def.height > 1.75) return null;
+    const tr = tamanhoReal(s.defId);
+    if (!tr || tr.encosta) return null;
+    const fp = footprint(def, s.rot);
+    const larguraEmX = s.rot === 0 || s.rot === 4;
+    const hx = (larguraEmX ? tr.real[0] : tr.real[1]) / M_POR_CASA / 2;
+    const hy = (larguraEmX ? tr.real[1] : tr.real[0]) / M_POR_CASA / 2;
+    const [ex, ey] = this.map ? this.encostoNaParede(this.map, s) : [0, 0];
+    return { cx: s.x + fp.sx / 2 + ex, cy: s.y + fp.sy / 2 + ey, hx, hy, topo: s.z + def.height };
+  }
+
+  /**
+   * O móvel encostado na parede (12/10, o Felipe, com as salas de referência): o desenho tem a medida de verdade e
+   * fica no meio das casas dele, então o armário de 0,5 m de fundo numa casa de 0,75 m ficava a um palmo da parede,
+   * como se flutuasse. Quando as costas dele dão para a parede (a casa de trás não é chão), ele vai até ela; no canto,
+   * vai também para o lado da parede. Só o desenho: a casa continua a mesma.
+   */
+  private encostoNaParede(map: RoomMap, it: FloorItem): [number, number] {
+    const def = getFurni(it.defId);
+    if (!def || (def.sit && !def.leitos) || def.walkable || def.portal || def.vao === 'vazada' || /^(portal|cell_|bars|iwall)/.test(def.kind)) return [0, 0];
+    if (it.z > (map.floorHeight(it.x, it.y) ?? 0) + 0.05) return [0, 0];
+    const tr = tamanhoReal(it.defId);
+    if (!tr || tr.encosta) return [0, 0];
+    const fp = footprint(def, it.rot);
+    const larguraEmX = it.rot === 0 || it.rot === 4;
+    const folgaX = Math.max(0, (fp.sx - (larguraEmX ? tr.real[0] : tr.real[1]) / M_POR_CASA) / 2);
+    const folgaY = Math.max(0, (fp.sy - (larguraEmX ? tr.real[1] : tr.real[0]) / M_POR_CASA) / 2);
+    if (folgaX < 0.03 && folgaY < 0.03) return [0, 0];
+    // a parede do lado (-1 ou +1, em x ou em y): nenhuma casa da pegada tem chão do outro lado
+    const fora = (x: number, y: number) => map.floorHeight(x, y) === null;
+    const lado = (ax: 'x' | 'y', s: -1 | 1) => {
+      const n = ax === 'x' ? fp.sy : fp.sx;
+      for (let i = 0; i < n; i++) {
+        const x = ax === 'x' ? (s < 0 ? it.x - 1 : it.x + fp.sx) : it.x + i;
+        const y = ax === 'y' ? (s < 0 ? it.y - 1 : it.y + fp.sy) : it.y + i;
+        if (!fora(x, y)) return false;
+      }
+      return true;
+    };
+    // as costas: o lado contrário da frente (giro 4: a frente para +y, as costas em -y)
+    const costas: ['x' | 'y', -1 | 1] = it.rot === 4 ? ['y', -1] : it.rot === 0 ? ['y', 1] : it.rot === 2 ? ['x', -1] : ['x', 1];
+    if (!lado(...costas)) return [0, 0];
+    let dx = 0;
+    let dy = 0;
+    if (costas[0] === 'x') dx = costas[1] * folgaX;
+    else dy = costas[1] * folgaY;
+    // no canto: a lateral que dá para a outra parede (só uma delas)
+    const outro = costas[0] === 'x' ? 'y' : 'x';
+    const folga = outro === 'x' ? folgaX : folgaY;
+    if (folga >= 0.03) {
+      const menos = lado(outro, -1);
+      const mais = lado(outro, 1);
+      const d = menos && !mais ? -folga : mais && !menos ? folga : 0;
+      if (outro === 'x') dx = d;
+      else dy = d;
+    }
+    return [dx, dy];
+  }
+
+  private ajusteDoMovel(map: RoomMap, it: FloorItem, fundo = 0): [number, number] {
+    const q = Math.floor(performance.now() / 250);
+    if (q !== this.ajustesQuadro) {
+      this.ajustes.clear();
+      this.ajustesQuadro = q;
+    }
+    const salvo = this.ajustes.get(it.id);
+    if (salvo) return salvo;
+    let r: [number, number] = [0, 0];
+    const def = getFurni(it.defId);
+    const chao = map.floorHeight(it.x, it.y) ?? 0;
+    if (def && fundo < 4) {
+      const fp = footprint(def, it.rot);
+      const tr = tamanhoReal(it.defId);
+      if (it.z > chao + 0.05) {
+        // em cima de alguma coisa: na mesa de tampo menor, para dentro do tampo; em cima de outro item, junto com ele
+        const apoio = map.itemsAt(it.x, it.y).find((s) => s !== it && s.id !== it.id && Math.abs(s.z + (getFurni(s.defId)?.height ?? 0) - it.z) < 0.06);
+        const t = apoio ? this.tampo(apoio) : null;
+        if (t) {
+          const ihx = Math.min(t.hx, (tr ? (it.rot === 0 || it.rot === 4 ? tr.real[0] : tr.real[1]) : 0.4) / M_POR_CASA / 2);
+          const ihy = Math.min(t.hy, (tr ? (it.rot === 0 || it.rot === 4 ? tr.real[1] : tr.real[0]) : 0.4) / M_POR_CASA / 2);
+          const cx = it.x + fp.sx / 2;
+          const cy = it.y + fp.sy / 2;
+          const nx = Math.max(t.cx - t.hx + ihx, Math.min(t.cx + t.hx - ihx, cx));
+          const ny = Math.max(t.cy - t.hy + ihy, Math.min(t.cy + t.hy - ihy, cy));
+          r = [nx - cx, ny - cy];
+        } else if (apoio) r = this.ajusteDoMovel(map, apoio, fundo + 1);
+      } else if (!def.sit || def.leitos) {
+        // a cama também (a cabeceira na parede), e quem está deitado nela vai junto
+        r = this.encostoNaParede(map, it);
+      } else if (def.sit && !def.leitos && def.width === 1 && def.depth === 1) {
+        // a cadeira: a mesa na casa da frente dela (para onde quem senta olha)
+        const [fx, fy] = it.rot === 4 ? [0, 1] : it.rot === 0 ? [0, -1] : it.rot === 2 ? [1, 0] : [-1, 0];
+        const mesa = map.itemsAt(it.x + fx, it.y + fy).find((s) => this.tampo(s));
+        const t = mesa ? this.tampo(mesa) : null;
+        if (t) {
+          const meia = (tr ? tr.real[1] : 0.5) / M_POR_CASA / 2;
+          const encaixa = 0.25; // quanto o assento entra embaixo do tampo (~0,19 m)
+          const c = fx ? it.x + 0.5 : it.y + 0.5;
+          const lado = fx ? it.y + 0.5 : it.x + 0.5;
+          const [tc, th, lc, lh] = fx ? [t.cx, t.hx, t.cy, t.hy] : [t.cy, t.hy, t.cx, t.hx];
+          if (Math.abs(lado - lc) <= lh + 0.1) {
+            const borda = tc - (fx || fy) * th;
+            const alvo = borda - (fx || fy) * (meia - encaixa);
+            // para a mesa (o tampo menor que as casas) ou para trás (a mesa com `aumento`, que entra na casa dela):
+            // o assento fica sempre um pouco embaixo da borda, nem longe nem dentro da mesa
+            const d = Math.max(-0.45, Math.min(0.7, (alvo - c) * (fx || fy)));
+            if (Math.abs(d) > 0.02) r = fx ? [d * fx, 0] : [0, d * fy];
+          }
+        }
+      }
+    }
+    this.ajustes.set(it.id, r);
+    return r;
+  }
+
   private userPos(u: ClientUser, now: number) {
     if (u.anim) {
-      const t = (now - u.anim.start) / TICK_MS;
+      const t = (now - u.anim.start) / u.anim.ms;
       const k = Math.min(1, Math.max(0, t));
       const [fx, fy] = this.vis(u.anim.fx, u.anim.fy);
       const [tx, ty] = this.vis(u.anim.tx, u.anim.ty);
@@ -702,7 +860,10 @@ export class RoomView {
       };
     }
     const [x, y] = this.vis(u.x, u.y);
-    return { x, y, z: u.z, moving: false };
+    // sentada numa cadeira que entrou embaixo da mesa: vai junto com ela
+    const cadeira = u.sit === 1 && this.map ? this.map.sitItem(u.x, u.y) : undefined;
+    const [ax, ay] = cadeira && this.map ? this.ajusteDoMovel(this.map, cadeira) : [0, 0];
+    return { x: x + ax, y: y + ay, z: u.z, moving: false };
   }
 
   /** A altura da pessoa na tela (zoom 1): a arte dela vem na escala antiga e o tabuleiro reduz (ESCALA_ARTE_PESSOA). */
@@ -1061,7 +1222,11 @@ export class RoomView {
     const def = it ? getFurni(it.defId) : undefined;
     if (!it || !def || def.walkable || def.sit) return false;
     const fp = footprint(def, it.rot);
-    const naBase = tile.x >= it.x && tile.y >= it.y && tile.x < it.x + fp.sx && tile.y < it.y + fp.sy;
+    const dx = tile.x - it.x;
+    const dy = tile.y - it.y;
+    const naPegada = dx >= 0 && dy >= 0 && dx < fp.sx && dy < fp.sy;
+    // a peça vazada (a cortina do leito, a mesa em U): a casa de dentro é chão, e a da cortina aberta também
+    const naBase = naPegada && (!def.vazio?.length || (ocupa(def, it.rot, dx, dy) && map.walkState(tile.x, tile.y) === 'blocked'));
     return !naBase && map.walkState(tile.x, tile.y) !== 'blocked';
   }
 
@@ -1145,7 +1310,23 @@ export class RoomView {
 
     if (hit?.kind === 'user') {
       if (this.aoClicarPeca?.(hit.id)) return;
-      // clicar numa peça passa a controlá-la
+      // Shift + clique: junta a peça ao grupo (ou tira); o clique no chão manda o grupo inteiro
+      if (shift && !this.watchOnly) {
+        if (this.myId && this.users.has(this.myId)) this.grupo.add(this.myId);
+        if (this.grupo.has(hit.id) && this.grupo.size > 1) {
+          this.grupo.delete(hit.id);
+          if (this.myId === hit.id) this.myId = [...this.grupo][0] ?? 0;
+        } else {
+          this.grupo.add(hit.id);
+          this.myId = hit.id;
+        }
+        if (this.grupo.size < 2) this.grupo.clear();
+        this.events.grupoMudou?.(this.grupo.size);
+        this.select({ kind: 'user', id: this.myId });
+        return;
+      }
+      // clicar numa peça passa a controlá-la (e desfaz o grupo)
+      if (this.grupo.size) (this.grupo.clear(), this.events.grupoMudou?.(0));
       this.myId = hit.id;
       this.select({ kind: 'user', id: hit.id });
       return;
@@ -1160,7 +1341,8 @@ export class RoomView {
       const def = it ? getFurni(it.defId) : undefined;
       if (it && def) {
         if (dbl) this.events.use(it.id);
-        if (def.walkable || def.sit) {
+        // como a cadeira: a mesa vazada leva a peça para baixo dela (abaixada, escondida)
+        if (def.walkable || def.sit || def.vao === 'vazada') {
           const fp = footprint(def, it.rot);
           const inside = tile && tile.x >= it.x && tile.y >= it.y && tile.x < it.x + fp.sx && tile.y < it.y + fp.sy;
           const target = inside ? tile! : { x: it.x, y: it.y };
@@ -1215,7 +1397,7 @@ export class RoomView {
     return null;
   }
 
-  private drawWallItem(it: { id: number; wall: 'l' | 'r'; plane: number; pos: number; z: number; state: number; escala?: number }, def: WallFurniDef, t: number, lights: Light[], alpha: number, outline: string | null) {
+  private drawWallItem(it: { id: number; wall: 'l' | 'r'; plane: number; pos: number; z: number; state: number; escala?: number; vazio?: boolean; modelo?: string }, def: WallFurniDef, t: number, lights: Light[], alpha: number, outline: string | null) {
     const ctx = this.ctx;
     const { ox, oy, k } = this.wallXform(it.wall, it.plane, it.pos, it.z, def);
     ctx.save();
@@ -1230,7 +1412,7 @@ export class RoomView {
       ctx.scale(e, e);
       ctx.translate(-px, -py);
     }
-    const comArte = desenharParedeComArte(ctx, def.id, it.wall, it.state, px, py, it.id);
+    const comArte = desenharParedeComArte(ctx, def.id, it.wall, it.state, px, py, it.id, it.vazio, it.modelo);
     ctx.transform(1, k, 0, 1, ox, oy);
     if (!comArte) drawWallFurni(ctx, def, it.state, it.id, t);
     if (outline) {
@@ -1323,6 +1505,7 @@ export class RoomView {
     desenharMesa(ctx, map, info.floorStyle, pecas, v, {
       mostrarItem: esconde ? (it) => !this.itemOculto(it) : undefined,
       imagemChao: imagemDoMapa(info.mapa),
+      terreno: info.terreno,
       // no começo do caminho, o escuro da sala (como no isométrico); em cima, o mapa claro
       escuro: Math.min(0.5, info.darkness * 0.7) * (1 - passo(0.15, 1, t)),
       celas: celas?.casa,
@@ -1422,7 +1605,7 @@ export class RoomView {
         retrato: this.retratoDe(u),
         pv: this.pvDe?.(u.id) ?? undefined,
         vez: !!m?.vez.has(u.id),
-        escolhida: !this.watchOnly && (u.id === this.myId || (sel?.kind === 'user' && sel.id === u.id)),
+        escolhida: !this.watchOnly && (u.id === this.myId || this.grupo.has(u.id) || (sel?.kind === 'user' && sel.id === u.id)),
         caido: !!m?.deitadas.has(u.id),
         mira: m?.mira === u.id,
         naArea: !!m?.naArea.has(u.id),
@@ -1520,11 +1703,21 @@ export class RoomView {
       this.staticLayer = buildStatic(map, scale, this.info.floorStyle, this.info.terreno, !!this.info.aberto);
       this.staticKey = key;
     }
-    ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
+    // a Viagem: o mundo passa por baixo e por fora; a van (e quem está nela) só balança de leve
+    const viagem = this.info.viagem;
+    let balanco = 0;
+    if (viagem) {
+      this.mundoViagem.atualizar(now, viagem);
+      ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
+      this.mundoViagem.chao(ctx, viagem);
+      balanco = this.mundoViagem.balanco(now) * z;
+    }
+    ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, (this.cam.y + balanco) * dpr);
     const st = this.staticLayer!;
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(st.canvas, st.x, st.y, st.w, st.h);
     ctx.imageSmoothingEnabled = true;
+    if (viagem) this.mundoViagem.casco(ctx, viagem);
     // mapa improvisado: a imagem deitada no chão inteiro (a casa x, y vai para o losango dela)
     const imgMapa = imagemDoMapa(this.info.mapa);
     if (imgMapa) {
@@ -1628,17 +1821,39 @@ export class RoomView {
     }
     // o que cai fora da tela não é desenhado (a fazenda tem centenas de mobis); a luz deles continua valendo
     const vista = { x0: -this.cam.x / z - 120, y0: -this.cam.y / z - 200, x1: (this.vw - this.cam.x) / z + 120, y1: (this.vh - this.cam.y) / z + 120 };
-    const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number }, alpha: number, selected: boolean, ghost: boolean) => {
+    const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number; vazio?: boolean; quebrado?: boolean; modelo?: string }, alpha: number, selected: boolean, ghost: boolean) => {
       const def = getFurni(it.defId);
       if (!def) return;
       const base = furniVisual(def, it.state, it.id);
-      const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1) ?? base;
+      const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio, it.modelo) ?? base;
+      // a Operação Pede Mesa: o item escorrega para o tampo desenhado, a cadeira entra embaixo da mesa
+      const [ax, ay] = ghost ? [0, 0] : this.ajusteDoMovel(map, it as FloorItem);
+      const ix = it.x + ax;
+      const iy = it.y + ay;
+      // A ordem de desenho vem da casa de verdade do móvel (a pegada no chão), nunca do desenho: a
+      // cadeira que desliza para baixo do tampo e a mesa maior que a pegada (`aumento`) cruzavam as
+      // caixas, e o desempate deixava a cadeira de trás por cima da mesa (12/10). Com as pegadas, peças
+      // em casas diferentes sempre têm um lado que as separa, e a ordem sai certa ao montar e ao mover.
       m.set(it.rot, def.width, def.depth, it.x, it.y, it.z);
+      const ordens = vis.nodes.map((node) => m.box(node.ordem ?? node.b));
+      m.set(it.rot, def.width, def.depth, ix, iy, it.z);
       const floorH = map.floorHeight(it.x, it.y) ?? 0;
       const flat = !!def.flat && it.z <= floorH + 0.05 && !ghost;
       let topZ = it.z + def.height;
-      for (const node of vis.nodes) {
+      // a cadeira (ou banqueta) encaixada embaixo da mesa, no chão: a mesa vem por cima dela
+      const encaixada = !!def.sit && it.z <= floorH + 0.01 && !!map.mesaDaCasa(it.x, it.y) && !ghost;
+      for (const [n, node] of vis.nodes.entries()) {
         const box = m.box(node.b);
+        if (def.aumento && def.aumento !== 1) {
+          // a mesa maior que a pegada: o contorno (clique e quem se cruza na tela) cresce junto com a arte
+          const cx = (box.x0 + box.x1) / 2;
+          const cy = (box.y0 + box.y1) / 2;
+          const k = def.aumento;
+          box.x0 = cx + (box.x0 - cx) * k;
+          box.x1 = cx + (box.x1 - cx) * k;
+          box.y0 = cy + (box.y0 - cy) * k;
+          box.y1 = cy + (box.y1 - cy) * k;
+        }
         if (box.z1 > topZ) topZ = box.z1;
         const sil = boxSilhouette(box);
         let sx0 = Infinity;
@@ -1660,18 +1875,30 @@ export class RoomView {
         const cela = ghost ? undefined : celas?.mobi.get(it.id);
         const nodeAlpha = (xray ? alpha * 0.28 : alpha) * (cela ? 1 - 0.72 * cela.transp : 1);
         const d: Drawable = {
-          box: node.ordem ? m.box(node.ordem) : box,
+          box: ordens[n],
+          sob: encaixada,
           sx0: sx0 - 12,
           sx1: sx1 + 12,
           sy0: sy0 - 24,
           sy1: sy1 + 4,
           poly: sil,
           draw: () => {
-            painter.m.set(rot, def.width, def.depth, it.x, it.y, it.z);
+            painter.m.set(rot, def.width, def.depth, ix, iy, it.z);
             painter.state = it.state;
             painter.seed = it.id;
             ctx.globalAlpha = nodeAlpha;
-            node.draw(painter);
+            if (it.quebrado) {
+              // destruído: carbonizado (escuro, queimado) e torto, tombando para um lado sobre a base
+              ctx.save();
+              const [bx, by] = iso(it.x + footprint(def, rot).sx / 2, it.y + footprint(def, rot).sy / 2, it.z);
+              const giro = (((it.id * 2654435761) >>> 0) % 2 ? 1 : -1) * (0.05 + (((it.id * 40503) >>> 0) % 5) * 0.012);
+              ctx.translate(bx, by);
+              ctx.rotate(giro);
+              ctx.translate(-bx, -by);
+              ctx.filter = 'brightness(0.42) sepia(0.6) saturate(0.55) contrast(1.15)';
+              node.draw(painter);
+              ctx.restore();
+            } else node.draw(painter);
             if (cela) escurecerForma(ctx, sil, cela.escuro);
             ctx.globalAlpha = 1;
             if (selected) {
@@ -1687,6 +1914,70 @@ export class RoomView {
         };
         (flat ? flats : drawables).push(d);
         if (!ghost) hitOf.set(d, { kind: 'floor', id: it.id, test: (x, y) => pointInPoly(x, y, sil) });
+        if (def.vazio?.length && !flat) {
+          // peça vazada (a cortina do leito, a mesa em U): o que está dentro fica entre as paredes do
+          // fundo e as da frente. A peça inteira vai para trás de tudo de dentro (a quina do fundo) e
+          // as paredes da frente (as faces x1 e y1, as que a câmera vê) são redesenhadas por cima,
+          // recortadas, na quina da frente.
+          const fp = footprint(def, rot);
+          const B = { x0: it.x, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy, z0: box.z0, z1: box.z1 };
+          const e = 0.02;
+          d.box = { x0: B.x0 - e, x1: B.x0, y0: B.y0 - e, y1: B.y0, z0: B.z0, z1: B.z1 };
+          // as faces de perto (x1 e y1), menos o lado aberto: pela face aberta se vê o fundo da peça,
+          // que não pode ser repintado por cima de quem está dentro
+          const ladoX1 = rot === 2 ? 'frente' : rot === 6 ? 'fundo' : 'lado';
+          const ladoY1 = rot === 4 ? 'frente' : rot === 0 ? 'fundo' : 'lado';
+          const aberto = (lado: string) => (def.aberto as string[] | undefined)?.includes(lado) ?? false;
+          const faces: [number, number][][] = [];
+          if (!aberto(ladoY1)) faces.push([iso(B.x0, B.y1, B.z0), iso(B.x1, B.y1, B.z0), iso(B.x1, B.y1, B.z1), iso(B.x0, B.y1, B.z1)]);
+          if (!aberto(ladoX1)) faces.push([iso(B.x1, B.y0, B.z0), iso(B.x1, B.y1, B.z0), iso(B.x1, B.y1, B.z1), iso(B.x1, B.y0, B.z1)]);
+          // a parte grossa de perto (o braço da mesa em U: a casa inteira, com o tampo e o que está em
+          // cima dele) também fica na frente de quem está dentro. É a casa ocupada da coluna ou da fileira
+          // de perto que tem uma casa vazia antes dela, na mesma fileira ou na mesma coluna.
+          const vaz = (dx: number, dy: number) => !ocupa(def, rot, dx, dy);
+          const zTopo = B.z1 + 0.45 * Z_PER_M;
+          for (let dy = 0; dy < fp.sy; dy++)
+            for (let dx = 0; dx < fp.sx; dx++) {
+              if (vaz(dx, dy) || (dx !== fp.sx - 1 && dy !== fp.sy - 1)) continue;
+              let antes = false;
+              for (let k = 0; k < dx && !antes; k++) antes = vaz(k, dy);
+              for (let k = 0; k < dy && !antes; k++) antes = vaz(dx, k);
+              if (antes) faces.push(boxSilhouette({ x0: B.x0 + dx, x1: B.x0 + dx + 1, y0: B.y0 + dy, y1: B.y0 + dy + 1, z0: B.z0, z1: zTopo }));
+            }
+          // todas no mesmo sentido, para o recorte ser a união delas (no nonzero, sentidos opostos se anulam)
+          for (let i = 0; i < faces.length; i++) {
+            const f = faces[i];
+            let area = 0;
+            for (let k = 0; k < f.length; k++) area += f[k][0] * f[(k + 1) % f.length][1] - f[(k + 1) % f.length][0] * f[k][1];
+            if (area < 0) faces[i] = [...f].reverse();
+          }
+          drawables.push({
+            box: { x0: B.x1, x1: B.x1 + e, y0: B.y1, y1: B.y1 + e, z0: B.z0, z1: B.z1 },
+            sx0: d.sx0,
+            sx1: d.sx1,
+            sy0: d.sy0,
+            sy1: d.sy1,
+            poly: sil,
+            draw: () => {
+              if (!faces.length) return;
+              ctx.save();
+              ctx.beginPath();
+              for (const f of faces) {
+                ctx.moveTo(f[0][0], f[0][1]);
+                for (let i = 1; i < f.length; i++) ctx.lineTo(f[i][0], f[i][1]);
+                ctx.closePath();
+              }
+              ctx.clip();
+              painter.m.set(rot, def.width, def.depth, ix, iy, it.z);
+              painter.state = it.state;
+              painter.seed = it.id;
+              ctx.globalAlpha = nodeAlpha;
+              node.draw(painter);
+              ctx.globalAlpha = 1;
+              ctx.restore();
+            },
+          });
+        }
       }
       for (const L of vis.lights) {
         const [lx, ly] = m.p(L.u, L.v, L.z);
@@ -1705,28 +1996,22 @@ export class RoomView {
           const z = real.z;
           const box: WBox = { x0: real.x, x1: real.x + 1, y0: real.y, y1: real.y + 1, z0: z, z1: z + 0.2 };
           const [cx, cy] = iso(real.x + 0.5, real.y + 0.5, z);
-          const T = 34;
+          // como o drop de um jogo (07/10): o ícone pintado de pé e um pouco inclinado, com sombra, brilho quente
+          // no chão e balanço leve (render/itemNoChao.ts). Deitá-lo na perspectiva do piso (2:1) o esmagava.
+          const pos = imgs.map((img, i) => ({ img, ox: [0, -0.24, 0.22][i], oy: [0, 0.2, -0.2][i], semente: hash(real.id, i) }));
           drawables.push({
             box,
-            sx0: cx - T,
-            sx1: cx + T,
-            sy0: cy - T - 6,
-            sy1: cy + 8,
+            sx0: cx - 56,
+            sx1: cx + 56,
+            sy0: cy - 72,
+            sy1: cy + 20,
             draw: () => {
-              // a sombra no chão e os itens um pouco espalhados, o primeiro na frente
-              ctx.fillStyle = 'rgba(0,0,0,0.35)';
-              ctx.beginPath();
-              ctx.ellipse(cx, cy + 2, T * 0.7, T * 0.28, 0, 0, Math.PI * 2);
-              ctx.fill();
-              imgs
-                .map((img, i) => ({ img, dx: [0, -14, 13][i], dy: [0, -6, -8][i] }))
-                .reverse()
-                .forEach(({ img, dx, dy }) => {
-                  const k = T / Math.max(img.naturalWidth, img.naturalHeight);
-                  const w = img.naturalWidth * k;
-                  const h = img.naturalHeight * k;
-                  ctx.drawImage(img, cx + dx - w / 2, cy + dy - h + 6, w, h);
-                });
+              // os do fundo primeiro: o de trás não tapa o da frente
+              for (const { img, ox, oy, semente } of [...pos].sort((a, b) => a.ox + a.oy - (b.ox + b.oy))) {
+                const [px, py] = iso(real.x + 0.5 + ox, real.y + 0.5 + oy, z);
+                // o lado maior do item: 44 (uns 0,8 m perto da pessoa de 94), 34 quando são vários (08/10: eram 72 e 58, do tamanho de gente)
+                desenharItemNoChao(ctx, img, px, py, imgs.length > 1 ? 34 : 44, semente);
+              }
             },
           });
           continue;
@@ -1811,7 +2096,7 @@ export class RoomView {
         delete u.passoDesde;
         delete u.passoLen;
       }
-      const casas = p.moving && u.anim ? (u.casas ?? 0) + (u.passoLen ?? 1) * Math.min(1, Math.max(0, (now - u.anim.start) / TICK_MS)) : 0;
+      const casas = p.moving && u.anim ? (u.casas ?? 0) + (u.passoLen ?? 1) * Math.min(1, Math.max(0, (now - u.anim.start) / u.anim.ms)) : 0;
       let bq: SpriteFrame | null = null;
       let bpes: PeQuadro[] | null = null;
       // o boneco filmado em 3D (andar completo, parado respirando, sentado, dançando): vale no lugar de tudo
@@ -1855,7 +2140,8 @@ export class RoomView {
       }
       const passos = lp && p.moving ? passosFor(lp, estado, u.dir) : null;
       // folha sem pose de sentar: fica de pé no chão, junto do assento (não em cima dele)
-      const standBy = !!sp && u.sit === 1 && !p.moving && !framesFor(sp.lc, u.dir, 'sit');
+      // (na van não: lá o agente senta no banco mesmo sem a pose de sentar, com as pernas escondidas)
+      const standBy = !!sp && u.sit === 1 && !p.moving && !framesFor(sp.lc, u.dir, 'sit') && !this.info?.viagem;
       const seated = u.sit === 1 && !standBy;
       const baseZ = standBy ? (map.floorHeight(u.x, u.y) ?? p.z) : p.z;
       const half = seated ? 0.25 : 0.3;
@@ -1869,6 +2155,8 @@ export class RoomView {
       // ~1,75 m de altura para a ordem de desenho
       const box: WBox = { x0: cx - half, x1: cx + half, y0: cy - half, y1: cy + half, z0: baseZ, z1: baseZ + ALTURA_PESSOA };
       const deitada = !!marcas?.deitadas.has(u.id);
+      // embaixo da mesa vazada: abaixada, escondida atrás dela (a mesa vem por cima na ordem de desenho)
+      const sob = !deitada && map.sobMesa(Math.round(p.x), Math.round(p.y));
       const fy = u.sit === 2 ? sy - 8 : sy;
       const door = this.door;
       const clip = !!door && (door.seg.wall === 'l' ? cx < door.seg.plane : cy < door.seg.plane);
@@ -1953,7 +2241,7 @@ export class RoomView {
                 }
             } else if (!deitada) desenharSombraPes(ctx, sx, sy, Math.round(rx * 0.86), Math.round(ry * 0.86));
             // anel na cor do personagem (no combate, na cor do lado): fino, em volta da sombra; a peça ativa pulsa
-            const active = u.id === this.myId;
+            const active = u.id === this.myId || (!this.watchOnly && this.grupo.has(u.id));
             const pulse = active ? 1 + Math.sin(now / 260) * 0.06 : 1;
             const corBase = marcas?.bases.get(u.id) ?? u.color;
             // no combate, a base pintada do kit (agente ou inimigo); fora dele, o anel na cor do personagem
@@ -1970,6 +2258,19 @@ export class RoomView {
               ctx.ellipse(sx, sy, arx * pulse, ary * pulse, 0, 0, Math.PI * 2);
               ctx.stroke();
             }
+            // de cócoras: duas setas para baixo embaixo do anel
+            if (u.agachado) {
+              ctx.strokeStyle = rgba(corBase, 0.95);
+              ctx.lineWidth = 1.6;
+              ctx.lineCap = 'round';
+              for (const dy of [ary + 4, ary + 8]) {
+                ctx.beginPath();
+                ctx.moveTo(sx - 5, sy + dy);
+                ctx.lineTo(sx, sy + dy + 3.5);
+                ctx.lineTo(sx + 5, sy + dy);
+                ctx.stroke();
+              }
+            }
             if (isSel || active) {
               ctx.lineWidth = 1;
               ctx.strokeStyle = 'rgba(255,255,255,0.38)';
@@ -1983,6 +2284,7 @@ export class RoomView {
         });
       const d: Drawable = {
         box,
+        sob,
         sx0: sx - 40,
         sx1: sx + 40,
         sy0: sy - HE - 30,
@@ -1995,12 +2297,15 @@ export class RoomView {
           // numa cela fechada, a peça fica no escuro com ela
           const eCela = escuroEm(celas, cx, cy);
           if (eCela > 0.01) ctx.filter = `brightness(${(1 - 0.78 * eCela).toFixed(3)})`;
-          // a pessoa na escala do tabuleiro, a partir dos pés
+          // a pessoa na escala do tabuleiro, a partir dos pés (de cócoras, mais baixa)
           ctx.save();
           ctx.translate(sx, sy);
-          ctx.scale(ESCALA_ARTE_PESSOA, ESCALA_ARTE_PESSOA);
+          ctx.scale(ESCALA_ARTE_PESSOA, ESCALA_ARTE_PESSOA * (sob ? 0.62 : u.agachado ? 0.72 : 1));
           ctx.translate(-sx, -sy);
           const dance = u.dance ? -Math.abs(Math.sin((now * Math.PI) / 320 + u.phase)) * 4 : 0;
+          // flutuando (o Existido, 10/10): o corpo uns 20 cm acima do chão, subindo e descendo devagar; a sombra e o
+          // anel ficam no chão (desenhados antes), e é isso que mostra que ele não pisa
+          if (u.flutua && !deitada) ctx.translate(0, -(11 + Math.sin(now / 650 + u.phase) * 2.5));
           // giro: afina de lado e volta, com um pulinho, a partir dos pés
           const tt = u.turnAt ? (now - u.turnAt) / TURN_MS : 1;
           const turning = tt < 1;
@@ -2108,6 +2413,14 @@ export class RoomView {
       if (h) hits.push(h);
     }
     this.hits = hits;
+    if (viagem) {
+      this.mundoViagem.frente(ctx);
+      // o que passa de perto é do mundo: não balança com a van
+      ctx.save();
+      ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
+      this.mundoViagem.proximo(ctx, viagem);
+      ctx.restore();
+    }
     // a casa do mouse atrás de um móvel: o contorno tracejado por cima, para ver onde a peça vai parar
     if (this.cursorPorCima && ht && this.mouse.inside && !place) {
       const h = map.standHeight(ht.x, ht.y);
@@ -2193,8 +2506,9 @@ export class RoomView {
         },
       );
 
-    // ícones de pista (a tela da mesa não mostra)
-    if (this.watchOnly) hintTargets.length = 0;
+    // ícones de pista (a tela da mesa não mostra). Desligados em 08/10 a pedido do Felipe ("por hora, vamos descartar
+    // essas lupinhas sobre os móveis... todos eles"): a pista continua no objeto, no painel dele ao clicar.
+    if (this.watchOnly || !MOSTRAR_LUPAS) hintTargets.length = 0;
     for (const h of hintTargets) {
       h.sx = Math.round(h.wx * z + this.cam.x);
       h.sy = Math.round(h.wy * z + this.cam.y + Math.sin(t / 450 + h.id) * 2);
@@ -2212,7 +2526,30 @@ export class RoomView {
       this.nameTag(u.name, wx * z + this.cam.x, (wy - H - (u.sit ? -12 : 4)) * z + this.cam.y, u.id === this.myId);
     }
 
+    if (viagem) this.mundoViagem.clima(ctx, viagem, now, this.dpr);
     this.bubbles.draw(ctx, (wx) => wx * z + this.cam.x, this.vw);
+    if (viagem?.destino) this.faixaDoDestino(viagem.destino);
+  }
+
+  /** O que o mestre escreveu como destino da viagem, numa faixa no alto do tabuleiro (a mesa também lê). */
+  private faixaDoDestino(texto: string) {
+    const ctx = this.ctx;
+    const fr = this.frame_();
+    ctx.save();
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.font = `700 17px ${UI_FONT}`;
+    ctx.textBaseline = 'middle';
+    const w = ctx.measureText(texto).width + 40;
+    const x = Math.round(fr.x + fr.w / 2 - w / 2);
+    const y = Math.round(fr.y + 22);
+    ctx.fillStyle = 'rgba(5,11,20,0.82)';
+    ctx.fillRect(x, y, w, 32);
+    ctx.strokeStyle = 'rgba(233,169,68,0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x + 0.75, y + 0.75, w - 1.5, 30.5);
+    ctx.fillStyle = '#ffd27a';
+    ctx.fillText(texto, x + 20, y + 16.5);
+    ctx.restore();
   }
 
   /** O móvel some na mesa quando todas as casas dele estão na névoa. */

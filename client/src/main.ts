@@ -10,8 +10,17 @@ import './ui/itens.css';
 import './ui/teclado.css';
 import './ui/requisicao.css';
 import './ui/entrada.css';
+import './ui/mapaMundi.css';
 import './ui/kit.css';
+import './ui/minimapa.css';
 import './ui/jogador.css';
+import './ui/fliperama.css';
+import './ui/barJogos.css';
+import './ui/retro-auto.css';
+import './ui/retro.css';
+import './ui/hud.css';
+import './ui/combateRapido.css';
+import './ui/cards.css';
 import { anyFurniName, getFurni, getWallFurni, portraitState, vitalConditions, type ServerMsg } from '@crona/shared';
 import { Net } from './net';
 import { clearIconCache } from './render/bubbles';
@@ -29,6 +38,8 @@ import { loadLogin, saveLogin } from './ui/login';
 import { TableScreen } from './ui/table';
 import { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha, TelaFicha } from './ui/telaFicha';
 import { Entrada } from './ui/entrada';
+import { mostrarTelaViagem } from './ui/viagemTela';
+import { BarJogos } from './ui/barJogos';
 import { esquecerSessao, guardarSessao, lerSessao } from './session/conta';
 import { janelaAberta } from './ui/fichaModal';
 import { NavigatorWin } from './ui/navigator';
@@ -36,6 +47,7 @@ import { RoomSettingsWin } from './ui/roomSettings';
 import { forgetGmKey, readGmKey, tableName, tableRequested } from './session/access';
 import { montarTemas } from './ui/temaUi';
 import { NEVOA_NA_TELA } from './ui/ferramentasMesa';
+import { ligarMarcaOuro } from './ui/marcaOuro';
 
 const LAST_ROOM = 'crona.lastRoom';
 const HOME_SEEN = 'crona.homeSeen';
@@ -86,13 +98,54 @@ function startPlace(defId: string, invId?: number) {
   shell?.setPlacement(`Colocando ${name}: clique para colocar · R ou botão direito gira · Shift coloca vários · Esc cancela`);
 }
 
+/**
+ * O grupo anda junto (09/10, o Felipe): cada peça vai para uma casa livre perto do destino, sem empilhar. As casas saem
+ * de uma busca a partir do destino (as mais perto primeiro); a peça mais perto do destino fica com a casa do clique, e
+ * as outras, em ordem de distância, com as seguintes.
+ */
+function andarEmGrupo(x: number, y: number) {
+  const map = app.view.map;
+  if (!map) return;
+  const ids = [...app.view.grupo].filter((id) => app.view.users.has(id));
+  const doGrupo = new Set(ids);
+  const ocupadas = new Set([...app.view.users.values()].filter((u) => !doGrupo.has(u.id)).map((u) => `${u.x},${u.y}`));
+  const casas: { x: number; y: number }[] = [];
+  const vistas = new Set([`${x},${y}`]);
+  const fila = [{ x, y }];
+  while (fila.length && casas.length < ids.length) {
+    const c = fila.shift()!;
+    if (map.walkState(c.x, c.y) === 'walk' && !ocupadas.has(`${c.x},${c.y}`)) casas.push(c);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+      const n = { x: c.x + dx, y: c.y + dy };
+      const k = `${n.x},${n.y}`;
+      if (vistas.has(k) || map.floorHeight(n.x, n.y) === null) continue;
+      vistas.add(k);
+      // não atravessa parede nem móvel na busca (a casa do lado de lá de um armário não é "perto")
+      if (map.walkState(n.x, n.y) === 'blocked') continue;
+      fila.push(n);
+    }
+  }
+  const dist = (id: number) => {
+    const u = app.view.users.get(id)!;
+    return Math.hypot(u.x - x, u.y - y);
+  };
+  ids.sort((a, b) => dist(a) - dist(b)).forEach((id, i) => {
+    const c = casas[i] ?? { x, y };
+    net.send({ t: 'tokenWalk', tokenId: id, x: c.x, y: c.y });
+  });
+}
+
 const view = new RoomView(canvas, {
   walk: (x, y) => {
     // jogador só acompanha
     if (!app.isGm) return;
     const id = app.view.myId;
+    if (app.view.grupo.size > 1) return andarEmGrupo(x, y);
     if (id) net.send({ t: 'tokenWalk', tokenId: id, x, y });
     else toast('Clique num personagem para comandá-lo.');
+  },
+  grupoMudou: (n) => {
+    if (n > 1) toast(`${n} peças andando juntas. Clique no chão para mandar o grupo; Shift + clique numa peça junta ou tira; clique sem Shift desfaz.`);
   },
   lookAt: () => {},
   placeFloor: (p, x, y, keep) => {
@@ -184,6 +237,10 @@ const telaFicha = fichaMode
       sessionEnded();
     })
   : null;
+/** os jogos do bar em que o mestre joga por um NPC (janelinha no canto) */
+const barMestre = shell ? new BarJogos(app, 'mestre') : null;
+// a marca de ouro das abas desliza de uma aba para a outra (em toda tela)
+ligarMarcaOuro();
 if (shell) {
   shell.mountCanvas(canvas);
   root.append(shell.el);
@@ -381,6 +438,23 @@ net.onMessage = (m: ServerMsg) => {
     case 'combate':
       shell?.combate.setCombate(m.combate, m.podeDesfazer, m.ameacas);
       table?.setCombate(m.combate);
+      break;
+    case 'bar':
+    case 'barFechar':
+    case 'barJogo':
+      // os jogos do bar: no celular do jogador, ou na janelinha do mestre (o NPC)
+      (telaFicha?.bar ?? barMestre)?.receber(m);
+      break;
+    case 'viagemTela':
+      mostrarTelaViagem(m.fase, m.ilustracao, m.texto, m.reserva);
+      break;
+    case 'lugares':
+      app.state.lugares = m.lugares;
+      app.emit('lugares');
+      break;
+    case 'bestiario':
+      app.state.bestiario = m.criaturas;
+      app.emit('bestiario');
       break;
     case 'roomList':
       app.state.rooms = m.rooms;

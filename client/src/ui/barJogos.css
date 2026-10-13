@@ -1,0 +1,536 @@
+/* =====================================================================
+   OS JOGOS DO BAR (barJogos.ts): a tela cheia do celular, a janelinha do mestre (o NPC) e o
+   visual dos dardos e da sinuca (dardos.ts, sinuca.ts), na linguagem da tela do jogador:
+   a janela azul-noite com a borda bege, a Pixelify e o ouro do botão forte.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------- no celular: a tela inteira */
+.bar-tela {
+  position: fixed;
+  inset: 0;
+  z-index: 8500;
+  overflow: hidden;
+  background: #02040a;
+  touch-action: none;
+}
+/* entrando e saindo, a ficha aparece por trás dos pixels */
+.bar-tela.some {
+  background: transparent;
+}
+.bar-pixels {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.bar-conteudo {
+  position: absolute;
+  inset: 0;
+  container-type: size;
+}
+.bar-conteudo.hidden {
+  visibility: hidden;
+}
+
+/* ---------------------------------------------------------------- no mestre: a janelinha do NPC */
+.bar-janela.bar-janela {
+  --u: calc(400px / 94);
+}
+.bar-janela {
+  position: fixed;
+  z-index: 650;
+  right: calc(16px + var(--n, 0) * 416px);
+  bottom: 16px;
+  width: 400px;
+  height: min(800px, calc(100vh - 96px));
+  display: flex;
+  flex-direction: column;
+  border: 3px solid var(--c-borda);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #02040a;
+  box-shadow:
+    0 0 0 2px #050b14,
+    0 18px 40px rgba(0, 0, 0, 0.6);
+  outline: none;
+  animation: bar-janela-entra 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bar-janela:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--c-ouro),
+    0 18px 40px rgba(0, 0, 0, 0.6);
+}
+.bar-janela-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  background: linear-gradient(var(--c-noite-3), var(--c-noite-2));
+  border-bottom: 2px solid var(--c-borda-2);
+  color: var(--c-texto);
+  font: 600 14px / 1.1 var(--f-pixel);
+  letter-spacing: 0.04em;
+}
+.bar-janela-topo b {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.bar-janela-x {
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--c-borda-2);
+  border-radius: 6px;
+  background: var(--c-campo);
+  color: var(--c-texto-2);
+  font: 700 18px / 1 var(--f-pixel);
+  cursor: pointer;
+}
+.bar-janela-x:hover {
+  border-color: var(--c-perigo);
+  color: var(--c-perigo);
+}
+.bar-janela .bar-conteudo {
+  position: relative;
+  inset: auto;
+  flex: 1;
+  min-height: 0;
+}
+@keyframes bar-janela-entra {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+}
+
+/* ---------------------------------------------------------------- dardos e sinuca */
+.bj {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding: max(var(--s3), env(safe-area-inset-top)) var(--s3) max(var(--s3), env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 480px;
+  color: var(--c-texto);
+  font: 500 var(--t-corpo) / 1.35 var(--f-corpo);
+  background:
+    radial-gradient(ellipse 120% 50% at 50% 0%, rgba(233, 169, 68, 0.12), transparent 70%),
+    linear-gradient(#0b1526, #050b14);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.bj-topo {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+.bj-topo b {
+  font: 700 var(--t-titulo) / 1 var(--f-pixel);
+  letter-spacing: 0.08em;
+  color: var(--c-ouro-hi);
+  text-shadow: var(--sombra-pixel);
+}
+.bj-topo span {
+  font: 500 var(--t-meta) / 1.2 var(--f-pixel);
+  color: var(--c-texto-2);
+}
+
+/* o placar: um cartão por jogador, o da vez aceso */
+.bj-placar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--u) * 20), 1fr));
+  gap: var(--s1);
+}
+.bj-chip {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.6);
+  padding: var(--s1) var(--s2);
+  border: var(--borda) solid var(--c-borda-2);
+  border-radius: var(--raio);
+  background: rgba(5, 11, 20, 0.94);
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s,
+    transform 0.25s var(--ease);
+}
+.bj-chip span {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 1.2);
+  font: 600 var(--t-meta) / 1.1 var(--f-pixel);
+  color: var(--c-texto-2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.bj-chip span::before {
+  content: '';
+  flex: none;
+  width: calc(var(--u) * 2.2);
+  height: calc(var(--u) * 2.2);
+  border-radius: 50%;
+  background: var(--cor);
+  box-shadow: 0 0 0 calc(var(--u) * 0.4) #050b14;
+}
+.bj-chip small {
+  font-size: var(--t-mini);
+  color: var(--c-texto-3);
+}
+.bj-chip b {
+  font: 700 var(--t-numero) / 1 var(--f-pixel);
+  color: var(--c-texto);
+  text-shadow: var(--sombra-pixel);
+  white-space: nowrap;
+}
+.bj-sinuca .bj-chip b {
+  font-size: var(--t-ui);
+}
+.bj-chip.on {
+  border-color: var(--c-ouro);
+  box-shadow: 0 0 calc(var(--u) * 3) rgba(233, 169, 68, 0.35);
+  transform: translateY(calc(var(--u) * -0.4));
+}
+.bj-chip.on b {
+  color: var(--c-ouro-hi);
+}
+.bj-chip.venceu {
+  border-color: var(--c-ok);
+  box-shadow: 0 0 calc(var(--u) * 3) rgba(121, 217, 143, 0.35);
+}
+
+/* o palco: o alvo ou a mesa, do tamanho que sobra */
+.bj-palco {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: var(--raio);
+  background: radial-gradient(ellipse at 50% 40%, #2a2016, #120c08);
+  box-shadow: inset 0 0 0 var(--borda) var(--c-borda-2);
+  transition: box-shadow 0.3s;
+}
+.bj-sinuca .bj-palco {
+  background: radial-gradient(ellipse at 50% 45%, #1c140e, #0a0705);
+}
+.minha-vez .bj-palco {
+  box-shadow:
+    inset 0 0 0 var(--borda) var(--c-ouro),
+    0 0 calc(var(--u) * 4) rgba(233, 169, 68, 0.25);
+}
+.bj-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+}
+.bj-aviso {
+  margin: 0;
+  min-height: calc(var(--t-corpo) * 2.7);
+  text-align: center;
+  color: var(--c-texto);
+  text-wrap: balance;
+}
+.minha-vez .bj-aviso {
+  color: var(--c-ouro-hi);
+}
+
+/* os botões de baixo */
+.bj-rodape {
+  display: flex;
+  gap: var(--s1);
+}
+.bj-bt {
+  flex: 1;
+  min-height: calc(var(--u) * 11);
+  padding: 0 var(--s2);
+  border: var(--borda) solid var(--c-borda);
+  border-radius: var(--raio);
+  background: var(--c-campo);
+  color: var(--c-texto);
+  font: 600 var(--t-rotulo) / 1.1 var(--f-pixel);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.12s var(--ease),
+    border-color 0.2s,
+    opacity 0.2s;
+}
+.bj-bt:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.bj-bt:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.bj-bt.sair {
+  flex: 0.7;
+  border-color: #b4483b;
+  color: var(--c-perigo);
+}
+.bj-bt.forte {
+  border-color: #3a1e08;
+  background: linear-gradient(#f6cf6a 0%, #e9a944 46%, #c97f2c 100%);
+  color: var(--c-tinta-ouro);
+  box-shadow:
+    inset 0 calc(var(--u) * 0.5) 0 rgba(255, 240, 190, 0.75),
+    inset 0 calc(var(--u) * -0.7) 0 rgba(120, 60, 10, 0.55);
+}
+/* a tacada: o botão grande com a barra da força */
+.bj-tacada {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: calc(var(--u) * 1);
+  touch-action: none;
+}
+.bj-forca {
+  display: block;
+  height: calc(var(--u) * 1.6);
+  border-radius: 99rem;
+  background: rgba(43, 22, 6, 0.35);
+  overflow: hidden;
+}
+.bj-forca i {
+  display: block;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(90deg, #79d98f, #f6cf6a 55%, #f0503f);
+}
+
+/* ---------------------------------------------------------------- a vida do bar (dardos e sinuca) */
+.bj-topo {
+  position: relative;
+  padding-right: calc(var(--u) * 10);
+}
+/* o botão da música, no canto */
+.bj-som {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(var(--u) * 8.5);
+  height: calc(var(--u) * 8.5);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: var(--borda) solid var(--c-borda-2);
+  border-radius: 50%;
+  background: rgba(5, 11, 20, 0.7);
+  color: var(--c-ouro-hi);
+  font: 700 calc(var(--u) * 4.2) / 1 var(--f-corpo);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.bj-som.off {
+  color: var(--c-texto-3);
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+/* a tela entrando: cada parte chega um pouco depois da outra */
+.bj.entra > * {
+  animation: bj-entra 0.55s var(--ease) both;
+}
+.bj.entra > :nth-child(2) {
+  animation-delay: 0.06s;
+}
+.bj.entra > :nth-child(3) {
+  animation-delay: 0.12s;
+}
+.bj.entra > :nth-child(4) {
+  animation-delay: 0.18s;
+}
+.bj.entra > :nth-child(5) {
+  animation-delay: 0.24s;
+}
+.bj.entra > :nth-child(6) {
+  animation-delay: 0.3s;
+}
+@keyframes bj-entra {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--u) * 3)) scale(0.98);
+  }
+}
+
+/* o número do placar pula quando muda */
+.bj-chip b.muda {
+  animation: bj-muda 0.5s var(--ease);
+}
+@keyframes bj-muda {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.35) translateY(calc(var(--u) * -0.8));
+    color: var(--c-ouro-hi);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.bj-chip.on {
+  animation: bj-vez 1.8s ease-in-out infinite;
+}
+@keyframes bj-vez {
+  50% {
+    box-shadow: 0 0 calc(var(--u) * 4.5) rgba(233, 169, 68, 0.55);
+  }
+}
+
+/* a faixa que atravessa o palco ("SUA VEZ!", "ESTOUROU!", "CATARINA VENCEU!") */
+.bj-faixa {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 42%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: var(--s2) 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(5, 11, 20, 0.92) 18%, rgba(5, 11, 20, 0.92) 82%, transparent);
+  border-top: calc(var(--u) * 0.5) solid var(--c-borda-2);
+  border-bottom: calc(var(--u) * 0.5) solid var(--c-borda-2);
+  animation: bj-faixa 1.7s var(--ease) both;
+}
+.bj-faixa span {
+  font: 700 var(--t-titulo) / 1 var(--f-pixel);
+  letter-spacing: 0.1em;
+  color: var(--c-texto);
+  text-shadow: var(--sombra-pixel);
+  animation: bj-faixa-letra 1.7s var(--ease) both;
+}
+.bj-faixa.minha span {
+  color: var(--c-ouro-hi);
+}
+.bj-faixa.minha {
+  border-color: var(--c-ouro);
+}
+.bj-faixa.ruim span {
+  color: var(--c-perigo);
+}
+.bj-faixa.ruim {
+  border-color: #b4483b;
+}
+.bj-faixa.festa span {
+  color: var(--c-ok);
+  font-size: var(--t-grande);
+}
+.bj-faixa.festa {
+  border-color: var(--c-ok);
+  animation-duration: 2.8s;
+}
+@keyframes bj-faixa {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
+  14%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(0.4);
+  }
+}
+@keyframes bj-faixa-letra {
+  0% {
+    transform: translateX(-60%);
+    opacity: 0;
+  }
+  18%,
+  78% {
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(60%);
+    opacity: 0;
+  }
+}
+
+/* a bandeja da sinuca: as bolas encaçapadas, a nova caindo nela */
+.bj-bandeja {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 1);
+  min-height: calc(var(--u) * 6.5);
+  padding: calc(var(--u) * 0.8) var(--s2);
+  border-radius: 99rem;
+  background: linear-gradient(#1a0e06, #2e1a0c);
+  box-shadow: inset 0 calc(var(--u) * 0.6) calc(var(--u) * 1.2) rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+.bj-bandeja small {
+  font: 500 var(--t-mini) / 1 var(--f-pixel);
+  color: var(--c-texto-3);
+}
+.bj-bola {
+  flex: none;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(var(--u) * 4.6);
+  height: calc(var(--u) * 4.6);
+  border-radius: 50%;
+  box-shadow:
+    inset calc(var(--u) * -0.5) calc(var(--u) * -0.6) 0 rgba(0, 0, 0, 0.3),
+    inset calc(var(--u) * 0.4) calc(var(--u) * 0.4) 0 rgba(255, 255, 255, 0.35);
+}
+.bj-bola b {
+  display: grid;
+  place-items: center;
+  width: 58%;
+  height: 58%;
+  border-radius: 50%;
+  background: #f4f1e6;
+  color: #141414;
+  font: 700 calc(var(--u) * 1.9) / 1 var(--f-corpo);
+}
+.bj-bola.nova {
+  animation: bj-bola-cai 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@keyframes bj-bola-cai {
+  from {
+    transform: translateY(calc(var(--u) * -6)) scale(0.4);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-janela,
+  .bj.entra > *,
+  .bj-chip.on,
+  .bj-chip b.muda,
+  .bj-bola.nova {
+    animation: none;
+  }
+  .bj-chip,
+  .bj-bt {
+    transition: none;
+  }
+}
+
+/* a parede pintada atrás do alvo (arte/bar/dardos-parede.png, quando chegar: arteBar.ts) */
+.bj-dardos.tem-parede .bj-palco {
+  background: var(--a-dardos-parede) center / cover no-repeat;
+}

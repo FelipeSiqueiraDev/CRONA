@@ -282,7 +282,8 @@ html {
   top: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  /* mais juntos desde que o mapa-múndi entrou (10/10): sobra espaço para o nome do lugar */
+  gap: 1.2rem;
 }
 .tb2-bt {
   width: 5.2rem;
@@ -432,4 +433,24 @@ html {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* Os algarismos das telas em pixel: a Pixelify Sans tem o 5 parecido com um S/8, então os
+   números vêm da Silkscreen (outra fonte pixel, licença OFL) e o resto continua na Pixelify.
+   Usar: font-family: 'Pixel Numeros', 'Pixelify Sans', monospace. */
+@font-face {
+  font-family: 'Pixel Numeros';
+  src: url('/fontes/silkscreen-400.woff2') format('woff2');
+  font-weight: 100 549;
+  unicode-range: U+0030-0039;
+  size-adjust: 92%;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pixel Numeros';
+  src: url('/fontes/silkscreen-700.woff2') format('woff2');
+  font-weight: 550 900;
+  unicode-range: U+0030-0039;
+  size-adjust: 92%;
+  font-display: swap;
 }

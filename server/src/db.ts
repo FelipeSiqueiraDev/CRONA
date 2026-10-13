@@ -1,4 +1,5 @@
-import type { AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
+import type { Criatura, PecaCriatura } from '@crona/shared';
+import type { ViagemInfo, IconeLugar, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
 import type { Conta } from './contas';
@@ -44,6 +45,8 @@ export interface RoomData {
   nevoa?: NevoaCena;
   /** mapa improvisado: a imagem enviada pelo mestre, no chão inteiro da cena */
   mapa?: string;
+  /** a Viagem: esta cena é a van parada com o mundo passando (docs/VIAGEM.md) */
+  viagem?: ViagemInfo;
 }
 
 export interface TokenData {
@@ -60,8 +63,16 @@ export interface TokenData {
   /** estado do retrato: com a arma, machucado */
   armed?: boolean;
   hurt?: boolean;
+  /** de cócoras (furtivo ou atrás de um móvel) */
+  agachado?: boolean;
+  /** na cama de cima do beliche */
+  alto?: boolean;
   /** PV, PE e SAN (atual e total) */
   vitals?: Vitals;
+  /** a peça é uma criatura do bestiário (a ficha vem dela) e a cara que ela tem */
+  criatura?: PecaCriatura;
+  /** flutua (a criatura que anda sem tocar o chão) */
+  flutua?: boolean;
 }
 
 export interface UserData {
@@ -89,6 +100,10 @@ export interface CampaignData {
   ameacas?: Record<string, combate.FichaAmeaca>;
   /** anotações do mestre na planta, por andar */
   notas?: NotaPlanta[];
+  /** onde este lugar fica no mapa-múndi, o ícone e a sala de entrada (sem valor, valem os padrões) */
+  lugar?: { x: number; y: number; icone?: IconeLugar; entrada?: number };
+  /** as cenas onde um agente já pisou (o minimapa apaga as outras); o mestre também marca */
+  visitadas?: number[];
 }
 
 export interface Database {
@@ -113,8 +128,16 @@ export interface Database {
   sedeRev?: number;
   /** os temas dos quatro agentes já foram postos (uma vez só: depois, quem escolhe é o jogador) */
   temasAgentes?: boolean;
+  /** o que estava em cima das mesas já subiu com elas (12/10, as mesas maiores) */
+  mesasAltas?: boolean;
   /** versão da montagem da Fazenda Olhos de Águia (seedFazenda) */
   fazendaRev?: number;
+  /** versão da montagem do Orfanato Filhos do Dragão (seedOrfanato) */
+  orfanatoRev?: number;
+  /** o bestiário (10/10): as criaturas, cada uma com uma ficha e várias aparências */
+  bestiario?: Criatura[];
+  /** as salas e campanhas de exemplo antigas já foram tiradas (seed.ts, limparSalasDeExemplo) */
+  limpezaExemplos?: boolean;
   /** fichas de personagem (motor de regras) */
   fichas?: FichaSalva[];
   nextFichaId?: number;

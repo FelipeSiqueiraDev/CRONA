@@ -1,0 +1,140 @@
+{
+ "destino": "client/public/arte/mobiliario",
+ "escala": 0.5,
+ "limpar": 56,
+ "moveis": [
+  {
+   "def": "beliche",
+   "folha": "client/public/arte/mobiliario/folhas/beliche.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.75,
+    2.25,
+    1.85
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "beliche~b",
+   "folha": "client/public/arte/mobiliario/folhas/beliche-b.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.75,
+    2.25,
+    1.85
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "beliche~c",
+   "folha": "client/public/arte/mobiliario/folhas/beliche-c.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.75,
+    2.25,
+    1.85
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "beliche~d",
+   "folha": "client/public/arte/mobiliario/folhas/beliche-d.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.75,
+    2.25,
+    1.85
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "cama_solteiro~d",
+   "folha": "client/public/arte/mobiliario/folhas/cama-solteiro-d.png",
+   "W": 1,
+   "D": 3,
+   "real": [
+    0.75,
+    2.25,
+    1.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "cama_casal~b",
+   "folha": "client/public/arte/mobiliario/folhas/cama-casal-b.png",
+   "W": 2,
+   "D": 3,
+   "real": [
+    1.5,
+    2.25,
+    1.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "cama_casal~c",
+   "folha": "client/public/arte/mobiliario/folhas/cama-casal-c.png",
+   "W": 2,
+   "D": 3,
+   "real": [
+    1.5,
+    2.25,
+    1.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  }
+ ]
+}

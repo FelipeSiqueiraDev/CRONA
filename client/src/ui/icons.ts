@@ -11,6 +11,7 @@ const P: Record<string, string> = {
   espadas:
     '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
   ficha: '<rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="2"/><path d="M5.5 15.5a3 3 0 0 1 6 0"/><path d="M14 10h5"/><path d="M14 13h5"/><path d="M14 16h3"/>',
+  globo: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3.2 3.4 3.2 14.6 0 18"/><path d="M12 3c-3.2 3.4-3.2 14.6 0 18"/>',
   sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
   engrenagem:
     '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
@@ -59,7 +60,9 @@ const P: Record<string, string> = {
   mao: '<path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
   trocar: '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>',
   mover: '<path d="M12 2v20M2 12h20"/><path d="m9 5 3-3 3 3M9 19l3 3 3-3M5 9l-3 3 3 3M19 9l3 3-3 3"/>',
+  van: '<path d="M2.5 16V8.5h10.5l4 4h4.5V16"/><path d="M13 8.5v4h4"/><circle cx="7" cy="17" r="1.9"/><circle cx="17.5" cy="17" r="1.9"/>',
   peso: '<path d="M6.5 8h11l3 12H3.5z"/><circle cx="12" cy="5.5" r="2.5"/>',
+  agachar: '<circle cx="15" cy="5" r="2"/><path d="M14 8.5 10.5 12l3.5 2-.5 5M10.5 12 6.5 13.5M14 14l4 1.5 1.5 3.5"/>',
   link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
   lixo: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
   copiar: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
@@ -140,10 +143,21 @@ export function temIcone(nome: string): boolean {
  * imagem que está na lista; sem ela, fica o desenho padrão.
  */
 let lista: Set<string> | null = null;
-export const arteCarregada: Promise<Set<string>> = fetch('/api/arte')
-  .then((r) => (r.ok ? (r.json() as Promise<{ arquivos: string[] }>) : { arquivos: [] }))
-  .then((j) => (lista = new Set(j.arquivos)))
-  .catch(() => (lista = new Set<string>()));
+/** Pede a lista; falhou (o servidor reiniciando bem na hora): tenta de novo, em vez de ficar sem arte até o F5 (10/10). */
+function pedirLista(tentativa = 0): Promise<Set<string>> {
+  return fetch('/api/arte', { cache: 'no-cache' })
+    .then((r) => {
+      if (!r.ok) throw new Error(String(r.status));
+      return r.json() as Promise<{ arquivos: string[] }>;
+    })
+    .then((j) => (lista = new Set(j.arquivos)))
+    .catch(() =>
+      tentativa < 20
+        ? new Promise<void>((ok) => setTimeout(ok, Math.min(15000, 1500 * (tentativa + 1)))).then(() => pedirLista(tentativa + 1))
+        : (lista = new Set<string>()),
+    );
+}
+export const arteCarregada: Promise<Set<string>> = pedirLista();
 
 /** A imagem existe? */
 export async function existeArte(url: string): Promise<boolean> {

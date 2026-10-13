@@ -97,6 +97,17 @@ Formato em [ARTE.md](ARTE.md) (Itens, "Arte pintada dos itens"). O que está mar
 
 Nada novo: usa os retratos, os ícones e as folhas da FICHAS. Os cartões de resumo ilustrados da referência (dados, grimório, maleta, fotos) só entram se um dia a tela do celular for por cartões.
 
+**O fliperama (08/10):** o gabinete de frente, em peças (corpo, moldura da tela, letreiro, painel, botão grande, alavanca em 5 posições e o botãozinho), pedido na SEÇÃO 0B do `PEDIDO-UNICO-CODEX.txt` com o gabarito `gabaritos/pedidos/fliperama/gabarito-fliperama-celular.png`. Os jogos continuam em código. **Vão em `client/public/arte/bar/` e entram sozinhos** (`arteBar.ts`), peça por peça; a alavanca troca de imagem com a direção apertada.
+- [ ] fliperama-corpo, -moldura, -letreiro, -painel, -botao (+ apertado), -alavanca-centro/cima/baixo/esq/dir, -mini (+ apertado)
+
+**Dardos e sinuca (08/10):** SEÇÃO 0C do pedido, gabaritos em `gabaritos/pedidos/bar-jogos/`. **Vão em `client/public/arte/bar/` e entram sozinhos** (o alvo, os dardos, a parede, a mesa, as bolas e o taco; os números o jogo escreve).
+- [ ] dardos-alvo, dardo-ouro/azul/vermelho/verde, dardos-parede
+- [ ] sinuca-mesa, sinuca-bola-0 a 15, sinuca-taco
+
+**As abas do painel da direita e a viagem (08/10):** seção 3 (D) e (C) do pedido. Entram sozinhos em `client/public/arte/icones/`.
+- [x] painel-players, painel-itens, painel-interludio (128×128) · no jogo 09/10
+- [x] mesa-viagem (128×128, junto das ferramentas da mesa) · no jogo 09/10
+
 ## 5. Tela COMBATE
 
 - [ ] ✱ **Retrato das ameaças**: na referência o Ocultista é um retrato pintado, de capuz; hoje é o avatar padrão. `personagens/<id>/retrato-desarmado.png`, no estilo dos retratos dos agentes (o Claude cadastra cada ameaça que chegar)
@@ -167,6 +178,18 @@ O pedido completo, peça por peça, com as medidas, está na pasta da arte do GP
   - **galpões:** estante do depósito, cerca da baia, meia parede de madeira;
   - **casarão:** o vão da escada.
 - [ ] ✱ **O calabouço** (`calabouco.zip`): alçapão aberto, escada de mão, tanque com corpo (três modelos), mesa de contenção, pilha de crânios, tocha de parede, estandarte
+
+## Orfanato Filhos do Dragão: queimado, o Ninho dos transtornados (09/10)
+
+O orfanato pegou fogo e virou a base ("Ninho") de um bando de transtornados, que mora lá e faz do lugar casa de tortura (LR p. 303). O pedido completo está no `PEDIDO-UNICO-CODEX.txt`, seções 0D e 0E. Os gabaritos ficam em `gabaritos/pedidos/orfanato/` e `gabaritos/pedidos/orfanato-queimado/` (sai de `scripts/3d/pedidos/orfanato-queimado.json`). Hoje tudo é desenhado em código; o Claude encaixa a arte.
+
+- [ ] ✱ **Teste de dentro** (`orfanato-queimado-teste.zip`): `piso-orfanato-queimado.png`, `parede-orfanato-queimada.png`, `fogueira.png` e `fogueira-apagada.png`
+- [ ] **Peças novas** (`orfanato-queimado.zip`): colchão no chão, escombros, viga queimada, ganchos de carne, cama de ferro queimada
+- [ ] **Móveis da casa queimados** (`orfanato-queimado.zip`): armário de cozinha, prateleira, estante de livros, guarda-roupa arrombado, cômoda, mesa do refeitório
+- [ ] **A vista de cima** de cada peça (`<nome>-cima.png`)
+- [ ] **De fora, queimado** (`orfanato-teste.zip`, `orfanato-fora.zip`): o prédio comprido (telhado caído, fuligem nas janelas) e o anexo de concreto, com as versões abertas e as vistas de cima
+- Sem letras: as frases de sangue da parede o jogo escreve em código.
+- O alvo de dardos de parede **não** volta para o pedido: a arte saiu de perfil, e o desenho em código ficou melhor.
 
 ## Para depois: o tabuleiro
 

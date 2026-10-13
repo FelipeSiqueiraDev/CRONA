@@ -1,0 +1,167 @@
+{
+ "destino": "client/public/arte/mobiliario",
+ "escala": 0.5,
+ "limpar": 56,
+ "moveis": [
+  {
+   "def": "arvore",
+   "folha": "client/public/arte/mobiliario/folhas/arvore.png",
+   "real": [
+    0.75,
+    0.75,
+    5.86
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.4,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "arvore~b",
+   "folha": "client/public/arte/mobiliario/folhas/arvore-b.png",
+   "real": [
+    0.75,
+    0.75,
+    5.86
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.4,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "arvore~c",
+   "folha": "client/public/arte/mobiliario/folhas/arvore-c.png",
+   "real": [
+    0.75,
+    0.75,
+    4.81
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.45,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "arbusto",
+   "folha": "client/public/arte/mobiliario/folhas/arbusto.png",
+   "real": [
+    0.75,
+    0.75,
+    0.98
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.5,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "arbusto~b",
+   "folha": "client/public/arte/mobiliario/folhas/arbusto-b.png",
+   "real": [
+    0.75,
+    0.75,
+    0.87
+   ],
+   "como_esta": true,
+   "por": "imagem",
+   "pisa": 0.5,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "sacas",
+   "folha": "client/public/arte/mobiliario/folhas/sacas-grao.png",
+   "real": [
+    0.75,
+    0.75,
+    0.7
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "feno",
+   "folha": "client/public/arte/mobiliario/folhas/fardo-feno.png",
+   "real": [
+    0.75,
+    0.75,
+    0.5
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "cerca",
+   "folha": "client/public/arte/mobiliario/folhas/cerca-madeira.png",
+   "real": [
+    0.75,
+    0.12,
+    1.1
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "carroca",
+   "folha": "client/public/arte/mobiliario/folhas/carroca.png",
+   "W": 2,
+   "D": 3,
+   "real": [
+    1.5,
+    2.25,
+    1.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  }
+ ]
+}

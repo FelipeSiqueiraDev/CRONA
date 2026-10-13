@@ -1,0 +1,211 @@
+/*
+ * O card vertical (10/10). O FORMATO veio das referências do Felipe (os cards de loja de jogo: em pé, o nome em cima, o
+ * quadro do ícone no meio, o detalhe e o rodapé com a ação); a PELE é a da tela do jogador (jogador.css), que é o padrão
+ * do HUD: a janela do login (azul-noite, borda bege e a linha de dentro), o losango de ouro no topo, a Pixelify com a
+ * sombra dura de pixel, a casa de item pintada do kit no quadro e o botão de ouro com o brilho que corre no rodapé.
+ * Usado nas ações e cartões do combate (.vez-acao, .vez-cartao) e na janela CRIATURAS (.card-v).
+ */
+:is(.vez-acoes, .vez-cartoes, .cards-v) {
+  /* em pé: estreitos e altos, quantos couberem na linha, e a última linha também no meio */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem 1.3rem;
+  padding: 1.4rem 0.4rem 0.6rem;
+}
+:is(.vez-acoes, .vez-cartoes, .cards-v) > * {
+  flex: 0 0 14.6rem;
+}
+:is(.vez-acao, .vez-cartao, .card-v) {
+  --card-borda: #a18873;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 21rem;
+  padding: 1.7rem 0.9rem 0.9rem;
+  border: 0.25rem solid var(--card-borda);
+  border-radius: 0.8rem;
+  background: rgba(5, 11, 20, 0.94);
+  box-shadow:
+    inset 0 0 0 0.4rem rgba(5, 11, 20, 0.94),
+    inset 0 0 0 0.55rem rgba(161, 136, 115, 0.38),
+    0 0.6rem 1.5rem rgba(0, 0, 0, 0.5);
+  color: var(--r-texto, #f3e9d8);
+  text-align: center;
+  cursor: pointer;
+  overflow: visible;
+  transition:
+    transform 0.18s var(--h-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    border-color 0.2s,
+    box-shadow 0.2s,
+    filter 0.2s;
+  animation: vez-sobe 0.4s var(--h-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+/* o losango de ouro na borda de cima (o do título dos painéis do HUD) */
+:is(.vez-acao, .vez-cartao, .card-v)::before {
+  content: '';
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  width: 1.3rem;
+  height: 1.3rem;
+  transform: translateX(-50%) rotate(45deg);
+  border: 0.22rem solid #050b14;
+  background: linear-gradient(135deg, #ffd27a, #e9a944 55%, #c97f2c);
+  box-shadow: 0 0 0.8rem rgba(255, 196, 90, 0.35);
+}
+:is(.vez-acao, .vez-cartao, .card-v):nth-child(2) {
+  animation-delay: 0.04s;
+}
+:is(.vez-acao, .vez-cartao, .card-v):nth-child(3) {
+  animation-delay: 0.08s;
+}
+:is(.vez-acao, .vez-cartao, .card-v):nth-child(4) {
+  animation-delay: 0.12s;
+}
+:is(.vez-acao, .vez-cartao, .card-v):nth-child(5) {
+  animation-delay: 0.16s;
+}
+:is(.vez-acao, .vez-cartao, .card-v):nth-child(6) {
+  animation-delay: 0.2s;
+}
+@keyframes vez-sobe {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+:is(.vez-acao, .vez-cartao, button.card-v):hover:not(:disabled) {
+  transform: translateY(-0.35rem);
+  border-color: #ffd27a;
+  box-shadow:
+    inset 0 0 0 0.4rem rgba(5, 11, 20, 0.94),
+    inset 0 0 0 0.55rem rgba(255, 210, 122, 0.45),
+    0 0.9rem 1.8rem rgba(0, 0, 0, 0.55),
+    0 0 1.4rem rgba(255, 196, 90, 0.18);
+}
+:is(.vez-acao, .vez-cartao, button.card-v):active:not(:disabled) {
+  transform: scale(0.97);
+}
+:is(.vez-acao, .vez-cartao, .card-v):focus-visible {
+  outline: 0.3rem solid #ffd27a;
+  outline-offset: 0.3rem;
+}
+/* o nome: a Pixelify com a sombra dura de pixel */
+.card-tit {
+  font: 700 1.55rem / 1.1 var(--r-pixel, 'Pixelify Sans', monospace);
+  letter-spacing: 0.02em;
+  color: var(--r-texto, #f3e9d8);
+  text-shadow: 0 0.22rem 0 #1b0d03;
+}
+/* o quadro: a casa de item pintada do kit, com a arte dentro, com folga */
+.card-quadro {
+  display: grid;
+  place-items: center;
+  width: 8.6rem;
+  height: 8.6rem;
+  padding: 1.3rem;
+  background: var(--ui-fichas-casa-item-normal, #0b1526) center / 100% 100% no-repeat;
+}
+.card-quadro :is(.arte-ic, img, .ic, svg, canvas) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  color: var(--r-ouro-hi, #ffd27a);
+  filter: drop-shadow(0 0.35rem 0.5rem rgba(0, 0, 0, 0.85));
+}
+/* o detalhe: o texto corrido apagado da tela do jogador */
+.card-placa {
+  max-width: 100%;
+  color: var(--r-texto-2, #cdbfa9) !important;
+  font: 400 1.15rem / 1.3 var(--r-corpo, 'Roboto Condensed', sans-serif) !important;
+}
+/* o rodapé: o botão de ouro, com o brilho que corre de vez em quando */
+.card-pe {
+  align-self: stretch;
+  margin-top: auto;
+  padding: 0.65rem 0.5rem;
+  border: 0.2rem solid #3a1e08;
+  border-radius: 0.5rem;
+  background:
+    linear-gradient(105deg, transparent 42%, rgba(255, 252, 235, 0.55) 50%, transparent 58%) no-repeat,
+    linear-gradient(#f6cf6a 0%, #e9a944 46%, #c97f2c 100%);
+  background-size:
+    260% 100%,
+    100% 100%;
+  background-position:
+    170% 0,
+    0 0;
+  box-shadow:
+    inset 0 0.22rem 0 rgba(255, 240, 190, 0.75),
+    inset 0 -0.3rem 0 rgba(120, 60, 10, 0.55);
+  color: #2b1606;
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.6);
+  font: 700 1.2rem / 1 var(--r-pixel, 'Pixelify Sans', monospace);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  animation: card-varre 6s 1.2s infinite;
+}
+@keyframes card-varre {
+  0% {
+    background-position:
+      170% 0,
+      0 0;
+  }
+  20%,
+  100% {
+    background-position:
+      -70% 0,
+      0 0;
+  }
+}
+/* os jeitos de cada card: o rodapé de contorno (sem ouro) nos que não são a ação principal */
+:is(.vez-acao.a-passar, .vez-acao.a-outras) .card-pe {
+  background: transparent;
+  border-color: rgba(161, 136, 115, 0.6);
+  box-shadow: none;
+  color: var(--r-texto-2, #cdbfa9);
+  text-shadow: none;
+  animation: none;
+}
+.vez-cartao.investida .card-pe {
+  background: linear-gradient(#f59a6a 0%, #e46a3c 50%, #b8451f 100%);
+}
+/* o escolhido: a borda de ouro e o cursor ▶ de menu, como na tela do jogador */
+.card-v.escolhido {
+  border-color: #ffd27a;
+  box-shadow:
+    inset 0 0 0 0.4rem rgba(5, 11, 20, 0.94),
+    inset 0 0 0 0.55rem rgba(255, 210, 122, 0.55),
+    0 0 1.6rem rgba(255, 196, 90, 0.25),
+    0 0.6rem 1.5rem rgba(0, 0, 0, 0.5);
+}
+.card-v.escolhido .card-tit {
+  color: #ffd27a;
+}
+.card-v.escolhido .card-tit::before {
+  content: '▶';
+  margin-right: 0.4rem;
+  font-size: 0.8em;
+}
+/* o usado ou travado: apagado, o rodapé vira contorno vermelho */
+:is(.vez-acao.usada, .vez-cartao.travado, .card-v.travado) {
+  filter: saturate(0.3) brightness(0.75);
+  cursor: default;
+}
+:is(.vez-acao.usada, .vez-cartao.travado, .card-v.travado) .card-pe {
+  background: transparent;
+  border-color: rgba(180, 72, 59, 0.6);
+  box-shadow: none;
+  color: #ff8a73;
+  text-shadow: none;
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.vez-acao, .vez-cartao, .card-v),
+  .card-pe {
+    animation: none;
+  }
+}

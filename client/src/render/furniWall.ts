@@ -2,6 +2,20 @@ import type { WallFurniDef } from '@crona/shared';
 import { rgba, rng, shade } from './color';
 import { drawBlood, drawSigil, type LightKind } from './furniFloor';
 import { drawFlame, OUTLINE } from './painter';
+import { arteCarregada } from '../ui/icons';
+
+/**
+ * A escrita de sangue pintada pelo Códex (10/10, pedida: arte/paredes/escrita-sangue-orfanato.png, de frente, chapada,
+ * fundo transparente): quando existe, vai na parede no lugar da letra de código (a parede inclina sozinha).
+ */
+const ESCRITA_PINTADA = '/arte/paredes/escrita-sangue-orfanato.png';
+let escritaPintada: HTMLImageElement | null = null;
+void arteCarregada.then((lista) => {
+  if (!lista.has(ESCRITA_PINTADA)) return;
+  const img = new Image();
+  img.onload = () => (escritaPintada = img);
+  img.src = ESCRITA_PINTADA;
+});
 
 /** Luz em coordenadas locais do item (px a partir do canto superior esquerdo). */
 export interface WallLight {
@@ -502,6 +516,138 @@ const draws: Record<string, Draw> = {
     ctx.lineTo(10, d.h - 8);
     ctx.closePath();
     ctx.fill();
+  },
+
+  /**
+   * A escrita de sangue (09/10, o Orfanato): as frases dos transtornados, escritas à mão com o dedo, letra por letra
+   * torta, e o sangue escorrendo das linhas. O texto inteiro também vai na pista da parede (Examinar).
+   */
+  escrita(ctx, d, _state, seed) {
+    if (escritaPintada) {
+      ctx.drawImage(escritaPintada, 0, 0, d.w, d.h);
+      return;
+    }
+    const [cor] = d.colors;
+    const linhas = [
+      'O DIABO OBSERVA E RECOMPENSA',
+      'A DOR EXTREMA.',
+      'O SANGUE É O CAMINHO PARA',
+      'OS DESEJOS MAIS PROFUNDOS.',
+      'O CORPO É O CANAL DA REVELAÇÃO',
+      'E O SOFRIMENTO É O IDIOMA',
+      'DOS ESCOLHIDOS.',
+    ];
+    const r = rng(seed + 5);
+    const escuro = shade(cor, -0.55);
+    const lh = d.h / 7.2;
+    ctx.save();
+    ctx.textBaseline = 'top';
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    // a letra de dedo: grossa e sem serifa, do tamanho que enche a parede
+    const fonte = (px: number) => `900 ${px}px Impact, "Arial Black", "Franklin Gothic Heavy", sans-serif`;
+    ctx.font = fonte(10);
+    const larga = Math.max(...linhas.map((l) => ctx.measureText(l).width + l.length * 0.6));
+    const fs = Math.max(6, Math.min(Math.round(lh * 0.8), Math.floor((10 * (d.w - 12)) / larga)));
+    // as marcas de mão: a palma e os dedos borrados, escorregando, onde o dedo foi molhado de novo
+    const mao = (x: number, y: number, s: number, giro: number, a: number) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(giro);
+      ctx.fillStyle = rgba(cor, a);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s * 0.42, s * 0.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      for (let k = 0; k < 4; k++) {
+        ctx.beginPath();
+        ctx.ellipse(-s * 0.32 + k * s * 0.21, -s * 0.72 - (k === 1 || k === 2 ? s * 0.1 : 0), s * 0.08, s * 0.24, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.ellipse(s * 0.5, -s * 0.12, s * 0.08, s * 0.2, -0.9, 0, Math.PI * 2);
+      ctx.fill();
+      // o arrasto da mão escorregando
+      ctx.fillStyle = rgba(cor, a * 0.35);
+      ctx.fillRect(-s * 0.38, 0, s * 0.76, s * (0.6 + r() * 0.8));
+      ctx.restore();
+    };
+    mao(d.w * 0.05, d.h * 0.78, fs * 1.6, -0.25, 0.75);
+    mao(d.w * 0.93, d.h * 0.3, fs * 1.4, 0.3, 0.6);
+    linhas.forEach((l, i) => {
+      const y = 1 + i * lh;
+      ctx.font = fonte(fs);
+      const largura = ctx.measureText(l).width + l.length * 0.6;
+      let x = Math.max(2, (d.w - largura) / 2 + (r() - 0.5) * 10);
+      const inclina = (r() - 0.5) * 0.03;
+      // o sangue no dedo: forte no começo de cada palavra, falhando até a próxima molhada
+      let carga = 1;
+      for (const ch of l) {
+        if (ch === ' ') {
+          carga = Math.min(1, carga + 0.55 + r() * 0.3);
+          x += fs * 0.32;
+          continue;
+        }
+        const tam = Math.round(fs * (0.88 + r() * 0.26));
+        ctx.font = fonte(tam);
+        const yy = y + (x - 2) * inclina + (r() - 0.5) * 1.8 + (fs - tam) * 0.6;
+        ctx.save();
+        ctx.translate(x, yy);
+        ctx.rotate((r() - 0.5) * 0.22);
+        const a = 0.35 + carga * 0.6;
+        // o borrão do dedo (duas passadas fora do lugar), o contorno do sangue secando e o miolo vivo
+        ctx.fillStyle = rgba(cor, a * 0.3);
+        ctx.fillText(ch, -0.8 + r() * 0.6, 0.6);
+        ctx.fillText(ch, 0.7, -0.4 + r() * 0.6);
+        if (carga >= 0.5) {
+          ctx.strokeStyle = rgba(escuro, a * 0.85);
+          ctx.lineWidth = Math.max(1.2, tam * 0.11);
+          ctx.strokeText(ch, 0, 0);
+          ctx.fillStyle = rgba(cor, a);
+          ctx.fillText(ch, 0, 0);
+        } else {
+          // o dedo seco: a letra sai só riscada, falhando
+          ctx.setLineDash([1.4 + r(), 1 + r() * 1.2]);
+          ctx.strokeStyle = rgba(cor, a + 0.15);
+          ctx.lineWidth = Math.max(1.4, tam * 0.16);
+          ctx.strokeText(ch, 0, 0);
+          ctx.setLineDash([]);
+        }
+        ctx.restore();
+        // o sangue escorrendo das letras molhadas
+        if (carga > 0.6 && r() < 0.32) {
+          const len = 2 + r() * lh * 1.1;
+          const dx = x + r() * tam * 0.5;
+          ctx.fillStyle = rgba(cor, 0.8);
+          ctx.fillRect(dx, yy + tam * 0.85, 0.9 + r() * 0.6, len);
+          ctx.beginPath();
+          ctx.arc(dx + 0.6, yy + tam * 0.85 + len, 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        x += ctx.measureText(ch).width + 0.6;
+        carga = Math.max(0.12, carga - 0.09 - r() * 0.05);
+      }
+    });
+    ctx.restore();
+  },
+
+  /** A fuligem do incêndio na parede: manchas pretas subindo do chão, mais fortes embaixo. */
+  fuligem(ctx, d, _state, seed) {
+    const [cor] = d.colors;
+    const r = rng(seed + 11);
+    for (let i = 0; i < 7; i++) {
+      const x = d.w * (0.15 + r() * 0.7);
+      const y = d.h * (0.35 + r() * 0.6);
+      const rx = d.w * (0.18 + r() * 0.3);
+      const ry = d.h * (0.25 + r() * 0.35);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, Math.max(rx, ry));
+      g.addColorStop(0, rgba(cor, 0.75));
+      g.addColorStop(0.6, rgba(cor, 0.35));
+      g.addColorStop(1, rgba(cor, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
   },
 
   extinguisher(ctx, d) {

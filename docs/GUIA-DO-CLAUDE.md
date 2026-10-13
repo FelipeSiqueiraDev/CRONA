@@ -43,6 +43,8 @@ Este guia é para o Claude que pega o CRONA do zero, numa conversa nova ou noutr
 - Mostre o resultado pronto (uma captura, o teste passando), não a depuração.
 - Coisa grande se combina antes, e a decisão fica registrada no documento da área.
 - Não proponha voltar atrás no que o Felipe já decidiu.
+- **A lista de pendências só quando um assunto termina** (revisto em 13/10; antes, 12/10, era no fim de cada bloco): no meio de um assunto, nada de lista, a não ser que ele peça. Ao fechar o assunto, a lista na resposta e no `EM-ABERTO.md`.
+- **Os arquivos (imagens, vídeos) sempre no fim da resposta, depois do resumo** (13/10). Animação vai em vídeo MP4 (os GIFs não animam para ele): `ffmpeg -i x.gif -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2:flags=neighbor,format=yuv420p" -c:v libx264 x.mp4`.
 
 **Visual**
 - **As telas seguem as referências** de `docs/referencias/` exatamente: botões, bordas, fonte, espaçamento. Confira por recortes lado a lado.
@@ -88,6 +90,12 @@ Este guia é para o Claude que pega o CRONA do zero, numa conversa nova ou noutr
   Start-Process powershell -WindowStyle Hidden -ArgumentList '-NoProfile','-Command','Start-Sleep -Seconds 120; shutdown /h'
   ```
 
+**A interface não pode piscar (pedido do Felipe, 07/10: "que isso pare para sempre")**
+- Mudou PV, PE, SAN, uma condição ou qualquer número que chega do servidor? **Acerte no lugar** (texto, largura da barra, classe); nunca refaça o painel nem recrie cartas, abas, retratos e ícones por causa de um número. Cada tela separa a **estrutura** (o que obriga a refazer: quem está na lista, nome, cor, arma, condições, máximos) dos **números** (PV, PE, SAN de agora): a assinatura da estrutura não leva os números, e um `atualizar()` guardado no elemento acerta os números.
+- Já é assim em: PLAYERS e o cartão do personagem do MAPA (`vitaisCarta`, `vitalsPanel`, `.atualizar`), as cartas de baixo (`cardVitals`), a FICHAS (`renderJogo`, `soNumerosDeJogo`: fechada ela só marca para refazer ao abrir) e o COMBATE (`patchVitais`, `assinaturaPecas` sem PV e SAN crus).
+- Troque o texto de um nó só se ele mudou (`if (el.textContent !== t) el.textContent = t`): trocar à toa recria o nó.
+- Para conferir: um `MutationObserver` no `document.body` durante um clique em "+ Vida" não pode ver nós criados nos painéis (só trocas de texto).
+
 ## Rodar e conferir
 
 O básico está no `AGENTS.md`. Além dele:
@@ -119,12 +127,23 @@ O básico está no `AGENTS.md`. Além dele:
   - **`docker exec` no Git Bash:** precisa de `MSYS_NO_PATHCONV=1`.
 - **Conferir o celular:** no painel, `resize_window` para 470×836. A captura do painel vem reduzida: meça pelo JavaScript (retângulos, `scrollHeight`).
 
+## A arte nova (pixel art só por código)
+
+Desde 12/10 o caminho é outro: o tabuleiro em pixel art 1:1 feita pelo motor, sem o Códex. O passo a passo, as medidas, as regras e os erros que já aconteceram estão no [`GUIA-MAPAS-PIXEL.md`](GUIA-MAPAS-PIXEL.md).
+
 ## A arte (o caminho do Códex)
 
 **A pasta da arte**
 - Fica em `F:\Dhellow\CRONA\arte\TEXTURAS MAPA\BASE - Ordo Realitas\`.
-- O `LEIA-ME.txt` dela é o mapa:
-  - os pedidos `PROMPT-*.txt`;
+- Desde 07/10 (noite), TUDO o que falta para o Códex está num arquivo só, o `PEDIDO-UNICO-CODEX.txt` (o que já chegou, a fila
+  e o pedido completo de cada parte); o `00-COMECE-AQUI.txt` tem a mensagem para colar. Pedido novo entra nele (numa seção
+  nova da fila), e não num PROMPT solto. Os pedidos antigos estão em `_arquivo/prompts/`.
+- **Regra da casa (Felipe, 07/10): todo LUGAR novo** (o Orfanato Filhos do Dragão, Santo Berço...) ganha, além das salas, a
+  **ilha no mapa-múndi** (`lugar-<slug>.png`) e **duas artes de chegada** (`chegada-<slug>-1.png` e `-2.png`, pinturas
+  1920 × 1080 como as 10 da viagem, em `client/public/arte/viagem/ilustracoes/`). A tela de chegada usa as do lugar quando
+  existem (`artesDeChegada` em `shared/src/viagem.ts`).
+- O mapa da pasta:
+  - o pedido único `PEDIDO-UNICO-CODEX.txt`;
   - `gabaritos/`: câmera, estilo, telas, agentes e "como está hoje";
   - `Sede da Ordem/<cômodo>/`: as folhas certas de cada cômodo;
   - `_entregas-originais/`: os zips como chegaram;

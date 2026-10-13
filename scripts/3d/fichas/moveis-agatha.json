@@ -1,0 +1,85 @@
+{
+ "destino": "client/public/arte/mobiliario",
+ "escala": 0.5,
+ "limpar": 56,
+ "moveis": [
+  {
+   "def": "balcao_loja",
+   "folha": "client/public/arte/mobiliario/folhas/balcao-loja.png",
+   "W": 6,
+   "D": 1,
+   "real": [
+    4.5,
+    0.65,
+    1.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "balcao_loja!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/balcao-loja-vazio.png",
+   "W": 6,
+   "D": 1,
+   "real": [
+    4.5,
+    0.65,
+    1.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "estante_frascos",
+   "folha": "client/public/arte/mobiliario/folhas/estante-frascos.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.4,
+    2.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "encosta": true
+  },
+  {
+   "def": "estante_frascos!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/estante-frascos-vazio.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.4,
+    2.2
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "encosta": true
+  }
+ ]
+}

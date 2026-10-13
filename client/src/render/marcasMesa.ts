@@ -185,7 +185,7 @@ function desenharTraco(ctx: CanvasRenderingContext2D, p: Projecao, m: Traco, alf
 
 /**
  * O ponto de atenção: anéis dourados abrindo no chão, um feixe de luz subindo (no isométrico) e um
- * losango que balança em cima. Entra rápido e some no fim.
+ * cristal lapidado que flutua e gira em cima. Entra rápido e some no fim.
  */
 function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, idade: number) {
   const px = p.px;
@@ -240,25 +240,119 @@ function desenharPonto(ctx: CanvasRenderingContext2D, p: Projecao, m: Ponto, ida
     ctx.closePath();
     ctx.fill();
   }
-  // o losango que balança em cima
+  // o cristal que flutua e gira em cima
   const sobe = (p.alto ? p.alto * 0.62 : 26 * px) + Math.sin(idade / 190) * 4 * px;
-  const s = 10 * px * (0.6 + 0.4 * entra);
-  const lx = cx;
-  const ly = cy - sobe;
+  const s = 13 * px * (0.6 + 0.4 * entra);
   ctx.globalAlpha = a;
-  ctx.beginPath();
-  ctx.moveTo(lx, ly - s * 1.5);
-  ctx.lineTo(lx + s, ly);
-  ctx.lineTo(lx, ly + s * 1.5);
-  ctx.lineTo(lx - s, ly);
-  ctx.closePath();
-  ctx.fillStyle = COR_PONTO;
-  ctx.shadowBlur = 12 * p.dpr;
-  ctx.shadowColor = 'rgba(255, 190, 90, 1)';
+  desenharCristal(ctx, cx, cy - sobe, s, idade, p.dpr, px);
+  ctx.restore();
+}
+
+/**
+ * O cristal do ponto: um octaedro de ouro (quatro faces em cima, quatro embaixo) girando devagar, cada
+ * face com a luz de cima à esquerda, o contorno escuro como o das peças do mapa, o brilho por dentro e
+ * uma estrelinha que passa de vez em quando.
+ */
+function desenharCristal(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, idade: number, dpr: number, px: number) {
+  const giro = idade / 900;
+  const alto = s * 1.7;
+  const baixo = s * 1.9;
+  // a cintura: quatro pontas em volta, achatadas (vista de cima e de lado ao mesmo tempo)
+  const cintura = [0, 1, 2, 3].map((k) => {
+    const ang = giro + (k * Math.PI) / 2;
+    return { x: Math.cos(ang) * s, y: Math.sin(ang) * s * 0.32, z: Math.sin(ang) };
+  });
+  const topo = { x: 0, y: -alto };
+  const pe = { x: 0, y: baixo };
+  // a luz vem de cima à esquerda: o tom de cada face sai do lado para onde ela olha
+  const tom = (mx: number, emCima: boolean) => {
+    const luz = (emCima ? 0.62 : 0.18) + -mx * 0.38;
+    return Math.max(0, Math.min(1, luz));
+  };
+  const cor = (t: number) => {
+    // do ouro escuro ao quase branco
+    const r = Math.round(122 + t * 133);
+    const g = Math.round(58 + t * 183);
+    const b = Math.round(10 + t * 160);
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+  ctx.save();
+  ctx.translate(x, y);
+  // a silhueta (a ponta mais à esquerda e a mais à direita da cintura): o brilho em volta e, no fim, o contorno
+  const esq = cintura.reduce((m, q) => (q.x < m.x ? q : m));
+  const dir = cintura.reduce((m, q) => (q.x > m.x ? q : m));
+  const silhueta = () => {
+    ctx.beginPath();
+    ctx.moveTo(topo.x, topo.y);
+    ctx.lineTo(dir.x, dir.y);
+    ctx.lineTo(pe.x, pe.y);
+    ctx.lineTo(esq.x, esq.y);
+    ctx.closePath();
+  };
+  ctx.shadowBlur = 16 * dpr;
+  ctx.shadowColor = 'rgba(255, 190, 90, 0.95)';
+  ctx.fillStyle = 'rgba(255, 214, 140, 0.9)';
+  silhueta();
   ctx.fill();
   ctx.shadowBlur = 0;
-  ctx.lineWidth = 1.4 * px;
-  ctx.strokeStyle = 'rgba(60, 36, 8, 0.85)';
+  // as faces da frente (as de trás ficam escondidas), de trás para a frente
+  const faces: { a: (typeof cintura)[number]; b: (typeof cintura)[number]; z: number }[] = [];
+  for (let k = 0; k < 4; k++) {
+    const a = cintura[k];
+    const b = cintura[(k + 1) % 4];
+    faces.push({ a, b, z: (a.z + b.z) / 2 });
+  }
+  faces.sort((f, g) => f.z - g.z);
+  ctx.lineJoin = 'round';
+  for (const f of faces) {
+    if (f.z < -0.05) continue;
+    const mx = (f.a.x + f.b.x) / 2 / s;
+    for (const emCima of [true, false]) {
+      const ponta = emCima ? topo : pe;
+      ctx.beginPath();
+      ctx.moveTo(ponta.x, ponta.y);
+      ctx.lineTo(f.a.x, f.a.y);
+      ctx.lineTo(f.b.x, f.b.y);
+      ctx.closePath();
+      const t = tom(mx, emCima);
+      const grad = ctx.createLinearGradient(ponta.x, ponta.y, (f.a.x + f.b.x) / 2, (f.a.y + f.b.y) / 2);
+      grad.addColorStop(0, cor(Math.min(1, t + 0.18)));
+      grad.addColorStop(1, cor(Math.max(0, t - 0.12)));
+      ctx.fillStyle = grad;
+      ctx.fill();
+      // a aresta clara entre as faces
+      ctx.strokeStyle = `rgba(255, 246, 214, ${0.25 + 0.35 * t})`;
+      ctx.lineWidth = 0.9 * px;
+      ctx.stroke();
+    }
+  }
+  // o contorno escuro por fora (o do resto do mapa)
+  silhueta();
+  ctx.strokeStyle = 'rgba(52, 30, 6, 0.95)';
+  ctx.lineWidth = 1.6 * px;
   ctx.stroke();
+  // o reflexo na face de cima e a estrelinha que passa
+  ctx.fillStyle = 'rgba(255, 255, 240, 0.75)';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.18, -alto * 0.62);
+  ctx.lineTo(-s * 0.05, -alto * 0.78);
+  ctx.lineTo(-s * 0.32, -alto * 0.3);
+  ctx.closePath();
+  ctx.fill();
+  const pisca = (idade % 1700) / 1700;
+  if (pisca < 0.22) {
+    const e = Math.sin((pisca / 0.22) * Math.PI);
+    const r = s * 0.9 * e;
+    const sx = s * 0.35;
+    const sy = -alto * 0.45;
+    ctx.strokeStyle = `rgba(255, 255, 245, ${0.9 * e})`;
+    ctx.lineWidth = 1.2 * px;
+    ctx.beginPath();
+    ctx.moveTo(sx - r, sy);
+    ctx.lineTo(sx + r, sy);
+    ctx.moveTo(sx, sy - r);
+    ctx.lineTo(sx, sy + r);
+    ctx.stroke();
+  }
   ctx.restore();
 }

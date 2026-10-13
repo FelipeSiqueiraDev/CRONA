@@ -1,18 +1,13 @@
 import { Z_PER_M } from '@crona/shared';
 import { shade } from './color';
 import { iso } from './iso';
+import type { WBox } from './caixa';
 
 /** Caixa local: [u0, u1, v0, v1, z0, z1]. u = frente, v = lateral. */
 export type LBox = [number, number, number, number, number, number];
 export type P3 = [number, number, number];
-export interface WBox {
-  x0: number;
-  x1: number;
-  y0: number;
-  y1: number;
-  z0: number;
-  z1: number;
-}
+// a caixa no mundo fica num arquivo à parte (a ordem de desenho e o teste dela usam sem o canvas)
+export type { WBox };
 export type LFace = 'front' | 'back' | 'right' | 'left';
 type WFace = '+x' | '-x' | '+y' | '-y';
 

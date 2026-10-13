@@ -1,0 +1,566 @@
+/* =====================================================================
+   O minimapa (minimapa.ts) no HUD do CRONA: o painel azul-noite com a borda
+   bege (hud.css), o título de ouro com o caminho ("Casarão › Térreo"), os
+   botões quadrados do HUD, o cartão do cômodo e a janela da lista de lugares.
+   Vem antes do hud.css (main.ts): onde o hud.css força com !important, aqui
+   o seletor é mais forte.
+   ===================================================================== */
+
+/* ---------- o painel da coluna ---------- */
+html:not(.modo-ficha) .p-plan.mm .p-title.mm-titulo {
+  right: 13.6rem !important;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 1.35rem !important;
+}
+/* o caminho dentro do título: o último nível em ouro, os de cima apagados */
+.mm-trilha {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  white-space: nowrap;
+}
+.mm-trilha .mm-migalha {
+  flex: 0 1 auto;
+  min-width: 2.4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--r-texto-3, #a3978a);
+}
+.mm-trilha .mm-migalha.on {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 70%;
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.mm-trilha .mm-sep {
+  flex: none;
+  color: var(--r-ouro, #e9a944);
+  opacity: 0.7;
+}
+/* o mapa ocupa o painel embaixo do título (não há mais abas de andar: a escada troca) */
+html:not(.modo-ficha) .p-plan.mm .plan-canvas {
+  top: 4.8rem !important;
+  height: calc(100% - 6rem) !important;
+}
+/* os botões do canto, à esquerda do da planta grande */
+.p-plan.mm .mm-botoes {
+  position: absolute;
+  z-index: 3;
+  top: 1.1rem;
+  right: 5rem;
+  display: flex;
+  gap: 0.4rem;
+}
+.mm-bt {
+  display: grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  padding: 0;
+  border: var(--h-borda, 0.2rem) solid var(--r-borda, #a18873);
+  border-radius: 0.6rem;
+  background: var(--h-campo, #060c16);
+  color: var(--r-texto, #f3e9d8);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s;
+}
+.mm-bt:hover {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  box-shadow: 0 0 1rem rgba(255, 196, 90, 0.4);
+}
+.mm-bt:focus-visible {
+  outline: 0.2rem solid var(--r-ouro-hi, #ffd27a);
+  outline-offset: 0.2rem;
+}
+.mm-bt .ic {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* ---------- o cartão do cômodo escolhido: por cima do mapa, embaixo ---------- */
+.mm-cartao {
+  position: absolute;
+  z-index: 3;
+  left: 1.4rem;
+  right: 1.4rem;
+  bottom: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  border: 0.16rem solid var(--r-borda, #a18873);
+  border-radius: var(--h-raio, 0.8rem);
+  background: rgba(5, 11, 20, 0.94);
+  box-shadow:
+    inset 0 0 0 0.2rem rgba(5, 11, 20, 0.97),
+    inset 0 0 0 0.3rem rgba(161, 136, 115, 0.3),
+    0 0.6rem 1.6rem rgba(0, 0, 0, 0.6);
+  animation: mm-cartao 0.22s var(--h-ease, ease-out) both;
+}
+.mm-cartao.hidden {
+  display: none;
+}
+@keyframes mm-cartao {
+  from {
+    opacity: 0;
+    transform: translateY(0.8rem);
+  }
+}
+.mm-c-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.mm-c-txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  font: 500 1.15rem/1.2 var(--r-corpo, sans-serif);
+  color: var(--r-texto-3, #a3978a);
+}
+.mm-c-txt > * {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mm-c-txt b {
+  flex: none;
+  max-width: 70%;
+}
+.mm-c-txt b {
+  font: 600 1.45rem/1.1 var(--r-pixel, monospace);
+  color: var(--r-texto, #f3e9d8);
+}
+.mm-c-visita {
+  flex: none;
+  padding: 0.3rem 0.7rem;
+  border: 0.12rem solid rgba(161, 136, 115, 0.55);
+  border-radius: 99rem;
+  background: none;
+  font: 500 1rem/1 var(--r-corpo, sans-serif);
+  color: var(--r-texto-2, #cdbfa9);
+  cursor: pointer;
+}
+.mm-c-visita.nao {
+  border-style: dashed;
+  color: var(--r-texto-3, #a3978a);
+}
+.mm-c-visita:hover {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+/* fechar o cartão (ou clicar fora de um cômodo) */
+.mm-c-x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  border: 0.14rem solid rgba(161, 136, 115, 0.55);
+  border-radius: 0.5rem;
+  background: none;
+  color: var(--r-texto-2, #cdbfa9);
+  cursor: pointer;
+}
+.mm-c-x:hover {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.mm-c-x .ic {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+/* o grupo dividido: quem vai (aceso) e quem fica (apagado e riscado) */
+.mm-c-grupo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.mm-c-agente {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.4rem;
+  padding: 0 0.8rem;
+  border: 0.12rem solid var(--c);
+  border-radius: 99rem;
+  background: color-mix(in srgb, var(--c) 18%, rgba(5, 11, 20, 0.92));
+  font: 600 1.15rem/1 var(--r-pixel, monospace);
+  color: var(--r-texto, #f3e9d8);
+  cursor: pointer;
+}
+.mm-c-agente i {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 0.6rem var(--c);
+}
+.mm-c-agente.fica {
+  border-style: dashed;
+  border-color: rgba(161, 136, 115, 0.4);
+  background: rgba(5, 11, 20, 0.92);
+  color: var(--r-texto-3, #a3978a);
+  text-decoration: line-through;
+}
+.mm-c-agente.fica i {
+  opacity: 0.3;
+  box-shadow: none;
+}
+.mm-c-acoes {
+  display: flex;
+  gap: 0.6rem;
+}
+.mm-c-acoes > * {
+  flex: 1;
+}
+/* Entrar: o botão de borda do HUD; Levar o grupo: o de ouro */
+.mm-c-entrar,
+.mm-c-aqui {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.9rem;
+  padding: 0 0.9rem;
+  border-radius: 0.6rem;
+  font: 600 1.2rem/1 var(--r-pixel, monospace);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.mm-c-entrar {
+  border: var(--h-borda, 0.2rem) solid var(--r-borda, #a18873);
+  background: var(--h-campo, #060c16);
+  color: var(--r-texto, #f3e9d8);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s,
+    filter 0.2s;
+}
+.mm-c-entrar:hover {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  box-shadow: 0 0 1rem rgba(255, 196, 90, 0.35);
+}
+.mm-c-entrar.grupo {
+  border-color: #f6cf6a;
+  background: var(--h-ouro, #e9a944);
+  color: var(--r-tinta-ouro, #2b1606);
+  box-shadow: var(--h-ouro-sombra, none);
+}
+.mm-c-entrar.grupo:hover {
+  filter: brightness(1.08);
+}
+.mm-c-entrar:disabled {
+  filter: grayscale(1) brightness(0.6);
+  cursor: default;
+}
+.mm-c-aqui {
+  border: 0.12rem dashed rgba(255, 210, 122, 0.55);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.mm-c-entrar .ic,
+.mm-c-aqui .ic {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* ---------- a planta grande (tecla M): o mesmo minimapa, em tamanho de ler ---------- */
+.plg-janela.mm-grande .plg-cab {
+  position: relative;
+  min-height: 3.6rem;
+}
+.plg-janela.mm-grande .mm-trilha {
+  flex: 1;
+  font: 600 1.8rem/1 var(--r-pixel, monospace);
+  letter-spacing: 0.04em;
+}
+.plg-janela.mm-grande .mm-botoes {
+  display: flex;
+  gap: 0.5rem;
+}
+.plg-janela.mm-grande .mm-bt {
+  width: 3.6rem;
+  height: 3.6rem;
+}
+.plg-mapa {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.plg-mapa .plan-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0.16rem solid rgba(161, 136, 115, 0.45);
+  border-radius: 0.7rem;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 45%, rgba(40, 70, 120, 0.22), transparent 75%),
+    #050a12;
+  box-shadow: inset 0 0 2rem rgba(0, 0, 0, 0.7);
+}
+.plg-mapa .mm-cartao {
+  left: auto;
+  right: 1.6rem;
+  bottom: 1.6rem;
+  width: min(42rem, 100% - 3.2rem);
+}
+
+/* ---------- a lista de todos os lugares (o botão das camadas): janela do HUD ---------- */
+.mm-janela-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 5, 10, 0.72);
+  backdrop-filter: blur(3px);
+  animation: mm-fundo 0.22s var(--h-ease, ease-out) both;
+}
+.mm-janela-fundo.saindo {
+  opacity: 0;
+  transition: opacity 0.14s;
+}
+@keyframes mm-fundo {
+  from {
+    opacity: 0;
+  }
+}
+.mm-janela {
+  display: flex;
+  flex-direction: column;
+  width: min(58rem, 94vw);
+  max-height: min(76rem, 88vh);
+  padding: 1.6rem 1.8rem 1.4rem;
+  border: 0.2rem solid var(--r-borda, #a18873);
+  border-radius: 1rem;
+  background: rgba(5, 11, 20, 0.97);
+  box-shadow:
+    inset 0 0 0 0.3rem rgba(5, 11, 20, 0.97),
+    inset 0 0 0 0.4rem rgba(161, 136, 115, 0.38),
+    0 2rem 5rem rgba(0, 0, 0, 0.7);
+  color: var(--r-texto-2, #cdbfa9);
+  animation: mm-janela 0.32s var(--h-ease, ease-out) both;
+}
+@keyframes mm-janela {
+  from {
+    transform: scale(0.96) translateY(1rem);
+  }
+}
+.mm-janela header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 0.14rem solid transparent;
+  border-image: var(--h-linha-ouro, linear-gradient(90deg, #c97f2c, transparent)) 1;
+}
+.mm-janela header > .ic {
+  width: 2rem;
+  height: 2rem;
+  color: var(--r-ouro, #e9a944);
+}
+.mm-janela h3 {
+  flex: 1;
+  margin: 0;
+  font: 600 1.9rem/1 var(--r-pixel, monospace);
+  letter-spacing: 0.05em;
+  color: var(--r-ouro-hi, #ffd27a);
+  text-transform: uppercase;
+}
+.mm-janela header .mm-bt {
+  width: 3.6rem;
+  height: 3.6rem;
+}
+.mm-l-corpo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 1rem;
+}
+.mm-lugares {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+}
+.mm-l-filhos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-left: 1.2rem;
+  padding-left: 1rem;
+  border-left: 0.14rem solid rgba(161, 136, 115, 0.22);
+}
+.mm-l-linha {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 3.6rem;
+  padding: 0 0.6rem;
+  border: 0.12rem solid transparent;
+  border-radius: 0.6rem;
+}
+.mm-l-linha:hover {
+  border-color: rgba(161, 136, 115, 0.4);
+  background: rgba(20, 36, 64, 0.6);
+}
+.mm-l-linha.atual {
+  border-color: rgba(255, 210, 122, 0.55);
+  background: rgba(233, 169, 68, 0.1);
+}
+.mm-l-nome {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.4rem 0;
+  border: 0;
+  background: none;
+  font: 500 1.4rem/1.3 var(--r-corpo, sans-serif);
+  color: var(--r-texto, #f3e9d8);
+  text-align: left;
+  cursor: pointer;
+}
+.mm-l-nome > span:not(.mm-l-seta):not(.mm-gente) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mm-l-nome:hover > span:not(.mm-l-seta) {
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.mm-l-nome .ic {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  color: var(--r-borda, #a18873);
+}
+.mm-l-nome small {
+  font-size: 1.1rem;
+  color: var(--r-texto-3, #a3978a);
+}
+.mm-l-linha.terreno .mm-l-nome,
+.mm-l-linha.predio .mm-l-nome {
+  font: 600 1.55rem/1.3 var(--r-pixel, monospace);
+}
+.mm-l-linha.terreno .mm-l-nome .ic,
+.mm-l-linha.predio .mm-l-nome .ic,
+.mm-l-linha.andar .mm-l-nome .ic {
+  color: var(--r-ouro, #e9a944);
+}
+.mm-l-linha.andar .mm-l-nome {
+  font: 600 1.2rem/1 var(--r-pixel, monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--r-texto-2, #cdbfa9);
+}
+.mm-l-seta {
+  flex: none;
+  width: 1rem;
+  font-size: 1.1rem;
+  color: var(--r-ouro, #e9a944);
+}
+.mm-l-linha.novo .mm-l-nome {
+  opacity: 0.5;
+}
+.mm-l-acoes {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.mm-l-entrar,
+.mm-l-aqui {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2.8rem;
+  padding: 0 0.8rem;
+  border-radius: 0.55rem;
+  font: 600 1.15rem/1 var(--r-pixel, monospace);
+}
+.mm-l-entrar {
+  border: 0.16rem solid var(--r-borda, #a18873);
+  background: var(--h-campo, #060c16);
+  color: var(--r-texto, #f3e9d8);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.12s,
+    border-color 0.2s;
+}
+.mm-l-linha:hover .mm-l-entrar,
+.mm-l-entrar:focus-visible,
+.mm-l-entrar.mm-l-sempre {
+  opacity: 1;
+}
+.mm-l-entrar:hover {
+  border-color: var(--r-ouro-hi, #ffd27a);
+}
+.mm-l-aqui {
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.mm-l-entrar .ic,
+.mm-l-aqui .ic {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+.mm-lugares .mm-gente {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+.mm-lugares .mm-gente i {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0.5rem currentColor;
+}
+.mm-l-rodape {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 0.12rem solid rgba(161, 136, 115, 0.3);
+  font: 500 1.15rem/1.2 var(--r-corpo, sans-serif);
+  color: var(--r-texto-3, #a3978a);
+}
+.mm-l-rodape span {
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mm-cartao,
+  .mm-janela,
+  .mm-janela-fundo {
+    animation: none;
+  }
+}
+
+/* o X da planta grande: o ícone no meio do botão */
+.plg-janela.mm-grande .plg-x {
+  flex: none;
+  padding: 0;
+}
+.plg-janela.mm-grande .plg-x .ic {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+/* o cartão dentro do mapa da coluna (o canvas tem a folga da direita do painel) */
+html:not(.modo-ficha) .p-plan.mm .mm-cartao {
+  left: 1.6rem;
+  right: 3.4rem;
+  bottom: 2rem;
+}

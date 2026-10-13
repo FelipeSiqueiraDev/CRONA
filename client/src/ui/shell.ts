@@ -1,10 +1,12 @@
 import {
   anyFurniName,
   distinctFacings,
+  bar,
   getFurni,
   getWallFurni,
   LOOT_KINDS,
   lootKindLabel,
+  lootParaItem,
   MAX_TOKEN_NAME,
   nextRotation,
   parseHeightmap,
@@ -23,10 +25,9 @@ import {
   type Documento,
   type FichaSalva,
   type FloorItem,
+  type FloorStyle,
   type Loot,
   type LootKind,
-  espacosDoItemFicha,
-  kindDoItem,
   regras,
   type Objective,
   type PartyMember,
@@ -44,8 +45,12 @@ import { clear, h, icon, toast, Win } from './dom';
 import { HintEditor, HintViewer } from './infostand';
 import { characterPicker, lookEditor } from './lookEditor';
 import { logIcon, lootIcon } from './lootIcons';
-import { brushSweep, brushWash, bump, countUp, drawStroke, eraseDraw, enter, floatText, flyArc, fxLayer, leave, pencilDraw, pencilShade, reduced, shake, stamp, tilt, typeInto, wait, wipeIn } from './motion';
+import { arteDoItem } from './arteItem';
+import { brushSweep, brushWash, bump, countUp, drawStroke, eraseDraw, enter, floatText, flyArc, fxLayer, leave, pencilDraw, reduced, shake, stamp, tilt, typeInto, wait, wipeIn } from './motion';
 import { askNote, promptNote } from './note';
+import { abrirMapaMundi } from './mapaMundi';
+import { TelaDeViagem } from './telaDeViagem';
+import { abrirViagem, ViagemPainel } from './viagem';
 import { brushize, paperize, textures, unpaint } from './paperArt';
 import { sfx } from './sfx';
 import { CombateScreen } from './combate';
@@ -55,6 +60,7 @@ import { infoItem, romano, textoRef } from './fichaRegras';
 import { doCatalogoPeloNome, listaDoCatalogo } from './catalogoItens';
 import { TecladoSenha } from './teclado';
 import { FerramentasMesa } from './ferramentasMesa';
+import { Minimapa, type MinimapaHost } from './minimapa';
 import { AbaInterludio } from './interludio';
 import { TopBar } from './topbar';
 import { botao, escolher, janela } from './fichaModal';
@@ -77,12 +83,20 @@ type InspTab = 'desc' | 'inter' | 'items';
 type Sel = { kind: 'floor' | 'wall'; item: FloorItem | WallItem } | null;
 
 const THUMB_KEY = 'crona.thumb.';
+/** Os botões das AÇÕES com o ícone pintado do kit (arte/icones/<nome>.png). */
+const PINTADO_ACAO: Record<string, string> = { lupa: 'busca', caixa: 'cadeado', mao: 'combate-item', trocar: 'carga' };
 const COLORS = ['#e3a94c', '#d83a2e', '#3f6fd8', '#f2efe6', '#6fdc8c', '#c78bff', '#3fe0c0', '#ff6fb0'];
 const INSP_TABS: InspTab[] = ['desc', 'inter', 'items'];
 
 /** Abas do painel da direita (controle do RPG). */
 type RpgTab = 'PLAYERS' | 'INTERLÚDIO' | 'ITENS';
-const RPG_TABS: RpgTab[] = ['PLAYERS', 'INTERLÚDIO', 'ITENS'];
+const RPG_TABS: RpgTab[] = ['PLAYERS', 'ITENS', 'INTERLÚDIO'];
+const ABA_ARTE: Record<RpgTab, string[]> = {
+  PLAYERS: ['/arte/icones/painel-players.png', '/arte/icones/titulo-identificacao.png'],
+  ITENS: ['/arte/icones/painel-itens.png', '/arte/icones/titulo-inventario.png'],
+  INTERLÚDIO: ['/arte/icones/painel-interludio.png', '/arte/icones/il-dormir.png'],
+};
+const ABA_LINHA: Record<RpgTab, NomeIcone> = { PLAYERS: 'pessoa', ITENS: 'mochila', INTERLÚDIO: 'lua' };
 
 function loadThumb(id: number): string | null {
   try {
@@ -257,6 +271,10 @@ interface Slot {
 }
 
 /** Tela MAPA, fiel ao layout de referência, com as interações animadas. */
+/** Bloco de PV, PE e SAN que se acerta no lugar (sem ser refeito). */
+type VitaisVivos = HTMLElement & { atualizar?: (p: PartyMember) => void };
+
+
 export class Shell {
   readonly el: HTMLElement;
   readonly board: HTMLElement;
@@ -271,6 +289,9 @@ export class Shell {
   private abaInterludio: AbaInterludio;
   private app: App;
   private campaign: CampaignState | null = null;
+  private viagemPainel!: ViagemPainel;
+  /** a coluna da esquerda (na viagem a planta some e o painel da viagem ocupa o lugar dela) */
+  private mapColEl!: HTMLElement;
   private tokenWin: TokenWin;
   private hintEditor: HintEditor;
   private hintViewer: HintViewer;
@@ -305,22 +326,8 @@ export class Shell {
   private sceneRows = new Map<number, HTMLElement>();
   private activeScene: number | null = null;
   private peeked = new Set<number>();
-  private planCanvas: HTMLCanvasElement;
-  /** andar que a planta está mostrando agora */
-  private planShown = '';
-  /** a arte do alfinete (interface/alfinete.png), quando existe */
-  private alfineteImg: HTMLImageElement | null = null;
-  private planRects: { id: number; x: number; y: number; w: number; h: number; name: string }[] = [];
-  private planDrag: { id: number; sx: number; sy: number; ox: number; oy: number; moved: boolean; mover: boolean } | null = null;
-  private planScale = 6;
-  private planOrigin = { x: 0, y: 0 };
-  private planHatch = { room: -1, t: 1 };
-  private planFade = { room: -1, t: 1 };
-  private planHover = -1;
-  /** andar que a planta mostra (null = o da cena atual) */
-  private planFloor: string | null = null;
-  private planTitle!: HTMLElement;
-  private planTabs!: HTMLElement;
+  /** o minimapa: Terreno › Prédio › Andar › Cômodo (minimapa.ts) */
+  private minimapa: Minimapa;
   /** o teclado de senha grande, no meio do tabuleiro (a geladeira do bar) */
   private teclado: TecladoSenha;
   /** painel da direita: controle do RPG */
@@ -332,6 +339,10 @@ export class Shell {
   private rpgTabsEl!: HTMLElement;
   private rpgBody!: HTMLElement;
   private rpgSig = '';
+  /** os números (PV, PE, SAN) da última passada: só eles mudando se acertam no lugar, sem refazer as cartas */
+  private rpgVit = '';
+  private rpgTabsDe: RpgTab | null = null;
+  private fichasMapaSig = '';
   private objEl: HTMLElement;
   private objPlus: HTMLElement;
   private objRows = new Map<number, ObjRow>();
@@ -350,6 +361,8 @@ export class Shell {
   private giveOpen = false;
   private giveKey = '';
   private inspTab: InspTab = 'desc';
+  /** o painel do objeto em três momentos: jogar (o agente usa), configurar (texto, itens, testes) e mexer (lugar) */
+  private objModo: 'jogar' | 'config' | 'mexer' = 'jogar';
   private inspKey = '';
   private inspSig = '';
   private photoUrl: string | null = null;
@@ -399,6 +412,7 @@ export class Shell {
       aoClicarMarca: () => void this.renameCampaign(),
       botoes: [
         // no celular, só a engrenagem e o sair, como na referência
+        { id: 'mundo', icone: 'globo', titulo: 'Mapa-múndi', soDesktop: true, onclick: () => (sfx.click(), abrirMapaMundi(app, { aoViajar: (l) => abrirViagem(app, this.campaign?.party ?? [], l) })) },
         { id: 'clima', icone: 'sol', titulo: 'Clima da cena', soDesktop: true, onclick: () => (sfx.click(), act.fx()) },
         { id: 'config', icone: 'engrenagem', titulo: 'Configurações', cheio: true, onclick: (e) => (e.stopPropagation(), this.toggleMenu()) },
         { id: 'registro', icone: 'documento', titulo: 'Registro da sessão', soDesktop: true, onclick: (e) => (e.stopPropagation(), this.toggleRegistro()) },
@@ -445,24 +459,18 @@ export class Shell {
     this.scenesEl = h('div', { class: 'scene-list' });
     const scenes = h('section', { class: 'sheet p-scenes' }, h('h3', { class: 'p-title' }, 'CENÁRIO ATUAL'), this.scenesEl);
     paperize(scenes, { seed: 11, tone: '#ceb69b', burn: 1, curl: 'br', curlSize: 32, backs: [{ dx: -6, dy: -3, rot: -1.1, dw: 2, dh: 4 }, { dx: 5, dy: 5, rot: 0.9 }] });
-    this.planCanvas = h('canvas', { class: 'plan-canvas' });
-    this.planTitle = h('span', null, 'PLANTA');
-    this.planTabs = h('div', { class: 'plan-tabs hidden', role: 'tablist', 'aria-label': 'Andares' });
-    // rosa dos ventos a nanquim (desenho padrão até chegar rosa-dos-ventos.png)
-    const rosa = svg(`<svg class="rosa" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="#2a241f" stroke-linejoin="round">
-      <circle cx="32" cy="34" r="17" stroke-width="1.2"/><circle cx="32" cy="34" r="12.5" stroke-width="0.7" stroke-dasharray="1.6 1.6"/>
-      <path d="M32 11 36 30 32 34 28 30Z" fill="#2a241f"/><path d="M32 57 36 38 32 34 28 38Z" fill="#fff8" /><path d="M9 34 28 30 32 34 28 38Z" fill="#fff8"/><path d="M55 34 36 30 32 34 36 38Z" fill="#2a241f"/>
-      <path d="M32 11 32 57M9 34 55 34" stroke-width="0.6"/><text x="32" y="8" text-anchor="middle" font-size="8" font-family="Courier Prime, monospace" font-weight="700" fill="#2a241f" stroke="none">N</text></svg>`);
-    void rosa;
-    const plan = h('section', { class: 'sheet p-plan wide' }, h('h3', { class: 'p-title' }, this.planTitle), this.planTabs, this.planCanvas, h('span', { class: 'tachinha', 'aria-hidden': 'true' }));
-    void existeArte('/arte/interface/alfinete.png').then((ok) => {
-      if (!ok) return;
-      const im = new Image();
-      im.onload = () => ((this.alfineteImg = im), this.drawPlan());
-      im.src = '/arte/interface/alfinete.png';
+    this.minimapa = new Minimapa(this.hostMinimapa());
+    // M abre e fecha a planta grande; Esc fecha (fora de um campo de texto)
+    document.addEventListener('keydown', (e) => {
+      const alvo = e.target as HTMLElement | null;
+      if (alvo?.closest?.('input, textarea, select, [contenteditable]')) return;
+      if (e.key === 'Escape' && this.plantaGrande && !document.querySelector('.mm-janela-fundo')) return this.fecharPlantaGrande();
+      if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey && !e.altKey && !document.documentElement.classList.contains('modo-ficha')) this.abrirPlantaGrande();
     });
-    paperize(plan, { kit: false, seed: 12, tone: '#c3b09a', burn: 0.85, grid: 11, backs: [{ dx: -10, dy: 5, rot: -1.4 }] });
-    this.bindPlan();
+    const mm = this.minimapa;
+    // o minimapa no painel do HUD (azul-noite, borda bege, ouro), com o botão da planta grande (M)
+    const ampliar = h('button', { class: 'plan-ampliar', type: 'button', title: 'Abrir a planta grande (M)', 'aria-label': 'Abrir a planta grande', onclick: () => this.abrirPlantaGrande() }, ic('lupaMais'));
+    const plan = h('section', { class: 'sheet p-plan wide mm' }, h('h3', { class: 'p-title mm-titulo' }, mm.trilha), ampliar, mm.botoes, mm.canvas, mm.cartao);
     // a lista de cenários saiu: a planta interativa é a navegação (a lista fica pronta, fora da tela)
     void scenes;
     const scrapA = h('span', { class: 'scrap scrap-a', 'aria-hidden': 'true' });
@@ -502,8 +510,22 @@ export class Shell {
       { class: 'board-vista', role: 'group', 'aria-label': 'Câmera do tabuleiro' },
       h('button', { class: 'bv', type: 'button', 'data-tatico': 'nao', title: 'Vista isométrica (T)', onclick: () => this.trocarVista(false) }, ic('isometrico'), h('span', null, 'ISO')),
       h('button', { class: 'bv', type: 'button', 'data-tatico': 'sim', title: 'Vista tática: a sala de cima, como mapa de batalha (T)', onclick: () => this.trocarVista(true) }, arteOu(['/arte/icones/tabuleiro-tatico.png'], ic('tatico')), h('span', null, 'TÁTICA')),
+      // o tabuleiro na altura toda: a fileira de baixo (agentes, inventário, ações) some até clicar de novo
+      h(
+        'button',
+        { class: 'bv bv-foco', type: 'button', title: 'Tabuleiro na altura toda (esconde a fileira de baixo)', 'aria-pressed': 'false', onclick: (e: MouseEvent) => this.alternarFoco(e.currentTarget as HTMLElement) },
+        svg('<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'),
+        h('span', null, 'AMPLIAR'),
+      ),
     );
+    try {
+      if (localStorage.getItem('crona.foco') === '1') queueMicrotask(() => this.alternarFoco(this.vistaEl.querySelector('.bv-foco')!, true));
+    } catch {
+      /* sem armazenamento: começa com a fileira */
+    }
     this.ferramentas = new FerramentasMesa(app);
+    this.ferramentas.aoViagem = () => abrirViagem(app, this.campaign?.party ?? []);
+    this.viagemPainel = new ViagemPainel(app);
     this.abaInterludio = new AbaInterludio(app);
     this.combate.aoFerramentaMesa = (tipo) => this.ferramentas.alternar(tipo, false);
     this.ferramentas.aoMudar = (tipo) => this.combate.marcarFerramentaMesa(tipo);
@@ -513,11 +535,11 @@ export class Shell {
     this.placaEl = h('div', { class: 'board-placa' });
     this.estadoEl = h('div', { class: 'board-estado hidden' });
     const ferr = h('div', { class: 'board-ferr' }, this.ferramentas.el, centro);
-    this.board = h('main', { class: 'board' }, moldura, this.placeBar, zoom, this.placaEl, ferr, this.vistaEl, this.tabOverlay, this.teclado.el);
+    this.board = h('main', { class: 'board' }, moldura, this.placeBar, zoom, this.placaEl, ferr, this.vistaEl, this.tabOverlay, this.teclado.el, new TelaDeViagem(app).el);
 
     // ================= direita =================
     const backboard = h('div', { class: 'backboard', 'aria-hidden': 'true' });
-    this.closeTag = h('button', { class: 'insp-x hidden', title: 'Fechar', 'aria-label': 'Fechar', onclick: () => (sfx.click(), app.view.select(null)) }, paperclip('x-clip'), h('span', null, '✕'));
+    this.closeTag = h('button', { class: 'insp-x hidden', title: 'Fechar', 'aria-label': 'Fechar', onclick: () => (sfx.click(), app.view.select(null)) }, paperclip('x-clip'), ic('fechar'));
     this.inspBody = h('div', { class: 'insp-body' });
     this.inspCab = h('h3', { class: 'insp-cab' }, 'NESTA CENA');
     this.inspEl = h('section', { class: 'sheet p-insp' }, this.closeTag, this.inspCab, this.inspBody);
@@ -532,7 +554,8 @@ export class Shell {
     const giveScrap = h('span', { class: 'scrap scrap-give', 'aria-hidden': 'true' }, scribble());
     paperize(giveScrap, { kit: false, seed: 43, tone: '#c6b199', burn: 0.8, torn: 2.2, backs: [{ dx: -4, dy: 10, rot: -3, dh: -20 }] });
     // esquerda: tudo do mapa (planta, cômodo e objeto, entrega)
-    const mapCol = h('aside', { class: 'col-map' }, plan, paperclip('clip clip-sala'), this.salaEl, this.inspEl, this.giveWrap);
+    const mapCol = h('aside', { class: 'col-map' }, plan, paperclip('clip clip-sala'), this.salaEl, this.viagemPainel.el, this.inspEl, this.giveWrap);
+    this.mapColEl = mapCol;
 
     // ================= direita: controle do RPG =================
     this.rpgTabsEl = h('div', { class: 'rpg-tabs', role: 'tablist' });
@@ -601,7 +624,7 @@ export class Shell {
     app.on('characters', () => ((this.sigs.party = ''), this.renderParty()));
     setInterval(() => this.captureThumb(), 4000);
     setInterval(() => this.markWalking(), 180);
-    window.addEventListener('resize', () => this.drawPlan());
+    window.addEventListener('resize', () => (this.minimapa.desenhar(), this.plantaGrande?.mm.desenhar()));
   }
 
   // ================= montagem =================
@@ -653,7 +676,7 @@ export class Shell {
     this.renderRpg();
     this.renderTop();
     this.renderScenes();
-    this.drawPlan();
+    this.atualizarMinimapa();
     this.renderObjectives();
     this.renderParty();
     this.renderLog();
@@ -700,8 +723,9 @@ export class Shell {
   private onRoom() {
     this.marcarVista();
     this.ferramentas.atualizar();
+    this.viagemPainel.atualizar();
+    this.mapColEl.classList.toggle('em-viagem', !!this.app.state.room?.viagem && !!this.app.state.room?.isOwner);
     const id = this.app.state.room?.id ?? null;
-    if (id !== this.lastRoom) this.planFloor = null;
     if (id !== this.lastRoom && this.lastRoom !== null) this.sceneFade();
     this.lastRoom = id;
     this.renderAll();
@@ -715,7 +739,7 @@ export class Shell {
     this.renderSala();
     this.renderAcoes();
     this.renderScenes();
-    this.drawPlan();
+    this.atualizarMinimapa();
     this.renderObjectives();
     this.renderInspector(true);
     this.renderParty();
@@ -944,8 +968,7 @@ export class Shell {
       const row = cur !== null ? this.sceneRows.get(cur) : undefined;
       if (row) this.markScene(row, this.intro(900));
       this.activeScene = cur;
-      this.planFade = { room: this.planHatch.room, t: 0 };
-      this.animatePlan(cur ?? -1, this.intro(1100));
+      this.minimapa.animarAtual(this.intro(1100));
     }
   }
 
@@ -976,129 +999,50 @@ export class Shell {
     });
   }
 
-  // ================= 1º andar =================
-  private bindPlan() {
-    const c = this.planCanvas;
-    const at = (e: PointerEvent) => {
-      const r = c.getBoundingClientRect();
-      return { x: ((e.clientX - r.left) * c.clientWidth) / r.width, y: ((e.clientY - r.top) * c.clientHeight) / r.height };
-    };
-    const hitRect = (p: { x: number; y: number }) => [...this.planRects].reverse().find((r) => p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h);
-    c.addEventListener('pointerdown', (e) => {
-      const p = at(e);
-      const r = hitRect(p);
-      if (!r || !this.campaign) return;
-      const lay = this.campaign.layout[r.id] ?? { x: 0, y: 0 };
-      // clicar leva ao cômodo; mudar o cômodo de lugar na planta só segurando Alt (sem mexer no mapa por engano)
-      this.planDrag = { id: r.id, sx: p.x, sy: p.y, ox: lay.x, oy: lay.y, moved: false, mover: e.altKey };
-      c.setPointerCapture(e.pointerId);
-    });
-    c.addEventListener('pointermove', (e) => {
-      const d = this.planDrag;
-      const p = at(e);
-      const hit = hitRect(p);
-      c.style.cursor = hit ? 'pointer' : 'default';
-      const hid = hit?.id ?? -1;
-      if (hid !== this.planHover) {
-        this.planHover = hid;
-        this.drawPlan(true);
-      }
-      // o nome do cômodo só no aviso do navegador (aparece se o mouse parar em cima)
-      const titulo = hit ? hit.name : '';
-      if (c.title !== titulo) c.title = titulo;
-      if (!d || !d.mover || !this.campaign || !this.owner) return;
-      const dx = Math.round((p.x - d.sx) / this.planScale);
-      const dy = Math.round((p.y - d.sy) / this.planScale);
-      if (dx || dy) d.moved = true;
-      if (d.moved) {
-        this.campaign.layout[d.id] = { x: d.ox + dx, y: d.oy + dy };
-        this.drawPlan(true);
-      }
-    });
-    c.addEventListener('pointerleave', () => {
-      this.planHover = -1;
-      this.drawPlan(true);
-    });
-    c.addEventListener('pointerup', () => {
-      const d = this.planDrag;
-      this.planDrag = null;
-      if (!d || !this.campaign) return;
-      if (d.moved) {
-        const l = this.campaign.layout[d.id];
-        this.app.net.send({ t: 'layoutSet', roomId: d.id, x: l.x, y: l.y });
-      } else if (d.id !== this.app.state.room?.id) this.goScene(d.id);
-    });
-  }
-
-  /** Lápis de cor pintando o cômodo atual na planta (hachuras + preenchimento). */
-  private animatePlan(room: number, delay: number) {
-    this.planHatch = { room, t: 0 };
-    const run = async () => {
-      if (delay) await wait(delay);
-      if (this.planHatch.room !== room) return;
-      const r = this.planRects.find((x) => x.id === room);
-      const lines = r ? this.hatchLines(r) : [];
-      const cr = this.planCanvas.getBoundingClientRect();
-      const k = cr.width / (this.planCanvas.clientWidth || 1);
-      const pts: { x: number; y: number }[] = [];
-      lines.forEach(([x0, y0, x1, y1], i) => {
-        const a = { x: cr.left + x0 * k, y: cr.top + y0 * k };
-        const b = { x: cr.left + x1 * k, y: cr.top + y1 * k };
-        if (i % 2) pts.push(b, a);
-        else pts.push(a, b);
-      });
-      await pencilShade(pts, 950, (t) => {
-        if (this.planHatch.room !== room) return;
-        this.planHatch.t = t;
-        this.planFade.t = Math.min(1, t * 1.6);
-        this.drawPlan(true);
-      });
-      this.planHatch.t = 1;
-      this.planFade = { room: -1, t: 1 };
-      this.drawPlan(true);
-    };
-    void run();
-  }
-
-  /** Hachuras a 45° dentro do retângulo do cômodo (x0,y0 → x1,y1). */
-  private hatchLines(r: { x: number; y: number; w: number; h: number }) {
-    const out: [number, number, number, number][] = [];
-    const step = 3.2;
-    for (let c = r.x + r.y + step; c < r.x + r.w + r.y + r.h; c += step) {
-      const x0 = Math.max(r.x, c - (r.y + r.h));
-      const x1 = Math.min(r.x + r.w, c - r.y);
-      out.push([x0, c - x0, x1, c - x1]);
-    }
-    return out;
-  }
 
   // ================= direita: controle do RPG =================
   /** Abas da direita e o conteúdo da aba aberta (PLAYERS: a ficha de cada um). */
   private renderRpg(force = false) {
     const party = this.campaign?.party ?? [];
-    const sig = JSON.stringify([this.rpgTab, this.gm, party.map((p) => [p.id, p.name, p.color, p.vitals ?? null, p.roomId, p.look?.charId ?? null, !!p.armed])]);
-    if (!force && sig === this.rpgSig) return;
+    // a estrutura (o que obriga a refazer as cartas) fica separada dos números (PV, PE, SAN): os números se
+    // acertam no lugar. Refazer tudo a cada ponto de vida piscava o painel inteiro.
+    const sig = JSON.stringify([this.rpgTab, this.gm, party.map((p) => [p.id, p.name, p.color, p.roomId, p.look?.charId ?? null, !!p.armed, vitalConditions(p.vitals).machucado])]);
+    const vit = JSON.stringify(party.map((p) => [p.id, p.vitals ?? null]));
+    if (!force && sig === this.rpgSig) {
+      if (vit !== this.rpgVit) {
+        this.rpgVit = vit;
+        for (const p of party) this.rpgBody.querySelector<VitaisVivos>(`.rpg-player[data-id="${p.id}"] .rp-vit`)?.atualizar?.(p);
+      }
+      return;
+    }
     this.rpgSig = sig;
-    clear(this.rpgTabsEl).append(
-      ...RPG_TABS.map((t) =>
-        h(
-          'button',
-          {
-            class: `itab${t === this.rpgTab ? ' on' : ''}`,
-            role: 'tab',
-            'aria-selected': String(t === this.rpgTab),
-            onclick: () => {
-              if (t === this.rpgTab) return;
-              sfx.paper();
-              this.rpgTab = t;
-              this.renderRpg(true);
+    this.rpgVit = vit;
+    // as abas só se refazem quando a aba muda
+    if (this.rpgTabsDe !== this.rpgTab || !this.rpgTabsEl.childElementCount) {
+      this.rpgTabsDe = this.rpgTab;
+      clear(this.rpgTabsEl).append(
+        ...RPG_TABS.map((t) =>
+          h(
+            'button',
+            {
+              class: `itab${t === this.rpgTab ? ' on' : ''}`,
+              role: 'tab',
+              'aria-selected': String(t === this.rpgTab),
+              onclick: () => {
+                if (t === this.rpgTab) return;
+                sfx.paper();
+                this.rpgTab = t;
+                this.renderRpg(true);
+              },
             },
-          },
-          h('span', null, t),
-          t === this.rpgTab ? tabRing() : null,
+            // o ícone pintado da aba (arte/icones/painel-<nome>.png); até chegar, um do kit ou o de linha
+            arteOu(ABA_ARTE[t], ic(ABA_LINHA[t])),
+            h('span', null, t),
+            t === this.rpgTab ? tabRing() : null,
+          ),
         ),
-      ),
-    );
+      );
+    }
     const body = clear(this.rpgBody);
     if (this.rpgTab === 'ITENS') {
       this.abaItens.render(body, party, this.fichasMapa, this.gm);
@@ -1121,7 +1065,7 @@ export class Shell {
       const here = p.roomId === cur;
       const card = h(
         'div',
-        { class: 'rpg-player', style: `--c:${p.color}` },
+        { class: 'rpg-player', style: `--c:${p.color}`, 'data-id': String(id) },
         h(
           'button',
           { class: 'rp-foto', title: here ? 'Comandar' : `Ir para ${this.sceneName(p.roomId)}`, onclick: () => this.pickCard(id) },
@@ -1155,367 +1099,91 @@ export class Shell {
 
   setFichasMapa(lista: FichaSalva[]) {
     this.fichasMapa = lista;
+    const fs = JSON.stringify(lista.map((f) => [f.id, f.atualizadaEm]));
+    if (fs === this.fichasMapaSig) return;
+    this.fichasMapaSig = fs;
+    // as cartas dos agentes vestem o elemento de cada um (o tema da ficha)
+    for (const [id, c] of this.cards) c.el.dataset.tema = this.temaDe(this.campaign?.party.find((x) => x.id === id));
     // a mochila (ITENS) e as condições marcadas (PLAYERS) vêm das fichas
     this.renderRpg(true);
   }
 
-  /** Abas dos andares acima da planta (só com mais de um andar). */
-  private renderPlanTabs(floors: string[], shown: string) {
-    const label = (f: string) => (f ? f.toUpperCase() : '1º ANDAR');
-    const sig = JSON.stringify([floors, shown]);
-    if (this.planTabs.dataset.sig === sig) return;
-    this.planTabs.dataset.sig = sig;
-    clear(this.planTabs).classList.toggle('hidden', floors.length < 2);
-    // muitos andares (a fazenda tem cinco): as abas encolhem para caber
-    this.planTabs.classList.toggle('muitas', floors.length > 3);
-    for (const f of floors)
-      this.planTabs.append(
-        h(
-          'button',
-          {
-            class: `plan-tab${f === shown ? ' on' : ''}`,
-            role: 'tab',
-            'aria-selected': String(f === shown),
-            onclick: () => {
-              if (f === shown) return;
-              sfx.paper();
-              this.planFloor = f;
-              this.drawPlan();
-            },
-          },
-          label(f),
-        ),
-      );
+  /** O tabuleiro na altura toda: esconde a fileira de baixo (e guarda a escolha neste navegador). */
+  private alternarFoco(bt: HTMLElement, ligar?: boolean) {
+    const on = ligar ?? !this.el.classList.contains('foco-tabuleiro');
+    this.el.classList.toggle('foco-tabuleiro', on);
+    bt.setAttribute('aria-pressed', String(on));
+    bt.classList.toggle('on', on);
+    bt.querySelector('span')!.textContent = on ? 'REDUZIR' : 'AMPLIAR';
+    if (ligar === undefined) sfx.click();
+    try {
+      localStorage.setItem('crona.foco', on ? '1' : '0');
+    } catch {
+      /* sem armazenamento */
+    }
   }
 
   /**
-   * Planta (como a referência): uma planta de arquitetura no papel quadriculado. Todos os
-   * andares da campanha na mesma escala (o bar fica pequeno perto do subsolo, como é); os
-   * cômodos de pedra cinza com o contorno grosso e a linha clara por dentro, as portas
-   * marcadas na parede, o atual em vermelho com o alfinete e o nome numa plaquinha. Ao ar
-   * livre, o terreno (grama, estrada, água) e os prédios com o nome.
+   * A planta grande, por cima da tela (botão da planta ou a tecla M): o mesmo minimapa, em
+   * tamanho de ler, com os níveis, o cartão e a lista de lugares. Entrar ou Levar fecham a janela.
    */
-  private drawPlan(keepScale = false) {
-    const c = this.planCanvas;
-    const cssW = c.clientWidth || 220;
-    const cssH = c.clientHeight || 170;
-    const dpr = Math.min(2, devicePixelRatio || 1);
-    if (c.width !== Math.round(cssW * dpr) || c.height !== Math.round(cssH * dpr)) {
-      c.width = Math.round(cssW * dpr);
-      c.height = Math.round(cssH * dpr);
-    }
-    const ctx = c.getContext('2d')!;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, cssW, cssH);
-    const camp = this.campaign;
-    const cur = this.app.state.room?.id;
-    this.planRects = [];
-    if (!camp || !camp.scenes.length) return;
-    // um andar por vez: o da cena atual, ou o que o mestre escolheu nas abas
-    const floorOf = (id: number | undefined) => camp.scenes.find((s) => s.id === id)?.floor ?? '';
-    const floors = [...new Set(camp.scenes.map((s) => s.floor ?? ''))];
-    const shown = this.planFloor !== null && floors.includes(this.planFloor) ? this.planFloor : floorOf(cur);
-    this.planShown = shown;
-    this.renderPlanTabs(floors, shown);
-    const todos = camp.scenes.map((s) => {
-      const p = camp.layout[s.id] ?? { x: 0, y: 0 };
-      const raw = parseHeightmap(s.heightmap);
-      const rot = (x: number, y: number) => rotatePt(raw, p.r ?? 0, x, y);
-      // o vão da porta (a casa de fora da parede) não entra no desenho
-      const porta = s.aberto ? null : rot(s.door.x, s.door.y);
-      return { s, raw, hm: rotateHm(raw, p.r ?? 0), p, rot, porta };
-    });
-    const caixa = (lista: typeof todos) => {
-      let x0 = Infinity;
-      let y0 = Infinity;
-      let x1 = -Infinity;
-      let y1 = -Infinity;
-      for (const { hm, p } of lista) {
-        x0 = Math.min(x0, p.x);
-        y0 = Math.min(y0, p.y);
-        x1 = Math.max(x1, p.x + hm.width);
-        y1 = Math.max(y1, p.y + hm.height);
-      }
-      return { x0, y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0) };
+  private plantaGrande: { el: HTMLElement; mm: Minimapa } | null = null;
+
+  private abrirPlantaGrande() {
+    if (this.plantaGrande) return this.fecharPlantaGrande();
+    sfx.paper();
+    const host = this.hostMinimapa();
+    const mm = new Minimapa(
+      {
+        ...host,
+        ir: (id) => (this.fecharPlantaGrande(), host.ir(id)),
+        levar: (roomId, tokens, entrar) => (entrar !== false && this.fecharPlantaGrande(), host.levar(roomId, tokens, entrar)),
+      },
+      { grande: true },
+    );
+    const fechar = h('button', { class: 'plg-x', type: 'button', title: 'Fechar (Esc)', 'aria-label': 'Fechar a planta', onclick: () => this.fecharPlantaGrande() }, ic('fechar'));
+    const el = h(
+      'div',
+      { class: 'plg', role: 'dialog', 'aria-label': 'Planta', onclick: (e: MouseEvent) => e.target === el && this.fecharPlantaGrande() },
+      h(
+        'div',
+        { class: 'plg-janela mm-grande' },
+        h('header', { class: 'plg-cab' }, mm.trilha, mm.botoes, fechar),
+        h('div', { class: 'plg-mapa' }, mm.canvas, mm.cartao),
+        h('p', { class: 'plg-dica' }, 'Clique num prédio para ver dentro e num cômodo para o cartão. Botão direito sobe. Esc fecha.'),
+      ),
+    );
+    document.body.append(el);
+    this.plantaGrande = { el, mm };
+    requestAnimationFrame(() => mm.atualizar());
+  }
+
+  private fecharPlantaGrande() {
+    const g = this.plantaGrande;
+    if (!g) return;
+    this.plantaGrande = null;
+    g.el.classList.add('saindo');
+    setTimeout(() => g.el.remove(), 180);
+  }
+
+  /** Atualiza o minimapa da coluna e o da planta grande (quando aberta). */
+  private atualizarMinimapa() {
+    this.minimapa.atualizar();
+    this.plantaGrande?.mm.atualizar();
+  }
+
+  /** O que o minimapa pede à tela: a campanha, a cena aberta e as ações do mestre. */
+  private hostMinimapa(): MinimapaHost {
+    return {
+      campanha: () => this.campaign,
+      cenaAtual: () => this.app.state.room?.id,
+      mestre: () => this.owner,
+      ir: (id) => this.goScene(id),
+      levar: (roomId, tokens, entrar) => (sfx.click(), this.app.net.send({ t: 'grupoPara', roomId, ...(tokens ? { tokens } : {}), ...(entrar === false ? { entrar } : {}) })),
+      marcarVisita: (roomId, visitada) => this.app.net.send(roomId === null ? { t: 'visitada', campanha: this.app.state.room?.id, visitada } : { t: 'visitada', roomId, visitada }),
+      ehAgente: (charId) => !!charId && this.fichasMapa.some((f) => f.personagem === charId),
+      moverCena: (roomId, x, y) => this.app.net.send({ t: 'layoutSet', roomId, x, y }),
     };
-    const parsed = todos.filter((q) => (q.s.floor ?? '') === shown);
-    void todos;
-    if (!keepScale || !this.planDrag) {
-      const pad = 8;
-      // o andar enche o papel (como o prédio da referência); um cômodo sozinho (o bar) fica em no máximo metade dele
-      const b = caixa(parsed);
-      const sozinho = parsed.length === 1 && !parsed[0].s.aberto;
-      const teto = sozinho ? Math.min((cssW * 0.5) / b.w, (cssH * 0.7) / b.h) : Infinity;
-      this.planScale = Math.max(1.5, Math.min(teto, (cssW - pad * 2) / b.w, (cssH - pad * 2) / b.h));
-      this.planOrigin = {
-        x: pad + (cssW - pad * 2 - b.w * this.planScale) / 2 - b.x0 * this.planScale,
-        y: pad + (cssH - pad * 2 - b.h * this.planScale) / 2 - b.y0 * this.planScale,
-      };
-    }
-    const S = this.planScale;
-    const O = this.planOrigin;
-    const granito = this.padraoGranito(ctx);
-    const TINTA = '#1d1a17';
-    // de quem é cada casa do andar (na planta): parede entre dois cômodos é fina; a de fora, grossa
-    const dono = new Map<string, number>();
-    const formas = new Map<number, Path2D>();
-    for (const { s, hm, p, porta } of parsed) {
-      if (s.aberto) continue;
-      const forma = new Path2D();
-      for (let y = 0; y < hm.height; y++)
-        for (let x = 0; x < hm.width; x++) {
-          if (hm.tiles[y]?.[x] === null || hm.tiles[y]?.[x] === undefined || (porta && x === porta[0] && y === porta[1])) continue;
-          dono.set(`${p.x + x},${p.y + y}`, s.id);
-          forma.rect(O.x + (p.x + x) * S, O.y + (p.y + y) * S, S + 0.35, S + 0.35);
-        }
-      formas.set(s.id, forma);
-    }
-    // a sombra do prédio no papel e a pedra (o andar inteiro é um prédio só, como na referência)
-    ctx.save();
-    ctx.translate(1.4, 1.8);
-    ctx.fillStyle = 'rgba(46,34,24,0.26)';
-    for (const f of formas.values()) ctx.fill(f);
-    ctx.restore();
-    ctx.fillStyle = granito;
-    for (const f of formas.values()) ctx.fill(f);
-    for (const { s, hm, raw, p, rot, porta } of parsed) {
-      const ox = O.x + p.x * S;
-      const oy = O.y + p.y * S;
-      const atual = s.id === cur;
-      const rect = { id: s.id, x: ox, y: oy, w: hm.width * S, h: hm.height * S, name: s.name.split('·').pop()!.trim() };
-      if (s.aberto) {
-        this.terrenoNaPlanta(ctx, s, raw, rot, ox, oy, S, granito);
-        this.planRects.push(rect);
-        continue;
-      }
-      const forma = formas.get(s.id)!;
-      const tile = (x: number, y: number) => dono.get(`${p.x + x},${p.y + y}`) === s.id;
-      // marcas escuras de móvel e de entulho, aqui e ali (a referência tem os quadradinhos)
-      ctx.fillStyle = 'rgba(42,38,34,0.55)';
-      for (let y = 0; y < hm.height; y++)
-        for (let x = 0; x < hm.width; x++) {
-          if (!tile(x, y) || !tile(x - 1, y) || !tile(x + 1, y) || !tile(x, y - 1) || !tile(x, y + 1)) continue;
-          const v = Math.sin((p.x + x) * 127.1 + (p.y + y) * 311.7) * 43758.5453;
-          if (v - Math.floor(v) < 0.045) ctx.fillRect(ox + (x + 0.2) * S, oy + (y + 0.3) * S, S * 0.6, S * 0.4);
-        }
-      // o cômodo atual: um véu vermelho (e, entrando, o lápis risca antes)
-      if (atual) {
-        const anima = this.planHatch.room === s.id ? this.planHatch.t : 1;
-        ctx.save();
-        ctx.clip(forma);
-        ctx.fillStyle = `rgba(196,40,28,${(0.4 * Math.min(1, anima / 0.7)).toFixed(3)})`;
-        ctx.fill(forma);
-        if (anima < 1) {
-          const lines = this.hatchLines(rect);
-          const drawn = anima * lines.length;
-          ctx.strokeStyle = `rgba(150,28,20,${(0.8 * (1 - anima)).toFixed(3)})`;
-          ctx.lineWidth = 1.2;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          lines.forEach(([x0, y0, x1, y1], i) => {
-            if (i >= drawn) return;
-            const f = Math.min(1, drawn - i);
-            ctx.moveTo(x0, y0);
-            ctx.lineTo(x0 + (x1 - x0) * f, y0 + (y1 - y0) * f);
-          });
-          ctx.stroke();
-        }
-        ctx.restore();
-      } else if (s.id === this.planFade.room && this.planFade.t < 1) {
-        ctx.fillStyle = `rgba(190,36,26,${0.45 * (1 - this.planFade.t)})`;
-        ctx.fill(forma);
-      }
-      if (s.id === this.planHover) {
-        ctx.fillStyle = 'rgba(255,246,228,0.22)';
-        ctx.fill(forma);
-      }
-      // as paredes: fina entre dois cômodos, grossa por fora
-      const fina: [number, number, number, number][] = [];
-      const grossa: [number, number, number, number][] = [];
-      const vizinho = (x: number, y: number) => dono.get(`${p.x + x},${p.y + y}`);
-      for (let y = 0; y < hm.height; y++)
-        for (let x = 0; x < hm.width; x++) {
-          if (!tile(x, y)) continue;
-          const X = ox + x * S;
-          const Y = oy + y * S;
-          for (const [nx, ny, seg] of [
-            [x, y - 1, [X, Y, X + S, Y]],
-            [x, y + 1, [X, Y + S, X + S, Y + S]],
-            [x - 1, y, [X, Y, X, Y + S]],
-            [x + 1, y, [X + S, Y, X + S, Y + S]],
-          ] as [number, number, [number, number, number, number]][]) {
-            const v = vizinho(nx, ny);
-            if (v === s.id) continue;
-            (v === undefined ? grossa : fina).push(seg);
-          }
-        }
-      // traço de nanquim: cada ponta desvia um pouco, sempre igual (as paredes que se encontram continuam emendadas)
-      const tremor = (x: number, y: number) => {
-        const v = Math.sin(Math.round(x * 10) * 12.9898 + Math.round(y * 10) * 78.233) * 43758.5453;
-        return (v - Math.floor(v) - 0.5) * 0.9;
-      };
-      const traco = (segs: [number, number, number, number][], cor: string, lw: number) => {
-        if (!segs.length) return;
-        ctx.strokeStyle = cor;
-        ctx.lineWidth = lw;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.beginPath();
-        for (const [a, b2, c2, d2] of segs) (ctx.moveTo(a + tremor(a, b2), b2 + tremor(b2, a)), ctx.lineTo(c2 + tremor(c2, d2), d2 + tremor(d2, c2)));
-        ctx.stroke();
-      };
-      traco(fina, 'rgba(30,26,22,0.7)', 1);
-      traco(grossa, '#1d1a17', Math.max(1.6, Math.min(2.4, S * 0.42)));
-      if (atual) traco([...fina, ...grossa], 'rgba(122,18,12,0.85)', 1.2);
-      // as portas: um tracinho escuro atravessando a parede
-      ctx.fillStyle = '#26201b';
-      for (const pt of s.portals) {
-        const [px, py] = rot(pt.x, pt.y);
-        if (!tile(px, py)) continue;
-        const X = ox + px * S;
-        const Y = oy + py * S;
-        const e = Math.max(1.6, S * 0.32);
-        if (!tile(px, py - 1)) ctx.fillRect(X + S * 0.2, Y - e / 2, S * 0.6, e);
-        else if (!tile(px, py + 1)) ctx.fillRect(X + S * 0.2, Y + S - e / 2, S * 0.6, e);
-        else if (!tile(px - 1, py)) ctx.fillRect(X - e / 2, Y + S * 0.2, e, S * 0.6);
-        else if (!tile(px + 1, py)) ctx.fillRect(X + S - e / 2, Y + S * 0.2, e, S * 0.6);
-      }
-      this.planRects.push(rect);
-    }
-    // onde estão as peças: bolinhas na cor de cada um
-    for (const { s, p, rot } of parsed)
-      for (const u of s.users) {
-        const pm = camp.party.find((q) => q.id === u.id);
-        const [ux, uy] = rot(u.x, u.y);
-        ctx.beginPath();
-        ctx.arc(O.x + (p.x + ux + 0.5) * S, O.y + (p.y + uy + 0.5) * S, Math.max(2, Math.min(3.2, S * 0.36)), 0, Math.PI * 2);
-        ctx.fillStyle = pm?.color ?? '#fff';
-        ctx.fill();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = '#f6efe2';
-        ctx.stroke();
-      }
-  }
-
-  /** O granito dos cômodos da planta: pedra cinza salpicada, com uns veios (como a referência). */
-  private granito: CanvasPattern | null = null;
-  private padraoGranito(ctx: CanvasRenderingContext2D): CanvasPattern | string {
-    if (this.granito) return this.granito;
-    const T = 72;
-    const p = document.createElement('canvas');
-    p.width = T;
-    p.height = T;
-    const g = p.getContext('2d');
-    if (!g) return '#9d9993';
-    let semente = 9;
-    const r = () => (semente = (semente * 16807) % 2147483647) / 2147483647;
-    g.fillStyle = '#928e87';
-    g.fillRect(0, 0, T, T);
-    // manchas grandes e claras/escuras (a pedra da referência), repetidas nas bordas para não ter emenda
-    const mancha = (x: number, y: number, rx: number, ry: number, cor: string) => {
-      for (const dx of [-T, 0, T])
-        for (const dy of [-T, 0, T]) {
-          g.beginPath();
-          g.ellipse(x + dx, y + dy, rx, ry, r() * 3, 0, Math.PI * 2);
-          g.fillStyle = cor;
-          g.fill();
-        }
-    };
-    for (let i = 0; i < 26; i++) mancha(r() * T, r() * T, 3 + r() * 7, 2 + r() * 5, r() < 0.55 ? 'rgba(70,66,60,0.16)' : 'rgba(225,221,212,0.18)');
-    for (let i = 0; i < 160; i++) {
-      g.fillStyle = r() < 0.6 ? 'rgba(52,48,44,0.38)' : 'rgba(232,228,220,0.35)';
-      g.fillRect(Math.floor(r() * T), Math.floor(r() * T), r() < 0.3 ? 2 : 1, r() < 0.3 ? 2 : 1);
-    }
-    g.strokeStyle = 'rgba(46,42,38,0.38)';
-    g.lineWidth = 0.7;
-    for (let i = 0; i < 4; i++) {
-      let x = r() * T;
-      let y = r() * T;
-      g.beginPath();
-      g.moveTo(x, y);
-      for (let k = 0; k < 3; k++) {
-        x += (r() - 0.5) * 18;
-        y += (r() - 0.5) * 18;
-        g.lineTo(x, y);
-      }
-      g.stroke();
-    }
-    this.granito = ctx.createPattern(p, 'repeat');
-    return this.granito ?? '#9d9993';
-  }
-
-  /** O lugar ao ar livre na planta: o terreno com cores de mapa e os prédios de pedra, com o nome. */
-  private terrenoNaPlanta(ctx: CanvasRenderingContext2D, s: SceneInfo, raw: Heightmap, rot: (x: number, y: number) => [number, number], ox: number, oy: number, S: number, granito: CanvasPattern | string) {
-    const linhas = (s.terreno ?? '').replace(/\r/g, '').split('\n');
-    const COR: Record<string, string> = { '.': '#a9ad7d', g: '#a9ad7d', t: '#d9c69c', l: '#b38c62', p: '#cfc8b8', d: '#b99b70', m: '#a67d55', a: '#8fb2bd' };
-    for (let y = 0; y < raw.height; y++)
-      for (let x = 0; x < raw.width; x++) {
-        const ch = linhas[y]?.[x] ?? '.';
-        const chao = raw.tiles[y]?.[x] !== null && raw.tiles[y]?.[x] !== undefined;
-        if (!chao && ch !== 'a') continue;
-        const [rx, ry] = rot(x, y);
-        ctx.fillStyle = COR[ch] ?? COR['.'];
-        ctx.fillRect(ox + rx * S, oy + ry * S, S + 0.35, S + 0.35);
-      }
-    // a borda do lugar
-    const largura = (rot(raw.width - 1, raw.height - 1)[0] === raw.width - 1 ? raw.width : raw.height) * S;
-    const altura = (rot(raw.width - 1, raw.height - 1)[0] === raw.width - 1 ? raw.height : raw.width) * S;
-    ctx.strokeStyle = s.id === this.app.state.room?.id ? '#b22a20' : '#1d1a17';
-    ctx.lineWidth = s.id === this.app.state.room?.id ? 2.2 : 1.4;
-    ctx.strokeRect(ox, oy, largura, altura);
-    // os prédios
-    for (const m of s.marcos ?? []) {
-      const [ax, ay] = rot(m.x, m.y);
-      const [bx, by] = rot(m.x + m.w - 1, m.y + m.h - 1);
-      const x0 = ox + Math.min(ax, bx) * S;
-      const y0 = oy + Math.min(ay, by) * S;
-      const w = (Math.abs(bx - ax) + 1) * S;
-      const h = (Math.abs(by - ay) + 1) * S;
-      ctx.fillStyle = 'rgba(52,40,28,0.25)';
-      ctx.fillRect(x0 + 1.2, y0 + 1.4, w, h);
-      ctx.fillStyle = granito;
-      ctx.fillRect(x0, y0, w, h);
-      ctx.strokeStyle = '#1d1a17';
-      ctx.lineWidth = 1.6;
-      ctx.strokeRect(x0, y0, w, h);
-      const f = Math.min(8.5, h * 0.42, (w / Math.max(4, m.nome.length)) * 1.8);
-      if (f >= 5) {
-        ctx.save();
-        ctx.font = `600 ${f.toFixed(1)}px "Ubuntu Mono", monospace`;
-        ctx.fillStyle = '#efe6d1';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(m.nome, x0 + w / 2, y0 + h / 2);
-        ctx.restore();
-      }
-    }
-  }
-
-  /** O alfinete da sala atual: a arte (alfinete.png) ou o marcador de mapa desenhado. */
-  private alfinete(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-    if (this.alfineteImg) {
-      const w = r * 2.4;
-      const hh = w * 1.4;
-      ctx.drawImage(this.alfineteImg, cx - w / 2, cy - hh * 0.8, w, hh);
-      return;
-    }
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(cx, cy + r * 1.7);
-    ctx.bezierCurveTo(cx - r * 0.45, cy + r * 0.9, cx - r, cy + r * 0.3, cx - r, cy - r * 0.15);
-    ctx.arc(cx, cy - r * 0.15, r, Math.PI, 0);
-    ctx.bezierCurveTo(cx + r, cy + r * 0.3, cx + r * 0.45, cy + r * 0.9, cx, cy + r * 1.7);
-    ctx.closePath();
-    ctx.fillStyle = '#f6efe3';
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = '#4a120d';
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(cx, cy - r * 0.15, r * 0.4, 0, Math.PI * 2);
-    ctx.fillStyle = '#b3261e';
-    ctx.fill();
-    ctx.restore();
   }
 
   // ================= objetivos =================
@@ -1625,17 +1293,17 @@ export class Shell {
   private inspState() {
     const view = this.app.view;
     const sel = view.selection;
-    const party = (this.campaign?.party ?? []).map((p) => [p.id, p.name, p.color, p.load, p.capacity, p.look, !!p.armed, p.vitals ?? null]);
+    const party = (this.campaign?.party ?? []).map((p) => [p.id, p.name, p.color, p.load, p.capacity, p.look, !!p.armed, vitalConditions(p.vitals).machucado, breathMode(vitalConditions(p.vitals))]);
     let data: unknown = null;
     if (sel?.kind === 'user') {
       const u = view.users.get(sel.id);
-      data = u ? [u.name, u.look, u.color, view.myId === sel.id] : null;
+      data = u ? [u.name, u.look, u.color, view.myId === sel.id, !!u.agachado, !!u.alto, !!view.map?.leitoItem(u.x, u.y)] : null;
     } else if (sel) data = this.selection()?.item ?? null;
     else {
       const map = view.map;
       data = map ? [...map.allItems(), ...map.allWallItems()].filter((it) => it.hint || it.loot?.length || it.actions?.length) : null;
     }
-    return JSON.stringify([sel, this.inspTab, this.giveLoot, this.addingLoot, this.logging, this.gm, this.app.state.room?.id, this.app.state.room?.description, data, party]);
+    return JSON.stringify([sel, this.inspTab, this.objModo, this.giveLoot, this.addingLoot, this.logging, this.gm, this.app.state.room?.id, this.app.state.room?.description, data, party]);
   }
 
   private renderInspector(force = false) {
@@ -1650,6 +1318,7 @@ export class Shell {
     if (fresh) {
       const locked = sel?.kind === 'floor' && !!this.selection()?.item && !!(this.selection()!.item as FloorItem).lock;
       this.inspTab = sel && sel.kind !== 'user' && !locked ? 'items' : 'desc';
+      this.objModo = 'jogar';
       this.photoUrl = sel && sel.kind !== 'user' ? view.photo(sel.kind, sel.id, 262, 250) : null;
       this.inspSig = this.inspState();
       if (sel) sfx.paper();
@@ -1697,7 +1366,7 @@ export class Shell {
     body.querySelectorAll('.itabs').forEach((t) => enter(t, 'up', 180, 360));
     this.drawRing(body, 380);
     body.querySelectorAll('.ipane > *').forEach((c, i) => enter(c, 'left', 260 + i * 70, 420));
-    body.querySelectorAll('.insp-tip, .tools, .tool-sel').forEach((c) => enter(c, 'fade', 300, 400));
+    body.querySelectorAll('.insp-tip, .tk-grupo').forEach((c, i) => enter(c, 'up', 260 + i * 70, 380));
   }
 
   private animateTabSwitch(body: HTMLElement, prev: InspTab) {
@@ -1760,32 +1429,155 @@ export class Shell {
     const actions = item.actions ?? [];
     const photo = this.photoUrl ? h('img', { src: this.photoUrl, alt: '' }) : thumbCopy(item.defId, 124);
     body.append(h('div', { class: 'insp-head' }, this.polaroid(photo), this.headText(title, desc)));
-    const tab = (id: InspTab, label: string) => {
-      const on = this.inspTab === id;
-      return h(
-        'button',
-        {
-          class: `itab${on ? ' on' : ''}`,
-          role: 'tab',
-          'aria-selected': String(on),
-          onclick: () => {
-            if (this.inspTab === id) return;
-            this.inspTab = id;
-            this.giveLoot = null;
-            this.renderInspector();
+    const modo = this.gm ? this.objModo : 'jogar';
+    if (this.gm) {
+      // os três momentos: o ícone em cima, o nome embaixo; o pintado quando chegar (PROMPT-ICONES-E-LOGO)
+      const botaoModo = (id: typeof modo, nome: string, pintado: string, linha: NomeIcone, dica: string) =>
+        h(
+          'button',
+          {
+            class: `obj-modo${modo === id ? ' on' : ''}`,
+            type: 'button',
+            role: 'tab',
+            'aria-selected': String(modo === id),
+            title: dica,
+            onclick: () => {
+              if (this.objModo === id) return;
+              sfx.paper();
+              this.objModo = id;
+              this.giveLoot = null;
+              this.renderInspector(true);
+            },
           },
-        },
-        h('span', null, label),
-        on ? tabRing() : null,
+          arteOu([`/arte/icones/${pintado}.png`], ic(linha)),
+          h('span', null, nome),
+        );
+      body.append(
+        h(
+          'div',
+          { class: 'obj-modos', role: 'tablist', 'aria-label': 'O que fazer com o objeto' },
+          botaoModo('jogar', 'Jogar', 'obj-interagir', 'mao', 'O agente vai lá e usa: abrir, ler, pegar e entregar itens, fazer os testes'),
+          botaoModo('config', 'Configurar', 'obj-configurar', 'engrenagem', 'Preparar o objeto: o texto e a pista, os itens dentro e os testes'),
+          botaoModo('mexer', 'Mexer', 'obj-mover', 'mover', 'Mudar de lugar: mover, girar, trocar, tamanho e guardar'),
+        ),
       );
-    };
-    body.append(h('div', { class: 'itabs', role: 'tablist' }, tab('items', `CONTÉM (${loot.length})`), tab('desc', 'DESCRIÇÃO'), tab('inter', 'INTERAÇÕES')));
-    const pane = h('div', { class: `ipane ${this.inspTab}` });
+    }
+    const pane = h('div', { class: `ipane obj-${modo}` });
     body.append(pane, selo());
-    if (this.inspTab === 'desc') this.paneDesc(pane, s);
-    else if (this.inspTab === 'inter') this.paneInter(pane, s, actions);
-    else this.paneItems(pane, s, loot);
+    if (modo === 'mexer') this.paneMexer(pane, s);
+    else if (modo === 'config') this.paneConfig(pane, s, loot, actions);
+    else this.paneJogar(pane, s, loot, actions);
   }
+
+  private secao(titulo: string, ...conteudo: (Node | null)[]) {
+    return h('section', { class: 'obj-sec' }, h('h4', { class: 'obj-sec-tit' }, titulo), ...conteudo);
+  }
+
+  private botaoObj(rotulo: string, pintado: string | null, linha: NomeIcone, fn: () => void, cls = '') {
+    return h('button', { class: `obj-bt ${cls}`, type: 'button', onclick: () => (sfx.click(), fn()) }, pintado ? arteOu([`/arte/icones/${pintado}.png`], ic(linha)) : ic(linha), h('span', null, rotulo));
+  }
+
+  /** Jogar: o que o agente faz com o objeto (abrir/usar, ler a pista, os itens e os testes). */
+  private paneJogar(pane: HTMLElement, s: NonNullable<Sel>, loot: Loot[], actions: NonNullable<FloorItem['actions']>) {
+    const { item, kind } = s;
+    const net = this.app.net;
+    const fdef = kind === 'floor' ? getFurni(item.defId) : undefined;
+    const wdef = kind === 'wall' ? getWallFurni(item.defId) : undefined;
+    const hint = item.hint && (item.hint.visible || this.gm) ? item.hint : undefined;
+    const trancado = kind === 'floor' && !!(item as FloorItem).lock;
+    if (trancado && this.gm) pane.append(this.keypad(item as FloorItem));
+    if (hint && !hint.visible) pane.append(h('p', { class: 'desc-hidden' }, '● pista oculta para os jogadores'));
+    const usos = h('div', { class: 'obj-bts' });
+    const states = fdef?.states ?? wdef?.states ?? 0;
+    const porta = fdef?.openState !== undefined;
+    // um jogo do bar: o agente comandado vai até ele e o jogo abre quando ele chega
+    const quemJoga = this.jogador(kind, item.defId);
+    if (quemJoga) usos.append(this.botaoObj(`Jogar (${quemJoga.split(' ')[0]})`, 'combate-item', 'mao', () => this.usar(kind, item.id, item.defId), 'forte'));
+    else if (states > 1) usos.append(this.botaoObj(porta ? (item.state === fdef!.openState ? 'Fechar' : 'Abrir') : 'Usar', porta ? 'cadeado' : 'combate-item', porta ? 'cadeado' : 'mao', () => this.usar(kind, item.id, item.defId), 'forte'));
+    if (!quemJoga && this.gm && bar.jogoDoBar(item.defId)) pane.append(h('p', { class: 'obj-nota' }, 'Para jogar: comande um agente (clique no retrato dele) e escolha o jogo de novo. Ele vai até lá e o jogo abre quando chegar.'));
+    if (hint) usos.append(this.botaoObj('Ler a pista', 'busca', 'lupa', () => this.hintViewer.open(kind, item.id)));
+    if (usos.childElementCount) pane.append(usos);
+    if (loot.length) {
+      const lista = h('div', { class: 'obj-lista' });
+      this.paneItems(lista, s, loot, 'jogar');
+      pane.append(this.secao(`Contém (${loot.length})`, lista));
+    }
+    if (actions.length) {
+      const lista = h('div', { class: 'obj-lista' });
+      this.paneInter(lista, s, actions, 'jogar');
+      pane.append(this.secao('Testes', lista));
+    }
+    if (!usos.childElementCount && !loot.length && !actions.length && !trancado)
+      pane.append(h('p', { class: 'empty' }, this.gm ? 'Nada para fazer aqui. Em Configurar, ponha itens, uma pista ou testes.' : 'Nada de especial aqui.'));
+  }
+
+  /** Configurar: o texto (a pista), os itens dentro, os testes e o destino da passagem. */
+  private paneConfig(pane: HTMLElement, s: NonNullable<Sel>, loot: Loot[], actions: NonNullable<FloorItem['actions']>) {
+    const { item, kind } = s;
+    const net = this.app.net;
+    const texto = h('div', { class: 'obj-bts' }, this.botaoObj(item.hint ? 'Editar o texto' : 'Escrever um texto', 'botao-editar', 'lapis', () => this.hintEditor.open(kind, item.id)));
+    if (item.hint) {
+      const hh = item.hint;
+      texto.append(this.botaoObj(hh.visible ? 'Esconder' : 'Mostrar', null, hh.visible ? 'olhoFechado' : 'olho', () => net.send({ t: 'setHint', id: item.id, hint: { ...hh, visible: !hh.visible } })));
+    }
+    const nota = item.hint ? (item.hint.visible ? 'Os jogadores leem este texto.' : 'Só você vê o texto; mostre quando acharem.') : 'Uma descrição especial, um documento ou uma pista para os jogadores lerem.';
+    pane.append(this.secao('Texto e pista', h('p', { class: 'obj-nota' }, nota), texto));
+    const itens = h('div', { class: 'obj-lista' });
+    this.paneItems(itens, s, loot, 'config');
+    pane.append(this.secao(`Itens dentro (${loot.length})`, itens));
+    const testes = h('div', { class: 'obj-lista' });
+    this.paneInter(testes, s, actions, 'config');
+    pane.append(this.secao('Testes', testes));
+    const floor = kind === 'floor' ? (item as FloorItem) : null;
+    const fdef = floor ? getFurni(floor.defId) : undefined;
+    if (floor && fdef?.portal) {
+      const others = this.app.state.rooms.filter((r) => r.id !== this.app.state.room?.id);
+      const sel = h('select', { class: 'tool-sel', 'aria-label': 'Destino da passagem' }, h('option', { value: '' }, 'Sem destino'), ...others.map((r) => h('option', { value: String(r.id), selected: r.id === floor.link }, r.name)));
+      sel.addEventListener('change', () => net.send({ t: 'setLink', id: floor.id, roomId: sel.value ? Number(sel.value) : null }));
+      pane.append(this.secao('Leva para', sel));
+    }
+  }
+
+  /** Mexer: o lugar do objeto (mover, girar, trocar por outro, o tamanho do desenho e guardar). */
+  private paneMexer(pane: HTMLElement, s: NonNullable<Sel>) {
+    const { item, kind } = s;
+    const net = this.app.net;
+    const floor = kind === 'floor' ? (item as FloorItem) : null;
+    const fdef = floor ? getFurni(floor.defId) : undefined;
+    const bts = h('div', { class: 'obj-bts grade' });
+    bts.append(
+      this.botaoObj('Mover', 'obj-mover', 'mover', () => {
+        if (floor) this.app.view.startPlacement({ kind: 'floor', defId: floor.defId, rot: floor.rot, moveId: floor.id });
+        else this.app.view.startPlacement({ kind: 'wall', defId: item.defId, moveId: item.id });
+        this.app.emit('placement');
+      }),
+    );
+    if (floor && fdef && fdef.rotations.length > 1)
+      bts.append(
+        this.botaoObj('Girar', null, 'girarD', () => {
+          const rot = nextRotation(fdef, floor.rot);
+          if (!this.app.view.map!.canPlace(floor.defId, floor.x, floor.y, rot, floor.id).ok) return toast('Não dá para girar aqui.', 'error');
+          net.send({ t: 'moveItem', id: floor.id, x: floor.x, y: floor.y, rot });
+        }),
+      );
+    if (floor) bts.append(this.botaoObj('Trocar', null, 'trocar', () => this.acts.trocar(floor.id, floor.defId)));
+    // destruído: carbonizado e torto, não senta nem liga, tapa metade (o orfanato queimado)
+    if (floor && fdef && !fdef.portal && !fdef.flat)
+      bts.append(
+        floor.quebrado
+          ? this.botaoObj('Consertar', null, 'ok', () => net.send({ t: 'quebrarItem', id: floor.id, quebrado: false }))
+          : this.botaoObj('Destruir', null, 'chama', () => net.send({ t: 'quebrarItem', id: floor.id, quebrado: true })),
+      );
+    if (kind === 'wall' || fdef?.flat) {
+      const e = item.escala ?? 1;
+      const passo = (d: number) => net.send({ t: 'resizeItem', id: item.id, escala: Math.round((e + d) * 100) / 100 });
+      if (e < 3) bts.append(this.botaoObj('Maior', null, 'mais', () => passo(0.25)));
+      if (e > 0.5) bts.append(this.botaoObj('Menor', null, 'menos', () => passo(-0.25)));
+    }
+    bts.append(this.botaoObj('Guardar', null, 'mochila', () => net.send({ t: 'pickup', id: item.id }), 'perigo'));
+    pane.append(bts, h('p', { class: 'obj-nota' }, 'Movendo: clique na casa nova; R ou o botão direito giram. Guardar tira o objeto da cena.'));
+  }
+
 
   /**
    * A fechadura de um mobi no painel do objeto: trancada, o botão que abre o teclado grande no
@@ -1851,7 +1643,7 @@ export class Shell {
     const tools = h('div', { class: 'tools' });
     const tool = (label: string, fn: () => void) => h('button', { class: 'tool', onclick: () => (sfx.click(), fn()) }, label);
     const states = fdef?.states ?? wdef?.states ?? 0;
-    if (states > 1) tools.append(tool('Usar', () => net.send({ t: 'use', id: item.id })));
+    if (states > 1 || this.jogador(kind, item.defId)) tools.append(tool('Usar', () => this.usar(kind, item.id, item.defId)));
     if (hint) tools.append(tool('Ler', () => this.hintViewer.open(kind, item.id)));
     if (this.gm) {
       const floor = kind === 'floor' ? (item as FloorItem) : null;
@@ -1895,12 +1687,14 @@ export class Shell {
     pane.append(tools);
   }
 
-  private paneInter(pane: HTMLElement, s: NonNullable<Sel>, actions: NonNullable<FloorItem['actions']>) {
+  private paneInter(pane: HTMLElement, s: NonNullable<Sel>, actions: NonNullable<FloorItem['actions']>, modo: 'jogar' | 'config' = 'jogar') {
     const net = this.app.net;
-    if (!actions.length) pane.append(h('p', { class: 'empty' }, 'Nenhuma interação cadastrada.'));
+    if (!actions.length) pane.append(h('p', { class: 'empty' }, 'Nenhum teste cadastrado.'));
     actions.forEach((a) => {
       const card = h('div', { class: 'icard' }, h('div', { class: 'ic-icon dt' }, h('b', null, 'DT'), h('span', null, String(a.dt))), h('div', { class: 'ic-text' }, h('b', null, a.label), h('small', null, `Teste | DT ${a.dt}`)));
-      if (this.gm) {
+      if (this.gm && modo === 'config')
+        card.append(h('button', { class: 'ic-del', title: 'Remover', 'aria-label': 'Remover o teste', onclick: () => net.send({ t: 'actionRemove', itemId: s.item.id, actionId: a.id }) }, '×'));
+      else if (this.gm) {
         if (this.logging === a.id) {
           const who = h('select', { class: 'mini' }, ...(this.campaign?.party ?? []).map((p) => h('option', { value: p.name }, p.name)));
           const val = h('input', { class: 'mini num', type: 'number', placeholder: 'valor' });
@@ -1919,14 +1713,13 @@ export class Shell {
               'div',
               { class: 'ic-right' },
               h('button', { class: 'dbtn', onclick: () => ((this.logging = a.id), sfx.click(), this.renderInspector()) }, 'Registrar'),
-              h('button', { class: 'ic-del', title: 'Remover', 'aria-label': 'Remover interação', onclick: () => net.send({ t: 'actionRemove', itemId: s.item.id, actionId: a.id }) }, '×'),
             ),
           );
       }
       pane.append(card);
     });
-    if (this.gm) {
-      const label = h('input', { class: 'mini grow', placeholder: 'Nova interação (ex: Investigar)', maxlength: 40 });
+    if (this.gm && modo === 'config') {
+      const label = h('input', { class: 'mini grow', placeholder: 'Novo teste (ex: Investigar)', maxlength: 40 });
       const dt = h('input', { class: 'mini num', type: 'number', value: '15', min: '0', max: '60' });
       const form = h(
         'form',
@@ -1947,7 +1740,7 @@ export class Shell {
     }
   }
 
-  private paneItems(pane: HTMLElement, s: NonNullable<Sel>, loot: Loot[]) {
+  private paneItems(pane: HTMLElement, s: NonNullable<Sel>, loot: Loot[], modo: 'jogar' | 'config' = 'jogar') {
     const net = this.app.net;
     if (!loot.length && !this.gm) pane.append(h('p', { class: 'empty' }, 'Nada aqui.'));
     // quem está sob comando pega direto (vai para a mochila da ficha dele)
@@ -1965,7 +1758,7 @@ export class Shell {
             h('span', { class: 'given-face', style: `--c:${holder?.color ?? '#999'}` }, portraitCanvas(holder?.look ?? null, 72)),
             h('span', { class: 'given-t' }, 'Entregue', h('br'), `para ${l.holder}`),
           )
-        : this.gm
+        : this.gm && modo === 'jogar'
           ? h(
               'div',
               { class: 'ic-bts' },
@@ -1999,7 +1792,7 @@ export class Shell {
         h('div', { class: 'ic-text' }, h('b', null, l.name), h('small', null, `Espaços: ${fmt(l.espacos)} | ${lootKindLabel(l.kind)}${l.item ? ' · do livro' : ''}`)),
         right,
       );
-      if (this.gm && !l.holder)
+      if (this.gm && !l.holder && modo === 'config')
         card.append(h('button', { class: 'ic-del', title: 'Remover item', 'aria-label': 'Remover item', onclick: () => net.send({ t: 'lootRemove', itemId: s.item.id, lootId: l.id }) }, '×'));
       pane.append(card);
       if (justGiven && right && !reduced()) {
@@ -2008,7 +1801,8 @@ export class Shell {
         setTimeout(() => sfx.pop(), 700);
       }
     });
-    if (this.gm) {
+    if (!loot.length && this.gm && modo === 'jogar') pane.append(h('p', { class: 'empty' }, 'Nada aqui.'));
+    if (this.gm && modo === 'config') {
       if (this.addingLoot) {
         // um nome do livro (lista do campo) faz do item o do catálogo: espaços, tipo e, para arma, o ataque
         const name = h('input', { class: 'mini grow', placeholder: 'Nome do item (ou um do livro)', maxlength: 40, list: listaDoCatalogo() }) as HTMLInputElement;
@@ -2185,75 +1979,69 @@ export class Shell {
     }
   }
 
+  /** O painel PERSONAGEM: só os comandos do tabuleiro (PV, PE, SAN e a mochila ficam em PLAYERS e ITENS, à direita). */
   private renderTokenInspector(body: HTMLElement, id: number) {
     const view = this.app.view;
     const u = view.users.get(id)!;
     const p = this.campaign?.party.find((x) => x.id === id);
     const color = p?.color ?? u.color;
     const net = this.app.net;
-    const carried: { l: Loot; from: string }[] = [];
     const ficha = this.fichasMapa.find((f) => f.personagem && f.personagem === u.look.charId);
     const map = view.map;
-    if (map) for (const it of [...map.allItems(), ...map.allWallItems()]) for (const l of it.loot ?? []) if (l.holder?.toLowerCase() === u.name.toLowerCase()) carried.push({ l, from: anyFurniName(it.defId) });
     const active = view.myId === id;
-    const ratio = p && p.capacity ? p.load / p.capacity : 0;
-    const load = p
-      ? h('div', { class: 'tk-load' }, h('span', null, `Carga ${fmt(p.load)} / ${fmt(p.capacity)}`), h('div', { class: `g-bar ${level(ratio)}` }, h('i', { style: `--w:${Math.min(100, ratio * 100)}%` })))
-      : null;
     body.append(
       h(
         'div',
         { class: 'insp-head' },
         this.polaroid(this.livePortrait(u.look, 262, p)),
-        this.headText(
-          u.name.toUpperCase(),
-          (active ? 'Sob seu comando: clique no chão para andar.' : 'Clique em Comandar (ou no retrato dele) para mover este personagem.') + (this.gm ? ' Q e E giram.' : ''),
-          load,
-        ),
+        this.headText(u.name.toUpperCase(), active ? 'Sob seu comando: clique no chão para andar.' : 'Clique em Comandar (ou no retrato) para mover esta peça.' + (this.gm ? ' Q e E giram.' : '')),
       ),
     );
-    const tools = h('div', { class: 'tools' });
-    const tool = (label: string, fn: () => void) => h('button', { class: 'tool', onclick: () => (sfx.click(), fn()) }, label);
-    if (!active) tools.append(tool('Comandar', () => view.setActive(id)));
-    tools.append(tool('Centralizar', () => view.focusUser(id)));
-    if (this.gm) {
-      tools.append(
-        h('button', { class: 'tool', title: 'Girar para a esquerda (Q)', onclick: () => this.turnToken(id, false) }, '↺ Girar'),
-        h('button', { class: 'tool', title: 'Girar para a direita (E)', onclick: () => this.turnToken(id, true) }, 'Girar ↻'),
-        this.stateTool('Armado', !!p?.armed, ficha ? 'Vem da mão: empunha a arma da mochila ou guarda as armas' : 'Com a arma na mão (retrato armado)', () => net.send({ t: 'tokenEdit', tokenId: id, armed: !p?.armed })),
-        tool('Editar', () => this.tokenWin.open({ id, name: u.name, look: u.look, color, capacity: p?.capacity ?? 10 })),
-        tool('Remover', async () => (await askNote(`TIRAR ${u.name.toUpperCase()}?`, `${u.name} sai do tabuleiro. Os itens que carrega continuam registrados.`, 'Tirar do tabuleiro', true)) && net.send({ t: 'tokenRemove', tokenId: id })),
-      );
-    }
-    body.append(tools);
-    if (p) body.append(this.vitalsPanel(id, p));
+    const tool = (label: string, fn: () => void, title?: string) => h('button', { class: 'tool', title, onclick: () => (sfx.click(), fn()) }, label);
+    const grupo = (nome: string, ...bts: (HTMLElement | null)[]) => {
+      const lista = bts.filter((b): b is HTMLElement => !!b);
+      return lista.length ? h('div', { class: 'tk-grupo' }, h('span', { class: 'tk-rot' }, nome), h('div', { class: 'tools' }, ...lista)) : null;
+    };
+    // a peça é uma criatura do bestiário: trocar a aparência (as outras peças da mesma criatura continuam como estão)
+    const cr = u.criatura ? this.app.state.bestiario.find((c) => c.id === u.criatura!.id) : undefined;
+    if (u.criatura && !cr) this.app.net.send({ t: 'bestiario' });
+    const blocos = [
+      cr && this.gm && cr.aparencias.length > 1
+        ? grupo(
+            'Aparência',
+            ...cr.aparencias.map((a) => this.stateTool(a.nome, u.criatura?.aparencia === a.id, `${cr.nome}: a aparência ${a.nome} (a ficha é a mesma)`, () => net.send({ t: 'pecaAparencia', tokenId: id, aparencia: a.id }))),
+          )
+        : null,
+      grupo(
+        'Mover',
+        active ? null : tool('Comandar', () => view.setActive(id), 'Os cliques no chão passam a mover esta peça'),
+        tool('Centralizar', () => view.focusUser(id), 'A câmera vai até a peça'),
+        this.gm ? h('button', { class: 'tool', title: 'Girar para a esquerda (Q)', onclick: () => this.turnToken(id, false) }, '↺ Girar') : null,
+        this.gm ? h('button', { class: 'tool', title: 'Girar para a direita (E)', onclick: () => this.turnToken(id, true) }, 'Girar ↻') : null,
+      ),
+      this.gm
+        ? grupo(
+            'Postura',
+            this.stateTool('Armado', !!p?.armed, ficha ? 'Vem da mão: empunha a arma da mochila ou guarda as armas' : 'Com a arma na mão (retrato armado)', () => net.send({ t: 'tokenEdit', tokenId: id, armed: !p?.armed })),
+            this.stateTool('Agachado', !!u.agachado, 'De cócoras (furtivo, atrás de um móvel): o corpo tem 1,0 m e um móvel mais baixo já dá cobertura', () => net.send({ t: 'tokenEdit', tokenId: id, agachado: !u.agachado })),
+            map?.leitoItem(u.x, u.y) ? this.stateTool('Cama de cima', !!u.alto, 'Escalar o beliche: sobe pela escadinha para a cama de cima (e desce de volta)', () => net.send({ t: 'tokenEdit', tokenId: id, alto: !u.alto })) : null,
+          )
+        : null,
+      this.gm
+        ? grupo(
+            'Peça',
+            ficha ? tool('Mochila', () => (sfx.paper(), this.abrirItens(id)), 'Abre a mochila na aba ITENS') : null,
+            tool('Editar', () => this.tokenWin.open({ id, name: u.name, look: u.look, color, capacity: p?.capacity ?? 10 }), 'Nome, aparência, cor e carga'),
+            tool('Remover', async () => (await askNote(`TIRAR ${u.name.toUpperCase()}?`, `${u.name} sai do tabuleiro. Os itens que carrega continuam registrados.`, 'Tirar do tabuleiro', true)) && net.send({ t: 'tokenRemove', tokenId: id }), 'Tira a peça do tabuleiro'),
+          )
+        : null,
+    ];
+    for (const b of blocos) if (b) body.append(b);
     if (this.gm) {
       const sc = h('select', { class: 'tool-sel', 'aria-label': 'Levar para outra cena' }, h('option', { value: '' }, 'Levar para outra cena…'), ...this.sceneList().filter((r) => r.id !== this.app.state.room?.id).map((r) => h('option', { value: String(r.id) }, r.name)));
       sc.addEventListener('change', () => sc.value && net.send({ t: 'tokenScene', tokenId: id, roomId: Number(sc.value) }));
-      body.append(sc);
+      body.append(h('div', { class: 'tk-grupo' }, h('span', { class: 'tk-rot' }, 'Cena'), sc));
     }
-    if (ficha) {
-      // com ficha, a mochila dela (um inventário só): o resto se faz na aba ITENS
-      const inv = ficha.ficha.inventario;
-      body.append(h('div', { class: 'itabs' }, h('span', { class: 'itab on' }, h('span', null, `MOCHILA (${inv.length})`), tabRing())));
-      const pane = h('div', { class: 'ipane' });
-      if (!inv.length) pane.append(h('p', { class: 'empty' }, 'Mochila vazia.'));
-      const lugar = { mao: 'na mão', vestido: 'vestido', mochila: 'na mochila' } as const;
-      for (const it of inv) {
-        const icone = it.tipo === 'cena' ? lootIcon((it.tipoCena as LootKind) || 'misc', 52) : lootIcon(kindDoItem(it), 52);
-        pane.append(h('div', { class: 'icard' }, h('div', { class: 'ic-icon' }, icone), h('div', { class: 'ic-text' }, h('b', null, regras.nomeDoItem(it)), h('small', null, `${fmt(espacosDoItemFicha(it))} esp. | ${lugar[regras.lugarDoItem(it)]}${(it.qtd ?? 1) > 1 ? ` · x${it.qtd}` : ''}`))));
-      }
-      pane.append(h('button', { class: 'add-item', onclick: () => (sfx.paper(), this.abrirItens(id)) }, 'Abrir na aba ITENS'));
-      body.append(pane);
-      return;
-    }
-    body.append(h('div', { class: 'itabs' }, h('span', { class: 'itab on' }, h('span', null, `CARREGANDO (${carried.length})`), tabRing())));
-    const pane = h('div', { class: 'ipane' });
-    if (!carried.length) pane.append(h('p', { class: 'empty' }, 'Nada nas mãos (itens desta cena).'));
-    carried.forEach(({ l, from }) =>
-      pane.append(h('div', { class: 'icard' }, h('div', { class: 'ic-icon' }, lootIcon(l.kind, 52)), h('div', { class: 'ic-text' }, h('b', null, l.name), h('small', null, `Espaços: ${fmt(l.espacos)} | ${lootKindLabel(l.kind)} · ${from}`)))),
-    );
-    body.append(pane);
   }
 
   /** Abre a aba ITENS na mochila do agente (id da peça). */
@@ -2285,6 +2073,21 @@ export class Shell {
     const v = p.vitals ?? DEFAULT_VITALS;
     const c = vitalConditions(p.vitals);
     const low: Record<VitalKey, boolean> = { pv: c.machucado, pe: c.cansado, san: c.perturbado };
+    // já tem as três barrinhas: acerta no lugar (recriar a cada ponto de vida piscava a carta)
+    const feitas = el.querySelectorAll<HTMLElement>(':scope > .pcv');
+    if (feitas.length === VITAL_KEYS.length) {
+      VITAL_KEYS.forEach((k, i) => {
+        const cur = v[k];
+        const max = v[`${k}Max`];
+        const row = feitas[i];
+        row.className = `pcv ${k}${low[k] ? ' low' : ''}${cur <= 0 ? ' zero' : ''}`;
+        row.title = `${VITAL_NAME[k]}: ${cur} de ${max}`;
+        row.querySelector<HTMLElement>('.pcv-bar > i')?.style.setProperty('--w', `${Math.max(0, Math.min(100, (cur / max) * 100))}%`);
+        const em = row.querySelector('em');
+        if (em && em.textContent !== String(cur)) em.textContent = String(cur);
+      });
+      return;
+    }
     const rows = VITAL_KEYS.map((k) => {
       const cur = v[k];
       const max = v[`${k}Max`];
@@ -2300,50 +2103,17 @@ export class Shell {
     clear(el).append(...rows);
   }
 
-  /** Ficha no inspetor do personagem: PV, PE e SAN com − e + (Shift = de 5 em 5) e o total editável. */
-  private vitalsPanel(id: number, p: PartyMember) {
-    const v = p.vitals ?? DEFAULT_VITALS;
-    const net = this.app.net;
-    const c = vitalConditions(p.vitals);
-    const wrap = h('div', { class: 'vitals' });
-    for (const k of VITAL_KEYS) {
-      const cur = v[k];
-      const max = v[`${k}Max`];
-      const change = (delta: number) => (e: MouseEvent) => {
-        sfx.click();
-        net.send({ t: 'vitals', tokenId: id, key: k, delta: e.shiftKey ? delta * 5 : delta });
-      };
-      const total = h('input', { class: 'vt-max', type: 'number', min: '1', max: '999', value: String(max), 'aria-label': `${VITAL_NAME[k]} total`, title: 'Total' });
-      total.addEventListener('change', () => {
-        const n = Number(total.value);
-        if (Number.isFinite(n) && n >= 1) net.send({ t: 'vitals', tokenId: id, key: k, max: n });
-      });
-      const w = Math.max(0, Math.min(100, (cur / max) * 100));
-      wrap.append(
-        h(
-          'div',
-          { class: `vt ${k}` },
-          h('b', { class: 'vt-k', title: VITAL_NAME[k] }, VITAL_LABEL[k]),
-          this.gm ? h('button', { class: 'vt-btn', title: `Tirar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Tirar ${VITAL_NAME[k]}`, onclick: change(-1) }, '−') : null,
-          h('span', { class: 'vt-bar' }, h('i', { style: `--w:${w}%` }), h('em', null, `${cur} / `)),
-          this.gm ? total : h('span', null, String(max)),
-          this.gm ? h('button', { class: 'vt-btn', title: `Dar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Dar ${VITAL_NAME[k]}`, onclick: change(1) }, '+') : null,
-        ),
-      );
-    }
-    const labels = conditionLabels(c);
-    if (labels.length) wrap.append(h('div', { class: 'vt-conds' }, ...labels.map((l) => h('span', { class: 'vt-cond' }, l))));
-    return wrap;
-  }
-
   /** Barras da carta de PLAYERS: PV, PE e SAN com − e + (Shift: de 5 em 5); clicar na barra muda o total. */
   private vitaisCarta(id: number, p: PartyMember) {
-    const v = p.vitals ?? DEFAULT_VITALS;
     const net = this.app.net;
-    const wrap = h('div', { class: 'rp-vit' });
+    // o agente de agora: os botões e o total leem daqui, para a carta mudar sem ser refeita
+    const atual = { p };
+    const wrap = h('div', { class: 'rp-vit' }) as VitaisVivos;
+    const linhas: { k: VitalKey; num: HTMLElement; max: HTMLElement; barra: HTMLElement; fill: HTMLElement }[] = [];
+    const v0 = p.vitals ?? DEFAULT_VITALS;
     for (const k of VITAL_KEYS) {
-      const cur = v[k];
-      const max = v[`${k}Max`];
+      const cur = v0[k];
+      const max = v0[`${k}Max`];
       const w = Math.max(0, Math.min(100, (cur / max) * 100));
       const change = (delta: number) => (e: MouseEvent) => {
         sfx.click();
@@ -2351,36 +2121,72 @@ export class Shell {
       };
       const total = async () => {
         if (!this.gm) return;
-        const r = await promptNote(`${VITAL_NAME[k].toUpperCase()} DE ${p.name.toUpperCase()}`, [{ label: 'Total', value: String(max), max: 3 }]);
+        const m = (atual.p.vitals ?? DEFAULT_VITALS)[`${k}Max`];
+        const r = await promptNote(`${VITAL_NAME[k].toUpperCase()} DE ${atual.p.name.toUpperCase()}`, [{ label: 'Total', value: String(m), max: 3 }]);
         const n = r ? Number(r[0]) : NaN;
         if (Number.isFinite(n) && n >= 1) net.send({ t: 'vitals', tokenId: id, key: k, max: n });
       };
+      const num = h('strong', null, String(cur));
+      const maxEl = h('small', null, `/${max}`);
+      const fill = h('i', { style: `width:${w}%` });
+      const barra = h('button', { class: `rp-bar ${k}`, title: this.gm ? 'Clique para mudar o total' : VITAL_NAME[k], 'aria-label': `${VITAL_NAME[k]} ${cur} de ${max}`, onclick: () => void total() }, fill);
       wrap.append(
         h(
           'div',
           { class: `rp-l ${k}` },
           h('b', { title: VITAL_NAME[k] }, VITAL_LABEL[k]),
+          // o número fora da barra, como no celular
+          h('span', { class: 'rp-n' }, num, maxEl),
           this.gm ? h('button', { class: 'rp-q', title: `Tirar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Tirar ${VITAL_NAME[k]}`, onclick: change(-1) }, ic('menos')) : h('span'),
-          h('button', { class: `rp-bar ${k}`, title: this.gm ? 'Clique para mudar o total' : VITAL_NAME[k], onclick: () => void total() }, h('i', { style: `width:${w}%` }), h('span', null, `${cur} / ${max}`)),
+          barra,
           this.gm ? h('button', { class: 'rp-q', title: `Dar 1 ${VITAL_LABEL[k]} (Shift: 5)`, 'aria-label': `Dar ${VITAL_NAME[k]}`, onclick: change(1) }, ic('mais')) : h('span'),
         ),
       );
+      linhas.push({ k, num, max: maxEl, barra, fill });
     }
     // as condições do agente: as que saem sozinhas pelo PV e pela SAN e as que o mestre marca (na ficha).
-    // Ficam aqui e no celular do jogador; a FICHAS do mestre é só a das regras.
-    const labels = conditionLabels(vitalConditions(p.vitals));
-    const ficha = this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === p.look?.charId);
-    const marcadas = (ficha?.condicoes ?? []).map((c) => regras.catalogo.condicao(c)?.nome ?? c);
-    if (labels.length || marcadas.length || (this.gm && ficha))
-      wrap.append(
-        h(
-          'div',
-          { class: 'vt-conds' },
-          ...labels.map((l) => h('span', { class: 'vt-cond' }, l)),
-          ...marcadas.map((l) => h('span', { class: 'vt-cond marcada' }, l)),
-          this.gm && ficha ? h('button', { class: 'vt-cond mais', type: 'button', title: 'Condições', 'aria-label': `Condições de ${p.name}`, onclick: () => this.escolherCondicoes(ficha) }, ic('mais'), marcadas.length ? null : h('span', null, 'Condição')) : null,
-        ),
+    // Ficam aqui e no celular do jogador; a FICHAS do mestre é só a das regras. O bloco só se refaz quando elas mudam.
+    const conds = h('div', { style: 'display:contents' });
+    let chave = '';
+    const pintaConds = (q: PartyMember) => {
+      const labels = conditionLabels(vitalConditions(q.vitals));
+      const ficha = this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === q.look?.charId);
+      const marcadas = (ficha?.condicoes ?? []).map((c) => regras.catalogo.condicao(c)?.nome ?? c);
+      const k = JSON.stringify([labels, marcadas, !!ficha, this.gm]);
+      if (k === chave) return;
+      chave = k;
+      conds.replaceChildren(
+        ...(labels.length || marcadas.length || (this.gm && ficha)
+          ? [
+              h(
+                'div',
+                { class: 'vt-conds' },
+                ...labels.map((l) => h('span', { class: 'vt-cond' }, l)),
+                ...marcadas.map((l) => h('span', { class: 'vt-cond marcada' }, l)),
+                this.gm && ficha ? h('button', { class: 'vt-cond mais', type: 'button', title: 'Condições', 'aria-label': `Condições de ${q.name}`, onclick: () => this.escolherCondicoes(ficha) }, ic('mais'), marcadas.length ? null : h('span', null, 'Condição')) : null,
+              ),
+            ]
+          : []),
       );
+    };
+    pintaConds(p);
+    wrap.append(conds);
+    // acerta os números e as barras no lugar (nada é recriado: o painel não pisca)
+    wrap.atualizar = (q) => {
+      atual.p = q;
+      const v = q.vitals ?? DEFAULT_VITALS;
+      for (const l of linhas) {
+        const cur = v[l.k];
+        const max = v[`${l.k}Max`];
+        const t = String(cur);
+        if (l.num.textContent !== t) l.num.textContent = t;
+        const mt = `/${max}`;
+        if (l.max.textContent !== mt) l.max.textContent = mt;
+        l.fill.style.width = `${Math.max(0, Math.min(100, (cur / max) * 100))}%`;
+        l.barra.setAttribute('aria-label', `${VITAL_NAME[l.k]} ${cur} de ${max}`);
+      }
+      pintaConds(q);
+    };
     return wrap;
   }
 
@@ -2420,7 +2226,7 @@ export class Shell {
     const cena = this.campaign?.scenes.find((x) => x.id === r?.id);
     const url = r ? loadThumb(r.id) : null;
     const nome = (r?.name.split('·').pop()?.trim() ?? 'Cena').toUpperCase();
-    const sig = JSON.stringify([r?.id, r?.name, r?.description, cena?.floor, r?.area, !!url, this.campaign?.scenes.length]);
+    const sig = JSON.stringify([r?.id, r?.name, r?.description, cena?.floor, r?.area, !!url, this.campaign?.scenes.length, r?.mapa, this.gm]);
     if (sig === this.salaSig) return;
     this.salaSig = sig;
     clear(this.salaCorpo).append(
@@ -2431,8 +2237,30 @@ export class Shell {
         h('h3', { class: 'marca' }, nome),
         h('p', null, r?.description || 'Clique num objeto do cenário para ver descrição, interações e itens.'),
         h('div', { class: 'sala-chips' }, h('span', null, ic('pino'), (cena?.floor ?? 'Andar único').toUpperCase()), h('span', null, ic('camadas'), r?.area ? r.area.toUpperCase() : `${this.campaign?.scenes.length ?? 1} CÔMODOS`)),
+        // o mapa improvisado (a imagem que o mestre subiu) se apaga daqui; quem estiver nele volta
+        r?.mapa && this.gm
+          ? h('button', { class: 'sala-apagar', type: 'button', onclick: () => void this.apagarMapa(r.id, nome) }, ic('lixo'), h('span', null, 'Apagar este mapa'))
+          : null,
       ),
     );
+  }
+
+  private async apagarMapa(roomId: number, nome: string) {
+    if (!(await askNote('Apagar o mapa', `O mapa improvisado "${nome}" some, e quem estiver nele volta para a cena ligada.`, 'Apagar', true))) return;
+    this.app.net.send({ t: 'mapaApagar', roomId });
+  }
+
+  /** O agente comandado que vai jogar, se o objeto for um jogo do bar (o fliperama, o alvo, a sinuca; só o mestre). */
+  private jogador(kind: string, defId: string): string | null {
+    const id = this.app.view.myId;
+    if (!this.gm || !id || !bar.jogoDoBar(defId) || (kind !== 'floor' && kind !== 'wall')) return null;
+    return this.app.view.users.get(id)?.name ?? null;
+  }
+
+  /** Usar um objeto: liga e desliga; um jogo do bar, com um agente escolhido, leva o agente para jogar. */
+  private usar(kind: string, id: number, defId: string) {
+    if (this.jogador(kind, defId)) this.app.net.send({ t: 'barJogar', tokenId: this.app.view.myId, itemId: id });
+    else this.app.net.send({ t: 'use', id });
   }
 
   /** AÇÕES sobre o objeto escolhido: examinar, abrir, usar e entregar. */
@@ -2484,7 +2312,7 @@ export class Shell {
           else ((this.inspTab = lock ? 'desc' : 'items'), this.renderInspector(true));
         },
       },
-      { id: 'usar', rotulo: 'Usar', icone: 'mao', ok: !!s && usa, dica: 'Ligar, acender, abrir a gaveta…', fazer: () => s && this.app.net.send({ t: 'use', id: it!.id }) },
+      { id: 'usar', rotulo: s && this.jogador(s.kind, it!.defId) ? 'Jogar' : 'Usar', icone: 'mao', ok: !!s && (usa || !!this.jogador(s.kind, it!.defId)), dica: s && this.jogador(s.kind, it!.defId) ? `${this.jogador(s.kind, it!.defId)} vai até o jogo e ele abre quando chegar (de novo: sai do jogo)` : 'Ligar, acender, abrir a gaveta…', fazer: () => s && this.usar(s.kind, it!.id, it!.defId) },
       { id: 'entregar', rotulo: 'Entregar', icone: 'trocar', ok: livres > 0 && this.gm, dica: 'Entregar um item daqui a um personagem', fazer: () => ((this.inspTab = 'items'), this.renderInspector(true)) },
     ];
     if (!acoes.find((a) => a.id === this.acaoAtiva)?.ok) this.acaoAtiva = acoes.find((a) => a.ok)?.id ?? 'examinar';
@@ -2504,7 +2332,8 @@ export class Shell {
               this.renderAcoes();
             },
           },
-          ic(a.icone),
+          // o ícone pintado do kit quando há um parecido (o resto fica com o de linha)
+          PINTADO_ACAO[a.icone] ? arteOu([`/arte/icones/${PINTADO_ACAO[a.icone]}.png`], ic(a.icone as NomeIcone)) : ic(a.icone as NomeIcone),
           h('span', null, a.rotulo),
         ),
       ),
@@ -2568,12 +2397,15 @@ export class Shell {
         paperize(c.el, { kit: false, seed: 60 + i * 3, tone: '#cfb99f', burn: 0.72, stripe: p.color, torn: 1.8, backs: [{ dx: 3, dy: 3, rot: 1.8 }, { dx: -3, dy: 5, rot: -1.3 }], pad: 22 });
       }
       // na carta cabe o nome curto (como na referência: Catarina, Alosi)
-      c.name.textContent = p.name.length <= 11 ? p.name : p.name.split(/\s+/)[0];
+      const curto = p.name.split(/\s+/)[0];
+      if (c.name.textContent !== curto) c.name.textContent = curto;
+      if (c.name.title !== p.name) c.name.title = p.name;
       const here = p.roomId === cur;
       const wasOn = c.el.classList.contains('on');
       c.el.classList.toggle('on', view.myId === id);
       c.el.classList.toggle('away', !here);
-      c.away.textContent = here ? '' : this.sceneName(p.roomId);
+      const longe = here ? '' : this.sceneName(p.roomId);
+      if (c.away.textContent !== longe) c.away.textContent = longe;
       c.away.classList.toggle('hidden', here);
       c.el.title = here ? `${p.name} (tecla ${i + 1})` : `${p.name} — em ${this.sceneName(p.roomId)}`;
       if (!wasOn && view.myId === id && this.cards.size && performance.now() - this.shownAt > 1500) bump(c.el, 1.04, 0.8);
@@ -2592,10 +2424,16 @@ export class Shell {
     }
   }
 
+  /** O elemento do agente (o tema da ficha dele): Sangue, Morte, Conhecimento, Energia ou a Ordem. */
+  private temaDe(p: PartyMember | undefined): string {
+    return this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === p?.look?.charId)?.tema ?? 'ordem';
+  }
+
   private makeCard(p: PartyMember, i: number): Card {
     const id = p.id ?? 0;
     const img = h('span', { class: 'pc-img' }, this.livePortrait(p.look, this.cardPortraitSize(), p));
-    const name = h('span', { class: 'pc-name' }, p.name);
+    // na plaquinha da carta, o primeiro nome (o inteiro no title)
+    const name = h('span', { class: 'pc-name', title: p.name }, p.name.split(/\s+/)[0]);
     const vitals = h('span', { class: 'pc-vitals' });
     this.cardVitals(vitals, p);
     const away = h('span', { class: 'pc-away hidden' });
@@ -2604,6 +2442,7 @@ export class Shell {
       {
         class: 'pcard',
         style: `--c:${p.color};--r:${[-1.2, 0.8, -0.5, 1.1, -0.9, 0.6][i % 6]}deg`,
+        'data-tema': this.temaDe(p),
         'data-token': String(id),
         onclick: () => this.pickCard(id),
       },
@@ -2613,8 +2452,6 @@ export class Shell {
       away,
       h('i', { class: 'pc-glow', 'aria-hidden': 'true' }),
       h('i', { class: 'pc-glare', 'aria-hidden': 'true' }),
-      this.turnButton(id, false),
-      this.turnButton(id, true),
     );
     paperize(el, { kit: false, seed: 60 + i * 3, tone: '#cfb99f', burn: 0.72, stripe: p.color, torn: 1.8, backs: [{ dx: 3, dy: 3, rot: 1.8 }, { dx: -3, dy: 5, rot: -1.3 }], pad: 22 });
     tilt(el);
@@ -2625,29 +2462,6 @@ export class Shell {
   private cardPortraitSize() {
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
     return Math.max(64, Math.round(12.5 * 0.8 * rem));
-  }
-
-  /** Botãozinho de girar no canto da carta (a carta inteira continua comandando). */
-  private turnButton(id: number, cw: boolean) {
-    const run = (e: Event) => {
-      e.stopPropagation();
-      e.preventDefault();
-      this.turnToken(id, cw);
-    };
-    return h(
-      'span',
-      {
-        class: `pc-turn ${cw ? 'r' : 'l'}`,
-        role: 'button',
-        tabindex: '0',
-        title: cw ? 'Girar para a direita (E)' : 'Girar para a esquerda (Q)',
-        'aria-label': cw ? 'Girar para a direita' : 'Girar para a esquerda',
-        onclick: run,
-        onpointerdown: (e: Event) => e.stopPropagation(),
-        onkeydown: (e: KeyboardEvent) => (e.key === 'Enter' || e.key === ' ') && run(e),
-      },
-      cw ? '↻' : '↺',
-    );
   }
 
   private pickCard(id: number) {
@@ -2701,7 +2515,8 @@ export class Shell {
       el.title = s ? `${s.l.name} (${lootKindLabel(s.l.kind)})` : '';
       clear(el);
       if (!s) return;
-      const ic = lootIcon(s.l.kind, 44);
+      // a arte do item, a mesma do chão e da mochila (a pintada, o ícone e, sem arte, o desenho do tipo)
+      const ic = arteDoItem(lootParaItem(s.l), 'caixa', 'q-arte');
       el.append(ic, h('span', { class: 'q-tag', 'aria-hidden': 'true' }, h('b', null, s.l.name), h('small', null, `${fmt(s.l.espacos)} esp.`)));
       if (more) el.append(h('b', { class: 'q-more' }, `+${more}`));
       if (!reduced()) {
@@ -2786,28 +2601,4 @@ function selo(): HTMLElement {
   const el = h('span', { class: 'insp-selo', 'aria-hidden': 'true' });
   el.innerHTML = `<svg viewBox="0 0 100 100"><defs><path id="selo-arco" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs><circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="50" cy="50" r="29" fill="none" stroke="currentColor" stroke-width="1"/><text font-size="8.6" letter-spacing="1.6" fill="currentColor" font-family="Courier Prime, monospace" font-weight="700"><textPath href="#selo-arco">ORDO REALITAS · SEDE DA ORDEM ·</textPath></text></svg><i></i>`;
   return el;
-}
-
-/** Planta girada em quartos de volta (r) no sentido horário, para encaixar o cômodo na planta. */
-function rotateHm(hm: Heightmap, r: number): Heightmap {
-  const k = ((r % 4) + 4) % 4;
-  if (!k) return hm;
-  const W = k % 2 ? hm.height : hm.width;
-  const H = k % 2 ? hm.width : hm.height;
-  const tiles = Array.from({ length: H }, (_, y) =>
-    Array.from({ length: W }, (_, x) => {
-      const [ox, oy] = k === 1 ? [y, hm.height - 1 - x] : k === 2 ? [hm.width - 1 - x, hm.height - 1 - y] : [hm.width - 1 - y, x];
-      return hm.tiles[oy]?.[ox] ?? null;
-    }),
-  );
-  return { width: W, height: H, tiles };
-}
-
-/** Uma casa (x, y) do cômodo na planta girada. */
-function rotatePt(hm: Heightmap, r: number, x: number, y: number): [number, number] {
-  const k = ((r % 4) + 4) % 4;
-  if (k === 1) return [hm.height - 1 - y, x];
-  if (k === 2) return [hm.width - 1 - x, hm.height - 1 - y];
-  if (k === 3) return [y, hm.width - 1 - x];
-  return [x, y];
 }

@@ -2,7 +2,7 @@ import { DIRS, M_POR_CASA, terrenoEm, Z_PER_M, type FloorStyle, type RoomMap, ty
 import { hash, shade } from './color';
 import { BATENTE_PORTA_M, VAO_PORTA_M } from './furniKit';
 import { iso } from './iso';
-import { texturaParede, texturaPiso } from './texturas';
+import { texturaParede, texturaPiso, texturaPx, type TexturaPx } from './texturas';
 
 export interface StaticLayer {
   canvas: HTMLCanvasElement;
@@ -29,6 +29,7 @@ const FLOORS: Record<FloorStyle, FloorLook> = {
   madeira: { base: '#3b2718', grout: 'rgba(10,6,4,0.7)', kind: 'plank' },
   taco: { base: '#8a4a22', grout: 'rgba(40,16,6,0.6)', kind: 'plank' },
   ladrilho: { base: '#c2beb2', grout: 'rgba(80,80,74,0.6)', kind: 'tile' },
+  cozinha_fazenda: { base: '#c9c0ad', grout: 'rgba(80,72,60,0.6)', kind: 'tile' },
   xadrez: { base: '#cfcabd', alt: '#2a2622', grout: 'rgba(0,0,0,0.35)', kind: 'checker' },
   azulejo: { base: '#93aebb', grout: 'rgba(40,60,70,0.5)', kind: 'tile' },
   carpete: { base: '#3b2160', alt: '#7a5ab0', grout: 'rgba(0,0,0,0)', kind: 'carpet' },
@@ -40,6 +41,8 @@ const FLOORS: Record<FloorStyle, FloorLook> = {
   lavoura: { base: '#553823', alt: '#6c4a2c', grout: 'rgba(0,0,0,0)', kind: 'rows' },
   cascalho: { base: '#9a9384', grout: 'rgba(40,36,30,0.35)', kind: 'gravel' },
   selo: { base: '#3e3a36', grout: 'rgba(10,8,6,0.6)', kind: 'stone' },
+  pier: { base: '#6a5238', grout: 'rgba(20,12,6,0.6)', kind: 'plank' },
+  calabouco: { base: '#35363a', grout: 'rgba(8,8,10,0.6)', kind: 'stone' },
 };
 /** a água (casa vazia da planta com terreno 'a'): mais baixa que a margem */
 const AGUA = '#2f5f72';
@@ -211,6 +214,12 @@ function drawWallSeg(ctx: CanvasRenderingContext2D, map: RoomMap, s: WallSeg, pi
   if (pintarParede) {
     // a textura desenhada (do chão ao topo); a parede da esquerda fica um pouco mais escura
     pintarParede(s);
+    if ((pintarParede as { pixel?: boolean }).pixel) {
+      // a pixel art já vem com a luz de cada parede e o rodapé
+      ctx.restore();
+      acabamento(ctx, map, s, hole);
+      return;
+    }
     if (s.wall === 'l') {
       ctx.fillStyle = 'rgba(0,0,0,0.16)';
       poly(ctx, face);
@@ -621,18 +630,56 @@ function padrao(ctx: CanvasRenderingContext2D, img: HTMLImageElement, o: Pt, px:
   return p;
 }
 
-/** O chão com a textura vista de cima: uma volta dela cobre casas x casas (um fio a mais, sem frestas entre as casas). */
-function pintorPiso(ctx: CanvasRenderingContext2D, img: HTMLImageElement, casas: number): Pintor<[number, number, number]> {
+/**
+ * O chão com a textura vista de cima: uma volta dela cobre casas x casas (um fio a mais, sem frestas entre as
+ * casas), com o pixel `origem` (o cruzamento dos rejuntes) na quina das casas: o rejunte segue a grade.
+ */
+function pintorPiso(ctx: CanvasRenderingContext2D, t: { img: HTMLImageElement; casas: number; origem: [number, number] }): Pintor<[number, number, number]> {
+  const { img, casas } = t;
   const W = img.naturalWidth;
   const H = img.naturalHeight;
+  const u0 = (-t.origem[0] * casas) / W;
+  const v0 = (-t.origem[1] * casas) / H;
   return ([x, y, h]) => {
-    const p = padrao(ctx, img, iso(0, 0, h), iso(casas / W, 0, h), iso(0, casas / H, h));
+    const p = padrao(ctx, img, iso(u0, v0, h), iso(u0 + casas / W, v0, h), iso(u0, v0 + casas / H, h));
     if (!p) return;
     const e = 0.012;
     poly(ctx, quad(x - e, y - e, x + 1 + e, y + 1 + e, h));
     ctx.fillStyle = p;
     ctx.fill();
   };
+}
+
+/** O resto inteiro (para o índice da variação, também nas casas negativas). */
+function resto(a: number, n: number) {
+  return ((Math.round(a) % n) + n) % n;
+}
+
+/** O chão em pixel art: a imagem da casa (uma das n x n variações), colada no pixel inteiro, sem suavizar. */
+function pintorPisoPx(ctx: CanvasRenderingContext2D, t: TexturaPx): Pintor<[number, number, number]> {
+  return ([x, y, h]) => {
+    const img = t.piso.imgs[resto(x, t.n)][resto(y, t.n)];
+    const [sx, sy] = iso(x, y, h);
+    const suave = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, Math.round(sx - t.piso.ax), Math.round(sy - t.piso.ay));
+    ctx.imageSmoothingEnabled = suave;
+  };
+}
+
+/** A parede em pixel art: o trecho (uma casa) colado pelo pé do começo dele; o recorte da parede corta o topo. */
+function pintorParedePx(ctx: CanvasRenderingContext2D, t: TexturaPx): Pintor<WallSeg> {
+  const f = ((s: WallSeg) => {
+    const p = t.parede[s.wall];
+    const img = p.imgs[resto(s.at, t.n)];
+    const [sx, sy] = s.wall === 'l' ? iso(s.plane, s.at, s.base) : iso(s.at, s.plane, s.base);
+    const suave = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, Math.round(sx - p.ax), Math.round(sy - p.ay));
+    ctx.imageSmoothingEnabled = suave;
+  }) as Pintor<WallSeg> & { pixel?: boolean };
+  f.pixel = true;
+  return f;
 }
 
 /** A parede com a textura vista de frente: do chão ao topo, e a largura de uma volta pela proporção da imagem. */
@@ -672,8 +719,9 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
   // texturas desenhadas do estilo do cômodo (chão e parede), quando já chegaram
   const tPiso = texturaPiso(style);
   const tParede = texturaParede(style);
-  const pintarPiso = tPiso ? pintorPiso(ctx, tPiso.img, tPiso.casas) : undefined;
-  const pintarParede = tParede ? pintorParede(ctx, map, tParede.img) : undefined;
+  const tPx = texturaPx(style);
+  const pintarPiso = tPx ? pintorPisoPx(ctx, tPx) : tPiso ? pintorPiso(ctx, tPiso) : undefined;
+  const pintarParede = tPx ? pintorParedePx(ctx, tPx) : tParede ? pintorParede(ctx, map, tParede.img) : undefined;
   // ao ar livre, o chão de cada casa pode ser outro (terreno): o desenho e a textura de cada estilo
   const linhas = terreno ? terreno.replace(/\r/g, '').split('\n') : undefined;
   const pintores = new Map<FloorStyle, Pintor<[number, number, number]> | undefined>();
@@ -682,7 +730,7 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
     if (!t || t === 'agua' || t === style) return [look, pintarPiso];
     if (!pintores.has(t)) {
       const tt = texturaPiso(t);
-      pintores.set(t, tt ? pintorPiso(ctx, tt.img, tt.casas) : undefined);
+      pintores.set(t, tt ? pintorPiso(ctx, tt) : undefined);
     }
     return [floorLook(t), pintores.get(t)];
   };

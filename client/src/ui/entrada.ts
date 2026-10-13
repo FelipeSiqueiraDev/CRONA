@@ -5,6 +5,7 @@ import { Cena, UNIVERSOS, pedidos, type CenaLayout, type Clima, type Pol } from 
 import MARCA from './entradaMarca.json';
 import PAINEL from './entradaPainel.json';
 import { Trilha } from './entradaTrilha';
+import { aoLiberar } from './audioCelular';
 
 /**
  * A tela de entrada da plataforma: a arte do Felipe (a mesa de RPG à luz de vela, com o painel
@@ -194,6 +195,8 @@ export class Entrada {
   /** o botão do som com o volume, que abre ao passar o mouse (no celular, no primeiro toque) */
   private caixaSom: HTMLElement;
   private volume: HTMLInputElement;
+  /** para de esperar o gesto que libera o som */
+  private pararDeOuvir: (() => void) | null = null;
   private aoTocar = (ev: Event) => {
     if (ev.target instanceof Node && this.caixaSom.contains(ev.target)) return;
     // um toque fora fecha o volume aberto no celular
@@ -351,10 +354,17 @@ export class Entrada {
     this.definirModo('entrar', false);
     if (aviso) this.erro(aviso);
     this.animar();
-    // a música tenta começar já; se o navegador segurar, começa no primeiro toque ou tecla
+    // a música tenta começar já; se o navegador segurar, começa no primeiro gesto que libera o som
+    // (no celular, quando o dedo solta: encostar não conta)
     this.trilha.aoMudarEstado = () => this.mostrarSom();
     this.trilha.comecar();
     this.mostrarSom();
+    this.pararDeOuvir?.();
+    this.pararDeOuvir = aoLiberar(() => {
+      this.trilha.comecar();
+      this.mostrarSom();
+      return this.trilha.tocando || !this.trilha.ligada;
+    });
     // no computador, o cursor já no e-mail
     if (matchMedia('(pointer: fine)').matches) setTimeout(() => this.campos.email.input.focus(), 700);
   }
@@ -402,6 +412,8 @@ export class Entrada {
     cancelAnimationFrame(this.quadro);
     removeEventListener('resize', this.aoRedimensionar);
     removeEventListener('keydown', this.aoTocar);
+    this.pararDeOuvir?.();
+    this.pararDeOuvir = null;
     this.trilha.calar(0.2, true);
     this.el.remove();
   }

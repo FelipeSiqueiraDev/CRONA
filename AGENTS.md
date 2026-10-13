@@ -9,6 +9,8 @@ Tabuleiro digital isométrico para sessões de **Ordem Paranormal RPG**. São du
 Conversa nova, ou outra conta? Antes de qualquer coisa:
 1. Leia o [`docs/GUIA-DO-CLAUDE.md`](docs/GUIA-DO-CLAUDE.md): os combinados com o Felipe, o caminho da arte com o Códex e como conferir o trabalho.
 2. Leia o [`docs/EM-ABERTO.md`](docs/EM-ABERTO.md): onde paramos, o que está pela metade, a fila do Códex e as decisões que esperam o Felipe.
+3. Vai mexer na arte do tabuleiro (cenário, móveis, chão, parede)? Siga o [`docs/GUIA-MAPAS-PIXEL.md`](docs/GUIA-MAPAS-PIXEL.md): o estilo novo, pixel art 1:1 feita só por código.
+4. Vai mexer nos bonecos do tabuleiro (personagens)? Siga o [`docs/PERSONAGEM-GERADOR.md`](docs/PERSONAGEM-GERADOR.md): o gerador de imagem desenha (com o guia de ângulo) e o código limpa e harmoniza com o mapa.
 
 Ao terminar um bloco de trabalho, atualize o `EM-ABERTO.md`.
 
@@ -24,7 +26,7 @@ npm run crona:link   # o link de qualquer lugar (túnel da Cloudflare, grátis);
 ```
 
 - **Mestre (este computador):** `http://localhost:8080`. **Mesa e celulares:** `http://IP-da-rede:8080/?mesa`. **De qualquer lugar:** o link do túnel (`server/data/link.txt`); o mestre de fora entra pela conta ("Felipe"). Em 127.0.0.1 entra como mestre; pela rede e pelo link, não. O log do jogo fica em `server/data/jogo.log`.
-- **Leve:** a arte vai em WebP (`scripts/webp.mjs` faz `*.png.webp` ao lado de cada PNG, fora do git; o servidor manda a cópia leve sozinho). O Docker tem teto de 3 GB (`%USERPROFILE%\.wslconfig`, desde 06/10).
+- **Leve:** a arte vai em WebP (`scripts/webp.mjs` faz uma cópia `.webp` de cada PNG na pasta espelho `client/public/arte-leve/`, fora do git, desde 06/10; o servidor manda a cópia leve sozinho). O Docker tem teto de 3 GB (`%USERPROFILE%\.wslconfig`, desde 06/10).
 - **De qualquer lugar (06/10):** `npm run crona:link` abre um túnel da Cloudflare (`cloudflared`, como o do C.R.I.S) até a porta da rede do jogo e volta sozinho se cair. O link (`https://<palavras>.trycloudflare.com`) muda a cada vez que o túnel sobe; o de agora fica em `server/data/link.txt` e aparece no `npm run crona:logs`. O túnel vai para a porta da mesa, nunca para a 127.0.0.1 (lá todo mundo é mestre): de fora, o mestre entra pela conta.
 - Mudou a arte ou o código? `npm run crona` de novo (monta a imagem nova). Os arquivos enviados pelo jogo ficam no volume `crona_crona-arquivos`.
 - **Um servidor por banco:** o servidor trava o banco (`pg_try_advisory_lock`). Com o jogo do Docker no ar, o `npm run dev` no banco `crona` recusa; para desenvolver, use a cópia (`node scripts/dev/visual.mjs subir`, banco `crona_visual`, que sai do `crona` por `pg_dump`). O banco de antes do Docker ficou inteiro como `crona_antes_docker`.
@@ -100,6 +102,7 @@ Pediram arte ("começa a arte", "faz os retratos", "faz os ícones da FICHAS")? 
 
 ## Estado (atualizado em 06/10/2026; o que está em aberto fica no `docs/EM-ABERTO.md`)
 
+- **Minimapa (10/10):** a planta da coluna da esquerda virou o minimapa em níveis, Terreno › Prédio › Andar › Cômodo (`client/src/ui/minimapa.ts`; a hierarquia sai das passagens em `shared/src/locais.ts`). No visual do HUD (azul-noite, borda bege, ouro no lugar do grupo, desde 12/10; `minimapa.css`); no terreno, o mapa em pixel art gerado das cenas, na paleta da noite; a tecla M abre o mesmo minimapa grande; clicar num prédio desce até ele, a escada troca o andar; clicar num cômodo só espia (o cartão com Entrar); o botão das camadas abre a lista de todos os lugares; o grupo dividido (escolher quem vai, arrastar a peça) e o não visitado apagado. Ver `docs/EM-ABERTO.md`.
 - **Ferramentas da mesa (06/10):** no canto de cima do tabuleiro do MAPA, só para o mestre: **Apontar** (P, ou Alt + clique: a mesa pisca no lugar), **Desenhar** (D: giz à mão livre, seta ou círculo, que some em 9 s), **Névoa** (N: a sala coberta na mesa, revelada pelo pincel e sozinha em volta dos agentes que andam; o mestre vê o escondido riscado) e **Mapa** (uma imagem vira cena vista de cima, ligada à cena de agora). Apontar e Desenhar também no COMBATE. Tudo em `docs/FERRAMENTAS-DA-MESA.md`; as contas em `shared/src/mesa.ts`, o desenho em `client/src/render/marcasMesa.ts` e `nevoaMesa.ts`.
 - **Entrada e contas (04/10):** quem abre o CRONA sem link vê a tela de entrada (`client/src/ui/entrada.ts`, a arte em `client/public/arte/login/`, animada). Lá entra com o e-mail (ou o nome da conta) e a senha, ou cria a conta.
   - **O fundo vivo (06/10, revisto em 07/10):** cada visita sorteia a cena (o tema — fantasia, horror ou cyberpunk —, a hora do relógio, o clima, a vela, o monstro) em `client/src/ui/entradaCena.ts`, com a trilha de cada tema em `client/src/ui/entradaTrilha.ts`. Cada tema é uma imagem inteira, que entra por `scripts/entrada-fundos.mjs`. Ver `docs/TELA-ENTRADA.md` (e `?hora=`, `?universo=`, `?clima=`, `?vela=`, `?monstro=` para ver uma cena de propósito).

@@ -150,6 +150,8 @@ const ICONE_PINTADO: Partial<Record<string, string>> = {
   engrenagem: 'topo-config',
   documento: 'topo-registro',
   sair: 'topo-sair',
+  // o mapa-múndi (10/10, pedido ao Códex): entra sozinho quando chegar
+  globo: 'topo-mapa-mundi',
 };
 function iconeTopo(nome: NomeIcone): Element {
   const reserva = icAnimado(nome) ?? ic(nome);
@@ -167,6 +169,9 @@ export class TopBar {
   private localT: HTMLElement;
   private localS: HTMLElement;
   private localBox: HTMLElement;
+  /** os botões da direita e o traço antes deles: o nome do lugar cabe no espaço que sobra (10/10) */
+  private botoesEl!: HTMLElement;
+  private sepBotoes!: HTMLElement;
   readonly botoes = new Map<string, HTMLButtonElement>();
 
   constructor(o: OpcoesTopo) {
@@ -200,6 +205,8 @@ export class TopBar {
     this.localS = h('span');
     this.localBox = h('div', { class: 'tb2-local hidden' }, this.localT, this.localS);
     const botoes = h('div', { class: 'tb2-botoes' });
+    this.botoesEl = botoes;
+    this.sepBotoes = h('span', { class: 'tb2-sep', style: 'left:133.2rem', 'aria-hidden': 'true' });
     for (const b of o.botoes) {
       if (b.sair) botoes.append(h('span', { class: 'tb2-div', 'aria-hidden': 'true' }));
       const el = h(
@@ -217,12 +224,14 @@ export class TopBar {
       h('span', { class: 'tb2-sep', style: 'left:36.5rem', 'aria-hidden': 'true' }),
       abas,
       this.op,
-      h('span', { class: 'tb2-sep', style: 'left:115.8rem', 'aria-hidden': 'true' }),
+      h('span', { class: 'tb2-sep', style: 'left:113.2rem', 'aria-hidden': 'true' }),
       this.localBox,
-      h('span', { class: 'tb2-sep', style: 'left:131rem', 'aria-hidden': 'true' }),
+      this.sepBotoes,
       botoes,
     );
     this.el = h('header', { class: 'tb2' }, inner);
+    window.addEventListener('resize', () => this.ajustarLocal());
+    void document.fonts?.ready.then(() => this.ajustarLocal());
     this.setAtiva(o.ativa);
   }
 
@@ -236,8 +245,11 @@ export class TopBar {
   }
 
   setMarca(titulo: string, sub: string) {
-    this.titulo.textContent = titulo.toUpperCase();
-    this.sub.textContent = sub.toUpperCase();
+    // só troca o texto se mudou (trocar à toa recria o nó e o topo pisca)
+    const t = titulo.toUpperCase();
+    const u = sub.toUpperCase();
+    if (this.titulo.textContent !== t) this.titulo.textContent = t;
+    if (this.sub.textContent !== u) this.sub.textContent = u;
   }
 
   /** "OPERAÇÃO / FULGOR": null esconde. */
@@ -250,7 +262,49 @@ export class TopBar {
 
   setLocal(titulo: string | null, sub = '') {
     this.localBox.classList.toggle('hidden', !titulo);
-    this.localT.textContent = (titulo ?? '').toUpperCase();
-    this.localS.textContent = sub.toUpperCase();
+    const lt = (titulo ?? '').toUpperCase();
+    const ls = sub.toUpperCase();
+    if (this.localT.textContent !== lt) this.localT.textContent = lt;
+    if (this.localS.textContent !== ls) this.localS.textContent = ls;
+    requestAnimationFrame(() => this.ajustarLocal());
+  }
+
+  /**
+   * O nome do lugar nunca passa por baixo dos botões (10/10, o Felipe: "Sede da Ordem" atrás do botão do mapa-múndi):
+   * a caixa vai do traço depois das abas até antes do primeiro botão, o traço acompanha os botões, e o nome comprido
+   * encolhe até caber.
+   */
+  private ajustarLocal() {
+    if (!this.botoesEl.offsetParent || this.localBox.classList.contains('hidden')) return;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
+    const esq = 113.2 * rem + 0.8 * rem;
+    const dir = this.botoesEl.offsetLeft - 1.4 * rem;
+    this.sepBotoes.style.setProperty('left', `${dir + 0.5 * rem}px`);
+    const larg = Math.max(8 * rem, dir - esq);
+    this.localBox.style.setProperty('left', `${esq}px`, 'important');
+    this.localBox.style.setProperty('width', `${larg}px`, 'important');
+    for (const el of [this.localT, this.localS]) {
+      el.style.transform = '';
+      el.style.display = 'inline-block';
+      el.style.whiteSpace = 'nowrap';
+      el.style.maxWidth = '';
+      const w = el.scrollWidth;
+      if (w <= larg) continue;
+      // um pouco maior: encolhe; bem maior (o nome do lugar): quebra em duas linhas e, se ainda não couber, encolhe
+      if (larg / w >= 0.8 || el === this.localS) {
+        el.style.transform = `scale(${(larg / w).toFixed(3)})`;
+        continue;
+      }
+      el.style.whiteSpace = 'normal';
+      el.style.maxWidth = `${larg}px`;
+      el.style.lineHeight = '1.1';
+      const linha = parseFloat(getComputedStyle(el).fontSize) * 1.1;
+      // no máximo duas linhas: passou disso, volta a uma só e encolhe
+      if (el.scrollHeight > linha * 2.3) {
+        el.style.whiteSpace = 'nowrap';
+        el.style.maxWidth = '';
+        el.style.transform = `scale(${(larg / el.scrollWidth).toFixed(3)})`;
+      } else if (el.scrollWidth > larg) el.style.transform = `scale(${(larg / el.scrollWidth).toFixed(3)})`;
+    }
   }
 }

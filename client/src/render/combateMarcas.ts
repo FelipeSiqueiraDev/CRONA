@@ -34,6 +34,8 @@ export interface MarcasCombate {
   naArea: Set<number>;
   /** de quem é a vez (brilha no mapa tático) */
   vez: Set<number>;
+  /** o movimento: as casas aonde quem age chega andando (acesas; a do mouse, mais forte) */
+  passos?: Casa[] | null;
 }
 
 export function marcasVazias(): MarcasCombate {
@@ -152,6 +154,22 @@ export function desenharChao(ctx: CanvasRenderingContext2D, m: MarcasCombate, po
     ctx.fill();
     ctx.restore();
   }
+  // o movimento: cada casa aonde dá para ir, um losango ciano pulsando de leve
+  if (m.passos?.length) {
+    ctx.save();
+    const pulso = 0.16 + 0.05 * Math.sin(now / 380);
+    ctx.fillStyle = `rgba(80,200,255,${pulso})`;
+    ctx.strokeStyle = 'rgba(120,220,255,0.35)';
+    ctx.lineWidth = 0.8;
+    for (const c of m.passos) {
+      const z = altura(c) + 0.02;
+      const i = 0.06;
+      poligonoChao(ctx, [[c.x + i, c.y + i], [c.x + 1 - i, c.y + i], [c.x + 1 - i, c.y + 1 - i], [c.x + i, c.y + 1 - i]], z);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 }
 
 /** Anel de destaque no pé da peça. */
@@ -176,6 +194,12 @@ function ponta(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number
 /** Depois da luz: anel de alcance, linha, mira, medida e o contorno da área (no mundo). */
 export function desenharCima(ctx: CanvasRenderingContext2D, m: MarcasCombate, pos: PosPeca, altura: (c: Casa) => number, hover: Casa | null, now: number) {
   ctx.save();
+  // a casa do mouse, se for uma aonde dá para ir
+  if (hover && m.passos?.some((c) => c.x === hover.x && c.y === hover.y)) {
+    ctx.fillStyle = 'rgba(120,230,255,0.55)';
+    poligonoChao(ctx, [[hover.x, hover.y], [hover.x + 1, hover.y], [hover.x + 1, hover.y + 1], [hover.x, hover.y + 1]], altura(hover) + 0.03);
+    ctx.fill();
+  }
   if (m.alcance) {
     const p = pos(m.alcance.id);
     if (p) {

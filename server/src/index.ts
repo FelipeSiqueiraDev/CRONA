@@ -72,8 +72,10 @@ function serveFile(res: http.ServerResponse, file: string, cache = false, req?: 
       ETag: etag,
     };
     // a cópia em WebP da arte (scripts/webp.mjs), para o navegador que aceita: bem menor que o PNG
-    if (arte && ext === '.png' && /image\/webp/.test(String(req?.headers.accept ?? '')) && !file.endsWith('.webp')) {
-      const leve = `${file}.webp`;
+    // (a pasta espelho arte-leve/, com o mesmo caminho e .webp no lugar de .png)
+    if (arte && ext === '.png' && /image\/webp/.test(String(req?.headers.accept ?? ''))) {
+      const i = file.lastIndexOf(`${path.sep}arte${path.sep}`);
+      const leve = `${file.slice(0, i)}${path.sep}arte-leve${path.sep}${file.slice(i + 6, -4)}.webp`;
       if (fs.existsSync(leve)) {
         res.setHeader('Vary', 'Accept');
         return serveFile(res, leve, cache, req);
@@ -170,8 +172,7 @@ function listarArte(): string[] {
     for (const it of itens) {
       if (it.name.startsWith('.')) continue;
       if (it.isDirectory()) andar(path.join(dir, it.name), `${rel}/${it.name}`, fundo + 1);
-      // a cópia leve (.png.webp) não entra na lista: o servidor troca sozinho na entrega
-      else if (/\.(png|webp|jpe?g|svg)$/i.test(it.name) && !/\.png\.webp$/i.test(it.name)) lista.push(`/arte${rel}/${it.name}`);
+      else if (/\.(png|webp|jpe?g|svg)$/i.test(it.name)) lista.push(`/arte${rel}/${it.name}`);
     }
   };
   andar(raiz, '', 0);

@@ -369,7 +369,8 @@
   --vela: 1;
   --chama: 255, 170, 80;
 }
-.fx-grupo {
+/* só na tela de entrada: o .fx-grupo solto pegava os grupos da aba FICHAS */
+.entrada .fx-grupo {
   position: absolute;
   inset: 0;
 }
@@ -698,6 +699,15 @@
   font-size: calc(var(--u) * 20px);
   letter-spacing: 0.02em;
   caret-color: #ffc35a;
+}
+/* o foco é do campo inteiro (a borda de ouro do .ent-campo): o texto não ganha contorno próprio
+   (a regra geral de input:focus-visible desenhava uma caixa dentro da caixa) */
+.ent-input:focus,
+.ent-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background: transparent !important;
 }
 .ent-input::placeholder {
   color: #6f6b67;

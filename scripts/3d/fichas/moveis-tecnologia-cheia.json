@@ -1,0 +1,389 @@
+{
+ "destino": "client/public/arte/mobiliario",
+ "escala": 0.5,
+ "limpar": 56,
+ "moveis": [
+  {
+   "def": "cadeira_gamer",
+   "folha": "client/public/arte/mobiliario/folhas/cadeira-gamer.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.65,
+    0.65,
+    1.3
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "cadeira_gamer~b",
+   "folha": "client/public/arte/mobiliario/folhas/cadeira-gamer-2.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.65,
+    0.65,
+    1.3
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "rack_moderno",
+   "folha": "client/public/arte/mobiliario/folhas/rack-moderno.png",
+   "W": 1,
+   "D": 2,
+   "real": [
+    0.6,
+    1.0,
+    2.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "encosta": true
+  },
+  {
+   "def": "rack_moderno!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/rack-moderno-vazio.png",
+   "W": 1,
+   "D": 2,
+   "real": [
+    0.6,
+    1.0,
+    2.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "encosta": true
+  },
+  {
+   "def": "lixeira_lanches",
+   "folha": "client/public/arte/mobiliario/folhas/lixeira-lanches.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.4,
+    0.4,
+    0.6
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "torre_crt",
+   "folha": "client/public/arte/mobiliario/folhas/torre-crt.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.7,
+    1.8
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "encosta": true
+  },
+  {
+   "def": "torre_crt!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/torre-crt-vazio.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.7,
+    1.8
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "encosta": true
+  },
+  {
+   "def": "bancada_eletronica",
+   "folha": "client/public/arte/mobiliario/folhas/bancada-eletronica.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.7,
+    0.95
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "encosta": true
+  },
+  {
+   "def": "bancada_eletronica!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/bancada-eletronica-vazio.png",
+   "W": 2,
+   "D": 1,
+   "real": [
+    1.5,
+    0.7,
+    0.95
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "encosta": true
+  },
+  {
+   "def": "mesa_holografica",
+   "folha": "client/public/arte/mobiliario/folhas/mesa-holografica.png",
+   "W": 2,
+   "D": 2,
+   "real": [
+    1.4,
+    1.4,
+    1.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "forma": "redonda",
+   "estados": {
+    "1": "client/public/arte/mobiliario/folhas/mesa-holografica-desligada.png"
+   }
+  },
+  {
+   "def": "mesa_holografica!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/mesa-holografica-vazio.png",
+   "W": 2,
+   "D": 2,
+   "real": [
+    1.4,
+    1.4,
+    1.0
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   },
+   "forma": "redonda"
+  },
+  {
+   "def": "frigobar_energetico",
+   "folha": "client/public/arte/mobiliario/folhas/frigobar-energetico.png",
+   "W": 1,
+   "D": 1,
+   "real": [
+    0.55,
+    0.55,
+    0.9
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "posto_enfermagem",
+   "folha": "client/public/arte/mobiliario/folhas/posto-enfermagem.png",
+   "W": 7,
+   "D": 3,
+   "real": [
+    5.25,
+    2.25,
+    1.1
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "posto_enfermagem!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/posto-enfermagem-vazio.png",
+   "W": 7,
+   "D": 3,
+   "real": [
+    5.25,
+    2.25,
+    1.1
+   ],
+   "como_esta": true,
+   "largura": true,
+   "giros": {
+    "4": 0,
+    "6": 1,
+    "0": 2,
+    "2": 3
+   }
+  },
+  {
+   "def": "painel_telas",
+   "folha": "client/public/arte/mobiliario/folhas/painel-telas.png",
+   "real": [
+    2.0,
+    0.08,
+    1.1
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "mural_polaroids",
+   "folha": "client/public/arte/mobiliario/folhas/mural-polaroids.png",
+   "real": [
+    0.9,
+    0.03,
+    0.6
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "mural_polaroids!vazio",
+   "folha": "client/public/arte/mobiliario/folhas/mural-polaroids-vazio.png",
+   "real": [
+    0.9,
+    0.03,
+    0.6
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "tela_cris",
+   "folha": "client/public/arte/mobiliario/folhas/tela-cris.png",
+   "real": [
+    2.6,
+    0.1,
+    1.45
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  },
+  {
+   "def": "tela_derrota",
+   "folha": "client/public/arte/mobiliario/folhas/tela-derrota.png",
+   "real": [
+    1.1,
+    0.08,
+    0.65
+   ],
+   "parede": {
+    "r": [
+     0,
+     0.5,
+     0.5
+    ],
+    "l": [
+     1,
+     0.5,
+     0.5
+    ]
+   }
+  }
+ ]
+}

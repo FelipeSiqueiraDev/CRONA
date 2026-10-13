@@ -1,4 +1,4 @@
-import type { AvatarLook, CharacterDef, InvItem, Role, RoomInfo, RoomSummary } from '@crona/shared';
+import type { AvatarLook, CharacterDef, Criatura, InvItem, LugarInfo, Role, RoomInfo, RoomSummary } from '@crona/shared';
 import type { Net } from '../net';
 import type { RoomView } from '../room/RoomView';
 import { SessionStore } from '../session/store';
@@ -15,15 +15,19 @@ export interface AppState {
   inventory: InvItem[];
   characters: CharacterDef[];
   rooms: RoomSummary[];
+  /** os lugares do mapa-múndi (chega quando o mapa abre) */
+  lugares: LugarInfo[];
+  /** o bestiário (só o mestre; chega quando a janela Criaturas abre) */
+  bestiario: Criatura[];
   room: RoomInfo | null;
   /** mestre controla; jogador só acompanha (vem do servidor no login) */
   role: Role;
 }
 
-export type AppEvent = 'me' | 'inventory' | 'characters' | 'rooms' | 'room' | 'selection' | 'items' | 'placement';
+export type AppEvent = 'me' | 'inventory' | 'characters' | 'rooms' | 'lugares' | 'bestiario' | 'room' | 'selection' | 'items' | 'placement';
 
 export class App {
-  state: AppState = { me: null, inventory: [], characters: [], rooms: [], room: null, role: 'player' };
+  state: AppState = { me: null, inventory: [], characters: [], rooms: [], lugares: [], bestiario: [], room: null, role: 'player' };
   net: Net;
   /** sessão compartilhada (contrato novo, docs/CONTRATO.md) */
   readonly session: SessionStore;
@@ -41,6 +45,10 @@ export class App {
     let s = this.listeners.get(evt);
     if (!s) this.listeners.set(evt, (s = new Set()));
     s.add(fn);
+  }
+
+  off(evt: AppEvent, fn: () => void) {
+    this.listeners.get(evt)?.delete(fn);
   }
 
   emit(evt: AppEvent) {

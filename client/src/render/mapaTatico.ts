@@ -1,7 +1,9 @@
-import { combate as cb, footprint, getFurni, M_POR_CASA, Z_PER_M, type FloorItem, type FloorStyle, type FurniDef, type RoomMap } from '@crona/shared';
+import { combate as cb, footprint, getFurni, M_POR_CASA, PILHA_CHAO, regras, terrenoEm, Z_PER_M, type FloorItem, type FloorStyle, type FurniDef, type RoomMap } from '@crona/shared';
+import { imagemDoMapa } from './mapaImagem';
+import { desenharItemNoChao } from './itemNoChao';
 import { contornoArea, type Casa } from '../room/combateGeo';
 import type { MarcasCombate } from './combateMarcas';
-import { imagemDeCima, imagemDoChao, tamanhoReal } from './furniArte';
+import { imagemDeCima, imagemDoChao, tamanhoReal, chaveDaArte } from './furniArte';
 import { VAO_PORTA_M } from './furniKit';
 import { texturaPiso } from './texturas';
 
@@ -251,7 +253,13 @@ export interface OpcoesMesa {
   mostrarItem?: (it: FloorItem) => boolean;
   /** mapa improvisado: a imagem no chão inteiro da sala, no lugar do piso */
   imagemChao?: CanvasImageSource | null;
+  /** ao ar livre: o chão de cada casa (grama, estrada, lavoura, píer...), uma letra por casa; a água é casa vazia */
+  terreno?: string;
 }
+
+/** A cor do chão enquanto a textura do estilo não chegou, e a água. */
+const COR_TERRENO: Partial<Record<FloorStyle, string>> = { grama: '#4d6a2e', estrada: '#86663f', lavoura: '#553823', cascalho: '#9a9384', terra: '#3a2e22', pier: '#6a5238', calabouco: '#35363a' };
+const COR_AGUA = '#2f5f72';
 
 /** O mapa tático parado, no enquadre e. */
 export function desenharTatico(ctx: CanvasRenderingContext2D, map: RoomMap, piso: FloorStyle | undefined, pecas: PecaTatica[], e: Enquadre, opcoes: OpcoesMesa = {}) {
@@ -275,11 +283,38 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
   ctx.setTransform(matrizNaAltura(v, 0));
   const pisoPath = new Path2D();
   for (let y = 0; y < map.height; y++) for (let x = 0; x < map.width; x++) if (chao(x, y)) pisoPath.rect(x, y, 1.002, 1.002);
-  const tex = texturaPiso(piso);
-  const padrao = tex?.img.complete && tex.img.naturalWidth ? ctx.createPattern(tex.img, 'repeat') : null;
-  if (padrao) padrao.setTransform(new DOMMatrix().scale(tex!.casas / tex!.img.naturalWidth));
-  ctx.fillStyle = padrao ?? '#4a4038';
-  ctx.fill(pisoPath);
+  const padraoDe = (estilo: FloorStyle | undefined): CanvasPattern | null => {
+    const t = texturaPiso(estilo);
+    const pat = t?.img.complete && t.img.naturalWidth ? ctx.createPattern(t.img, 'repeat') : null;
+    if (pat) pat.setTransform(new DOMMatrix().scale(t!.casas / t!.img.naturalWidth));
+    return pat;
+  };
+  const linhasTerreno = opcoes.terreno ? opcoes.terreno.replace(/\r/g, '').split('\n') : undefined;
+  if (linhasTerreno) {
+    // ao ar livre: cada casa com o chão dela (a textura de cima de cada estilo) e a água nas casas vazias
+    const porEstilo = new Map<FloorStyle | undefined, Path2D>();
+    const agua = new Path2D();
+    for (let y = 0; y < map.height; y++)
+      for (let x = 0; x < map.width; x++) {
+        const t = terrenoEm(linhasTerreno, x, y);
+        if (!chao(x, y)) {
+          if (t === 'agua') agua.rect(x, y, 1.002, 1.002);
+          continue;
+        }
+        const estilo = t && t !== 'agua' ? t : piso;
+        if (!porEstilo.has(estilo)) porEstilo.set(estilo, new Path2D());
+        porEstilo.get(estilo)!.rect(x, y, 1.002, 1.002);
+      }
+    ctx.fillStyle = COR_AGUA;
+    ctx.fill(agua);
+    for (const [estilo, path] of porEstilo) {
+      ctx.fillStyle = padraoDe(estilo) ?? (estilo ? COR_TERRENO[estilo] : undefined) ?? '#4a4038';
+      ctx.fill(path);
+    }
+  } else {
+    ctx.fillStyle = padraoDe(piso) ?? '#4a4038';
+    ctx.fill(pisoPath);
+  }
   if (opcoes.imagemChao) ctx.drawImage(opcoes.imagemChao, 0, 0, map.width, map.height);
   else {
     ctx.fillStyle = 'rgba(14, 11, 8, 0.32)';
@@ -313,6 +348,11 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
   for (const { it, def } of itens) {
     if (def.flat || def.kind === 'portal' || /lamp|lampada|fluorescent|luz/.test(def.kind)) continue;
     const fp = footprint(def, it.rot);
+    // o que alguém largou no chão: o ícone pintado do item, e não a vista de cima literal (07/10)
+    if (it.defId === PILHA_CHAO && it.loot?.length) {
+      blocos.push({ prof: prof(it.x + 0.5, it.y + 0.5), z: it.z ?? 0, desenhar: () => desenharItemLargado(ctx, v, it, () => desenharMovel(ctx, v, it, def)) });
+      continue;
+    }
     blocos.push({ prof: prof(it.x + fp.sx / 2, it.y + fp.sy / 2), z: it.z ?? 0, desenhar: () => desenharMovel(ctx, v, it, def) });
   }
   for (const p of paredes(map)) blocos.push({ prof: prof((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2) - (p.fundo ? 100 : 0), z: 0, desenhar: () => desenharParede(ctx, v, p, piso) });
@@ -352,6 +392,33 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
 
 // ---------------------------------------------------------------------------
 // as peças do desenho
+
+/**
+ * O que alguém largou no chão, visto de cima: o ícone pintado de cada item (até 3), de pé na tela, com uma sombra
+ * achatada embaixo. Não precisa ser a vista de cima literal: o ícone destaca o item e mostra que alguém o deixou
+ * ali. Enquanto a imagem não chega, `semArte` desenha o volume de sempre.
+ */
+function desenharItemLargado(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorItem, semArte: () => void) {
+  const imgs = (it.loot ?? [])
+    .slice(0, 3)
+    .map((l) => imagemDoMapa(`/arte/itens/pintados/${l.item?.id ?? regras.slug(l.name)}.png`))
+    .filter((x): x is HTMLImageElement => !!x);
+  if (!imgs.length) return semArte();
+  const desloca = [
+    [0, 0],
+    [-0.24, 0.2],
+    [0.22, -0.2],
+  ];
+  const lado = v.escala * (imgs.length > 1 ? 0.95 : 1.15);
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  imgs.forEach((img, i) => {
+    const [sx, sy] = projetar(v, it.x + 0.5 + desloca[i][0], it.y + 0.5 + desloca[i][1], it.z ?? 0);
+    // o mesmo desenho do isométrico (de pé, sombra, brilho e balanço); a semente vem do item
+    desenharItemNoChao(ctx, img, sx, sy + lado * 0.18, lado, (it.id * 0.6180339 + i * 0.31) % 1);
+  });
+  ctx.restore();
+}
 
 /** Tapete, rosa dos ventos, mancha: a arte vista de cima deitada na pegada (em casas); sem arte, uma marca na cor dele. */
 function desenharTapete(ctx: CanvasRenderingContext2D, it: FloorItem, def: FurniDef) {
@@ -444,7 +511,8 @@ function desenharMovel(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorIte
   const corBase = def.colors?.[0] ?? '#6a5a4a';
   const cor = misturar(clarear(corBase, 0.18), tapa ? '#15110d' : cobre ? '#2a231c' : '#6a5a48', tapa ? 0.5 : cobre ? 0.3 : 0.2);
   const { path, pts, r, planta, mesa } = formaDoMovel(it, def);
-  const arte = imagemDeCima(def.id, it.state);
+  // o modelo que a peça sorteou (a variação b ou c tem a vista de cima dela)
+  const arte = imagemDeCima(chaveDaArte(def.id, it.id, undefined, it.vazio, it.modelo), it.state) ?? imagemDeCima(def.id, it.state);
   // a sombra no chão, para baixo e à direita, do tamanho da altura (com arte, a silhueta dela)
   if (base <= 0.01) {
     const s = Math.min(0.42, 0.06 + (alto / Z_PER_M) * 0.13);
@@ -990,6 +1058,15 @@ export type PosTatica = (id: number) => { x: number; y: number } | null;
  */
 export function marcasNoChao(ctx: CanvasRenderingContext2D, m: MarcasCombate | null, pos: PosTatica, mouse: Casa | null, now: number) {
   ctx.save();
+  // o movimento: as casas aonde dá para ir (a do mouse, mais forte)
+  if (m?.passos?.length) {
+    ctx.fillStyle = `rgba(80, 200, 255, ${0.16 + 0.05 * Math.sin(now / 380)})`;
+    for (const c of m.passos) ctx.fillRect(c.x + 0.06, c.y + 0.06, 0.88, 0.88);
+    if (mouse && m.passos.some((c) => c.x === mouse.x && c.y === mouse.y)) {
+      ctx.fillStyle = 'rgba(120, 230, 255, 0.5)';
+      ctx.fillRect(mouse.x + 0.04, mouse.y + 0.04, 0.92, 0.92);
+    }
+  }
   if (m?.alcance) {
     const p = pos(m.alcance.id);
     if (p) {

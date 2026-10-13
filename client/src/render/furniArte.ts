@@ -44,6 +44,8 @@ export interface MovelArte {
   chao?: { arquivo: string };
   /** item de parede: a vista presa na parede da direita ('r') e na da esquerda ('l'), e os outros estados ('r-1'...); a âncora é o ponto de encosto */
   parede?: Record<string, VistaArte>;
+  /** item de parede redondo (o relógio): a inclinação das bordas que a arte trouxe, por parede; o jogo inclina a diferença até a da parede */
+  inclina?: Record<string, number>;
   /**
    * tela acesa: o brilho em cada giro que mostra a tela, em pixels da imagem. modo 'cores'
    * (o fliperama: troca de cor a cada ms), 'pulso' (o monitor do leito: bate como um
@@ -64,6 +66,16 @@ export interface MovelArte {
   real?: [number, number, number];
   /** encostado no fundo da casa (a prateleira na parede), em vez de no meio */
   encosta?: boolean;
+  /**
+   * arte feita por código (scripts/3d/codigo): o desenho já vem na medida de verdade (`real`), centrado na pegada,
+   * com a sombra no chão dentro da imagem. O jogo não mede a largura do desenho (a sombra entraria na conta).
+   */
+  exato?: boolean;
+  /**
+   * pixel art (a arte feita pelo motor de pixel, 1 pixel da imagem = 1 do tabuleiro): desenhada sem suavizar e
+   * no pixel inteiro, para não borrar.
+   */
+  pixel?: boolean;
   /**
    * o móvel visto de cima (mapa tático), com a frente para baixo; a imagem tem a pegada inteira e
    * a caixa diz onde o móvel está nela, em pixels (scripts/3d/cima.py): o jogo põe a caixa no
@@ -114,6 +126,9 @@ function larguraDoDesenho(c: HTMLCanvasElement): number {
  */
 const DA_PAREDE = /^(portal|cell_door|cell_front|cell_wall|cell_bars|bars|iwall)/;
 
+/** A árvore e o arbusto: a copa passa da casa de propósito (o tronco é que pisa nela); não encolhem. */
+const COPA = /^(arvore|arbusto)$/;
+
 /**
  * Quanto a peça encolhe para caber nas casas dela. O desenho vai ao tamanho de verdade pela altura
  * (moveis.py), e o gerador costuma desenhar largo: a base passava da casa (o carrinho entrava na casa
@@ -130,7 +145,14 @@ function encaixe(chave: string, a: MovelArte, def: FurniDef, prontas: Imagens[])
   const salvo = encaixes.get(chave);
   if (salvo) return salvo;
   const e: Encaixe = { f: 1, base: null };
-  if (a.real && prontas.length && !DA_PAREDE.test(def.kind)) {
+  if (a.pixel && a.real) {
+    // pixel art: a arte já vem no tamanho final (com o `aumento`), e esticar borraria o pixel
+    e.base = [a.real[0], a.real[1]];
+    encaixes.set(chave, e);
+    return e;
+  }
+  if (a.exato && a.real) e.base = [a.real[0], a.real[1]];
+  else if (a.real && prontas.length && !DA_PAREDE.test(def.kind) && !COPA.test(def.kind)) {
     const [rw, rd] = a.real;
     const larguras = prontas.map((im) => im.largura * a.escala).sort((x, y) => x - y);
     const medida = larguras[Math.floor(larguras.length / 2)];
@@ -142,6 +164,12 @@ function encaixe(chave: string, a: MovelArte, def: FurniDef, prontas: Imagens[])
     e.f = f < 0.99 ? f : 1;
     e.base = [bw * e.f, bd * e.f];
   }
+  // a mesa maior que a pegada (o `aumento` do catálogo): cresce por igual em volta do meio dela
+  const aum = def.aumento ?? 1;
+  if (aum !== 1) {
+    e.f *= aum;
+    if (e.base) e.base = [e.base[0] * aum, e.base[1] * aum];
+  }
   encaixes.set(chave, e);
   return e;
 }
@@ -151,17 +179,28 @@ let lista: Record<string, MovelArte> | null = null;
 const modelos = new Map<string, string[]>();
 const imagens = new Map<string, Imagens | 'carregando' | 'erro'>();
 
-// o tabuleiro se pinta de novo a cada quadro: a arte aparece assim que chega
-void fetch('/arte/mobiliario/moveis.json')
-  .then((r) => (r.ok ? (r.json() as Promise<Record<string, MovelArte>>) : {}))
-  .then((j) => {
-    lista = j;
-    for (const chave of Object.keys(j).sort()) {
-      const i = chave.indexOf('~');
-      if (i > 0) modelos.set(chave.slice(0, i), [...(modelos.get(chave.slice(0, i)) ?? []), chave]);
-    }
-  })
-  .catch(() => (lista = {}));
+// o tabuleiro se pinta de novo a cada quadro: a arte aparece assim que chega. Falhou (o servidor reiniciando bem na
+// hora): tenta de novo, em vez de passar a sessão inteira com os móveis no desenho de código (10/10)
+function carregarLista(tentativa = 0) {
+  void fetch('/arte/mobiliario/moveis.json', { cache: 'no-cache' })
+    .then((r) => {
+      if (!r.ok) throw new Error(String(r.status));
+      return r.json() as Promise<Record<string, MovelArte>>;
+    })
+    .then((j) => {
+      lista = j;
+      modelos.clear();
+      for (const chave of Object.keys(j).sort()) {
+        const i = chave.indexOf('~');
+        if (i > 0) modelos.set(chave.slice(0, i), [...(modelos.get(chave.slice(0, i)) ?? []), chave]);
+      }
+    })
+    .catch(() => {
+      if (tentativa < 20) setTimeout(() => carregarLista(tentativa + 1), Math.min(15000, 1500 * (tentativa + 1)));
+      else lista = {};
+    });
+}
+carregarLista();
 
 /** O material de cada piso, para a arte de material (a porta de metal no arsenal e na prisão). */
 const MATERIAL: Record<string, string> = { metal: 'metal', cela: 'metal' };
@@ -170,8 +209,12 @@ const MATERIAL: Record<string, string> = { metal: 'metal', cela: 'metal' };
  * Qual arte vale para esta peça: a do material do cômodo, se houver; senão um dos modelos do
  * móvel, sorteado pelo número da peça (o mesmo sempre, e vizinhos costumam sair diferentes).
  */
-export function chaveDaArte(defId: string, seed: number, piso?: string): string {
+export function chaveDaArte(defId: string, seed: number, piso?: string, vazio = false, modelo?: string): string {
   if (!lista) return defId;
+  // o modelo que a montagem escolheu (os 12 quadros da fazenda, cada um o seu)
+  if (modelo && lista[`${defId}~${modelo}`]) return `${defId}~${modelo}`;
+  // o móvel que ficou sem nada: a gêmea vazia ("mesa-gabinete-vazio"), se já chegou
+  if (vazio && lista[`${defId}!vazio`]) return `${defId}!vazio`;
   const mat = piso ? MATERIAL[piso] : undefined;
   if (mat && lista[`${defId}@${mat}`]) return `${defId}@${mat}`;
   const outros = modelos.get(defId);
@@ -202,7 +245,11 @@ function pronta(arquivo: string): Imagens | null {
       g.drawImage(normal, 0, 0);
       imagens.set(url, { normal, espelho, largura: larguraDoDesenho(normal) });
     };
-    img.onerror = () => imagens.set(url, 'erro');
+    // falhou (o servidor reiniciando, a rede piscando): tenta de novo daqui a pouco, em vez de ficar sem arte até o F5
+    img.onerror = () => {
+      imagens.set(url, 'erro');
+      setTimeout(() => imagens.get(url) === 'erro' && imagens.delete(url), 4000);
+    };
     img.src = url;
   }
   return null;
@@ -213,8 +260,8 @@ function pronta(arquivo: string): Imagens | null {
  * ordem de quem fica na frente), ou null se ele não tem arte (ou ela ainda não chegou).
  * As luzes continuam as do desenho por código. state: o estado do móvel (0 = aceso).
  */
-export function visualComArte(def: FurniDef, base: FVisual, state = 0, seed = 0, rot?: number, piso?: string, escala = 1): FVisual | null {
-  const chave = chaveDaArte(def.id, seed, piso);
+export function visualComArte(def: FurniDef, base: FVisual, state = 0, seed = 0, rot?: number, piso?: string, escala = 1, vazio = false, modelo?: string): FVisual | null {
+  const chave = chaveDaArte(def.id, seed, piso, vazio, modelo);
   const salvo = lista?.[chave];
   if (!salvo) return null;
   // a porta: arte só nas paredes do fundo; nas da frente (que não aparecem), a soleira do desenho por código
@@ -316,8 +363,8 @@ export function tamanhoReal(defId: string): { real: [number, number, number]; en
  * Item de parede com arte: a vista daquela parede (e do estado), com o ponto onde ele
  * encosta na parede em (x, y). false se ele não tem arte (ou ela ainda não chegou).
  */
-export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: string, parede: 'l' | 'r', state: number, x: number, y: number, seed = 0): boolean {
-  const a = lista?.[chaveDaArte(defId, seed)];
+export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: string, parede: 'l' | 'r', state: number, x: number, y: number, seed = 0, vazio = false, modelo?: string): boolean {
+  const a = lista?.[chaveDaArte(defId, seed, undefined, vazio, modelo)];
   if (!a?.parede) return false;
   const vista = (state ? a.parede[`${parede}-${state}`] : undefined) ?? a.parede[parede];
   if (!vista) return false;
@@ -327,7 +374,7 @@ export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: stri
   // o gerador desenha o quadro um pouco torto (mais deitado que a parede): inclina na vertical, em volta
   // do ponto de encosto, até as bordas seguirem a parede; a medida é a da vista do estado 0
   const base = a.parede[parede] ? pronta(a.parede[parede].arquivo) : null;
-  const med = inclinacaoDoDesenho((base ?? img).normal);
+  const med = a.inclina?.[parede] ?? inclinacaoDoDesenho((base ?? img).normal);
   const alvo = parede === 'r' ? 0.5 : -0.5;
   const torto = med !== null && Math.abs(alvo - med) >= 0.04 ? alvo - med : 0;
   ctx.save();
@@ -420,17 +467,24 @@ function lugar(p: Painter, img: HTMLCanvasElement, ax: number, ay: number, k: nu
   const [bx, by] = centro ? iso((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, w.z0) : iso(w.x1, w.y1, w.z0);
   const r = { x: bx - ax * k, y: by - ay * k, w: img.width * k, h: img.height * k };
   const f = aj?.enc.f ?? 1;
-  if (f >= 1) return r;
+  if (f === 1) return r;
   const [px, py] = pivo(p, aj!.encosta);
   return { x: px + (r.x - px) * f, y: py + (r.y - py) * f, w: r.w * f, h: r.h * f };
 }
 
-function pintar(p: Painter, img: HTMLCanvasElement, ax: number, ay: number, k: number, centro: boolean, aj?: Ajuste) {
+function pintar(p: Painter, img: HTMLCanvasElement, ax: number, ay: number, k: number, centro: boolean, aj?: Ajuste, pixel = false) {
   const r = lugar(p, img, ax, ay, k, centro, aj);
   const ctx = p.ctx;
   const suave = ctx.imageSmoothingEnabled;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
+  if (pixel) {
+    // pixel art: no pixel inteiro e sem suavizar (senão borra)
+    r.x = Math.round(r.x);
+    r.y = Math.round(r.y);
+    ctx.imageSmoothingEnabled = false;
+  } else {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+  }
   ctx.drawImage(img, r.x, r.y, r.w, r.h);
   ctx.imageSmoothingEnabled = suave;
   return r;
@@ -529,7 +583,10 @@ function brilhar(p: Painter, r: { x: number; y: number }, k: number, x: number, 
   const cy = r.y + y * k;
   const rr = raio * k;
   const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+  // a queda é suave (o miolo forte some rápido e a borda vai devagar): sem o disco recortado em volta da lâmpada
   grad.addColorStop(0, rgba(cor, forca));
+  grad.addColorStop(0.25, rgba(cor, forca * 0.45));
+  grad.addColorStop(0.6, rgba(cor, forca * 0.12));
   grad.addColorStop(1, rgba(cor, 0));
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
@@ -573,7 +630,7 @@ function desenharGiro(
     p.ctx.rotate(ang);
     p.ctx.translate(-px, -r0.y);
   }
-  const r = pintar(p, imgs.normal, vista.ax, vista.ay, a.escala, centro, aj);
+  const r = pintar(p, imgs.normal, vista.ax, vista.ay, a.escala, centro, aj, !!a.pixel);
   if (a.brilho && luz && p.power > 0.1) brilhar(p, r, k, a.brilho.x, a.brilho.y, a.brilho.r, luz, 0.55 * p.power * falha);
   const tela = a.tela?.giros[g as '4'];
   if (tela && corTela && p.power > 0.1) brilhar(p, r, k, tela.x, tela.y, tela.r, corTela, (a.tela?.forca ?? 0.42) * forcaTela * p.power);
@@ -581,27 +638,60 @@ function desenharGiro(
   if (ang) p.ctx.restore();
 }
 
-/** O feixe de luz da lâmpada (x, y, o brilho dela na tela) até o chão embaixo, no meio da casa: suave, some antes de chegar. */
+/**
+ * O feixe de luz da lâmpada (x, y, o brilho dela na tela) até o chão embaixo, no meio da casa. Ar com luz, e não um
+ * cone recortado (12/10, o Felipe: "os feixes estão muito duros"): várias camadas do cone, cada uma mais estreita e
+ * fraca, somam um miolo claro que se desfaz para os lados; a luz some descendo e pousa no chão numa mancha redonda
+ * (deitada no isométrico), mais forte embaixo da lâmpada.
+ */
 function feixe(p: Painter, x: number, y: number, raio: number, cor: string, forca: number) {
   const [bx, by] = p.m.p(0.5, 0.5, 0);
   if (by <= y) return;
   const topo = Math.min(18, raio * 0.45);
-  const base = topo * 3.2;
+  const base = topo * 3.4;
   const ctx = p.ctx;
-  const g = ctx.createLinearGradient(0, y, 0, by + base * 0.4);
-  g.addColorStop(0, rgba(cor, 0.26 * forca));
-  g.addColorStop(0.7, rgba(cor, 0.09 * forca));
-  g.addColorStop(1, rgba(cor, 0));
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
-  ctx.fillStyle = g;
+  // a mancha no chão: primeiro, para o cone passar por cima dela
+  const rx = base * 1.5;
+  ctx.save();
+  ctx.translate(bx, by);
+  ctx.scale(1, 0.5);
+  const poca = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+  poca.addColorStop(0, rgba(cor, 0.34 * forca));
+  poca.addColorStop(0.4, rgba(cor, 0.16 * forca));
+  poca.addColorStop(1, rgba(cor, 0));
+  ctx.fillStyle = poca;
   ctx.beginPath();
-  ctx.moveTo(x - topo, y);
-  ctx.lineTo(x + topo, y);
-  ctx.lineTo(bx + base, by);
-  ctx.quadraticCurveTo(bx, by + base * 0.5, bx - base, by);
-  ctx.closePath();
+  ctx.arc(0, 0, rx, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+  // o cone em camadas: a de fora larga e quase invisível, a de dentro estreita; juntas, a borda se desfaz
+  const CAMADAS = 6;
+  for (let c = 0; c < CAMADAS; c++) {
+    const e = 1 - c / CAMADAS; // largura: de 1 até 1/6
+    const t = topo * (0.35 + 0.65 * e);
+    const b = base * e;
+    const g = ctx.createLinearGradient(0, y, 0, by + b * 0.25);
+    const a = (0.5 / CAMADAS) * forca;
+    g.addColorStop(0, rgba(cor, a));
+    g.addColorStop(0.6, rgba(cor, a * 0.55));
+    g.addColorStop(1, rgba(cor, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(x - t, y);
+    ctx.lineTo(x + t, y);
+    ctx.lineTo(bx + b, by);
+    ctx.quadraticCurveTo(bx, by + b * 0.5, bx - b, by);
+    ctx.closePath();
+    ctx.fill();
+  }
+  // o ar em volta da lâmpada acende um pouco
+  const halo = ctx.createRadialGradient(x, y, 0, x, y, topo * 2.2);
+  halo.addColorStop(0, rgba(cor, 0.16 * forca));
+  halo.addColorStop(1, rgba(cor, 0));
+  ctx.fillStyle = halo;
+  ctx.fillRect(x - topo * 2.2, y - topo * 2.2, topo * 4.4, topo * 4.4);
   ctx.restore();
 }
 
@@ -633,5 +723,5 @@ function desenhar(p: Painter, a: MovelArte, frente: Imagens, costas: Imagens | n
   const espelhar = (vista.lado ?? 'esquerda') !== ladoNaTela;
   const img = espelhar ? imgs.espelho : imgs.normal;
   const ax = espelhar ? img.width - vista.ax : vista.ax;
-  pintar(p, img, ax, vista.ay, a.escala, vista.ancora === 'centro', enc ? { enc, encosta: !!a.encosta } : undefined);
+  pintar(p, img, ax, vista.ay, a.escala, vista.ancora === 'centro', enc ? { enc, encosta: !!a.encosta } : undefined, !!a.pixel);
 }

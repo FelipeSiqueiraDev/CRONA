@@ -1,16 +1,19 @@
 import {
+  footprint,
   getFurni,
   parseHeightmap,
+  PILHA_CHAO,
   RoomMap,
   type Door,
   type FloorStyle,
   type Hint,
   type LightMode,
+  type Loot,
   type ParticleKind,
 } from "@crona/shared";
 import type { Database, RoomData } from "./db";
 import { buildRoom, plan, type FloorSeed, type WallSeed } from "./seed";
-import { partyTokens, planTop } from "./seedSede";
+import { partyTokens, planRight, planTop } from "./seedSede";
 
 /**
  * Fazenda Olhos de Águia, a primeira missão grande: o mundo aberto da fazenda (anda-se
@@ -27,7 +30,7 @@ import { partyTokens, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 9;
+export const FAZENDA_REV = 23;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -44,7 +47,7 @@ const oculta = (title: string, text: string): Hint => ({
 // ------------------------------------------------------------------ terreno
 
 /** Chão ao ar livre casa por casa (letras de TERRENOS); a água vira casa vazia na planta. */
-class Terreno {
+export class Terreno {
   readonly g: string[][];
   constructor(
     readonly w: number,
@@ -221,12 +224,10 @@ const FAZENDA_FORA: FloorSeed[] = [
   ["casarao", 13, 9, 4],
   ["galpao", 27, 1, 4],
   ["celeiro", 46, 1, 4],
-  ["entrada", 19, 18, 0],
-  ["entrada", 20, 18, 0],
-  ["entrada", 30, 7, 0],
-  ["entrada", 31, 7, 0],
-  ["entrada", 51, 9, 0],
-  ["entrada", 52, 9, 0],
+  // uma entrada larga por prédio (08/10: eram dois capachos lado a lado)
+  ["entrada_larga", 19, 18, 0],
+  ["entrada_larga", 30, 7, 0],
+  ["entrada_larga", 51, 9, 0],
   // a porteira (aberta) e a cerca em volta de tudo; a do meio separa a casa das plantações
   ["porteira", 0, 18, 2, undefined, 1],
   ...cercaX(0, 0, 71),
@@ -499,7 +500,7 @@ function plantacoesArredores(): FloorSeed[] {
 
 // ------------------------------------------------------------------ as cenas
 
-interface CenaSpec {
+export interface CenaSpec {
   key: string;
   name: string;
   description: string;
@@ -521,6 +522,8 @@ interface CenaSpec {
   plan: { x: number; y: number; r?: number };
   /** peças que começam aqui: [x, y, direção] de cada agente */
   grupo?: [number, number, number][];
+  /** itens largados no chão (a pilha "Itens no Chão", que os jogadores pegam): [x, y, nome, espaços, tipo] */
+  chao?: [number, number, string, number, Loot["kind"]][];
 }
 
 /** Ao ar livre: a planta inteira do terreno e a "porta" (onde nasce quem chega sem passagem) dentro dela. */
@@ -537,8 +540,8 @@ const CALABOUCO = "Calabouço";
 /**
  * O calabouço embaixo do celeiro: 16×14 de pedra. Desce-se pela escada de mão, reta, do
  * alçapão no teto até o chão (no fundo à esquerda); a "porta" é o vão do corredor escuro, no
- * meio da parede do fundo. No meio, o estrado redondo do altar, um degrau acima do chão
- * (altura 1, uns 60 cm).
+ * meio da parede do fundo. No meio, o estrado redondo do altar: o chão é plano, e o estrado é um
+ * móvel pisável de 0,61 m (09/10; antes a planta subia num bloco quadrado, feio).
  */
 function calaboucoPlan(): { heightmap: string; door: Door } {
   const W = 16;
@@ -546,16 +549,105 @@ function calaboucoPlan(): { heightmap: string; door: Door } {
   const rows = [
     Array.from({ length: W }, (_, x) => (x === 9 ? "0" : "x")).join(""),
   ];
-  for (let y = 1; y <= H; y++) {
-    let r = "";
-    for (let x = 0; x < W; x++)
-      r += Math.hypot(x + 0.5 - 9.5, y + 0.5 - 8.5) <= 2.6 ? "1" : "0";
-    rows.push(r);
-  }
+  // o chão é todo plano (09/10): quem sobe é o estrado do altar (o móvel pisável de 0,61 m), não a planta
+  for (let y = 1; y <= H; y++) rows.push("0".repeat(W));
   return { heightmap: rows.join("\n"), door: { x: 9, y: 0, dir: 4 } };
 }
 
-const CENAS: CenaSpec[] = [
+/**
+ * Põe a sala no quadro do DESENHO (`plan.r`: 1 e 3 giram um quarto de volta, 2 espelha): a porta cai na parede onde o
+ * desenho a põe (antes a sala só girava na planta, e no tabuleiro a porta ficava na parede oposta). Os móveis, as
+ * passagens, o grupo e a porta andam junto. Os quadros de parede que caem numa parede da
+ * frente (que não aparece) vão para uma parede de trás, em outro ponto.
+ */
+function giraSala(spec: CenaSpec): CenaSpec {
+  const k = (((spec.plan.r ?? 0) % 4) + 4) % 4;
+  if (!k) return spec;
+  // meia-volta (r = 2): ESPELHA a sala (x vira o oposto). A porta cai na parede oposta, mas o que estava encostado no
+  // fundo (a parede de cima, que aparece) continua no fundo, e nada fica escondido atrás de um móvel alto na frente.
+  const espelho = k === 2;
+  const linhas = spec.layout.heightmap.split("\n");
+  const H = linhas.length;
+  const W = linhas[0].length;
+  const [W2, H2] = k % 2 ? [H, W] : [W, H];
+  const pt = (x: number, y: number): [number, number] => (espelho ? [W - 1 - x, y] : giraPt(W, H, k, x, y));
+  const girar = (r: number) => (espelho ? (r === 2 ? 6 : r === 6 ? 2 : r) : (r + 2 * k) % 8);
+  const grade = Array.from({ length: H2 }, () => Array<string>(W2).fill("x"));
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      const [nx, ny] = pt(x, y);
+      grade[ny][nx] = linhas[y][x];
+    }
+  const heightmap = grade.map((l) => l.join("")).join("\n");
+  const [dx, dy] = pt(spec.layout.door.x, spec.layout.door.y);
+  const door = { x: dx, y: dy, dir: girar(spec.layout.door.dir) };
+  const floor = spec.floor.map((f) => {
+    const [id, x, y, rot, ...resto] = f;
+    const d = getFurni(id);
+    const fp = d ? footprint(d, rot) : { sx: 1, sy: 1 };
+    const [ax, ay] = pt(x, y);
+    const [bx, by] = pt(x + fp.sx - 1, y + fp.sy - 1);
+    return [id, Math.min(ax, bx), Math.min(ay, by), girar(rot), ...resto] as FloorSeed;
+  });
+  // onde ficam as paredes de trás (a do norte, 'r', e a do oeste, 'l') no quadro novo
+  const chao = (x: number, y: number) => grade[y]?.[x] !== undefined && grade[y][x] !== "x";
+  let planoN = 0;
+  while (planoN < H2 && grade[planoN].filter((c) => c !== "x").length < 2) planoN++;
+  let planoO = 0;
+  while (planoO < W2 && grade.filter((l) => l[planoO] !== "x").length < 2) planoO++;
+  const xs = grade[planoN].map((c, x) => (c !== "x" ? x : -1)).filter((x) => x >= 0);
+  const ys = grade.map((l, y) => (l[planoO] !== "x" ? y : -1)).filter((y) => y >= 0);
+  const portais = floor.filter((f) => f[0] === "portal" || f[0].startsWith("stairs") || f[0] === "escada_desce");
+  const livre = (lado: "r" | "l", pos: number) =>
+    !portais.some(([, x, y]) => (lado === "r" ? y === planoN && Math.abs(x + 0.5 - pos) < 1.2 : x === planoO && Math.abs(y + 0.5 - pos) < 1.2));
+  const wall: WallSeed[] = [];
+  const perdidos: WallSeed[] = [];
+  for (const w of spec.wall ?? []) {
+    const [id, lado, , pos, z, ...resto] = w;
+    // o lado novo: o norte ('r') e o oeste ('l') giram junto; só os que sobram no norte ou no oeste aparecem
+    const nova = espelho ? (lado === "r" ? "r" : "x") : lado === "r" ? (["r", "x", "x", "l"] as const)[k] : (["l", "r", "x", "x"] as const)[k];
+    if (nova === "x") {
+      perdidos.push(w);
+      continue;
+    }
+    // a posição ao longo da parede nova (contínua, no sentido do giro)
+    const p = espelho ? W - pos : k === 1 ? H - pos : k === 3 ? W - pos : pos;
+    wall.push([id, nova, nova === "r" ? planoN : planoO, p, z, ...resto] as WallSeed);
+  }
+  // o que caiu numa parede da frente: vai para uma parede de trás, num ponto livre
+  const lugares: [("r" | "l"), number][] = [];
+  for (const f of [0.5, 0.25, 0.75, 0.15, 0.85, 0.4, 0.6]) {
+    if (xs.length) lugares.push(["r", xs[0] + (xs[xs.length - 1] - xs[0] + 1) * f]);
+    if (ys.length) lugares.push(["l", ys[0] + (ys[ys.length - 1] - ys[0] + 1) * f]);
+  }
+  const usados: [("r" | "l"), number][] = wall.map((w) => [w[1], w[3]] as [("r" | "l"), number]);
+  for (const w of perdidos) {
+    const [id, , , , z, ...resto] = w;
+    const l = lugares.find(([lado, pos]) => livre(lado, pos) && !usados.some(([a, b]) => a === lado && Math.abs(b - pos) < 1.6));
+    if (!l) continue;
+    usados.push(l);
+    wall.push([id, l[0], l[0] === "r" ? planoN : planoO, l[1], z, ...resto] as WallSeed);
+  }
+  void chao;
+  return {
+    ...spec,
+    layout: { heightmap, door },
+    floor,
+    wall,
+    links: spec.links.map(([x, y, para]) => {
+      const [nx, ny] = pt(x, y);
+      return [nx, ny, para] as [number, number, string];
+    }),
+    chao: spec.chao?.map(([x, y, ...resto]) => [...pt(x, y), ...resto] as [number, number, string, number, Loot["kind"]]),
+    grupo: spec.grupo?.map(([x, y, d]) => {
+      const [nx, ny] = pt(x, y);
+      return [nx, ny, girar(d)] as [number, number, number];
+    }),
+    plan: { x: spec.plan.x, y: spec.plan.y },
+  };
+}
+
+const CENAS_BRUTAS: CenaSpec[] = [
   // ------------------------------------------------------------ fora
   {
     key: "fazenda",
@@ -574,11 +666,8 @@ const CENAS: CenaSpec[] = [
     links: [
       [0, 18, "arredores"],
       [19, 18, "hall"],
-      [20, 18, "hall"],
       [30, 7, "mantimentos"],
-      [31, 7, "mantimentos"],
       [51, 9, "celeiro"],
-      [52, 9, "celeiro"],
     ],
     plan: { x: 0, y: 0 },
     grupo: [
@@ -610,170 +699,177 @@ const CENAS: CenaSpec[] = [
     key: "hall",
     name: FAZENDA + "Hall do Casarão",
     description:
-      "O hall de entrada, com a escada para o andar de cima e as portas para a cozinha, a sala de jantar, o banheiro, o quarto das crianças e o escritório.",
-    layout: planTop(9, 12, 4),
+      "O hall de entrada, com a escada para o andar de cima e as portas: a cozinha, o banheiro e o quarto das crianças do lado de lá; a sala de jantar e o escritório do outro.",
+    layout: planTop(7, 11, 3),
     andar: CASA,
     style: "taco",
     darkness: 0.35,
     ambient: "#c08a50",
     particles: ["dust"],
     floor: [
-      ["stairs_up", 4, 1, 4],
-      ["portal", 2, 1, 4],
-      ["portal", 6, 1, 4],
-      ["portal", 0, 2, 2],
-      ["portal", 0, 8, 2],
-      ["portal", 8, 7, 6],
-      ["portal", 3, 12, 0],
-      ["portal", 4, 12, 0],
-      ["rug_ornate", 3, 6, 0],
-      ["table_round", 3, 7, 0],
-      ["plant", 3, 7, 0],
+      ["stairs_up", 3, 1, 4],
+      // o lado oeste (a parede que aparece): a cozinha, o banheiro e o quarto das crianças
+      ["portal", 0, 3, 2],
+      ["portal", 0, 6, 2],
+      ["portal", 0, 9, 2],
+      // o lado leste (a da frente, que não aparece): a sala de jantar e o escritório
+      ["portal", 6, 3, 6],
+      ["portal", 6, 8, 6],
+      // a porta da frente, dupla, na parede de baixo
+      ["portal", 2, 11, 0],
+      ["portal", 3, 11, 0],
+      ["rug_worn", 2, 5, 0],
       ["bench", 1, 4, 2],
-      ["sideboard", 7, 3, 6],
+      ["sideboard", 5, 5, 6],
       ["armchair", 1, 10, 2],
-      ["plant", 1, 11, 0],
-      ["plant", 8, 11, 0],
-      ...lamps([4, 5], [4, 9]),
+      ["plant", 1, 1, 0],
+      ["plant", 5, 1, 0],
+      ["plant", 5, 10, 0],
+      ...lamps([3, 5], [3, 9]),
     ],
     wall: [
-      ["painting", "r", 1, 7.6, 2.54],
-      ["clock", "l", 0, 5.0, 3.45],
-      ["sconce", "l", 0, 3.6, 2.9],
-      ["sconce", "l", 0, 6.6, 2.9],
+      ["quadro_fazenda", "r", 1, 5.5, 2.54],
+      ["clock", "r", 1, 1.4, 3.45],
+      ["sconce", "l", 0, 4.5, 2.9],
+      ["sconce", "l", 0, 7.5, 2.9],
     ],
     links: [
-      [4, 1, "corredor"],
-      [2, 1, "cozinha"],
-      [6, 1, "jantar"],
-      [0, 2, "banheiro"],
-      [0, 8, "criancas"],
-      [8, 7, "escritorio"],
-      [3, 12, "fazenda"],
-      [4, 12, "fazenda"],
+      [3, 1, "corredor"],
+      [0, 3, "cozinha"],
+      [0, 6, "banheiro"],
+      [0, 9, "criancas"],
+      [6, 3, "jantar"],
+      [6, 8, "escritorio"],
+      [2, 11, "fazenda"],
+      [3, 11, "fazenda"],
     ],
-    plan: { x: 9, y: 7 },
+    plan: { x: 12, y: 3 },
   },
   {
     key: "cozinha",
     name: FAZENDA + "Cozinha",
     description:
-      "A cozinha de fazenda: fogão a lenha, a pia, os armários e a mesa comprida onde a família come.",
-    layout: planTop(14, 7, 2),
+      "A cozinha de fazenda: fogão a lenha, a pia, os armários e a mesa onde a família come. A porta dá para o hall, a leste.",
+    layout: planRight(10, 6, 3),
     andar: CASA,
-    style: "ladrilho",
+    style: "cozinha_fazenda",
     darkness: 0.35,
     ambient: "#c08a50",
     particles: ["dust", "smoke"],
     floor: [
-      ["portal", 2, 1, 4],
-      ["portal", 0, 4, 2],
-      ["fogao_lenha", 5, 1, 4, undefined, 1],
-      ["pia_cozinha", 8, 1, 4],
-      ["armario_cozinha", 11, 1, 4],
-      ["armario_cozinha", 0, 1, 2],
-      ["barrel", 0, 6, 0],
-      ["crate_wood", 0, 7, 0],
-      ["mesa_cozinha", 5, 4, 0],
-      ["chair_wood", 4, 4, 2],
-      ["chair_wood", 4, 5, 2],
-      ["chair_wood", 8, 4, 6],
-      ["chair_wood", 8, 5, 6],
-      ["chair_wood", 6, 6, 0],
-      ["mug", 6, 4, 0],
-      ["plant", 13, 7, 0],
-      ...lamps([6, 3], [10, 5]),
+      ["portal", 9, 3, 6],
+      // o armário do canto em L (13/10, pedido do Felipe: um móvel só, no lugar de dois armários)
+      ["armario_cozinha_l", 0, 0, 4],
+      ["fogao_lenha", 2, 0, 4, undefined, 1],
+      ["pia_cozinha", 4, 0, 4],
+      ["armario_cozinha", 6, 0, 4],
+      ["crate_wood", 0, 4, 0],
+      ["barrel", 0, 5, 0],
+      ["mesa_cozinha", 4, 3, 0],
+      ["chair_wood", 3, 3, 2],
+      ["chair_wood", 3, 4, 2],
+      ["chair_wood", 7, 3, 6],
+      ["chair_wood", 7, 4, 6],
+      ["chair_wood", 5, 2, 4],
+      ["chair_wood", 5, 5, 0],
+      ["mug", 5, 3, 0],
+      ["plant", 9, 5, 0],
+      ...lamps([4, 2], [8, 2]),
     ],
     wall: [
-      ["shelf_wall", "r", 1, 10.5, 2.99],
-      ["clock", "l", 0, 6.5, 3.45],
+      ["shelf_wall", "r", 0, 8.5, 3.22],
+      // a natureza-morta das frutas, em cima do fogão
+      ["quadro_fazenda~02", "r", 0, 3.0, 2.54],
+      ["clock", "l", 0, 4.5, 3.45],
     ],
-    links: [
-      [2, 1, "hall"],
-      [0, 4, "jantar"],
-    ],
-    plan: { x: 0, y: 0, r: 2 },
+    links: [[9, 3, "hall"]],
+    plan: { x: 0, y: 0 },
   },
   {
     key: "jantar",
     name: FAZENDA + "Sala de Jantar",
     description:
-      "A mesa grande de madeira com as cadeiras em volta, o aparador e a cristaleira.",
-    layout: plan(7, 14, 1),
+      "A mesa grande de madeira com as cadeiras em volta, o aparador e a cristaleira. A porta dá para o hall, a oeste.",
+    layout: plan(7, 8, 3),
     andar: CASA,
     style: "taco",
     darkness: 0.38,
     ambient: "#c08a50",
     floor: [
-      ["portal", 1, 1, 2],
-      ["portal", 4, 0, 4],
-      ["mesa_jantar", 3, 5, 2],
-      ["candelabra", 3, 6, 0],
-      ...[5, 6, 7, 8].map((y): FloorSeed => ["chair_wood", 2, y, 2]),
-      ...[5, 6, 7, 8].map((y): FloorSeed => ["chair_wood", 5, y, 6]),
-      ["chair_wood", 3, 4, 4],
-      ["chair_wood", 4, 9, 0],
-      ["sideboard", 7, 3, 6],
-      ["armario_cozinha", 1, 10, 2],
-      ["plant", 1, 13, 0],
-      ["plant", 7, 0, 0],
-      ...lamps([6, 4], [6, 9]),
+      ["portal", 1, 3, 2],
+      ["mesa_jantar", 4, 2, 2],
+      ["candelabra", 4, 3, 0],
+      ...[2, 3, 4, 5].map((y): FloorSeed => ["chair_wood", 3, y, 2]),
+      ...[2, 3, 4, 5].map((y): FloorSeed => ["chair_wood", 6, y, 6]),
+      ["chair_wood", 4, 1, 4],
+      ["chair_wood", 4, 6, 0],
+      ["sideboard", 6, 0, 4],
+      ["armario_cozinha", 1, 0, 4],
+      ["plant", 7, 7, 0],
+      ["plant", 1, 7, 0],
+      ...lamps([2, 5], [5, 6]),
     ],
     wall: [
-      ["painting", "l", 1, 7.0, 2.54],
-      ["sconce", "l", 1, 4.5, 2.9],
-      ["sconce", "l", 1, 9.5, 2.9],
-      ["clock", "r", 0, 2.0, 3.45],
+      ["quadro_fazenda~03", "l", 1, 5.5, 2.54],
+      ["sconce", "l", 1, 1.6, 2.9],
+      ["sconce", "l", 1, 6.4, 2.9],
+      ["clock", "r", 0, 4.5, 3.45],
     ],
-    links: [
-      [1, 1, "hall"],
-      [4, 0, "cozinha"],
-    ],
-    plan: { x: 14, y: 0, r: 3 },
+    links: [[1, 3, "hall"]],
+    plan: { x: 21, y: 0 },
   },
   {
     key: "banheiro",
     name: FAZENDA + "Banheiro de Baixo",
     description: "O banheiro do térreo: vaso, pia e o espelho manchado.",
-    layout: plan(9, 4, 2),
+    layout: plan(5, 3, 1),
     andar: CASA,
     style: "xadrez",
     darkness: 0.4,
     floor: [
-      ["portal", 1, 2, 2],
-      ["toilet", 5, 0, 4],
-      ["sink", 7, 0, 4],
-      ["plant", 9, 3, 0],
-      ...lamps([5, 2]),
+      ["portal", 1, 1, 2],
+      ["toilet", 3, 0, 4],
+      ["sink", 5, 0, 4],
+      ["plant", 5, 2, 0],
+      ...lamps([3, 1]),
     ],
-    wall: [["mirror", "r", 0, 7.5, 2.72]],
-    links: [[1, 2, "hall"]],
+    wall: [["mirror", "r", 0, 5.5, 2.72]],
+    links: [[1, 1, "hall"]],
     plan: { x: 0, y: 7, r: 2 },
   },
   {
     key: "criancas",
     name: FAZENDA + "Quarto das Crianças",
     description:
-      "Três camas de solteiro lado a lado, os brinquedos num caixote e o tapete gasto.",
-    layout: plan(9, 8, 4),
+      "Três beliches lado a lado, o tapete gasto e brinquedo por todo lado: ursinhos, blocos, um cavalinho de balanço e uma casinha de brinquedo.",
+    layout: plan(8, 6, 3),
     andar: CASA,
     style: "taco",
     darkness: 0.4,
     ambient: "#c08a50",
     floor: [
-      ["portal", 1, 4, 2],
-      ["cama_solteiro", 3, 0, 4],
-      ["cama_solteiro", 5, 0, 4],
-      ["cama_solteiro", 7, 0, 4],
+      ["portal", 1, 3, 2],
+      ["beliche", 3, 0, 4],
+      ["beliche", 5, 0, 4],
+      ["beliche", 7, 0, 4],
       ["nightstand", 4, 0, 4],
       ["nightstand", 6, 0, 4],
-      ["rug_worn", 3, 4, 0],
-      ["comoda", 8, 5, 6],
-      ["crate_wood", 9, 7, 0],
-      ...lamps([5, 4]),
+      ["rug_worn", 3, 3, 0],
+      ["comoda", 8, 3, 6],
+      ["crate_wood", 8, 5, 0],
+      ...lamps([5, 3]),
     ],
-    wall: [["painting", "r", 0, 2.2, 2.63]],
-    links: [[1, 4, "hall"]],
+    wall: [["quadro_fazenda~12", "r", 0, 2.2, 2.63]],
+    // os brinquedos espalhados pelo chão: itens que os jogadores podem pegar
+    chao: [
+      [1, 0, "Casinha de Brinquedo", 2, "misc"],
+      [2, 1, "Ursinho de Pelúcia", 1, "misc"],
+      [6, 2, "Boneca de Pano", 0.5, "misc"],
+      [6, 4, "Blocos de Montar", 1, "misc"],
+      [7, 4, "Cavalinho de Balanço", 2, "misc"],
+      [2, 5, "Carrinho de Brinquedo", 0.5, "misc"],
+    ],
+    links: [[1, 3, "hall"]],
     plan: { x: 0, y: 11, r: 2 },
   },
   {
@@ -781,33 +877,35 @@ const CENAS: CenaSpec[] = [
     name: FAZENDA + "Escritório",
     description:
       "O escritório do dono da fazenda: a escrivaninha, as estantes de livros, o arquivo e a poltrona.",
-    layout: plan(10, 12, 6),
+    layout: plan(9, 8, 4),
     andar: CASA,
     style: "madeira",
     darkness: 0.42,
     ambient: "#c08a50",
     floor: [
-      ["portal", 1, 6, 2],
-      ["desk_wood", 5, 4, 4],
-      ["chair_wood", 5, 3, 4],
-      ["chair_wood", 6, 5, 0],
-      ["desk_lamp", 6, 4, 4],
-      ["papers", 5, 4, 4],
+      ["portal", 1, 4, 2],
+      ["desk_wood", 5, 3, 4],
+      ["chair_wood", 5, 2, 4],
+      ["chair_wood", 6, 4, 0],
+      ["desk_lamp", 6, 3, 4],
+      ["papers", 5, 3, 4],
       ["bookshelf", 1, 0, 4],
       ["bookshelf", 3, 0, 4],
-      ["cabinet_file", 10, 0, 4],
-      ["rug_ornate", 4, 7, 0],
-      ["armchair", 9, 9, 6],
-      ["plant", 10, 11, 0],
-      ...lamps([5, 6]),
+      ["cabinet_file", 9, 0, 4],
+      ["rug_ornate", 4, 5, 2],
+      ["armchair", 9, 6, 6],
+      ["plant", 9, 7, 0],
+      ...lamps([5, 4]),
     ],
     wall: [
-      ["painting", "r", 0, 7.5, 2.54],
-      ["clock", "l", 1, 3.0, 3.45],
-      ["sconce", "l", 1, 9.5, 2.9],
+      ["quadro_fazenda~04", "r", 0, 6.5, 2.54],
+      // o mapa da fazenda, desenhado à mão, na mesma parede da gravura do casarão
+      ["quadro_fazenda~09", "r", 0, 8.0, 2.54],
+      ["clock", "l", 1, 2.0, 3.45],
+      ["sconce", "l", 1, 6.5, 2.9],
     ],
-    links: [[1, 6, "hall"]],
-    plan: { x: 18, y: 7 },
+    links: [[1, 4, "hall"]],
+    plan: { x: 20, y: 9 },
   },
   // ------------------------------------------------------------ casarão, 2º andar
   {
@@ -834,48 +932,50 @@ const CENAS: CenaSpec[] = [
       ...lamps([2, 4]),
     ],
     wall: [
-      ["painting", "l", 0, 4.8, 2.54],
+      ["quadro_fazenda~05", "l", 0, 4.8, 2.54],
+      // o rio na neblina, com a ponte, mais no fundo do corredor
+      ["quadro_fazenda~11", "l", 0, 8.5, 2.54],
       ["clock", "r", 1, 0.8, 3.45],
     ],
     links: [
       [2, 1, "banheiro2"],
-      [0, 2, "principal"],
+      [0, 2, "quarto1"],
       [0, 7, "quarto2"],
-      [4, 2, "quarto1"],
-      [4, 7, "quarto3"],
+      [4, 2, "quarto3"],
+      [4, 7, "principal"],
       [2, 8, "hall"],
     ],
-    plan: { x: 11, y: 5 },
+    plan: { x: 12, y: 6 },
   },
   {
     key: "principal",
     name: FAZENDA + "Quarto Principal",
     description:
       "O quarto do casal: a cama grande, os criados-mudos, o guarda-roupa e a cômoda.",
-    layout: plan(11, 8, 1),
+    layout: plan(9, 7, 1),
     andar: CASA2,
     style: "taco",
     darkness: 0.42,
     ambient: "#c08a50",
     floor: [
       ["portal", 1, 1, 2],
-      ["cama_casal", 5, 0, 4],
-      ["nightstand", 4, 0, 4],
-      ["nightstand", 7, 0, 4],
-      ["desk_lamp", 4, 0, 4],
-      ["rug_ornate", 4, 3, 0],
-      ["guarda_roupa", 9, 0, 4],
-      ["comoda", 1, 5, 2],
-      ["armchair", 10, 6, 6],
-      ["plant", 11, 7, 0],
-      ...lamps([6, 4]),
+      ["cama_casal", 4, 0, 4],
+      ["nightstand", 3, 0, 4],
+      ["nightstand", 6, 0, 4],
+      ["desk_lamp", 3, 0, 4],
+      ["rug_ornate", 3, 3, 2],
+      ["guarda_roupa", 8, 0, 4],
+      ["comoda", 1, 4, 2],
+      ["armchair", 9, 5, 6],
+      ["plant", 9, 6, 0],
+      ...lamps([5, 4]),
     ],
     wall: [
-      ["painting", "r", 0, 2.5, 2.63],
-      ["mirror", "l", 1, 4.0, 2.18],
+      ["quadro_fazenda~06", "r", 0, 2.2, 2.63],
+      ["mirror", "l", 1, 4.5, 2.18],
     ],
     links: [[1, 1, "corredor"]],
-    plan: { x: 0, y: 0, r: 2 },
+    plan: { x: 20, y: 8 },
   },
   {
     key: "banheiro2",
@@ -896,75 +996,79 @@ const CENAS: CenaSpec[] = [
     ],
     wall: [["mirror", "r", 1, 3.5, 2.72]],
     links: [[2, 1, "corredor"]],
-    plan: { x: 11, y: 0, r: 2 },
+    plan: { x: 12, y: 0, r: 2 },
   },
   {
     key: "quarto1",
     name: FAZENDA + "Quarto 1",
     description: "Quarto de solteiro, com a escrivaninha perto da janela.",
-    layout: plan(12, 8, 6),
-    andar: CASA2,
-    style: "taco",
-    darkness: 0.42,
-    ambient: "#c08a50",
-    floor: [
-      ["portal", 1, 6, 2],
-      ["cama_solteiro", 8, 0, 4],
-      ["nightstand", 7, 0, 4],
-      ["rug_worn", 6, 3, 0],
-      ["guarda_roupa", 11, 3, 6],
-      ["table_small", 11, 6, 0],
-      ["chair_wood", 10, 6, 2],
-      ...lamps([6, 4]),
-    ],
-    wall: [["painting", "r", 0, 4.5, 2.63]],
-    links: [[1, 6, "corredor"]],
-    plan: { x: 16, y: 0 },
-  },
-  {
-    key: "quarto2",
-    name: FAZENDA + "Quarto 2",
-    description:
-      "Quarto de solteiro, a cama de colcha cor-de-rosa e o guarda-roupa.",
-    layout: plan(11, 8, 4),
+    layout: plan(8, 6, 4),
     andar: CASA2,
     style: "taco",
     darkness: 0.42,
     ambient: "#c08a50",
     floor: [
       ["portal", 1, 4, 2],
-      ["cama_solteiro", 5, 0, 4],
-      ["nightstand", 6, 0, 4],
-      ["rug_worn", 4, 4, 0],
-      ["guarda_roupa", 9, 0, 4],
-      ["comoda", 1, 6, 2],
-      ...lamps([6, 4]),
+      ["cama_solteiro", 6, 0, 4],
+      ["nightstand", 5, 0, 4],
+      ["rug_worn", 3, 1, 0],
+      ["guarda_roupa", 8, 2, 6],
+      ["desk_wood", 8, 4, 6],
+      ["desk_lamp", 8, 5, 6],
+      ["chair_wood", 7, 4, 2],
+      ...lamps([4, 3]),
     ],
-    wall: [["painting", "r", 0, 2.5, 2.63]],
+    wall: [["quadro_fazenda~07", "r", 0, 3.5, 2.63]],
     links: [[1, 4, "corredor"]],
-    plan: { x: 0, y: 8, r: 2 },
+    plan: { x: 1, y: 1, r: 2 },
   },
   {
-    key: "quarto3",
-    name: FAZENDA + "Quarto 3",
-    description: "Quarto de solteiro, a cama de colcha amarela e uma mesinha.",
-    layout: plan(12, 8, 3),
+    key: "quarto2",
+    name: FAZENDA + "Quarto 2",
+    description:
+      "Quarto de solteiro, a cama de colcha cor-de-rosa e o guarda-roupa.",
+    layout: plan(8, 6, 3),
     andar: CASA2,
     style: "taco",
     darkness: 0.42,
     ambient: "#c08a50",
     floor: [
       ["portal", 1, 3, 2],
-      ["cama_solteiro", 8, 0, 4],
-      ["nightstand", 9, 0, 4],
-      ["rug_worn", 7, 4, 0],
-      ["guarda_roupa", 11, 3, 6],
-      ["table_small", 11, 6, 0],
-      ["chair_wood", 10, 6, 2],
-      ...lamps([6, 4]),
+      ["cama_solteiro", 4, 0, 4],
+      ["nightstand", 5, 0, 4],
+      ["rug_worn", 4, 3, 0],
+      ["guarda_roupa", 7, 0, 4],
+      ["comoda", 1, 4, 2],
+      ...lamps([5, 3]),
     ],
+    wall: [["quadro_fazenda~08", "r", 0, 2.5, 2.63]],
     links: [[1, 3, "corredor"]],
-    plan: { x: 16, y: 8 },
+    plan: { x: 1, y: 8, r: 2 },
+  },
+  {
+    key: "quarto3",
+    name: FAZENDA + "Quarto 3",
+    description: "Quarto de solteiro, a cama de colcha amarela e a escrivaninha.",
+    layout: plan(8, 6, 2),
+    andar: CASA2,
+    style: "taco",
+    darkness: 0.42,
+    ambient: "#c08a50",
+    floor: [
+      ["portal", 1, 2, 2],
+      ["cama_solteiro", 6, 0, 4],
+      ["nightstand", 7, 0, 4],
+      ["rug_worn", 3, 3, 0],
+      ["guarda_roupa", 8, 1, 6],
+      ["desk_wood", 8, 3, 6],
+      ["desk_lamp", 8, 4, 6],
+      ["chair_wood", 7, 3, 2],
+      ...lamps([5, 3]),
+    ],
+    links: [[1, 2, "corredor"]],
+    // os doze quadros do casarão: aqui, o bordado da cruz em cima da cama
+    wall: [["quadro_fazenda~10", "r", 0, 3.5, 2.63]],
+    plan: { x: 20, y: 1 },
   },
   // ------------------------------------------------------------ casa de mantimentos e celeiro
   {
@@ -1088,20 +1192,23 @@ const CENAS: CenaSpec[] = [
     key: "calabouco",
     name: FAZENDA + "Calabouço",
     description:
-      "Embaixo do celeiro, pedra molhada e o cheiro de ferro: de um lado os computadores ligados e os tanques com gente dentro, no meio o altar no estrado redondo, com o círculo de sangue e os crânios, e no fundo um corredor escuro.",
+      "Embaixo do celeiro, pedra molhada e cheiro de ferro: o lugar de um ritual. Na parede da esquerda, a central de monitoramento; no meio, o altar no estrado redondo, com o círculo de sangue e os crânios, e em volta dele os computadores, as máquinas e os monitores que ficavam ligados na pessoa, o gravador e a câmera; no fundo, os arquivos do estudo e a passagem para o corredor escuro.",
     layout: calaboucoPlan(),
     andar: CALABOUCO,
-    style: "selo",
+    style: "calabouco",
     darkness: 0.66,
     fog: 0.25,
     ambient: "#3a8a90",
     particles: ["dust", "smoke"],
+    // 08/10 (o Felipe): aqui faziam um ritual de TROCA DE MENTE à força, pondo uma mente muito forte num corpo que não
+    // aguentava. Não tem criatura presa (os tanques saíram): tem os aparelhos que monitoravam a pessoa e o registro do
+    // "estudo". Ninguém ficava aqui: descia, fazia o ritual e pronto (sem leitos). Quem não resistiu ficou na sala do fim
+    // do corredor e virou Existido.
     floor: [
-      // a escada de mão que sobe reto para o alçapão do celeiro, e a porta do corredor escuro
+      // a escada de mão que sobe reto para o alçapão do celeiro, e a passagem do corredor escuro
       ["escada_vertical", 1, 1, 4],
       ["portal", 9, 1, 4],
-      // a parede dos computadores (à esquerda), cada estação com a sua cadeira
-      ["server_rack", 0, 3, 2],
+      // a central de monitoramento, na parede da esquerda: os computadores, com o painel das telas em cima
       [
         "console",
         0,
@@ -1109,80 +1216,66 @@ const CENAS: CenaSpec[] = [
         2,
         oculta(
           "Computadores",
-          "As telas mostram um corpo por dentro, em camadas, e um contador que não para de subir. Os cabos descem pelo chão até os tanques.",
+          "As telas mostram um corpo por dentro, em camadas, e duas linhas de atividade cerebral que deviam ser de pessoas diferentes, mas sobem e descem juntas. Os cabos descem pelo chão até o altar.",
         ),
       ],
       ["chair_office", 1, 4, 6],
-      ["server_rack", 0, 6, 2],
-      ["server_rack", 0, 7, 2],
-      ["console", 0, 8, 2],
-      ["chair_office", 1, 9, 6],
-      ["ups", 0, 10, 2],
-      ["parts_boxes", 0, 11, 2],
-      ["crate_metal", 0, 12, 2],
-      ["crate_metal", 0, 12, 2],
-      ["crate_metal", 0, 13, 2],
-      ["cables_floor", 1, 6, 2],
-      // os tanques com os corpos: dois no fundo e um no lado direito (na frente, tampava o estrado)
+      ["console", 0, 6, 2],
+      ["chair_office", 1, 7, 6],
+      ["cables_floor", 2, 6, 0],
+      ["cables_floor", 4, 7, 0],
+      ["server_rack", 0, 11, 2],
+      ["server_rack", 0, 12, 2],
+      ["ups", 0, 13, 2],
+      // em volta do altar: o computador do ritual, as máquinas, os monitores ligados na pessoa (um deles tomado pela
+      // Energia), o gravador e a câmera apontada para a pedra
+      ["console", 12, 5, 2],
+      ["chair_office", 13, 5, 6],
+      ["gravador_rolo", 13, 7, 6],
+      ["eletroencefalografo", 6, 7, 2],
+      ["monitor_suporte", 7, 5, 4],
+      ["monitor_suporte", 6, 9, 2],
       [
-        "tank",
-        4,
-        1,
-        4,
-        oculta(
-          "Tanque",
-          "No líquido esverdeado boia um homem, ligado por tubos. Os olhos estão abertos.",
-        ),
-      ],
-      [
-        "tank",
+        "monitor_energia",
         12,
-        1,
-        4,
-        oculta(
-          "Tanque",
-          "Uma mulher encolhida no líquido, com marcas riscadas na pele. O vidro está quente.",
-        ),
-      ],
-      [
-        "tank",
-        14,
-        5,
+        9,
         6,
         oculta(
-          "Tanque",
-          "O corpo aqui dentro não é bem de gente: os braços são compridos demais.",
+          "Monitor",
+          "Fundido com outro aparelho que não devia estar ali, os cabos acesos como veias. A tela ainda mostra um batimento, e não tem ninguém ligado nele.",
         ),
       ],
-      // a mesa de trabalho com os frascos e o monitor dos sinais vitais; o carrinho
+      ["camera_tripe", 9, 12, 0],
+      // o registro do estudo: os arquivos do lado da passagem, o quadro branco com os gráficos e a mesa de trabalho
+      [
+        "cabinet_file",
+        6,
+        1,
+        4,
+        oculta(
+          "Arquivo",
+          "Pastas por nome, em ordem de data. Cada uma termina com a mesma palavra carimbada: REJEIÇÃO. A última está vazia, só com o nome escrito na capa.",
+        ),
+      ],
+      ["cabinet_file", 7, 1, 4],
+      ["whiteboard", 10, 1, 4],
       ["table_work", 3, 11, 4],
       ["flasks", 3, 11, 0],
       ["vitals_monitor", 5, 11, 4],
       ["papers", 4, 12, 0],
       ["trolley", 13, 9, 6],
-      // o estrado: o círculo de sangue no meio, o altar no fundo, velas e crânios na borda
-      ["sigil_floor", 8, 7, 0],
+      // o estrado redondo de pedra negra (o sigilo, as velas e os crânios já vêm nele) e, em cima, a pedra do sacrifício
+      ["estrado_altar", 7, 6, 4],
       [
-        "altar",
-        9,
-        6,
+        "pedra_sacrificio",
+        8,
+        8,
         4,
         oculta(
-          "Altar",
-          "Pedra escura, lisa de tanto uso. O círculo pintado em volta ainda está úmido: é sangue.",
+          "Pedra do sacrifício",
+          "Pedra escura, lisa de tanto uso, com argolas e correntes nas quatro pontas. O sulco do meio ainda está úmido: é sangue. Subir aqui dá a sensação de que alguma coisa olha de volta.",
         ),
       ],
-      ["blood_pool", 9, 8, 0],
-      ["blood_pool", 8, 10, 0],
-      ["blood_drops", 10, 10, 0],
-      ["candles", 8, 6, 0],
-      ["candles", 7, 8, 0],
-      ["candles", 11, 8, 0],
-      ["candles", 9, 10, 0],
-      ["skull", 7, 7, 2],
-      ["skull", 11, 7, 6],
-      ["skull", 7, 9, 2],
-      ["skull", 11, 9, 6],
       ["candelabra", 6, 11, 0],
       ["candelabra", 12, 11, 0],
       // o rastro de sangue até o corredor, as poças e o ralo
@@ -1190,19 +1283,28 @@ const CENAS: CenaSpec[] = [
       ["blood_drops", 10, 4, 0],
       ["blood_drops", 9, 5, 0],
       ["puddle", 5, 6, 0],
-      ["puddle", 13, 4, 0],
+      ["puddle", 13, 6, 0],
       ["puddle", 3, 8, 0],
       ["puddle", 10, 13, 0],
       ["drain", 7, 13, 0],
     ],
     wall: [
-      ["monitor_wall", "l", 0, 6.5, 2.63],
-      ["cctv", "l", 0, 1.7, 3.9],
-      ["sconce", "l", 0, 11.8, 2.9],
-      ["sconce", "r", 1, 7.6, 2.9],
-      ["sconce", "r", 1, 11.4, 2.9],
-      ["pipes", "r", 1, 6.4, 3.6],
-      ["poster_sigil", "r", 1, 14.4, 2.2],
+      // as telas em cima dos computadores (antes ficavam atrás dos racks), a câmera da escada e as arandelas
+      ["monitor_wall", "l", 0, 5.5, 2.63],
+      ["cctv", "l", 0, 1.7, 3.3],
+      ["sconce", "l", 0, 9.0, 2.9],
+      ["sconce", "r", 1, 8.5, 2.9],
+      ["sconce", "r", 1, 15.4, 2.9],
+      ["pipes", "r", 1, 3.0, 3.6],
+      // as fotos de quem passou pelo ritual
+      [
+        "board_investigation",
+        "r",
+        1,
+        5.6,
+        2.5,
+        { icon: "inspect", title: "Quadro", text: "Fotos de gente da região, de frente e de perfil, cada uma com uma data. Fios ligam todas a uma foto só, no meio: o altar, de cima.", visible: false },
+      ],
     ],
     links: [
       [1, 1, "celeiro"],
@@ -1217,7 +1319,7 @@ const CENAS: CenaSpec[] = [
       "O corredor do fundo do calabouço: estreito, sem luz, a pedra suando. Um rastro de sangue vai até a porta do fim.",
     layout: planTop(3, 14, 1),
     andar: CALABOUCO,
-    style: "selo",
+    style: "calabouco",
     darkness: 0.86,
     fog: 0.45,
     light: "flicker",
@@ -1251,11 +1353,13 @@ const CENAS: CenaSpec[] = [
   {
     key: "sala_sangue",
     name: FAZENDA + "Sala de Sangue",
+    // 08/10 (o Felipe): é onde guardavam quem não resistiu ao ritual. Os corpos viraram Existidos e acordam quando os
+    // agentes chegam: o primeiro combate oficial do CRONA. Os Existidos entram pelo combate (a ameaça do livro).
     description:
-      "Uma sala pequena no fim do corredor, e tudo nela é sangue: o chão, as paredes, a mesa de metal no meio, o ralo entupido.",
+      "A sala do fim do corredor, onde guardavam quem não aguentou o ritual: os corpos no chão, cobertos, o sangue de tudo, a mesa de metal no meio e o ralo entupido. O ar aqui é parado demais.",
     layout: plan(6, 5, 2),
     andar: CALABOUCO,
-    style: "selo",
+    style: "calabouco",
     darkness: 0.7,
     fog: 0.3,
     light: "flicker",
@@ -1263,7 +1367,7 @@ const CENAS: CenaSpec[] = [
     particles: ["dust"],
     floor: [
       ["portal", 1, 2, 2],
-      // o sangue vem antes: a mesa fica em cima dele, não o contrário
+      // o sangue vem antes: a mesa e os corpos ficam em cima dele, não o contrário
       ...de(
         "blood_pool",
         [2, 0],
@@ -1289,8 +1393,20 @@ const CENAS: CenaSpec[] = [
           "As correias de couro estão abertas e duras de sangue seco. O sangue escorre da mesa até o ralo entupido.",
         ),
       ],
-      ["barrel", 1, 4, 0],
-      ["skull", 6, 3, 6],
+      // os corpos de quem não aguentou
+      [
+        "corpo_lencol",
+        5,
+        0,
+        4,
+        oculta(
+          "Corpo",
+          "Embaixo do lençol, a pele está fria e cinzenta. Por baixo dela, fraco, alguma coisa brilha dourado, como uma luz que acabou de acender.",
+        ),
+      ],
+      ["corpo_saco", 6, 1, 4],
+      ["corpo_lencol", 2, 4, 2],
+      ["skull", 6, 4, 6],
       ["candles", 6, 0, 0],
     ],
     wall: [
@@ -1304,6 +1420,9 @@ const CENAS: CenaSpec[] = [
     plan: { x: 11, y: 0 },
   },
 ];
+
+/** As cenas como o desenho as põe: as salas com `plan.r` giram para a porta cair na parede do desenho. */
+const CENAS: CenaSpec[] = CENAS_BRUTAS.map(giraSala);
 
 // ------------------------------------------------------------------ montagem
 
@@ -1323,7 +1442,7 @@ function giraPt(
 }
 
 /** Posição na planta: o canto de cima à esquerda do cômodo girado (sem o vão da porta) cai em (plan.x, plan.y). */
-function naPlanta(spec: CenaSpec): { x: number; y: number; r?: number } {
+export function naPlanta(spec: CenaSpec): { x: number; y: number; r?: number } {
   const hm = parseHeightmap(spec.layout.heightmap);
   const r = spec.plan.r ?? 0;
   let mx = Infinity;
@@ -1343,7 +1462,7 @@ function naPlanta(spec: CenaSpec): { x: number; y: number; r?: number } {
 }
 
 /** Aplica o andar, o piso, o clima e o ar livre da cena. */
-function estilo(room: RoomData, spec: CenaSpec) {
+export function estilo(room: RoomData, spec: CenaSpec) {
   room.floor = spec.andar;
   room.floorStyle = spec.style;
   room.fog = spec.fog ?? 0;
@@ -1384,21 +1503,33 @@ function ligar(built: Map<string, RoomData>) {
         )
         .pop()
     : undefined;
-  if (feno)
-    feno.lock = { open: false, slide: { dx: 0, dy: -1 }, semSenha: true };
+  if (feno) {
+    // o fardo sai "para trás" (dy -1); se a sala girou (`plan.r` 1 ou 3), o empurrão gira junto (o espelho, r 2, não muda o eixo y)
+    const k = ((CENAS_BRUTAS.find((c) => c.key === "celeiro")?.plan.r ?? 0) % 4 + 4) % 4;
+    const slide = [{ dx: 0, dy: -1 }, { dx: 1, dy: 0 }, { dx: 0, dy: -1 }, { dx: -1, dy: 0 }][k];
+    feno.lock = { open: false, slide, semSenha: true };
+  }
   else console.warn("[seed] Fazenda: o feno do alçapão não coube");
 }
 
-const montar = (db: Database, spec: CenaSpec) =>
-  buildRoom(
+export const montar = (db: Database, spec: CenaSpec) => {
+  const chao = spec.chao ?? [];
+  const room = buildRoom(
     db,
     spec.name,
     spec.description,
     spec.layout,
-    spec.floor,
+    [...spec.floor, ...chao.map(([x, y]): FloorSeed => [PILHA_CHAO, x, y, 0])],
     spec.wall ?? [],
     spec.darkness,
   );
+  // cada pilha leva o item que ficou ali, visível para todos
+  for (const [x, y, name, espacos, kind] of chao) {
+    const pilha = room.items.find((i) => i.defId === PILHA_CHAO && i.x === x && i.y === y && !i.loot);
+    if (pilha) pilha.loot = [{ id: db.nextItemId++, name, espacos, kind, revealed: true }];
+  }
+  return room;
+};
 
 /** Monta a fazenda inteira (fora, arredores e os interiores) e a campanha dela. */
 export function seedFazenda(db: Database) {
@@ -1494,11 +1625,44 @@ export function rebuildFazenda(db: Database): boolean {
   return true;
 }
 
+/** Repõe na porteira os agentes que faltam na fazenda (depois da limpeza das salas de exemplo, que levou as peças). */
+export function reporAgentesDaFazenda(db: Database): boolean {
+  const spec = CENAS.find((s) => s.grupo);
+  const porteira = spec ? db.rooms.find((r) => r.name === spec.name) : undefined;
+  if (!spec || !porteira) return false;
+  const nomes = new Set(
+    db.rooms.filter((r) => r.name.startsWith(FAZENDA)).flatMap((r) => (r.tokens ?? []).map((t) => t.name)),
+  );
+  const charIdOf = (name: string) =>
+    db.characters.find((c) => c.name.toLowerCase() === name.toLowerCase())?.id ?? null;
+  const faltam = partyTokens(db, charIdOf, spec.grupo).filter((t) => !nomes.has(t.name));
+  if (!faltam.length) return false;
+  porteira.tokens = [...(porteira.tokens ?? []), ...faltam];
+  return true;
+}
+
 /** Monta a fazenda se ainda não existe; se existe, refaz quando a montagem mudou. */
 export function montarFazenda(db: Database): boolean {
   if (!db.rooms.some((r) => r.name.startsWith(FAZENDA))) {
     seedFazenda(db);
     return true;
   }
-  return rebuildFazenda(db);
+  return rebuildFazenda(db) || pisosDoCalabouco(db);
+}
+
+/**
+ * O calabouço ganhou o piso próprio (07/10, `piso-calabouco.png`): troca só o estilo das três cenas dele
+ * (era a pedra antiga), sem refazer nada do que o mestre mexeu nelas.
+ */
+function pisosDoCalabouco(db: Database): boolean {
+  let mudou = false;
+  for (const spec of CENAS) {
+    if (spec.style !== "calabouco") continue;
+    const room = db.rooms.find((r) => r.name === spec.name);
+    if (room && room.floorStyle === "selo") {
+      room.floorStyle = "calabouco";
+      mudou = true;
+    }
+  }
+  return mudou;
 }

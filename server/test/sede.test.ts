@@ -411,10 +411,13 @@ describe('proporção dos móveis', () => {
       publicBuild: true,
       darkness: 0.5,
     };
+    // a luminária na altura antiga do tampo, em metros (a escala de antes era 1 unidade = 1 m)
+    r.items[1].z = getFurni('desk_wood')!.height / Z_PER_M;
     restackRoom(r);
     const desk = getFurni('desk_wood')!;
     assert.equal(r.items[1].z, desk.height);
-    assert.ok(Math.abs(desk.height - 0.8 * Z_PER_M) < 0.01);
+    // a escrivaninha cresceu (12/10, `aumento`): 0,8 m × 1,2
+    assert.ok(Math.abs(desk.height - 0.8 * (desk.aumento ?? 1) * Z_PER_M) < 0.01);
     assert.equal(r.items[2].z, 0);
   });
 });

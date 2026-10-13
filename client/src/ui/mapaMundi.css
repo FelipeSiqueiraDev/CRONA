@@ -1,0 +1,302 @@
+/* O mapa-múndi: a tela pequena com pixels grandes, os pinos clicáveis por cima e o cartão do lugar */
+.mm-palco {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0.35rem solid #2a1d2e;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: #0f1117;
+  box-shadow: inset 0 0 0 0.2rem rgba(255, 255, 255, 0.18);
+}
+.mm-tela {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  display: block;
+}
+/* a camada dos pinos cobre o mapa inteiro: só os pinos pegam o clique (antes ela tampava o "Partir para cá") */
+.mm-pinos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.mm-pino {
+  pointer-events: auto;
+  position: absolute;
+  /* a ilha na tela de 288 × 162: 72 × 64 pixels */
+  width: 25%;
+  height: 38%;
+  transform: translate(-50%, -62%);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  touch-action: none;
+}
+.mm-pino .mm-nome {
+  position: absolute;
+  left: 50%;
+  bottom: -1.7rem;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 0.25rem 0.9rem;
+  border-radius: 99rem;
+  background: rgba(42, 29, 46, 0.88);
+  color: #fff6d8;
+  font: 700 1.3rem / 1.2 var(--r-pixel, monospace);
+  border: 0.15rem solid rgba(255, 246, 216, 0.4);
+}
+.mm-pino:hover .mm-nome,
+.mm-pino.on .mm-nome {
+  background: #e9a844;
+  color: #2a1d2e;
+  border-color: #fff6d8;
+}
+.mm-pino:focus-visible {
+  outline: 0.25rem solid #fff6d8;
+  outline-radius: 0.5rem;
+}
+.mm-info {
+  position: absolute;
+  z-index: 1;
+  left: 1.2rem;
+  bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.3rem;
+  border-radius: 0.7rem;
+  background: rgba(42, 29, 46, 0.92);
+  border: 0.2rem solid rgba(255, 246, 216, 0.55);
+  color: #fff6d8;
+  max-width: 34%;
+}
+.mm-info.hidden {
+  display: none;
+}
+.mm-nome-grande {
+  font: 700 1.8rem / 1.15 var(--r-pixel, monospace);
+}
+.mm-info small {
+  font: 500 1.2rem / 1.2 var(--r-corpo, sans-serif);
+  opacity: 0.85;
+}
+.mm-bts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+/* a tela da viagem (partida e chegada): a pintura cobrindo tudo, aproximando devagar, com a legenda embaixo */
+.vg-tela {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  overflow: hidden;
+  background: #05070b;
+  /* entra de uma vez (cobre a troca de cena); só a saída é suave */
+  opacity: 0;
+  cursor: pointer;
+}
+.vg-tela.on {
+  opacity: 1;
+}
+.vg-tela.saindo {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.vg-tela-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  opacity: 0;
+  transition:
+    transform 7s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.6s ease;
+}
+.vg-tela-img.pronta {
+  opacity: 1;
+  transform: scale(1.1);
+}
+.vg-tela-vinheta {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.4) 100%), linear-gradient(to top, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0) 22%);
+}
+.vg-tela-legenda {
+  position: absolute;
+  left: 50%;
+  bottom: 7%;
+  transform: translate(-50%, 1.2rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  color: #fff3d8;
+  text-align: center;
+  text-shadow: 0 0.2rem 1.2rem rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transition: opacity 1s ease 0.6s, transform 1.2s cubic-bezier(0.25, 1, 0.5, 1) 0.6s;
+}
+.vg-tela.on .vg-tela-legenda {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.vg-tela-legenda small {
+  font: 700 1.3rem / 1 var(--r-pixel, monospace);
+  letter-spacing: 0.3em;
+  color: #e9a844;
+}
+.vg-tela-legenda b {
+  font: 700 clamp(2.4rem, 4vw, 4.4rem) / 1.1 var(--r-pixel, monospace);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vg-tela-img,
+  .vg-tela.on .vg-tela-img {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* a tela da viagem: cobre o tabuleiro (do mestre e da mesa) enquanto a cena é a viagem */
+.tv {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  background: #05070b;
+  border-radius: inherit;
+}
+.tv.hidden {
+  display: none;
+}
+.tv-cena {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.tv-vinheta {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(4, 6, 10, 0.55), rgba(4, 6, 10, 0) 26%), linear-gradient(to bottom, rgba(4, 6, 10, 0.35), rgba(4, 6, 10, 0) 16%);
+  pointer-events: none;
+}
+.tv-clima {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.tv-topo {
+  position: absolute;
+  top: 5%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff3d8;
+  text-shadow: 0 0.2rem 1rem rgba(0, 0, 0, 0.8);
+}
+.tv-topo small {
+  font: 700 1.2rem / 1 var(--r-pixel, monospace);
+  letter-spacing: 0.32em;
+  color: #e9a844;
+}
+.tv-destino {
+  font: 700 clamp(2rem, 2.6vw, 3.4rem) / 1.1 var(--r-pixel, monospace);
+  text-align: center;
+}
+.tv-base {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 5%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+.tv-quem {
+  display: flex;
+  justify-content: center;
+  gap: 1.4rem;
+}
+.tv-ag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: #fff3d8;
+  font: 700 1.1rem / 1 var(--r-pixel, monospace);
+  text-shadow: 0 0.1rem 0.6rem rgba(0, 0, 0, 0.9);
+}
+.tv-ag-foto {
+  width: 5.4rem;
+  height: 5.4rem;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 0.25rem solid #e9a844;
+  background: #0b1424;
+  box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.7);
+}
+.tv-ag-foto canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+.tv-trajeto {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.2rem;
+}
+.tv-ponto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  color: #fff3d8;
+  font: 700 1.1rem / 1.1 var(--r-pixel, monospace);
+  text-align: center;
+  max-width: 14rem;
+  text-shadow: 0 0.1rem 0.6rem rgba(0, 0, 0, 0.9);
+}
+.tv-ponto canvas {
+  width: 7.2rem;
+  height: auto;
+  image-rendering: pixelated;
+}
+.tv-estrada {
+  position: relative;
+  height: 0.6rem;
+  border-radius: 99rem;
+  background: repeating-linear-gradient(90deg, rgba(255, 243, 216, 0.85) 0 1.2rem, transparent 1.2rem 2.2rem);
+}
+.tv-van {
+  position: absolute;
+  bottom: 0.2rem;
+  left: 4%;
+  transition: left 1s linear;
+}
+.tv-van canvas {
+  width: 8rem;
+  height: auto;
+  image-rendering: pixelated;
+  display: block;
+  filter: drop-shadow(0 0.3rem 0.4rem rgba(0, 0, 0, 0.6));
+}
+/* na viagem, as ferramentas do tabuleiro somem: a tela da viagem é o que importa */
+.board:has(> .tv:not(.hidden)) > :not(.tv):not(.board-moldura) {
+  visibility: hidden;
+}

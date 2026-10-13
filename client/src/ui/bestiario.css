@@ -1,0 +1,182 @@
+/* A janela CRIATURAS (o bestiário, 10/10): os cards das criaturas em cima, a escolhida embaixo (os cards das
+   aparências e o "colocar em campo"). O card em si (a janela azul-noite, o losango, a casa de item, o botão de ouro) vem de cards.css. */
+.bs-topo {
+  justify-content: flex-start !important;
+}
+.card-v.bs-nova {
+  border-style: dashed;
+}
+.card-v.bs-nova .card-pe {
+  background: transparent;
+  border-color: rgba(161, 136, 115, 0.6);
+  box-shadow: none;
+  color: var(--r-texto-2, #cdbfa9);
+  text-shadow: none;
+  animation: none;
+}
+.bs-boneco {
+  width: 9rem;
+  height: 9rem;
+  image-rendering: pixelated;
+}
+.card-quadro .bs-boneco {
+  width: 8rem !important;
+  height: 8rem !important;
+}
+/* "variadas": as caras lado a lado, menores */
+.bs-varias {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.bs-varias .bs-boneco {
+  width: 4.4rem !important;
+  height: 6rem !important;
+  margin: 0 -0.6rem;
+}
+.bs-livro {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 0.2rem solid #a18873;
+  background: #060c16;
+  color: var(--r-texto, #f3e9d8);
+  font: 700 1.1rem / 1.2 var(--r-corpo, sans-serif);
+}
+.bs-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.4rem;
+  padding-top: 1.2rem;
+  border-top: 0.15rem dashed rgba(161, 136, 115, 0.35);
+}
+.bs-ficha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.8rem;
+}
+.bs-ficha h4 {
+  margin: 0;
+  font: 700 2.2rem / 1 var(--r-pixel, monospace);
+  color: var(--r-ouro-hi, #e8b45a);
+}
+.bs-ficha > small,
+.bs-vazio {
+  color: var(--r-texto-3, #a59a87);
+  font: 500 1.2rem / 1.3 var(--r-corpo, sans-serif);
+}
+.bs-dado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  color: var(--r-texto, #e8dfcc);
+  font: 700 1.4rem / 1.1 var(--r-corpo, sans-serif);
+}
+.bs-dado small {
+  font: 500 1.05rem / 1 var(--r-corpo, sans-serif);
+  color: var(--r-texto-3, #a59a87);
+}
+.bs-num input {
+  width: 7rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--r-texto, #e8dfcc);
+  font: 700 1.4rem / 1 var(--r-corpo, sans-serif);
+}
+.bs-flutua {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--r-texto, #e8dfcc);
+  font: 600 1.2rem / 1 var(--r-corpo, sans-serif);
+  cursor: pointer;
+}
+.bs-detalhe h5 {
+  margin: 0.4rem 0 0;
+  font: 700 1.15rem / 1 var(--r-pixel, monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--r-texto-2, #cbbfa8);
+}
+.bs-aps {
+  justify-content: flex-start !important;
+}
+/* a edição da aparência, dentro do card: o nome e as duas cores */
+.bs-ap-edita {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0 0.6rem;
+  cursor: default;
+}
+.bs-ap-nome {
+  width: 6.8rem;
+  min-width: 0;
+  padding: 0.25rem 0.4rem;
+  border-radius: 0.35rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.5);
+  background: #060c16;
+  color: var(--r-texto, #f3e9d8);
+  font: 700 1.05rem / 1 var(--r-corpo, sans-serif);
+}
+.bs-ap-edita input[type='color'] {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0.15rem solid #a18873;
+  border-radius: 0.35rem;
+  background: none;
+  cursor: pointer;
+}
+.bs-x {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 50%;
+  background: #b3261e;
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.bs-campo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 0.6rem;
+}
+.bs-campo-rot {
+  font: 700 1.15rem / 1 var(--r-pixel, monospace);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--r-texto-2, #cbbfa8);
+}
+.bs-qtd {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.bs-qtd button {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.5rem;
+  border: 0.2rem solid #a18873;
+  background: #060c16;
+  color: var(--r-texto, #f3e9d8);
+  font: 700 1.7rem / 1 var(--r-corpo, sans-serif);
+  cursor: pointer;
+}
+.bs-qtd b {
+  min-width: 2.6rem;
+  text-align: center;
+  font: 700 2rem / 1 var(--r-pixel, monospace);
+  color: var(--r-texto, #e8dfcc);
+}
+.bs-apagar {
+  margin-left: auto;
+}

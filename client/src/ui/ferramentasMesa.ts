@@ -1,8 +1,9 @@
+import { abrirBestiario } from './bestiario';
 import { contarNevoa, NEVOA_RAIO_MAX, NEVOA_RAIO_PADRAO, type CorGiz, type FormaTraco } from '@crona/shared';
 import type { FerramentaMesa } from '../room/RoomView';
 import type { App } from './app';
 import { h } from './dom';
-import { arte, ic } from './icons';
+import { arteOu, ic } from './icons';
 import { abrirMapaImprovisado } from './mapaImprovisado';
 import { sfx } from './sfx';
 
@@ -44,11 +45,16 @@ export class FerramentasMesa {
   private sig = '';
   /** a ferramenta ligada mudou (a aba COMBATE marca os botões dela) */
   aoMudar: ((tipo: Tipo | null) => void) | null = null;
+  /** o botão VIAGEM: a janela de partir (a Shell sabe quem são os agentes) */
+  aoViagem: (() => void) | null = null;
 
   constructor(app: App) {
     this.app = app;
     // o ícone pintado (arte/icones/mesa-<nome>.png); sem ele, o de linha
-    const pintado = (nome: string, icone: string) => arte(`/arte/icones/mesa-${nome}.png`, icone);
+    // a arte própria da ferramenta (mesa-<nome>.png, quando chegar) e, até lá, a pintada do kit que serve
+    const RESERVA: Record<string, string> = { desenhar: 'botao-editar', apontar: 'tabuleiro-alcance', mapa: 'topo-mapa' };
+    const pintado = (nome: string, icone: string) =>
+      arteOu([`/arte/icones/mesa-${nome}.png`, ...(RESERVA[nome] ? [`/arte/icones/${RESERVA[nome]}.png`] : [])], ic(icone));
     const botao = (tipo: Tipo, icone: string, nome: string, tecla: string, dica: string) => {
       const b = h('button', { class: 'bv', type: 'button', title: `${dica} (${tecla})`, 'aria-label': nome, 'aria-pressed': 'false', onclick: () => this.alternar(tipo) }, pintado(nome.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(), icone), h('span', null, nome.toUpperCase()));
       this.botoes.set(tipo, b);
@@ -70,6 +76,18 @@ export class FerramentasMesa {
           { class: 'bv', type: 'button', title: 'Mapa improvisado: suba uma imagem e ela vira uma cena vista de cima', 'aria-label': 'Mapa improvisado', onclick: () => (sfx.click(), abrirMapaImprovisado(app)) },
           pintado('mapa', 'imagem'),
           h('span', null, 'MAPA'),
+        ),
+        h(
+          'button',
+          { class: 'bv', type: 'button', title: 'Viagem: os agentes na van, a estrada passando; fica até você decidir chegar', 'aria-label': 'Viagem', onclick: () => (sfx.click(), this.aoViagem?.()) },
+          arteOu(['/arte/icones/mesa-viagem.png'], ic('van')),
+          h('span', null, 'VIAGEM'),
+        ),
+        h(
+          'button',
+          { class: 'bv', type: 'button', title: 'Criaturas: o bestiário (uma ficha, várias aparências) e pôr várias em campo', 'aria-label': 'Criaturas', onclick: () => (sfx.click(), abrirBestiario(app)) },
+          arteOu(['/arte/icones/mesa-criaturas.png'], ic('caveira')),
+          h('span', null, 'CRIATURAS'),
         ),
       ),
       this.opcoes,

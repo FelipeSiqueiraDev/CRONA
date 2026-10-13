@@ -48,6 +48,9 @@ própria folha ("folha" no móvel); senão vale a da ficha.
   - "retificar": antes de tudo, endireita o desenho para as bordas da caixa ficarem
     exatamente na inclinação do isométrico (o gerador erra um pouco; lado a lado, dava
     degrau).
+  - "pes": o móvel de pernas (cadeira, banqueta) que o gerador desenhou com a câmera um pouco
+    girada: os três pés que aparecem não caem no losango do tabuleiro (um lado mais inclinado que
+    o outro) e o pé da frente parecia flutuar. Endireita pelos pés, como o "retificar".
   - "pe": a caixa não cobre bem o desenho (fliperama, pilha de cadeiras): o ponto mais
     baixo dele (o pé da frente) fica no chão, na quina da frente do móvel.
   - "pisa": o móvel pisa na casa pelo desenho, não pela caixa (a caixa erra em quem não é
@@ -361,6 +364,64 @@ def retificar(rec):
     ys_ = yy + dy0 - c * xs_
     out = amostrar(rec, xs_, ys_)
     return np.clip(out, 0, 255).round().astype(np.uint8), (a, c)
+
+
+def pes_do_desenho(rec):
+    """
+    Os três pés que aparecem (o da esquerda, o da frente, o mais baixo, e o da direita), pelo fundo da
+    silhueta de cada coluna: [(x, y)] ou None. O da frente é o ponto mais baixo; os dos lados, os mais
+    baixos de cada lado dele (a borda do assento, mais para fora, fica mais alta que o pé).
+    """
+    op = rec[:, :, 3] > 100
+    xs = np.nonzero(op.any(axis=0))[0]
+    if len(xs) < 20:
+        return None
+    fundo = np.full(op.shape[1], -1)
+    for x in xs:
+        fundo[x] = np.nonzero(op[:, x])[0].max()
+    yf = fundo.max()
+    tol = max(1, round(0.004 * op.shape[0]))
+    xf = float(np.nonzero(fundo >= yf - tol)[0].mean())
+    x0, x1 = xs.min(), xs.max()
+
+    def lado(cols):
+        if not len(cols):
+            return None
+        y = fundo[cols].max()
+        return float(cols[fundo[cols] >= y - tol].mean()), float(y)
+    esq = lado(xs[xs < xf - 0.3 * (xf - x0)])
+    dir_ = lado(xs[xs > xf + 0.3 * (x1 - xf)])
+    if not esq or not dir_:
+        return None
+    return [esq, (xf, float(yf)), dir_]
+
+
+def endireitar_pelos_pes(rec):
+    """
+    "pes": o gerador desenhou o móvel de pernas (a cadeira) com a câmera um pouco girada, e os pés não
+    caem no losango do tabuleiro: um lado inclina mais que meio pixel por pixel e o outro menos, e o pé
+    da frente parecia flutuar perto da mesa (12/10, o Felipe). Como o retificar, mas pelos pés: a conta
+    (x' = a x; y' = y + c x) deixa as verticais em pé e põe os dois lados da base em 2:1.
+    """
+    pes = pes_do_desenho(rec)
+    if not pes:
+        return rec, None
+    (xl, yl), (xf, yf), (xr, yr) = pes
+    s1 = (yf - yl) / (xf - xl)
+    s2 = (yr - yf) / (xr - xf)
+    if abs(s1 - 0.5) > 0.4 or abs(s2 + 0.5) > 0.4:
+        return rec, None
+    a = s1 - s2
+    c = 0.5 * a - s1
+    h, w = rec.shape[:2]
+    W2 = int(np.ceil(w * a))
+    dy0 = min(0.0, c * w)
+    H2 = int(np.ceil(h + abs(c) * w))
+    yy, xx = np.mgrid[0:H2, 0:W2].astype(float) + 0.5
+    xs_ = xx / a
+    ys_ = yy + dy0 - c * xs_
+    out = amostrar(rec, xs_, ys_)
+    return np.clip(out, 0, 255).round().astype(np.uint8), (a, c, s1, s2)
 
 
 def reamostrar(img, w2, h2):
@@ -856,6 +917,10 @@ def quatro_giros(m, folha, caixas, destino, escala):
             rec, conta = retificar(rec)
             if conta:
                 print(f"{m['def']} giro {giro}: endireitado (x {conta[0]:.3f}, inclinação {conta[1]:+.3f})", flush=True)
+        if m.get('pes'):
+            rec, conta = endireitar_pelos_pes(rec)
+            if conta:
+                print(f"{m['def']} giro {giro}: os pés em 2:1 (eram {conta[2]:+.2f} e {conta[3]:+.2f}; x {conta[0]:.3f}, inclinação {conta[1]:+.3f})", flush=True)
         nome = f'giro-{giro}.png'
         if m.get('pendurado'):
             img, (ax, ay), caixa = pendurar(rec, m['pendurado'], escala)
@@ -1167,6 +1232,9 @@ def parede(m, folha, caixas, destino, escala):
     os.makedirs(pasta, exist_ok=True)
     w, d, _ = m['real']
     ent = {'escala': escala, 'parede': {}}
+    if m.get('inclina'):
+        # a inclinação das bordas que a arte trouxe, por parede: o jogo inclina a diferença até a da parede (o relógio redondo)
+        ent['inclina'] = m['inclina']
     imgs = []
     for chave, (pedaco, fx, fy) in m['parede'].items():
         rec = recortar(folha, caixas, pedaco)

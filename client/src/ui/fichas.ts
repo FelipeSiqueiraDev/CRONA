@@ -221,13 +221,49 @@ export class FichasScreen {
       this.dica,
     );
     this.ligarDicas();
-    app.on('characters', () => this.render());
+    app.on('characters', () => (this.escondida() ? (this.sujo = true) : this.render()));
   }
 
   // ================================================================ dados
 
+  /** a tela está fechada (outra aba do mestre): não se redesenha nada, abre refeita */
+  private sujo = false;
+  private escondida() {
+    return this.el.classList.contains('hidden');
+  }
+
+  /** A ficha sem o que muda em jogo (PV, PE e SAN de agora, condições): se o resto é igual, a tela só acerta os números. */
+  private semJogo(f: FichaSalva) {
+    return JSON.stringify({ ...f, atual: undefined, condicoes: undefined, atualizadaEm: undefined });
+  }
+
+  private soNumerosDeJogo(a: FichaSalva[], b: FichaSalva[]) {
+    return a.length === b.length && a.every((f, i) => f.id === b[i].id && this.semJogo(f) === this.semJogo(b[i]));
+  }
+
+  /**
+   * Só PV, PE, SAN ou condições mudaram: acerta no lugar (as barras da lista, os recursos e as condições do
+   * jogador, o estado do corpo) em vez de refazer a ficha inteira, que piscava a cada ponto de vida.
+   */
+  private renderJogo() {
+    const fs = this.atual();
+    if (!fs) return this.render();
+    this.calc = regras.calcular(fs.ficha);
+    for (const f of this.lista) {
+      const v = this.vitais(f, regras.calcular(f.ficha));
+      const i = this.agLista.querySelector<HTMLElement>(`.fx-ag[data-id="${f.id}"] .fx-ag-pv i`);
+      if (i) i.style.width = `${Math.round((v.pv / Math.max(1, v.pvMax)) * 100)}%`;
+    }
+    this.corpo.setCondicoes(vitalConditions(this.vitais(fs, this.calc)));
+    if (this.o.jogador) {
+      this.renderRec(fs, this.calc);
+      this.renderCond(fs, this.calc);
+    }
+  }
+
   /** Lista que chega do servidor (todas para o mestre; só a própria para o jogador). */
   setFichas(lista: FichaSalva[], nova?: number) {
+    const antes = this.lista;
     // ficha com gravação a caminho: fica a versão da tela (a do servidor está um passo atrás)
     this.lista = lista.map((f) => (this.timers.has(f.id) ? (this.lista.find((x) => x.id === f.id) ?? f) : f)).sort((a, b) => a.id - b.id);
     if (nova) {
@@ -238,6 +274,11 @@ export class FichasScreen {
       }
     }
     if (this.selId === null || (!this.lista.some((f) => f.id === this.selId) && this.rascunho?.id !== 0)) this.selId = this.lista[0]?.id ?? null;
+    if (this.escondida()) {
+      this.sujo = true;
+      return;
+    }
+    if (!nova && !this.rascunho && this.soNumerosDeJogo(antes, this.lista)) return this.renderJogo();
     this.render();
   }
 
@@ -293,13 +334,16 @@ export class FichasScreen {
   private mudar(fn: (fs: FichaSalva) => void, redesenhar = true) {
     const fs = this.atual();
     if (!fs) return;
+    let soJogo = false;
     if (this.editando) fn(fs);
     else {
       const c = clone(fs);
+      const antes = this.semJogo(c);
       fn(c);
+      soJogo = this.semJogo(c) === antes;
       this.salvarJogo(c);
     }
-    if (redesenhar) this.render();
+    if (redesenhar) soJogo ? this.renderJogo() : this.render();
   }
 
   // ================================================================ modos
@@ -389,6 +433,7 @@ export class FichasScreen {
 
   show() {
     this.el.classList.remove('hidden');
+    this.sujo = false;
     this.render();
   }
 
@@ -463,9 +508,9 @@ export class FichasScreen {
       cards.push(
         h(
           'button',
-          { class: `fx-ag${on ? ' on' : ''}`, type: 'button', title: fs.nome, onclick: () => fs.id && this.selecionar(fs.id) },
+          { class: `fx-ag${on ? ' on' : ''}`, type: 'button', title: fs.nome, 'data-id': String(fs.id), onclick: () => fs.id && this.selecionar(fs.id) },
           h('span', { class: 'fx-ag-foto' }, foto),
-          h('span', { class: 'fx-ag-placa' }, h('span', { class: `fx-ag-nome${fs.nome.length > 14 ? ' longo' : ''}` }, fs.nome), h('span', { class: 'fx-ag-info' }, `NEX ${fs.ficha.nex}% · ${CLASSE_NOME(fs.ficha.classe)}`)),
+          h('span', { class: 'fx-ag-placa' }, h('span', { class: 'fx-ag-nome', title: fs.nome }, fs.nome.split(/\s+/)[0]), h('span', { class: 'fx-ag-info' }, `NEX ${fs.ficha.nex}% · ${CLASSE_NOME(fs.ficha.classe)}`)),
           h('span', { class: 'fx-ag-pv' }, h('i', { style: `width:${Math.round((v.pv / Math.max(1, v.pvMax)) * 100)}%` })),
           pend ? h('span', { class: 'fx-ag-pend', title: `${pend} pendência${pend > 1 ? 's' : ''}` }, String(pend)) : null,
         ),
@@ -1031,15 +1076,19 @@ export class FichasScreen {
   private renderPod(fs: FichaSalva, c: Calc) {
     const f = fs.ficha;
     const corpo = this.corpoDe(this.pPod);
+    // o ícone pintado de cada grupo (os mesmos dos filtros do celular: classe, trilha, origem, paranormal)
+    const PINTADO_GRUPO: Partial<Record<NomeIcone, string>> = { ficha: 'poder-origem', estrela: 'poder-classe', pino: 'poder-trilha', olho: 'poder-paranormal' };
     const grupo = (titulo: string, itens: regras.PoderObtido[], icone: NomeIcone) => {
       if (!itens.length) return null;
+      const pint = PINTADO_GRUPO[icone];
+      const icp = () => (pint ? arteOu([`/arte/icones/${pint}.png`], ic(icone)) : ic(icone));
       return h(
         'div',
         { class: 'fx-pg' },
         h('h4', null, titulo),
         ...itens.map((p) => {
           const info = infoPoder(p);
-          return h('div', { class: 'fx-pi', 'data-dica': info }, h('span', { class: 'fx-pi-ic' }, ic(icone)), h('span', { class: 'fx-pi-n' }, p.nome, p.escolha ? h('small', null, ` ${textoValor(p.escolha)}`) : null));
+          return h('div', { class: 'fx-pi', 'data-dica': info }, h('span', { class: 'fx-pi-ic' }, icp()), h('span', { class: 'fx-pi-n' }, p.nome, p.escolha ? h('small', null, ` ${textoValor(p.escolha)}`) : null));
         }),
       );
     };

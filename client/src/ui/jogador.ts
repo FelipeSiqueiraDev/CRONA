@@ -21,7 +21,7 @@ import {
   type NotaDiario,
   type TipoDocumento,
 } from '@crona/shared';
-import { portraitCanvas } from '../render/portrait';
+import { breathMode, livePortrait } from '../render/portrait';
 import { sprites } from '../render/sprites';
 import type { App } from './app';
 import { arteDoItem } from './arteItem';
@@ -83,6 +83,46 @@ function quando(iso: string): string {
 }
 
 /** O ícone pintado do kit (arte/icones/<nome>.png), com o de linha enquanto não chega. */
+/**
+ * Os atributos, no mesmo jeito dos números: o ícone, o valor (quantos d20 rola, LR p. 11) e o nome.
+ * Com `dica`, o toque passa o brilho e diz só os dados ("4D20"; com 0 ou menos, rola dois e fica o
+ * menor). Sem `dica` (dentro de um cartão que já é botão, na ficha), é só a faixa.
+ */
+export function faixaAtributos(atributos: Record<regras.AtributoId, number>, dica = true): HTMLElement {
+  const atr = (a: regras.AtributoId, i: number) => {
+    const v = atributos[a];
+    const dados = v > 0 ? `${v}D20` : '2D20';
+    const rola = v > 0 ? `rola ${v}d20, fica o maior` : 'rola 2d20, fica o menor';
+    const el = h(
+      dica ? 'button' : 'div',
+      {
+        class: `jg-num jg-atr a-${a}`,
+        style: `--i:${i}`,
+        type: dica ? 'button' : undefined,
+        'aria-label': `${regras.NOME_ATRIBUTO[a]} ${v}: ${rola}`,
+        onclick: dica
+          ? () => {
+              sfx.click();
+              el.classList.remove('rola');
+              void el.offsetWidth;
+              el.classList.add('rola');
+              el.querySelector('.jg-atr-dica')?.remove();
+              const d = h('span', { class: 'jg-atr-dica' }, h('b', null, dados), v > 0 ? null : h('small', null, 'fica com o menor'));
+              el.append(d);
+              window.setTimeout(() => d.remove(), 2600);
+            }
+          : undefined,
+      },
+      h('span', { class: 'jg-atr-brilho', 'aria-hidden': 'true' }),
+      h('span', { class: 'jg-num-ic' }, pintado(a, 'pulso')),
+      h('b', null, String(v)),
+      h('span', { class: 'jg-num-n' }, regras.NOME_ATRIBUTO[a]),
+    ) as HTMLElement;
+    return el;
+  };
+  return h('div', { class: 'jg-numeros jg-atrs' }, ...(['agi', 'for', 'int', 'pre', 'vig'] as const).map(atr));
+}
+
 const pintado = (nome: string | string[] | undefined, icone: NomeIcone) =>
   nome ? arteOu((Array.isArray(nome) ? nome : [nome]).map((n) => `/arte/icones/${n}.png`), ic(icone)) : ic(icone);
 /** Os ícones pintados que ainda vão chegar (o pedido ao Códex), com o mais parecido de hoje enquanto isso. */
@@ -108,6 +148,8 @@ export class TelaJogador {
   /** onde cada barra estava (para animar a mudança) */
   private pctAntes: Partial<Record<'pv' | 'pe' | 'san', number>> = {};
   private retratoTimer = 0;
+  /** o retrato vivo (respira e pisca): o mesmo elemento enquanto nada nele muda, para o fôlego não reiniciar a cada toque na ficha */
+  private fotoViva: { chave: string; el: HTMLElement } | null = null;
   // o que fica escolhido em cada aba
   private filtroPoder: FiltroPoder = 'classe';
   private poderSel: string | null = null;
@@ -220,6 +262,16 @@ export class TelaJogador {
     };
   }
 
+  /** A foto que respira e pisca, no ritmo da ficha (machucado, perturbado, cansado, morrendo). Só se refaz se algo nela mudar. */
+  private retratoVivo(look: NonNullable<ReturnType<typeof lookDe>>, armado: boolean, cond: ReturnType<typeof vitalConditions> | null): HTMLElement {
+    const modo = cond ? breathMode(cond) : 'calm';
+    const chave = JSON.stringify([look.charId, armado, !!cond?.machucado, modo, !!sprites.def(look.charId!)]);
+    if (this.fotoViva?.chave === chave) return this.fotoViva.el;
+    const el = livePortrait(look, 220, { dir: 2, armed: armado, hurt: !!cond?.machucado, breath: modo });
+    this.fotoViva = { chave, el };
+    return el;
+  }
+
   private renderPerfil() {
     const fs = this.fs!;
     const f = fs.ficha;
@@ -243,7 +295,7 @@ export class TelaJogador {
       : [h('span', { class: 'jg-chip ok' }, 'Normal')];
     if (regras.armado(f.inventario)) chips.push(h('span', { class: 'jg-chip arma' }, 'Armado'));
     this.perfil.replaceChildren(
-      h('div', { class: 'jg-foto' }, look ? portraitCanvas(look, 120) : ic('pessoa')),
+      h('div', { class: 'jg-foto' }, look ? this.retratoVivo(look, regras.armado(f.inventario), auto) : ic('pessoa')),
       h(
         'div',
         { class: 'jg-quem' },
@@ -283,7 +335,13 @@ export class TelaJogador {
       return h(
         'div',
         { class: `jg-vital ${k}${mudou}${pct <= 25 ? ' baixo' : ''}` },
-        h('div', { class: 'jg-vital-topo' }, h('b', null, rotulo), h('span', { class: 'jg-vital-n' }, h('strong', null, String(atual)), `/${max}`)),
+        // o número reserva a largura dos dígitos do máximo e fica numa linha só: de 9 para 10 nada muda de lugar
+        h(
+          'div',
+          { class: 'jg-vital-topo' },
+          h('b', null, rotulo),
+          h('span', { class: `jg-vital-n${String(max).length >= 3 ? ' n3' : ''}` }, h('strong', { style: `min-width:${Math.max(2, String(max).length)}ch` }, String(atual)), h('small', null, `/${max}`)),
+        ),
         h('div', { class: 'jg-barra' }, rastro, tinta, h('i', { class: 'jg-brilho' })),
         h(
           'div',
@@ -366,33 +424,6 @@ export class TelaJogador {
   private abaAgente(): Node[] {
     const fs = this.fs!;
     const c = this.calc!;
-    // os atributos, no mesmo jeito dos números: o ícone, o valor (quantos d20 rola, LR p. 11) e o nome; o toque diz o que rola
-    const atr = (a: regras.AtributoId) => {
-      const v = c.atributos[a];
-      const rola = v > 0 ? `rola ${v}d20, fica o maior` : 'rola 2d20, fica o menor';
-      const el: HTMLButtonElement = h(
-        'button',
-        {
-          class: `jg-num jg-atr a-${a}`,
-          type: 'button',
-          'aria-label': `${regras.NOME_ATRIBUTO[a]} ${v}: ${rola}`,
-          onclick: () => {
-            sfx.click();
-            el.classList.remove('rola');
-            void el.offsetWidth;
-            el.classList.add('rola');
-            el.querySelector('.jg-atr-dica')?.remove();
-            const dica = h('span', { class: 'jg-atr-dica' }, h('b', null, regras.NOME_ATRIBUTO[a]), rola);
-            el.append(dica);
-            window.setTimeout(() => dica.remove(), 2600);
-          },
-        },
-        h('span', { class: 'jg-num-ic' }, pintado(a, 'pulso')),
-        h('b', null, String(v)),
-        h('span', null, regras.NOME_ATRIBUTO[a]),
-      ) as HTMLButtonElement;
-      return el;
-    };
     const armado = regras.armado(fs.ficha.inventario);
     const armas = fs.ficha.inventario.filter((it) => it.tipo === 'arma' && regras.maosDoItem(it) > 0 && it.uid);
     const naMao = fs.ficha.inventario.filter((it) => it.tipo === 'arma' && regras.lugarDoItem(it) === 'mao');
@@ -413,7 +444,7 @@ export class TelaJogador {
       h('span', { class: 'jg-armado-op arm' }, pintado(IC.armado, 'pistola'), 'Armado'),
     );
     return [
-      h('div', { class: 'jg-numeros jg-atrs' }, ...(['agi', 'for', 'int', 'pre', 'vig'] as const).map(atr)),
+      faixaAtributos(c.atributos),
       this.numeros,
       trocar,
       h('p', { class: 'jg-nota-armado' }, armado ? `Na mão: ${naMao.map((x) => regras.nomeDoItem(x)).join(', ')}.` : armas.length ? 'A arma fica guardada; Armado saca a primeira da mochila.' : 'Sem arma na mochila.'),

@@ -1,0 +1,1223 @@
+/* GERADO por scripts/dev/retro-gerar.mjs: não editar à mão (os acertos vão no retro.css) */
+/*  shell.css  */
+html:not(.modo-ficha) .uline {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .tb {
+    border-bottom: 0.15rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .tb-tab {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .tb-tab.on {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .tb-tab::after {
+    background: radial-gradient(circle, rgba(20, 36, 64, 0.94) 0 0.05rem, #3a2f26 0.07rem 0.2rem, transparent 0.24rem) left top / 0.6rem 0.6rem no-repeat,
+    radial-gradient(circle, rgba(20, 36, 64, 0.94) 0 0.05rem, #3a2f26 0.07rem 0.2rem, transparent 0.24rem) right top / 0.6rem 0.6rem no-repeat,
+    radial-gradient(circle, rgba(20, 36, 64, 0.94) 0 0.05rem, #3a2f26 0.07rem 0.2rem, transparent 0.24rem) left bottom / 0.6rem 0.6rem no-repeat,
+    radial-gradient(circle, rgba(20, 36, 64, 0.94) 0 0.05rem, #3a2f26 0.07rem 0.2rem, transparent 0.24rem) right bottom / 0.6rem 0.6rem no-repeat
+}
+html:not(.modo-ficha) .tb-icon {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .tb-icon:hover {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .tb-menu button {
+    border-bottom: 0.1rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .sc-row:hover:not(.on) .sc-name {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .sc-row.on .sc-name {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .plan-tab {
+    border: 0.1rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .plan-tab.on {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .obj {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .chk {
+    border: 0.14rem solid rgba(161, 136, 115, 0.75);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .chk-p {
+    stroke: #ff8a73
+}
+html:not(.modo-ficha) .obj-plus {
+    border: 0.1rem dashed rgba(161, 136, 115, 0.45)
+}
+html:not(.modo-ficha) .obj-add {
+    border-bottom: 0.1rem dashed rgba(161, 136, 115, 0.35)
+}
+html:not(.modo-ficha) .board .place-bar {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .bz {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .bz:hover {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rpg-player {
+    border-bottom: 0.1rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .polaroid {
+    border: 0.1rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .pc-dot {
+    background: radial-gradient(circle at 35% 35%, rgba(11, 21, 38, 0.94), #56514b)
+}
+html:not(.modo-ficha) .insp-text h2 {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .insp-text p {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .itab {
+    border: 0.1rem solid rgba(161, 136, 115, 0.42);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .ipane {
+    border: 0.1rem solid rgba(161, 136, 115, 0.32)
+}
+html:not(.modo-ficha) .icard {
+    border: 0.1rem solid rgba(161, 136, 115, 0.50)
+}
+html:not(.modo-ficha) .ic-text b {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .ic-text small {
+    color: #a3978a
+}
+html:not(.modo-ficha) .dbtn {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .given {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .add-item {
+    border: 0.1rem dashed rgba(161, 136, 115, 0.50)
+}
+html:not(.modo-ficha) .mini {
+    border: 0.1rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.50)
+}
+html:not(.modo-ficha) .tool {
+    border: 0.1rem solid rgba(161, 136, 115, 0.40);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .vt-btn {
+    border: 0.1rem solid rgba(161, 136, 115, 0.40);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .vt-max {
+    border: 0.1rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.45)
+}
+html:not(.modo-ficha) .vt-cond.mais {
+    border: 0.1rem dashed rgba(161, 136, 115, 0.50);
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .vt-cond.mais:hover {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .tool.state.on {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .tool-sel {
+    border: 0.1rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.40)
+}
+html:not(.modo-ficha) .grow-row.giving {
+    background: linear-gradient(90deg, rgba(255, 236, 200, 0), rgba(20, 36, 64, 0.45) 30%, rgba(255, 236, 200, 0))
+}
+html:not(.modo-ficha) .g-name {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .pcard {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .pc-glare {
+    background: radial-gradient(circle at var(--gx, 50%) var(--gy, 30%), rgba(20, 36, 64, 0.42), rgba(255, 250, 235, 0) 48%)
+}
+html:not(.modo-ficha) .pcv.zero em {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .qslot {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .q-tag {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .q-tag small {
+    color: #a3978a
+}
+html:not(.modo-ficha) .log-line {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .log-line time {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .lg-ic {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .dust {
+    background: radial-gradient(circle, rgba(20, 36, 64, 0.94), rgba(255, 220, 160, 0) 70%)
+}
+html:not(.modo-ficha) .replaced .paper {
+    background: rgba(11, 21, 38, 0.94)
+}
+/*  kit.css  */
+/*  mapa.css  */
+html:not(.modo-ficha) .board-moldura {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) left 0.9rem top 0.9rem / 3rem 0.22rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) left 0.9rem top 0.9rem / 0.22rem 3rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) right 0.9rem top 0.9rem / 3rem 0.22rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) right 0.9rem top 0.9rem / 0.22rem 3rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) left 0.9rem bottom 0.9rem / 3rem 0.22rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) left 0.9rem bottom 0.9rem / 0.22rem 3rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) right 0.9rem bottom 0.9rem / 3rem 0.22rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) right 0.9rem bottom 0.9rem / 0.22rem 3rem no-repeat
+}
+html:not(.modo-ficha) .bm-risco {
+    background: repeating-linear-gradient(90deg, rgba(11, 21, 38, 0.55) 0 0.4rem, transparent 0.4rem 0.8rem)
+}
+html:not(.modo-ficha) .board-vista .bv.on {
+    background: rgba(11, 21, 38, 0.35)
+}
+html:not(.modo-ficha) .p-plan .p-title {
+    border-bottom: 0.12rem solid rgba(161, 136, 115, 0.55);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .plan-tab {
+    color: #a3978a
+}
+html:not(.modo-ficha) .plan-tab:hover {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .plan-tab + .plan-tab::before {
+    color: #a3978a
+}
+html:not(.modo-ficha) .plan-tab.on, html:not(.modo-ficha) .plan-tab.on:hover {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .p-plan .tachinha::after {
+    background: rgba(20, 36, 64, 0.60)
+}
+html:not(.modo-ficha) .marca, html:not(.modo-ficha) .insp-cab {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .sala-txt p {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .sala-chips span {
+    border: 0.1rem solid rgba(161, 136, 115, 0.38);
+    background: rgba(20, 36, 64, 0.35);
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .insp-cab {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .p-insp .insp-text h2 {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .p-insp .insp-text p {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .p-insp .ipane.cena .ic-text small {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .p-insp .insp-tip {
+    color: #a3978a
+}
+html:not(.modo-ficha) .rpg-tabs {
+    border-bottom: 0.12rem solid rgba(161, 136, 115, 0.35)
+}
+html:not(.modo-ficha) .rpg-tabs .itab {
+    color: #a3978a
+}
+html:not(.modo-ficha) .rpg-tabs .itab:hover {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .rpg-tabs .itab.on {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .rp-foto {
+    background: rgba(20, 36, 64, 0.94)
+}
+html:not(.modo-ficha) .rp-nome b {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .rp-mais {
+    color: #a3978a
+}
+html:not(.modo-ficha) .rp-mais:hover {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .rp-local {
+    color: #a3978a
+}
+html:not(.modo-ficha) .rp-local .ic {
+    fill: #a3978a
+}
+html:not(.modo-ficha) .rp-l b {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .rp-q {
+    border: 0.1rem solid rgba(161, 136, 115, 0.45);
+    background: rgba(20, 36, 64, 0.35);
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .rp-q:hover {
+    background: rgba(20, 36, 64, 0.70)
+}
+html:not(.modo-ficha) .pcard {
+    background: rgba(20, 36, 64, 0.94)
+}
+html:not(.modo-ficha) .pcard .pc-name {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .p-quick .p-title, html:not(.modo-ficha) .p-acoes .p-title {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .p-quick .p-title small {
+    color: #a3978a
+}
+html:not(.modo-ficha) .tb2-reg {
+    border-bottom: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .p-insp .ipane.items .icard {
+    border-bottom: 0.1rem solid rgba(161, 136, 115, 0.30);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .board-mesa .bv.on {
+    background: rgba(11, 21, 38, 0.35)
+}
+html:not(.modo-ficha) .board-mesa .bm-chip.on {
+    background: rgba(11, 21, 38, 0.35)
+}
+html:not(.modo-ficha) .board-mesa .bm-cor.giz {
+    background: rgba(20, 36, 64, 0.94)
+}
+html:not(.modo-ficha) .mi-dica {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .mi-escolher:focus-within {
+    outline: 0.2rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .mi-medida {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .mi-previa {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .il {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .il-dica {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .il-chip {
+    border: 0.1rem solid rgba(161, 136, 115, 0.45);
+    background: rgba(20, 36, 64, 0.35);
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .il-agente {
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .il-vit {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .il-prato {
+    border: 0.1rem solid rgba(161, 136, 115, 0.45);
+    background: rgba(20, 36, 64, 0.60);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .il-ganho {
+    color: #79d98f
+}
+html:not(.modo-ficha) .il-erro {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .il-bonus {
+    color: #a3978a
+}
+html:not(.modo-ficha) .il-bonus.tem {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .il-usar {
+    border: 0.1rem solid rgba(161, 136, 115, 0.45);
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .il-nada {
+    color: #a3978a
+}
+html:not(.modo-ficha) .p-agentes .p-title {
+    color: #f3e9d8
+}
+/*  fichas.css  */
+html:not(.modo-ficha) .fx-tit h3 {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-mini {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: linear-gradient(180deg, rgba(20, 36, 64, 0.94), rgba(11, 21, 38, 0.94));
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-mini.on {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fx-q {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: linear-gradient(180deg, rgba(20, 36, 64, 0.94), rgba(11, 21, 38, 0.94));
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-q:not(:disabled):hover {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-agentes {
+    border-right: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-ag {
+    border: 0.15rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-ag-sem {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fx-ag.novo {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-corpo {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-cantos {
+    background: linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) left top / 2.2rem 0.18rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) left top / 0.18rem 2.2rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) right top / 2.2rem 0.18rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) right top / 0.18rem 2.2rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) left bottom / 2.2rem 0.18rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) left bottom / 0.18rem 2.2rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) right bottom / 2.2rem 0.18rem no-repeat,
+    linear-gradient(rgba(11, 21, 38, 0.94), rgba(11, 21, 38, 0.94)) right bottom / 0.18rem 2.2rem no-repeat
+}
+html:not(.modo-ficha) .fx-id-r {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fx-id-v {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) button.fx-id-v {
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) button.fx-id-v:hover {
+    background: rgba(20, 36, 64, 0.60)
+}
+html:not(.modo-ficha) .fx-nex-bar {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: linear-gradient(180deg, rgba(20, 36, 64, 0.94), rgba(11, 21, 38, 0.94))
+}
+html:not(.modo-ficha) .fx-selo {
+    border: 0.2rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .fx-at-n {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-at-v {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-pontos {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fx-pontos.ok {
+    color: #79d98f
+}
+html:not(.modo-ficha) .fx-rc-ic.pv {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fx-rc-ic.pe {
+    color: #8fc1ff
+}
+html:not(.modo-ficha) .fx-rc-ic.san {
+    color: #8fc1ff
+}
+html:not(.modo-ficha) .fx-rc-n {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-dv {
+    border: 0.12rem solid rgba(161, 136, 115, 0.40);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .fx-dv-ic {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-dv-ic .ic {
+    fill: #f3e9d8
+}
+html:not(.modo-ficha) .fx-dv-r {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-dv-v {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-dv-l {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-ch {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-ch.normal.on {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-ch.normal.on .ic {
+    color: #79d98f
+}
+html:not(.modo-ficha) .fx-per .fx-corpo-p {
+    border: 0.12rem solid rgba(161, 136, 115, 0.55)
+}
+html:not(.modo-ficha) .fx-per .fx-tab-l {
+    border-bottom: 0.1rem solid rgba(161, 136, 115, 0.35);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-per .fx-tab-l > * {
+    border-left: 0.1rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .fx-grau.veterano {
+    color: #8fc1ff
+}
+html:not(.modo-ficha) .fx-grau.expert {
+    color: #ff8a73
+}
+html:not(.modo-ficha) button.fx-tab-l:hover {
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .fx-equip .fx-corpo-p {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-equip .fx-tab-l {
+    border-bottom: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-equip .fx-tab-l > * {
+    border-left: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-p.escuro .fx-corpo-p {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-pi {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-rc-circ {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-rt {
+    border: 0.15rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-sl {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-sl.vazio {
+    color: #a3978a
+}
+html:not(.modo-ficha) .fx-sl.em-uso {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-lim {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fx-lim.passou, html:not(.modo-ficha) .fx-carga.passou {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fx-carga {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-tat-aba {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-tc {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-cp-foto {
+    border: 0.15rem solid rgba(161, 136, 115, 0.75);
+    color: #a3978a
+}
+html:not(.modo-ficha) .fx-cp-nome {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-cp-tipo {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fx-cp-l {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fx-cp-l > span:first-child .ic {
+    fill: #ff8a73;
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fx-nt-aba {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-nt-txt {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-nt-campo {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fx-bt {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fx-dica {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: rgba(20, 36, 64, 0.94);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fj-x {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fj-dica, html:not(.modo-ficha) .fj-texto {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fj-dica {
+    color: #a3978a
+}
+html:not(.modo-ficha) .fj-sub {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fj-sub small {
+    color: #a3978a
+}
+html:not(.modo-ficha) .fj-campo {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fx-inp {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: rgba(20, 36, 64, 0.94);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fj-cont {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fj-vazio {
+    color: #a3978a
+}
+html:not(.modo-ficha) .fo {
+    border: 0.12rem solid rgba(161, 136, 115, 0.40);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .fo:hover:not(:disabled) {
+    background: rgba(20, 36, 64, 0.70);
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fo.on {
+    background: rgba(20, 36, 64, 0.80)
+}
+html:not(.modo-ficha) .fo-marca {
+    border: 0.15rem solid rgba(161, 136, 115, 0.75);
+    background: rgba(20, 36, 64, 0.94);
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fo-nome {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fo-nome small {
+    color: #a3978a
+}
+html:not(.modo-ficha) .fo-resumo {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fo-reqs span {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .fo-motivos {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fo-avisos {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .fj-chip {
+    border: 0.12rem solid rgba(161, 136, 115, 0.50);
+    background: rgba(20, 36, 64, 0.35);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fj-aba {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .fe-nex {
+    border: 0.12rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .fe-l {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .fe-l > .ic {
+    color: #79d98f
+}
+html:not(.modo-ficha) .fe-l.pend > .ic {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fe-l.erro {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fe-l.erro > .ic {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .fe-l.aviso {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .fe-l small {
+    color: #a3978a
+}
+@media (max-width: 820px) and (orientation: portrait), (max-width: 560px) {
+    html:not(.modo-ficha) .fx-seta {
+        border: 0.12rem solid rgba(161, 136, 115, 0.75)
+    }
+}
+@media (max-width: 820px) and (orientation: portrait), (max-width: 560px) {
+    html:not(.modo-ficha) .fx-zoom {
+        border: 0.12rem solid rgba(161, 136, 115, 0.75)
+    }
+}
+@media (max-width: 820px) and (orientation: portrait), (max-width: 560px) {
+    html:not(.modo-ficha) .fx-id-v {
+        background: rgba(20, 36, 64, 0.35)
+    }
+}
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+    html:not(.modo-ficha) .fx-g-comb .fx-tc span {
+        color: #a3978a
+    }
+}
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+    html:not(.modo-ficha) .fx-g-comb .fx-tc b {
+        color: #f3e9d8
+    }
+}
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+    html:not(.modo-ficha) .fx-g-aba-n {
+        color: #f3e9d8
+    }
+}
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+    html:not(.modo-ficha) .fx .fx-dv .fx-dv-r {
+        color: #cdbfa9
+    }
+}
+html:not(.modo-ficha) .cr-passo {
+    border: 0.1rem solid rgba(161, 136, 115, 0.30);
+    background: rgba(20, 36, 64, 0.35);
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .cr-passo .ic {
+    color: #79d98f
+}
+html:not(.modo-ficha) .cr-dica {
+    color: #a3978a
+}
+html:not(.modo-ficha) .cr-texto {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .cr-contador small {
+    color: #a3978a
+}
+html:not(.modo-ficha) .cr-carta {
+    border: 0.15rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.40);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .cr-carta small {
+    color: #a3978a
+}
+html:not(.modo-ficha) .cr-req {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .cr-motivo {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cr-atr {
+    border-bottom: 0.1rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .cr-mm {
+    border: 0.1rem solid rgba(161, 136, 115, 0.45);
+    background: rgba(20, 36, 64, 0.50)
+}
+html:not(.modo-ficha) .cr-muda {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .cr-nex {
+    border-left: 0.4rem solid rgba(161, 136, 115, 0.75);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cr-nex h4 .ic {
+    color: #79d98f
+}
+html:not(.modo-ficha) .cr-prob.erro {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cr-prob.aviso {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .cr-item {
+    border: 0.1rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.40)
+}
+html:not(.modo-ficha) .cr-item span {
+    color: #a3978a
+}
+html:not(.modo-ficha) .cr-rev {
+    border-bottom: 0.1rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .cr-rev small {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .cr-sub {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .cr-num {
+    border-bottom: 0.1rem dotted rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .cr-aviso {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .cr-ok {
+    color: #79d98f
+}
+html:not(.modo-ficha) .nota-texto {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .cfg-carta {
+    border: 0.15rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .cfg-carta:hover {
+    background: rgba(20, 36, 64, 0.60)
+}
+html:not(.modo-ficha) .cfg-carta .ic {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cfg-carta span {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .cfg-som.on {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cfg-som.on .ic {
+    color: #79d98f
+}
+/*  combate.css  */
+html:not(.modo-ficha) .cb-tit h3 {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .cb-rodada {
+    border: 0.12rem solid rgba(161, 136, 115, 0.55);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-rodada:hover {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-menu {
+    border: 0.12rem solid rgba(161, 136, 115, 0.55);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-menu:hover {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-bt {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: linear-gradient(180deg, rgba(20, 36, 64, 0.94), rgba(11, 21, 38, 0.94));
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .cb-bt.escuro {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-bt.escuro:not(:disabled):hover {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-bt.claro:not(:disabled):hover, html:not(.modo-ficha) .cb-bt.cb-mini:not(:disabled):hover {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-foto {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-ini-linha {
+    border: 0.12rem solid rgba(161, 136, 115, 0.30);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) button.cb-ini-linha:not(.vez):hover {
+    border-color: rgba(161, 136, 115, 0.60)
+}
+html:not(.modo-ficha) .cb-estado.ruim {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-pend-ic {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .cb-palco > .cb-tab {
+    border: 0.15rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-tab-cena, html:not(.modo-ficha) .cb-ferr, html:not(.modo-ficha) .cb-chip {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-ferr.cb-bt {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-longe {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-caixa {
+    border: 0.12rem solid rgba(161, 136, 115, 0.42);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-quem-bt {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: linear-gradient(180deg, rgba(20, 36, 64, 0.94), rgba(11, 21, 38, 0.94))
+}
+html:not(.modo-ficha) .cb-aba {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-aba:not(.on):hover {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-opcao {
+    border: 0.12rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-opcao-ic {
+    border-right: 0.12rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .cb-alvo-tag {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-alvo-tag.vazio {
+    border-color: rgba(161, 136, 115, 0.40)
+}
+html:not(.modo-ficha) .cb-mont-linha {
+    border: 0.12rem solid rgba(161, 136, 115, 0.30);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-sel, html:not(.modo-ficha) .cb-ciente {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: linear-gradient(180deg, rgba(20, 36, 64, 0.94), rgba(11, 21, 38, 0.94))
+}
+html:not(.modo-ficha) .cb-inp {
+    border: 0.15rem solid rgba(161, 136, 115, 0.75);
+    background: rgba(20, 36, 64, 0.94)
+}
+html:not(.modo-ficha) .cb-empate {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .cb-foto.alvo {
+    border: 0.18rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .cb-machucado {
+    background: linear-gradient(90deg, #d68c1a 50%, rgba(11, 21, 38, 0.94) 50%)
+}
+html:not(.modo-ficha) .cb-alvo-estado .ic {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-filtro {
+    border: 0.12rem solid rgba(161, 136, 115, 0.45);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-reg-linha.t-estado span {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-menu-item {
+    border: 0.12rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-dlg-peca {
+    border: 0.12rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-dlg-peca:hover {
+    border-color: rgba(161, 136, 115, 0.70)
+}
+html:not(.modo-ficha) .cb-col {
+    border: 0.12rem solid rgba(161, 136, 115, 0.30);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-col h4 span, html:not(.modo-ficha) .cb-dano h4 span {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-arma {
+    border: 0.12rem solid rgba(161, 136, 115, 0.30);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-arma:not(.on):hover {
+    border-color: rgba(161, 136, 115, 0.65)
+}
+html:not(.modo-ficha) .cb-arma-ic {
+    border-right: 0.12rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .cb-sit.info.bom .cb-sit-ic {
+    color: #79d98f
+}
+html:not(.modo-ficha) .cb-sit.info.ruim {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-sit.info.aviso {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .cb-visto {
+    color: #8fc1ff
+}
+html:not(.modo-ficha) .cb-chave {
+    background: rgba(11, 21, 38, 0.94)
+}
+html:not(.modo-ficha) .cb-chave::before {
+    background: rgba(20, 36, 64, 0.94)
+}
+html:not(.modo-ficha) .cb-caixa-dado {
+    border: 0.12rem solid rgba(161, 136, 115, 0.42);
+    background: rgba(20, 36, 64, 0.45)
+}
+html:not(.modo-ficha) .cb-reacao {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75);
+    background: linear-gradient(180deg, rgba(20, 36, 64, 0.94), rgba(11, 21, 38, 0.94))
+}
+html:not(.modo-ficha) .cb-carimbo {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-carimbo.erro {
+    border-color: rgba(161, 136, 115, 0.75);
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .cb-dano-conta .alerta, html:not(.modo-ficha) .cb-dano-conta b + .alerta {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-limite.alerta {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-reg-destaque {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-cond {
+    border: 0.12rem solid rgba(161, 136, 115, 0.45);
+    background: rgba(20, 36, 64, 0.40)
+}
+html:not(.modo-ficha) .cb-cond.auto {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-alvo-ritual {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .cb-alvo-ritual .ic {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-alvo-nota.aviso {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .cb-cond-op {
+    border: 0.12rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .cb-cond-op:hover {
+    border-color: rgba(161, 136, 115, 0.70)
+}
+html:not(.modo-ficha) .fj-texto.alerta {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-fa-teste {
+    border: 0.12rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .cb-fa-x {
+    border: 0.12rem solid rgba(161, 136, 115, 0.45);
+    background: rgba(20, 36, 64, 0.40)
+}
+html:not(.modo-ficha) .cb-fa-marca {
+    border: 0.12rem solid rgba(161, 136, 115, 0.45);
+    background: rgba(20, 36, 64, 0.40)
+}
+html:not(.modo-ficha) .cb-man-lado {
+    border-top: 0.12rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .cb-col-pe.alerta {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .cb-rit-alvo {
+    border-top: 0.1rem solid rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .cb-rit-custo.alerta {
+    color: #ff8a73
+}
+/*  itens.css  */
+html:not(.modo-ficha) .rpg-body .it-cab, html:not(.modo-ficha) .rpg-body .it-sec {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .rpg-body .it-ag {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .it-card {
+    border: 0.12rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .it-nome-ag {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .it-carga, html:not(.modo-ficha) .it-maos {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .it-aviso {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .it-aviso.erro {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .it-tipo {
+    border: 0.12rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35);
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .it-tipo-ic {
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .it-tipo:nth-child(3) .it-tipo-ic {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .it-grade {
+    border: 0.12rem solid rgba(161, 136, 115, 0.30);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .rpg-body .it-slot {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .it-arte {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rpg-body .it-slot.vazio .it-arte {
+    color: #a3978a
+}
+html:not(.modo-ficha) .rpg-body .it-slot.vazio .it-nome {
+    color: #a3978a
+}
+html:not(.modo-ficha) .rpg-body .it-slot.mais {
+    border: 0.15rem dashed rgba(161, 136, 115, 0.45);
+    color: #a3978a
+}
+html:not(.modo-ficha) .rpg-body .it-slot.mais:hover {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .it-det {
+    border: 0.12rem solid rgba(161, 136, 115, 0.35);
+    background: rgba(20, 36, 64, 0.35)
+}
+html:not(.modo-ficha) .it-det-arte {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .it-det-txt {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .it-det-txt b {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .it-campos {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .it-rot {
+    color: #a3978a
+}
+html:not(.modo-ficha) .it-meta {
+    color: #a3978a
+}
+html:not(.modo-ficha) .rpg-body .it-bt {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .it-menu {
+    border: 0.12rem solid rgba(161, 136, 115, 0.75)
+}
+/*  requisicao.css  */
+html:not(.modo-ficha) .rq-topo {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rq-carga-barra {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rq-carga-meta {
+    background: rgba(20, 36, 64, 0.94)
+}
+html:not(.modo-ficha) .rq-secoes {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rq-busca {
+    background: rgba(20, 36, 64, 0.94)
+}
+html:not(.modo-ficha) .rq-chip {
+    background: rgba(20, 36, 64, 0.35);
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .rq-chip:hover {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rq-chip.on {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rq-ordem {
+    background: rgba(20, 36, 64, 0.45);
+    color: #cdbfa9
+}
+html:not(.modo-ficha) .rq-grade {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rq-card {
+    border: 0.1rem solid rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rq-card:hover {
+    border-color: rgba(161, 136, 115, 0.75)
+}
+html:not(.modo-ficha) .rq-tem {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .rq-cat {
+    color: #f3e9d8
+}
+html:not(.modo-ficha) .rq-cat.c0 {
+    background: radial-gradient(circle at 35% 30%, rgba(11, 21, 38, 0.94), #6a6e73)
+}
+html:not(.modo-ficha) .rq-cat.c2 {
+    background: radial-gradient(circle at 35% 30%, rgba(20, 36, 64, 0.94), #8d97a2)
+}
+html:not(.modo-ficha) .rq-det {
+    background: rgba(11, 21, 38, 0.94)
+}
+html:not(.modo-ficha) .rq-det-num div {
+    border-bottom: 0.1rem dashed rgba(161, 136, 115, 0.30)
+}
+html:not(.modo-ficha) .rq-checks .ok {
+    color: #79d98f
+}
+html:not(.modo-ficha) .rq-checks .aviso {
+    color: #ffd27a
+}
+html:not(.modo-ficha) .rq-checks .erro {
+    color: #ff8a73
+}
+html:not(.modo-ficha) .rq-det-acoes {
+    background: linear-gradient(rgba(235, 223, 198, 0), rgba(11, 21, 38, 0.94) 35%)
+}
+html:not(.modo-ficha) .rq-travado {
+    color: #ff8a73
+}
+@media (max-width: 820px) and (orientation: portrait), (max-width: 560px) {
+    html:not(.modo-ficha) .rq-det-voltar i {
+        background: rgba(20, 36, 64, 0.35)
+    }
+}
+@media (max-width: 820px) and (orientation: portrait), (max-width: 560px) {
+    html:not(.modo-ficha) .rq-chip, html:not(.modo-ficha) .rq-ordem {
+        border-color: rgba(161, 136, 115, 0.75)
+    }
+}
+/*  teclado.css  */
+html:not(.modo-ficha) .tsg-parafuso {
+    background: radial-gradient(circle at 35% 30%, rgba(20, 36, 64, 0.94), rgba(11, 21, 38, 0.94) 45%, #4a4f55 85%)
+}
+html:not(.modo-ficha) .tsg-led.verde.aceso {
+    background: radial-gradient(circle at 40% 35%, rgba(20, 36, 64, 0.94), #4dff7c 45%, #14a33a)
+}

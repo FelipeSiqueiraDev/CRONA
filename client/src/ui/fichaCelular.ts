@@ -22,6 +22,7 @@ import { arteDoItem } from './arteItem';
 import { arte, arteOu, ic, type NomeIcone } from './icons';
 import { sfx } from './sfx';
 import { vestirTema } from './temaUi';
+import { faixaAtributos } from './jogador';
 
 type Calc = regras.Calculado;
 const cat = regras.catalogo;
@@ -214,11 +215,8 @@ export class FichaCelular {
       'titulo-atributos',
       'pulso',
       [
-        h(
-          'div',
-          { class: 'fc-atrs' },
-          ...regras.ATRIBUTOS.map((a) => h('div', { class: 'fc-atr' }, h('span', { class: 'fc-atr-ic' }, arte(`/arte/icones/${a}.png`, ICONE_ATR[a])), h('b', null, String(c.atributos[a])), h('small', null, NOME_ATR[a]))),
-        ),
+        // a mesma faixa da aba Agente (o cartão inteiro já abre a edição)
+        faixaAtributos(c.atributos, false),
       ],
       () => this.editarAtributos(),
       falta > 0 ? h('span', { class: 'fc-selo' }, `${falta} ponto${falta > 1 ? 's' : ''}`) : null,

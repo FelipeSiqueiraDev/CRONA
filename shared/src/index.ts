@@ -14,10 +14,16 @@ export * from './fichas';
 export * from './itens';
 export * from './mesa';
 export * from './documentos';
+export * from './viagem';
+export * from './lugares';
+export * from './bestiario';
+export * from './locais';
 /** Regras de Ordem Paranormal: catálogos, ficha, criação de NEX 0% a 99% (ver docs/REGRAS.md). */
 export * as regras from './regras';
 /** Combate: ordem de iniciativa, rodadas, turnos e registro (ver docs/COMBATE.md). */
 export * as combate from './combate';
+/** Os jogos do bar: fliperama, dardos e sinuca (as contas que todo celular faz igual). */
+export * as bar from './bar';
 export {
   LOOT_KINDS,
   lootKindLabel,

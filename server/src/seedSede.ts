@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 41;
+export const SEDE_REV = 51;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -277,12 +277,12 @@ const ROOMS: RoomSpec[] = [
       ['chair_office', 31, 5, 6],
       ['cabinet_file', 33, 0, 4],
       ['cabinet_file', 34, 0, 4],
-      // perto da escada, onde se chega: o canto de conversa, duas poltronas frente a frente e a mesa
-      // de xadrez no meio (arrumado pelo Felipe no jogo, 05/10; o tapete redondo preto e branco da
-      // série vem na arte nova)
-      ['armchair', 3, 12, 2],
+      // perto da escada, onde se chega: o canto de conversa, as duas poltronas pretas da série frente
+      // a frente e a mesa de xadrez no meio (arrumado pelo Felipe no jogo, 05/10; o tapete redondo
+      // preto e branco da série ainda não chegou)
+      ['poltrona_preta', 3, 12, 2],
       ['table_chess', 5, 12, 4],
-      ['armchair', 7, 12, 6],
+      ['poltrona_preta', 7, 12, 6],
       ['bench', 10, 13, 0],
       ['bench', 13, 13, 0],
       ['floor_lamp', 5, 13, 0],
@@ -293,7 +293,9 @@ const ROOMS: RoomSpec[] = [
     ],
     wall: [
       ['board_investigation', 'r', 0, 12.0, 2.36],
-      ['screen', 'r', 0, 21.5, 2.45],
+      // as TVs grandes de tela fina da série, na parede do fundo
+      ['tv_grande', 'r', 0, 21.5, 2.45],
+      ['tv_grande', 'r', 0, 30.0, 2.45],
       ['clock', 'r', 0, 18.2, 3.54],
       ['pipes', 'r', 0, 26.0, 3.81],
       ['sconce', 'l', 1, 11.6, 2.9],
@@ -399,12 +401,13 @@ const ROOMS: RoomSpec[] = [
       ['sigil_floor', 0, 10, 0],
       ['blood_drops', 2, 13, 0],
       ['rubble', 0, 14, 0],
-      // o posto do carcereiro, no canto perto da porta: armários, a mesa das câmeras e a cadeira
-      ['locker_row', 20, 0, 4],
-      ['locker', 22, 0, 4],
-      ['desk_metal', 21, 3, 4],
-      ['monitor', 21, 3, 4],
-      ['chair_office', 21, 2, 4],
+      // o posto do carcereiro, no canto perto da porta: a mesa das câmeras encostada na parede, com o painel dos
+      // monitores em cima dela (08/10: antes o painel ficava atrás dos armários), e os armários do lado
+      ['desk_metal', 20, 0, 4],
+      ['monitor', 21, 0, 4],
+      ['chair_office', 21, 1, 0],
+      ['locker_row', 22, 0, 4],
+      ['locker', 23, 1, 6],
       ['cabinet_file', 23, 3, 6],
       // o interrogatório, no meio do pátio: a mesinha, as duas cadeiras e a lâmpada em cima
       ['desk_metal', 11, 9, 0],
@@ -434,7 +437,7 @@ const ROOMS: RoomSpec[] = [
       ['sigil_scratch', 'l', 0, 13.6, 2],
       ['emergency_light', 'l', 0, 12.3, 3.45],
       // o posto: o painel das câmeras e o relógio
-      ['monitor_wall', 'r', 0, 21.5, 2.9],
+      ['monitor_wall', 'r', 0, 21, 2.9],
       ['clock', 'r', 0, 23.3, 3.6],
     ],
     links: [[23, 9, 'corredor']],
@@ -486,7 +489,7 @@ const ROOMS: RoomSpec[] = [
     particles: ['dust'],
     lamp: 'fluorescent',
     name: SEDE + 'Laboratório',
-    description: 'O laboratório do Renan, com cara de clínica: bancadas nas paredes e duas bancadas compridas no meio, microscópios, frascos e o quadro branco.',
+    description: 'O laboratório do Renan, com cara de clínica: bancadas nas paredes e duas bancadas compridas no meio, microscópios, frascos, a mesa de vidro com os tubos de ensaio, a impressora 3D e o quadro branco; o leitor de digital na parede, perto da porta.',
     layout: planBottom(9, 10, 6),
     floorName: 'Subsolo',
     style: 'azulejo',
@@ -494,29 +497,32 @@ const ROOMS: RoomSpec[] = [
     plan: { x: 30, y: -3 },
     floor: [
       ['portal', 6, 9, 0],
-      // como na planta da série: as bancadas na parede do fundo e na da esquerda, e duas bancadas
-      // compridas no meio, paralelas, com o corredor entre elas; o quadro branco no fundo
-      ['lab_bench', 0, 0, 4],
+      // como na planta da série, com as bancadas inteiras do Códex (12/10): a de canto no fundo,
+      // a de parede inteira na esquerda e as duas ilhas compridas no meio, com o corredor entre
+      // elas; o quadro branco e a impressora 3D no fundo; a mesa de vidro na parede da direita
+      ['bancada_lab_curta', 0, 0, 4],
       ['stool_lab', 0, 1, 0],
       ['whiteboard', 3, 0, 4],
+      ['impressora_3d', 6, 0, 4],
       ['cabinet_file', 7, 0, 4],
       ['cabinet_file', 8, 0, 4],
-      ['lab_bench', 0, 3, 2],
-      ['chair_office', 1, 3, 6],
-      ['lab_bench', 0, 5, 2],
-      ['lab_bench', 3, 3, 2],
-      ['lab_bench', 3, 5, 2],
-      ['lab_bench', 5, 3, 6],
-      ['lab_bench', 5, 5, 6],
+      ['bancada_lab_parede', 0, 3, 2],
+      ['chair_office', 1, 4, 6],
+      ['bancada_lab_ilha', 3, 3, 2],
+      ['bancada_lab_ilha', 5, 3, 6],
       ['stool_lab', 4, 4, 0],
       ['stool_lab', 4, 6, 0],
+      ['mesa_vidro_lab', 8, 3, 0],
       ['chair_office', 6, 2, 0],
-      ['trolley', 7, 6, 0],
+      ['trolley', 7, 7, 0],
       ...lamps([2, 2], [4, 5], [7, 3]),
     ],
     wall: [
-      ['board_investigation', 'r', 0, 4.6, 2.18],
+      // o quadro de investigação em cima dos arquivos (atrás do quadro branco, ele sumia)
+      ['board_investigation', 'r', 0, 7.5, 2.4],
       ['notes_wall', 'l', 0, 6.5, 2.36],
+      // o leitor de digital, perto da porta
+      ['scanner_digital', 'l', 0, 8.6, 1.3],
     ],
     links: [[6, 9, 'corredor']],
   },
@@ -527,7 +533,7 @@ const ROOMS: RoomSpec[] = [
     lamp: 'fluorescent',
     name: SEDE + 'Sala de Tecnologia',
     was: [SEDE + 'Sala de Reunião'],
-    description: 'As estações de trabalho na parede do fundo, embaixo do painel das câmeras; os servidores, a impressora e as fitas na parede da esquerda; o quadro branco no meio do carpete roxo.',
+    description: 'A sala mais da hora da Sede, cheia de telas: a mesa em U com os três postos embaixo da tela enorme do C.R.I.S, o painel de telas, a torre de monitores de tubo, a mesa holográfica no meio do carpete roxo, a bancada de eletrônica com o ferro de solda fumegando, os servidores, um monitor travado na tela de DERROTA e a lixeira transbordando de embalagens.',
     layout: planBottom(13, 10, 10),
     floorName: 'Subsolo',
     style: 'carpete',
@@ -535,32 +541,43 @@ const ROOMS: RoomSpec[] = [
     plan: { x: 40, y: -3 },
     floor: [
       ['portal', 10, 9, 0],
-      // as estações de trabalho na parede do fundo, cada uma com a sua cadeira
-      ['console', 4, 0, 4],
-      ['chair_office', 5, 1, 0],
-      ['console', 7, 0, 4],
-      ['chair_office', 8, 1, 0],
-      ['console', 10, 0, 4],
-      ['chair_office', 11, 1, 0],
-      // na parede da esquerda: os servidores com o nobreak, a impressora, as fitas e o bebedouro
-      ['server_rack', 0, 1, 2],
+      // a mesa em U na parede do fundo: os três postos, cada um com a sua cadeira dentro do U
+      ['desk_u', 4, 0, 4],
+      ['cadeira_gamer', 5, 1, 0],
+      ['cadeira_gamer', 6, 1, 0],
+      ['cadeira_gamer', 8, 1, 0],
+      // ao lado da mesa em U: a torre de monitores de tubo e o frigobar de energético
+      ['torre_crt', 10, 0, 4],
+      ['frigobar_energetico', 12, 0, 4],
+      // na parede da esquerda: o rack moderno e o servidor com o nobreak, a impressora, as fitas e o bebedouro
+      ['rack_moderno', 0, 1, 2],
       ['server_rack', 0, 2, 2],
       ['ups', 0, 3, 2],
       ['cables_floor', 1, 2, 4],
       ['printer_dot', 0, 5, 2],
       ['media_shelf', 0, 7, 2],
       ['water_cooler', 0, 9, 2],
-      // o quadro branco no meio, virado para a sala, e as caixas de peças no canto
-      ['whiteboard', 5, 5, 4],
+      // no meio, a mesa holográfica com duas cadeiras; na parede da direita, a bancada de eletrônica; as caixas de
+      // peças e a lixeira transbordando nos cantos
+      ['mesa_holografica', 5, 5, 4],
+      ['cadeira_gamer', 4, 6, 2],
+      ['cadeira_gamer', 7, 5, 6],
+      ['bancada_eletronica', 11, 4, 6],
+      ['cadeira_gamer', 10, 5, 2],
       ['parts_boxes', 11, 8, 4],
       ['parts_boxes', 12, 8, 6],
-      ...lamps([3, 3], [9, 3], [8, 7]),
+      ['lixeira_lanches', 9, 8, 0],
+      ...lamps([3, 3], [6, 2], [8, 7]),
     ],
     wall: [
-      ['monitor_wall', 'r', 0, 8, 2.63],
-      ['shelf_wall', 'r', 0, 4.8, 2.45],
+      // a tela enorme do C.R.I.S em cima da mesa em U (o sistema da Ordem que procura o paranormal) e o painel de telas
+      ['tela_cris', 'r', 0, 7.0, 1.9],
+      ['painel_telas', 'r', 0, 2.4, 2.3],
       ['ac_wall', 'r', 0, 11.6, 3.9],
-      ['shelf_wall', 'l', 0, 5, 2.63],
+      // na parede da esquerda: o monitor travado na tela de DERROTA, o mural de polaroids e a prateleira
+      ['tela_derrota', 'l', 0, 4.4, 2.6],
+      ['mural_polaroids', 'l', 0, 8.0, 2.6],
+      ['shelf_wall', 'l', 0, 6.2, 3.3],
     ],
     links: [[10, 9, 'corredor']],
   },
@@ -577,41 +594,40 @@ const ROOMS: RoomSpec[] = [
     plan: { x: 54, y: -3 },
     floor: [
       ['portal', 2, 9, 0],
-      // a parede do fundo é o que impressiona: as estantes grandes dos dois lados e, no meio, o sofá
-      // vermelho embaixo da pintura do Coliseu (a estante que pega a parede inteira vem na arte nova)
-      ['bookshelf', 1, 0, 4],
-      ['bookshelf', 3, 0, 4],
-      ['sofa_booth', 5, 0, 4],
-      ['bookshelf', 7, 0, 4],
-      ['bookshelf', 9, 0, 4],
-      ['cabinet_file', 11, 0, 4],
-      ['candelabra', 4, 1, 0],
-      ['candelabra', 7, 1, 0],
-      // a mesa grande perto do centro, cheia de livros e folhas, com a cadeira do Veríssimo atrás
-      ['chair_office', 5, 2, 4],
-      ['desk_wood', 5, 3, 4],
-      ['desk_lamp', 5, 3, 4],
-      ['books_stack', 6, 3, 4],
-      // as quatro poltronas avermelhadas na frente, no tapete; o armário de metal ao lado da mesa
-      ['rug_ornate', 4, 4, 2],
-      ['armchair_red', 4, 5, 0],
-      ['armchair_red', 5, 5, 0],
-      ['armchair_red', 6, 5, 0],
-      ['armchair_red', 7, 5, 0],
-      ['cabinet_file', 8, 3, 4],
-      // o canto de exibição, na parede da esquerda: as relíquias nos pedestais (as armaduras e a
-      // vitrine dos itens paranormais vêm na arte nova)
-      ['pedestal', 0, 3, 2],
-      ['pedestal', 0, 5, 2],
-      ['pedestal', 0, 7, 2],
+      // a parede do fundo é o que impressiona: a estante do Veríssimo pegando a parede quase inteira e,
+      // no canto, o sofá vermelho embaixo da pintura do Coliseu
+      ['sofa_verissimo', 1, 0, 4],
+      ['shelf_verissimo', 6, 0, 4],
+      ['candelabra', 5, 0, 4],
+      ['candelabra', 11, 3, 0],
+      // a mesa grande perto do centro, com a cadeira do Veríssimo atrás (de costas para o sofá)
+      ['chair_verissimo', 4, 1, 4],
+      // a frente da mesa (as gavetas, o lado de quem trabalha) virada para a cadeira do Veríssimo (08/10, o Felipe)
+      ['desk_verissimo', 3, 2, 0],
+      // as quatro poltronas avermelhadas: duas na frente da mesa e duas frente a frente no tapete; o
+      // armário de metal ao lado da mesa
+      ['rug_aubusson', 2, 5, 0],
+      ['armchair_verissimo', 3, 4, 0],
+      ['armchair_verissimo', 5, 4, 0],
+      ['armchair_verissimo', 2, 6, 2],
+      ['armchair_verissimo', 5, 6, 6],
+      ['cabinet_file', 7, 2, 4],
+      // o canto de exibição, na parede da esquerda, depois do quadro de detetive (08/10: antes o quadro ficava atrás
+      // da vitrine e da armadura): um museu particular; a outra armadura guarda a relíquia do meio da sala
+      ['pedestal_relic', 0, 5, 2],
+      ['vitrine_paranormal', 0, 6, 2],
+      ['pedestal_relic', 0, 8, 2],
+      ['armor_display', 0, 9, 2],
+      ['pedestal_relic', 9, 6, 0],
+      ['armor_display', 10, 6, 6],
       ['plant', 11, 9, 0],
-      ...lamps([6, 4], [6, 8], [2, 5], [10, 5]),
+      ...lamps([6, 4], [6, 8], [3, 7], [10, 5]),
     ],
     wall: [
-      // a pintura do Coliseu atrás da cadeira, o quadro de detetive enorme, o relógio
-      ['painting', 'r', 0, 6.0, 2.6],
-      ['board_investigation', 'l', 0, 1.6, 2.18],
-      ['clock', 'r', 0, 10.6, 3.54],
+      // a pintura do Coliseu sobre o sofá, o quadro de detetive enorme, o relógio
+      ['painting_coliseu', 'r', 0, 2.1, 2.1],
+      ['board_detective', 'l', 0, 2.5, 1.95],
+      ['clock', 'r', 0, 4.6, 3.54],
     ],
     links: [[2, 9, 'corredor']],
   },
@@ -707,7 +723,7 @@ const ROOMS: RoomSpec[] = [
     particles: ['dust'],
     lamp: 'fluorescent',
     name: SEDE + 'Enfermaria',
-    description: 'A ala médica da Marcela: seis cubículos com as camas verdes, fechados por divisórias, os armários de remédio ao lado da porta e o posto da enfermagem no canto.',
+    description: 'A ala médica da Marcela: seis leitos verdes, cada um na sua cortina, os armários de remédio ao lado da porta e o posto da enfermagem no canto.',
     layout: planTop(20, 13, 17),
     floorName: 'Subsolo',
     style: 'ladrilho',
@@ -716,31 +732,27 @@ const ROOMS: RoomSpec[] = [
     floor: [
       ['portal', 17, 1, 4],
       // seis cubículos, como na ala médica da série: três em cima (a cabeceira na parede) e três
-      // embaixo; cada um fechado pelas divisórias dos lados e por um pedaço na frente, com o soro
+      // embaixo; cada leito dentro da sua cortina (a de cima aberta, a de baixo fechada), com o soro.
+      // O soro fica do lado de lá da cama (o da esquerda, longe da câmera), para a cama aparecer e o lado
+      // de cá ficar livre para alguém parar junto do leito (revisto em 07/10)
       ...[1, 5, 9].flatMap((x) => [
+        ['bed_curtain', x - 1, 1, 4, undefined, 1] as FloorSeed,
         ['hospital_bed', x, 1, 4] as FloorSeed,
-        ['iv_stand', x + 1, 1, 0] as FloorSeed,
+        ['iv_stand', x - 1, 1, 0] as FloorSeed,
+        ['bed_curtain', x - 1, 10, 0, undefined, x === 5 ? 0 : 1] as FloorSeed,
         ['hospital_bed', x, 11, 0] as FloorSeed,
-        ['iv_stand', x + 1, 13, 0] as FloorSeed,
+        ['iv_stand', x - 1, 13, 0] as FloorSeed,
       ]),
-      ...[4, 8, 12].flatMap((x) => [1, 2, 3, 11, 12, 13].map((y) => ['divider', x, y, 2] as FloorSeed)),
-      ...[3, 7, 11].flatMap((x) => [['divider', x, 4, 0] as FloorSeed, ['divider', x, 10, 0] as FloorSeed]),
       // os remédios num canto só: os armários na parede do fundo, ao lado da porta, e a pia
       ['medical_cabinet', 13, 1, 4],
       ['medical_cabinet', 15, 1, 4],
       ['cabinet_file', 18, 1, 4],
       ['sink', 19, 1, 4],
-      // o posto da enfermagem no canto de baixo: o balcão em L, com a mesa e o computador dentro
-      ['lab_bench', 13, 10, 2],
-      ['lab_bench', 14, 10, 4],
-      ['lab_bench', 16, 10, 4],
-      ['lab_bench', 18, 10, 4],
-      ['desk_metal', 16, 12, 4],
-      ['computer_old', 16, 12, 4],
-      ['chair_office', 16, 13, 0],
+      // o posto da enfermagem no canto de baixo: um balcão só, inteiro, com o computador em cima (09/10, arte do Códex)
+      ['posto_enfermagem', 13, 11, 4],
       // o carrinho no corredor entre os cubículos
       ['trolley', 7, 7, 0],
-      ...lamps([4, 7], [10, 7], [16, 5], [17, 12]),
+      ...lamps([4, 7], [10, 7], [16, 5], [16, 9]),
     ],
     wall: [
       ['clock', 'r', 1, 19.5, 3.54],
@@ -754,7 +766,7 @@ const ROOMS: RoomSpec[] = [
     particles: ['dust'],
     lamp: 'fluorescent',
     name: SEDE + 'Arsenal',
-    description: 'Os armários de armas dos dois lados da porta, os de munição e os baús nas paredes, e a bancada em U onde tudo é limpo e conferido.',
+    description: 'Os armários de armas dos dois lados da porta, os de munição e os baús nas paredes, e a mesa grande no meio, onde tudo é limpo e conferido.',
     layout: planTop(14, 10, 6),
     floorName: 'Subsolo',
     style: 'metal',
@@ -776,11 +788,11 @@ const ROOMS: RoomSpec[] = [
       ['locker_ammo', 0, 6, 2],
       ['chest_army', 0, 8, 2],
       ['chest_army', 0, 10, 2, undefined, 1],
-      // a bancada em U no meio, as bancadas viradas para dentro, com as banquetas
-      ['gun_table', 4, 4, 4],
-      ['gun_table', 7, 4, 4],
-      ['gun_table', 4, 5, 2],
-      ['gun_table', 9, 5, 6],
+      // a mesa grande do Códex no meio (no lugar das bancadas pequenas, que saíam tortas), com as
+      // banquetas dos dois lados
+      ['mesa_arsenal', 5, 4, 4],
+      ['stool_metal', 6, 3, 0],
+      ['stool_metal', 7, 3, 0],
       ['stool_metal', 6, 6, 0],
       ['stool_metal', 7, 6, 0],
       ['oil_stain', 6, 8, 0],
@@ -794,7 +806,7 @@ const ROOMS: RoomSpec[] = [
     wall: [
       ['blade_rack', 'r', 1, 5.0, 2.09],
       ['emergency_light', 'r', 1, 5.0, 3.99],
-      ['tool_board', 'l', 0, 2.7, 1.63],
+      ['tool_board', 'l', 0, 2.9, 1.63],
       ['target_paper', 'l', 0, 9.0, 1.72],
     ],
     links: [[6, 1, 'salao']],
