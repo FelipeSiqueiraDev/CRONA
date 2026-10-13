@@ -120,6 +120,14 @@ python3 ../guia_andar.py <pasta>                                # os guias do an
   8 direções pela cozinha.
 - `cena.harmonizar` agora só clareia a linha escura fina (o cinto e a calça ficam).
 
+## O andar nas 8 direções (13/10, depois)
+
+As 3 folhas que faltavam chegaram (ChatGPT, um chat só, uma folha por mensagem, fundo branco): `andar_2_e_se.png`,
+`andar_3_s_sw.png`, `andar_4_w_nw.png` (o fundo branco ligado à borda virou transparente). `andar8.py` limpa as 4
+folhas juntas: os 48 quadros em `andar8/andar-<dir>-<0..5>.png` (90 px, harmonizados), a folha de conferência, o
+vídeo das 8 direções no lugar e o vídeo pela cozinha. As alturas no gerador variam só ~5% entre as folhas. O
+gerador fechou os olhos no 5º quadro da frente (`s`): os olhos voltam do 4º (`olhos_de`).
+
 ## O que falta
 
 1. As 6 direções do andar que faltam (o Felipe manda as imagens do gerador; `andar.py` limpa e monta).
