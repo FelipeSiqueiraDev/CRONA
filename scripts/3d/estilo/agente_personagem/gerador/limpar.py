@@ -95,3 +95,52 @@ if __name__ == '__main__':
         b = n[ys.min():ys.max() + 1, x0:x1]
         Image.fromarray(b.astype(np.uint8), 'RGBA').save(f'{base}_{k + 1}.png')
         print(k + 1, b.shape[1], 'x', b.shape[0])
+
+
+def reduzir_detalhe(a, px, py, ox, oy):
+    """
+    Como reduzir(), mas guarda o detalhe fino: em cada bloco, a linha escura (contorno, aro dos óculos, olho) ganha
+    se cobrir 22% do bloco; depois a cor forte (o dourado, o vinho do livro) se cobrir 22%; senão, a mediana.
+    """
+    H, W = a.shape[:2]
+    xs = np.arange(ox + px / 2, W - 1, px)
+    ys = np.arange(oy + py / 2, H - 1, py)
+    out = np.zeros((len(ys), len(xs), 4))
+    for i, y in enumerate(ys):
+        for j, x in enumerate(xs):
+            y0, y1 = int(y - py / 2), int(y + py / 2) + 1
+            x0, x1 = int(x - px / 2), int(x + px / 2) + 1
+            blk = a[max(0, y0):y1, max(0, x0):x1].reshape(-1, 4)
+            op = blk[blk[:, 3] > 127]
+            if len(op) * 2 < len(blk):
+                continue
+            rgb = op[:, :3]
+            lum = rgb @ np.array([0.3, 0.59, 0.11])
+            sat = rgb.max(1) - rgb.min(1)
+            escuro = lum < 55
+            forte = (sat > 90) & ~escuro
+            if escuro.mean() >= 0.22:
+                c = np.median(rgb[escuro], 0)
+            elif forte.mean() >= 0.22:
+                c = np.median(rgb[forte], 0)
+            else:
+                # a mediana do miolo (sem as bordas do bloco, que misturam com o vizinho)
+                yy, xx = np.mgrid[max(0, y0):y1, max(0, x0):x1]
+                mio = (np.abs(yy - y) <= py * 0.3) & (np.abs(xx - x) <= px * 0.3)
+                m = mio.reshape(-1)[blk[:, 3] > 127]
+                c = np.median(rgb[m] if m.any() else rgb, 0)
+            out[i, j, :3] = c
+            out[i, j, 3] = 255
+    return out
+
+
+def limpar_detalhe(f, px, py, ox, oy, cores=128, sufixo='_d'):
+    a = np.asarray(Image.open(f).convert('RGBA')).astype(float)
+    n = solto(paleta(reduzir_detalhe(a, px, py, ox, oy), cores))
+    base = os.path.splitext(f)[0] + sufixo
+    Image.fromarray(n.astype(np.uint8), 'RGBA').save(base + '_limpo.png')
+    ys = np.nonzero((n[..., 3] > 0).any(1))[0]
+    for k, (x0, x1) in enumerate(separar(n)):
+        b = n[ys.min():ys.max() + 1, x0:x1]
+        Image.fromarray(b.astype(np.uint8), 'RGBA').save(f'{base}_{k + 1}.png')
+    return base
