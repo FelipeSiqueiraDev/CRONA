@@ -37,4 +37,11 @@ if __name__ == '__main__':
                 f.alpha_composite(Q[(d, k)], (k * w, r * h))
         f = f.resize((f.width * 4, f.height * 4), Image.NEAREST)
         f.save(os.path.join(pasta, f'guia-andar-{i + 1}-{par[0]}-{par[1]}.png'))
+    # e uma folha por direção (1 linha x 6 quadros)
+    for par in FOLHAS:
+        for d in par:
+            f = Image.new('RGBA', (w * N, h), (255, 0, 255, 255))
+            for k in range(N):
+                f.alpha_composite(Q[(d, k)], (k * w, 0))
+            f.resize((f.width * 4, f.height * 4), Image.NEAREST).save(os.path.join(pasta, f'guia-andar-{d}.png'))
     print('ok', w, h)
