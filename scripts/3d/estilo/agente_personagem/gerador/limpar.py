@@ -196,10 +196,33 @@ def reduzir_grade(a, passo=8.0):
     return out
 
 
+def _faixas(m, folga=20):
+    """As faixas (início, fim) onde m tem algo, separadas por vãos maiores que folga."""
+    xs = np.nonzero(m)[0]
+    out, ini = [], xs[0]
+    for p, q in zip(xs[:-1], xs[1:]):
+        if q - p > folga:
+            out.append((ini, p + 1)); ini = q
+    out.append((ini, xs[-1] + 1))
+    return out
+
+
 def limpar_grade(f, passo=8.0, cores=128, sufixo='_g'):
-    """Separa os bonecos na imagem grande e reduz cada um pela grade dele."""
-    a = np.asarray(Image.open(f).convert('RGBA')).astype(float)
+    """Separa os bonecos na imagem grande (linhas e colunas) e reduz cada um pela grade dele."""
+    A = np.asarray(Image.open(f).convert('RGBA')).astype(float)
     base = os.path.splitext(f)[0] + sufixo
+    res, k0 = [], 0
+    for (r0, r1) in _faixas((A[..., 3] > 127).any(1), 10):
+        a = A.copy()
+        a[:r0, ..., 3] = 0
+        a[r1:, ..., 3] = 0
+        b, r = _limpar_linha(a, passo, cores, base, k0)
+        res += r
+        k0 += len(r)
+    return base, res
+
+
+def _limpar_linha(a, passo, cores, base, k0):
     col = (a[..., 3] > 127).any(0)
     xs = np.nonzero(col)[0]
     grupos, ini = [], xs[0]
@@ -225,7 +248,7 @@ def limpar_grade(f, passo=8.0, cores=128, sufixo='_g'):
             return j, i
         olhos = achar_olhos(a, x0, x1, ys.min(), ys.max())
         n = desenhar_olhos(n, [mapa(X, Y) for (X, Y) in olhos])
-        Image.fromarray(n.astype(np.uint8), 'RGBA').save(f'{base}_{k + 1}.png')
+        Image.fromarray(n.astype(np.uint8), 'RGBA').save(f'{base}_{k0 + k + 1}.png')
         res.append(n.shape)
     return base, res
 
