@@ -71,14 +71,56 @@ def agachado(fase):
             kj, pe = 0.75 * kk, -0.3 * kk
         else:
             kj, pe = 0.12 * max(0.0, math.sin(math.pi * q / 0.5)), 0.0
-        pernas[lado] = (th + 0.55, kj + 0.95, pe + 0.2)
-    bd = -0.35 * math.cos(2 * math.pi * p)
-    braco = {'d': (bd + 0.35, 0.6), 'e': (-bd + 0.35, 0.6)}
-    return pose_livre(pernas, braco, incl=0.12)
+        pernas[lado] = (th + 0.75, kj + 1.25, pe + 0.35)
+    bd = -0.25 * math.cos(2 * math.pi * p)
+    # os braços dobrados na frente do corpo, perto do peito
+    braco = {'d': (bd + 0.55, 1.1), 'e': (-bd + 0.55, 1.1)}
+    J = pose_livre(pernas, braco, incl=0.0)
+    J['curva'] = 0.6           # o tronco curvado para a frente (~35 graus)
+    return J
+
+
+# as peças que ficam com as pernas (o resto do corpo curva para a frente a partir do quadril)
+BAIXO = ('calca_', 'bota_', 'quadril', 'cinto', 'livro')
+
+
+def _curvar(A):
+    """Troca alosi.montar por um que curva o tronco, os braços e a cabeça para a frente (J['curva'], em rad) em volta
+    do quadril: o agachado de verdade, e não só os joelhos dobrados. Uma vez só por processo."""
+    if getattr(A, '_curvado', False):
+        return
+    A._curvado = True
+    original = A.montar
+
+    def montar(J):
+        partes = original(J)
+        ang = J.get('curva', 0.0)
+        if not ang:
+            return partes
+        piv = np.array([0.0, 0.0, 0.52 + J['sobe']])
+        c, s_ = math.cos(ang), math.sin(ang)
+
+        def girar(f):
+            def d(L):
+                q = L - piv
+                # o inverso do giro para a frente (em volta do eixo a): o ponto do mundo volta para a peça reta
+                y = c * q[:, 1] - s_ * q[:, 2]
+                z = s_ * q[:, 1] + c * q[:, 2]
+                return f(np.stack([q[:, 0], y, z], 1) + piv)
+            return d
+        for p in partes:
+            if not p.nome.startswith(BAIXO):
+                p.d = girar(p.d)
+                if p.liso is not None:
+                    p.liso = girar(p.liso)
+        return partes
+    A.montar = montar
+    A.detalhes = lambda q: None        # o guia não precisa do rosto (o gerador desenha)
 
 
 def _q(args):
     import alosi as A
+    _curvar(A)
     tipo, d, k = args
     J = sentado() if tipo == 'sentado' else abrir(k) if tipo == 'abrir' else agachado(k / N)
     return A.rgba(A.render(d, J))
