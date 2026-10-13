@@ -337,8 +337,8 @@ def fogao(aceso=True):
         fr = (yb + 0.04 - 0.035) - Y
         pol = ((fr > 0.05) & (fr < 0.05 + 3 * PH)) | ((fr > 0.2) & (fr < 0.2 + 2 * PH)) | ((fr > 0.4) & (fr < 0.4 + PH))
         pol &= np.sin(X * 9.0 + 1.3) > -0.4
-        out = np.where(pol[:, None], hx('#4a4542'), out)
-        out = np.where(((fr > 0.05 + PH) & (fr < 0.05 + 2 * PH) & (np.sin(X * 9.0 + 1.3) > 0.3))[:, None], hx('#57514c'), out)
+        out = np.where(pol[:, None], hx('#4e4844'), out)
+        out = np.where(((fr > 0.05 + PH) & (fr < 0.05 + 2 * PH) & (np.sin(X * 9.0 + 1.3) > 0.3))[:, None], hx('#605954'), out)
         out = np.where(bd[:, None], hx('#4b4642'), out)
         # a moldura da chapa: a beira de dentro em sombra (1 px) e a de fora com a luz (1 px)
         bdi = ~bd & ((X < x0 + 0.04 + PH) | (X > x1 - 0.04 - PH) | (Y > yb + 0.005 - PH))
