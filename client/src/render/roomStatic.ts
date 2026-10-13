@@ -2,7 +2,7 @@ import { DIRS, M_POR_CASA, terrenoEm, Z_PER_M, type FloorStyle, type RoomMap, ty
 import { hash, shade } from './color';
 import { BATENTE_PORTA_M, VAO_PORTA_M } from './furniKit';
 import { iso } from './iso';
-import { texturaParede, texturaPiso } from './texturas';
+import { texturaParede, texturaPiso, texturaPx, type TexturaPx } from './texturas';
 
 export interface StaticLayer {
   canvas: HTMLCanvasElement;
@@ -213,6 +213,12 @@ function drawWallSeg(ctx: CanvasRenderingContext2D, map: RoomMap, s: WallSeg, pi
   if (pintarParede) {
     // a textura desenhada (do chão ao topo); a parede da esquerda fica um pouco mais escura
     pintarParede(s);
+    if ((pintarParede as { pixel?: boolean }).pixel) {
+      // a pixel art já vem com a luz de cada parede e o rodapé
+      ctx.restore();
+      acabamento(ctx, map, s, hole);
+      return;
+    }
     if (s.wall === 'l') {
       ctx.fillStyle = 'rgba(0,0,0,0.16)';
       poly(ctx, face);
@@ -643,6 +649,38 @@ function pintorPiso(ctx: CanvasRenderingContext2D, t: { img: HTMLImageElement; c
   };
 }
 
+/** O resto inteiro (para o índice da variação, também nas casas negativas). */
+function resto(a: number, n: number) {
+  return ((Math.round(a) % n) + n) % n;
+}
+
+/** O chão em pixel art: a imagem da casa (uma das n x n variações), colada no pixel inteiro, sem suavizar. */
+function pintorPisoPx(ctx: CanvasRenderingContext2D, t: TexturaPx): Pintor<[number, number, number]> {
+  return ([x, y, h]) => {
+    const img = t.piso.imgs[resto(x, t.n)][resto(y, t.n)];
+    const [sx, sy] = iso(x, y, h);
+    const suave = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, Math.round(sx - t.piso.ax), Math.round(sy - t.piso.ay));
+    ctx.imageSmoothingEnabled = suave;
+  };
+}
+
+/** A parede em pixel art: o trecho (uma casa) colado pelo pé do começo dele; o recorte da parede corta o topo. */
+function pintorParedePx(ctx: CanvasRenderingContext2D, t: TexturaPx): Pintor<WallSeg> {
+  const f = ((s: WallSeg) => {
+    const p = t.parede[s.wall];
+    const img = p.imgs[resto(s.at, t.n)];
+    const [sx, sy] = s.wall === 'l' ? iso(s.plane, s.at, s.base) : iso(s.at, s.plane, s.base);
+    const suave = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, Math.round(sx - p.ax), Math.round(sy - p.ay));
+    ctx.imageSmoothingEnabled = suave;
+  }) as Pintor<WallSeg> & { pixel?: boolean };
+  f.pixel = true;
+  return f;
+}
+
 /** A parede com a textura vista de frente: do chão ao topo, e a largura de uma volta pela proporção da imagem. */
 function pintorParede(ctx: CanvasRenderingContext2D, map: RoomMap, img: HTMLImageElement): Pintor<WallSeg> {
   const W = img.naturalWidth;
@@ -680,8 +718,9 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
   // texturas desenhadas do estilo do cômodo (chão e parede), quando já chegaram
   const tPiso = texturaPiso(style);
   const tParede = texturaParede(style);
-  const pintarPiso = tPiso ? pintorPiso(ctx, tPiso) : undefined;
-  const pintarParede = tParede ? pintorParede(ctx, map, tParede.img) : undefined;
+  const tPx = texturaPx(style);
+  const pintarPiso = tPx ? pintorPisoPx(ctx, tPx) : tPiso ? pintorPiso(ctx, tPiso) : undefined;
+  const pintarParede = tPx ? pintorParedePx(ctx, tPx) : tParede ? pintorParede(ctx, map, tParede.img) : undefined;
   // ao ar livre, o chão de cada casa pode ser outro (terreno): o desenho e a textura de cada estilo
   const linhas = terreno ? terreno.replace(/\r/g, '').split('\n') : undefined;
   const pintores = new Map<FloorStyle, Pintor<[number, number, number]> | undefined>();

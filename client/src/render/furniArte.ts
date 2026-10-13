@@ -72,6 +72,11 @@ export interface MovelArte {
    */
   exato?: boolean;
   /**
+   * pixel art (a arte feita pelo motor de pixel, 1 pixel da imagem = 1 do tabuleiro): desenhada sem suavizar e
+   * no pixel inteiro, para não borrar.
+   */
+  pixel?: boolean;
+  /**
    * o móvel visto de cima (mapa tático), com a frente para baixo; a imagem tem a pegada inteira e
    * a caixa diz onde o móvel está nela, em pixels (scripts/3d/cima.py): o jogo põe a caixa no
    * tamanho de verdade dele
@@ -140,6 +145,12 @@ function encaixe(chave: string, a: MovelArte, def: FurniDef, prontas: Imagens[])
   const salvo = encaixes.get(chave);
   if (salvo) return salvo;
   const e: Encaixe = { f: 1, base: null };
+  if (a.pixel && a.real) {
+    // pixel art: a arte já vem no tamanho final (com o `aumento`), e esticar borraria o pixel
+    e.base = [a.real[0], a.real[1]];
+    encaixes.set(chave, e);
+    return e;
+  }
   if (a.exato && a.real) e.base = [a.real[0], a.real[1]];
   else if (a.real && prontas.length && !DA_PAREDE.test(def.kind) && !COPA.test(def.kind)) {
     const [rw, rd] = a.real;
@@ -461,12 +472,19 @@ function lugar(p: Painter, img: HTMLCanvasElement, ax: number, ay: number, k: nu
   return { x: px + (r.x - px) * f, y: py + (r.y - py) * f, w: r.w * f, h: r.h * f };
 }
 
-function pintar(p: Painter, img: HTMLCanvasElement, ax: number, ay: number, k: number, centro: boolean, aj?: Ajuste) {
+function pintar(p: Painter, img: HTMLCanvasElement, ax: number, ay: number, k: number, centro: boolean, aj?: Ajuste, pixel = false) {
   const r = lugar(p, img, ax, ay, k, centro, aj);
   const ctx = p.ctx;
   const suave = ctx.imageSmoothingEnabled;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
+  if (pixel) {
+    // pixel art: no pixel inteiro e sem suavizar (senão borra)
+    r.x = Math.round(r.x);
+    r.y = Math.round(r.y);
+    ctx.imageSmoothingEnabled = false;
+  } else {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+  }
   ctx.drawImage(img, r.x, r.y, r.w, r.h);
   ctx.imageSmoothingEnabled = suave;
   return r;
@@ -612,7 +630,7 @@ function desenharGiro(
     p.ctx.rotate(ang);
     p.ctx.translate(-px, -r0.y);
   }
-  const r = pintar(p, imgs.normal, vista.ax, vista.ay, a.escala, centro, aj);
+  const r = pintar(p, imgs.normal, vista.ax, vista.ay, a.escala, centro, aj, !!a.pixel);
   if (a.brilho && luz && p.power > 0.1) brilhar(p, r, k, a.brilho.x, a.brilho.y, a.brilho.r, luz, 0.55 * p.power * falha);
   const tela = a.tela?.giros[g as '4'];
   if (tela && corTela && p.power > 0.1) brilhar(p, r, k, tela.x, tela.y, tela.r, corTela, (a.tela?.forca ?? 0.42) * forcaTela * p.power);
@@ -705,5 +723,5 @@ function desenhar(p: Painter, a: MovelArte, frente: Imagens, costas: Imagens | n
   const espelhar = (vista.lado ?? 'esquerda') !== ladoNaTela;
   const img = espelhar ? imgs.espelho : imgs.normal;
   const ax = espelhar ? img.width - vista.ax : vista.ax;
-  pintar(p, img, ax, vista.ay, a.escala, vista.ancora === 'centro', enc ? { enc, encosta: !!a.encosta } : undefined);
+  pintar(p, img, ax, vista.ay, a.escala, vista.ancora === 'centro', enc ? { enc, encosta: !!a.encosta } : undefined, !!a.pixel);
 }
