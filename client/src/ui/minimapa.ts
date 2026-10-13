@@ -92,6 +92,7 @@ const COR_PISO: Partial<Record<FloorStyle, string>> = {
   madeira: '#3b2a1f',
   taco: '#4a3524',
   ladrilho: '#33424f',
+  cozinha_fazenda: '#33424f',
   xadrez: '#2c3c52',
   azulejo: '#1d3d58',
   carpete: '#3b2456',

@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 22;
+export const FAZENDA_REV = 23;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -752,7 +752,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       "A cozinha de fazenda: fogão a lenha, a pia, os armários e a mesa onde a família come. A porta dá para o hall, a leste.",
     layout: planRight(10, 6, 3),
     andar: CASA,
-    style: "ladrilho",
+    style: "cozinha_fazenda",
     darkness: 0.35,
     ambient: "#c08a50",
     particles: ["dust", "smoke"],

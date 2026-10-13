@@ -29,6 +29,7 @@ const FLOORS: Record<FloorStyle, FloorLook> = {
   madeira: { base: '#3b2718', grout: 'rgba(10,6,4,0.7)', kind: 'plank' },
   taco: { base: '#8a4a22', grout: 'rgba(40,16,6,0.6)', kind: 'plank' },
   ladrilho: { base: '#c2beb2', grout: 'rgba(80,80,74,0.6)', kind: 'tile' },
+  cozinha_fazenda: { base: '#c9c0ad', grout: 'rgba(80,72,60,0.6)', kind: 'tile' },
   xadrez: { base: '#cfcabd', alt: '#2a2622', grout: 'rgba(0,0,0,0.35)', kind: 'checker' },
   azulejo: { base: '#93aebb', grout: 'rgba(40,60,70,0.5)', kind: 'tile' },
   carpete: { base: '#3b2160', alt: '#7a5ab0', grout: 'rgba(0,0,0,0)', kind: 'carpet' },

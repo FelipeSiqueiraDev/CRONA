@@ -187,5 +187,19 @@
   "parede": {
    "arquivo": "parede-loja.png"
   }
+ },
+ "cozinha_fazenda": {
+  "piso": {
+   "arquivo": "piso-ladrilho.png",
+   "casas": 8,
+   "origem": [
+    2,
+    2
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-hospital.png"
+  },
+  "px": "cozinha_fazenda"
  }
 }
