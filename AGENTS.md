@@ -10,6 +10,7 @@ Conversa nova, ou outra conta? Antes de qualquer coisa:
 1. Leia o [`docs/GUIA-DO-CLAUDE.md`](docs/GUIA-DO-CLAUDE.md): os combinados com o Felipe, o caminho da arte com o Códex e como conferir o trabalho.
 2. Leia o [`docs/EM-ABERTO.md`](docs/EM-ABERTO.md): onde paramos, o que está pela metade, a fila do Códex e as decisões que esperam o Felipe.
 3. Vai mexer na arte do tabuleiro (cenário, móveis, chão, parede)? Siga o [`docs/GUIA-MAPAS-PIXEL.md`](docs/GUIA-MAPAS-PIXEL.md): o estilo novo, pixel art 1:1 feita só por código.
+4. Vai mexer nos bonecos do tabuleiro (personagens)? Siga o [`docs/PERSONAGEM-GERADOR.md`](docs/PERSONAGEM-GERADOR.md): o gerador de imagem desenha (com o guia de ângulo) e o código limpa e harmoniza com o mapa.
 
 Ao terminar um bloco de trabalho, atualize o `EM-ABERTO.md`.
 

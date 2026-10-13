@@ -152,6 +152,23 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Em andamento em 13/10 (na nuvem, branch `claude/arte-codigo`): a Alosi nova (gerador + limpeza por código) e a cozinha à noite
+
+Tudo em `docs/PERSONAGEM-GERADOR.md` (o caminho, os prompts, os arquivos e o que falta).
+
+- **Personagem:** desenhar só por código não chegou na qualidade (4 agentes tentaram; estudos em
+  `scripts/3d/estilo/agente_personagem/`). O caminho é **o gerador de imagem desenha, o código limpa e harmoniza**
+  (`scripts/3d/estilo/agente_personagem/gerador/`). A Alosi: **as 8 direções paradas aprovadas** (90 px, feitas com o
+  guia de ângulo do boneco 3D), **o andar com 2 de 8 direções** (costas e 3/4 costas direita). **Aguardando o Felipe**
+  mandar as 6 folhas do andar que faltam (`guia-1-e` ... `guia-6-nw`).
+- **Móveis em tamanho real:** o `aumento` 1,2 das cadeiras/mesas deixava o boneco pequeno; o Felipe aprovou 1,0
+  (`docs/estilo/alosi-moveis-12-vs-10.png`). Falta passar para o jogo.
+- **A cozinha à noite** (`scripts/3d/estilo/agente_cozinha/noite.py`, `NOITE=1`): a cena multiplicada pela luz que
+  chega em cada ponto (ambiente roxo-vinho, o sol do fim da tarde pela janela com as sombras, as lâmpadas em cone com a
+  sombra de cima, o fogo tremendo), em degraus. Estudo; no jogo a luz teria de ser calculada na hora.
+- **Por que as referências "têm borogodó":** contraste claro/escuro (chão escuro, móveis claros), luz que conta história,
+  cores de destaque, muitas coisinhas, formas exageradas, chão calmo, cômodo pequeno e emoldurado.
+
 ## Feito em 12/10 (na nuvem, branch `claude/arte-codigo`): estudos do estilo pixel art só por código
 
 O Felipe mandou salas isométricas em pixel art "cozy" (uma de madeira com lareira) e quer o tabuleiro nesse jeito, sem
