@@ -1911,7 +1911,7 @@ def acabamento(t, forca, tj=None):
             cor = np.where((m & reflexo)[..., None], cor * 0.84 + np.array([240.0, 250.0, 250.0]) * 0.16, cor)
 
     # o fundo; o que passa da viga (a chaminé, os fios) some para ele aos poucos
-    fundo = np.array([214.0, 214.0, 210.0])
+    fundo = np.array([26.0, 20.0, 28.0]) if NOITE['ok'] else np.array([214.0, 214.0, 210.0])
     cor = np.where((obj >= 0)[..., None], cor, fundo)
     for (oid, zf, alto) in fades:
         m = (obj == oid) & (Z > zf)
@@ -1929,9 +1929,15 @@ def acabamento(t, forca, tj=None):
             atras = np.where((m & (vo != oid) & (np.roll(m, dx, axis=1) == False) & (atras == cor).all(-1))[..., None], vz, atras)
         k = np.ceil(np.clip((Z - zf) / alto, 0, 1) * 4) / 4
         cor = np.where((m & (Z > zf))[..., None], cor * (1 - k[..., None]) + atras * k[..., None], cor)
+    if NOITE['ok']:
+        import noite
+        sol = _JC._ULTIMO.get('sol') if JANELA['ok'] else None
+        feixe = _JC._ULTIMO.get('feixe') if JANELA['ok'] else None
+        cor = noite.iluminar(cor, c, t, lampadas, fogo=((FORN['m'], 0.62, 0.32), forca), sol=sol, feixe=feixe, luzes=luzes,
+                            janela=((_JC.YA + _JC.YB) / 2, 0.25, 1.75) if JANELA['ok'] else None)
     if FOGO['ok']:
         cor = FOGO['f'](cor, t, forca)
-    for (L0, raio, forca_l) in lampadas:
+    for (L0, raio, forca_l) in ([] if NOITE['ok'] else lampadas):
         cor = luz_lampada(cor, L0, raio, forca_l)
     if JANELA['ok']:
         cor = JANELA['poeira'](cor, c, tj)
@@ -1962,6 +1968,7 @@ def luz_lampada(cor, L0, tg, forca_l):
 import janela_cozinha as _JC  # noqa: E402
 JANELA = {'ok': True, 'luz': _JC.luz_janela, 'poeira': _JC.poeira_janela}
 FOGO = {'ok': True, 'f': lambda cor, t, forca: _fogo(cor, t, forca)}
+NOITE = {'ok': os.environ.get('NOITE') == '1'}
 
 
 def montar(t=0.0, forca=1.0, tj=None):

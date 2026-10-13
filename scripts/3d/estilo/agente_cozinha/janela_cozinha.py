@@ -14,6 +14,7 @@ A parede tem de ser a caixa (-ESP, 0, ...) com a face visível em x = 0 (tipo 2)
 sombra no mapa do sol); a sombra do batente, das travessas e da cortina no chão é feita pela conta da própria janela.
 """
 import math
+import os
 import numpy as np
 from motor import MUNDO, emissivo, ruido, tela, VISTA, ESC
 
@@ -57,7 +58,7 @@ ZR = 2.38                  # a altura do varão
 ZC0, ZC1 = 1.12, 2.37      # a cortina: a barra de baixo e o alto (presa no varão)
 LARG = 0.36                # a largura de cada folha da cortina (franzida)
 PREGAS = 3                 # as pregas de cada folha
-SOL = np.array([2.4, 0.35, -1.0])     # o sentido em que a luz anda (de fora para dentro e para baixo), no quadro da parede
+SOL = np.array([2.4, 0.35, -1.0]) if os.environ.get('NOITE') != '1' else np.array([2.2, 0.5, -0.85])     # o sentido em que a luz anda (de fora para dentro e para baixo), no quadro da parede
 SOL = SOL / np.linalg.norm(SOL)
 SOL_W = _w(SOL)                         # o mesmo sentido no mundo
 COR_SOL = np.array([255.0, 228.0, 168.0])
@@ -406,6 +407,7 @@ def luz_janela(cor, c, t):
     acc = acc * ac * vira
     q = np.zeros((h, w))
     q[idx] = _degraus(acc)
+    _ULTIMO['sol'] = q
     # no chão pousa inteira; nos móveis um pouco menos (já têm a luz da face)
     forca = np.where(c.tipo == 1, 1.0, 0.9)[..., None]
     k = q[..., None] * forca
