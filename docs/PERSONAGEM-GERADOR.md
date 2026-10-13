@@ -103,12 +103,64 @@ python3 andar.py andar_1_n_ne.png n ne andar.mp4                # o andar de uma
 python3 ../guia_andar.py <pasta>                                # os guias do andar
 ```
 
-## O que falta
+## Onde parou (13/10, fim da conversa)
 
-1. As 6 direções do andar que faltam (o Felipe manda as imagens do gerador; `andar.py` limpa e monta).
-2. O vídeo dele andando pela cozinha nas 8 direções.
-3. Sentado: o guia e o pedido.
-4. Respirar e piscar por código em cima das 8 paradas.
-5. Passar o `aumento` 1,0 das cadeiras/mesas/banquetas para o jogo.
-6. Pôr a Alosi nova no jogo (as tiras `idle-`, `parado-`, `andar-` no formato do `docs/ARTE.md`).
-7. Os outros agentes (Catarina, Cora, Tepes) pelo mesmo caminho.
+- **Andar das costas (`n`, `ne`): pronto, 6 quadros, aprovado** ("ficou ótimo").
+- **Tentativas que não serviram para as outras 6 direções:** uma direção por imagem (saíam diferentes entre si), todas
+  juntas (o gerador achata para caber) e o "passo de 2 quadros" editando a pose parada (`passo_s*.png`: o Felipe achou
+  duro; 4 quadros com o parado no meio não convenceram). **Vale o andar de 6 quadros.**
+- **Pedido em andamento:** a mesma receita da folha das costas, 2 direções por pedido, chat novo cada um, com a folha
+  aprovada como 4ª imagem. O pacote (`alosi-andar-6-quadros.zip`) tem 3 pastas `1-e-se`, `2-s-sw`, `3-w-nw`, cada uma
+  com `1-modelo.png` (= `alosi_gerador_guia.png`), `2-mapa-estilo.png` (= `entrada/6-mapa-estilo.png`),
+  `3-guia.png` (= `entrada/andar/guia-andar-<n>-<dir>-<dir>.png`) e `4-andar-aprovado.png`
+  (= `entrada/andar/0-andar-aprovado.png`). O LEIA-ME com o prompt: `gerador/pedidos/andar-6-quadros-LEIA-ME.txt`.
+- **Quando as folhas chegarem:** `python3 andar.py <folha.png> <dir1> <dir2> saida.mp4` (limpa, harmoniza e faz o
+  vídeo). Se vier achatada, corrigir a proporção pela pose parada da mesma direção (`alosi_gerador_guia_90_<n>.png`:
+  comparar a largura do tronco e a altura da cabeça, e reduzir com passos diferentes em x e em y). Depois, o vídeo nas
+  8 direções pela cozinha.
+- `cena.harmonizar` agora só clareia a linha escura fina (o cinto e a calça ficam).
+
+## O andar nas 8 direções (13/10, depois)
+
+As 3 folhas que faltavam chegaram (ChatGPT, um chat só, uma folha por mensagem, fundo branco): `andar_2_e_se.png`,
+`andar_3_s_sw.png`, `andar_4_w_nw.png` (o fundo branco ligado à borda virou transparente). `andar8.py` limpa as 4
+folhas juntas: os 48 quadros em `andar8/andar-<dir>-<0..5>.png` (90 px, harmonizados), a folha de conferência, o
+vídeo das 8 direções no lugar e o vídeo pela cozinha. As alturas no gerador variam só ~5% entre as folhas. O
+gerador fechou os olhos no 5º quadro da frente (`s`): os olhos voltam do 4º (`olhos_de`).
+
+## No jogo (13/10)
+
+A Alosi nova está no tabuleiro: `client/public/arte/personagens/alosi/tabuleiro-3d/` (o formato do boneco v2, `anim.json`
+lido por `findBoneco`), gravado por `gerador/exportar_jogo.py`: `parado` (a pose aprovada respirando, 4 quadros, 420 ms)
+e `andar` (os 6 quadros de `andar8/`) nas 8 direções, `escala` = 1/0,91 (pixel 1:1 no zoom 1), os pés de cada quadro
+achados na imagem. Vale no lugar das poses antigas (`tabuleiro-32bits/`, que ficaram). Vídeo: `docs/estilo/alosi-no-jogo.mp4`.
+
+**Pisar no chão (13/10):** sem sombra forte ele parecia flutuar. Agora o pé passa 3 px do ponto do chão (`AFUNDA` no
+`exportar_jogo.py`), o boneco em pixel art ganha a pegada em degraus embaixo (`desenharPegada` no `RoomView.ts`, o miolo
+mais escuro e um anel mais claro, como a sombra dos móveis) e a sombra de cada pé sobe 1 px (a bota tapa a metade de
+cima). Antes e depois: `docs/estilo/alosi-pes-antes-depois.png`.
+
+**Pedidos em andamento** (pacote `alosi-acoes.zip`; LEIA-ME em `gerador/pedidos/acoes-LEIA-ME.txt`; os guias em
+`gerador/entrada/acoes/`, feitos por `../guia_acoes.py`): **sentado** (4 diagonais), **abrir o armário** (4 diagonais x
+3 quadros) e **andar agachado** (8 direções x 6, 4 folhas). No jogo: `sentado` já é tocado quando a peça está na
+cadeira (`sentadoReal` no RoomView); `agachado` e `abrir` ainda precisam de código (o tabuleiro hoje achata a peça
+agachada em 72%; o `abrir` precisa de um gatilho quando o mobi ao lado abre).
+
+## Teste: o corpo pelo código, a cabeça da arte aprovada (13/10)
+
+Fazer cada ação no gerador não fecha a conta: ações x 8 direções x quadros x armado/desarmado x machucado passa de mil
+quadros por personagem. Teste em `scripts/3d/estilo/agente_personagem/projecao/`:
+- `textura.py`: o 3D inteiro pintado com a arte aprovada (cada ponto do corpo posado volta para a pose parada e pega a
+  cor da direção que o vê melhor). Refaz bem a pose parada, mas borra quando o corpo dobra (o 3D e a arte não batem
+  pixel a pixel). Abandonado.
+- `hibrido.py` (**recusado pelo Felipe: "terrível de ruim"**): o corpo vem do 3D (`alosi.py`, qualquer pose, com a luz, a rampa e o contorno do
+  cenário; as cores de cada material tiradas da arte aprovada) e **a cabeça é recortada da própria arte aprovada**
+  daquela direção (ela é rígida: em qualquer pose é a mesma, só muda de lugar), presa no pescoço do 3D.
+  Prévias: `docs/estilo/alosi-hibrido-vs-aprovada.png` (em cima o híbrido, embaixo a aprovada) e
+  `docs/estilo/alosi-hibrido-andar-agachado.mp4` (andar e agachado nas 8 direções, tudo por código).
+
+
+1. Sentado, abrir o armário e andar agachado: esperando as imagens do gerador (pacote `alosi-acoes.zip`).
+2. Piscar por código em cima das 8 paradas.
+3. Passar o `aumento` 1,0 das cadeiras/mesas/banquetas para o jogo.
+4. Os outros agentes (Catarina, Cora, Tepes) pelo mesmo caminho.

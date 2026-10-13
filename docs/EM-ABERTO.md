@@ -159,8 +159,17 @@ Tudo em `docs/PERSONAGEM-GERADOR.md` (o caminho, os prompts, os arquivos e o que
 - **Personagem:** desenhar só por código não chegou na qualidade (4 agentes tentaram; estudos em
   `scripts/3d/estilo/agente_personagem/`). O caminho é **o gerador de imagem desenha, o código limpa e harmoniza**
   (`scripts/3d/estilo/agente_personagem/gerador/`). A Alosi: **as 8 direções paradas aprovadas** (90 px, feitas com o
-  guia de ângulo do boneco 3D), **o andar com 2 de 8 direções** (costas e 3/4 costas direita). **Aguardando o Felipe**
-  mandar as 6 folhas do andar que faltam (`guia-1-e` ... `guia-6-nw`).
+  guia de ângulo do boneco 3D) e **o andar nas 8 direções**, já **no jogo** (`tabuleiro-3d/`, vídeo
+  `docs/estilo/alosi-no-jogo.mp4`), pisando no chão (pegada em degraus e o pé afundado 3 px, desde 13/10).
+  **Aguardando o Felipe** mandar as imagens do gerador de sentado, abrir o armário e andar agachado
+  (`alosi-acoes.zip`); depois falta o código do agachado e do abrir.
+- **Personagem por código (teste de 13/10): recusado pelo Felipe ("terrível de ruim").** O corpo do 3D com a cabeça
+  da arte aprovada (`projecao/hibrido.py`) não chega na qualidade. O personagem fica no gerador; o código só multiplica
+  (arma na mão, machucado, dano, respirar, piscar).
+- **Plano de todas as ações (13/10):** em `docs/PERSONAGEM-GERADOR.md` ("Plano de todas as ações"): cada agente só
+  com a arma de assinatura, o códex aberto conta como armado, escondido = agachado encolhido. **Próximo passo:** o
+  Felipe instala o Códex de linha de comando no PC e chama o Claude Code de lá; o primeiro teste é a pose mais
+  difícil (atacar armado, 2 direções).
 - **Móveis em tamanho real:** o `aumento` 1,2 das cadeiras/mesas deixava o boneco pequeno; o Felipe aprovou 1,0
   (`docs/estilo/alosi-moveis-12-vs-10.png`). Falta passar para o jogo.
 - **A cozinha à noite** (`scripts/3d/estilo/agente_cozinha/noite.py`, `NOITE=1`): a cena multiplicada pela luz que

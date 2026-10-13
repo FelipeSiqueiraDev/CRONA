@@ -143,6 +143,39 @@ const TURN_MS = 240;
 /** Sombras de contato prontas, por tamanho. */
 const sombrasPes = new Map<string, HTMLCanvasElement>();
 
+const pegadas = new Map<string, HTMLCanvasElement>();
+
+/** A pegada em degraus embaixo do boneco em pixel art: o miolo mais escuro e um anel mais claro, de borda firme. */
+function desenharPegada(ctx: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number) {
+  const k = `${rx}x${ry}`;
+  let c = pegadas.get(k);
+  if (!c) {
+    c = document.createElement('canvas');
+    c.width = rx * 2 + 1;
+    c.height = ry * 2 + 1;
+    const g = c.getContext('2d')!;
+    const img = g.createImageData(c.width, c.height);
+    for (let j = 0; j < c.height; j++)
+      for (let i = 0; i < c.width; i++) {
+        const dx = (i - rx) / rx;
+        const dy = (j - ry) / ry;
+        const d = dx * dx + dy * dy;
+        if (d > 1) continue;
+        const o = (j * c.width + i) * 4;
+        img.data[o] = 30;
+        img.data[o + 1] = 14;
+        img.data[o + 2] = 22;
+        img.data[o + 3] = d < 0.35 ? 92 : d < 0.7 ? 62 : 34;
+      }
+    g.putImageData(img, 0, 0);
+    pegadas.set(k, c);
+  }
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(c, Math.round(x - rx), Math.round(y - ry));
+  ctx.restore();
+}
+
 /**
  * Sombra de contato embaixo das botas, em pixel duro como o resto do
  * tabuleiro: um elipse escuro de borda firme, com o miolo mais fechado.
@@ -2222,10 +2255,18 @@ export class RoomView {
               }
             // embaixo das botas: a sombra de contato, escura e de borda firme, como no pixel art; com o boneco,
             // uma embaixo de cada pé, menor e mais clara quando o pé está no ar
+            // o boneco em pixel art (o do gerador): a pegada em degraus, como a sombra dos móveis no chão (sem ela o
+            // corpo parece flutuar em cima do piso)
+            if (!deitada && bpes && bq?.pixel && u.sit !== 2) {
+              const abre = Math.max(6, ...bpes.map((pe) => Math.abs(pe[0])));
+              desenharPegada(ctx, sx, sy + 1, Math.round(abre + 9), Math.round((abre + 9) * 0.46));
+            }
             if (!deitada && bpes && u.sit !== 2)
               for (const [dx, dy, alt] of bpes) {
                 const k = Math.max(0.45, 1 - alt / 9);
-                desenharSombraPes(ctx, sx + Math.round(dx), sy + Math.round(dy), Math.round(8 * k), Math.max(2, Math.round(3.5 * k)));
+                // no boneco em pixel art, 1 px acima da sola: a bota tapa a metade de cima e a sombra fica embaixo dela
+                const sobe = bq?.pixel ? 1 : 0;
+                desenharSombraPes(ctx, sx + Math.round(dx), sy + Math.round(dy) - sobe, Math.round(8 * k), Math.max(2, Math.round(3.5 * k)));
               }
             else if (!deitada && quadro?.pesPontos?.length && u.sit !== 2) {
               // a pose (pixel art ou arte grande): uma sombra embaixo de cada pé que a imagem mostra, inclusive o

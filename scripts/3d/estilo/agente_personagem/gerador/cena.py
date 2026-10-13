@@ -68,6 +68,10 @@ def harmonizar(spr):
     rosto = np.zeros(a.shape, bool)
     rosto[int(h * 0.12):int(h * 0.32)] = True
     meio &= ~rosto
+    # só a linha fina (1 px entre duas partes claras); a área escura de verdade (o cinto, a calça) fica como está
+    claro = a & ~escuro
+    fina = (_viz(claro, 0, 1, False) & _viz(claro, 0, -1, False)) | (_viz(claro, 1, 0, False) & _viz(claro, -1, 0, False))
+    meio &= fina
     rgb = np.where(meio[..., None], dentro * 0.5 + np.array([10.0, 3.0, 5.0]), rgb)
     s[..., :3] = rgb
     return np.clip(s, 0, 255)
