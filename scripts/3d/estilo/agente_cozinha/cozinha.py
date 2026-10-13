@@ -109,6 +109,7 @@ def ladrilho():
 
 AZ = '#a7c7c0'          # o azulejo verde-água
 AZ_J = '#7e9e98'
+AZ_REJ = '#dbe3da'      # o rejunte claro
 PINT = '#ece0c2'        # a parede pintada (creme de cal)
 TA, TZ = 7 * PH, 8 * PZ   # o azulejo: 7 x 8 px
 ZAZ = 7 * TZ              # o alto do azulejo (7 fiadas)
@@ -134,34 +135,44 @@ def parede(eixo):
         # a cal gasta: manchas grandes e suaves em dois degraus (pixel limpo: a borda segue a grade 1 px x 1 px)
         qa, qz = np.floor(a / PH) * PH, np.floor(z / PZ) * PZ
         s = suave(qa + (3.1 if eixo == 'x' else 11.7), qz * 1.6, 0.55, 9) * 0.65 + suave(qa, qz * 2.0, 0.22, 4) * 0.35
-        out = np.where((s > 0.66)[:, None], _tom(out, 0.95), out)
-        out = np.where((s > 0.76)[:, None], _tom(out, 0.95), out)
-        # as lasquinhas (2 px deitados, a sombra embaixo) e a sujeira escura logo embaixo da viga
-        ia_, iz_ = np.floor(a / (2 * PH)), np.floor(z / PZ)
-        lasca = ruido(ia_, iz_, 5.0) > 0.996
-        out = np.where(lasca[:, None], _tom(pint, 0.82), out)
-        out = np.where(((z > ALTO - 2 * PZ))[:, None], _tom(out, 0.9), out)
-        # o azulejo
+        out = np.where((s > 0.7)[:, None], _tom(out, 0.965), out)
+        # a sujeira escura logo embaixo da viga (2 degraus)
+        out = np.where(((z > ALTO - 4 * PZ))[:, None], _tom(out, 0.95), out)
+        out = np.where(((z > ALTO - 2 * PZ))[:, None], _tom(out, 0.92), out)
+        # o azulejo (7 x 8 px): o rejunte claro de 1 px; a peça abaulada: a fileira de cima e a coluna da esquerda
+        # pegam luz, a de baixo e a da direita na sombra; três tons de esmalte; o brilho do esmalte em diagonal
         ia, iz = np.floor(a / TA), np.floor(z / TZ)
         ga, gz = a - ia * TA, z - iz * TZ
+        ca, cz_ = np.floor(ga / PH + 1e-6), np.floor(gz / PZ + 1e-6)      # o pixel dentro da peça (0..6, 0..7)
         k = ruido(ia, iz, 7.0)
-        t = np.where((k > 0.8)[:, None], _tom(az, 1.04), np.where((k < 0.15)[:, None], _tom(az, 0.96), az))
-        t = np.where((gz >= TZ - PZ)[:, None], _tom(az, 1.12), t)              # a beira de cima pega luz
-        t = np.where(((ga >= PH) & (ga < 2 * PH))[:, None], _tom(t, 1.05), t)   # e a da esquerda
-        t = np.where(((gz >= PZ) & (gz < 2 * PZ))[:, None], _tom(t, 0.93), t)   # a de baixo, sombra
-        # o brilho do esmalte: uma risquinha diagonal em algumas peças
-        sh = (k > 0.55) & (k < 0.7) & (np.abs((ga / PH) - (TZ - gz) / PZ * 0.5 - 3) < 0.6) & (gz > 3 * PZ)
+        t = np.where((k > 0.78)[:, None], _tom(az, 1.035), np.where((k < 0.2)[:, None], _tom(az, 0.965), az))
+        t = np.where((cz_ == 7)[:, None], _tom(t, 1.1), t)                          # a beira de cima
+        t = np.where(((ca == 1) & (cz_ < 7))[:, None], _tom(t, 1.045), t)           # a da esquerda
+        t = np.where((cz_ == 1)[:, None], _tom(t, 0.92), t)                         # a de baixo
+        t = np.where(((ca == 6) & (cz_ > 1))[:, None], _tom(t, 0.955), t)           # a da direita
+        # o brilho: uma risquinha de 2 px em diagonal no alto à esquerda (em metade das peças), e o ponto de luz
+        sh = (k > 0.35) & (((ca == 2) & (cz_ == 6)) | ((ca == 3) & (cz_ == 5)))
         t = np.where(sh[:, None], _tom(az, 1.2), t)
-        t = np.where(((ga < PH) | (gz < PZ))[:, None], azj, t)
+        t = np.where(((k > 0.35) & (ca == 2) & (cz_ == 5))[:, None], _tom(az, 1.1), t)
+        t = np.where(((ga < PH) | (gz < PZ))[:, None], hx(AZ_REJ), t)
         out = np.where((z < ZAZ)[:, None], t, out)
         # o rodapé (a fiada de baixo mais escura)
-        out = np.where((z < TZ)[:, None], np.where((gz >= TZ - PZ)[:, None], _tom(hx('#6f938c'), 1.1), np.where((ga < PH)[:, None], azj * 0.8, hx('#6f938c'))), out)
+        rod = np.where((cz_ == 7)[:, None], _tom(hx('#6f938c'), 1.1), np.where((cz_ == 1)[:, None], _tom(hx('#6f938c'), 0.9), hx('#6f938c')))
+        rod = np.where(((ca == 1) & (cz_ > 1) & (cz_ < 7))[:, None], _tom(hx('#6f938c'), 1.04), rod)
+        rod = np.where(((ga < PH) | (gz < PZ))[:, None], hx('#b8c4bc'), rod)
+        out = np.where((z < TZ)[:, None], rod, out)
         # a faixa decorada: azul, com os losangos creme a cada 6 px e a linha escura em cima e embaixo
         fx = (z >= ZAZ) & (z < ZFX)
         v = np.floor((z - ZAZ) / PZ)          # 0 embaixo .. 4 em cima
         u = np.floor(a / PH) % 6
-        pat = np.where((v == 0) | (v == 4), 0, np.where(v == 2, np.where(u < 3, 2, 1), np.where((u >= 1) & (u <= 1), 2, 1)))
+        # a florzinha em cruz (creme, o miolo amarelo) a cada 6 px, e um pontinho claro no meio do caminho
+        pat = np.where((v == 0) | (v == 4), 0, 1)
+        pat = np.where(((v == 2) & (u >= 1) & (u <= 3)) | (((v == 1) | (v == 3)) & (u == 2)), 2, pat)
+        pat = np.where((v == 2) & (u == 2), 3, pat)
+        pat = np.where((v == 2) & (u == 5), 4, pat)
         cor_fx = np.where((pat == 0)[:, None], azul_e, np.where((pat == 2)[:, None], creme, azul))
+        cor_fx = np.where((pat == 3)[:, None], hx('#e8b84a'), cor_fx)
+        cor_fx = np.where((pat == 4)[:, None], hx('#6a90b0'), cor_fx)
         out = np.where(fx[:, None], cor_fx, out)
         # o friso de cerâmica clara em cima da faixa (1 px) e a sombrinha dele na cal
         out = np.where(((z >= ZFX) & (z < ZFX + PZ))[:, None], hx('#f6eedc'), out)
