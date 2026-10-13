@@ -1213,7 +1213,8 @@ def mesa(x, y, w, d, h, tampo=0.1, perna=0.12, tabua=0.25):
 CAD_LADO, CAD_TOPO, CAD_ESC = '#743c22', '#c07c44', '#542a16'
 
 
-def cadeira(x, y, costas, k=1.2):
+def cadeira(x, y, costas, k=None):
+    k = float(os.environ.get('AUMENTO', '1.2')) if k is None else k
     """A cadeira rústica da sala (sala4), crescida pelo aumento do jogo (1,2): o encosto de três travessas, o assento de tábuas."""
     s = 0.44 * k
     hs = 0.47 * k
@@ -1743,8 +1744,9 @@ def montar_moveis(t):
     caixotes(0.05, 3.06)
     barril(0.37, 4.12)
     # a mesa (4,3) giro 0 com as seis cadeiras, a caneca (5,3) e a fruteira
-    mesa(2.775, 2.1, 2.7, 1.8, 0.94)
-    s = 0.44 * 1.2
+    am = float(os.environ.get('AUMENTO', '1.2'))
+    mesa(2.775, 2.1, 2.7, 1.8, 0.94 * am / 1.2)
+    s = 0.44 * float(os.environ.get('AUMENTO', '1.2'))
     for (cx, cy, costas) in ((3, 3, '-x'), (3, 4, '-x'), (7, 3, '+x'), (7, 4, '+x'), (5, 2, '-y'), (5, 5, '+y')):
         cadeira((cx + 0.5) * CASA - s / 2, (cy + 0.5) * CASA - s / 2, costas)
     toalhinha(3.25, 5.0, 2.84, 3.16, 0.9405)
