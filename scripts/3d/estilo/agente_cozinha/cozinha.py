@@ -89,7 +89,10 @@ TL = 0.375                                       # o ladrilho: meia casa
 
 
 def ladrilho():
-    """O ladrilho em xadrez suave: a junta de 1 px, a luz na beira de cima e a sombra na de baixo."""
+    """
+    O ladrilho hidráulico em xadrez suave: a junta de 1 linha, a luz fina na beira de cima (a peça abaulada) e, no
+    meio de cada peça, o desenho do hidráulico: um quadrado girado (na tela, um losango) de 1 linha e o miolo.
+    """
     A = np.stack([hx(x) for x in LAD_A])
     B = np.stack([hx(x) for x in LAD_B])
     jc = hx(LAD_J)
@@ -99,10 +102,17 @@ def ladrilho():
         i, j = np.floor(X / TL), np.floor(Y / TL)
         gx, gy = X - i * TL, Y - j * TL
         k = (ruido(i, j, 3.0) * 3).astype(int) % 3
-        out = np.where(((i + j) % 2 == 0)[:, None], A[k], B[k])
-        # o desenho do ladrilho hidráulico: um losango pequeno no meio, 1 tom abaixo
-        out = np.where(((gx >= PH) & (gx < 2 * PH) | (gy >= PH) & (gy < 2 * PH))[:, None], _tom(out, 1.07), out)
-        out = np.where(((gx >= TL - PH) | (gy >= TL - PH))[:, None], _tom(out, 0.9), out)
+        claro = ((i + j) % 2 == 0)
+        out = np.where(claro[:, None], A[k], B[k])
+        # o desenho: o quadrado do meio (1 linha) e o miolo; no claro um tom abaixo, no escuro um tom acima
+        dx, dy = np.abs(gx - TL / 2), np.abs(gy - TL / 2)
+        q = np.maximum(dx, dy)
+        lin = (q >= 0.24 * TL) & (q < 0.24 * TL + PH)
+        mio = (dx + dy) < 0.075 * TL + PH
+        des = np.where(claro[:, None], _tom(out, 0.93), _tom(out, 1.06))
+        out = np.where((lin | mio)[:, None], des, out)
+        # a luz fina na beira de cima e a da esquerda (1 linha)
+        out = np.where(((gx >= PH) & (gx < 2 * PH) | (gy >= PH) & (gy < 2 * PH))[:, None], _tom(out, 1.05), out)
         return np.where(((gx < PH) | (gy < PH))[:, None], jc, out)
     return emissivo(f)
 
@@ -323,7 +333,17 @@ def fogao(aceso=True):
         X, Y = P[:, 0], P[:, 1]
         # a borda da chapa (uma moldura 1 tom acima)
         bd = (X < x0 + 0.04) | (X > x1 - 0.04) | (Y > yb + 0.04 - 0.035)
-        out = np.where(bd[:, None], hx('#47423e'), out)
+        # o ferro polido pelo uso: faixas ao comprido um tom acima, mais largas perto da frente, e o risco de luz
+        fr = (yb + 0.04 - 0.035) - Y
+        pol = ((fr > 0.05) & (fr < 0.05 + 3 * PH)) | ((fr > 0.2) & (fr < 0.2 + 2 * PH)) | ((fr > 0.4) & (fr < 0.4 + PH))
+        pol &= np.sin(X * 9.0 + 1.3) > -0.4
+        out = np.where(pol[:, None], hx('#4a4542'), out)
+        out = np.where(((fr > 0.05 + PH) & (fr < 0.05 + 2 * PH) & (np.sin(X * 9.0 + 1.3) > 0.3))[:, None], hx('#57514c'), out)
+        out = np.where(bd[:, None], hx('#4b4642'), out)
+        # a moldura da chapa: a beira de dentro em sombra (1 px) e a de fora com a luz (1 px)
+        bdi = ~bd & ((X < x0 + 0.04 + PH) | (X > x1 - 0.04 - PH) | (Y > yb + 0.005 - PH))
+        out = np.where(bdi[:, None], hx('#35302e'), out)
+        out = np.where(((Y > yb + 0.04 - PH) | (X < x0 + PH))[:, None], hx('#5e5752'), out)
         for k, (bx, by) in enumerate(BOCAS):
             r = np.hypot(X - bx, Y - by)
             # a boca: o disco um tom abaixo da chapa, os anéis (a fresta escura e o aro claro do lado da luz); a
@@ -532,14 +552,22 @@ PIA = dict(x0=3.0, x1=4.5, d=0.62, zt=0.9, cx0=3.64, cx1=4.24, cy0=0.1, cy1=0.48
 
 
 def granito(L, n, P):
-    """O granito cinza-bege salpicado (os pontinhos escuros e claros em grupos de 1 px, sem formar risca)."""
+    """
+    O granito cinza-bege salpicado: grãos de 1 e de 2 px (deitados) em quatro tons (o preto, o cinza, o bege e o
+    branco), sem formar risca; no tampo, a beira da frente polida (1 px de luz).
+    """
     X, Y, Z = P[:, 0], P[:, 1], P[:, 2]
     a = np.floor(X / PH) if n[2] > 0.5 else np.floor((X if abs(n[1]) > 0.5 else Y) / PH)
     b = np.floor(Y / PH) if n[2] > 0.5 else np.floor(Z / PZ)
     r = ruido(a, b, 41.0)
-    out = np.tile(hx('#9a948a'), (len(P), 1))
-    out = np.where((r > 0.86)[:, None], hx('#6e6860'), out)
-    out = np.where((r < 0.1)[:, None], hx('#c4beb2'), out)
+    r2 = ruido(np.floor(a / 2), b, 43.0)             # os grãos de 2 px
+    out = np.tile(hx('#9c958a'), (len(P), 1))
+    out = np.where((ruido(np.floor(a / 3), np.floor(b / 2), 47.0) > 0.6)[:, None], hx('#948d82'), out)   # a nuvem do fundo
+    out = np.where((r2 > 0.9)[:, None], hx('#6a645c'), out)
+    out = np.where((r2 < 0.05)[:, None], hx('#b8ad9a'), out)
+    out = np.where((r > 0.93)[:, None], hx('#4e4a45'), out)
+    out = np.where((r < 0.06)[:, None], hx('#d4cec2'), out)
+    out = np.where(((r > 0.45) & (r < 0.5))[:, None], hx('#a89c88'), out)
     return out
 
 
@@ -1618,12 +1646,16 @@ def acabamento(t, forca, tj=None):
     chao = (tipo == 1) & topo
     # a sombra macia (dois degraus) embaixo dos móveis, um pouco para a frente e a direita
     X, Y, Z = P[..., 0], P[..., 1], P[..., 2]
-    dentro = np.zeros((h, w), bool)
-    volta = np.zeros((h, w), bool)
+    # (a distância de cada pixel do chão até a pegada, empurrada um pouco para a frente; em 4 degraus que somem
+    # para fora: a sombra macia, sem pontilhado; a sombra puxa para o roxo-quente)
+    dmin = np.full((h, w), 9.0)
     for (a0, a1, b0, b1) in pegadas:
-        dentro |= chao & (X > a0 + 0.02) & (X < a1 + 0.08) & (Y > b0 + 0.02) & (Y < b1 + 0.1)
-        volta |= chao & (X > a0 - 0.05) & (X < a1 + 0.16) & (Y > b0 - 0.05) & (Y < b1 + 0.2)
-    cor = np.where(dentro[..., None], cor * 0.74, np.where(volta[..., None], cor * 0.88, cor))
+        ddx = np.maximum(np.maximum((a0 + 0.02) - X, X - (a1 + 0.08)), 0)
+        ddy = np.maximum(np.maximum((b0 + 0.02) - Y, Y - (b1 + 0.1)), 0)
+        dmin = np.minimum(dmin, np.hypot(ddx, ddy))
+    ks = np.where(dmin <= 0, 0.74, np.where(dmin < 0.045, 0.8, np.where(dmin < 0.1, 0.87, np.where(dmin < 0.17, 0.94, 1.0))))
+    ks = np.where(chao, ks, 1.0)
+    cor = cor * ks[..., None] + (1 - ks[..., None]) * np.array([14.0, 2.0, 12.0])
     # os cantos
     dp = np.minimum(X, Y)
     cor = np.where((chao & (dp < 0.1))[..., None], cor * 0.86, np.where((chao & (dp < 0.22))[..., None], cor * 0.94, cor))
@@ -1691,9 +1723,15 @@ def luz_lampada(cor, L0, tg, forca_l):
     dz = L0[2] - P[..., 2]
     rh = np.hypot(P[..., 0] - L0[0], P[..., 1] - L0[1])
     raio = np.maximum(dz, 0.05) * tg + 0.12
-    s = np.clip(1 - rh / raio, 0, 1) ** 0.8 * np.clip(1.3 - dz / 3.0, 0, 1) * forca_l
-    s = np.where((c.obj >= 0) & (c.nz > 0.6) & (dz > 0.3), np.floor(s * 3 + 0.25) / 3, 0)
-    return cor + (np.array([255.0, 222.0, 160.0]) - cor * 0.3) * s[..., None] * 0.3
+    s = np.clip(1 - rh / raio, 0, 1) ** 0.9 * np.clip(1.3 - dz / 3.0, 0, 1) * forca_l
+    # em 5 degraus suaves (o primeiro bem fraco: a borda do cone some aos poucos)
+    s = np.where((c.obj >= 0) & (c.nz > 0.6) & (dz > 0.3), np.floor(s * 5 + 0.35) / 5, 0)
+    cor = cor + (np.array([255.0, 222.0, 160.0]) - cor * 0.3) * s[..., None] * 0.27
+    # o halo morno em volta da lâmpada (no que está perto dela: a cúpula por dentro, o fio), em 2 degraus
+    d3 = np.linalg.norm(P - L0, axis=-1)
+    hal = np.where(d3 < 0.12, 0.3, np.where(d3 < 0.22, 0.14, 0.0)) * forca_l / 0.62
+    hal = np.where((c.obj >= 0) & ~np.isin(c.obj, list(luzes)), hal, 0)
+    return cor + (np.array([255.0, 232.0, 180.0]) - cor) * hal[..., None]
 
 
 import janela_cozinha as _JC  # noqa: E402

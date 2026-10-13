@@ -349,12 +349,28 @@ def tab2(cores, larg, junta='#4a2414', eixo=0, seed=0, comp=None, org=0.0, veio=
         k = (ruido(fila, col, seed + 2) * len(cs)).astype(int) % len(cs)
         out = cs[k]
         if veio:
-            # uma risca de veio por tábua, um pouco mais escura, em pedaços bem compridos
-            o = np.floor((0.45 + 0.2 * ruido(fila, seed + 4)) * larg / e) * e
+            # o veio: uma risca mais escura em pedaços bem compridos e uma clara mais curta, desencontradas
+            kv = veio if isinstance(veio, float) else 0.9
+            o = np.floor((0.42 + 0.2 * ruido(fila, seed + 4)) * larg / e) * e
             lin = (g >= o) & (g < o + e)
             seg = np.floor(t / 0.34 + ruido(fila, col, seed + 5))
-            vv = lin & (ruido(fila, seg, seed + 7) < 0.6)
-            out = np.where(vv[:, None], _tom(out, veio if isinstance(veio, float) else 0.93), out)
+            vv = lin & (ruido(fila, seg, seed + 7) < 0.62)
+            out = np.where(vv[:, None], _tom(out, kv), out)
+            if larg >= 5 * e:
+                o2 = np.floor((0.2 + 0.12 * ruido(fila, seed + 8)) * larg / e) * e
+                lin2 = (g >= o2) & (g < o2 + e) & ~lin
+                seg2 = np.floor(t / 0.2 + ruido(fila, col, seed + 9))
+                out = np.where((lin2 & (ruido(fila, seg2, seed + 10) < 0.45))[:, None], _tom(out, 1.06), out)
+                # o nó: um caroço escuro de 2 px com o anel um tom abaixo, em algumas tábuas
+                tq = np.floor(t / 0.6)
+                tem = ruido(fila, tq, seed + 11) < 0.28
+                tk = (tq + 0.2 + 0.6 * ruido(fila, tq, seed + 12)) * 0.6
+                sk = np.floor((0.55 + 0.2 * ruido(fila, tq, seed + 13)) * larg / e) * e + 0.5 * e
+                dt, ds = np.abs(t - tk) / et, np.abs(g - sk) / e
+                anel = tem & (dt < 2.6) & (ds < 1.5) & ~((dt > 1.6) & (ds > 0.5))
+                caro = tem & (dt < 1.0) & (ds < 0.5)
+                out = np.where(anel[:, None], _tom(out, 0.88), out)
+                out = np.where(caro[:, None], _tom(out, 0.7), out)
         out = np.where((g >= larg - e)[:, None], _tom(out, luz_borda), out)
         out = np.where(((g >= e) & (g < 2 * e))[:, None], _tom(out, sombra_borda), out)
         jun = g < e
