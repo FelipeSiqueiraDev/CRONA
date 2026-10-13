@@ -27,7 +27,7 @@ SAIDA = os.path.join(REPO, 'client', 'public', 'arte', 'personagens', 'alosi', '
 ESCALA_ARTE_PESSOA = 0.91
 ESCALA = 1 / ESCALA_ARTE_PESSOA
 ORDEM = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']        # a ordem da folha das 8 paradas (1..8)
-AFUNDA = 2                                                   # o pé passa 2 px do ponto do chão (pisa, não flutua)
+AFUNDA = 3                                                   # o pé passa 3 px do ponto do chão (pisa, não flutua)
 
 
 def carregar(f):

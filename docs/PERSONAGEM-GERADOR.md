@@ -135,6 +135,11 @@ lido por `findBoneco`), gravado por `gerador/exportar_jogo.py`: `parado` (a pose
 e `andar` (os 6 quadros de `andar8/`) nas 8 direções, `escala` = 1/0,91 (pixel 1:1 no zoom 1), os pés de cada quadro
 achados na imagem. Vale no lugar das poses antigas (`tabuleiro-32bits/`, que ficaram). Vídeo: `docs/estilo/alosi-no-jogo.mp4`.
 
+**Pisar no chão (13/10):** sem sombra forte ele parecia flutuar. Agora o pé passa 3 px do ponto do chão (`AFUNDA` no
+`exportar_jogo.py`), o boneco em pixel art ganha a pegada em degraus embaixo (`desenharPegada` no `RoomView.ts`, o miolo
+mais escuro e um anel mais claro, como a sombra dos móveis) e a sombra de cada pé sobe 1 px (a bota tapa a metade de
+cima). Antes e depois: `docs/estilo/alosi-pes-antes-depois.png`.
+
 **Pedidos em andamento** (pacote `alosi-acoes.zip`; LEIA-ME em `gerador/pedidos/acoes-LEIA-ME.txt`; os guias em
 `gerador/entrada/acoes/`, feitos por `../guia_acoes.py`): **sentado** (4 diagonais), **abrir o armário** (4 diagonais x
 3 quadros) e **andar agachado** (8 direções x 6, 4 folhas). No jogo: `sentado` já é tocado quando a peça está na
@@ -143,10 +148,7 @@ agachada em 72%; o `abrir` precisa de um gatilho quando o mobi ao lado abre).
 
 ## O que falta
 
-1. As 6 direções do andar que faltam (o Felipe manda as imagens do gerador; `andar.py` limpa e monta).
-2. O vídeo dele andando pela cozinha nas 8 direções.
-3. Sentado: o guia e o pedido.
-4. Respirar e piscar por código em cima das 8 paradas.
-5. Passar o `aumento` 1,0 das cadeiras/mesas/banquetas para o jogo.
-6. Pôr a Alosi nova no jogo (as tiras `idle-`, `parado-`, `andar-` no formato do `docs/ARTE.md`).
-7. Os outros agentes (Catarina, Cora, Tepes) pelo mesmo caminho.
+1. Sentado, abrir o armário e andar agachado: esperando as imagens do gerador (pacote `alosi-acoes.zip`).
+2. Piscar por código em cima das 8 paradas.
+3. Passar o `aumento` 1,0 das cadeiras/mesas/banquetas para o jogo.
+4. Os outros agentes (Catarina, Cora, Tepes) pelo mesmo caminho.
