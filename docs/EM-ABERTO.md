@@ -166,6 +166,10 @@ Tudo em `docs/PERSONAGEM-GERADOR.md` (o caminho, os prompts, os arquivos e o que
 - **Personagem por código (teste de 13/10): recusado pelo Felipe ("terrível de ruim").** O corpo do 3D com a cabeça
   da arte aprovada (`projecao/hibrido.py`) não chega na qualidade. O personagem fica no gerador; o código só multiplica
   (arma na mão, machucado, dano, respirar, piscar).
+- **Plano de todas as ações (13/10):** em `docs/PERSONAGEM-GERADOR.md` ("Plano de todas as ações"): cada agente só
+  com a arma de assinatura, o códex aberto conta como armado, escondido = agachado encolhido. **Próximo passo:** o
+  Felipe instala o Códex de linha de comando no PC e chama o Claude Code de lá; o primeiro teste é a pose mais
+  difícil (atacar armado, 2 direções).
 - **Móveis em tamanho real:** o `aumento` 1,2 das cadeiras/mesas deixava o boneco pequeno; o Felipe aprovou 1,0
   (`docs/estilo/alosi-moveis-12-vs-10.png`). Falta passar para o jogo.
 - **A cozinha à noite** (`scripts/3d/estilo/agente_cozinha/noite.py`, `NOITE=1`): a cena multiplicada pela luz que
