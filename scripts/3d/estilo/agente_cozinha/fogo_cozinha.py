@@ -409,11 +409,11 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
         R = g.get('raio_luz', 0.5 + 1.2 * lz)
         k = ((np.clip(1 - d3 / R, 0, 1) ** 0.8 * (0.3 + 0.8 * olha) + 0.5 * np.clip(1 - d3 / (0.3 + 0.32 * lz), 0, 1))
              * (0.4 + 0.6 * lz))
-        k = np.minimum(np.floor(k * 4) / 4, 1.0)
+        k = np.minimum(np.floor(k * 6) / 6, 1.0)          # em 6 degraus (a borda da luz some aos poucos)
         k = np.where(frente, k, 0.0)
         if g.get('luz_fora'):
             # na frente do próprio fogão a luz é mais fraca (só esquenta: não vira marrom)
-            k = np.where(fora, np.floor(k * g.get('luz_fora_k', 0.0) * 4) / 4, k)
+            k = np.where(fora, np.floor(k * g.get('luz_fora_k', 0.0) * 6) / 6, k)
         cor = _luz_quente(cor, k)
     return np.clip(cor, 0, 255)
 
@@ -505,8 +505,8 @@ def chamas_boca(cor, c, t, forca, centro, raio, zt, esc=0.45, luz=(0.9, 0.55), p
         pulso = 1 + 0.05 * math.sin(TAU * t) + 0.03 * math.sin(TAU * 3 * t + 0.8)
         d3 = np.linalg.norm(P - L0, axis=-1) / pulso
         k = np.clip(1 - d3 / luz[0], 0, 1) ** 1.3 * luz[1] * lz
-        # em 3 degraus fracos (pixel limpo: sem pontilhado)
-        k = np.minimum(np.floor(k * 3 + 0.35) / 3, 1.0) * 0.8
+        # em 5 degraus fracos (pixel limpo: sem pontilhado)
+        k = np.minimum(np.floor(k * 5 + 0.4) / 5, 1.0) * 0.8
         k = np.where((c.obj >= 0) & ~furo, k, 0.0)
         cor = _luz_quente(cor, k)
     return np.clip(cor, 0, 255)

@@ -127,6 +127,10 @@ O básico está no `AGENTS.md`. Além dele:
   - **`docker exec` no Git Bash:** precisa de `MSYS_NO_PATHCONV=1`.
 - **Conferir o celular:** no painel, `resize_window` para 470×836. A captura do painel vem reduzida: meça pelo JavaScript (retângulos, `scrollHeight`).
 
+## A arte nova (pixel art só por código)
+
+Desde 12/10 o caminho é outro: o tabuleiro em pixel art 1:1 feita pelo motor, sem o Códex. O passo a passo, as medidas, as regras e os erros que já aconteceram estão no [`GUIA-MAPAS-PIXEL.md`](GUIA-MAPAS-PIXEL.md).
+
 ## A arte (o caminho do Códex)
 
 **A pasta da arte**

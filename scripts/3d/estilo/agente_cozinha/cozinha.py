@@ -777,7 +777,7 @@ def armario(o0, face, enfeite=0):
     LADO = {'*': pintado(), 'cima': liso(CREME)}
     caixa(B(0, 0.035, 0, DU, ZN, ZT), LADO, sombra=False)
     caixa(B(W - 0.035, W, 0, DU, ZN, ZT), LADO, sombra=False)
-    caixa(B(0.035, W - 0.035, 0.012, DU, ZU - 0.03, ZU), {'*': pintado(), 'cima': liso('#a8987a')}, sombra=False)
+    caixa(B(0.035, W - 0.035, 0.012, DU, ZU - 0.03, ZU), {'*': pintado(), 'cima': liso('#6a8794')}, sombra=False)
 
     def fundo_azul(L, n, P):
         """O fundo por dentro: em cima (o guarda-louça) azul, com a sombra das prateleiras; embaixo (o vão aberto) o
@@ -792,7 +792,7 @@ def armario(o0, face, enfeite=0):
         lam = np.where(((z > ZU - 0.03 - 0.07) & (z < ZU - 0.03))[:, None], _tom(lam, 0.86), lam)
         return np.where((z < ZU - 0.03)[:, None], lam, out)
     caixa(B(0.0, W, 0, 0.012, ZN, ZT), {FR: emissivo(fundo_azul), TRAS: COSTAS, '*': pintado(), 'cima': liso(CREME)}, sombra=False)
-    caixa(B(0.035, W - 0.035, 0.012, DU - 0.03, ZP, ZP + 0.022), {'cima': liso('#a8987a'), '*': pintado()}, sombra=False)
+    caixa(B(0.035, W - 0.035, 0.012, DU - 0.03, ZP, ZP + 0.022), {'cima': liso('#6a8794'), '*': pintado()}, sombra=False)
     # a louça: os pratos em pé na frente (encostados no vidro, no trilho), as xícaras e as tigelas
     for zp, sem in ((ZU, 0 if enfeite != 1 else 2), (ZP + 0.022, 1)):
         louca(B, fy, o0, zp, W, DU, sem)
@@ -969,10 +969,20 @@ def radio(x0, x1, y0, y1, z):
             a = P[:, 1] if nn[0] > 0.5 else P[:, 0]
             a0, a1 = (y0, y1) if nn[0] > 0.5 else (x0, x1)
             zz = P[:, 2] - z
+            # o alto-falante: o tecido creme atrás da grade de ripinhas (1 px escuro a cada 3), a moldura clara
             tela_ = (a > a0 + 0.04) & (a < a1 - 0.04) & (zz > 0.1) & (zz < h - 0.04)
-            out = np.where(tela_[:, None], np.where((((np.floor(a / PH) + np.floor(zz / PZ)) % 2) == 0)[:, None], hx('#d8c49a'), hx('#c4ae84')), out)
-            mostr = (a > a0 + 0.06) & (a < a1 - 0.06) & (zz > 0.045) & (zz < 0.075)
-            out = np.where(mostr[:, None], hx('#f0d890'), out)
+            rip = (np.floor((a - a0) / PH) % 3) == 0
+            pano = np.where(rip[:, None], hx('#6a3a1e'), hx('#d8c49a'))
+            pano = np.where((zz > h - 0.04 - 2 * PZ)[:, None], _tom(pano, 0.85), pano)
+            out = np.where(tela_[:, None], pano, out)
+            mold = ~tela_ & (a > a0 + 0.04 - PH) & (a < a1 - 0.04 + PH) & (zz > 0.1 - PZ) & (zz < h - 0.04 + PZ)
+            out = np.where(mold[:, None], hx('#b06a38'), out)
+            # o mostrador aceso (o vidro amarelo, o ponteiro vermelho) e os dois botões
+            mostr = (a > a0 + 0.05) & (a < a1 - 0.09) & (zz > 0.04) & (zz < 0.08)
+            out = np.where(mostr[:, None], hx('#f4dc8c'), out)
+            out = np.where((mostr & (np.abs(a - (a0 + a1) / 2 + 0.02) < PH * 0.6))[:, None], hx('#b8302a'), out)
+            bot = (np.hypot((a - (a1 - 0.055)) * KX, (zz - 0.06) * KZ) < 1.6)
+            out = np.where(bot[:, None], hx('#2a1a12'), out)
         return out
     o = c.novo_obj(3)
     c.caixa((x0, x1, y0, y1, z, z + h), emissivo(f), M, o, ch=0.03)
@@ -1056,14 +1066,28 @@ def fruteira(x, y, z):
 
 
 def toalhinha(x0, x1, y0, y1, z):
-    """O caminho de mesa de crochê: creme, com a bainha de buraquinhos."""
+    """
+    O caminho de mesa de crochê: creme, a barra de bicos (os buraquinhos em fileira e a linha de ponto) e, no meio,
+    o miolo das florzinhas de crochê.
+    """
     def f(L, n, P):
         X, Y = P[:, 0], P[:, 1]
+        u, v = (X - x0) / PH, (Y - y0) / PH            # em px (ao comprido, de través)
+        U, V = (x1 - x0) / PH, (y1 - y0) / PH
         out = np.tile(hx('#efe6d0'), (len(P), 1))
-        bd = (X < x0 + 3 * PH) | (X > x1 - 3 * PH) | (Y < y0 + 3 * PH) | (Y > y1 - 3 * PH)
-        fur = bd & (((np.floor(X / PH) + np.floor(Y / PH)) % 3) == 0)
-        out = np.where(fur[:, None], hx('#c8b894'), out)
-        out = np.where(((np.abs(X - x0 - 5 * PH) < PH * 0.5) | (np.abs(X - x1 + 5 * PH) < PH * 0.5))[:, None] & ~bd[:, None], hx('#dccfb0'), out)
+        bv = np.minimum(v, V - v)                    # a distância até a beira comprida
+        bu = np.minimum(u, U - u)
+        borda = (bv < 2) | (bu < 2)
+        out = np.where(borda[:, None], hx('#f6efdc'), out)
+        # os bicos: um buraquinho a cada 4 px na fileira de fora; a linha de ponto por dentro da barra
+        fur = ((bv < 1) & (np.floor(u) % 4 == 1)) | ((bu < 1) & (np.floor(v) % 4 == 1))
+        out = np.where(fur[:, None], hx('#c4b28e'), out)
+        lin = ~borda & (((bv >= 2) & (bv < 3)) | ((bu >= 2) & (bu < 3)))
+        out = np.where(lin[:, None], hx('#dccfae'), out)
+        # o miolo das florzinhas no meio, a cada 16 px (na tela, um losanguinho)
+        cu = (u - 8) % 16 - 8
+        q = np.abs(cu) + np.abs(v - V / 2)
+        out = np.where((~borda & (q < 1.6) & (bu > 6))[:, None], hx('#d2bf94'), out)
         return out
     o = c.novo_obj(3, contorno=False)
     fp([(x0, y0, z), (x1, y0, z), (x1, y1, z), (x0, y1, z)], (0, 0, 1), emissivo(f), o)
@@ -1208,7 +1232,7 @@ def tapete_tranca(xc, yc, r=0.6):
         ang = np.arctan2(dy, dx)
         out = cores[(anel.astype(int) * 3) % len(cores)]
         # a trança: os gomos em diagonal, um claro e um escuro, desencontrados de anel para anel
-        g = np.floor(ang * rr / (2 * PH) + anel * 0.5 + (rr % pa) / pa)
+        g = np.floor(ang * rr / (3 * PH) + anel * 0.5 + (rr % pa) / pa)
         out = np.where((g % 2 == 0)[:, None], _tom(out, 1.08), _tom(out, 0.9))
         out = np.where((rr % pa < PH * 0.8)[:, None], _tom(out, 0.78), out)
         out = np.where((rr > r - 1.6 * PH)[:, None], hx('#5a2e22'), out)

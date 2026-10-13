@@ -21,6 +21,7 @@ cada face (topo 1, face +y 0,84, face +x 0,66, com um tom quente), a sombra maci
 | `agente_janela/` | a janela aberta com a cortina no vento, o sol no chão e a poeira (`janela_px.py`) |
 | `juntar.py` | junta tudo em `sala4.py` (a sala final): a lareira e o fogo, as peças, a janela, a mesa em nogueira, a chaminé que sai da casa |
 | `gif_sala.py`, `gif_paleta.py` | o GIF da sala viva (o fogo aceso, apagando, a fumaça; a cortina) |
+| `exportar_px.py`, `texturas_px.py`, `ver_no_jogo.mjs` | levar para o jogo: os móveis nos 4 giros, o chão e a parede no ângulo do tabuleiro, e a foto do jogo com a arte nova (ver `docs/GUIA-MAPAS-PIXEL.md`) |
 
 Rodar: `python sala4.py saida.png` (a imagem sai ampliada 3x). Variáveis: `FOGO_T` (o instante do loop, 0..1),
 `FOGO_FORCA` (1 aceso .. 0 apagado), `FOGO_FUMACA`, `FOGO_FUMACA_T`, `JANELA_T`. O GIF: `python gif_sala.py` e
