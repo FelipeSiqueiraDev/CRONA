@@ -15,7 +15,9 @@ sombra no mapa do sol); a sombra do batente, das travessas e da cortina no chão
 """
 import math
 import numpy as np
-from motor import MUNDO, emissivo, ruido, tela, VISTA
+from motor import MUNDO, emissivo, ruido, tela, VISTA, ESC
+
+PXM = 0.024 / ESC          # 1 px da arte em metros (relativo ao ESC)
 
 
 
@@ -86,7 +88,7 @@ def _madeira(cor, eixo=1, seed=0):
         g = s / 0.09
         fila = np.floor(g)
         w = (g % 1) - (0.35 + 0.3 * ruido(fila, seed)) - 0.08 * np.sin(t * 5 + fila * 2.1)
-        risca = (np.abs(w) < 0.5 * 0.032 / 0.09) & (np.sin(t * 3.1 + fila * 1.7 + seed) > -0.1)
+        risca = (np.abs(w) < 0.5 * PXM / 0.09) & (np.sin(t * 3.1 + fila * 1.7 + seed) > -0.1)
         return np.where(risca[:, None], c * 1.1 + 4, np.tile(c, (len(L), 1)))
     return emissivo(f)
 

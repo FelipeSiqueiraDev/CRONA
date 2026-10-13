@@ -5,8 +5,8 @@ A planta é a do jogo (server/src/seedFazenda.ts, cena "cozinha"): 10 x 6 casas 
 parede da frente à direita (x = 10, que não aparece), piso "ladrilho". Cada móvel fica na casa e no giro do seed, no
 tamanho de shared/src/furni.ts (largura e fundo em casas, altura em metros, `aumento` na mesa e nas cadeiras).
 
-Câmera do jogo (2:1): x desce para a direita na tela, y desce para a esquerda, z sobe. ESC 0,75: 1 pixel da arte é
-~0,032 m no chão e ~0,026 m na vertical. Só as paredes de trás aparecem: a da esquerda (x = 0) e a do fundo (y = 0).
+Câmera do jogo (2:1): x desce para a direita na tela, y desce para a esquerda, z sobe. ESC 1 (o padrão, o 1:1 do jogo):
+1 pixel da arte é ~0,0234 m no chão e ~0,0191 m na vertical (PH e PZ, em base_estilo; ESC=0.75 ainda funciona). Só as paredes de trás aparecem: a da esquerda (x = 0) e a do fundo (y = 0).
 
 Uso:
     python3 cozinha.py saida.png            # a imagem parada (3x)
@@ -18,7 +18,7 @@ import math
 import os
 import sys
 
-os.environ['ESC'] = os.environ.get('ESC', '0.75')
+os.environ['ESC'] = os.environ.get('ESC', '1')        # 1:1 (1 px da arte = 1 px do tabuleiro), o do jogo
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'codigo'))
 sys.path.insert(0, AQUI)
@@ -258,10 +258,10 @@ def tora_y(cx, cz, r, y0, y1, casca='#5a3a22', miolo='#c89a62', lados=8, oid=Non
 
     def ponta(L, n, P):
         # no pixel: a casca (1 px), o alburno claro, o anel escuro no meio e o miolo
-        rx = (P[:, 0] - cx) * 32
-        rz = (P[:, 2] - cz) * 39.2
+        rx = (P[:, 0] - cx) * KX
+        rz = (P[:, 2] - cz) * KZ
         rr = np.hypot(rx, rz)
-        R = r * 32
+        R = r * KX
         out = np.tile(cm, (len(P), 1))
         out = np.where((rr < R * 0.62)[:, None], _tom(cm, 0.94), out)
         out = np.where((np.abs(rr - R * 0.5) < 0.55)[:, None], _tom(cm, 0.72), out)
@@ -292,9 +292,15 @@ def fogao(aceso=True):
     AZF = azulejinho()
     face_com_furos('y', yb, x0 + 0.03, x1 - 0.03, 0.1, zc, [(m - bw, m + bw, zp, bt), (nicho[0], nicho[1], 0.1, nicho[3])], AZF, corpo)
     fp([(x1 - 0.03, 0, 0.1), (x1 - 0.03, yb, 0.1), (x1 - 0.03, yb, zc), (x1 - 0.03, 0, zc)], (1, 0, 0), azulejinho(eixo='x'), corpo)
+    # o lado esquerdo e as costas (o móvel sozinho, girado, mostra todos os lados): o mesmo azulejinho
+    fp([(x0 + 0.03, 0, 0.1), (x0 + 0.03, yb, 0.1), (x0 + 0.03, yb, zc), (x0 + 0.03, 0, zc)], (-1, 0, 0), azulejinho(eixo='x'), corpo)
+    fp([(x0 + 0.03, 0, 0.1), (x1 - 0.03, 0, 0.1), (x1 - 0.03, 0, zc), (x0 + 0.03, 0, zc)], (0, -1, 0), azulejinho(org=x0 + 0.03), corpo)
     VERM = _pau('#a8432e', '#c0573c', quina=1.22, b=(0, 0, 0, 0, 0, 0.1))
     face_com_furos('y', yb + 0.012, x0 + 0.02, x1 - 0.02, 0.0, 0.1, [(nicho[0], nicho[1], nicho[2], 0.1)], VERM, corpo)
     fp([(x1 - 0.02, 0, 0), (x1 - 0.02, yb + 0.012, 0), (x1 - 0.02, yb + 0.012, 0.1), (x1 - 0.02, 0, 0.1)], (1, 0, 0), VERM, corpo)
+    fp([(x0 + 0.02, 0, 0), (x0 + 0.02, yb + 0.012, 0), (x0 + 0.02, yb + 0.012, 0.1), (x0 + 0.02, 0, 0.1)], (-1, 0, 0), VERM, corpo)
+    fp([(x0 + 0.02, 0, 0), (x1 - 0.02, 0, 0), (x1 - 0.02, 0, 0.1), (x0 + 0.02, 0, 0.1)], (0, -1, 0), VERM, corpo)
+    fp([(x0 + 0.02, yb, 0.1), (x0 + 0.03, yb, 0.1), (x0 + 0.03, 0, 0.1), (x0 + 0.02, 0, 0.1)], (0, 0, 1), liso('#c0573c'), corpo)
     fp([(x0 + 0.02, yb, 0.1), (x1 - 0.02, yb, 0.1), (x1 - 0.02, yb + 0.012, 0.1), (x0 + 0.02, yb + 0.012, 0.1)], (0, 0, 1), liso('#c0573c'), corpo)
     pegadas.append((x0, x1, 0, yb + 0.02))
 
@@ -398,10 +404,10 @@ def fogao(aceso=True):
             out = np.where((dentro_ & ((np.abs(z - (fz1 - 0.1)) < 1.2 * PZ) | (np.abs(X - (fx0 + 0.04)) < PH)))[:, None], hx('#1c1918'), out)
             out = np.where((dentro_ & ((np.abs(z - (fz0 + 0.04)) < 1.2 * PZ) | (np.abs(X - (fx1 - 0.04)) < PH)))[:, None], hx('#565049'), out)
             # o termômetro (o mostrador redondo creme com o ponteiro)
-            r = np.hypot((X - (fx0 + fx1) / 2) * 32, (z - (fz1 - 0.055)) * 39.2)
+            r = np.hypot((X - (fx0 + fx1) / 2) * KX, (z - (fz1 - 0.055)) * KZ)
             out = np.where((r < 2.6)[:, None], hx('#e8dcc0'), out)
             out = np.where(((r >= 2.6) & (r < 3.6))[:, None], hx('#b88a3a'), out)
-            out = np.where(((r < 2.0) & (np.abs((X - (fx0 + fx1) / 2) * 32 - (z - (fz1 - 0.055)) * 39.2) < 0.6) & (X > (fx0 + fx1) / 2))[:, None], hx('#a8302a'), out)
+            out = np.where(((r < 2.0) & (np.abs((X - (fx0 + fx1) / 2) * KX - (z - (fz1 - 0.055)) * KZ) < 0.6) & (X > (fx0 + fx1) / 2))[:, None], hx('#a8302a'), out)
         return out
     o = c.novo_obj(3)
     c.caixa((fx0, fx1, yb, yb + 0.02, fz0, fz1), {'frente': emissivo(forno), '*': _pau('#2e2a28', '#4a4541', quina=1.3, b=(0, 0, 0, 0, fz0, fz1))}, M, o)
@@ -450,7 +456,8 @@ def fogao(aceso=True):
     cx0, cx1, cy0, cy1 = CHAM
     zch = ALTO + 1.25
     oc = c.novo_obj(3, sombra=False)
-    c.caixa((cx0, cx1, cy0, cy1, zt, zch), {'frente': tijolos('y', org=cx0), 'dir': tijolos('x', org=-cy1), 'cima': liso('#c9c8c2')}, M, oc)
+    c.caixa((cx0, cx1, cy0, cy1, zt, zch), {'frente': tijolos('y', org=cx0), 'costas': tijolos('y', org=cx0), 'dir': tijolos('x', org=-cy1),
+                                            'esq': tijolos('x', org=-cy1), 'cima': liso('#c9c8c2')}, M, oc)
     # o colarinho de ferro no pé da chaminé
     _barra((cx0 - 0.02, cx1 + 0.02, cy0, cy1 + 0.02, zt, zt + 0.05), '#34302d', '#4a4541', quina=1.3)
     fades.append((oc, ALTO + 0.45, 0.8))
@@ -536,11 +543,13 @@ def pia():
         fp([(a0, b0, zt), (a1, b0, zt), (a1, b1, zt), (a0, b1, zt)], (0, 0, 1), G, o)
     fp([(x0, d, zb), (x1, d, zb), (x1, d, zt), (x0, d, zt)], (0, 1, 0), G, o)
     fp([(x1, 0, zb), (x1, d, zb), (x1, d, zt), (x1, 0, zt)], (1, 0, 0), G, o)
+    fp([(x0, 0, zb), (x0, d, zb), (x0, d, zt), (x0, 0, zt)], (-1, 0, 0), G, o)
+    fp([(x0, 0, zb), (x1, 0, zb), (x1, 0, zt), (x0, 0, zt)], (0, -1, 0), G, o)
     # a cuba de inox (o fundo, a parede de trás e a da esquerda, que a câmera vê) e o ralo
     def inox(L, n, P):
         out = np.tile(hx('#a9b1b4'), (len(P), 1))
         if n[2] > 0.5:
-            rr = np.hypot((P[:, 0] - (cx0 + cx1) / 2) * 32, (P[:, 1] - (cy0 + cy1) / 2) * 16)
+            rr = np.hypot((P[:, 0] - (cx0 + cx1) / 2) * KX, (P[:, 1] - (cy0 + cy1) / 2) * KY)
             out = np.where((rr < 1.6)[:, None], hx('#4a5054'), out)
             out = np.where(((P[:, 0] + P[:, 1]) % 0.16 < 0.025)[:, None], hx('#c4cccf'), out)
         else:
@@ -550,10 +559,22 @@ def pia():
     fp([(cx0, cy0, cz), (cx1, cy0, cz), (cx1, cy1, cz), (cx0, cy1, cz)], (0, 0, 1), emissivo(inox), oc)
     fp([(cx0, cy0, cz), (cx1, cy0, cz), (cx1, cy0, zt), (cx0, cy0, zt)], (0, 1, 0), emissivo(inox), oc)
     fp([(cx0, cy0, cz), (cx0, cy1, cz), (cx0, cy1, zt), (cx0, cy0, zt)], (1, 0, 0), emissivo(inox), oc)
+    # as outras duas paredes da cuba (de costas para a câmera da cena; o móvel girado as mostra)
+    fp([(cx0, cy1, cz), (cx1, cy1, cz), (cx1, cy1, zt), (cx0, cy1, zt)], (0, -1, 0), emissivo(inox), oc)
+    fp([(cx1, cy0, cz), (cx1, cy1, cz), (cx1, cy1, zt), (cx1, cy0, zt)], (-1, 0, 0), emissivo(inox), oc)
     # os pés de alvenaria nas pontas (creme, a barra vermelha embaixo)
     for (a0, a1) in ((x0, x0 + 0.07), (x1 - 0.07, x1)):
         caixa((a0, a1, 0, d - 0.03, 0.1, zb), {'*': _pau('#e2d8c2', '#ece4d2', quina=False), 'frente': _pau('#e2d8c2', quina=False)})
         caixa((a0, a1, 0, d - 0.02, 0, 0.1), _pau('#a8432e', '#c0573c', quina=1.2, b=(0, 0, 0, 0, 0, 0.1)))
+    # o fundo embaixo da bancada (a parede de alvenaria entre os pés: as costas da pia girada), com a barra vermelha
+    def reboco(L, n, P):
+        out = np.tile(hx('#e2d8c2'), (len(P), 1))
+        out = np.where((P[:, 2] < 0.1)[:, None], hx('#a8432e'), out)
+        out = np.where(((P[:, 2] >= 0.1 - PZ) & (P[:, 2] < 0.1))[:, None], hx('#c0573c'), out)
+        if n[1] > 0.5:                                   # por dentro (atrás da cortina): na sombra
+            out = _tom(out, 0.62)
+        return out
+    caixa((x0 + 0.07, x1 - 0.07, 0.0, 0.03, 0.0, zb), {'*': emissivo(reboco), 'cima': liso('#c8bea8')}, sombra=False)
     pegadas.append((x0, x1, 0, d))
     # a cortininha de xadrez vermelho (franzida em pregas, duas folhas, presa embaixo da bancada)
     cortininha(x0 + 0.07, x1 - 0.07, d - 0.05, 0.03, zb - 0.005)
@@ -640,10 +661,10 @@ def prato_pe(cx, y, cz, r, aro='#3e5f8e', normal='y'):
     lados = 20
     if normal == 'y':
         pts = [(cx + r * math.cos(2 * math.pi * i / lados), y, cz + r * math.sin(2 * math.pi * i / lados)) for i in range(lados)]
-        fp(pts, (0, 1, 0), emissivo(f), o)
+        c.face_plana(pts, (0, 1, 0), emissivo(f), M, o, dois_lados=True)
     else:
         pts = [(y, cx + r * math.cos(2 * math.pi * i / lados), cz + r * math.sin(2 * math.pi * i / lados)) for i in range(lados)]
-        fp(pts, (1, 0, 0), emissivo(f), o)
+        c.face_plana(pts, (1, 0, 0), emissivo(f), M, o, dois_lados=True)
     return o
 
 
@@ -700,7 +721,10 @@ def armario(o0, face, enfeite=0):
     meio = W / 2
     pain = [(0.05, meio - 0.02, 0.66, 0.83), (meio + 0.02, W - 0.05, 0.66, 0.83),
             (0.05, meio - 0.02, 0.1, 0.62), (meio + 0.02, W - 0.05, 0.1, 0.62)]
-    caixa(B(0.0, W, 0, DL, 0.07, ZB), {FR: pintado(pain), '*': pintado(), 'cima': liso(CREME)})
+    # as costas (o móvel girado mostra o de trás): tábuas de pinho cru em pé, a junta escura, o veio
+    COSTAS = tab2(['#b88a58', '#b08254', '#bc8e5c'], 0.15, '#6a4426', eixo=1 if fy else 0, seed=66, org=o0)
+    TRAS = 'costas' if fy else 'esq'
+    caixa(B(0.0, W, 0, DL, 0.07, ZB), {FR: pintado(pain), TRAS: COSTAS, '*': pintado(), 'cima': liso(CREME)})
     pegadas.append(B(0, W, 0, DL, 0, 0)[:4])
     for (u0, u1, z0, z1) in pain:
         um = (u0 + u1) / 2 if z0 > 0.6 else (u1 - 0.07 if u0 < meio else u0 + 0.07)
@@ -714,15 +738,21 @@ def armario(o0, face, enfeite=0):
     LADO = {'*': pintado(), 'cima': liso(CREME)}
     caixa(B(0, 0.035, 0, DU, ZN, ZT), LADO, sombra=False)
     caixa(B(W - 0.035, W, 0, DU, ZN, ZT), LADO, sombra=False)
-    caixa(B(0.035, W - 0.035, 0, DU, ZU - 0.03, ZU), {'*': pintado(), 'cima': liso('#a8987a')}, sombra=False)
+    caixa(B(0.035, W - 0.035, 0.012, DU, ZU - 0.03, ZU), {'*': pintado(), 'cima': liso('#a8987a')}, sombra=False)
 
     def fundo_azul(L, n, P):
+        """O fundo por dentro: em cima (o guarda-louça) azul, com a sombra das prateleiras; embaixo (o vão aberto) o
+        lambri creme de réguas finas, com a sombra da prateleira de cima."""
         z = P[:, 2]
+        u = au(P)
         out = np.tile(hx('#5e7e8c'), (len(P), 1))
         for zz in (ZP, ZT):
             out = np.where(((z < zz) & (z > zz - 0.06))[:, None], hx('#465f6c'), out)
-        return out
-    caixa(B(0.035, W - 0.035, 0, 0.012, ZU, ZT), emissivo(fundo_azul), sombra=False)
+        g = (u % (4 * PH))
+        lam = np.where((g < PH)[:, None], hx('#b8a888'), np.where((g < 2 * PH)[:, None], hx('#eee4cc'), hx(CREME)))
+        lam = np.where(((z > ZU - 0.03 - 0.07) & (z < ZU - 0.03))[:, None], _tom(lam, 0.86), lam)
+        return np.where((z < ZU - 0.03)[:, None], lam, out)
+    caixa(B(0.0, W, 0, 0.012, ZN, ZT), {FR: emissivo(fundo_azul), TRAS: COSTAS, '*': pintado(), 'cima': liso(CREME)}, sombra=False)
     caixa(B(0.035, W - 0.035, 0.012, DU - 0.03, ZP, ZP + 0.022), {'cima': liso('#a8987a'), '*': pintado()}, sombra=False)
     # a louça: os pratos em pé na frente (encostados no vidro, no trilho), as xícaras e as tigelas
     for zp, sem in ((ZU, 0 if enfeite != 1 else 2), (ZP + 0.022, 1)):
@@ -737,7 +767,7 @@ def armario(o0, face, enfeite=0):
         caixa(B(u0, u1, vf, DU, z0, z1), {'*': _pau(CREME, CREME_L, quina=False), FR: _pau(CREME, quina=False)}, sombra=False)
     for uk in (meio - 0.06, meio + 0.04):
         caixa(B(uk, uk + 0.02, DU, DU + 0.02, ZP - 0.06, ZP), _pau('#5a4a3a', '#8a7a62', quina=False), sombra=False)
-    vidros.append(B(0.036, W - 0.036, 0.0, vf - 0.002, ZU + 0.001, ZT - 0.001))
+    vidros.append(B(0.036, W - 0.036, 0.014, vf - 0.002, ZU + 0.001, ZT - 0.001))   # (depois do fundo: as costas ficam sem o vidro)
     # o vão aberto entre a bancada e o guarda-louça e em cima: os enfeites
     enfeites_armario(B, fy, o0, W, ZN, ZT + 0.06, enfeite)
 
@@ -1089,13 +1119,15 @@ def espada_sao_jorge(x, y):
         return np.where((rr > 0.18)[:, None], hx('#9a5432'), hx('#3e2a1c'))
     _disco(x, y, 0.33, 0.205, emissivo(terra), o, lados=22)
     pegadas.append((x - 0.2, x + 0.2, y - 0.2, y + 0.2))
-    # as folhas: lâminas de frente para a câmera (no plano que passa pelo meio), cada uma inclinada e torcida
-    k = 1 / math.sqrt(2)
+    # as folhas: lâminas de frente para a câmera (no plano que passa pelo meio), cada uma inclinada e torcida; com
+    # os dois lados (o móvel girado sozinho: a câmera do giro, BE.GIRO)
+    hv, rv = BE.frente_tela()
+    nf = (float(hv[0]), float(hv[1]), 0.0)
     folhas = ((-0.09, 0.0, -0.12, 0.98, 0.07), (-0.03, -0.04, -0.05, 1.18, 0.08), (0.04, 0.03, 0.07, 1.1, 0.075),
               (0.1, -0.02, 0.17, 0.86, 0.065), (0.0, 0.06, 0.0, 0.92, 0.07), (-0.13, 0.05, -0.24, 0.72, 0.06), (0.13, 0.06, 0.25, 0.7, 0.06))
     for (s0, dv, s1, alto, larg) in folhas:
         of = c.novo_obj(3)
-        cx_, cy_ = x + dv * k, y + dv * k
+        cx_, cy_ = x + dv * hv[0], y + dv * hv[1]
         ns = 8
         pts_e, pts_d = [], []
         for i in range(ns + 1):
@@ -1107,7 +1139,7 @@ def espada_sao_jorge(x, y):
             pts_d.append((s + w / 2, zz))
 
         def f(L, n, P, cx_=cx_, cy_=cy_, s0=s0, s1=s1, alto=alto):
-            sp = (P[:, 0] - cx_) * k - (P[:, 1] - cy_) * k
+            sp = (P[:, 0] - cx_) * rv[0] + (P[:, 1] - cy_) * rv[1]
             q = np.clip((P[:, 2] - 0.3) / (alto - 0.3), 0, 1)
             meio = s0 + (s1 - s0) * q ** 1.4
             lado = sp - meio
@@ -1117,12 +1149,12 @@ def espada_sao_jorge(x, y):
             out = np.where((lado < -0.004)[:, None] & ~faixa[:, None], hx('#3a6a3e'), out)
             borda = np.abs(lado) > 0.026
             out = np.where(borda[:, None], hx('#c8c050'), out)
-            return _cru(out, (k, k, 0))
+            return _cru(out, nf)
         for i in range(ns):
             (a0, z0), (a1, z1) = pts_e[i], pts_e[i + 1]
             (b0, _), (b1, _) = pts_d[i], pts_d[i + 1]
             quad = [(a0, z0), (b0, z0), (b1, z1), (a1, z1)]
-            c.face_plana([(cx_ + s * k, cy_ - s * k, zz) for (s, zz) in quad], (k, k, 0), emissivo(f), M, of)
+            c.face_plana([(cx_ + s * rv[0], cy_ + s * rv[1], zz) for (s, zz) in quad], nf, emissivo(f), M, of, dois_lados=True)
 
 
 def tapete_tranca(xc, yc, r=0.6):
@@ -1271,14 +1303,14 @@ def natureza_morta(x0, x1, z0, z1):
                                     uva='#5a3a6a', uva2='#7a5a8a', per='#c8b840', per2='#e0d060', fol='#4a6a2a').items()}
 
     def pintura(L, n, P):
-        i = np.floor((P[:, 0] - a0) * 32 + 1e-4).astype(int)
-        v = np.floor((b1 - P[:, 2]) * 39.195 + 1e-4).astype(int)
+        i = np.floor((P[:, 0] - a0) * KX + 1e-4).astype(int)
+        v = np.floor((b1 - P[:, 2]) * KZ + 1e-4).astype(int)
         S = np.floor(tela(P) + 1e-4).astype(int)
         rs = S[:, 1] - int(math.floor(tela(np.array([a0, yf, b1]))[1]))
         out = np.tile(C['fu'], (len(P), 1))
         out[(v % 7 == 3) & (i % 5 == 1)] = C['fu2']
-        Wp = int(W * 32)
-        Hp = int(Hh * 39.195)
+        Wp = int(W * KX)
+        Hp = int(Hh * KZ)
         mesa_ = v >= Hp - 5
         out[mesa_] = C['mesa']
         out[v == Hp - 5] = C['mesa2']
@@ -1379,7 +1411,7 @@ def tabua_colheres(yc, zt):
         out = np.tile(hx('#dcaa6c'), (len(P), 1))
         g = np.floor(P[:, 2] / PZ)
         out = np.where(((g % 5 == 0) & (ruido(np.floor(P[:, 1] / 0.2), g, 3.0) > 0.4))[:, None], hx('#c8945a'), out)
-        furo = np.hypot((P[:, 1] - yc) * 32, (P[:, 2] - (zt - 0.07)) * 39.2) < 1.3
+        furo = np.hypot((P[:, 1] - yc) * KX, (P[:, 2] - (zt - 0.07)) * KZ) < 1.3
         return np.where(furo[:, None], hx('#5a4a3a'), out)
     # a face (com o contorno de quina) e a grossura de lado (a de +y, que a câmera vê)
     # (o polígono é côncavo: vai em dois pedaços convexos, a pá e o cabo)
@@ -1488,6 +1520,67 @@ def _fogo(cor, t, forca):
     return chamas_boca(cor, c, t, forca, BOCAS[0], FURO, FOG['zt'], luz=(0.85, 0.45))
 
 
+def _viz(a, dy, dx, fill):
+    """O vizinho (dy, dx) de cada pixel (fill fora da imagem)."""
+    h, w = a.shape[:2]
+    out = np.full_like(a, fill)
+    ys = slice(max(0, dy), h + min(0, dy))
+    yd = slice(max(0, -dy), h + min(0, -dy))
+    xs = slice(max(0, dx), w + min(0, dx))
+    xd = slice(max(0, -dx), w + min(0, -dx))
+    out[yd, xd] = a[ys, xs]
+    return out
+
+
+def acabar_px(cor, obj, nrm, face, prof, tipo, luz_m, sem_contorno, movel=None):
+    """
+    O acabamento de pixel de cada peça (a cena e o móvel exportado sozinho usam o mesmo): depois da luz das faces.
+      - a quina de cima (o topo que encontra a face em pé embaixo dele): 1 px de brilho;
+      - a quina em pé da frente (a face da esquerda que encontra a da direita): 1 px de brilho mais leve;
+      - as arestas de dentro (duas faces da mesma peça): 1 px um pouco mais escuro, suave;
+      - o contorno de 1 px: forte e escuro por fora (contra o fundo, o chão, a parede); contra outra peça, só a
+        cor da própria peça escurecida (o contorno seletivo: as peças se separam sem riscar de preto).
+    movel: os pixels que contam como peça (padrão: obj >= 0); tipo: 1 chão, 2 parede, 3 móvel.
+    """
+    if movel is None:
+        movel = obj >= 0
+    obj_m = np.where(movel, obj, -1)
+    prof_m = np.where(movel, prof, -1e9)
+    nz, nx, ny = nrm[..., 2], nrm[..., 0], nrm[..., 1]
+    topo = nz > 0.6
+    livre = movel & ~luz_m & ~sem_contorno
+    # o brilho da quina de cima
+    emb_obj, emb_nz = _viz(obj_m, 1, 0, -1), _viz(nz, 1, 0, 0.0)
+    brilho = topo & livre & (emb_obj == obj_m) & (emb_nz < 0.5) & (tipo != 1)
+    cor = np.where(brilho[..., None], np.minimum(255, cor * 1.13 + 9), cor)
+    # o brilho da quina em pé da frente (na face da esquerda, o último pixel antes da face da direita)
+    dir_obj, dir_n = _viz(obj_m, 0, 1, -1), _viz(nrm, 0, 1, 0.0)
+    esq = ~topo & (ny > 0.35) & (ny >= nx)
+    vira = (dir_obj == obj_m) & (dir_n[..., 0] > 0.35) & (dir_n[..., 0] > dir_n[..., 1]) & (np.abs(dir_n[..., 2]) < 0.6)
+    canto = esq & vira & livre & (tipo == 3) & ~brilho
+    cor = np.where(canto[..., None], np.minimum(255, cor * 1.08 + 6), cor)
+    # o contorno (forte por fora, seletivo entre peças)
+    forte = np.zeros(obj.shape, bool)
+    fraco = np.zeros(obj.shape, bool)
+    for dy, dx in ((0, 1), (1, 0), (0, -1), (-1, 0)):
+        On, Pn, Tn = _viz(obj_m, dy, dx, -1), _viz(prof_m, dy, dx, -1e9), _viz(np.where(movel, tipo, 0), dy, dx, 0)
+        atras = movel & (On != obj_m) & ((Pn < prof_m - 0.04) | (On < 0))
+        forte |= atras & ((On < 0) | (Tn != 3) | (tipo != 3))
+        fraco |= atras & (On >= 0) & (Tn == 3) & (tipo == 3)
+    forte &= ~luz_m & ~sem_contorno
+    fraco &= ~luz_m & ~sem_contorno & ~forte
+    # as arestas de dentro
+    quina = np.zeros(obj.shape, bool)
+    for dy, dx in ((0, 1), (1, 0)):
+        On, Fn, Nn = _viz(obj_m, dy, dx, -1), _viz(face, dy, dx, -1), _viz(nrm, dy, dx, 0.0)
+        quina |= movel & (On == obj_m) & (Fn != face) & ((Nn * nrm).sum(-1) < 0.5)
+    quina &= (tipo == 3) & ~forte & ~fraco & ~luz_m & ~brilho & ~canto & ~sem_contorno
+    cor = np.where(quina[..., None], cor * 0.86 + np.array([2.0, 0.0, 2.0]), cor)
+    cor = np.where(fraco[..., None], cor * 0.52 + np.array([10.0, 3.0, 5.0]), cor)
+    cor = np.where(forte[..., None], cor * 0.28 + np.array([26.0, 13.0, 11.0]), cor)
+    return cor
+
+
 def acabamento(t, forca, tj=None):
     tj = t if tj is None else tj
     cor = c.cor.copy()
@@ -1536,22 +1629,8 @@ def acabamento(t, forca, tj=None):
 
     if JANELA['ok']:
         cor = JANELA['luz'](cor, c, tj)
-    emb_obj, emb_nz = viz(obj, 1, 0, -1), viz(nz, 1, 0, 0.0)
-    brilho = topo & (obj >= 0) & (emb_obj == obj) & (emb_nz < 0.5) & ~luz_m & (tipo != 1)
-    cor = np.where(brilho[..., None], np.minimum(255, cor * 1.15 + 10), cor)
-    borda = np.zeros((h, w), bool)
-    for dy, dx in ((0, 1), (1, 0), (0, -1), (-1, 0)):
-        On, Pn = viz(obj, dy, dx, -1), viz(prof, dy, dx, -1e9)
-        borda |= (obj >= 0) & (On != obj) & ((Pn < prof - 0.04) | (On < 0))
     sem_contorno = np.isin(obj, [o for o, v in c.contornos.items() if not v])
-    borda &= ~luz_m & ~sem_contorno
-    quina = np.zeros((h, w), bool)
-    for dy, dx in ((0, 1), (1, 0)):
-        On, Fn, Nn = viz(obj, dy, dx, -1), viz(face, dy, dx, -1), viz(nrm, dy, dx, 0.0)
-        quina |= (obj >= 0) & (On == obj) & (Fn != face) & ((Nn * nrm).sum(-1) < 0.5)
-    quina &= (tipo == 3) & ~borda & ~luz_m & ~brilho & ~sem_contorno
-    cor = np.where(quina[..., None], cor * 0.8, cor)
-    cor = np.where(borda[..., None], cor * 0.28 + np.array([26.0, 12.0, 10.0]), cor)
+    cor = acabar_px(cor, obj, nrm, face, prof, tipo, luz_m, sem_contorno)
 
     # o vidro dos armários: o que se vê por trás dele fica um pouco azulado, com os reflexos em diagonal
     if vidros:

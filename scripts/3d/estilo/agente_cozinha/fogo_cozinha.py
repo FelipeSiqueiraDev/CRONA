@@ -1,4 +1,8 @@
-"""Cópia do fogo_px2 (agente_fogo), adaptada à fornalha pequena do fogão a lenha: tudo escala com a boca (g['esc'])."""
+"""
+Cópia do fogo_px2 (agente_fogo), adaptada à fornalha pequena do fogão a lenha. Duas escalas: g['esc'] = o tamanho da
+boca no mundo (as distâncias em metros) e g['px'] = o tamanho das formas desenhadas em pixels (as chamas, as lambidas,
+as fagulhas, a fumaça), que segue o ESC do motor (padrão: o próprio g['esc'] x ESC / 0,75).
+"""
 """
 O fogo da lareira de vão 3D (a lareira do agente_lareira: arco, vão fundo de verdade), desenhado no pixel depois do
 acabamento (contorno incluído), com o fogo apagando e a fumaça.
@@ -45,7 +49,7 @@ import math
 import numpy as np
 
 from fogo_px import TAU, hx, paleta, CHAMA, PONTA, _tela, _viz, _toras_hit, _gota, _limpar, _sem_pixel_solto
-from motor import VISTA, ruido
+from motor import VISTA, ruido, KX, KY, ESC
 
 GEO2 = dict(m=2.92, bw=0.42, zp=0.124, bt=0.88, yb=0.72, yf=0.37, chamine=(2.92, 0.23, 3.23))
 
@@ -132,10 +136,10 @@ def _soltas2(sx, sy, bx, by, t, fl, esc=1.0):
         q = (fr * t + fase) % 1
         if q > 0.75:
             continue
-        cy = by - esc * topo * fl - 1 - q * 7
-        cx = bx + dx * esc + 1.2 * math.sin(TAU * q)
+        cy = by - esc * (topo * fl + 1 + q * 7)
+        cx = bx + esc * (dx + 1.2 * math.sin(TAU * q))
         tam = 1 - q / 0.75
-        g = _gota(sx, sy, cx, cy + 2.2 * tam, 3.2 * tam + 1.6, 4.5 * tam + 1.8)
+        g = _gota(sx, sy, cx, cy + esc * 2.2 * tam, esc * (3.2 * tam + 1.6), esc * (4.5 * tam + 1.8))
         nivel = np.where(g > 0, np.where(g > 0.55, 2, 1), nivel)
     return nivel
 
@@ -246,6 +250,7 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
         chamine = g.get('chamine', (m, 0.23, 3.23))
     rec = yb - yf
     _ESC['e'] = g.get('esc', 1.0)
+    pe = g.get('px', g.get('esc', 1.0) * ESC / 0.75)      # a escala das formas em pixels
     forca = float(np.clip(forca, 0, 1))
     fl, br, lz = _faixas(forca)
     if fumaca is None:
@@ -340,7 +345,7 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
     bx, by = _tela(c, np.array([m + g.get('chama_dx', -0.15 * g.get('esc', 1.0)), yb - rec * g.get('chama_y', 0.75), z0 + 0.2 * g.get('esc', 1.0)]))
     bx, by = float(bx), float(by)
     s_chama = (P0[:, 1] - (yb - rec * g.get('chama_y', 0.75))) / VISTA[1]
-    nivel_px = np.maximum(_chamas2(sx, sy, bx, by, t, fl, esc=g.get('esc', 1.0)), _soltas2(sx, sy, bx, by, t, fl, esc=g.get('esc', 1.0)))
+    nivel_px = np.maximum(_chamas2(sx, sy, bx, by, t, fl, esc=pe), _soltas2(sx, sy, bx, by, t, fl, esc=pe))
     niv = np.zeros((h, w), int)
     niv[ii, jj] = np.where(s_chama < s_sup, nivel_px, 0)
     niv = _limpar(niv)
@@ -355,7 +360,7 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
         if forca < 0.3 + 0.15 * i:
             continue
         q = (fr * t + fase) % 1
-        e = g.get('esc', 1.0)
+        e = pe
         px = int(round(bx + dx * e + 2.0 * e * math.sin(TAU * (q * 1.5 + fase))))
         py = int(round(by - 6 * e - q * alto * e * (0.5 + 0.5 * fl)))
         for (yy, cc) in ((py, hx('#ffe7a0')), (py + 1, hx('#f08a2a'))):
@@ -363,7 +368,7 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
                 novo[yy, px] = cc
     if fumaca > 0:
         a = np.zeros((h, w))
-        a[ii, jj] = _fumaca(sx, sy, bx, by + 1, fumaca_t, fumaca)
+        a[ii, jj] = _fumaca(sx, sy, bx, by + pe, fumaca_t, fumaca, altura=26 * pe, espalha=12 * pe, raio=(1.3 * pe, 3.9 * pe), onda=2.2 * pe)
         # pixel limpo: o degrau sozinho some
         viz_a = np.stack([_viz(a, dy, dx, 0.0) for dy, dx in ((0, 1), (1, 0), (0, -1), (-1, 0))])
         a = np.where((a > 0) & ((viz_a > 0).sum(0) <= 1), 0, a)
@@ -376,18 +381,18 @@ def desenhar_fogo(cor, c, t=0.0, forca=1.0, fumaca=None, fumaca_t=None, geo=None
     if fumaca > 0.05:
         fx, fy = _tela(c, np.array([m - 0.04, yb + 0.03, bt - 0.04]))
         fx, fy = float(fx), float(fy)
-        cor = _fumaca_tela(cor, (fx - 14, fy - 34, fx + 18, fy + 6), FUMACA_FRENTE, bx=fx, by=fy, ft=fumaca_t,
-                           quanto=fumaca, altura=28, espalha=6, raio=(1.4, 3.6), n=6, vel=0.45, onda=1.6,
-                           vento=1.5, seed=40.0, ganho=1.55)
+        cor = _fumaca_tela(cor, (fx - 14 * pe, fy - 34 * pe, fx + 18 * pe, fy + 6 * pe), FUMACA_FRENTE, bx=fx, by=fy, ft=fumaca_t,
+                           quanto=fumaca, altura=28 * pe, espalha=6 * pe, raio=(1.4 * pe, 3.6 * pe), n=6, vel=0.45, onda=1.6 * pe,
+                           vento=1.5 * pe, seed=40.0, ganho=1.55)
     # (2) a chaminé: aceso, um fio de fumaça; apagando, mais; sobe acima da viga ondulando, mais escura que o fundo
     if chamine is not None:
         qc = max(fumaca, 0.35 * fl) if fumaca_chamine is None else fumaca_chamine
         if qc > 0:
             cx_, cy_ = _tela(c, np.array(chamine))
             cx_, cy_ = float(cx_), float(cy_)
-            cor = _fumaca_tela(cor, (cx_ - 20, cy_ - 58, cx_ + 32, cy_ + 6), FUMACA_CHAMINE, bx=cx_, by=cy_ - 1,
-                               ft=fumaca_t, quanto=qc, altura=46, espalha=8, raio=(2.4, 7.0), n=10, vel=0.35,
-                               onda=2.6, vento=7.0, seed=80.0, ganho=1.45)
+            cor = _fumaca_tela(cor, (cx_ - 20 * pe, cy_ - 58 * pe, cx_ + 32 * pe, cy_ + 6 * pe), FUMACA_CHAMINE, bx=cx_, by=cy_ - 1,
+                               ft=fumaca_t, quanto=qc, altura=46 * pe, espalha=8 * pe, raio=(2.4 * pe, 7.0 * pe), n=10, vel=0.35,
+                               onda=2.6 * pe, vento=7.0 * pe, seed=80.0, ganho=1.45)
 
     # ---------- 5. a luz do fogo nas pedras e no chão (anéis em degraus, distância 3D, só na frente da boca) ----------
     if lz > 0:
@@ -423,7 +428,7 @@ desenhar_fogo2 = desenhar_fogo
 BRASA_BOCA = paleta('#4a1a10', '#8a2c14', '#d0541c', '#f89434', '#ffd060')
 
 
-def _linguas_boca(sx, sy, bx, by, t, fl, meia):
+def _linguas_boca(sx, sy, bx, by, t, fl, meia, kp=1.0):
     """As línguas baixas e largas que saem do buraco da boca (tons 1..5), espalhadas pela largura do buraco."""
     nivel = np.zeros(sx.shape, int)
     if fl <= 0:
@@ -434,18 +439,18 @@ def _linguas_boca(sx, sy, bx, by, t, fl, meia):
     tons = [(1.0, 1.0, 0.0), (0.78, 0.82, 0.4), (0.58, 0.64, 0.8), (0.4, 0.46, 1.1), (0.24, 0.28, 1.4)]
     for (px, w, hgt, tmax, fase, fr) in linguas:
         a = TAU * (fr * t + fase)
-        hh = hgt * (0.82 + 0.18 * math.sin(a) + 0.06 * math.sin(2 * a + 1.1)) * (0.35 + 0.65 * fl)
-        ww = w * (0.95 + 0.05 * math.cos(a + 0.7))
+        hh = kp * hgt * (0.82 + 0.18 * math.sin(a) + 0.06 * math.sin(2 * a + 1.1)) * (0.35 + 0.65 * fl)
+        ww = kp * w * (0.95 + 0.05 * math.cos(a + 0.7))
         tm = max(1, int(round(tmax * (0.4 + 0.6 * fl))))
         v = np.clip((by - sy) / max(hh, 1e-6), 0, 1)
-        bal = (0.9 * math.sin(a + 0.4) * v ** 1.5 + 0.4 * np.sin(2 * a + 2.0 + 5 * v) * v ** 2)
+        bal = kp * (0.9 * math.sin(a + 0.4) * v ** 1.5 + 0.4 * np.sin(2 * a + 2.0 + 5 * v) * v ** 2)
         for k, (fw, fh, sobe) in enumerate(tons[:tm]):
             g = _gota(sx - bal, sy, bx + px * meia, by - sobe, ww * fw, hh * fh)
             nivel = np.where(g > 0, np.maximum(nivel, k + 1), nivel)
     return nivel
 
 
-def chamas_boca(cor, c, t, forca, centro, raio, zt, esc=0.45, luz=(0.9, 0.55)):
+def chamas_boca(cor, c, t, forca, centro, raio, zt, esc=0.45, luz=(0.9, 0.55), px=None):
     """
     O buraco da boca aberta (centro x, y; raio; zt = o alto da chapa): o fundo em brasa pulsando (pedaços), as
     chamas subindo do buraco por cima da chapa (sem tapar o que está na frente delas) e a luz do fogo em volta,
@@ -479,18 +484,19 @@ def chamas_boca(cor, c, t, forca, centro, raio, zt, esc=0.45, luz=(0.9, 0.55)):
         C = np.array([bx0, by0, zt])
         bx, by = _tela(c, C)
         bx, by = float(bx), float(by) + 1
-        x0, x1 = int(bx - 14), int(bx + 15)
-        y0, y1 = int(by - 26), int(by + 3)
+        pe = ESC / 0.75 if px is None else px
+        x0, x1 = int(bx - 14 * pe), int(bx + 15 * pe)
+        y0, y1 = int(by - 26 * pe), int(by + 3 * pe)
         x0, y0, x1, y1 = max(0, x0), max(0, y0), min(w, x1), min(h, y1)
         yy, xx = np.mgrid[y0:y1, x0:x1]
         niv = np.zeros((h, w), int)
-        nv = _linguas_boca(xx + 0.5, yy + 0.5, bx, by, t, fl, raio * 32 * 1.2)
+        nv = _linguas_boca(xx + 0.5, yy + 0.5, bx, by, t, fl, raio * KX * 1.2, kp=pe)
         prof_ch = C @ VISTA
         livre = (c.prof[y0:y1, x0:x1] < prof_ch + 0.02) | (c.obj[y0:y1, x0:x1] < 0)
         # embaixo da linha do buraco as chamas não aparecem (estão dentro da chapa)
-        sx_rel = (xx + 0.5 - bx) / (raio * 32 * 1.42)
+        sx_rel = (xx + 0.5 - bx) / (raio * KX * 1.42)
         dentro_furo = (yy + 0.5 - by) < -1 + 0 * sx_rel
-        niv[y0:y1, x0:x1] = np.where(livre & (dentro_furo | (np.abs(sx_rel) < 1) & ((yy + 0.5 - by) < raio * 16 * 1.42 * np.sqrt(np.clip(1 - sx_rel ** 2, 0, 1)) - 1)), nv, 0)
+        niv[y0:y1, x0:x1] = np.where(livre & (dentro_furo | (np.abs(sx_rel) < 1) & ((yy + 0.5 - by) < raio * KY * 1.42 * np.sqrt(np.clip(1 - sx_rel ** 2, 0, 1)) - 1)), nv, 0)
         niv = _limpar(niv)
         cor = np.where((niv > 0)[..., None], CHAMA[np.clip(niv - 1, 0, 4)], cor)
     # 3. a luz do fogo da boca em volta (a parede de trás, a chaminé, a chaleira, a chapa), em anéis

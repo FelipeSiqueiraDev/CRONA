@@ -5,10 +5,55 @@ cozinha põe no módulo (c, M, caixa, pegadas): a cozinha chama `ligar(globals()
 import math
 import numpy as np
 import motor as _mt
-from motor import tela, ruido, emissivo
+from motor import tela, ruido, emissivo, KX, KY, KZ, ESC, VISTA
+
+# O giro do móvel desenhado sozinho (exportar_px.py): quem exporta põe aqui a Peca girada antes de desenhar. Os
+# materiais recebem o ponto e a normal da cena (local); com a Peca, a luz que os materiais redondos já trazem (vol,
+# _p1_mat_rampa) e as fitas e folhas viradas para a câmera (_fita, a espada-de-são-jorge) seguem o mundo girado.
+# None (a cena): local = mundo.
+GIRO = {'peca': None}
+
+
+def _peca():
+    """A Peca do giro: a de GIRO ou, se ninguém pôs, a que o exportar_px está usando (o PECA['p'] dele)."""
+    if GIRO['peca'] is not None:
+        return GIRO['peca']
+    import sys
+    for nome in ('exportar_px', '__main__'):
+        pp = getattr(sys.modules.get(nome), 'PECA', None)
+        if isinstance(pp, dict) and pp.get('p') is not None and pp['p'] is not _mt.MUNDO:
+            return pp['p']
+    return None
+
+
+def n_mundo(N):
+    """A normal (uma (3,) ou várias (k, 3)) do quadro do móvel para o mundo girado."""
+    p = _peca()
+    N = np.asarray(N, float)
+    if p is None:
+        return N
+    if N.ndim == 1:
+        return np.array(p.normal(tuple(N)), float)
+    return p.normal_vec(N)
+
+
+def vista_local():
+    """O sentido da câmera no quadro do móvel (com o giro, a câmera vista de dentro do móvel girado)."""
+    p = _peca()
+    if p is None:
+        return VISTA.copy()
+    q = p.local(np.array([[0.0, 0.0, 0.0], list(VISTA)]))
+    return q[1] - q[0]
+
+
+def frente_tela():
+    """(h, r): h = o sentido horizontal para a câmera e r = o que anda para a direita na tela (no quadro do móvel)."""
+    v = vista_local()
+    h = np.array([v[0], v[1]]) / math.hypot(v[0], v[1])
+    return h, np.array([h[1], -h[0]])
 
 ALTO = 2.85
-PXM = 0.032
+PXM = 0.024 / ESC          # 1 px da arte em metros (o veio da madeira), relativo ao ESC (0,032 m em 0,75; 0,024 m em 1)
 c = None
 M = _mt.MUNDO
 pegadas = []
@@ -118,7 +163,7 @@ def _p1_fator(n, tipo):
 
 def _p1_final(T, n, tipo):
     """A cor que, depois da luz da face e do tom quente do acabamento, vira exatamente T."""
-    f = _p1_fator(n, tipo)
+    f = _p1_fator(n_mundo(n), tipo)
     return (T - (1 - f) * _QUENTE) / f
 
 
@@ -202,7 +247,7 @@ def _p1_mat_rampa(R, lo, hi, tipo=3, extra=None):
     (em degraus inteiros da rampa), e já compensado da luz do acabamento.
     """
     def f(L, n, P):
-        s = _p1_sol(n)
+        s = _p1_sol(n_mundo(n))
         idx = np.full(len(L), lo + s * (hi - lo))
         if extra is not None:
             idx = idx + extra(L, np.asarray(n, float) / np.linalg.norm(n), P)
@@ -212,8 +257,8 @@ def _p1_mat_rampa(R, lo, hi, tipo=3, extra=None):
 
 
 
-PZ = 1 / 39.195          # 1 px da arte na vertical (m)
-PH = 1 / 32.0            # 1 px da arte ao longo de x ou de y (m)
+PZ = 1 / KZ              # 1 px da arte na vertical (m): 0,75 / 39,195 / ESC
+PH = 1 / KX              # 1 px da arte ao longo de x ou de y (m): 0,75 / 32 / ESC
 _QUENTE = np.array([16.0, 4.0, -10.0])
 _LUZ2 = np.array([-0.3, 0.55, 1.0]) / np.linalg.norm([-0.3, 0.55, 1.0])
 
@@ -229,7 +274,7 @@ def _fac(n):
 
 def _cru(cor, n):
     """A cor que, depois da luz da face do acabamento, fica igual a `cor` (para o material que já traz a luz)."""
-    f = _fac(n)
+    f = _fac(n_mundo(n))
     return (cor - (1 - f) * _QUENTE) / f
 
 
@@ -333,30 +378,35 @@ def vol(cx, cy, cor, brilho=0.0, faixas=None, costuras=None):
         th = np.arctan2(P[:, 1] - cy, P[:, 0] - cx)
         ch = math.sqrt(max(0.0, 1 - nn[2] ** 2))
         N = np.stack([ch * np.cos(th), ch * np.sin(th), np.full(len(P), nn[2])], 1)
-        d = N @ _LUZ2
+        d = n_mundo(N) @ _LUZ2
         k = _luz_k(d)
         base = np.tile(c0, (len(P), 1))
         if faixas is not None:
             base = faixas(P, base)
         if costuras is not None:
             nc, cc, r = costuras
-            sx = (P[:, 0] - P[:, 1]) * 32
+            # na tela (pela câmera do giro): x = a distância para a direita, em px (na cena, (X - Y) x KX)
+            hv, rv = frente_tela()
+            ka = math.sqrt(2) * KX
+            sx = (cx - cy) * KX + ((P[:, 0] - cx) * rv[0] + (P[:, 1] - cy) * rv[1]) * ka
             rr = np.hypot(P[:, 0] - cx, P[:, 1] - cy)
             ok = np.zeros(len(P), bool)
             angs = [2 * math.pi * (i + 0.5) / nc for i in range(nc)]
-            vis = [a for a in angs if math.cos(a - math.radians(45)) > -0.05]
-            xs = sorted([(math.cos(a) - math.sin(a), a) for a in vis])
+            acam = math.atan2(hv[1], hv[0])
+            vis = [a for a in angs if math.cos(a - acam) > -0.05]
+            xs = sorted([((math.cos(a) * rv[0] + math.sin(a) * rv[1]) * math.sqrt(2), a) for a in vis])
             for j, (v, a) in enumerate(xs):
                 # a costura que fica perto demais da vizinha na tela (perto da borda) some
                 viz = [abs(v - w) for (w, _) in xs if w != v]
-                if viz and min(viz) * r * 32 < 2.6:
+                if viz and min(viz) * r * KX < 2.6:
                     continue
-                sk = 32 * ((cx - cy) + rr * v)
+                sk = KX * ((cx - cy) + rr * v)
                 ok |= (sx >= sk - 0.5) & (sx < sk + 0.5) & (np.cos(th - a) > 0.2)
             base = np.where(ok[:, None], hx(cc), base)
         out = _vao(_tom(base, k), P)
         if brilho:
-            sp = (np.cos(th - math.radians(112)) > 0.965) & (nn[2] < 0.6)
+            Nw = n_mundo(N)
+            sp = (np.cos(np.arctan2(Nw[:, 1], Nw[:, 0]) - math.radians(112)) > 0.965) & (nn[2] < 0.6)
             out = np.where(sp[:, None], _tom(base, 1.0 + brilho), out)
         return _cru(out, n)
     return emissivo(f)
@@ -382,13 +432,13 @@ def _fita(pts2, cx, cy, mat, oid, w):
     Uma fita fina de frente para a câmera (o galho, a alça): pts2 = [(s, z), ...] no plano vertical que passa por
     (cx, cy) de frente para a câmera; s anda para a direita na tela. Cada trecho é um quadrilátero.
     """
-    k = 1 / math.sqrt(2)
+    h, r = frente_tela()
     for (s0, z0), (s1, z1) in zip(pts2[:-1], pts2[1:]):
         ds, dz = s1 - s0, z1 - z0
         l = math.hypot(ds, dz) or 1e-6
         ps, pz = -dz / l * w / 2, ds / l * w / 2
         q = [(s0 + ps, z0 + pz), (s1 + ps, z1 + pz), (s1 - ps, z1 - pz), (s0 - ps, z0 - pz)]
-        c.face_plana([(cx + s * k, cy - s * k, z) for (s, z) in q], (k, k, 0), mat, M, oid)
+        c.face_plana([(cx + s * r[0], cy + s * r[1], z) for (s, z) in q], (h[0], h[1], 0), mat, M, oid, dois_lados=True)
 
 
 # ---------------------------------------------------------------- a cadeira ----------------------------------------------------------------
