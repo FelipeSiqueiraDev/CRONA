@@ -153,7 +153,7 @@ quadros por personagem. Teste em `scripts/3d/estilo/agente_personagem/projecao/`
 - `textura.py`: o 3D inteiro pintado com a arte aprovada (cada ponto do corpo posado volta para a pose parada e pega a
   cor da direção que o vê melhor). Refaz bem a pose parada, mas borra quando o corpo dobra (o 3D e a arte não batem
   pixel a pixel). Abandonado.
-- `hibrido.py` (o caminho): **o corpo vem do 3D** (`alosi.py`, qualquer pose, com a luz, a rampa e o contorno do
+- `hibrido.py` (**recusado pelo Felipe: "terrível de ruim"**): o corpo vem do 3D (`alosi.py`, qualquer pose, com a luz, a rampa e o contorno do
   cenário; as cores de cada material tiradas da arte aprovada) e **a cabeça é recortada da própria arte aprovada**
   daquela direção (ela é rígida: em qualquer pose é a mesma, só muda de lugar), presa no pescoço do 3D.
   Prévias: `docs/estilo/alosi-hibrido-vs-aprovada.png` (em cima o híbrido, embaixo a aprovada) e

@@ -163,10 +163,9 @@ Tudo em `docs/PERSONAGEM-GERADOR.md` (o caminho, os prompts, os arquivos e o que
   `docs/estilo/alosi-no-jogo.mp4`), pisando no chão (pegada em degraus e o pé afundado 3 px, desde 13/10).
   **Aguardando o Felipe** mandar as imagens do gerador de sentado, abrir o armário e andar agachado
   (`alosi-acoes.zip`); depois falta o código do agachado e do abrir.
-- **Personagem por código (teste de 13/10, esperando o Felipe):** o corpo do 3D com as cores da arte aprovada e a
-  cabeça recortada da arte aprovada (`projecao/hibrido.py`). Andar e agachado nas 8 direções sem desenho novo
-  (`docs/estilo/alosi-hibrido-andar-agachado.mp4`). Se aprovado, as ações (abrir, atacar, dano, machucado, armado)
-  saem todas do código.
+- **Personagem por código (teste de 13/10): recusado pelo Felipe ("terrível de ruim").** O corpo do 3D com a cabeça
+  da arte aprovada (`projecao/hibrido.py`) não chega na qualidade. O personagem fica no gerador; o código só multiplica
+  (arma na mão, machucado, dano, respirar, piscar).
 - **Móveis em tamanho real:** o `aumento` 1,2 das cadeiras/mesas deixava o boneco pequeno; o Felipe aprovou 1,0
   (`docs/estilo/alosi-moveis-12-vs-10.png`). Falta passar para o jogo.
 - **A cozinha à noite** (`scripts/3d/estilo/agente_cozinha/noite.py`, `NOITE=1`): a cena multiplicada pela luz que
