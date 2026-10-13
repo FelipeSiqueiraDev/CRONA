@@ -190,6 +190,8 @@ def pose(andar=None, resp=0.0):
                 joelho = 0.18 * k
                 pe = 0.0
             pernas[lado] = dict(coxa=th, joelho=joelho, pe=pe, a=0.09 * (1 if lado == 'd' else -1))
+            if lado == 'd':
+                J['coxa_d'] = th
         # os braços ao contrário das pernas
         bd = -0.5 * math.cos(2 * math.pi * p)
         J['braco'] = {'d': (bd, 0.2 + 0.25 * max(0, bd)), 'e': (-bd, 0.2 + 0.25 * max(0, -bd))}
@@ -330,9 +332,11 @@ def montar(J):
         add('mao_' + lado, 'pele', 'mao_' + lado, ell(Mo, (0.08, 0.082, 0.085), pitch=-bal2))
         J['mao_' + lado] = Mo
     # ---- o códex no cinto (lado direito), pendurado na corrente
-    Lb = np.array([0.215, 0.07, 0.38 + S])
+    # (andando, ele balança com a coxa, um pouco atrasado)
+    cx_ = J.get('coxa_d', 0.0) * 0.55
+    Lb = np.array([0.215, 0.07 + 0.09 * math.sin(cx_), 0.38 + S + 0.03 * (1 - math.cos(cx_))])
     J['livro'] = Lb
-    add('livro', 'livro', 'livro', rbox(Lb, (0.03, 0.075, 0.09), 0.012, yaw=-0.5))
+    add('livro', 'livro', 'livro', rbox(Lb, (0.03, 0.075, 0.09), 0.012, pitch=-cx_, yaw=-0.5))
     # ---- a cabeça (feita reta e inclinada para trás em volta do pescoço)
     cabeca = suave(0.06, ell(Hc, (0.25, 0.23, 0.235)), ell(Hc + [0, 0.035, -0.11], (0.19, 0.17, 0.14)))
     add('cabeca', 'pele', 'pele', na_cabeca(J, cabeca))
@@ -855,8 +859,108 @@ def folha(imgs, fundo=(96, 92, 104), esc=4, cols=8):
     return out.resize((out.width * esc, out.height * esc), Image.NEAREST)
 
 
-if __name__ == '__main__':
+RESP = [0.0, 0.5, 1.0, 0.5]          # a respiração: 4 quadros (o peito e a cabeça sobem até 1 px)
+COM_CARA = ('s', 'se', 'sw', 'e', 'w')   # as direções que mostram os olhos (ganham a linha do piscar)
+
+
+def _quadro(args):
+    d, kind, k = args
+    if kind == 'parado':
+        J = pose(resp=RESP[k % 4])
+        if k >= 4:
+            J['olhos'] = False
+    else:
+        J = pose(andar=k / 8)
+    q = render(d, J)
+    return np.array(rgba(q))
+
+
+def tudo():
+    from multiprocessing import Pool
     os.makedirs(SAIDA, exist_ok=True)
-    imgs = [rgba(render(d, pose())) for d in ORDEM]
-    folha(imgs).save(os.path.join(SAIDA, 'previa.png'))
+    pasta = os.path.join(SAIDA, 'tabuleiro-32bits')
+    os.makedirs(pasta, exist_ok=True)
+    tarefas = []
+    for d in ORDEM:
+        tarefas += [(d, 'parado', k) for k in range(8 if d in COM_CARA else 4)]
+        tarefas += [(d, 'andar', k) for k in range(8)]
+    with Pool(min(8, os.cpu_count() or 2)) as pool:
+        res = pool.map(_quadro, tarefas)
+    Q = {t: Image.fromarray(r, 'RGBA') for t, r in zip(tarefas, res)}
+    w, h = Q[('s', 'parado', 0)].size
+    for d in ORDEM:
+        Q[(d, 'parado', 0)].save(os.path.join(pasta, f'idle-desarmado-{d}.png'))
+        linhas = 2 if d in COM_CARA else 1
+        tira = Image.new('RGBA', (w * 4, h * linhas))
+        for k in range(4 * linhas):
+            tira.paste(Q[(d, 'parado', k)], ((k % 4) * w, (k // 4) * h))
+        tira.save(os.path.join(pasta, f'parado-desarmado-{d}.png'))
+        tira = Image.new('RGBA', (w * 8, h))
+        for k in range(8):
+            tira.paste(Q[(d, 'andar', k)], (k * w, 0))
+        tira.save(os.path.join(pasta, f'andar-desarmado-{d}.png'))
+    # a folha das 8 direções, na ordem do docs/ARTE.md (em cima n ne e se, embaixo s sw w nw)
+    grade = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
+    fl = Image.new('RGBA', (w * 4, h * 2))
+    for i, d in enumerate(grade):
+        fl.paste(Q[(d, 'parado', 0)], ((i % 4) * w, (i // 4) * h))
+    fl.save(os.path.join(SAIDA, 'oito-direcoes.png'))
+    folha([Q[(d, 'parado', 0)] for d in grade], cols=4, esc=4).save(os.path.join(SAIDA, 'oito-direcoes_4x.png'))
+    # o GIF do andar (as 8 direções andando juntas) e o da respiração com a piscada
+    fundo = (96, 92, 104)
+    def gif(nome, quadros, dur):
+        fr = [folha(qs, fundo=fundo, cols=4, esc=3).convert('RGB') for qs in quadros]
+        pal = fr[0].quantize(colors=255, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+        fr = [f.quantize(palette=pal, dither=Image.Dither.NONE) for f in fr]
+        fr[0].save(os.path.join(SAIDA, nome), save_all=True, append_images=fr[1:], duration=dur, loop=0, disposal=1)
+    gif('andar.gif', [[Q[(d, 'andar', k)] for d in grade] for k in range(8)], 110)
+    seq = [0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1, 2, 2, 3, 3, 0, 4, 0, 0]
+    gif('parado.gif', [[Q[(d, 'parado', k if (k < 4 or d in COM_CARA) else k - 4)] for d in grade] for k in seq], 150)
+    folha([Q[(d, 'andar', k)] for d in ('se', 'sw') for k in range(8)], cols=8, esc=4).save(os.path.join(SAIDA, 'andar_se_sw_4x.png'))
+    print('ok', len(tarefas), 'quadros', (w, h))
+
+
+def na_cozinha(saida=None, lugares=(((2.15, 1.25), 'sw'), ((6.5, 2.35), 's'), ((3.05, 4.35), 'se'))):
+    """
+    A Alosi em pé dentro da cozinha 1:1 (agente_cozinha/cozinha.py), no z-buffer dela: o que está na frente (a mesa,
+    as cadeiras) tapa o que está atrás; a sombra de contato pousa no ladrilho.
+    """
+    sys.path.insert(0, os.path.join(AQUI, '..', 'agente_cozinha'))
+    import cozinha as K
+    img = np.array(K.montar(0.0, 1.0)).astype(float)
+    ck = K.c
+    H, W = ck.prof.shape
+    for (T, d) in lugares:
+        q = render(d, pose(), T=T, sombra_chao=False)
+        # a sombra no chão da cozinha (onde o que se vê é o chão, perto dos pés)
+        P = ck.mundoP
+        r = np.hypot(P[..., 0] - T[0], P[..., 1] - T[1])
+        chao = (ck.tipo == 1) & (ck.nz > 0.6)
+        a = np.where(chao & (r < 0.19), 0.42, np.where(chao & (r < 0.26), 0.24, 0.0))
+        img = img * (1 - a[..., None]) + np.array([34.0, 22.0, 30.0]) * a[..., None]
+        x0, y0, w, h = q.caixa
+        for i in range(h):
+            for j in range(w):
+                if q.alfa[i, j] == 0:
+                    continue
+                I, Jx = i + y0 - ck.y0, j + x0 - ck.x0
+                if 0 <= I < H and 0 <= Jx < W and q.c.prof[i, j] > ck.prof[I, Jx] - 0.01:
+                    img[I, Jx] = q.cor[i, j]
+    im = Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
+    saida = saida or os.path.join(SAIDA, 'cozinha_teste.png')
+    im.save(saida.replace('.png', '_1x.png'))
+    im.resize((im.width * 3, im.height * 3), Image.NEAREST).save(saida)
+    return im
+
+
+if __name__ == '__main__':
+    if '--rapido' in sys.argv:
+        os.makedirs(SAIDA, exist_ok=True)
+        imgs = [rgba(render(d, pose())) for d in ORDEM]
+        folha(imgs).save(os.path.join(SAIDA, 'previa.png'))
+    elif '--cozinha' in sys.argv:
+        na_cozinha()
+    else:
+        tudo()
+        na_cozinha()
     print('ok')
