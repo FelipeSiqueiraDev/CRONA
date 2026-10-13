@@ -136,7 +136,103 @@ Siga a cozinha (`agente_cozinha/cozinha.py`) como modelo. É o caminho completo.
    `ARTE=/tmp/exp/ PX=<nome> ESTILO=<floorStyle> node scripts/3d/estilo/ver_no_jogo.mjs saida.png "Fazenda · Cozinha"`
 4. **Antes de commitar o que muda o jogo:** rode `npm run typecheck`, `npm test` e `npm run build`. Faça o commit em português, na branch `claude/...`.
 
-## 7. Trabalhar com agentes (como fizemos)
+## 7. As regras de posição e de movimento do tabuleiro
+
+O desenho tem que obedecer a estas regras: elas decidem onde cada coisa fica, o que bloqueia e por onde as peças andam.
+Os números são os do código (13/10); se mudarem, vale o código. Cada regra cita o arquivo onde está.
+
+### 7.1 A grade, a planta e as paredes
+- **Casa:** 0,75 m (`M_POR_CASA`, `shared/src/constants.ts`). O quadrado do livro, de 1,5 m, são 2 casas.
+- **Altura:** em unidades. `Z_PER_M` ≈ 1,633 unidade por metro, e cada unidade tem 32 px (`Z_PX`).
+- **Tela:** `iso(x, y, z) = ((x − y)·32, (x + y)·16 − z·32)` (`client/src/render/iso.ts`).
+- **Planta (heightmap):** uma linha de texto por y, um caractere por x.
+  - `0`–`9` e `a`–`w` são alturas de piso de 0 a 32 unidades (1 unidade ≈ 0,61 m).
+  - `x` é casa vazia: não é chão.
+  - Vai de 2×2 a 80×80 casas (`shared/src/heightmap.ts`).
+- **Ao ar livre:** a cena tem `terreno`, uma letra por casa: `g` grama, `t` estrada, `l` lavoura, `p` cascalho, `d` terra, `m` píer, `a` água (a água fica numa casa `x`).
+- **Paredes:** só as de trás.
+  - `'l'` é a da esquerda, no plano x = menor x da linha.
+  - `'r'` é a da direita/fundo, no plano y = menor y da coluna.
+  - Cada trecho tem uma casa de largura e a `base` é a altura do piso dali.
+  - A parede tem 2,8 m (`WALL_HEIGHT`) e o topo é o piso mais alto + 2,8 m (`shared/src/walls.ts`).
+- **A porta do cômodo:** fica numa casa com chão, na borda (o vão tem 2,1 m). Nenhum móvel pode ficar nela ("Não bloqueie a porta.").
+
+### 7.2 Os móveis no catálogo (`shared/src/furni.ts`)
+- **`width` × `depth`** em casas, no giro 4. A **âncora** do item é a casa de menor x e menor y da pegada.
+- **Giros:** 0, 2, 4, 6 dizem para onde aponta a frente: −y, +x, +y, −x. Nos giros 2 e 6, largura e fundo trocam.
+  - Um móvel pode limitar os giros (`rotations`).
+  - O jogo mostra a frente nos giros 2 e 4 e as costas nos giros 0 e 6.
+- **`height`** em metros no catálogo. O jogo converte para unidades; o `aumento` já vem incluído.
+- **`walkable`:** pisa-se em cima (tapete, estrado). Sem ele, sem `sit` e sem porta aberta, a casa bloqueia.
+- **`sit`:** a casa vira assento.
+  - A peça sobe à altura do móvel e fica virada para a frente dele.
+  - O caminho não atravessa cadeira: ela só pode ser o destino.
+  - `leitos` são as alturas das camas do beliche.
+- **`stackable`:** aceita coisa em cima, que fica no topo do de baixo (o tampo). Em cima de algo que não é stackable: "Não dá para empilhar aqui." O limite da pilha é ~7,35 m.
+- **`flat`:** decalque no chão (tapete, sangue, sigilo). Vai por baixo de tudo e não conta como pilha.
+- **`vazio`:** casas livres dentro da pegada, em `[u, v]` no giro 4.
+  - `u` vai ao longo da largura, da esquerda para a direita. `v` vai do fundo (0) para a frente.
+  - Nessas casas anda-se e põe-se outra peça.
+  - Exemplos: o armário em L (`[[1,1],[1,2]]`), a mesa em U e a cortina do leito.
+  - `aberto` diz o lado sem parede da peça vazada.
+- **`vao`:** a mesa com vão embaixo.
+  - Em todas: a cadeira encaixa embaixo ("Já tem algo embaixo da mesa." se já houver).
+  - `'vazada'` (só pernas): a peça também passa por baixo, abaixada, com um custo maior no caminho.
+  - `'fundo'`: ninguém atravessa.
+- **`aumento`:** a arte cresce por igual em volta do meio. As mesas e as cadeiras usam 1,2. A pegada e a ordem de desenho continuam as das casas.
+- **Portas:**
+  - `states` e `openState` dizem em que estado dá para passar. O clique duplo do mestre troca o estado.
+  - O `portal` tem os estados aberta (0), fechada (1) e trancada (2).
+  - Não fecha com alguém no vão.
+- **Passagem para outra cena:** `portal` com `link`. A peça **parada** em cima viaja. As escadas (`stairs_up`, `escada_desce`, `escada_vertical`) são passagens, e a peça chega no pé delas.
+- **`hidden`:** passagem escondida (alçapão, escada) que só aparece quando o móvel com tranca desliza.
+- **`cela`:** porta de cela. O jogo acha a cela pelas paredes em volta (até 48 casas); fechada, a cela fica no escuro.
+- **`xray`:** fica transparente (28%) quando há uma peça atrás.
+- **Itens de parede:**
+  - Ficam em `wall` `'l'`/`'r'`, com `pos` (o centro ao longo da parede, em casas), `z` (a base, em unidades) e `w`/`h` em px.
+  - Têm de ficar inteiros numa parede, fora da porta, acima do rodapé e abaixo do topo.
+- **Lâmpada de teto:** `height` 0 e `walkable`. Anda-se embaixo, e o desenho fica no alto (2,15–2,75 m).
+
+### 7.3 O que o desenho precisa respeitar
+- **A âncora da arte:** a quina da frente da base, a de baixo na tela (ou o centro da base, com `ancora: 'centro'`).
+  - A arte em pixel (`pixel`) vai no tamanho final, sem esticar.
+  - O `real` é a medida de verdade, já com o aumento.
+- **Encostar na parede:** se o móvel é menor que as casas dele e as costas dão para a parede, o jogo desloca o **desenho** até ela (no canto, também para o lado). A casa continua a mesma.
+  - Não vale para cadeira, coisa pisável, portal, mesa vazada e item fora do chão.
+- **O tampo:** um móvel stackable de 0,52 a 1,07 m de altura (a mesa, o balcão) tem tampo.
+  - O que vai em cima escorrega para dentro do tampo desenhado.
+  - **Desenhe o tampo na altura do `height`**, senão o que vai em cima flutua ou afunda.
+- **A cadeira na mesa:** uma cadeira 1×1 com a mesa na casa da frente entra 0,25 casa embaixo do tampo (o deslocamento fica entre −0,45 e +0,7 casa). A peça sentada vai junto.
+  - **Por isso a mesa não pode ter travessa embaixo**, só tampo e pernas nas quinas, para a cadeira encaixar sem atravessar.
+- **A ordem de desenho:** é calculada pela **pegada** (as casas), não pelo desenho. Quem está atrás numa dimensão vem antes.
+  - O que fica embaixo da mesa (a cadeira encaixada, a peça agachada) vai atrás da mesa.
+  - O desenho não deve sair muito da pegada: o que passar dela pode cruzar errado com o vizinho.
+- **A pessoa:**
+  - Tem 1,80 m (~94 px no tabuleiro) e pisa no **centro da casa**.
+  - A caixa dela tem 0,3 casa de meia largura.
+  - Sentada no chão, fica 8 px mais baixa. Debaixo da mesa vazada fica abaixada (62% da altura; 72% se estiver agachada).
+
+### 7.4 O movimento das peças
+- **O caminho (A\*):** 8 direções, com custo 1 no reto e √2 na diagonal (`shared/src/pathfinding.ts`).
+  - A diagonal não corta quina de coisa que bloqueia.
+  - Entre caminhos iguais, prefere o que vira menos e continua na direção em que já vinha.
+- **O passo:**
+  - O relógio bate a cada 250 ms.
+  - O passo reto leva 500 ms e o diagonal 750 ms (~2 casas por segundo).
+  - O cliente anima o passo nesse tempo.
+- **Degrau:** sobe até ~0,92 m e desce até ~1,84 m numa casa. Altura maior só por escada (passagem para outra cena).
+- **O que bloqueia:**
+  - casa sem chão;
+  - móvel que não é pisável;
+  - porta fechada ou trancada;
+  - outra peça.
+  - Se só uma peça atrapalha, a que anda espera até 8 passos e tenta de novo.
+- **Sentar:** na cadeira, a peça vira para a frente dela e só a cabeça gira. Começar a andar levanta. Sentar no chão é uma ação à parte.
+- **As 8 direções da folha do personagem** (`shared/src/protocol.ts`):
+  - O índice da grade 0..7 (N, NE, E, SE, S, SW, W, NW, com N = −y) vira o nome da folha, que segue a **tela**: 0→ne, 1→e, 2→se, 3→s, 4→sw, 5→w, 6→nw, 7→n.
+  - Os giros pares andam ao longo das casas e aparecem como diagonais na tela. O móvel de giro 4 (frente +y) olha para **sw** na tela.
+
+## 8. Trabalhar com agentes (como fizemos)
 
 Quando o trabalho é grande, divida em agentes em paralelo, cada um com:
 - uma parte bem definida: o fogo, a lareira, as peças, a janela;
@@ -148,7 +244,7 @@ Quando o trabalho é grande, divida em agentes em paralelo, cada um com:
 Depois, um script junta tudo (`juntar.py` monta o `sala4.py`). Os nomes que se repetem entre os arquivos precisam ser
 renomeados ao juntar (por exemplo, `_LUZ` virou `_LUZ2`).
 
-## 8. Erros que já aconteceram (confira antes de entregar)
+## 9. Erros que já aconteceram (confira antes de entregar)
 
 - [ ] **Faltam pedaços de costas ou de lado.** O fogão sumia de costas, a pia não tinha fundo, a planta só tinha folha de um lado.
 - [ ] **Algo flutua ou atravessa outra peça.** O pote encostava na cortina, o friso da parede passava pela porta.
@@ -158,9 +254,11 @@ renomeados ao juntar (por exemplo, `_LUZ` virou `_LUZ2`).
 - [ ] **Pixel solto, xadrez ou pontilhado** num padrão. Isso vem de linha mais fina que 1 px ou de padrão fora da grade.
 - [ ] **Pixel desigual no jogo.** Acontece com escala que não é inteira; o 1:1 resolve.
 - [ ] **A sombra do móvel cai fora da imagem** ou some com a luz do jogo, que soma por cima. Ela precisa ter força.
+- [ ] **A mesa com travessa embaixo** (a cadeira não encaixa) ou o **tampo fora da altura do `height`** (o que vai em cima flutua).
+- [ ] **O desenho saindo muito da pegada** (cruza errado com o vizinho na ordem de desenho).
 - [ ] **A medida errada.** Confira com o `furni.ts` e o seed. O tamanho do móvel é o do catálogo, e a arte já vem com o `aumento`.
 
-## 9. O que falta (13/10)
+## 10. O que falta (13/10)
 
 Ver `docs/EM-ABERTO.md`. Em resumo:
 - fechar os móveis da cozinha de todos os lados;

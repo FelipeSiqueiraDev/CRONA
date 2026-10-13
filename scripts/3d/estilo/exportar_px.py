@@ -40,6 +40,7 @@ def _cadeira():
 # Todos desenhados de frente para +y (o giro 4 do jogo).
 ITENS = {
     'armario_cozinha': (2, 1, (0.0, 0.0), lambda: CZ.armario(0.0, '+y', enfeite=0), {}),
+    'armario_cozinha_l': (2, 3, (0.0, 0.0), lambda: CZ.armario_l(), {}),
     'fogao_lenha': (2, 1, (1.5, 0.0), lambda: CZ.fogao(aceso=False), {'1': lambda: CZ.fogao(aceso=True)}),
     'pia_cozinha': (2, 1, (3.0, 0.0), lambda: CZ.pia(), {}),
     'mesa_cozinha': (3, 2, (3.0, 2.25), lambda: CZ.mesa(2.775, 2.1, 2.7, 1.8, 0.94), {}),
@@ -160,22 +161,9 @@ def desenhar(nome, rot, desenho, forca=0.0):
     # o brilho da quina de cima e o contorno (só entre peças do móvel; o chão invisível não conta)
     obj_m = np.where(movel, obj, -1)
     prof_m = np.where(movel, prof, -1e9)
-    emb_obj, emb_nz = _viz(obj_m, 1, 0, -1), _viz(nz, 1, 0, 0.0)
-    brilho = topo & movel & (emb_obj == obj_m) & (emb_nz < 0.5) & ~luz_m
-    cor = np.where(brilho[..., None], np.minimum(255, cor * 1.15 + 10), cor)
-    borda = np.zeros((h, w), bool)
-    for dy, dx in ((0, 1), (1, 0), (0, -1), (-1, 0)):
-        On, Pn = _viz(obj_m, dy, dx, -1), _viz(prof_m, dy, dx, -1e9)
-        borda |= movel & (On != obj_m) & ((Pn < prof_m - 0.04) | (On < 0))
+    # o brilho das quinas, as arestas de dentro e o contorno (forte por fora, seletivo entre peças): o mesmo da cena
     sem_contorno = np.isin(obj, [o for o, v in c.contornos.items() if not v])
-    borda &= ~luz_m & ~sem_contorno
-    quina = np.zeros((h, w), bool)
-    for dy, dx in ((0, 1), (1, 0)):
-        On, Fn, Nn = _viz(obj_m, dy, dx, -1), _viz(face, dy, dx, -1), _viz(nrm, dy, dx, 0.0)
-        quina |= movel & (On == obj_m) & (Fn != face) & ((Nn * nrm).sum(-1) < 0.5)
-    quina &= ~borda & ~luz_m & ~brilho & ~sem_contorno
-    cor = np.where(quina[..., None], cor * 0.8, cor)
-    cor = np.where(borda[..., None], cor * 0.28 + np.array([26.0, 12.0, 10.0]), cor)
+    cor = CZ.acabar_px(cor, obj, nrm, face, prof, tipo, luz_m, sem_contorno, movel)
     # o vidro dos armários
     if CZ.vidros:
         sx = np.arange(w)[None, :] + c.x0

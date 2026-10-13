@@ -885,6 +885,206 @@ def enfeites_armario(B, fy, o0, W, zn, zt, qual):
         cesto(x, y, zt, r=0.14)
 
 
+# =====================================================================================================================
+# o armário de cozinha em L (armario_cozinha_l: 2 x 3 casas no giro 4, as casas [1,1] e [1,2] livres): o braço do
+# fundo (x 0..1,5, encostado em y = 0) e o da esquerda (y 0..2,25, encostado em x = 0), um móvel só, dividindo o canto
+# =====================================================================================================================
+def _braco(eixo):
+    """
+    O quadro de um braço do L: u ao longo da parede (a partir do canto), v da parede para a frente. eixo 'x': o braço
+    do fundo (a frente olha para +y); 'y': o da esquerda (a frente olha para +x). Devolve B, a face da frente, a de
+    trás, a da ponta (a que fica longe do canto), au (u de cada ponto) e se a normal é a da frente.
+    """
+    if eixo == 'x':
+        return ((lambda u0, u1, v0, v1, z0, z1: (u0, u1, v0, v1, z0, z1)), 'frente', 'costas', 'dir',
+                (lambda P: P[:, 0]), (lambda n: n[1] > 0.5))
+    return ((lambda u0, u1, v0, v1, z0, z1: (v0, v1, u0, u1, z0, z1)), 'dir', 'esq', 'frente',
+            (lambda P: P[:, 1]), (lambda n: n[0] > 0.5))
+
+
+def _pintado_l(au, e_frente, paineis=()):
+    """O creme pintado do armário; paineis (u0, u1, z0, z1): a almofada com a fresta, a luz e o rebaixo do meio."""
+    c0 = hx(CREME)
+
+    def f(L, n, P):
+        out = np.tile(c0, (len(P), 1))
+        if not e_frente(np.asarray(n, float)):
+            return out
+        u, z = au(P), P[:, 2]
+        for (u0, u1, z0, z1) in paineis:
+            dentro = (u >= u0) & (u < u1) & (z >= z0) & (z < z1)
+            fresta = dentro & ((u < u0 + PH) | (u >= u1 - PH) | (z < z0 + PZ) | (z >= z1 - PZ))
+            luz = dentro & ~fresta & ((z >= z1 - 2 * PZ) | (u < u0 + 2 * PH))
+            somb = dentro & ~fresta & ((z < z0 + 2 * PZ) | (u >= u1 - 2 * PH))
+            mi = dentro & (u >= u0 + 0.06) & (u < u1 - 0.06) & (z >= z0 + 0.05) & (z < z1 - 0.05)
+            mib = mi & ((u < u0 + 0.06 + PH) | (z >= z1 - 0.05 - PZ))
+            mil = mi & ((u >= u1 - 0.06 - PH) | (z < z0 + 0.05 + PZ))
+            out = np.where(luz[:, None], hx(CREME_L), out)
+            out = np.where(somb[:, None], _tom(c0, 0.92), out)
+            out = np.where(mib[:, None], _tom(c0, 0.9), out)
+            out = np.where(mil[:, None], hx(CREME_L), out)
+            out = np.where(fresta[:, None], hx('#7a6a54'), out)
+        return out
+    return emissivo(f)
+
+
+def _fundo_l(au, ZU, ZP, ZT):
+    """O fundo por dentro: em cima azul (a sombra das prateleiras), embaixo, no vão, o lambri creme de réguas finas."""
+    def f(L, n, P):
+        z = P[:, 2]
+        u = au(P)
+        out = np.tile(hx('#5e7e8c'), (len(P), 1))
+        for zz in (ZP, ZT):
+            out = np.where(((z < zz) & (z > zz - 0.06))[:, None], hx('#465f6c'), out)
+        g = (u % (4 * PH))
+        lam = np.where((g < PH)[:, None], hx('#b8a888'), np.where((g < 2 * PH)[:, None], hx('#eee4cc'), hx(CREME)))
+        lam = np.where(((z > ZU - 0.03 - 0.07) & (z < ZU - 0.03))[:, None], _tom(lam, 0.86), lam)
+        return np.where((z < ZU - 0.03)[:, None], lam, out)
+    return emissivo(f)
+
+
+def _esquadria(mat, lado):
+    """O tampo do braço com a emenda de meia-esquadria no canto (a diagonal x = y): a junta de 1 px e a luz dela."""
+    def f(L, n, P):
+        out = mat(L, n, P)
+        d = (P[:, 0] - P[:, 1]) * lado            # > 0 do lado deste braço
+        out = np.where((d < PH)[:, None], hx('#5a2c16'), out)
+        return np.where(((d >= PH) & (d < 2 * PH))[:, None], _tom(out, 1.1), out)
+    f.emissivo = True
+    return f
+
+
+def armario_l():
+    """
+    O armário de cozinha em L, no canto do fundo com a esquerda (giro 4: a pegada x 0..1,5, y 0..2,25; as casas
+    [1,1] e [1,2] livres). Embaixo o balcão em L (o rodapé recuado, as gavetas e as portas almofadadas nos dois braços,
+    a pilastra no canto de dentro) com o tampo de tábuas contínuo e a emenda em meia-esquadria; em cima, no braço do
+    fundo, o louceiro com as portas de vidro e, no da esquerda, as prateleiras abertas com a louça; a cimalha em L.
+    As costas (tábuas de pinho em pé) e as pontas fechadas: o móvel é visto nos 4 giros.
+    """
+    WX, WY = 1.5, 2.25             # o comprimento de cada braço (do canto)
+    DL, DU = 0.56, 0.34            # o fundo do balcão e o do louceiro / das prateleiras
+    ZB, ZN, ZU, ZT = 0.86, 0.91, 1.36, 1.84
+    ZP = 1.6
+    BX, FRX, TRX, PTX, aux, efx = _braco('x')
+    BY, FRY, TRY, PTY, auy, efy = _braco('y')
+    COSTAS_X = tab2(['#b88a58', '#b08254', '#bc8e5c'], 0.15, '#6a4426', eixo=1, seed=66)
+    COSTAS_Y = tab2(['#b88a58', '#b08254', '#bc8e5c'], 0.15, '#6a4426', eixo=1, seed=67)
+
+    # ---- o rodapé recuado (L) ----
+    caixa(BX(0.0, WX - 0.04, 0, DL - 0.04, 0, 0.07), mad2('#5a3a24', eixo=0, seed=61, passo=0.04))
+    caixa(BY(DL - 0.04, WY - 0.04, 0, DL - 0.04, 0, 0.07), mad2('#5a3a24', eixo=0, seed=62, passo=0.04))
+
+    # ---- o balcão: o braço do fundo (com o canto) e o da esquerda; gavetas em cima, portas embaixo ----
+    def colunas(u0, u1, n):
+        xs = np.linspace(u0, u1, n + 1)
+        return [(xs[i] + (0.01 if i else 0), xs[i + 1] - (0.01 if i < n - 1 else 0)) for i in range(n)]
+    cx_ = colunas(DL + 0.05, WX - 0.05, 2)
+    cy_ = colunas(DL + 0.05, WY - 0.05, 3)
+    pain_x = [(a, b, 0.66, 0.83) for (a, b) in cx_] + [(a, b, 0.1, 0.62) for (a, b) in cx_]
+    pain_y = [(a, b, 0.66, 0.83) for (a, b) in cy_] + [(a, b, 0.1, 0.62) for (a, b) in cy_]
+    caixa(BX(0.0, WX, 0, DL, 0.07, ZB), {FRX: _pintado_l(aux, efx, pain_x), TRX: COSTAS_X, 'esq': COSTAS_Y,
+                                        '*': _pintado_l(aux, efx), 'cima': liso(CREME)}, sombra=False)
+    caixa(BY(DL, WY, 0, DL, 0.07, ZB), {FRY: _pintado_l(auy, efy, pain_y), TRY: COSTAS_Y,
+                                       '*': _pintado_l(auy, efy), 'cima': liso(CREME)}, sombra=False)
+    # os puxadores (o botão das gavetas no meio, o das portas perto da junta do par)
+    for (B_, pains, cols) in ((BX, pain_x, cx_), (BY, pain_y, cy_)):
+        for k, (u0, u1, z0, z1) in enumerate(pains):
+            if z0 > 0.6:
+                um, zm = (u0 + u1) / 2, (z0 + z1) / 2
+            else:
+                um = u1 - 0.07 if (k - len(cols)) % 2 == 0 else u0 + 0.07
+                zm = z1 - 0.12
+            _barra(B_(um - 0.018, um + 0.018, DL, DL + 0.025, zm - 0.015, zm + 0.015), '#5a4a3a', '#8a7a62', quina=False)
+    # a pilastra no canto de dentro (a quina em pé arredondada, clara)
+    caixa((DL - 0.005, DL + 0.03, DL - 0.005, DL + 0.03, 0.07, ZB), {'*': _pau(CREME_L, CREME_L, quina=False)}, sombra=False)
+    pegadas.append((0.0, WX, 0.0, DL))
+    pegadas.append((0.0, DL, DL, WY))
+
+    # ---- o tampo de tábuas contínuo, com a meia-esquadria no canto (a diagonal de (0, 0) a (D, D)) ----
+    D = DL + 0.025
+    TX = _esquadria(tab2(['#b07440', '#a86e3c', '#b67a44'], 0.14, '#5a2c16', eixo=0, seed=62), +1)
+    TY = _esquadria(tab2(['#b07440', '#a86e3c', '#b67a44'], 0.14, '#5a2c16', eixo=1, seed=63), -1)
+    BORDA = mad2('#8a5230', eixo=0, seed=63, passo=0.03)
+    ot = c.novo_obj(3)
+    fp([(0, 0, ZN), (WX + 0.01, 0, ZN), (WX + 0.01, D, ZN), (D, D, ZN)], (0, 0, 1), TX, ot)
+    fp([(0, 0, ZN), (D, D, ZN), (D, WY + 0.01, ZN), (0, WY + 0.01, ZN)], (0, 0, 1), TY, ot)
+    for (pts, nn) in ((((D, D), (WX + 0.01, D)), (0, 1, 0)), (((WX + 0.01, 0), (WX + 0.01, D)), (1, 0, 0)),
+                      (((0, 0), (WX + 0.01, 0)), (0, -1, 0)), (((D, D), (D, WY + 0.01)), (1, 0, 0)),
+                      (((0, WY + 0.01), (D, WY + 0.01)), (0, 1, 0)), (((0, 0), (0, WY + 0.01)), (-1, 0, 0))):
+        (a, b), (a2, b2) = pts
+        fp([(a, b, ZB), (a2, b2, ZB), (a2, b2, ZN), (a, b, ZN)], nn, BORDA, ot)
+
+    # ---- em cima, no braço do fundo: o louceiro (as portas de vidro só no que fica fora do canto) ----
+    LADO = {TRX: COSTAS_X, '*': _pintado_l(aux, efx), 'cima': liso(CREME)}
+    caixa(BX(WX - 0.035, WX, 0, DU, ZN, ZT), LADO, sombra=False)
+    caixa(BX(0.0, 0.035, 0, DU, ZN, ZT), {'esq': COSTAS_Y, TRX: COSTAS_X, '*': _pintado_l(aux, efx), 'cima': liso(CREME)}, sombra=False)
+    caixa(BX(0.0, WX, 0, 0.012, ZN, ZT), {FRX: _fundo_l(aux, ZU, ZP, ZT), TRX: COSTAS_X, '*': _pintado_l(aux, efx), 'cima': liso(CREME)}, sombra=False)
+    caixa(BX(0.035, WX - 0.035, 0.012, DU, ZU - 0.03, ZU), {'*': _pintado_l(aux, efx), 'cima': liso('#6a8794')}, sombra=False)
+    caixa(BX(0.035, WX - 0.035, 0.012, DU - 0.03, ZP, ZP + 0.022), {'cima': liso('#6a8794'), '*': _pintado_l(aux, efx)}, sombra=False)
+    u0v = DU + 0.035                                 # onde começam as portas (o canto fica atrás das prateleiras)
+    Wv = WX - u0v
+    BXs = (lambda a, b, cc, d, e, f_: BX(a + u0v - 0.035, b + u0v - 0.035, cc, d, e, f_))
+    louca(BXs, True, 0.0, ZU, Wv + 0.035, DU, 0)
+    louca(BXs, True, 0.0, ZP + 0.022, Wv + 0.035, DU, 1)
+    vf = DU - 0.022
+    meio = (u0v + WX - 0.035) / 2
+    for (a, b, z0, z1) in ((u0v, u0v + 0.04, ZU, ZT), (WX - 0.075, WX - 0.035, ZU, ZT), (meio - 0.022, meio + 0.022, ZU, ZT),
+                           (u0v, WX - 0.035, ZU, ZU + 0.04), (u0v, WX - 0.035, ZT - 0.04, ZT),
+                           (u0v + 0.04, meio - 0.022, ZP - 0.005, ZP + 0.03), (meio + 0.022, WX - 0.075, ZP - 0.005, ZP + 0.03)):
+        caixa(BX(a, b, vf, DU, z0, z1), {'*': _pau(CREME, CREME_L, quina=False), FRX: _pau(CREME, quina=False)}, sombra=False)
+    for uk in (meio - 0.06, meio + 0.04):
+        caixa(BX(uk, uk + 0.02, DU, DU + 0.02, ZP - 0.06, ZP), _pau('#5a4a3a', '#8a7a62', quina=False), sombra=False)
+    vidros.append(BX(u0v + 0.001, WX - 0.036, 0.014, vf - 0.002, ZU + 0.001, ZT - 0.001))
+
+    # ---- em cima, no braço da esquerda: as prateleiras abertas (o lado do canto fecha a ponta do louceiro) ----
+    caixa(BY(DU, DU + 0.035, 0, DU, ZN, ZT), {TRY: COSTAS_Y, '*': _pintado_l(auy, efy), 'cima': liso(CREME)}, sombra=False)
+    caixa(BY(WY - 0.035, WY, 0, DU, ZN, ZT), {TRY: COSTAS_Y, '*': _pintado_l(auy, efy), 'cima': liso(CREME)}, sombra=False)
+    caixa(BY(DU, WY, 0, 0.012, ZN, ZT), {FRY: _fundo_l(auy, ZU, ZP, ZT), TRY: COSTAS_Y, '*': _pintado_l(auy, efy), 'cima': liso(CREME)}, sombra=False)
+    PRAT = {'cima': tab2(['#c08650', '#b88048'], 0.17, '#6a3a1e', eixo=1, seed=68), '*': _pintado_l(auy, efy)}
+    u1p = DU + 0.035
+    for zz in (ZU - 0.03, ZP):
+        caixa(BY(u1p, WY - 0.035, 0.012, DU, zz, zz + 0.03), PRAT, sombra=False)
+    # a barra recortada embaixo da prateleira de baixo (o lambrequim: bicos de 1 px a cada 6)
+    def lambrequim(L, n, P):
+        out = np.tile(hx(CREME), (len(P), 1))
+        g = ((auy(P) - u1p) / PH) % 6
+        out = np.where(((P[:, 2] < ZU - 0.03 - 2 * PZ) & ((g < 1) | (g >= 5)))[:, None], _tom(out, 0.84), out)
+        return np.where((P[:, 2] >= ZU - 0.03 - PZ)[:, None], hx(CREME_L), out)
+    caixa(BY(u1p, WY - 0.035, DU - 0.015, DU, ZU - 0.03 - 0.045, ZU - 0.03), {'*': emissivo(lambrequim)}, sombra=False)
+    BYs = (lambda a, b, cc, d, e, f_: BY(a + u1p - 0.035, b + u1p - 0.035, cc, d, e, f_))
+    Wy = WY - u1p
+    louca(BYs, False, 0.0, ZU, Wy, DU, 2)
+    louca(BYs, False, 0.0, ZP + 0.03, Wy, DU, 1)
+    # o meio das prateleiras: os potes de mantimento, a lata, a pilha de tigelas de ágata
+    for (u, cor, hh) in ((1.12, '#5a2a1e', 0.13), (1.24, '#e8c050', 0.15), (1.36, '#f0ead8', 0.12)):
+        pote_vidro(0.17, u, ZU, cor, h=hh, r=0.045)
+    lata(0.17, 1.55, ZP + 0.03, '#b8402e', 0.12)
+    for k in range(3):
+        o = c.novo_obj(3)
+        zz = ZP + 0.03 + k * 0.03
+        _poligono_rodado(0.17, 1.2, [(zz, 0.045), (zz + 0.03, 0.068)], vol(0.17, 1.2, ('#ece6da', '#3e6a9a', '#ece6da')[k], brilho=0.3), o,
+                         lados=16, tampa_mat=liso('#d8d0c0'))
+
+    # ---- a cimalha em L ----
+    CIM_T = tab2(['#b07440', '#a86e3c'], 0.12, '#5a2c16', eixo=0, seed=64)
+    CIM_T2 = tab2(['#b07440', '#a86e3c'], 0.12, '#5a2c16', eixo=1, seed=65)
+    caixa((-0.0, WX + 0.025, 0, DU + 0.03, ZT, ZT + 0.06), {'cima': CIM_T, '*': mad2('#8a5230', eixo=0, seed=65, passo=0.03)}, sombra=False)
+    caixa((0, DU + 0.03, DU + 0.03, WY + 0.025, ZT, ZT + 0.06), {'cima': CIM_T2, '*': mad2('#8a5230', eixo=0, seed=66, passo=0.03)}, sombra=False)
+
+    # ---- o que fica no balcão e em cima ----
+    filtro_barro(1.15, 0.26, ZN)
+    pote_vidro(0.8, 0.22, ZN, '#f0ead8', h=0.14)
+    pote_vidro(0.93, 0.2, ZN, '#4a2a1a', h=0.12)
+    for k, (u, cor, hh) in enumerate(((0.75, '#b8402e', 0.17), (0.9, '#c88a2e', 0.14), (1.04, '#3e6a8e', 0.12))):
+        lata(0.22, u, ZN, cor, hh)
+    radio(0.1, 0.38, 1.45, 1.95, ZN)
+    moringa(0.24, 2.08, ZN)
+    cesto(1.05, 0.17, ZT + 0.06, r=0.14)
+    pote_barro(0.17, 0.2, ZT + 0.06, r=0.1, h=0.2)
+    abobora(0.17, 1.2, ZT + 0.06)
+
+
 def pote_vidro(x, y, z, conteudo, h=0.14, r=0.055):
     """O pote de vidro com mantimento: o conteúdo até 3/4, o vidro claro em cima, a tampa de lata."""
     def faixas(P, base):
@@ -1533,13 +1733,13 @@ def nova_cena():
 
 def montar_moveis(t):
     """Cada móvel na casa e no giro do seed (casa x 0,75 m). Ver MOVEIS_SEED no fim do arquivo."""
-    # parede do fundo (y = 0), da esquerda para a direita: armário (0,0), fogão (2,0), pia (4,0), armário (6,0)
-    armario(0.0, '+y', enfeite=0)
+    # o canto do fundo com a esquerda: o armário em L (0,0) giro 4 (x 0..1,5 no fundo, y 0..2,25 na esquerda)
+    armario_l()
+    # parede do fundo (y = 0), da esquerda para a direita: fogão (2,0), pia (4,0), armário (6,0)
     fogao(aceso=FOGO_ACESO['v'])
     pia()
     armario(4.5, '+y', enfeite=1)
-    # parede da esquerda (x = 0): o armário (0,1) giro 2, os caixotes (0,4) e o barril (0,5)
-    armario(0.75, '+x', enfeite=2)
+    # parede da esquerda (x = 0): os caixotes (0,4) e o barril (0,5)
     caixotes(0.05, 3.06)
     barril(0.37, 4.12)
     # a mesa (4,3) giro 0 com as seis cadeiras, a caneca (5,3) e a fruteira
@@ -1779,11 +1979,10 @@ def montar(t=0.0, forca=1.0, tj=None):
 # o que o seed põe na cozinha (server/src/seedFazenda.ts) e onde ficou aqui: [id, casa x, casa y, giro, estado]
 MOVEIS_SEED = (
     ('portal', 9, 3, 6, None, 'a porta para o hall, na parede da frente (x = 10), que não aparece'),
-    ('armario_cozinha', 0, 0, 4, None, 'armario(0.0, +y): x 0..1,5 no fundo'),
+    ('armario_cozinha_l', 0, 0, 4, None, 'armario_l(): 2 x 3 casas, x 0..1,5 no fundo e y 0..2,25 na esquerda (casas [1,1] e [1,2] livres)'),
     ('fogao_lenha', 2, 0, 4, 1, 'fogao(): x 1,5..3,0 no fundo, aceso'),
     ('pia_cozinha', 4, 0, 4, None, 'pia(): x 3,0..4,5 no fundo, com a janela em cima'),
     ('armario_cozinha', 6, 0, 4, None, 'armario(4.5, +y): x 4,5..6,0 no fundo'),
-    ('armario_cozinha', 0, 1, 2, None, 'armario(0.75, +x): y 0,75..2,25 na esquerda'),
     ('crate_wood', 0, 4, 0, None, 'caixotes(): y 3,0..3,75 na esquerda, 0,8 m'),
     ('barrel', 0, 5, 0, None, 'barril(): y 3,75..4,5 na esquerda, 1 m'),
     ('mesa_cozinha', 4, 3, 0, None, 'mesa(): casas 4..6 x 3..4, arte 2,7 x 1,8 m (aumento 1,2), 0,94 m'),

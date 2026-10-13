@@ -51,8 +51,8 @@ def rampa(*cs):
 
 # rampas de 5 tons (fundo, sombra, meio, luz, brilho): a sombra puxa para o vermelho-roxo, a luz para o amarelo
 RAMPAS = {
-    'pele':    rampa('#7c3f37', '#b06650', '#d99272', '#efb58e', '#fbd2ac'),
-    'cabelo':  rampa('#1e100c', '#33190f', '#4c2a18', '#6b4024', '#8f5d36'),
+    'pele':    rampa('#8a4a3e', '#c47c60', '#e8aa84', '#f7c9a2', '#fde0c2'),
+    'cabelo':  rampa('#1a0d0a', '#2e170e', '#45251a', '#603a24', '#845634'),
     'jaqueta': rampa('#8b7466', '#b5a08c', '#d6c6b0', '#ebe0cc', '#f8f1e2'),
     'forro':   rampa('#6e5a50', '#94806e', '#b4a28c', '#c9b8a0', '#dcccb4'),
     'camisa':  rampa('#7f7a86', '#aaa6b2', '#cdcad2', '#e6e4ea', '#f7f6f8'),
@@ -155,8 +155,8 @@ def corte_z(f, z0=None, z1=None):
 # ---------------------------------------------------------------------------------------------------------------
 # a pose (as juntas, em coordenadas do corpo)
 # ---------------------------------------------------------------------------------------------------------------
-QUADRIL_Z = 0.53
-COXA, CANELA = 0.22, 0.2
+QUADRIL_Z = 0.47
+COXA, CANELA = 0.19, 0.17
 TORNOZELO_Z = 0.11
 
 
@@ -217,12 +217,39 @@ def pose(andar=None, resp=0.0):
 # as partes
 # ---------------------------------------------------------------------------------------------------------------
 class Parte:
-    def __init__(self, nome, mat, grupo, d):
-        self.nome, self.mat, self.grupo, self.d = nome, mat, grupo, d
+    def __init__(self, nome, mat, grupo, d, liso=None):
+        # liso: um campo mais simples cuja normal entra na luz (o cabelo se ilumina como um volume, não como bolas)
+        self.nome, self.mat, self.grupo, self.d, self.liso = nome, mat, grupo, d, liso
+
+
+INCL_CAB = 0.26     # a cabeça inclinada para trás (a cara olha mais para a câmera de cima: a trapaça do chibi)
 
 
 def cabeca_centro(J):
-    return np.array([0.0, 0.02 + J['incl'] * 0.9, 1.40 + J['sobe'] + J['resp'] * PZ * 1.0])
+    return np.array([0.0, 0.02 + J['incl'] * 0.9, 1.31 + J['sobe'] + J['resp'] * PZ * 1.0])
+
+
+def _pivo(J):
+    return cabeca_centro(J) + np.array([0.0, 0.0, -0.2])
+
+
+def cab(J, P):
+    """Ponto da cabeça (como se ela estivesse reta) -> o corpo (com a cabeça inclinada)."""
+    Pv = _pivo(J)
+    q = np.asarray(P, float) - Pv
+    c, s = math.cos(INCL_CAB), math.sin(INCL_CAB)
+    return Pv + np.array([q[0], c * q[1] - s * q[2], s * q[1] + c * q[2]])
+
+
+def na_cabeca(J, f):
+    """O campo f (feito com a cabeça reta) visto no corpo."""
+    Pv = _pivo(J)
+    c, s = math.cos(-INCL_CAB), math.sin(-INCL_CAB)
+
+    def d(L):
+        q = L - Pv
+        return f(Pv + np.stack([q[:, 0], c * q[:, 1] - s * q[:, 2], s * q[:, 1] + c * q[:, 2]], 1))
+    return d
 
 
 def montar(J):
@@ -232,8 +259,8 @@ def montar(J):
     inc = J['incl']
     partes = []
 
-    def add(nome, mat, grupo, d):
-        partes.append(Parte(nome, mat, grupo, d))
+    def add(nome, mat, grupo, d, liso=None):
+        partes.append(Parte(nome, mat, grupo, d, liso))
 
     # ---- pernas, botas
     for lado, (H, K, A_, ang) in J['pernas'].items():
@@ -243,21 +270,21 @@ def montar(J):
         # a bota: o cano em volta do tornozelo e o pé para a frente, gira com a canela
         Cb = A_ + np.array([0, 0.035 * math.cos(ang), -0.045 + 0.035 * math.sin(ang)])
         add('bota_' + lado, 'bota', 'perna_' + lado,
-            suave(0.03, rbox(Cb, (0.07, 0.115, 0.06), 0.05, pitch=-ang),
+            suave(0.03, rbox(Cb, (0.078, 0.125, 0.064), 0.05, pitch=-ang),
                   cap(A_ - [0, 0, 0.03], A_ + [0, 0, 0.02], 0.074)))
     # ---- quadril, cinto
-    Q0 = np.array([0, 0.0, 0.58 + S])
+    Q0 = np.array([0, 0.0, 0.52 + S])
     add('quadril', 'calca', 'tronco', ell(Q0, (0.175, 0.125, 0.1)))
-    add('cinto', 'cinto', 'tronco', corte_z(ell(Q0 + [0, 0, 0.02], (0.18, 0.13, 0.2)), 0.585 + S, 0.63 + S))
+    add('cinto', 'cinto', 'tronco', corte_z(ell(Q0 + [0, 0, 0.02], (0.18, 0.13, 0.2)), 0.525 + S, 0.57 + S))
     # ---- camisa (o tronco) e a jaqueta aberta
-    T0 = np.array([0, 0.0 + inc * 0.4, 0.82 + S + ch * 0.6])
+    T0 = np.array([0, 0.0 + inc * 0.4, 0.76 + S + ch * 0.6])
     add('camisa', 'camisa', 'camisa', ell(T0, (0.15, 0.115, 0.25)))
     jaq = ell(T0 + [0, -0.01, 0.0], (0.19 + 0.004 * r, 0.14 + 0.004 * r, 0.255))
-    jaq = corte_z(jaq, 0.6 + S)
+    jaq = corte_z(jaq, 0.54 + S)
     # o vão da frente (a jaqueta aberta): mais largo embaixo
     def vao(L):
         z = L[:, 2] - S
-        w = 0.042 + 0.03 * np.clip((0.95 - z) / 0.35, 0, 1)
+        w = 0.03 + 0.025 * np.clip((0.9 - z) / 0.35, 0, 1)
         return np.maximum(np.abs(L[:, 0]) - w, -(L[:, 1] - (T0[1] + 0.06)))
     add('jaqueta', 'jaqueta', 'tronco', menos(jaq, vao))
     # ombros (redondos, a jaqueta fofa)
@@ -265,14 +292,14 @@ def montar(J):
         add('ombro_' + ('d' if s > 0 else 'e'), 'jaqueta', 'tronco',
             ell(T0 + [0.15 * s, -0.01, 0.15], (0.1, 0.105, 0.085)))
     # o capuz: o rolo atrás do pescoço e as abas em volta
-    Cz = np.array([0, -0.085 + inc * 0.5, 1.05 + S + ch])
+    Cz = np.array([0, -0.085 + inc * 0.5, 0.99 + S + ch])
     add('capuz', 'jaqueta', 'capuz', uniao(ell(Cz, (0.15, 0.085, 0.08)),
                                             ell(Cz + [0.1, 0.06, -0.01], (0.065, 0.075, 0.06)),
                                             ell(Cz + [-0.1, 0.06, -0.01], (0.065, 0.075, 0.06))))
     # pescoço e a gola clerical
     Hc = cabeca_centro(J)
-    add('pescoco', 'pele', 'pele', cap([0, 0.0 + inc * 0.6, 1.0 + S], [0, 0.01 + inc * 0.8, 1.16 + S], 0.055))
-    add('gola', 'camisa', 'camisa', corte_z(ell([0, 0.005 + inc * 0.6, 1.07 + S + ch], (0.072, 0.07, 0.2)), None, 1.1 + S + ch))
+    add('pescoco', 'pele', 'pele', cap([0, 0.0 + inc * 0.6, 0.94 + S], [0, 0.01 + inc * 0.8, 1.1 + S], 0.055))
+    add('gola', 'camisa', 'camisa', corte_z(ell([0, 0.005 + inc * 0.6, 1.01 + S + ch], (0.072, 0.07, 0.2)), None, 1.045 + S + ch))
     # ---- braços (a manga da jaqueta, o punho canelado, a mão fechada)
     for lado, s in (('d', 1), ('e', -1)):
         bal, cot = J['braco'][lado]
@@ -282,68 +309,59 @@ def montar(J):
         Cv = Ob + 0.2 * np.array([math.sin(ab) * s, math.sin(bal), -math.cos(bal)])
         bal2 = bal + cot
         Pu = Cv + 0.16 * np.array([math.sin(0.04) * s, math.sin(bal2), -math.cos(bal2)])
-        Mo = Pu + 0.055 * np.array([0.0, math.sin(bal2), -math.cos(bal2)])
+        Mo = Pu + 0.06 * np.array([0.0, math.sin(bal2), -math.cos(bal2)])
         add('manga_' + lado, 'jaqueta', 'braco_' + lado,
             suave(0.035, cap(Ob, Cv, 0.085, 0.082), cap(Cv, Pu, 0.082, 0.072)))
         J['punho_' + lado] = (Pu, bal2)
         add('punho_' + lado, 'forro', 'braco_' + lado, cap(Pu - 0.03 * (Pu - Cv) / np.linalg.norm(Pu - Cv), Pu + 0.012 * (Pu - Cv) / np.linalg.norm(Pu - Cv), 0.066))
-        add('mao_' + lado, 'pele', 'mao_' + lado, ell(Mo, (0.058, 0.062, 0.066), pitch=-bal2))
+        add('mao_' + lado, 'pele', 'mao_' + lado, ell(Mo, (0.068, 0.07, 0.074), pitch=-bal2))
         J['mao_' + lado] = Mo
     # ---- o códex no cinto (lado direito), pendurado na corrente
-    Lb = np.array([0.215, 0.07, 0.44 + S])
+    Lb = np.array([0.215, 0.07, 0.38 + S])
     J['livro'] = Lb
     add('livro', 'livro', 'livro', rbox(Lb, (0.03, 0.075, 0.09), 0.012, yaw=-0.5))
-    # ---- a cabeça
-    add('cabeca', 'pele', 'pele', suave(0.06, ell(Hc, (0.245, 0.225, 0.23)),
-                                        ell(Hc + [0, 0.035, -0.11], (0.185, 0.165, 0.14))))
-    add('nariz', 'pele', 'pele', ell(Hc + [0, 0.215, -0.065], (0.022, 0.03, 0.026)))
-    for s in (1, -1):
-        add('orelha', 'pele', 'pele', ell(Hc + [0.232 * s, -0.01, -0.06], (0.035, 0.05, 0.06)))
+    # ---- a cabeça (feita reta e inclinada para trás em volta do pescoço)
+    cabeca = suave(0.06, ell(Hc, (0.25, 0.23, 0.235)), ell(Hc + [0, 0.035, -0.11], (0.19, 0.17, 0.14)))
+    add('cabeca', 'pele', 'pele', na_cabeca(J, cabeca))
+    add('nariz', 'pele', 'pele', na_cabeca(J, ell(Hc + [0, 0.22, -0.07], (0.022, 0.03, 0.026))))
+    add('orelha', 'pele', 'pele', na_cabeca(J, uniao(*[ell(Hc + [0.236 * s, -0.01, -0.06], (0.035, 0.05, 0.06)) for s in (1, -1)])))
     # ---- o cabelo: a calota, as mechas de cima e as da frente
-    add('cabelo', 'cabelo', 'cabelo', cabelo(Hc))
+    add('cabelo', 'cabelo', 'cabelo', na_cabeca(J, cabelo(Hc)),
+        liso=na_cabeca(J, ell(Hc + [0, -0.03, 0.06], (0.3, 0.29, 0.27))))
     return partes
 
 
-def _lumps():
-    """As mechas encaracoladas em volta da calota: (lon, lat, raio) fixos (lon 0 = a frente, lat 90 = o alto)."""
-    rng = np.random.default_rng(4)
-    out = []
-    for lat in (78, 58, 40, 22, 5, -12):
-        n = {78: 4, 58: 9, 40: 12, 22: 13, 5: 13, -12: 11}[lat]
-        for k in range(n):
-            lon = (360 / n) * (k + 0.5 * (lat % 2)) + rng.uniform(-8, 8)
-            lon = (lon + 180) % 360 - 180
-            # a cara fica livre embaixo da franja
-            if lat < 30 and abs(lon) < 62:
-                continue
-            if lat < 0 and abs(lon) < 95:
-                continue
-            out.append((lon, lat + rng.uniform(-4, 4), rng.uniform(0.06, 0.085)))
-    return out
-
-
-LUMPS = _lumps()
+# as mechas grandes em volta da calota: (lon, lat, raio, quanto sai), lon 0 = a frente, lat 90 = o alto
+MECHAS = [
+    # o alto (a coroa, onde o cabelo fofo sobe)
+    (0, 80, 0.1, 0.9), (120, 72, 0.1, 0.9), (-120, 72, 0.1, 0.9),
+    (35, 55, 0.095, 0.92), (-35, 55, 0.095, 0.92), (95, 50, 0.1, 0.92), (-95, 50, 0.1, 0.92),
+    (150, 45, 0.1, 0.92), (-150, 45, 0.1, 0.92), (180, 55, 0.095, 0.92),
+    # o meio, dos lados e atrás (as ondas)
+    (95, 25, 0.09, 0.9), (-95, 25, 0.09, 0.9), (122, 18, 0.1, 0.93), (-122, 18, 0.1, 0.93),
+    (145, 15, 0.1, 0.93), (-145, 15, 0.1, 0.93), (180, 18, 0.1, 0.93),
+    # embaixo: em cima das orelhas e a nuca
+    (100, -12, 0.075, 0.88), (-100, -12, 0.075, 0.88), (130, -15, 0.09, 0.9), (-130, -15, 0.09, 0.9),
+    (160, -20, 0.09, 0.88), (-160, -20, 0.09, 0.88),
+]
 
 
 def cabelo(Hc):
-    Ccap = Hc + np.array([0, -0.035, 0.055])
-    R = np.array([0.268, 0.262, 0.245])
+    Ccap = Hc + np.array([0, -0.03, 0.06])
+    R = np.array([0.27, 0.262, 0.235])
     fs = [ell(Ccap, R)]
-    for lon, lat, rr in LUMPS:
+    for lon, lat, rr, k in MECHAS:
         lo, la = math.radians(lon), math.radians(lat)
         dirv = np.array([math.sin(lo) * math.cos(la), math.cos(lo) * math.cos(la), math.sin(la)])
-        P = Ccap + dirv * R * 0.93
-        fs.append(ell(P, (rr, rr, rr * 0.85)))
-    # a franja: mechas caindo da esquerda para a direita na testa, e as de cima das orelhas
-    fs.append(ell(Hc + [-0.06, 0.2, 0.12], (0.13, 0.07, 0.075), yaw=0.25))
-    fs.append(ell(Hc + [0.08, 0.205, 0.105], (0.1, 0.06, 0.07), yaw=-0.2))
-    fs.append(ell(Hc + [0.17, 0.15, 0.06], (0.06, 0.07, 0.1)))
-    fs.append(ell(Hc + [-0.18, 0.13, 0.05], (0.06, 0.07, 0.1)))
-    for s in (1, -1):
-        fs.append(ell(Hc + [0.215 * s, 0.03, -0.0], (0.07, 0.1, 0.12)))
+        fs.append(ell(Ccap + dirv * R * k, (rr, rr, rr * 0.82)))
+    # a franja: duas mechas largas caindo da esquerda (dele) para a direita na testa, e as pontas nas têmporas
+    fs.append(ell(Hc + [-0.05, 0.19, 0.15], (0.14, 0.075, 0.07), yaw=0.3))
+    fs.append(ell(Hc + [0.1, 0.19, 0.13], (0.11, 0.07, 0.065), yaw=-0.25))
+    fs.append(ell(Hc + [0.2, 0.08, 0.05], (0.05, 0.07, 0.09)))
+    fs.append(ell(Hc + [-0.21, 0.07, 0.06], (0.05, 0.07, 0.09)))
     tudo = uniao(*fs)
     # a janela da cara (o que o cabelo não cobre)
-    cara = ell(Hc + [0, 0.24, -0.11], (0.2, 0.25, 0.215))
+    cara = ell(Hc + [0, 0.22, -0.09], (0.235, 0.25, 0.2))
     return menos(tudo, cara)
 
 
@@ -416,7 +434,13 @@ def render(direcao, J, T=(0.0, 0.0), caixa=None, sombra_chao=True):
             continue
         Lm = L[m]
         g = np.stack([p.d(Lm + dv) - p.d(Lm - dv) for dv in (np.array([e, 0, 0]), np.array([0, e, 0]), np.array([0, 0, e]))], 1)
-        N[m] = g / np.maximum(np.linalg.norm(g, axis=1, keepdims=True), 1e-9)
+        g = g / np.maximum(np.linalg.norm(g, axis=1, keepdims=True), 1e-9)
+        if p.liso is not None:
+            g2 = np.stack([p.liso(Lm + dv) - p.liso(Lm - dv) for dv in (np.array([e, 0, 0]), np.array([0, e, 0]), np.array([0, 0, e]))], 1)
+            g2 = g2 / np.maximum(np.linalg.norm(g2, axis=1, keepdims=True), 1e-9)
+            g = g * 0.45 + g2 * 0.55
+            g = g / np.maximum(np.linalg.norm(g, axis=1, keepdims=True), 1e-9)
+        N[m] = g
     Pw = L @ Mw.T + T3
     Nw = N @ Mw.T
     prof = Pw @ VISTA
@@ -490,8 +514,15 @@ def acabar(q, sombra_chao):
         nivel = np.where(sh, np.minimum(nivel, 1), nivel)
     # o canto apertado (outra peça logo na frente da normal): um tom abaixo
     P1 = (L + q.Nl * 0.035).reshape(-1, 3)
-    d1, _ = q.campo(P1)
-    apertado = (d1.reshape(h, w) < 0.018) & hit
+    ds = np.stack([p.d(P1) for p in partes])
+    pr = parte.ravel()
+    ds[pr[pr >= 0], np.nonzero(pr >= 0)[0]] = 9.0
+    gp = np.array([p.grupo for p in partes])
+    # peças do mesmo grupo (a cabeça e o nariz, a calça e a bota) não fazem canto
+    for i in range(len(partes)):
+        m = (pr >= 0) & (gp[np.maximum(pr, 0)] == gp[i])
+        ds[i, m] = 9.0
+    apertado = (ds.min(0).reshape(h, w) < 0.018) & hit
     nivel = np.where(apertado, nivel - 1, nivel)
     # o brilho (a quina de cima que pega mais luz) em quem brilha: cabelo, bota, ouro, a jaqueta clara
     forte = s > 0.8
@@ -595,7 +626,7 @@ def _ponto(q, x, y, cor, d=None, forca=True):
             q.c.prof[i, j] = d if d is not None else q.c.prof[i, j]
 
 
-def _linha3d(q, A, B, cor, folga=0.03, passos=None):
+def _linha3d(q, A, B, cor, folga=0.03, passos=None, fora=True):
     """Uma linha de 1 px entre dois pontos do corpo, com o teste de profundidade em cada pixel."""
     xa, ya, da = _px(q, A)
     xb, yb, db = _px(q, B)
@@ -609,13 +640,15 @@ def _linha3d(q, A, B, cor, folga=0.03, passos=None):
         if key in feitos:
             continue
         feitos.add(key)
-        _ponto_d(q, x, y, cor, d, folga)
+        _ponto_d(q, x, y, cor, d, folga, fora)
 
 
-def _ponto_d(q, x, y, cor, d, folga):
+def _ponto_d(q, x, y, cor, d, folga, fora=True):
     i, j = int(math.floor(y)), int(math.floor(x))
     h, w = q.c.obj.shape
     if 0 <= i < h and 0 <= j < w:
+        if not fora and q.alfa[i, j] == 0:
+            return
         if q.alfa[i, j] > 0 and d < q.c.prof[i, j] - folga:
             return
         q.cor[i, j] = cor
@@ -624,99 +657,102 @@ def _ponto_d(q, x, y, cor, d, folga):
             q.c.prof[i, j] = d
 
 
-def _cara(q):
-    """O quadro da cara: o centro da cabeça, a frente e a direita (local), e quanto ela olha para a câmera."""
-    Hc = cabeca_centro(q.J)
+def _vista_cab(q):
+    """O sentido da câmera no quadro da cabeça reta (o corpo e a inclinação desfeitos)."""
     Vl = VISTA @ q.Mw
-    return Hc, Vl
+    c, s = math.cos(-INCL_CAB), math.sin(-INCL_CAB)
+    return np.array([Vl[0], c * Vl[1] - s * Vl[2], s * Vl[1] + c * Vl[2]])
 
 
 def detalhes(q):
     J = q.J
-    Hc, Vl = _cara(q)
+    Hc = cabeca_centro(J)
+    Vl = VISTA @ q.Mw
+    Vc = _vista_cab(q)
     S = J['sobe']
     ouro = RAMPAS['ouro']
-    escuro = np.array([40.0, 20.0, 14.0])
-    aro = np.array([58.0, 30.0, 20.0])
-    # ---- a cruz e a corrente no peito (por cima da camisa)
-    Tz = 0.82 + S
-    cruz = np.array([0.0, 0.125, Tz + 0.02])
+    aro = np.array([52.0, 26.0, 18.0])
+    C = lambda P: cab(J, P)
+    # ---- a corrente e a cruz no peito (por cima da camisa)
+    cruz = np.array([0.0, 0.122, 0.75 + S])
     if _visivel(q, cruz, 0.02) and Vl[1] > 0.1:
         for s in (1, -1):
-            _linha3d(q, [0.055 * s, 0.07, 1.05 + S], cruz + [0, 0, 0.05], ouro[2], 0.02)
+            _linha3d(q, [0.05 * s, 0.075, 0.99 + S], cruz + [0.004 * s, 0, 0.055], ouro[1], 0.02)
         x, y, d = _px(q, cruz)
         cx, cy = int(math.floor(x)), int(math.floor(y))
-        for (dx, dy, k) in ((0, -2, 4), (0, -1, 3), (-1, -1, 3), (1, -1, 2), (0, 0, 3), (0, 1, 2)):
+        for (dx, dy) in ((0, -3), (-1, -2), (1, -2), (0, -1), (0, 0), (0, 1)):
+            _ponto(q, cx + dx + 0.5, cy + dy + 0.5, np.array([60.0, 34.0, 14.0]))
+        for (dx, dy, k) in ((0, -2, 4), (-1, -2, 3), (1, -2, 2), (0, -1, 3), (0, 0, 2)):
             _ponto(q, cx + dx + 0.5, cy + dy + 0.5, ouro[k])
     # ---- a fivela do cinto
-    fiv = np.array([0.0, 0.135, 0.605 + S])
+    fiv = np.array([0.0, 0.135, 0.545 + S])
     if _visivel(q, fiv, 0.02) and Vl[1] > 0.0:
         x, y, d = _px(q, fiv)
         cx, cy = int(math.floor(x)), int(math.floor(y))
         for dx in (-1, 0, 1):
             _ponto(q, cx + dx + 0.5, cy + 0.5, ouro[3] if dx < 1 else ouro[2])
-    # ---- a corrente do cinto até o códex
+    # ---- a corrente do cinto até o códex e o sol na capa
     Lb = J['livro']
-    _linha3d(q, [0.17, 0.09, 0.6 + S], Lb + [0.0, 0.0, 0.09], ouro[3], 0.03)
-    # o sol no códex (a capa vira para fora)
-    capa = Lb + np.array([0.03 * math.cos(0.5), 0.03 * math.sin(0.5), 0.0]) * 1.0
-    sol = Lb + np.array([0.045, 0.02, 0.0])
-    if _visivel(q, sol, 0.04):
+    _linha3d(q, [0.165, 0.09, 0.54 + S], Lb + [0.0, 0.0, 0.09], ouro[3], 0.03)
+    sol = Lb + np.array([0.035, 0.03, 0.005])
+    if _visivel(q, sol, 0.03):
         x, y, d = _px(q, sol)
         _ponto(q, x, y, ouro[3])
-    # ---- o rosto: só quando a cara vira para a câmera
-    frente = np.array([0.0, 1.0, 0.0])
-    olhar = frente @ Vl / np.linalg.norm(Vl)
+    # ---- o rosto (no quadro da cabeça reta; cada ponto vai para o corpo por C)
+    nV = np.linalg.norm(Vc)
+    olhar = Vc[1] / nV
     olhos_ab = J.get('olhos', True)
     for s in (1, -1):
-        # o centro do olho na superfície da cabeça
-        Pe = Hc + np.array([0.092 * s, 0.0, -0.06])
-        Pe[1] = Hc[1] + 0.225 * math.sqrt(max(0.0, 1 - (0.092 / 0.245) ** 2 - (0.06 / 0.23) ** 2)) + 0.004
-        n_olho = np.array([0.092 * s / 0.245 ** 2, (Pe[1] - Hc[1]) / 0.225 ** 2, -0.06 / 0.23 ** 2])
+        ex, ez = 0.095, -0.055
+        Pe = Hc + np.array([ex * s, 0.23 * math.sqrt(max(0.0, 1 - (ex / 0.25) ** 2 - (ez / 0.235) ** 2)) + 0.003, ez])
+        n_olho = np.array([ex * s / 0.25 ** 2, (Pe[1] - Hc[1]) / 0.23 ** 2, ez / 0.235 ** 2])
         n_olho /= np.linalg.norm(n_olho)
-        if n_olho @ Vl / np.linalg.norm(Vl) < 0.12:
+        vis = n_olho @ Vc / nV
+        if vis < 0.1:
             continue
-        # a lente: um círculo na frente do olho (de frente para a frente da cara), aro de 1 px
-        Cl = Pe + np.array([0.008 * s, 0.03, 0.0])
-        rl = 0.056
-        pts = [Cl + rl * np.array([math.cos(a), 0.0, math.sin(a)]) for a in np.linspace(0, 2 * math.pi, 40)]
-        # o olho
-        x, y, d = _px(q, Pe)
+        lado = abs(n_olho[0] * Vc[1] - n_olho[1] * Vc[0]) / max(1e-6, math.hypot(Vc[0], Vc[1]))
+        Cl = Pe + np.array([0.006 * s, 0.03, 0.0])
+        rl = 0.06
+        # a lente: o vidro clareia um tom (e o reflexo no canto de cima)
+        x, y, d = _px(q, C(Pe))
         cx, cy = int(math.floor(x)), int(math.floor(y))
-        # quanto o olho fica estreito de lado
-        lado = abs(n_olho @ np.cross([0, 0, 1.0], Vl / np.linalg.norm(Vl)))
         if olhos_ab:
-            larg = 2 if lado < 0.55 else 1
+            larg = 2 if lado < 0.5 else 1
             for dy in (-1, 0, 1):
                 for dx in range(larg):
-                    _ponto(q, cx + dx - (larg // 2) + 0.5, cy + dy + 0.5, RAMPAS['olho'][0 if dy == 1 else 1])
-            # o brilho do olho
-            _ponto(q, cx - (larg // 2) + 0.5, cy - 1 + 0.5, np.array([250.0, 244.0, 230.0]))
+                    _ponto(q, cx + dx - (larg // 2) + 0.5, cy + dy + 0.5, RAMPAS['olho'][0 if dy == 1 else (1 if dx == 0 else 2)])
+            _ponto(q, cx - (larg // 2) + 0.5, cy - 1 + 0.5, np.array([248.0, 242.0, 228.0]))
         else:
             for dx in (-1, 0, 1):
                 _ponto(q, cx + dx + 0.5, cy + 0.5, RAMPAS['olho'][1])
-        # o aro dos óculos
         feitos = set()
-        for P in pts:
+        for a in np.linspace(0, 2 * math.pi, 48):
+            P = C(Cl + rl * np.array([math.cos(a), 0.0, math.sin(a) * 0.92]))
             x2, y2, d2 = _px(q, P)
             k = (int(math.floor(x2)), int(math.floor(y2)))
             if k in feitos:
                 continue
             feitos.add(k)
-            _ponto_d(q, x2, y2, aro, d2, 0.05)
+            _ponto_d(q, x2, y2, aro, d2, 0.05, fora=False)
         # a perna dos óculos até a orelha
-        _linha3d(q, Cl + [rl * s, 0, 0.01], Hc + [0.235 * s, 0.02, -0.04], aro, 0.02)
+        _linha3d(q, C(Cl + [rl * s, 0, 0.01]), C(Hc + [0.24 * s, 0.0, -0.035]), aro, 0.02, fora=False)
         # a sobrancelha (grossa, descendo para o meio: o jeito sério dele)
-        _linha3d(q, Pe + [0.055 * s, 0.0, 0.085], Pe + [-0.01 * s, 0.01, 0.07], np.array([46.0, 24.0, 16.0]), 0.04)
+        _linha3d(q, C(Pe + [0.06 * s, 0.0, 0.095]), C(Pe + [-0.015 * s, 0.012, 0.08]), np.array([44.0, 22.0, 14.0]), 0.04)
+        # a bochecha corada embaixo da lente
+        if olhos_ab is not None and vis > 0.5:
+            P = C(Pe + np.array([0.03 * s, -0.012, -0.085]))
+            if _visivel(q, P, 0.03):
+                x, y, d = _px(q, P)
+                _ponto(q, x, y, np.array([236.0, 150.0, 126.0]))
     # a ponte dos óculos e a boca
     if olhar > 0.25:
-        _linha3d(q, Hc + [-0.042, 0.245, -0.055], Hc + [0.042, 0.245, -0.055], aro, 0.03)
-        b0 = Hc + np.array([0.0, 0.2, -0.155])
+        _linha3d(q, C(Hc + [-0.04, 0.25, -0.05]), C(Hc + [0.04, 0.25, -0.05]), aro, 0.03)
+        b0 = C(Hc + np.array([0.0, 0.205, -0.15]))
         if _visivel(q, b0, 0.04):
             x, y, d = _px(q, b0)
             cx, cy = int(math.floor(x)), int(math.floor(y))
             for dx in ((-1, 0) if olhar > 0.6 else (0,)):
-                _ponto(q, cx + dx + 0.5, cy + 0.5, np.array([150.0, 76.0, 62.0]))
+                _ponto(q, cx + dx + 0.5, cy + 0.5, np.array([156.0, 80.0, 66.0]))
 
 
 def sombra(q):
