@@ -729,8 +729,10 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
     const t = terrenoEm(linhas, tx, ty);
     if (!t || t === 'agua' || t === style) return [look, pintarPiso];
     if (!pintores.has(t)) {
-      const tt = texturaPiso(t);
-      pintores.set(t, tt ? pintorPiso(ctx, tt) : undefined);
+      // o chão do terreno em pixel art (a grama, a estrada) quando o estilo tem; senão a textura de antes
+      const tp = texturaPx(t);
+      const tt = tp ? null : texturaPiso(t);
+      pintores.set(t, tp ? pintorPisoPx(ctx, tp) : tt ? pintorPiso(ctx, tt) : undefined);
     }
     return [floorLook(t), pintores.get(t)];
   };

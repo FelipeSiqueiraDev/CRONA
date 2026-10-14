@@ -10,7 +10,7 @@ Grava client/public/arte/mobiliario/<def>/parede-r.png e parede-l.png (a da esqu
 moveis.json: escala 1, pixel, e a âncora = o meio do item na parede (o ponto que o jogo usa:
 iso(pos, plano, z + h/64)).
 
-Uso: python exportar_parede_px.py [def ...] [--destino pasta] [--t 0.0]
+Uso: python exportar_parede_px.py [def ...] [--grupo modulo] [--destino pasta] [--t 0.0]
 """
 import json
 import os
@@ -42,6 +42,56 @@ def _janela_cozinha():
 ITENS = {
     'janela_cozinha': _janela_cozinha,
 }
+
+# Os itens de parede dos outros cômodos, desenhados SOZINHOS (sem a cena inteira): nos módulos de pecas_px/,
+# ITENS_PAREDE = {def: (desenho, (x, z))}. O desenho põe o item na parede de trás (o plano y = 0, saindo para +y),
+# com o meio dele em (x, 0, z) metros da cena, usando as peças do cozinha.py (CZ) e do base_estilo.py (BE).
+ITENS_PAREDE = {}
+
+
+def _carregar_grupos():
+    import importlib
+    pasta = os.path.join(AQUI, 'pecas_px')
+    if not os.path.isdir(pasta):
+        return
+    sys.path.insert(0, pasta)
+    for arq in sorted(os.listdir(pasta)):
+        if arq.endswith('.py') and not arq.startswith('_'):
+            for k, v in getattr(importlib.import_module(arq[:-3]), 'ITENS_PAREDE', {}).items():
+                if k in ITENS_PAREDE or k in ITENS:
+                    raise SystemExit(f'{k} está em dois lugares (pecas_px/{arq} e outro)')
+                ITENS_PAREDE[k] = v
+
+
+_carregar_grupos()
+
+
+def exportar_sozinho(nome, destino):
+    """Um item de parede desenhado sozinho, pelo exportador dos móveis (a mesma luz, o mesmo contorno)."""
+    import exportar_px as EP
+    desenho, (X, Z) = ITENS_PAREDE[nome]
+    ox, oy = X - 0.75, 0.0
+    EP.ITENS['__parede'] = (2, 1, (ox, oy), desenho, {})
+    img, (ax, ay), _ = EP.desenhar('__parede', 4, desenho)
+    del EP.ITENS['__parede']
+    # a âncora do exportador é a quina da frente da pegada; a do item de parede é o meio dele na parede
+    q = tela(np.array([[ox + 2 * 0.75, oy + 0.75, 0.0]]))[0]
+    m = tela(np.array([[X, 0.0, Z]]))[0]
+    ax, ay = ax + (m[0] - q[0]), ay + (m[1] - q[1])
+    pasta = os.path.join(destino, nome)
+    os.makedirs(pasta, exist_ok=True)
+    im = Image.fromarray(img, 'RGBA')
+    im.save(os.path.join(pasta, 'parede-r.png'), optimize=True)
+    im.transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(pasta, 'parede-l.png'), optimize=True)
+    w, h = im.size
+    print(f'{nome}: {w}x{h} px, âncora ({ax:.1f}, {ay:.1f})')
+    return {
+        'escala': 1, 'pixel': True, 'codigo': True,
+        'parede': {
+            'r': {'arquivo': f'{nome}/parede-r.png', 'ax': round(float(ax), 1), 'ay': round(float(ay), 1)},
+            'l': {'arquivo': f'{nome}/parede-l.png', 'ax': round(float(w - ax), 1), 'ay': round(float(ay), 1)},
+        },
+    }
 
 
 def _desenhar(t, com_item, construir):
@@ -128,14 +178,20 @@ def main():
         i = args.index('--t')
         t = float(args[i + 1])
         del args[i:i + 2]
-    nomes = args or list(ITENS)
+    if '--grupo' in args:
+        i = args.index('--grupo')
+        mod = __import__(args[i + 1])
+        del args[i:i + 2]
+        args += list(getattr(mod, 'ITENS_PAREDE', {}))
+    nomes = args or list(ITENS) + list(ITENS_PAREDE)
     jpath = os.path.join(destino, 'moveis.json')
     lista = {}
     if os.path.exists(jpath):
         with open(jpath, encoding='utf-8') as f:
             lista = json.load(f)
+    os.makedirs(destino, exist_ok=True)
     for n in nomes:
-        lista[n] = exportar(n, destino, t)
+        lista[n] = exportar_sozinho(n, destino) if n in ITENS_PAREDE else exportar(n, destino, t)
     with open(jpath, 'w', encoding='utf-8') as f:
         json.dump(lista, f, ensure_ascii=False, indent=2)
         f.write('\n')

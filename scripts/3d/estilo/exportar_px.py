@@ -10,7 +10,8 @@ da imagem) e o que passa da viga (a chaminé) sumindo em transparência.
 No moveis.json: `escala` 1, `pixel` (o jogo desenha sem suavizar, no pixel inteiro, sem esticar) e `real` (a medida
 de verdade, já com o `aumento` do catálogo: a arte vem no tamanho final).
 
-Uso: python exportar_px.py [móvel ...] [--destino pasta]   (sem nome: todos os de ITENS)
+Uso: python exportar_px.py [móvel ...] [--grupo modulo] [--destino pasta] [--folha saida.png]
+     (sem nome: todos os de ITENS, inclusive os dos módulos de pecas_px/)
 """
 import json
 import os
@@ -51,6 +52,34 @@ ITENS = {
 }
 # o fogo do fogão aceso (só no giro de frente da cena: nos outros, a fornalha fica de lado ou de costas)
 FOGO = {'fogao_lenha': {'1': 1.0}}
+# peças com arte só em alguns giros (a porta: só nas paredes do fundo, giros 4 e 2; nos outros, o jogo desenha a soleira)
+SO_GIROS = {}
+
+
+def _carregar_grupos():
+    """
+    Os móveis dos outros cômodos ficam em módulos separados (pecas_px/<grupo>.py), um por grupo, para vários
+    trabalharem ao mesmo tempo: cada módulo tem o seu ITENS (o mesmo formato daqui) e, se precisar, o FOGO.
+    O desenho usa as peças do cozinha.py (CZ) e do base_estilo.py (BE), sempre em volta da pegada na cena.
+    """
+    import importlib
+    pasta = os.path.join(AQUI, 'pecas_px')
+    if not os.path.isdir(pasta):
+        return
+    sys.path.insert(0, pasta)
+    for arq in sorted(os.listdir(pasta)):
+        if not arq.endswith('.py') or arq.startswith('_'):
+            continue
+        mod = importlib.import_module(arq[:-3])
+        for k, v in getattr(mod, 'ITENS', {}).items():
+            if k in ITENS:
+                raise SystemExit(f'{k} está em dois lugares (pecas_px/{arq} e outro)')
+            ITENS[k] = v
+        FOGO.update(getattr(mod, 'FOGO', {}))
+        SO_GIROS.update(getattr(mod, 'SO_GIROS', {}))
+
+
+_carregar_grupos()
 
 
 # ---------- o motor girado: a Peca da pegada no lugar do MUNDO, e os materiais recebem o ponto da cena ----------
@@ -206,7 +235,7 @@ def exportar(nome, destino):
     def vistas(des, suf='', estado='0'):
         out = {}
         real = None
-        for rot in (4, 2, 0, 6):
+        for rot in SO_GIROS.get(nome, (4, 2, 0, 6)):
             img, (ax, ay), r = desenhar(nome, rot, des, FOGO.get(nome, {}).get(estado, 0.0))
             real = real or r
             arq = f'giro-{rot}{suf}.png'
@@ -217,13 +246,57 @@ def exportar(nome, destino):
 
     giros, real = vistas(desenho)
     ent = {'escala': 1, 'pixel': True, 'exato': True, 'codigo': True, 'giros': giros, 'real': real}
+    if nome in SO_GIROS:
+        ent['soGiros'] = True
     if estados:
         ent['estados'] = {k: {'giros': vistas(d, f'-{k}', k)[0]} for k, d in estados.items()}
     return ent
 
 
+def folha(nomes, destino, saida):
+    """Os 4 giros de cada móvel lado a lado, num chão de casas (para conferir de olho), ampliado 2x."""
+    from PIL import ImageDraw
+    lista = json.load(open(os.path.join(destino, 'moveis.json'), encoding='utf-8'))
+    linhas = []
+    for n in nomes:
+        g = lista.get(n, {}).get('giros', {})
+        imgs = [Image.open(os.path.join(destino, g[r]['arquivo'])) for r in ('4', '2', '0', '6') if r in g]
+        est = lista.get(n, {}).get('estados', {})
+        for k, e in est.items():
+            imgs += [Image.open(os.path.join(destino, e['giros'][r]['arquivo'])) for r in ('4',) if r in e['giros']]
+        if imgs:
+            linhas.append((n, imgs))
+    if not linhas:
+        return
+    larg = max(sum(i.width + 12 for i in imgs) for _, imgs in linhas) + 170
+    alt = sum(max(i.height for i in imgs) + 14 for _, imgs in linhas)
+    F = Image.new('RGBA', (larg, alt), (196, 186, 166, 255))
+    d = ImageDraw.Draw(F)
+    y = 0
+    for n, imgs in linhas:
+        h = max(i.height for i in imgs)
+        d.text((4, y + 4), n, fill=(40, 30, 20, 255))
+        x = 170
+        for i in imgs:
+            F.alpha_composite(i, (x, y + h - i.height + 7))
+            x += i.width + 12
+        y += h + 14
+    F.resize((F.width * 2, F.height * 2), Image.NEAREST).save(saida)
+    print('folha', saida)
+
+
 def main():
     args = sys.argv[1:]
+    saida_folha = None
+    if '--folha' in args:
+        i = args.index('--folha')
+        saida_folha = args[i + 1]
+        del args[i:i + 2]
+    if '--grupo' in args:
+        i = args.index('--grupo')
+        mod = __import__(args[i + 1])
+        del args[i:i + 2]
+        args += list(mod.ITENS)
     destino = DESTINO
     if '--destino' in args:
         i = args.index('--destino')
@@ -241,6 +314,8 @@ def main():
     os.makedirs(destino, exist_ok=True)
     json.dump(lista, open(arq, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
     print('ok', len(nomes))
+    if saida_folha:
+        folha(nomes, destino, saida_folha)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,7621 @@
+{
+ "pecas": [
+  {
+   "id": "stairs_down",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "stairs_down",
+    "name": "Escada Secreta",
+    "category": "estrutura",
+    "kind": "stairs_down",
+    "width": 1,
+    "depth": 1,
+    "height": 0,
+    "walkable": true,
+    "stackable": true,
+    "portal": true,
+    "hidden": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Fica escondida atrás de um mobi com senha; aparece quando ele desliza."
+   }
+  },
+  {
+   "id": "beer_fridge",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "beer_fridge",
+    "name": "Geladeira Amarela",
+    "category": "bar",
+    "kind": "beer_fridge",
+    "width": 1,
+    "depth": 1,
+    "height": 3.27,
+    "rotations": [
+     4,
+     2
+    ],
+    "desc": "Geladeira amarela de porta de vidro, cheia de garrafas. Tem um teclado numérico do lado."
+   }
+  },
+  {
+   "id": "bar_shelf",
+   "n": 4,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bar_shelf",
+    "name": "Prateleira de Garrafas",
+    "category": "bar",
+    "kind": "bar_shelf",
+    "width": 2,
+    "depth": 1,
+    "height": 3.27,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "minibar",
+   "n": 2,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "minibar",
+    "name": "Frigobar",
+    "category": "bar",
+    "kind": "beer_fridge",
+    "width": 1,
+    "depth": 1,
+    "height": 1.47,
+    "stackable": true,
+    "rotations": [
+     4,
+     2
+    ],
+    "desc": "A geladeirinha de trás do balcão."
+   }
+  },
+  {
+   "id": "beer_crate",
+   "n": 4,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    4,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "beer_crate",
+    "name": "Engradado de Cerveja",
+    "category": "bar",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 0.57,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "keg",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "keg",
+    "name": "Barril de Chope",
+    "category": "bar",
+    "kind": "barrel",
+    "width": 1,
+    "depth": 1,
+    "height": 0.98,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "fridge_drinks",
+   "n": 2,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "fridge_drinks",
+    "name": "Expositor de Bebidas",
+    "category": "bar",
+    "kind": "beer_fridge",
+    "width": 1,
+    "depth": 1,
+    "height": 3.27,
+    "rotations": [
+     4,
+     2
+    ],
+    "desc": "Geladeira de porta de vidro, cheia de garrafas."
+   }
+  },
+  {
+   "id": "bar_counter",
+   "n": 6,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bar_counter",
+    "name": "Balcão do Bar",
+    "category": "bar",
+    "kind": "bar_counter",
+    "width": 2,
+    "depth": 1,
+    "height": 1.8,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "beer_glass",
+   "n": 4,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "beer_glass",
+    "name": "Copo",
+    "category": "bar",
+    "kind": "mug",
+    "width": 1,
+    "depth": 1,
+    "height": 0.24,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "stool_bar",
+   "n": 6,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "stool_bar",
+    "name": "Banqueta de Balcão",
+    "category": "bar",
+    "kind": "stool_high",
+    "width": 1,
+    "depth": 1,
+    "height": 1.47,
+    "aumento": 1.2,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "armchair_red",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "armchair_red",
+    "name": "Poltrona Vermelha",
+    "category": "bar",
+    "kind": "armchair",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "plant",
+   "n": 20,
+   "salas": [
+    "Sede · Bar",
+    "Sede · Salão Principal",
+    "Sede · Corredor",
+    "Sede · Gabinete",
+    "Fazenda · Hall do Casarão",
+    "Fazenda · Cozinha",
+    "Fazenda · Sala de Jantar",
+    "Fazenda · Banheiro de Baixo",
+    "Fazenda · Escritório",
+    "Fazenda · Corredor de Cima",
+    "Fazenda · Quarto Principal",
+    "Fazenda · Banheiro de Cima",
+    "Fazenda · Casa de Mantimentos"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "plant",
+    "name": "Planta",
+    "category": "decoracao",
+    "kind": "plant",
+    "width": 1,
+    "depth": 1,
+    "height": 1.96,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "arcade",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "arcade",
+    "name": "Feliperama",
+    "category": "bar",
+    "kind": "jukebox",
+    "width": 1,
+    "depth": 1,
+    "height": 2.94,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O Feliperama, o fliperama do bar: a tela ilumina o bar inteiro. Clique duplo liga/desliga; com um agente escolhido, Jogar leva o agente até ele (o jogo abre no celular do jogador quando ele chega)."
+   }
+  },
+  {
+   "id": "chair_stack",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "chair_stack",
+    "name": "Pilha de Cadeiras",
+    "category": "bar",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 2.12,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Cadeiras de plástico empilhadas no canto."
+   }
+  },
+  {
+   "id": "table_bar",
+   "n": 4,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "table_bar",
+    "name": "Mesa de Bar",
+    "category": "bar",
+    "kind": "table",
+    "width": 1,
+    "depth": 1,
+    "height": 1.47,
+    "vao": "vazada",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "chair_bar",
+   "n": 14,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    2,
+    6,
+    4,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "chair_bar",
+    "name": "Cadeira de Bar",
+    "category": "bar",
+    "kind": "chair",
+    "width": 1,
+    "depth": 1,
+    "height": 0.9,
+    "aumento": 1.2,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "ashtray",
+   "n": 2,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "ashtray",
+    "name": "Cinzeiro",
+    "category": "bar",
+    "kind": "mug",
+    "width": 1,
+    "depth": 1,
+    "height": 0.08,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "pool_table",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "pool_table",
+    "name": "Mesa de Sinuca",
+    "category": "bar",
+    "kind": "pool_table",
+    "width": 2,
+    "depth": 4,
+    "height": 1.39,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "rug_ornate",
+   "n": 3,
+   "salas": [
+    "Sede · Bar",
+    "Fazenda · Escritório",
+    "Fazenda · Quarto Principal"
+   ],
+   "rots": [
+    0,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "rug_ornate",
+    "name": "Tapete Persa",
+    "category": "mobilia",
+    "kind": "rug",
+    "width": 3,
+    "depth": 4,
+    "height": 0.05,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "rug_worn",
+   "n": 9,
+   "salas": [
+    "Sede · Bar",
+    "Fazenda · Hall do Casarão",
+    "Fazenda · Quarto das Crianças",
+    "Fazenda · Corredor de Cima",
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 2",
+    "Fazenda · Quarto 3",
+    "Fazenda · Casa de Mantimentos",
+    "Orfanato · Quarto da Diretora"
+   ],
+   "rots": [
+    2,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "rug_worn",
+    "name": "Tapete Gasto",
+    "category": "mobilia",
+    "kind": "rug",
+    "width": 2,
+    "depth": 3,
+    "height": 0.05,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "sideboard",
+   "n": 3,
+   "salas": [
+    "Sede · Bar",
+    "Fazenda · Hall do Casarão",
+    "Fazenda · Sala de Jantar"
+   ],
+   "rots": [
+    6,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "sideboard",
+    "name": "Aparador",
+    "category": "bar",
+    "kind": "table_big",
+    "width": 2,
+    "depth": 1,
+    "height": 1.47,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Aparador de madeira escura, com garrafas e copos em cima."
+   }
+  },
+  {
+   "id": "bar_cabinet",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bar_cabinet",
+    "name": "Armarinho",
+    "category": "bar",
+    "kind": "nightstand",
+    "width": 1,
+    "depth": 1,
+    "height": 1.63,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "sofa_booth",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "sofa_booth",
+    "name": "Sofá Vermelho",
+    "category": "bar",
+    "kind": "sofa",
+    "width": 2,
+    "depth": 1,
+    "height": 0.73,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "ceiling_lamp",
+   "n": 35,
+   "salas": [
+    "Sede · Bar",
+    "Sede · Gabinete",
+    "Fazenda · Hall do Casarão",
+    "Fazenda · Cozinha",
+    "Fazenda · Sala de Jantar",
+    "Fazenda · Banheiro de Baixo",
+    "Fazenda · Quarto das Crianças",
+    "Fazenda · Escritório",
+    "Fazenda · Corredor de Cima",
+    "Fazenda · Quarto Principal",
+    "Fazenda · Banheiro de Cima",
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 2",
+    "Fazenda · Quarto 3",
+    "Fazenda · Casa de Mantimentos",
+    "Fazenda · Celeiro"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "ceiling_lamp",
+    "name": "Lâmpada Pendurada",
+    "category": "iluminacao",
+    "kind": "ceiling_lamp",
+    "width": 1,
+    "depth": 1,
+    "height": 0,
+    "walkable": true,
+    "stackable": true,
+    "states": 2,
+    "rotations": [
+     0
+    ],
+    "desc": "Fica no teto; dá para andar embaixo."
+   }
+  },
+  {
+   "id": "dirt",
+   "n": 10,
+   "salas": [
+    "Sede · Bar",
+    "Sede · Banheiro"
+   ],
+   "rots": [
+    0,
+    2,
+    4,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "dirt",
+    "name": "Sujeira",
+    "category": "decoracao",
+    "kind": "dirt",
+    "width": 1,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "neon_bar",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "neon_bar",
+    "name": "Letreiro Neon",
+    "category": "parede",
+    "kind": "neon",
+    "w": 64,
+    "h": 26,
+    "states": 2,
+    "desc": "Clique duplo liga/desliga."
+   },
+   "parede": true
+  },
+  {
+   "id": "clock",
+   "n": 10,
+   "salas": [
+    "Sede · Bar",
+    "Sede · Salão Principal",
+    "Sede · Prisão",
+    "Sede · Gabinete",
+    "Sede · Enfermaria",
+    "Fazenda · Hall do Casarão",
+    "Fazenda · Cozinha",
+    "Fazenda · Sala de Jantar",
+    "Fazenda · Escritório",
+    "Fazenda · Corredor de Cima"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "clock",
+    "name": "Relógio de Parede",
+    "category": "parede",
+    "kind": "clock",
+    "w": 22,
+    "h": 22
+   },
+   "parede": true
+  },
+  {
+   "id": "sconce",
+   "n": 15,
+   "salas": [
+    "Sede · Bar",
+    "Sede · Salão Principal",
+    "Sede · Sala de Rituais",
+    "Fazenda · Hall do Casarão",
+    "Fazenda · Sala de Jantar",
+    "Fazenda · Escritório",
+    "Fazenda · Calabouço",
+    "Fazenda · Corredor Escuro"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "sconce",
+    "name": "Arandela de Velas",
+    "category": "parede",
+    "kind": "sconce",
+    "w": 16,
+    "h": 28,
+    "states": 2
+   },
+   "parede": true
+  },
+  {
+   "id": "tv_wall",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "tv_wall",
+    "name": "TV de Tubo",
+    "category": "parede",
+    "kind": "tv",
+    "w": 26,
+    "h": 34,
+    "desc": "TV velha no suporte, passando futebol."
+   },
+   "parede": true
+  },
+  {
+   "id": "fan_wall",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "fan_wall",
+    "name": "Ventilador de Parede",
+    "category": "parede",
+    "kind": "fan",
+    "w": 24,
+    "h": 30
+   },
+   "parede": true
+  },
+  {
+   "id": "dartboard",
+   "n": 1,
+   "salas": [
+    "Sede · Bar"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "dartboard",
+    "name": "Alvo de Dardos",
+    "category": "parede",
+    "kind": "dartboard",
+    "w": 28,
+    "h": 28
+   },
+   "parede": true
+  },
+  {
+   "id": "stairs_up",
+   "n": 2,
+   "salas": [
+    "Sede · Salão Principal",
+    "Fazenda · Hall do Casarão"
+   ],
+   "rots": [
+    2,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "stairs_up",
+    "name": "Escada que Sobe",
+    "category": "estrutura",
+    "kind": "stairs_up",
+    "width": 1,
+    "depth": 2,
+    "height": 0,
+    "walkable": true,
+    "portal": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Pare em cima para subir ao andar ligado."
+   }
+  },
+  {
+   "id": "portal",
+   "n": 88,
+   "salas": [
+    "Sede · Salão Principal",
+    "Sede · Corredor",
+    "Sede · Prisão",
+    "Sede · Laboratório",
+    "Sede · Sala de Tecnologia",
+    "Sede · Gabinete",
+    "Sede · Sala de Rituais",
+    "Sede · Banheiro",
+    "Sede · Enfermaria",
+    "Sede · Arsenal",
+    "Fazenda · Hall do Casarão",
+    "Fazenda · Cozinha",
+    "Fazenda · Sala de Jantar",
+    "Fazenda · Banheiro de Baixo",
+    "Fazenda · Quarto das Crianças",
+    "Fazenda · Escritório",
+    "Fazenda · Corredor de Cima",
+    "Fazenda · Quarto Principal",
+    "Fazenda · Banheiro de Cima",
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 2",
+    "Fazenda · Quarto 3",
+    "Fazenda · Casa de Mantimentos",
+    "Fazenda · Celeiro",
+    "Fazenda · Calabouço",
+    "Fazenda · Corredor Escuro",
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Enfermaria",
+    "Orfanato · Salão",
+    "Orfanato · Cozinha",
+    "Orfanato · Depósito",
+    "Orfanato · Quarto da Diretora",
+    "Orfanato · Sanitários",
+    "Orfanato · Banheiro",
+    "Orfanato · Sala de Banho",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Sala de Cirurgia",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 3",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 8",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 10",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    4,
+    2,
+    0,
+    6
+   ],
+   "estados": [
+    0,
+    1,
+    2
+   ],
+   "def": {
+    "id": "portal",
+    "name": "Passagem",
+    "category": "estrutura",
+    "kind": "portal",
+    "width": 1,
+    "depth": 1,
+    "height": 0,
+    "walkable": true,
+    "portal": true,
+    "states": 3,
+    "openState": 0,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Pare em cima para ir ao quarto ligado (o mestre escolhe o destino). Clique duplo: aberta, fechada, trancada; fechada ou trancada, ninguém passa."
+   }
+  },
+  {
+   "id": "table_work",
+   "n": 5,
+   "salas": [
+    "Sede · Salão Principal",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    2,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "table_work",
+    "name": "Mesa de Trabalho",
+    "category": "escritorio",
+    "kind": "table_big",
+    "width": 3,
+    "depth": 2,
+    "height": 1.54,
+    "vao": "vazada",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "chair_office",
+   "n": 29,
+   "salas": [
+    "Sede · Salão Principal",
+    "Sede · Prisão",
+    "Sede · Laboratório",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    2,
+    6,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "chair_office",
+    "name": "Cadeira de Escritório",
+    "category": "escritorio",
+    "kind": "office_chair",
+    "width": 1,
+    "depth": 1,
+    "height": 0.98,
+    "aumento": 1.2,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "cabinet_file",
+   "n": 11,
+   "salas": [
+    "Sede · Salão Principal",
+    "Sede · Prisão",
+    "Sede · Laboratório",
+    "Sede · Gabinete",
+    "Sede · Enfermaria",
+    "Fazenda · Escritório",
+    "Fazenda · Casa de Mantimentos",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    4,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cabinet_file",
+    "name": "Arquivo de Aço",
+    "category": "escritorio",
+    "kind": "file_cabinet",
+    "width": 1,
+    "depth": 1,
+    "height": 2.2,
+    "stackable": true,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Clique duplo abre a gaveta."
+   }
+  },
+  {
+   "id": "poltrona_preta",
+   "n": 2,
+   "salas": [
+    "Sede · Salão Principal"
+   ],
+   "rots": [
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "poltrona_preta",
+    "name": "Poltrona Preta",
+    "category": "mobilia",
+    "kind": "armchair",
+    "width": 1,
+    "depth": 1,
+    "height": 1.55,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "table_chess",
+   "n": 1,
+   "salas": [
+    "Sede · Salão Principal"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "table_chess",
+    "name": "Mesa de Xadrez",
+    "category": "mobilia",
+    "kind": "table_chess",
+    "width": 1,
+    "depth": 1,
+    "height": 1.4,
+    "vao": "vazada",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "bench",
+   "n": 20,
+   "salas": [
+    "Sede · Salão Principal",
+    "Sede · Corredor",
+    "Fazenda · Hall do Casarão",
+    "Orfanato · Salão"
+   ],
+   "rots": [
+    0,
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bench",
+    "name": "Banco de Madeira",
+    "category": "mobilia",
+    "kind": "bench",
+    "width": 2,
+    "depth": 1,
+    "height": 0.73,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "floor_lamp",
+   "n": 1,
+   "salas": [
+    "Sede · Salão Principal"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "floor_lamp",
+    "name": "Luminária de Chão",
+    "category": "iluminacao",
+    "kind": "floor_lamp",
+    "width": 1,
+    "depth": 1,
+    "height": 3.1,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "compass_floor",
+   "n": 1,
+   "salas": [
+    "Sede · Salão Principal"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "compass_floor",
+    "name": "Rosa dos Ventos",
+    "category": "mobilia",
+    "kind": "rug",
+    "width": 3,
+    "depth": 3,
+    "height": 0.03,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0
+    ],
+    "desc": "Gravada em bronze no chão do Salão."
+   }
+  },
+  {
+   "id": "fluorescent",
+   "n": 29,
+   "salas": [
+    "Sede · Salão Principal",
+    "Sede · Corredor",
+    "Sede · Prisão",
+    "Sede · Laboratório",
+    "Sede · Sala de Tecnologia",
+    "Sede · Banheiro",
+    "Sede · Enfermaria",
+    "Sede · Arsenal"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "fluorescent",
+    "name": "Luminária Fluorescente",
+    "category": "iluminacao",
+    "kind": "fluorescent",
+    "width": 1,
+    "depth": 1,
+    "height": 0,
+    "walkable": true,
+    "stackable": true,
+    "states": 2,
+    "rotations": [
+     0,
+     2
+    ],
+    "desc": "Luz fria do teto; dá para andar embaixo."
+   }
+  },
+  {
+   "id": "board_investigation",
+   "n": 3,
+   "salas": [
+    "Sede · Salão Principal",
+    "Sede · Laboratório",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "board_investigation",
+    "name": "Quadro de Investigação",
+    "category": "parede",
+    "kind": "board",
+    "w": 76,
+    "h": 50
+   },
+   "parede": true
+  },
+  {
+   "id": "tv_grande",
+   "n": 2,
+   "salas": [
+    "Sede · Salão Principal"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "tv_grande",
+    "name": "TV Grande",
+    "category": "parede",
+    "kind": "tv",
+    "w": 72,
+    "h": 42,
+    "desc": "TV de tela fina, grande, presa na parede."
+   },
+   "parede": true
+  },
+  {
+   "id": "pipes",
+   "n": 5,
+   "salas": [
+    "Sede · Salão Principal",
+    "Sede · Corredor",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "pipes",
+    "name": "Tubulação",
+    "category": "parede",
+    "kind": "pipes",
+    "w": 64,
+    "h": 22
+   },
+   "parede": true
+  },
+  {
+   "id": "emergency_light",
+   "n": 6,
+   "salas": [
+    "Sede · Salão Principal",
+    "Sede · Corredor",
+    "Sede · Prisão",
+    "Sede · Enfermaria",
+    "Sede · Arsenal"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "emergency_light",
+    "name": "Luz de Emergência",
+    "category": "parede",
+    "kind": "emergency",
+    "w": 22,
+    "h": 16,
+    "states": 2,
+    "desc": "Continua acesa no apagão."
+   },
+   "parede": true
+  },
+  {
+   "id": "vent",
+   "n": 3,
+   "salas": [
+    "Sede · Corredor"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "vent",
+    "name": "Grade de Ventilação",
+    "category": "decoracao",
+    "kind": "vent",
+    "width": 1,
+    "depth": 1,
+    "height": 0.03,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "trash_can",
+   "n": 6,
+   "salas": [
+    "Sede · Corredor",
+    "Orfanato · Enfermaria",
+    "Orfanato · Cozinha",
+    "Orfanato · Quarto 10"
+   ],
+   "rots": [
+    4,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "trash_can",
+    "name": "Lixeira de Metal",
+    "category": "decoracao",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 0.98,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Redonda, amassada, de tampa basculante."
+   }
+  },
+  {
+   "id": "locker_row",
+   "n": 3,
+   "salas": [
+    "Sede · Corredor",
+    "Sede · Prisão"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "locker_row",
+    "name": "Armários de Vestiário",
+    "category": "armazenamento",
+    "kind": "locker",
+    "width": 2,
+    "depth": 1,
+    "height": 3.1,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Três portas estreitas com cadeado."
+   }
+  },
+  {
+   "id": "janitor_cart",
+   "n": 1,
+   "salas": [
+    "Sede · Corredor"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "janitor_cart",
+    "name": "Carrinho de Limpeza",
+    "category": "decoracao",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 1.8,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Balde, esfregão, borrifadores e o saco de lixo."
+   }
+  },
+  {
+   "id": "puddle",
+   "n": 10,
+   "salas": [
+    "Sede · Corredor",
+    "Fazenda · Calabouço",
+    "Fazenda · Corredor Escuro",
+    "Orfanato · Sanitários",
+    "Orfanato · Sala de Banho"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "puddle",
+    "name": "Poça de Água",
+    "category": "decoracao",
+    "kind": "dirt",
+    "width": 1,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0
+    ]
+   }
+  },
+  {
+   "id": "wet_sign",
+   "n": 1,
+   "salas": [
+    "Sede · Corredor"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "wet_sign",
+    "name": "Placa de Piso Molhado",
+    "category": "decoracao",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 0.98,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "cctv",
+   "n": 3,
+   "salas": [
+    "Sede · Corredor",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cctv",
+    "name": "Câmera de Segurança",
+    "category": "parede",
+    "kind": "board",
+    "w": 20,
+    "h": 24,
+    "desc": "O ledzinho vermelho nunca apaga."
+   },
+   "parede": true
+  },
+  {
+   "id": "notice_board",
+   "n": 1,
+   "salas": [
+    "Sede · Corredor"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "notice_board",
+    "name": "Quadro de Avisos",
+    "category": "parede",
+    "kind": "board",
+    "w": 52,
+    "h": 35
+   },
+   "parede": true
+  },
+  {
+   "id": "extinguisher",
+   "n": 1,
+   "salas": [
+    "Sede · Corredor"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "extinguisher",
+    "name": "Extintor",
+    "category": "parede",
+    "kind": "extinguisher",
+    "w": 12,
+    "h": 30
+   },
+   "parede": true
+  },
+  {
+   "id": "power_box",
+   "n": 1,
+   "salas": [
+    "Sede · Corredor"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "power_box",
+    "name": "Caixa de Força",
+    "category": "parede",
+    "kind": "board",
+    "w": 23,
+    "h": 29
+   },
+   "parede": true
+  },
+  {
+   "id": "cell_front",
+   "n": 41,
+   "salas": [
+    "Sede · Prisão"
+   ],
+   "rots": [
+    2,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cell_front",
+    "name": "Parede de Cela",
+    "category": "estrutura",
+    "kind": "cell_front",
+    "width": 1,
+    "depth": 1,
+    "height": 3.59,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Parede de concreto da cela, inteira (no lugar da grade): fechada, não se vê o que tem dentro."
+   }
+  },
+  {
+   "id": "bed",
+   "n": 5,
+   "salas": [
+    "Sede · Prisão"
+   ],
+   "rots": [
+    2,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bed",
+    "name": "Cama de Cela",
+    "category": "mobilia",
+    "kind": "bed",
+    "width": 1,
+    "depth": 3,
+    "height": 0.82,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "toilet_steel",
+   "n": 5,
+   "salas": [
+    "Sede · Prisão"
+   ],
+   "rots": [
+    6,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "toilet_steel",
+    "name": "Vaso de Aço",
+    "category": "saude",
+    "kind": "toilet",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Aço inox de prisão, com a pia em cima."
+   }
+  },
+  {
+   "id": "cell_door_steel",
+   "n": 6,
+   "salas": [
+    "Sede · Prisão"
+   ],
+   "rots": [
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cell_door_steel",
+    "name": "Porta de Aço da Cela",
+    "category": "estrutura",
+    "kind": "cell_door_steel",
+    "width": 1,
+    "depth": 1,
+    "height": 0,
+    "states": 2,
+    "openState": 1,
+    "cela": true,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Clique duplo abre/fecha. Fechada, ninguém passa e a cela fica no escuro; aberta, acende e a parede da frente fica transparente."
+   }
+  },
+  {
+   "id": "sigil_floor",
+   "n": 3,
+   "salas": [
+    "Sede · Prisão",
+    "Sede · Sala de Rituais",
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "sigil_floor",
+    "name": "Sigilo Ritualístico",
+    "category": "ocultismo",
+    "kind": "sigil",
+    "width": 3,
+    "depth": 3,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0
+    ]
+   }
+  },
+  {
+   "id": "blood_drops",
+   "n": 91,
+   "salas": [
+    "Sede · Prisão",
+    "Sede · Sala de Rituais",
+    "Fazenda · Calabouço",
+    "Fazenda · Corredor Escuro",
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Pátio",
+    "Orfanato · Enfermaria",
+    "Orfanato · Salão",
+    "Orfanato · Cozinha",
+    "Orfanato · Depósito",
+    "Orfanato · Quarto da Diretora",
+    "Orfanato · Sanitários",
+    "Orfanato · Banheiro",
+    "Orfanato · Sala de Banho",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Sala de Cirurgia",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 3",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 8",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 10",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "blood_drops",
+    "name": "Respingos de Sangue",
+    "category": "ocultismo",
+    "kind": "blood_small",
+    "width": 1,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0
+    ]
+   }
+  },
+  {
+   "id": "rubble",
+   "n": 2,
+   "salas": [
+    "Sede · Prisão",
+    "Sede · Câmara do Selo"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "rubble",
+    "name": "Entulho",
+    "category": "armazenamento",
+    "kind": "rubble",
+    "width": 2,
+    "depth": 2,
+    "height": 0.82,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "desk_metal",
+   "n": 3,
+   "salas": [
+    "Sede · Prisão",
+    "Fazenda · Sala de Sangue"
+   ],
+   "rots": [
+    4,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "desk_metal",
+    "name": "Mesa Metálica",
+    "category": "escritorio",
+    "kind": "desk",
+    "width": 2,
+    "depth": 1,
+    "height": 1.57,
+    "vao": "fundo",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "monitor",
+   "n": 1,
+   "salas": [
+    "Sede · Prisão"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "monitor",
+    "name": "Monitor",
+    "category": "escritorio",
+    "kind": "monitor",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Clique duplo liga/desliga."
+   }
+  },
+  {
+   "id": "locker",
+   "n": 1,
+   "salas": [
+    "Sede · Prisão"
+   ],
+   "rots": [
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "locker",
+    "name": "Armário de Metal",
+    "category": "armazenamento",
+    "kind": "locker",
+    "width": 1,
+    "depth": 1,
+    "height": 3.18,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Clique duplo abre a porta."
+   }
+  },
+  {
+   "id": "chair_wood",
+   "n": 25,
+   "salas": [
+    "Sede · Prisão",
+    "Sede · Sala de Rituais",
+    "Fazenda · Cozinha",
+    "Fazenda · Sala de Jantar",
+    "Fazenda · Escritório",
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 3",
+    "Fazenda · Casa de Mantimentos",
+    "Orfanato · Banheiro"
+   ],
+   "rots": [
+    4,
+    0,
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "chair_wood",
+    "name": "Cadeira de Madeira",
+    "category": "mobilia",
+    "kind": "chair",
+    "width": 1,
+    "depth": 1,
+    "height": 0.9,
+    "aumento": 1.2,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "food_tray",
+   "n": 5,
+   "salas": [
+    "Sede · Prisão",
+    "Orfanato · Salão",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Quarto 10"
+   ],
+   "rots": [
+    4,
+    2,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "food_tray",
+    "name": "Bandeja de Comida",
+    "category": "decoracao",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 0.16,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Restos de comida e uma caneca de lata."
+   }
+  },
+  {
+   "id": "drain",
+   "n": 5,
+   "salas": [
+    "Sede · Prisão",
+    "Fazenda · Calabouço",
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "drain",
+    "name": "Ralo",
+    "category": "decoracao",
+    "kind": "dirt",
+    "width": 1,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0
+    ]
+   }
+  },
+  {
+   "id": "cage_lamp",
+   "n": 7,
+   "salas": [
+    "Sede · Prisão",
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cage_lamp",
+    "name": "Luminária de Grade",
+    "category": "parede",
+    "kind": "cage_lamp",
+    "w": 15,
+    "h": 18,
+    "states": 2,
+    "desc": "Lâmpada protegida por grade de ferro. Clique duplo acende/apaga."
+   },
+   "parede": true
+  },
+  {
+   "id": "tally_marks",
+   "n": 10,
+   "salas": [
+    "Sede · Prisão",
+    "Fazenda · Corredor Escuro",
+    "Orfanato · Salão",
+    "Orfanato · Quarto da Diretora",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 10",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "tally_marks",
+    "name": "Marcas de Contagem",
+    "category": "parede",
+    "kind": "board",
+    "w": 29,
+    "h": 23,
+    "desc": "Os dias contados, riscados na parede."
+   },
+   "parede": true
+  },
+  {
+   "id": "chains_wall",
+   "n": 10,
+   "salas": [
+    "Sede · Prisão",
+    "Sede · Câmara do Selo",
+    "Fazenda · Corredor Escuro",
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Sala de Cirurgia",
+    "Orfanato · Quarto 10"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "chains_wall",
+    "name": "Correntes com Algemas",
+    "category": "parede",
+    "kind": "board",
+    "w": 28,
+    "h": 52,
+    "desc": "Correntes enferrujadas presas por argolas, com as algemas abertas."
+   },
+   "parede": true
+  },
+  {
+   "id": "sigil_scratch",
+   "n": 10,
+   "salas": [
+    "Sede · Prisão",
+    "Sede · Câmara do Selo",
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Sala de Cirurgia",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 11"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "sigil_scratch",
+    "name": "Sigilo Riscado",
+    "category": "parede",
+    "kind": "board",
+    "w": 28,
+    "h": 35,
+    "desc": "Riscos fundos na pedra, em espiral, como feitos à unha."
+   },
+   "parede": true
+  },
+  {
+   "id": "monitor_wall",
+   "n": 2,
+   "salas": [
+    "Sede · Prisão",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "monitor_wall",
+    "name": "Painel de Monitoramento",
+    "category": "parede",
+    "kind": "tv",
+    "w": 61,
+    "h": 52,
+    "states": 2,
+    "desc": "Quatro monitores com as câmeras da Sede. Clique duplo liga/desliga."
+   },
+   "parede": true
+  },
+  {
+   "id": "sigil_gold",
+   "n": 1,
+   "salas": [
+    "Sede · Câmara do Selo"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "sigil_gold",
+    "name": "Selo Dourado",
+    "category": "ocultismo",
+    "kind": "sigil",
+    "width": 3,
+    "depth": 3,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0
+    ]
+   }
+  },
+  {
+   "id": "skull",
+   "n": 6,
+   "salas": [
+    "Sede · Câmara do Selo",
+    "Sede · Sala de Rituais",
+    "Fazenda · Corredor Escuro",
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Salão"
+   ],
+   "rots": [
+    4,
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "skull",
+    "name": "Crânio",
+    "category": "ocultismo",
+    "kind": "skull",
+    "width": 1,
+    "depth": 1,
+    "height": 0.49,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "wax_pool",
+   "n": 3,
+   "salas": [
+    "Sede · Câmara do Selo"
+   ],
+   "rots": [
+    0,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "wax_pool",
+    "name": "Poça de Cera",
+    "category": "ocultismo",
+    "kind": "dirt",
+    "width": 1,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Cera derretida no chão, com tocos de vela caídos."
+   }
+  },
+  {
+   "id": "candles",
+   "n": 28,
+   "salas": [
+    "Sede · Câmara do Selo",
+    "Sede · Sala de Rituais",
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Salão",
+    "Orfanato · Quarto da Diretora",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Sala de Cirurgia",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 9"
+   ],
+   "rots": [
+    0,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "candles",
+    "name": "Velas",
+    "category": "iluminacao",
+    "kind": "candles",
+    "width": 1,
+    "depth": 1,
+    "height": 0.57,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Clique duplo acende/apaga."
+   }
+  },
+  {
+   "id": "altar",
+   "n": 1,
+   "salas": [
+    "Sede · Câmara do Selo"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "altar",
+    "name": "Altar de Pedra",
+    "category": "ocultismo",
+    "kind": "altar",
+    "width": 2,
+    "depth": 1,
+    "height": 0.98,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Altar baixo de pedra antiga, com cera escorrida e restos de oferendas."
+   }
+  },
+  {
+   "id": "pedestal",
+   "n": 2,
+   "salas": [
+    "Sede · Câmara do Selo"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "pedestal",
+    "name": "Pedestal com Tigela",
+    "category": "ocultismo",
+    "kind": "pedestal",
+    "width": 1,
+    "depth": 1,
+    "height": 1.63,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Pedestal estreito de pedra com uma tigela de bronze cheia de cinzas."
+   }
+  },
+  {
+   "id": "candelabra",
+   "n": 6,
+   "salas": [
+    "Sede · Câmara do Selo",
+    "Sede · Gabinete",
+    "Fazenda · Sala de Jantar",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    0,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "candelabra",
+    "name": "Candelabro",
+    "category": "iluminacao",
+    "kind": "candelabra",
+    "width": 1,
+    "depth": 1,
+    "height": 2.61,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "crack_glow",
+   "n": 1,
+   "salas": [
+    "Sede · Câmara do Selo"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "crack_glow",
+    "name": "Rachadura Dourada",
+    "category": "parede",
+    "kind": "crack",
+    "w": 38,
+    "h": 92,
+    "desc": "Uma rachadura funda; lá dentro, uma luz dourada fraca."
+   },
+   "parede": true
+  },
+  {
+   "id": "bancada_lab_curta",
+   "n": 1,
+   "salas": [
+    "Sede · Laboratório"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bancada_lab_curta",
+    "name": "Bancada de Laboratório (canto)",
+    "category": "laboratorio",
+    "kind": "lab_bench",
+    "width": 2,
+    "depth": 1,
+    "height": 1.5,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "stool_lab",
+   "n": 3,
+   "salas": [
+    "Sede · Laboratório"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "stool_lab",
+    "name": "Banqueta de Laboratório",
+    "category": "laboratorio",
+    "kind": "stool",
+    "width": 1,
+    "depth": 1,
+    "height": 1.21,
+    "aumento": 1.2,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Assento de vinil preto, rodinhas e o anel de apoio dos pés."
+   }
+  },
+  {
+   "id": "whiteboard",
+   "n": 2,
+   "salas": [
+    "Sede · Laboratório",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "whiteboard",
+    "name": "Quadro Branco",
+    "category": "escritorio",
+    "kind": "crate",
+    "width": 3,
+    "depth": 1,
+    "height": 2.94,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "De rodinhas, cheio de setas e círculos."
+   }
+  },
+  {
+   "id": "impressora_3d",
+   "n": 1,
+   "salas": [
+    "Sede · Laboratório"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "impressora_3d",
+    "name": "Impressora 3D",
+    "category": "laboratorio",
+    "kind": "impressora_3d",
+    "width": 1,
+    "depth": 1,
+    "height": 2.12,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "bancada_lab_parede",
+   "n": 1,
+   "salas": [
+    "Sede · Laboratório"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bancada_lab_parede",
+    "name": "Bancada de Laboratório (parede)",
+    "category": "laboratorio",
+    "kind": "lab_bench",
+    "width": 4,
+    "depth": 1,
+    "height": 1.5,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "bancada_lab_ilha",
+   "n": 2,
+   "salas": [
+    "Sede · Laboratório"
+   ],
+   "rots": [
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bancada_lab_ilha",
+    "name": "Bancada de Laboratório (ilha)",
+    "category": "laboratorio",
+    "kind": "lab_bench",
+    "width": 4,
+    "depth": 1,
+    "height": 1.5,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "mesa_vidro_lab",
+   "n": 1,
+   "salas": [
+    "Sede · Laboratório"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "mesa_vidro_lab",
+    "name": "Mesa de Vidro do Laboratório",
+    "category": "laboratorio",
+    "kind": "mesa_vidro_lab",
+    "width": 1,
+    "depth": 3,
+    "height": 1.76,
+    "vao": "fundo",
+    "aumento": 1.2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Tubos de ensaio em duas fileiras, frascos coloridos e um bico de Bunsen."
+   }
+  },
+  {
+   "id": "trolley",
+   "n": 5,
+   "salas": [
+    "Sede · Laboratório",
+    "Sede · Enfermaria",
+    "Fazenda · Calabouço",
+    "Orfanato · Enfermaria",
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [
+    0,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "trolley",
+    "name": "Carrinho de Laboratório",
+    "category": "laboratorio",
+    "kind": "trolley",
+    "width": 1,
+    "depth": 1,
+    "height": 1.55,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "notes_wall",
+   "n": 1,
+   "salas": [
+    "Sede · Laboratório"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "notes_wall",
+    "name": "Anotações",
+    "category": "parede",
+    "kind": "notes",
+    "w": 40,
+    "h": 38
+   },
+   "parede": true
+  },
+  {
+   "id": "scanner_digital",
+   "n": 1,
+   "salas": [
+    "Sede · Laboratório"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "scanner_digital",
+    "name": "Leitor de Digital",
+    "category": "parede",
+    "kind": "power_box",
+    "w": 10,
+    "h": 14
+   },
+   "parede": true
+  },
+  {
+   "id": "desk_u",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "desk_u",
+    "name": "Mesa em U",
+    "category": "escritorio",
+    "kind": "desk",
+    "width": 6,
+    "depth": 4,
+    "height": 1.27,
+    "vazio": [
+     [
+      1,
+      1
+     ],
+     [
+      1,
+      2
+     ],
+     [
+      1,
+      3
+     ],
+     [
+      2,
+      1
+     ],
+     [
+      2,
+      2
+     ],
+     [
+      2,
+      3
+     ],
+     [
+      3,
+      1
+     ],
+     [
+      3,
+      2
+     ],
+     [
+      3,
+      3
+     ],
+     [
+      4,
+      1
+     ],
+     [
+      4,
+      2
+     ],
+     [
+      4,
+      3
+     ]
+    ],
+    "aberto": [
+     "frente"
+    ],
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Três postos com três monitores cada, teclados acesos de roxo, fones, fitas e uns cristais esquisitos no meio das pastas."
+   }
+  },
+  {
+   "id": "cadeira_gamer",
+   "n": 6,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    0,
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cadeira_gamer",
+    "name": "Cadeira Gamer",
+    "category": "escritorio",
+    "kind": "chair",
+    "width": 1,
+    "depth": 1,
+    "height": 2.55,
+    "aumento": 1.2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "torre_crt",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "torre_crt",
+    "name": "Torre de Monitores CRT",
+    "category": "escritorio",
+    "kind": "torre_crt",
+    "width": 2,
+    "depth": 1,
+    "height": 2.94,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Seis monitores de tubo empilhados e um videocassete, todos ligados."
+   }
+  },
+  {
+   "id": "frigobar_energetico",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "frigobar_energetico",
+    "name": "Frigobar de Energético",
+    "category": "escritorio",
+    "kind": "frigobar",
+    "width": 1,
+    "depth": 1,
+    "height": 1.47,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "rack_moderno",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "rack_moderno",
+    "name": "Rack de Servidores Moderno",
+    "category": "escritorio",
+    "kind": "server",
+    "width": 1,
+    "depth": 2,
+    "height": 3.27,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "server_rack",
+   "n": 3,
+   "salas": [
+    "Sede · Sala de Tecnologia",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "server_rack",
+    "name": "Rack de Servidores",
+    "category": "escritorio",
+    "kind": "locker",
+    "width": 1,
+    "depth": 1,
+    "height": 3.27,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Armário de metal com os servidores piscando."
+   }
+  },
+  {
+   "id": "ups",
+   "n": 2,
+   "salas": [
+    "Sede · Sala de Tecnologia",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "ups",
+    "name": "Nobreak e Estabilizador",
+    "category": "escritorio",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 0.49,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "cables_floor",
+   "n": 3,
+   "salas": [
+    "Sede · Sala de Tecnologia",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    4,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cables_floor",
+    "name": "Cabos no Chão",
+    "category": "decoracao",
+    "kind": "dirt",
+    "width": 3,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "printer_dot",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "printer_dot",
+    "name": "Impressora Matricial",
+    "category": "escritorio",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 1.63,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Papel contínuo caindo na frente."
+   }
+  },
+  {
+   "id": "media_shelf",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "media_shelf",
+    "name": "Estante de Mídias",
+    "category": "escritorio",
+    "kind": "crate",
+    "width": 2,
+    "depth": 1,
+    "height": 1.8,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Fitas VHS, disquetes e caixas."
+   }
+  },
+  {
+   "id": "water_cooler",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "water_cooler",
+    "name": "Bebedouro",
+    "category": "escritorio",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 1.96,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "mesa_holografica",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "mesa_holografica",
+    "name": "Mesa Holográfica",
+    "category": "escritorio",
+    "kind": "mesa_holografica",
+    "width": 2,
+    "depth": 2,
+    "height": 1.63,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Uma mesa redonda que projeta um mapa no ar. Clique duplo liga e desliga."
+   }
+  },
+  {
+   "id": "bancada_eletronica",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bancada_eletronica",
+    "name": "Bancada de Eletrônica",
+    "category": "escritorio",
+    "kind": "bancada_eletronica",
+    "width": 2,
+    "depth": 1,
+    "height": 1.55,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Tampo de madeira gasto, ferro de solda fumegando, a lupa com luz presa na borda."
+   }
+  },
+  {
+   "id": "parts_boxes",
+   "n": 2,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    4,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "parts_boxes",
+    "name": "Caixas de Componentes",
+    "category": "escritorio",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 0.82,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Caixas de papelão abertas com cabos, peças e um teclado velho."
+   }
+  },
+  {
+   "id": "lixeira_lanches",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "lixeira_lanches",
+    "name": "Lixeira Transbordando",
+    "category": "escritorio",
+    "kind": "lixeira_lanches",
+    "width": 1,
+    "depth": 1,
+    "height": 0.98,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "tela_cris",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "tela_cris",
+    "name": "Tela do C.R.I.S",
+    "category": "parede",
+    "kind": "tv",
+    "w": 130,
+    "h": 72,
+    "desc": "A tela enorme do C.R.I.S, o sistema da Ordem que procura o paranormal."
+   },
+   "parede": true
+  },
+  {
+   "id": "painel_telas",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "painel_telas",
+    "name": "Painel de Telas",
+    "category": "parede",
+    "kind": "tv",
+    "w": 100,
+    "h": 56
+   },
+   "parede": true
+  },
+  {
+   "id": "ac_wall",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "ac_wall",
+    "name": "Ar-condicionado",
+    "category": "parede",
+    "kind": "fan",
+    "w": 38,
+    "h": 17
+   },
+   "parede": true
+  },
+  {
+   "id": "tela_derrota",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "tela_derrota",
+    "name": "Tela de Derrota",
+    "category": "parede",
+    "kind": "tv",
+    "w": 56,
+    "h": 34,
+    "desc": "Um monitor na parede travado na tela de DERROTA de algum jogo."
+   },
+   "parede": true
+  },
+  {
+   "id": "mural_polaroids",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Tecnologia"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "mural_polaroids",
+    "name": "Mural de Polaroids",
+    "category": "parede",
+    "kind": "board",
+    "w": 46,
+    "h": 31
+   },
+   "parede": true
+  },
+  {
+   "id": "shelf_wall",
+   "n": 2,
+   "salas": [
+    "Sede · Sala de Tecnologia",
+    "Fazenda · Cozinha"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "shelf_wall",
+    "name": "Prateleira de Parede",
+    "category": "parede",
+    "kind": "shelf",
+    "w": 42,
+    "h": 20,
+    "desc": "Manuais, um rádio e um telefone velho."
+   },
+   "parede": true
+  },
+  {
+   "id": "sofa_verissimo",
+   "n": 1,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "sofa_verissimo",
+    "name": "Sofá Chesterfield",
+    "category": "escritorio",
+    "kind": "sofa",
+    "width": 3,
+    "depth": 1,
+    "height": 0.73,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O sofá vermelho-vivo de couro capitonê, de braços enrolados."
+   }
+  },
+  {
+   "id": "shelf_verissimo",
+   "n": 1,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "shelf_verissimo",
+    "name": "Estante do Veríssimo",
+    "category": "escritorio",
+    "kind": "bookshelf",
+    "width": 6,
+    "depth": 1,
+    "height": 4.25,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "A estante que pega a parede inteira: livros de couro, pastas da Ordem, um globo, chaves antigas e, dobrado num canto, um pedaço de capuz amarelo."
+   }
+  },
+  {
+   "id": "chair_verissimo",
+   "n": 1,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "chair_verissimo",
+    "name": "Cadeira do Veríssimo",
+    "category": "escritorio",
+    "kind": "armchair",
+    "width": 1,
+    "depth": 1,
+    "height": 0.78,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Espaldar alto entalhado, couro vinho capitonê e tachas de latão."
+   }
+  },
+  {
+   "id": "desk_verissimo",
+   "n": 1,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "desk_verissimo",
+    "name": "Mesa do Veríssimo",
+    "category": "escritorio",
+    "kind": "desk",
+    "width": 3,
+    "depth": 2,
+    "height": 1.57,
+    "vao": "fundo",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "A grande mesa de madeira entalhada, cheia de livros, pastas de casos e a luminária verde."
+   }
+  },
+  {
+   "id": "rug_aubusson",
+   "n": 1,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "rug_aubusson",
+    "name": "Tapete Aubusson",
+    "category": "mobilia",
+    "kind": "rug",
+    "width": 4,
+    "depth": 3,
+    "height": 0.05,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "armchair_verissimo",
+   "n": 4,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [
+    0,
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "armchair_verissimo",
+    "name": "Poltrona das Visitas",
+    "category": "escritorio",
+    "kind": "armchair",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "pedestal_relic",
+   "n": 3,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [
+    2,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "pedestal_relic",
+    "name": "Pedestal da Relíquia",
+    "category": "ocultismo",
+    "kind": "pedestal",
+    "width": 1,
+    "depth": 1,
+    "height": 2.12,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Mármore escuro e uma redoma de vidro com uma relíquia paranormal dentro."
+   }
+  },
+  {
+   "id": "vitrine_paranormal",
+   "n": 1,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "vitrine_paranormal",
+    "name": "Vitrine Paranormal",
+    "category": "ocultismo",
+    "kind": "bookshelf",
+    "width": 2,
+    "depth": 1,
+    "height": 3.27,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Relíquias no veludo vinho: uma máscara estranha, um crânio marcado, uma adaga escura e o pedaço do capuz amarelo."
+   }
+  },
+  {
+   "id": "armor_display",
+   "n": 2,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "armor_display",
+    "name": "Armadura de Exposição",
+    "category": "ocultismo",
+    "kind": "pedestal",
+    "width": 1,
+    "depth": 1,
+    "height": 3.27,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Uma armadura completa num pedestal de madeira escura, com a espada apoiada."
+   }
+  },
+  {
+   "id": "painting_coliseu",
+   "n": 1,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "painting_coliseu",
+    "name": "Pintura do Coliseu",
+    "category": "parede",
+    "kind": "painting",
+    "w": 101,
+    "h": 63
+   },
+   "parede": true
+  },
+  {
+   "id": "board_detective",
+   "n": 1,
+   "salas": [
+    "Sede · Gabinete"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "board_detective",
+    "name": "Quadro de Detetive",
+    "category": "parede",
+    "kind": "board",
+    "w": 152,
+    "h": 82
+   },
+   "parede": true
+  },
+  {
+   "id": "blood_pool",
+   "n": 59,
+   "salas": [
+    "Sede · Sala de Rituais",
+    "Fazenda · Corredor Escuro",
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Pátio",
+    "Orfanato · Enfermaria",
+    "Orfanato · Salão",
+    "Orfanato · Cozinha",
+    "Orfanato · Quarto da Diretora",
+    "Orfanato · Banheiro",
+    "Orfanato · Sala de Banho",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Sala de Cirurgia",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 10",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "blood_pool",
+    "name": "Mancha de Sangue",
+    "category": "ocultismo",
+    "kind": "blood",
+    "width": 1,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0
+    ]
+   }
+  },
+  {
+   "id": "bookshelf",
+   "n": 4,
+   "salas": [
+    "Sede · Sala de Rituais",
+    "Fazenda · Escritório",
+    "Fazenda · Casa de Mantimentos"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "bookshelf",
+    "name": "Estante de Livros",
+    "category": "ocultismo",
+    "kind": "bookshelf",
+    "width": 2,
+    "depth": 1,
+    "height": 3.59,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "counter_wood",
+   "n": 5,
+   "salas": [
+    "Sede · Sala de Rituais",
+    "Orfanato · Salão"
+   ],
+   "rots": [
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "counter_wood",
+    "name": "Balcão de Madeira",
+    "category": "mobilia",
+    "kind": "table_big",
+    "width": 2,
+    "depth": 1,
+    "height": 1.47,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "flasks",
+   "n": 3,
+   "salas": [
+    "Sede · Sala de Rituais",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    4,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "flasks",
+    "name": "Frascos",
+    "category": "laboratorio",
+    "kind": "flasks",
+    "width": 1,
+    "depth": 1,
+    "height": 0.41,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "books_stack",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Rituais"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "books_stack",
+    "name": "Pilha de Livros",
+    "category": "ocultismo",
+    "kind": "books",
+    "width": 1,
+    "depth": 1,
+    "height": 0.65,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "table_round",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Rituais"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "table_round",
+    "name": "Mesa Redonda",
+    "category": "mobilia",
+    "kind": "table_round",
+    "width": 2,
+    "depth": 2,
+    "height": 1.49,
+    "vao": "vazada",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0
+    ]
+   }
+  },
+  {
+   "id": "papers",
+   "n": 4,
+   "salas": [
+    "Sede · Sala de Rituais",
+    "Fazenda · Escritório",
+    "Fazenda · Casa de Mantimentos",
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    0,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "papers",
+    "name": "Papéis Espalhados",
+    "category": "escritorio",
+    "kind": "papers",
+    "width": 1,
+    "depth": 1,
+    "height": 0.03,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "table_tools",
+   "n": 3,
+   "salas": [
+    "Sede · Sala de Rituais",
+    "Fazenda · Casa de Mantimentos",
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [
+    2,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "table_tools",
+    "name": "Mesa das Ferramentas",
+    "category": "ocultismo",
+    "kind": "desk",
+    "width": 2,
+    "depth": 1,
+    "height": 1.57,
+    "vao": "fundo",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Mesa rústica com a faca cerimonial, o giz, a tigela, a corda e as velas."
+   }
+  },
+  {
+   "id": "stool",
+   "n": 1,
+   "salas": [
+    "Sede · Sala de Rituais"
+   ],
+   "rots": [
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "stool",
+    "name": "Banqueta",
+    "category": "mobilia",
+    "kind": "stool",
+    "width": 1,
+    "depth": 1,
+    "height": 1.08,
+    "aumento": 1.2,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "poster_sigil",
+   "n": 2,
+   "salas": [
+    "Sede · Sala de Rituais"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "poster_sigil",
+    "name": "Pôster de Sigilo",
+    "category": "parede",
+    "kind": "poster_sigil",
+    "w": 44,
+    "h": 56
+   },
+   "parede": true
+  },
+  {
+   "id": "toilet",
+   "n": 7,
+   "salas": [
+    "Sede · Banheiro",
+    "Fazenda · Banheiro de Baixo",
+    "Fazenda · Banheiro de Cima",
+    "Orfanato · Sanitários"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "toilet",
+    "name": "Vaso Sanitário",
+    "category": "saude",
+    "kind": "toilet",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "stall_panel",
+   "n": 7,
+   "salas": [
+    "Sede · Banheiro",
+    "Orfanato · Sanitários",
+    "Orfanato · Sala de Banho"
+   ],
+   "rots": [
+    2,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "stall_panel",
+    "name": "Divisória de Cabine",
+    "category": "estrutura",
+    "kind": "iwall",
+    "width": 1,
+    "depth": 1,
+    "height": 2.61,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Painel de fórmica entre os vasos do banheiro."
+   }
+  },
+  {
+   "id": "sink",
+   "n": 7,
+   "salas": [
+    "Sede · Banheiro",
+    "Sede · Enfermaria",
+    "Fazenda · Banheiro de Baixo",
+    "Fazenda · Banheiro de Cima",
+    "Orfanato · Sanitários",
+    "Orfanato · Sala de Banho"
+   ],
+   "rots": [
+    2,
+    4,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "sink",
+    "name": "Pia",
+    "category": "saude",
+    "kind": "sink",
+    "width": 1,
+    "depth": 1,
+    "height": 1.47,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "trash_bin",
+   "n": 4,
+   "salas": [
+    "Sede · Banheiro",
+    "Orfanato · Pátio",
+    "Orfanato · Salão",
+    "Orfanato · Ala dos Dormitórios"
+   ],
+   "rots": [
+    4,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "trash_bin",
+    "name": "Lixeira",
+    "category": "saude",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 0.65,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "mirror",
+   "n": 7,
+   "salas": [
+    "Sede · Banheiro",
+    "Fazenda · Banheiro de Baixo",
+    "Fazenda · Quarto Principal",
+    "Fazenda · Banheiro de Cima",
+    "Orfanato · Quarto da Diretora",
+    "Orfanato · Banheiro"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "mirror",
+    "name": "Espelho",
+    "category": "parede",
+    "kind": "mirror",
+    "w": 30,
+    "h": 40
+   },
+   "parede": true
+  },
+  {
+   "id": "towel_dispenser",
+   "n": 1,
+   "salas": [
+    "Sede · Banheiro"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "towel_dispenser",
+    "name": "Papeleira",
+    "category": "parede",
+    "kind": "dispenser",
+    "w": 18,
+    "h": 22
+   },
+   "parede": true
+  },
+  {
+   "id": "bed_curtain",
+   "n": 6,
+   "salas": [
+    "Sede · Enfermaria"
+   ],
+   "rots": [
+    4,
+    0
+   ],
+   "estados": [
+    1,
+    0
+   ],
+   "def": {
+    "id": "bed_curtain",
+    "name": "Cortina do Leito",
+    "category": "saude",
+    "kind": "divider",
+    "width": 3,
+    "depth": 4,
+    "height": 3.59,
+    "states": 2,
+    "openState": 1,
+    "xray": true,
+    "vazio": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      0,
+      2
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      1
+     ],
+     [
+      1,
+      2
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      2,
+      1
+     ],
+     [
+      2,
+      2
+     ]
+    ],
+    "aberto": [
+     "fundo"
+    ],
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O trilho em U com a cortina verde-clara, com espaço para andar em volta do leito. Fechada, a frente fica cerrada; aberta, a cortina fica franzida nos cantos de trás."
+   }
+  },
+  {
+   "id": "hospital_bed",
+   "n": 8,
+   "salas": [
+    "Sede · Enfermaria",
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [
+    4,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "hospital_bed",
+    "name": "Leito Hospitalar",
+    "category": "saude",
+    "kind": "hospital_bed",
+    "width": 1,
+    "depth": 3,
+    "height": 1.14,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "iv_stand",
+   "n": 7,
+   "salas": [
+    "Sede · Enfermaria",
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "iv_stand",
+    "name": "Suporte de Soro",
+    "category": "saude",
+    "kind": "iv_stand",
+    "width": 1,
+    "depth": 1,
+    "height": 3.1,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "medical_cabinet",
+   "n": 4,
+   "salas": [
+    "Sede · Enfermaria",
+    "Orfanato · Enfermaria",
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "medical_cabinet",
+    "name": "Armário de Remédios",
+    "category": "saude",
+    "kind": "medical_cabinet",
+    "width": 2,
+    "depth": 1,
+    "height": 3.1,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "posto_enfermagem",
+   "n": 1,
+   "salas": [
+    "Sede · Enfermaria"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "posto_enfermagem",
+    "name": "Posto de Enfermagem",
+    "category": "saude",
+    "kind": "posto_enfermagem",
+    "width": 7,
+    "depth": 3,
+    "height": 1.8,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O balcão do posto de enfermagem, inteiro, com o computador em cima."
+   }
+  },
+  {
+   "id": "weapon_rack",
+   "n": 4,
+   "salas": [
+    "Sede · Arsenal"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "weapon_rack",
+    "name": "Armário de Armas",
+    "category": "arsenal",
+    "kind": "weapon_rack",
+    "width": 2,
+    "depth": 1,
+    "height": 3.27,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "locker_ammo",
+   "n": 5,
+   "salas": [
+    "Sede · Arsenal"
+   ],
+   "rots": [
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "locker_ammo",
+    "name": "Armário de Munição",
+    "category": "arsenal",
+    "kind": "locker",
+    "width": 1,
+    "depth": 1,
+    "height": 3.1,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Aço verde-oliva com cadeado. Clique duplo abre: caixas de munição e carregadores."
+   }
+  },
+  {
+   "id": "chest_army",
+   "n": 11,
+   "salas": [
+    "Sede · Arsenal",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    2,
+    0
+   ],
+   "estados": [
+    0,
+    1
+   ],
+   "def": {
+    "id": "chest_army",
+    "name": "Baú Militar",
+    "category": "arsenal",
+    "kind": "chest",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "stackable": true,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Madeira e metal verde-oliva. Clique duplo abre: coletes e lanternas dentro."
+   }
+  },
+  {
+   "id": "mesa_arsenal",
+   "n": 1,
+   "salas": [
+    "Sede · Arsenal"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "mesa_arsenal",
+    "name": "Mesa Grande do Arsenal",
+    "category": "arsenal",
+    "kind": "table_big",
+    "width": 4,
+    "depth": 2,
+    "height": 1.8,
+    "vao": "fundo",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "stool_metal",
+   "n": 4,
+   "salas": [
+    "Sede · Arsenal"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "stool_metal",
+    "name": "Banqueta Giratória",
+    "category": "arsenal",
+    "kind": "stool",
+    "width": 1,
+    "depth": 1,
+    "height": 1.18,
+    "aumento": 1.2,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "oil_stain",
+   "n": 1,
+   "salas": [
+    "Sede · Arsenal"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "oil_stain",
+    "name": "Mancha de Óleo",
+    "category": "decoracao",
+    "kind": "dirt",
+    "width": 1,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0
+    ]
+   }
+  },
+  {
+   "id": "ammo_box",
+   "n": 4,
+   "salas": [
+    "Sede · Arsenal"
+   ],
+   "rots": [
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "ammo_box",
+    "name": "Caixa de Munição",
+    "category": "arsenal",
+    "kind": "crate_metal",
+    "width": 1,
+    "depth": 1,
+    "height": 0.49,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "blade_rack",
+   "n": 2,
+   "salas": [
+    "Sede · Arsenal",
+    "Fazenda · Casa de Mantimentos"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "blade_rack",
+    "name": "Suporte de Armas Brancas",
+    "category": "parede",
+    "kind": "board",
+    "w": 58,
+    "h": 35,
+    "desc": "Facão, machado, duas facas e um bastão."
+   },
+   "parede": true
+  },
+  {
+   "id": "tool_board",
+   "n": 3,
+   "salas": [
+    "Sede · Arsenal",
+    "Fazenda · Casa de Mantimentos",
+    "Fazenda · Celeiro"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "tool_board",
+    "name": "Painel de Ferramentas",
+    "category": "parede",
+    "kind": "board",
+    "w": 58,
+    "h": 41,
+    "desc": "Chaves, alicates, uma lanterna e fita."
+   },
+   "parede": true
+  },
+  {
+   "id": "target_paper",
+   "n": 1,
+   "salas": [
+    "Sede · Arsenal"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "target_paper",
+    "name": "Alvo de Papel",
+    "category": "parede",
+    "kind": "poster_sigil",
+    "w": 29,
+    "h": 46,
+    "desc": "A silhueta furada de bala."
+   },
+   "parede": true
+  },
+  {
+   "id": "casarao",
+   "n": 1,
+   "salas": [
+    "Fazenda · Olhos de Águia"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "casarao",
+    "name": "Casarão",
+    "category": "fazenda",
+    "kind": "casarao",
+    "width": 14,
+    "depth": 9,
+    "height": 10.61,
+    "xray": true,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "A casa grande, de dois andares, com a varanda na frente."
+   }
+  },
+  {
+   "id": "galpao",
+   "n": 1,
+   "salas": [
+    "Fazenda · Olhos de Águia"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "galpao",
+    "name": "Casa de Mantimentos",
+    "category": "fazenda",
+    "kind": "galpao",
+    "width": 8,
+    "depth": 6,
+    "height": 7.51,
+    "xray": true,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Depósito de mantimentos e ferramentas, com o escritório do capataz."
+   }
+  },
+  {
+   "id": "celeiro",
+   "n": 1,
+   "salas": [
+    "Fazenda · Olhos de Águia"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "celeiro",
+    "name": "Celeiro",
+    "category": "fazenda",
+    "kind": "celeiro",
+    "width": 12,
+    "depth": 8,
+    "height": 10.61,
+    "xray": true,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Baias, feno e a carroça."
+   }
+  },
+  {
+   "id": "entrada_larga",
+   "n": 3,
+   "salas": [
+    "Fazenda · Olhos de Águia"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "entrada_larga",
+    "name": "Entrada Larga",
+    "category": "fazenda",
+    "kind": "entrada",
+    "width": 2,
+    "depth": 1,
+    "height": 0.03,
+    "walkable": true,
+    "portal": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "A entrada de um prédio, com a porta larga: pare em cima para entrar."
+   }
+  },
+  {
+   "id": "porteira",
+   "n": 3,
+   "salas": [
+    "Fazenda · Olhos de Águia",
+    "Fazenda · Arredores",
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    2,
+    6,
+    4
+   ],
+   "estados": [
+    1,
+    0
+   ],
+   "def": {
+    "id": "porteira",
+    "name": "Porteira",
+    "category": "fazenda",
+    "kind": "porteira",
+    "width": 3,
+    "depth": 1,
+    "height": 0,
+    "portal": true,
+    "states": 2,
+    "openState": 1,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Aberta, quem para em cima sai para o lugar ligado. Clique duplo abre e fecha."
+   }
+  },
+  {
+   "id": "cerca",
+   "n": 330,
+   "salas": [
+    "Fazenda · Olhos de Águia",
+    "Fazenda · Arredores",
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cerca",
+    "name": "Cerca de Madeira",
+    "category": "fazenda",
+    "kind": "cerca",
+    "width": 1,
+    "depth": 1,
+    "height": 1.8,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "placa",
+   "n": 6,
+   "salas": [
+    "Fazenda · Olhos de Águia",
+    "Fazenda · Arredores"
+   ],
+   "rots": [
+    2,
+    6,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "placa",
+    "name": "Placa",
+    "category": "fazenda",
+    "kind": "placa",
+    "width": 1,
+    "depth": 1,
+    "height": 2.94,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Placa de madeira com o caminho escrito à mão."
+   }
+  },
+  {
+   "id": "fonte",
+   "n": 1,
+   "salas": [
+    "Fazenda · Olhos de Águia"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "fonte",
+    "name": "Fonte",
+    "category": "fazenda",
+    "kind": "fonte",
+    "width": 3,
+    "depth": 3,
+    "height": 2.61,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "arbusto",
+   "n": 18,
+   "salas": [
+    "Fazenda · Olhos de Águia",
+    "Fazenda · Arredores",
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "arbusto",
+    "name": "Arbusto",
+    "category": "fazenda",
+    "kind": "arbusto",
+    "width": 1,
+    "depth": 1,
+    "height": 1.47,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "feno",
+   "n": 21,
+   "salas": [
+    "Fazenda · Olhos de Águia",
+    "Fazenda · Celeiro"
+   ],
+   "rots": [
+    2,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "feno",
+    "name": "Fardo de Feno",
+    "category": "fazenda",
+    "kind": "feno",
+    "width": 1,
+    "depth": 1,
+    "height": 0.82,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "carroca",
+   "n": 2,
+   "salas": [
+    "Fazenda · Olhos de Águia",
+    "Fazenda · Celeiro"
+   ],
+   "rots": [
+    6,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "carroca",
+    "name": "Carroça",
+    "category": "fazenda",
+    "kind": "carroca",
+    "width": 2,
+    "depth": 3,
+    "height": 1.96,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "milharal",
+   "n": 85,
+   "salas": [
+    "Fazenda · Olhos de Águia",
+    "Fazenda · Arredores"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "milharal",
+    "name": "Milharal",
+    "category": "fazenda",
+    "kind": "plantacao",
+    "width": 1,
+    "depth": 1,
+    "height": 3.1,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Milho mais alto que gente."
+   }
+  },
+  {
+   "id": "horta",
+   "n": 69,
+   "salas": [
+    "Fazenda · Olhos de Águia",
+    "Fazenda · Arredores"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "horta",
+    "name": "Canteiro",
+    "category": "fazenda",
+    "kind": "plantacao",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "arvore",
+   "n": 113,
+   "salas": [
+    "Fazenda · Olhos de Águia",
+    "Fazenda · Arredores",
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "arvore",
+    "name": "Árvore",
+    "category": "fazenda",
+    "kind": "arvore",
+    "width": 1,
+    "depth": 1,
+    "height": 8.98,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "armchair",
+   "n": 3,
+   "salas": [
+    "Fazenda · Hall do Casarão",
+    "Fazenda · Escritório",
+    "Fazenda · Quarto Principal"
+   ],
+   "rots": [
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "armchair",
+    "name": "Poltrona",
+    "category": "mobilia",
+    "kind": "armchair",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "sit": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "quadro_fazenda",
+   "n": 12,
+   "salas": [
+    "Fazenda · Hall do Casarão",
+    "Fazenda · Cozinha",
+    "Fazenda · Sala de Jantar",
+    "Fazenda · Quarto das Crianças",
+    "Fazenda · Escritório",
+    "Fazenda · Corredor de Cima",
+    "Fazenda · Quarto Principal",
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 2",
+    "Fazenda · Quarto 3"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "quadro_fazenda",
+    "name": "Quadro da Fazenda",
+    "category": "parede",
+    "kind": "painting",
+    "w": 36,
+    "h": 30,
+    "desc": "Um dos doze quadros do casarão: o pasto, a família em sépia, o cavalo, o bordado, o rio na neblina..."
+   },
+   "parede": true
+  },
+  {
+   "id": "armario_cozinha_l",
+   "n": 1,
+   "salas": [
+    "Fazenda · Cozinha"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "armario_cozinha_l",
+    "name": "Armário de Cozinha em L",
+    "category": "casa",
+    "kind": "armario",
+    "width": 2,
+    "depth": 3,
+    "height": 3.1,
+    "vazio": [
+     [
+      1,
+      1
+     ],
+     [
+      1,
+      2
+     ]
+    ],
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O armário do canto da cozinha, num móvel só: o braço do fundo e o da esquerda com o balcão contínuo e o louceiro em cima."
+   }
+  },
+  {
+   "id": "fogao_lenha",
+   "n": 2,
+   "salas": [
+    "Fazenda · Cozinha",
+    "Orfanato · Cozinha"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    1,
+    0
+   ],
+   "def": {
+    "id": "fogao_lenha",
+    "name": "Fogão a Lenha",
+    "category": "casa",
+    "kind": "fogao",
+    "width": 2,
+    "depth": 1,
+    "height": 1.39,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Clique duplo acende/apaga."
+   }
+  },
+  {
+   "id": "pia_cozinha",
+   "n": 2,
+   "salas": [
+    "Fazenda · Cozinha",
+    "Orfanato · Cozinha"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "pia_cozinha",
+    "name": "Pia de Cozinha",
+    "category": "casa",
+    "kind": "pia_cozinha",
+    "width": 2,
+    "depth": 1,
+    "height": 1.47,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "armario_cozinha",
+   "n": 4,
+   "salas": [
+    "Fazenda · Cozinha",
+    "Fazenda · Sala de Jantar",
+    "Orfanato · Cozinha"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "armario_cozinha",
+    "name": "Armário de Cozinha",
+    "category": "casa",
+    "kind": "armario",
+    "width": 2,
+    "depth": 1,
+    "height": 3.1,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "crate_wood",
+   "n": 17,
+   "salas": [
+    "Fazenda · Cozinha",
+    "Fazenda · Quarto das Crianças",
+    "Fazenda · Casa de Mantimentos",
+    "Fazenda · Celeiro",
+    "Orfanato · Depósito"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "crate_wood",
+    "name": "Caixote de Madeira",
+    "category": "armazenamento",
+    "kind": "crate",
+    "width": 1,
+    "depth": 1,
+    "height": 1.31,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "barrel",
+   "n": 16,
+   "salas": [
+    "Fazenda · Cozinha",
+    "Fazenda · Casa de Mantimentos",
+    "Fazenda · Celeiro",
+    "Orfanato · Cozinha",
+    "Orfanato · Depósito"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "barrel",
+    "name": "Barril",
+    "category": "armazenamento",
+    "kind": "barrel",
+    "width": 1,
+    "depth": 1,
+    "height": 1.63,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "mesa_cozinha",
+   "n": 2,
+   "salas": [
+    "Fazenda · Cozinha",
+    "Orfanato · Cozinha"
+   ],
+   "rots": [
+    0,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "mesa_cozinha",
+    "name": "Mesa da Cozinha",
+    "category": "casa",
+    "kind": "mesa",
+    "width": 3,
+    "depth": 2,
+    "height": 1.54,
+    "vao": "vazada",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "mug",
+   "n": 1,
+   "salas": [
+    "Fazenda · Cozinha"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "mug",
+    "name": "Caneca",
+    "category": "escritorio",
+    "kind": "mug",
+    "width": 1,
+    "depth": 1,
+    "height": 0.33,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "janela_cozinha",
+   "n": 1,
+   "salas": [
+    "Fazenda · Cozinha"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "janela_cozinha",
+    "name": "Janela com Cortina",
+    "category": "parede",
+    "kind": "window",
+    "w": 72,
+    "h": 70,
+    "desc": "Janela de madeira aberta para o pasto, com a cortina de linho e o varão de ferro."
+   },
+   "parede": true
+  },
+  {
+   "id": "mesa_jantar",
+   "n": 5,
+   "salas": [
+    "Fazenda · Sala de Jantar",
+    "Orfanato · Salão"
+   ],
+   "rots": [
+    2,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "mesa_jantar",
+    "name": "Mesa de Jantar",
+    "category": "casa",
+    "kind": "mesa",
+    "width": 4,
+    "depth": 2,
+    "height": 1.54,
+    "vao": "vazada",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "beliche",
+   "n": 3,
+   "salas": [
+    "Fazenda · Quarto das Crianças"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "beliche",
+    "name": "Beliche",
+    "category": "casa",
+    "kind": "beliche",
+    "width": 1,
+    "depth": 3,
+    "height": 3.02,
+    "sit": true,
+    "leitos": [
+     0.9,
+     2.48
+    ],
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Duas camas de solteiro empilhadas, com a escadinha no pé. A peça fica na de baixo; para a de cima, \"Na cama de cima\" (a escalada)."
+   }
+  },
+  {
+   "id": "nightstand",
+   "n": 17,
+   "salas": [
+    "Fazenda · Quarto das Crianças",
+    "Fazenda · Quarto Principal",
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 2",
+    "Fazenda · Quarto 3",
+    "Orfanato · Quarto da Diretora",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "nightstand",
+    "name": "Criado-Mudo",
+    "category": "mobilia",
+    "kind": "nightstand",
+    "width": 1,
+    "depth": 1,
+    "height": 0.98,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "comoda",
+   "n": 3,
+   "salas": [
+    "Fazenda · Quarto das Crianças",
+    "Fazenda · Quarto Principal",
+    "Fazenda · Quarto 2"
+   ],
+   "rots": [
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "comoda",
+    "name": "Cômoda",
+    "category": "casa",
+    "kind": "armario",
+    "width": 2,
+    "depth": 1,
+    "height": 1.47,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "pilha_chao",
+   "n": 14,
+   "salas": [
+    "Fazenda · Quarto das Crianças",
+    "Orfanato · Pátio",
+    "Orfanato · Salão",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 10"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "pilha_chao",
+    "name": "Itens no Chão",
+    "category": "armazenamento",
+    "kind": "pilha",
+    "width": 1,
+    "depth": 1,
+    "height": 0.2,
+    "walkable": true,
+    "interno": true,
+    "rotations": [
+     0
+    ],
+    "desc": "O que alguém largou aqui. Quem passar pode pegar."
+   }
+  },
+  {
+   "id": "desk_wood",
+   "n": 6,
+   "salas": [
+    "Fazenda · Escritório",
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 3",
+    "Fazenda · Casa de Mantimentos",
+    "Orfanato · Quarto da Diretora",
+    "Orfanato · Banheiro"
+   ],
+   "rots": [
+    4,
+    2,
+    6,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "desk_wood",
+    "name": "Mesa de Escritório",
+    "category": "escritorio",
+    "kind": "desk",
+    "width": 2,
+    "depth": 1,
+    "height": 1.57,
+    "vao": "fundo",
+    "aumento": 1.2,
+    "stackable": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "desk_lamp",
+   "n": 4,
+   "salas": [
+    "Fazenda · Escritório",
+    "Fazenda · Quarto Principal",
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 3"
+   ],
+   "rots": [
+    4,
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "desk_lamp",
+    "name": "Luminária de Mesa",
+    "category": "iluminacao",
+    "kind": "desk_lamp",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "escada_desce",
+   "n": 1,
+   "salas": [
+    "Fazenda · Corredor de Cima"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "escada_desce",
+    "name": "Escada que Desce",
+    "category": "casa",
+    "kind": "escada_desce",
+    "width": 1,
+    "depth": 2,
+    "height": 0,
+    "walkable": true,
+    "portal": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O vão da escada, com o corrimão: pare em cima para descer (o mestre escolhe o destino)."
+   }
+  },
+  {
+   "id": "cama_casal",
+   "n": 1,
+   "salas": [
+    "Fazenda · Quarto Principal"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cama_casal",
+    "name": "Cama de Casal",
+    "category": "casa",
+    "kind": "bed",
+    "width": 2,
+    "depth": 3,
+    "height": 0.9,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "guarda_roupa",
+   "n": 16,
+   "salas": [
+    "Fazenda · Quarto Principal",
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 2",
+    "Fazenda · Quarto 3",
+    "Orfanato · Quarto da Diretora",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 3",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 8",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    4,
+    2,
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "guarda_roupa",
+    "name": "Guarda-roupa",
+    "category": "casa",
+    "kind": "armario",
+    "width": 2,
+    "depth": 1,
+    "height": 3.27,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "banheira",
+   "n": 4,
+   "salas": [
+    "Fazenda · Banheiro de Cima",
+    "Orfanato · Banheiro",
+    "Orfanato · Sala de Banho"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "banheira",
+    "name": "Banheira",
+    "category": "casa",
+    "kind": "banheira",
+    "width": 1,
+    "depth": 2,
+    "height": 0.98,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "cama_solteiro",
+   "n": 4,
+   "salas": [
+    "Fazenda · Quarto 1",
+    "Fazenda · Quarto 2",
+    "Fazenda · Quarto 3",
+    "Orfanato · Quarto da Diretora"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cama_solteiro",
+    "name": "Cama de Solteiro",
+    "category": "casa",
+    "kind": "bed",
+    "width": 1,
+    "depth": 3,
+    "height": 0.9,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "iwall_low",
+   "n": 28,
+   "salas": [
+    "Fazenda · Casa de Mantimentos"
+   ],
+   "rots": [
+    6,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "iwall_low",
+    "name": "Divisória Baixa",
+    "category": "estrutura",
+    "kind": "iwall",
+    "width": 1,
+    "depth": 1,
+    "height": 2.12,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Meia parede: separa baias sem esconder quem está dentro."
+   }
+  },
+  {
+   "id": "prateleira",
+   "n": 4,
+   "salas": [
+    "Fazenda · Casa de Mantimentos",
+    "Orfanato · Salão"
+   ],
+   "rots": [
+    6,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "prateleira",
+    "name": "Prateleira de Madeira",
+    "category": "casa",
+    "kind": "shelf",
+    "width": 2,
+    "depth": 1,
+    "height": 3.59,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "sacas",
+   "n": 9,
+   "salas": [
+    "Fazenda · Casa de Mantimentos",
+    "Fazenda · Celeiro",
+    "Orfanato · Depósito"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "sacas",
+    "name": "Sacas de Grão",
+    "category": "fazenda",
+    "kind": "sacas",
+    "width": 1,
+    "depth": 1,
+    "height": 1.14,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "baia",
+   "n": 45,
+   "salas": [
+    "Fazenda · Celeiro"
+   ],
+   "rots": [
+    6,
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "baia",
+    "name": "Cerca da Baia",
+    "category": "fazenda",
+    "kind": "cerca",
+    "width": 1,
+    "depth": 1,
+    "height": 2.29,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "alcapao",
+   "n": 1,
+   "salas": [
+    "Fazenda · Celeiro"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "alcapao",
+    "name": "Alçapão",
+    "category": "fazenda",
+    "kind": "alcapao",
+    "width": 1,
+    "depth": 1,
+    "height": 0,
+    "walkable": true,
+    "stackable": true,
+    "portal": true,
+    "hidden": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O alçapão escondido no chão: aparece quando o que está em cima dele sai do lugar. Pare em cima para descer."
+   }
+  },
+  {
+   "id": "escada_vertical",
+   "n": 1,
+   "salas": [
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "escada_vertical",
+    "name": "Escada de Mão",
+    "category": "fazenda",
+    "kind": "escada_vertical",
+    "width": 1,
+    "depth": 1,
+    "height": 0,
+    "walkable": true,
+    "portal": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "A escada de mão presa na parede, subindo reto até o alçapão no teto. Pare nela para subir."
+   }
+  },
+  {
+   "id": "console",
+   "n": 3,
+   "salas": [
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "console",
+    "name": "Bancada de Computadores",
+    "category": "escritorio",
+    "kind": "console",
+    "width": 2,
+    "depth": 1,
+    "height": 1.27,
+    "stackable": true,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Dois monitores e teclado. Clique duplo liga/desliga."
+   }
+  },
+  {
+   "id": "gravador_rolo",
+   "n": 1,
+   "salas": [
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "gravador_rolo",
+    "name": "Gravador de Rolo",
+    "category": "escritorio",
+    "kind": "aparelho",
+    "width": 1,
+    "depth": 1,
+    "height": 1.55,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Os dois rolos parados no meio de uma gravação."
+   }
+  },
+  {
+   "id": "eletroencefalografo",
+   "n": 1,
+   "salas": [
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "eletroencefalografo",
+    "name": "Eletroencefalógrafo",
+    "category": "saude",
+    "kind": "aparelho",
+    "width": 1,
+    "depth": 1,
+    "height": 2.12,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "A touca de eletrodos pendurada no gancho e o papel saindo com as linhas."
+   }
+  },
+  {
+   "id": "monitor_suporte",
+   "n": 3,
+   "salas": [
+    "Fazenda · Calabouço",
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "monitor_suporte",
+    "name": "Monitor no Suporte",
+    "category": "saude",
+    "kind": "monitor_pe",
+    "width": 1,
+    "depth": 1,
+    "height": 2.37,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O monitor de sinais vitais no pé de rodinhas, com o cesto dos cabos. Clique duplo liga/desliga."
+   }
+  },
+  {
+   "id": "monitor_energia",
+   "n": 1,
+   "salas": [
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    6
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "monitor_energia",
+    "name": "Monitor Tomado pela Energia",
+    "category": "ocultismo",
+    "kind": "monitor_pe",
+    "width": 1,
+    "depth": 1,
+    "height": 2.61,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Um monitor fundido com outro aparelho, os cabos acesos como veias. Não devia funcionar, e funciona."
+   }
+  },
+  {
+   "id": "camera_tripe",
+   "n": 1,
+   "salas": [
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "camera_tripe",
+    "name": "Câmera no Tripé",
+    "category": "escritorio",
+    "kind": "camera_tripe",
+    "width": 1,
+    "depth": 1,
+    "height": 2.61,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "A câmera de fita no tripé, com a luzinha de gravando."
+   }
+  },
+  {
+   "id": "vitals_monitor",
+   "n": 1,
+   "salas": [
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "vitals_monitor",
+    "name": "Monitor de Sinais Vitais",
+    "category": "saude",
+    "kind": "monitor",
+    "width": 1,
+    "depth": 1,
+    "height": 0.56,
+    "states": 2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "A linha verde do batimento."
+   }
+  },
+  {
+   "id": "estrado_altar",
+   "n": 1,
+   "salas": [
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "estrado_altar",
+    "name": "Estrado do Altar",
+    "category": "ocultismo",
+    "kind": "estrado",
+    "width": 5,
+    "depth": 5,
+    "height": 1,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "vazio": [
+     [
+      0,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      0,
+      4
+     ],
+     [
+      4,
+      4
+     ]
+    ],
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O estrado redondo de pedra negra do calabouço, com o sigilo nas canaletas e velas e crânios na borda."
+   }
+  },
+  {
+   "id": "pedra_sacrificio",
+   "n": 1,
+   "salas": [
+    "Fazenda · Calabouço"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "pedra_sacrificio",
+    "name": "Pedra do Sacrifício",
+    "category": "ocultismo",
+    "kind": "pedra_sacrificio",
+    "width": 3,
+    "depth": 2,
+    "height": 1.63,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "A pedra do sacrifício: o tampo côncavo, as argolas e as correntes nas quatro pontas, o sangue seco."
+   }
+  },
+  {
+   "id": "corpo_lencol",
+   "n": 3,
+   "salas": [
+    "Fazenda · Sala de Sangue",
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "corpo_lencol",
+    "name": "Corpo Coberto",
+    "category": "ocultismo",
+    "kind": "corpo",
+    "width": 1,
+    "depth": 3,
+    "height": 0.49,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Alguém deitado no chão, embaixo de um lençol encardido. Os pés aparecem."
+   }
+  },
+  {
+   "id": "corpo_saco",
+   "n": 1,
+   "salas": [
+    "Fazenda · Sala de Sangue"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "corpo_saco",
+    "name": "Saco de Cadáver",
+    "category": "ocultismo",
+    "kind": "corpo",
+    "width": 1,
+    "depth": 3,
+    "height": 0.49,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Um saco de cadáver preto, fechado."
+   }
+  },
+  {
+   "id": "orfanato_predio",
+   "n": 1,
+   "salas": [
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "orfanato_predio",
+    "name": "Orfanato (queimado)",
+    "category": "fazenda",
+    "kind": "predio_queimado",
+    "width": 16,
+    "depth": 46,
+    "height": 8.82,
+    "xray": true,
+    "rotations": [
+     0
+    ],
+    "desc": "O prédio comprido do orfanato, de um andar só, queimado: o telhado caído em vários trechos, a fuligem subindo das janelas, a porta da frente carbonizada no fim da ala dos quartos."
+   }
+  },
+  {
+   "id": "entrada",
+   "n": 3,
+   "salas": [
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    0,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "entrada",
+    "name": "Entrada",
+    "category": "fazenda",
+    "kind": "entrada",
+    "width": 1,
+    "depth": 1,
+    "height": 0.03,
+    "walkable": true,
+    "portal": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Pare em cima para entrar no lugar ligado (o mestre escolhe o destino)."
+   }
+  },
+  {
+   "id": "iwall",
+   "n": 28,
+   "salas": [
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "iwall",
+    "name": "Parede Interna",
+    "category": "estrutura",
+    "kind": "iwall",
+    "width": 1,
+    "depth": 1,
+    "height": 3.92,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Monte cômodos. Fica transparente quando você passa atrás."
+   }
+  },
+  {
+   "id": "iwall_window",
+   "n": 1,
+   "salas": [
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "iwall_window",
+    "name": "Parede com Janela",
+    "category": "estrutura",
+    "kind": "iwall_window",
+    "width": 1,
+    "depth": 1,
+    "height": 3.92,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "iwall_door",
+   "n": 1,
+   "salas": [
+    "Orfanato · Pátio"
+   ],
+   "rots": [
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "iwall_door",
+    "name": "Parede com Vão",
+    "category": "estrutura",
+    "kind": "iwall_door",
+    "width": 1,
+    "depth": 1,
+    "height": 0,
+    "walkable": true,
+    "xray": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "escombros",
+   "n": 6,
+   "salas": [
+    "Orfanato · Pátio",
+    "Orfanato · Enfermaria",
+    "Orfanato · Salão",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Quarto 3",
+    "Orfanato · Quarto 8"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "escombros",
+    "name": "Escombros Queimados",
+    "category": "armazenamento",
+    "kind": "escombros",
+    "width": 2,
+    "depth": 2,
+    "height": 0.98,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "O teto que desabou no incêndio: telha, reboco e madeira carbonizada."
+   }
+  },
+  {
+   "id": "viga_queimada",
+   "n": 6,
+   "salas": [
+    "Orfanato · Pátio",
+    "Orfanato · Enfermaria",
+    "Orfanato · Salão",
+    "Orfanato · Quarto 3",
+    "Orfanato · Quarto 8"
+   ],
+   "rots": [
+    2,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "viga_queimada",
+    "name": "Viga Queimada",
+    "category": "armazenamento",
+    "kind": "viga",
+    "width": 1,
+    "depth": 3,
+    "height": 0.49,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Uma viga do telhado que caiu no incêndio, ainda com brasas nas rachaduras."
+   }
+  },
+  {
+   "id": "fuligem",
+   "n": 35,
+   "salas": [
+    "Orfanato · Pátio",
+    "Orfanato · Enfermaria",
+    "Orfanato · Salão",
+    "Orfanato · Cozinha",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 3",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 8",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "fuligem",
+    "name": "Fuligem",
+    "category": "decoracao",
+    "kind": "blood",
+    "width": 1,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0
+    ]
+   }
+  },
+  {
+   "id": "cinzas",
+   "n": 31,
+   "salas": [
+    "Orfanato · Pátio",
+    "Orfanato · Enfermaria",
+    "Orfanato · Salão",
+    "Orfanato · Cozinha",
+    "Orfanato · Depósito",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 3",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 8",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cinzas",
+    "name": "Cinzas",
+    "category": "decoracao",
+    "kind": "dirt",
+    "width": 1,
+    "depth": 1,
+    "height": 0.02,
+    "walkable": true,
+    "stackable": true,
+    "flat": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "gancho_carne",
+   "n": 2,
+   "salas": [
+    "Orfanato · Pátio",
+    "Orfanato · Cozinha"
+   ],
+   "rots": [
+    2,
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "gancho_carne",
+    "name": "Ganchos de Carne",
+    "category": "ocultismo",
+    "kind": "gancho",
+    "width": 1,
+    "depth": 2,
+    "height": 3.1,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Uma travessa de ferro com ganchos de açougue. O que está pendurado neles não é de boi."
+   }
+  },
+  {
+   "id": "catre",
+   "n": 8,
+   "salas": [
+    "Orfanato · Enfermaria"
+   ],
+   "rots": [
+    4,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "catre",
+    "name": "Caminha de Pano",
+    "category": "mobilia",
+    "kind": "bed",
+    "width": 1,
+    "depth": 3,
+    "height": 0.65,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Uma caminha simples de lona num estrado de madeira, da enfermaria das crianças."
+   }
+  },
+  {
+   "id": "med_tray",
+   "n": 1,
+   "salas": [
+    "Orfanato · Enfermaria"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "med_tray",
+    "name": "Bandeja de Remédios",
+    "category": "saude",
+    "kind": "flasks",
+    "width": 1,
+    "depth": 1,
+    "height": 0.26,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Frascos, seringas e algodão numa bandeja de inox."
+   }
+  },
+  {
+   "id": "fuligem_parede",
+   "n": 15,
+   "salas": [
+    "Orfanato · Enfermaria",
+    "Orfanato · Salão",
+    "Orfanato · Cozinha",
+    "Orfanato · Depósito",
+    "Orfanato · Sanitários",
+    "Orfanato · Sala de Banho",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Quarto 3",
+    "Orfanato · Quarto 8"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "fuligem_parede",
+    "name": "Fuligem na Parede",
+    "category": "parede",
+    "kind": "fuligem",
+    "w": 70,
+    "h": 110,
+    "desc": "As marcas pretas que o fogo deixou subindo pela parede."
+   },
+   "parede": true
+  },
+  {
+   "id": "window_barred",
+   "n": 13,
+   "salas": [
+    "Orfanato · Enfermaria",
+    "Orfanato · Salão",
+    "Orfanato · Cozinha",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "window_barred",
+    "name": "Janela Gradeada",
+    "category": "parede",
+    "kind": "window",
+    "w": 44,
+    "h": 54,
+    "states": 2
+   },
+   "parede": true
+  },
+  {
+   "id": "passagem_aberta",
+   "n": 5,
+   "salas": [
+    "Orfanato · Salão",
+    "Orfanato · Ala dos Dormitórios"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "passagem_aberta",
+    "name": "Passagem Aberta",
+    "category": "estrutura",
+    "kind": "passagem",
+    "width": 1,
+    "depth": 1,
+    "height": 0,
+    "walkable": true,
+    "portal": true,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Divisão de cena sem porta (o mesmo ambiente, dividido em duas cenas): nada aparece; quem para em cima vai para o cômodo ligado."
+   }
+  },
+  {
+   "id": "fogueira",
+   "n": 1,
+   "salas": [
+    "Orfanato · Salão"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "fogueira",
+    "name": "Fogueira",
+    "category": "iluminacao",
+    "kind": "fogueira",
+    "width": 2,
+    "depth": 2,
+    "height": 0.98,
+    "states": 2,
+    "rotations": [
+     0
+    ],
+    "desc": "Uma fogueira acesa no chão, numa roda de pedras. Clique duplo acende/apaga."
+   }
+  },
+  {
+   "id": "colchao_chao",
+   "n": 14,
+   "salas": [
+    "Orfanato · Salão",
+    "Orfanato · Ala dos Dormitórios",
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 10",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    0,
+    2
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "colchao_chao",
+    "name": "Colchão no Chão",
+    "category": "mobilia",
+    "kind": "colchao",
+    "width": 1,
+    "depth": 2,
+    "height": 0.23,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Um colchão largado no chão, afundado e encardido de sangue. Alguém dorme aqui."
+   }
+  },
+  {
+   "id": "pilha_cranios",
+   "n": 5,
+   "salas": [
+    "Orfanato · Salão",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    0
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "pilha_cranios",
+    "name": "Pilha de Crânios",
+    "category": "ocultismo",
+    "kind": "pilha_cranios",
+    "width": 1,
+    "depth": 1,
+    "height": 0.73,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ]
+   }
+  },
+  {
+   "id": "escrita_sangue",
+   "n": 1,
+   "salas": [
+    "Orfanato · Salão"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "escrita_sangue",
+    "name": "Escrita de Sangue",
+    "category": "parede",
+    "kind": "escrita",
+    "w": 340,
+    "h": 136,
+    "desc": "Frases escritas com sangue na parede, à mão."
+   },
+   "parede": true
+  },
+  {
+   "id": "tocha_parede",
+   "n": 5,
+   "salas": [
+    "Orfanato · Salão",
+    "Orfanato · Ala dos Dormitórios"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "tocha_parede",
+    "name": "Tocha de Parede",
+    "category": "parede",
+    "kind": "sconce",
+    "w": 14,
+    "h": 34,
+    "desc": "Uma tocha acesa presa na parede de pedra."
+   },
+   "parede": true
+  },
+  {
+   "id": "mesa_contencao",
+   "n": 1,
+   "salas": [
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "mesa_contencao",
+    "name": "Mesa de Contenção",
+    "category": "laboratorio",
+    "kind": "mesa_contencao",
+    "width": 2,
+    "depth": 3,
+    "height": 1.76,
+    "vao": "vazada",
+    "aumento": 1.2,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Mesa de aço inox com as correias de couro para prender alguém deitado."
+   }
+  },
+  {
+   "id": "estandarte_sangue",
+   "n": 1,
+   "salas": [
+    "Orfanato · Sala de Cirurgia"
+   ],
+   "rots": [],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "estandarte_sangue",
+    "name": "Estandarte de Sangue",
+    "category": "parede",
+    "kind": "board",
+    "w": 40,
+    "h": 80,
+    "desc": "Um estandarte velho de pano, com um sigilo pintado em sangue."
+   },
+   "parede": true
+  },
+  {
+   "id": "cama_queimada",
+   "n": 21,
+   "salas": [
+    "Orfanato · Quarto 1",
+    "Orfanato · Quarto 2",
+    "Orfanato · Quarto 3",
+    "Orfanato · Quarto 4",
+    "Orfanato · Quarto 5",
+    "Orfanato · Quarto 6",
+    "Orfanato · Quarto 7",
+    "Orfanato · Quarto 8",
+    "Orfanato · Quarto 9",
+    "Orfanato · Quarto 10",
+    "Orfanato · Quarto 11",
+    "Orfanato · Quarto 12"
+   ],
+   "rots": [
+    4
+   ],
+   "estados": [
+    0
+   ],
+   "def": {
+    "id": "cama_queimada",
+    "name": "Cama Queimada",
+    "category": "mobilia",
+    "kind": "bed",
+    "width": 1,
+    "depth": 3,
+    "height": 0.82,
+    "rotations": [
+     0,
+     2,
+     4,
+     6
+    ],
+    "desc": "Uma cama de ferro do orfanato, retorcida pelo fogo, com o colchão chamuscado."
+   }
+  }
+ ],
+ "estilos": {
+  "madeira": [
+   "Sede · Bar",
+   "Fazenda · Escritório",
+   "Orfanato · Depósito",
+   "Orfanato · Ala dos Dormitórios",
+   "Orfanato · Quarto 1",
+   "Orfanato · Quarto 2",
+   "Orfanato · Quarto 3",
+   "Orfanato · Quarto 4",
+   "Orfanato · Quarto 5",
+   "Orfanato · Quarto 6",
+   "Orfanato · Quarto 7",
+   "Orfanato · Quarto 8",
+   "Orfanato · Quarto 9",
+   "Orfanato · Quarto 10",
+   "Orfanato · Quarto 11",
+   "Orfanato · Quarto 12"
+  ],
+  "concreto": [
+   "Sede · Salão Principal",
+   "Orfanato · Sala de Cirurgia"
+  ],
+  "bloco": [
+   "Sede · Corredor"
+  ],
+  "cela": [
+   "Sede · Prisão"
+  ],
+  "selo": [
+   "Sede · Câmara do Selo"
+  ],
+  "azulejo": [
+   "Sede · Laboratório"
+  ],
+  "carpete": [
+   "Sede · Sala de Tecnologia"
+  ],
+  "taco": [
+   "Sede · Gabinete",
+   "Fazenda · Hall do Casarão",
+   "Fazenda · Sala de Jantar",
+   "Fazenda · Quarto das Crianças",
+   "Fazenda · Corredor de Cima",
+   "Fazenda · Quarto Principal",
+   "Fazenda · Quarto 1",
+   "Fazenda · Quarto 2",
+   "Fazenda · Quarto 3",
+   "Fazenda · Casa de Mantimentos",
+   "Orfanato · Enfermaria",
+   "Orfanato · Salão",
+   "Orfanato · Cozinha",
+   "Orfanato · Quarto da Diretora"
+  ],
+  "musgo": [
+   "Sede · Sala de Rituais"
+  ],
+  "xadrez": [
+   "Sede · Banheiro",
+   "Fazenda · Banheiro de Baixo",
+   "Fazenda · Banheiro de Cima",
+   "Orfanato · Sanitários",
+   "Orfanato · Banheiro",
+   "Orfanato · Sala de Banho"
+  ],
+  "ladrilho": [
+   "Sede · Enfermaria"
+  ],
+  "metal": [
+   "Sede · Arsenal"
+  ],
+  "grama": [
+   "Fazenda · Olhos de Águia",
+   "Fazenda · Arredores",
+   "Orfanato · Pátio"
+  ],
+  "cozinha_fazenda": [
+   "Fazenda · Cozinha"
+  ],
+  "terra": [
+   "Fazenda · Celeiro"
+  ],
+  "calabouco": [
+   "Fazenda · Calabouço",
+   "Fazenda · Corredor Escuro",
+   "Fazenda · Sala de Sangue"
+  ]
+ },
+ "salas": [
+  {
+   "nome": "Sede · Bar",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 21,
+   "h": 15
+  },
+  {
+   "nome": "Sede · Salão Principal",
+   "estilo": "concreto",
+   "terreno": false,
+   "w": 35,
+   "h": 14
+  },
+  {
+   "nome": "Sede · Corredor",
+   "estilo": "bloco",
+   "terreno": false,
+   "w": 37,
+   "h": 3
+  },
+  {
+   "nome": "Sede · Prisão",
+   "estilo": "cela",
+   "terreno": false,
+   "w": 25,
+   "h": 16
+  },
+  {
+   "nome": "Sede · Câmara do Selo",
+   "estilo": "selo",
+   "terreno": false,
+   "w": 7,
+   "h": 8
+  },
+  {
+   "nome": "Sede · Laboratório",
+   "estilo": "azulejo",
+   "terreno": false,
+   "w": 9,
+   "h": 11
+  },
+  {
+   "nome": "Sede · Sala de Tecnologia",
+   "estilo": "carpete",
+   "terreno": false,
+   "w": 13,
+   "h": 11
+  },
+  {
+   "nome": "Sede · Gabinete",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 12,
+   "h": 11
+  },
+  {
+   "nome": "Sede · Sala de Rituais",
+   "estilo": "musgo",
+   "terreno": false,
+   "w": 10,
+   "h": 11
+  },
+  {
+   "nome": "Sede · Banheiro",
+   "estilo": "xadrez",
+   "terreno": false,
+   "w": 7,
+   "h": 4
+  },
+  {
+   "nome": "Sede · Enfermaria",
+   "estilo": "ladrilho",
+   "terreno": false,
+   "w": 20,
+   "h": 14
+  },
+  {
+   "nome": "Sede · Arsenal",
+   "estilo": "metal",
+   "terreno": false,
+   "w": 14,
+   "h": 11
+  },
+  {
+   "nome": "Fazenda · Olhos de Águia",
+   "estilo": "grama",
+   "terreno": true,
+   "w": 72,
+   "h": 36
+  },
+  {
+   "nome": "Fazenda · Arredores",
+   "estilo": "grama",
+   "terreno": true,
+   "w": 48,
+   "h": 30
+  },
+  {
+   "nome": "Fazenda · Hall do Casarão",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 7,
+   "h": 12
+  },
+  {
+   "nome": "Fazenda · Cozinha",
+   "estilo": "cozinha_fazenda",
+   "terreno": false,
+   "w": 11,
+   "h": 6
+  },
+  {
+   "nome": "Fazenda · Sala de Jantar",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 8,
+   "h": 8
+  },
+  {
+   "nome": "Fazenda · Banheiro de Baixo",
+   "estilo": "xadrez",
+   "terreno": false,
+   "w": 6,
+   "h": 3
+  },
+  {
+   "nome": "Fazenda · Quarto das Crianças",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 9,
+   "h": 6
+  },
+  {
+   "nome": "Fazenda · Escritório",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 10,
+   "h": 8
+  },
+  {
+   "nome": "Fazenda · Corredor de Cima",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 5,
+   "h": 12
+  },
+  {
+   "nome": "Fazenda · Quarto Principal",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 10,
+   "h": 7
+  },
+  {
+   "nome": "Fazenda · Banheiro de Cima",
+   "estilo": "xadrez",
+   "terreno": false,
+   "w": 5,
+   "h": 6
+  },
+  {
+   "nome": "Fazenda · Quarto 1",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 9,
+   "h": 6
+  },
+  {
+   "nome": "Fazenda · Quarto 2",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 9,
+   "h": 6
+  },
+  {
+   "nome": "Fazenda · Quarto 3",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 9,
+   "h": 6
+  },
+  {
+   "nome": "Fazenda · Casa de Mantimentos",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 22,
+   "h": 16
+  },
+  {
+   "nome": "Fazenda · Celeiro",
+   "estilo": "terra",
+   "terreno": false,
+   "w": 24,
+   "h": 14
+  },
+  {
+   "nome": "Fazenda · Calabouço",
+   "estilo": "calabouco",
+   "terreno": false,
+   "w": 16,
+   "h": 15
+  },
+  {
+   "nome": "Fazenda · Corredor Escuro",
+   "estilo": "calabouco",
+   "terreno": false,
+   "w": 3,
+   "h": 15
+  },
+  {
+   "nome": "Fazenda · Sala de Sangue",
+   "estilo": "calabouco",
+   "terreno": false,
+   "w": 7,
+   "h": 5
+  },
+  {
+   "nome": "Orfanato · Pátio",
+   "estilo": "grama",
+   "terreno": true,
+   "w": 29,
+   "h": 53
+  },
+  {
+   "nome": "Orfanato · Enfermaria",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 13,
+   "h": 7
+  },
+  {
+   "nome": "Orfanato · Salão",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 14,
+   "h": 17
+  },
+  {
+   "nome": "Orfanato · Cozinha",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 9,
+   "h": 6
+  },
+  {
+   "nome": "Orfanato · Depósito",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 5,
+   "h": 3
+  },
+  {
+   "nome": "Orfanato · Quarto da Diretora",
+   "estilo": "taco",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Sanitários",
+   "estilo": "xadrez",
+   "terreno": false,
+   "w": 5,
+   "h": 3
+  },
+  {
+   "nome": "Orfanato · Banheiro",
+   "estilo": "xadrez",
+   "terreno": false,
+   "w": 6,
+   "h": 3
+  },
+  {
+   "nome": "Orfanato · Sala de Banho",
+   "estilo": "xadrez",
+   "terreno": false,
+   "w": 5,
+   "h": 5
+  },
+  {
+   "nome": "Orfanato · Ala dos Dormitórios",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 25
+  },
+  {
+   "nome": "Orfanato · Sala de Cirurgia",
+   "estilo": "concreto",
+   "terreno": false,
+   "w": 9,
+   "h": 6
+  },
+  {
+   "nome": "Orfanato · Quarto 1",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 2",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 3",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 4",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 5",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 6",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 7",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 8",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 9",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 10",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 11",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  },
+  {
+   "nome": "Orfanato · Quarto 12",
+   "estilo": "madeira",
+   "terreno": false,
+   "w": 6,
+   "h": 4
+  }
+ ]
+}
