@@ -916,6 +916,11 @@ export class RoomView {
 
   addItem(it: FloorItem) {
     this.map?.addItem(it);
+    this.neblinaMudou(it.defId);
+  }
+  /** a peça de neblina mudou: os bancos de neblina saem de novo */
+  private neblinaMudou(defId: string | undefined) {
+    if (defId === 'neblina_densa' && this.map) this.fog.montarBancos(this.map);
   }
   updateItem(it: FloorItem) {
     const old = this.map?.getItem(it.id);
@@ -925,6 +930,7 @@ export class RoomView {
       sfx.scrape(SLIDE_MS);
     }
     this.map?.updateItem(it);
+    this.neblinaMudou(it.defId);
   }
 
   /** Posição desenhada de um mobi que está deslizando (pesado: custa a sair, trepida, para). */
@@ -941,7 +947,9 @@ export class RoomView {
     return { ...it, x: s.fx + (it.x - s.fx) * e + shake, y: s.fy + (it.y - s.fy) * e + shake * 0.5 };
   }
   removeItem(id: number) {
+    const era = this.map?.getItem(id)?.defId;
     this.map?.removeItem(id);
+    this.neblinaMudou(era);
     if (this.selection?.kind === 'floor' && this.selection.id === id) this.select(null);
   }
   setWallItem(it: WallItem) {
@@ -2412,6 +2420,16 @@ export class RoomView {
       });
       // a luz da peça desce até as pernas: ilumina o chão em volta junto com o corpo (sem parecer colado por cima)
       lights.push({ x: sx, y: sy - HE * 0.22, radius: 88, color: '#ffe2b8', intensity: u.id === this.myId ? 0.42 : 0.3, kind: 'personal' });
+    }
+
+    // a neblina densa (o miolo do labirinto): casa a casa, ordenada com a sebe, para ficar DENTRO das paredes
+    for (const c of this.fog.casas) {
+      const box = this.fog.caixaDaCasa(c);
+      const [lx] = iso(c.x, c.y + 1, c.h);
+      const [rx] = iso(c.x + 1, c.y, c.h);
+      const [, topo] = iso(c.x, c.y, box.z1);
+      const [, base] = iso(c.x + 1, c.y + 1, c.h);
+      drawables.push({ box, sx0: lx - 30, sx1: rx + 30, sy0: topo - 30, sy1: base + 20, draw: () => this.fog.drawCasa(ctx, c, now) });
     }
 
     // cursor do piso

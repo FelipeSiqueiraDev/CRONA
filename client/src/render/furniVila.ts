@@ -28,6 +28,11 @@ export const VILA_BUILDERS: Record<string, Builder> = {
     );
   },
 
+  /** a neblina densa: o banco de neblina sai do fog.ts; aqui só a marquinha no chão para o mestre achar a peça */
+  neblina(def) {
+    return V([B([0.3, 0.7, 0.3, 0.7, 0, 0.02], def.colors[0])]);
+  },
+
   /** a lareira encostada na parede: o fogo na boca dela */
   lareira(def, state) {
     const h = alto(def.height);

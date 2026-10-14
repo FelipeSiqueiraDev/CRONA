@@ -19,7 +19,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Doutor a sudoeste, o bosque ao sul, as minas a oeste.
  */
 export const SANTO_BERCO = "Santo Berço · ";
-export const SANTO_BERCO_REV = 3;
+export const SANTO_BERCO_REV = 5;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -36,19 +36,29 @@ const DENTRO = { darkness: 0.5, ambient: "#b07060", particles: ["dust"] as CenaS
 
 // ------------------------------------------------------------------ a vila (de fora)
 
+/**
+ * A vila foi desenhada numa grade menor e espalhada por K (o Felipe, 14/10: "tá tudo espremido"): as medidas abaixo
+ * ficam na grade do desenho e `k` passa para casas do tabuleiro; os prédios se afastam pelo meio deles.
+ */
+const K = 1.45;
+const k = (v: number) => Math.round(v * K);
 /** O terreno da vila e o meio do Labirinto (em casas). */
-const VW = 48;
-const VH = 44;
-const CX = 24;
-const CY = 21;
-/** os raios do labirinto (a sebe de fora), do anel de estátuas e da estrada em anel */
-const R_LAB = 6.5;
-const R_EST = 8.8;
-const R_ANEL0 = 10.2;
-const R_ANEL1 = 11.8;
+const VW = k(48);
+const VH = k(44);
+const CX = k(24);
+const CY = k(21);
+/** os raios do labirinto (a sebe de fora e a de dentro), do anel de estátuas e da estrada em anel */
+const R_LAB = 6.5 * K;
+const R_DENTRO = 3.3 * K;
+const R_EST = 8.8 * K;
+const R_ANEL0 = 10.2 * K;
+const R_ANEL1 = 11.8 * K;
 /** a estrada do portão: chega pelo leste, nas fileiras ESTRADA_Y e ESTRADA_Y + 1 */
 const ESTRADA_Y = CY;
-const PORTAO_X = 43;
+const PORTAO_X = k(43);
+/** a horta da fazenda (o canto de cima à esquerda) */
+const HX = k(13);
+const HY = k(1);
 
 const dist = (x: number, y: number) => Math.hypot(x + 0.5 - CX, y + 0.5 - CY);
 
@@ -64,16 +74,16 @@ function terrenoVila(): Terreno {
     }
   // a estrada do portão (leste) até o anel, e os raios para cada canto da vila
   t.linha([[VW, ESTRADA_Y], [CX + R_ANEL0, ESTRADA_Y]], "t", 2);
-  t.linha([[CX - 6.5, CY - 9], [12, 12.5]], "t", 2); // noroeste: a ferraria
-  t.linha([[CX + 6.5, CY - 9], [36, 11.5]], "t", 2); // nordeste: a taverna
-  t.linha([[CX, CY - R_ANEL0], [CX, 8]], "t", 2); // norte: a fazenda
-  t.linha([[CX - 7.5, CY + 8], [11, 29]], "t", 2); // sudoeste: a casa do Doutor
+  t.linha([[CX - 6.5 * K, CY - 9 * K], [12 * K, 12.5 * K]], "t", 2); // noroeste: a ferraria
+  t.linha([[CX + 6.5 * K, CY - 9 * K], [36 * K, 11.5 * K]], "t", 2); // nordeste: a taverna
+  t.linha([[CX, CY - R_ANEL0], [CX, 8 * K]], "t", 2); // norte: a fazenda
+  t.linha([[CX - 7.5 * K, CY + 8 * K], [11 * K, 29 * K]], "t", 2); // sudoeste: a casa do Doutor
   t.linha([[CX, CY + R_ANEL0], [CX, VH]], "t", 2); // sul: o bosque
   t.linha([[CX - R_ANEL0, CY], [0, CY]], "t", 2); // oeste: as minas
   // a horta da fazenda (norte), do lado do celeiro
-  t.ret(13, 1, 16, 4, "l");
+  t.ret(HX, HY, HX + 3, HY + 3, "l");
   // o pé da montanha das minas (oeste): cascalho
-  t.disco(0, CY + 0.5, 3.2, 5, "p");
+  t.disco(0, CY + 0.5, 3.2 * K, 5 * K, "p");
   return t;
 }
 const T_VILA = terrenoVila();
@@ -85,8 +95,14 @@ function porta(id: string, x: number, y: number, rot: 0 | 4): [number, number] {
   return rot === 4 ? [x + meio, y + def.depth] : [x + def.width - 1 - meio, y - 1];
 }
 
-/** Os prédios da vila: [def, x, y, giro, cena de dentro (ou nada, por enquanto)]. */
-const PREDIOS: [string, number, number, 0 | 4, string | null][] = [
+/** o canto do prédio na grade espalhada: o meio dele se afasta por K */
+function espalha(id: string, x: number, y: number): [number, number] {
+  const d = getFurni(id)!;
+  return [Math.round((x + d.width / 2) * K - d.width / 2), Math.round((y + d.depth / 2) * K - d.depth / 2)];
+}
+
+/** Os prédios da vila (na grade do desenho): [def, x, y, giro, cena de dentro (ou nada, por enquanto)]. */
+const PREDIOS_DESENHO: [string, number, number, 0 | 4, string | null][] = [
   ["ferraria_predio", 8, 6, 4, "ferraria"],
   ["taverna_predio", 31, 3, 4, "taverna"],
   ["torre_porteiro", 40, 14, 4, "torre"],
@@ -98,6 +114,7 @@ const PREDIOS: [string, number, number, 0 | 4, string | null][] = [
   ["casa_vila", 27, 36, 0, null],
   ["casa_vila", 36, 36, 0, null],
 ];
+const PREDIOS = PREDIOS_DESENHO.map(([id, x, y, r, cena]) => [id, ...espalha(id, x, y), r, cena] as [string, number, number, 0 | 4, string | null]);
 const ENTRADAS = new Map(PREDIOS.filter((p) => p[4]).map(([id, x, y, r, cena]) => [cena!, porta(id, x, y, r)]));
 
 /** a sebe do labirinto: o anel de fora com a entrada virada para o portão, e um anel de dentro com outra brecha */
@@ -108,8 +125,8 @@ function labirinto(): FloorSeed[] {
       const d = dist(x, y);
       const ang = Math.atan2(y + 0.5 - CY, x + 0.5 - CX);
       const fora = d >= R_LAB - 0.5 && d < R_LAB + 0.5 && Math.abs(ang) > 0.28;
-      const dentro = d >= 3.3 && d < 4.3 && Math.abs(ang - Math.PI / 2) > 0.45 && Math.abs(Math.abs(ang) - 2.4) > 0.3;
-      const raio = d >= 4.3 && d < R_LAB - 0.5 && (Math.abs(ang + 1.9) < 0.12 || Math.abs(ang - 0.9) < 0.12);
+      const dentro = d >= R_DENTRO && d < R_DENTRO + 1 && Math.abs(ang - Math.PI / 2) > 0.32 && Math.abs(Math.abs(ang) - 2.4) > 0.22;
+      const raio = d >= R_DENTRO + 1 && d < R_LAB - 0.5 && (Math.abs(ang + 1.9) < 0.09 || Math.abs(ang - 0.9) < 0.09);
       if (fora || dentro || raio) f.push(["sebe", x, y, 0]);
     }
   return f;
@@ -134,7 +151,7 @@ function postes(): FloorSeed[] {
     const a = (i * Math.PI) / 4 + Math.PI / 8;
     f.push(["poste_cristal", Math.round(CX + Math.cos(a) * (R_ANEL1 + 1) - 0.5), Math.round(CY + Math.sin(a) * (R_ANEL1 + 1) - 0.5), 0]);
   }
-  for (const x of [37, 41]) f.push(["poste_cristal", x, ESTRADA_Y - 1, 0], ["poste_cristal", x, ESTRADA_Y + 2, 0]);
+  for (const x of [k(37), k(41)]) f.push(["poste_cristal", x, ESTRADA_Y - 1, 0], ["poste_cristal", x, ESTRADA_Y + 2, 0]);
   return f;
 }
 
@@ -158,18 +175,20 @@ function vilaPiso(): FloorSeed[] {
     });
   f.push(...labirinto(), ...estatuas(), ...postes().filter(([, x, y]) => !predio(x, y)));
   // o poço e o lodo preto: uma poça no chão batido perto da entrada do labirinto, outra no caminho das minas
-  f.push(["poco", 29, 13, 0]);
-  f.push(["lodo_preto", CX + 7, CY + 2, 0, oculta("Lodo Preto", "Brilha como se tivesse luz por dentro. Quem olha muito tempo sente vontade de tocar.")]);
-  f.push(["lodo_preto", 4, CY + 3, 0], ["lodo_preto", 14, 26, 0]);
+  f.push(["poco", k(29), k(13), 0]);
+  f.push(["lodo_preto", CX + k(7), CY + k(2), 0, oculta("Lodo Preto", "Brilha como se tivesse luz por dentro. Quem olha muito tempo sente vontade de tocar.")]);
+  f.push(["lodo_preto", k(4), CY + k(3), 0], ["lodo_preto", k(14), k(26), 0]);
+  // a neblina grossa que esconde o miolo do labirinto (o raio vem da escala da peça: neblinaDoLabirinto)
+  f.push(["neblina_densa", CX, CY, 0]);
   // os cristais soltos: o vermelho na porta da ferraria, o verde na casa do Doutor, o azul atrás da taverna
-  f.push(["cristal_vermelho", 7, 13, 0], ["cristal_verde", 16, 30, 0], ["cristal_azul", 41, 4, 0]);
+  f.push(["cristal_vermelho", k(7), k(13), 0], ["cristal_verde", k(16), k(30), 0], ["cristal_azul", k(41), k(4), 0]);
   // a fazenda (norte): a horta do lado do celeiro, com a cerca na frente
-  for (let y = 1; y <= 3; y++) for (let x = 13; x <= 16; x++) f.push(["horta", x, y, 0]);
-  for (let x = 13; x <= 16; x++) f.push(["cerca", x, 4, 4]);
+  for (let y = HY; y <= HY + 2; y++) for (let x = HX; x <= HX + 3; x++) f.push(["horta", x, y, 0]);
+  for (let x = HX; x <= HX + 3; x++) f.push(["cerca", x, HY + 3, 4]);
   // a entrada das minas (oeste): as pedras na encosta
-  f.push(...de("pedras", [0, CY - 4], [1, CY - 3], [0, CY + 4], [2, CY + 5], [1, CY + 7], [3, CY - 2]));
+  f.push(...de("pedras", [0, CY - k(4)], [1, CY - k(3)], [0, CY + k(4)], [2, CY + k(5)], [1, CY + k(7)], [3, CY - k(2)], [2, CY - k(6)], [0, CY + k(9)]));
   // o resto da vila: barris e caixotes nas portas, a carroça na estrada
-  f.push(["barril_madeira", 30, 11, 0], ["barril_madeira", 41, 11, 0], ["crate_wood", 16, 12, 0], ["carroca", 44, 25, 0]);
+  f.push(["barril_madeira", k(30), k(11), 0], ["barril_madeira", k(41), k(11), 0], ["crate_wood", k(16), k(12), 0], ["carroca", k(44), k(25), 0]);
   const ocupado = new Set<string>();
   for (const [id, x, y, r] of f) {
     const def = getFurni(id.split("~")[0]);
@@ -178,13 +197,19 @@ function vilaPiso(): FloorSeed[] {
     for (let dy = 0; dy < sy; dy++) for (let dx = 0; dx < sx; dx++) ocupado.add(`${x + dx},${y + dy}`);
   }
   // as árvores retorcidas: o bosque da Provação ao sul, a mata da montanha a oeste e as soltas pela vila
-  const arvores: [number, number][] = [
+  const arvores: [number, number][] = ([
     [2, 40], [5, 42], [9, 40], [13, 42], [14, 38], [30, 42], [33, 40], [40, 42], [44, 40], [46, 37],
     [3, 3], [6, 1], [1, 7], [12, 2], [46, 2], [45, 9], [43, 30], [46, 33], [2, 28], [1, 34],
     [15, 17], [33, 16], [16, 27], [32, 28], [21, 32], [27, 10],
-  ];
+  ] as [number, number][]).map(([x, y]) => [k(x), k(y)] as [number, number]);
+  // e mais um punhado espalhado pela grama que sobrou entre as casas (sempre nos mesmos lugares)
+  for (let i = 0; i < 46; i++) {
+    const x = (i * 37 + 5) % VW;
+    const y = (i * 53 + 11) % VH;
+    if (dist(x, y) > R_ANEL1 + 2.5) arvores.push([x, y]);
+  }
   arvores.forEach(([x, y], i) => f.push(...naGrama(ocupado, [[i % 3 === 0 ? "arvore_retorcida" : i % 3 === 1 ? "arvore_retorcida~b" : "arvore_retorcida~c", x, y, 0]])));
-  const arbustos: [number, number][] = [[10, 14], [20, 6], [37, 13], [45, 18], [40, 33], [12, 35], [26, 41], [8, 25], [30, 32], [17, 15]];
+  const arbustos = ([[10, 14], [20, 6], [37, 13], [45, 18], [40, 33], [12, 35], [26, 41], [8, 25], [30, 32], [17, 15]] as [number, number][]).map(([x, y]) => [k(x), k(y)]);
   arbustos.forEach(([x, y], i) => f.push(...naGrama(ocupado, [[i % 2 ? "arbusto_estranho~b" : "arbusto_estranho", x, y, 0]])));
   return f;
 }
@@ -371,6 +396,11 @@ const CENAS: CenaSpec[] = [
 
 // ------------------------------------------------------------------ montagem
 
+/** A neblina enche o labirinto inteiro, até a sebe de fora (a escala da peça é o raio: 4 casas na escala 1). */
+function neblinaDoLabirinto(room: RoomData) {
+  for (const it of room.items) if (it.defId === "neblina_densa") it.escala = Math.round(((R_LAB - 0.6) / 4) * 100) / 100;
+}
+
 function ligar(built: Map<string, RoomData>) {
   for (const spec of CENAS) {
     const room = built.get(spec.key)!;
@@ -393,6 +423,7 @@ export function seedSantoBerco(db: Database) {
   for (const spec of CENAS) {
     const room = montar(db, spec);
     estilo(room, spec);
+    neblinaDoLabirinto(room);
     built.set(spec.key, room);
   }
   ligar(built);
@@ -427,6 +458,7 @@ function rebuildSantoBerco(db: Database): boolean {
       db.rooms.push(room);
     }
     estilo(room, spec);
+    neblinaDoLabirinto(room);
     built.set(spec.key, room);
   }
   ligar(built);

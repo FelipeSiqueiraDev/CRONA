@@ -418,6 +418,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'cama_palha', name: 'Cama de Palha', category: 'vila', kind: 'bed', width: 2, depth: 3, height: 0.55, rotations: ALL, colors: ['#8a6a4a', '#6a4a2c', '#c8a868'], desc: 'O estrado de madeira com o colchão de palha e a manta de lã.' },
   { id: 'bau_madeira', name: 'Baú de Madeira', category: 'vila', kind: 'bau', width: 1, depth: 1, height: 0.6, stackable: true, rotations: ALL, colors: ['#6a4a2c', '#3a3a3a'] },
   { id: 'escotilha', name: 'Escotilha Pesada', category: 'vila', kind: 'escotilha', width: 1, depth: 1, height: 0.04, walkable: true, stackable: true, portal: true, flat: true, states: 3, openState: 0, rotations: ALL, colors: ['#4a4a50', '#070505'], desc: 'A escotilha de ferro no chão do quarto do Ferreiro: só abre por baixo. Dá no bunker.' },
+  { id: 'neblina_densa', name: 'Neblina Densa', category: 'decoracao', kind: 'neblina', width: 1, depth: 1, height: 0.02, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#a8b2a8'], desc: 'Um banco de neblina grossa, que se mexe devagar e esconde o que está dentro (o miolo do Labirinto Infinito). O tamanho da peça é o tamanho da neblina.' },
   { id: 'escada_espiral', name: 'Escada em Espiral', category: 'vila', kind: 'escada_espiral', width: 2, depth: 2, height: 0, walkable: true, portal: true, rotations: ALL, colors: ['#8a8278', '#3a2a1e'], desc: 'A escada de pedra em caracol da torre. Pare em cima para subir ou descer.' },
 ];
 

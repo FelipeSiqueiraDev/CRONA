@@ -1,4 +1,4 @@
-import type { RoomMap } from '@crona/shared';
+import { Z_PER_M, type RoomMap } from '@crona/shared';
 import { rng } from './color';
 import { iso } from './iso';
 
@@ -29,17 +29,95 @@ function puffSprite() {
   return c;
 }
 
+/** O raio (em casas) do banco de neblina da peça "neblina_densa" na escala 1. */
+const RAIO_NEBLINA = 4;
+/** até onde a neblina sobe (unidades de altura: 1,9 m, um pouco abaixo da sebe de 2,4 m: o topo dela aparece) */
+const ALTO_NEBLINA = 1.9 * Z_PER_M;
+
+/** Um tufo de neblina dentro de uma casa: o lugar na casa (u, v), a altura (0..1 da coluna), o tamanho. */
+interface Tufo {
+  u: number;
+  v: number;
+  z: number;
+  r: number;
+  a: number;
+  phase: number;
+}
+
+/**
+ * Uma casa de neblina densa (a peça "neblina_densa", 14/10: o miolo do Labirinto de Santo Berço). A neblina é
+ * desenhada casa a casa, ordenada junto com os móveis: a sebe da frente tapa a neblina de trás, e ela enche os
+ * corredores sem passar por cima das paredes nem vazar para fora.
+ */
+export interface CasaNeblina {
+  x: number;
+  y: number;
+  h: number;
+  /** 0 no meio do banco, 1 na beira: na beira a neblina é mais rala */
+  beira: number;
+  tufos: Tufo[];
+}
+
 /**
  * Névoa: nuvens suaves que derivam sobre o piso, recortadas pelo volume do
  * quarto. É desenhada antes da luz, então brilha perto das fontes de luz.
+ * A neblina densa (CasaNeblina) é outra coisa: desenhada casa a casa junto com os móveis, com a cena com névoa ou não.
  */
 export class Fog {
   private puffs: Puff[] = [];
+  /** as casas de neblina densa da cena */
+  casas: CasaNeblina[] = [];
   private clip: Path2D | null = null;
   private bounds = { x0: 0, x1: 1, y0: 0, y1: 1 };
   private last = 0;
 
+  /** as casas de neblina das peças "neblina_densa" da cena (de novo quando o mestre põe, move ou tira uma) */
+  montarBancos(map: RoomMap) {
+    this.casas = [];
+    const vistas = new Set<string>();
+    for (const it of map.allItems()) {
+      if (it.defId !== 'neblina_densa') continue;
+      const raio = RAIO_NEBLINA * (it.escala ?? 1);
+      const r = rng(it.id * 7 + 3);
+      for (let y = Math.floor(it.y - raio); y <= Math.ceil(it.y + raio); y++)
+        for (let x = Math.floor(it.x - raio); x <= Math.ceil(it.x + raio); x++) {
+          const d = Math.hypot(x - it.x, y - it.y) / raio;
+          // só no chão livre (as casas da sebe ficam de fora: a neblina corre entre as paredes)
+          if (d > 1 || vistas.has(`${x},${y}`) || map.walkState(x, y) === 'blocked') continue;
+          const h = map.floorHeight(x, y);
+          if (h === null) continue;
+          vistas.add(`${x},${y}`);
+          const tufos: Tufo[] = [];
+          // mais tufos quanto mais perto do meio: no miolo a neblina é BEM densa (o Felipe, 14/10)
+          const n = 3 + Math.round((1 - d) * 5);
+          for (let k = 0; k < n; k++) tufos.push({ u: 0.1 + r() * 0.8, v: 0.1 + r() * 0.8, z: k / n + r() * 0.2, r: 26 + r() * 20 + (1 - d) * 10, a: 0.75 + r() * 0.25, phase: r() * 10 });
+          this.casas.push({ x, y, h, beira: d, tufos });
+        }
+    }
+  }
+
+  /** A caixa da coluna de neblina da casa (para ordenar com os móveis). */
+  caixaDaCasa(c: CasaNeblina) {
+    return { x0: c.x, x1: c.x + 1, y0: c.y, y1: c.y + 1, z0: c.h, z1: c.h + ALTO_NEBLINA };
+  }
+
+  /** Os tufos de uma casa: sobem e descem devagar e balançam, mais ralos na beira do banco. */
+  drawCasa(ctx: CanvasRenderingContext2D, c: CasaNeblina, now: number) {
+    const s = puffSprite();
+    const rala = c.beira > 0.75 ? 1 - (c.beira - 0.75) / 0.25 : 1;
+    for (const t of c.tufos) {
+      const ondula = Math.sin(now / 2400 + t.phase);
+      const [px, py] = iso(c.x + t.u + 0.12 * ondula, c.y + t.v - 0.08 * ondula, c.h + t.z * ALTO_NEBLINA);
+      ctx.globalAlpha = Math.min(1, t.a * (0.85 + 0.15 * Math.sin(now / 1900 + t.phase * 2)) * (0.25 + 0.75 * rala) * (0.75 + 0.5 * (1 - c.beira)));
+      const w = t.r * 2.6;
+      const hh = t.r * 1.5;
+      ctx.drawImage(s, px - w / 2, py - hh / 2, w, hh);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   setMap(map: RoomMap) {
+    this.montarBancos(map);
     const tiles: [number, number, number][] = [];
     for (let y = 0; y < map.height; y++)
       for (let x = 0; x < map.width; x++) {
@@ -87,9 +165,10 @@ export class Fog {
   }
 
   draw(ctx: CanvasRenderingContext2D, density: number, now: number) {
-    if (!this.clip || density <= 0.01) return;
+    if (!this.clip) return;
     const dt = this.last ? Math.min(0.1, (now - this.last) / 1000) : 0;
     this.last = now;
+    if (density <= 0.01) return;
     const b = this.bounds;
     const s = puffSprite();
     ctx.save();
