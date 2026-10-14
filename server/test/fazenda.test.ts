@@ -79,7 +79,7 @@ beforeEach(() => {
 describe("Fazenda Olhos de Águia", () => {
   test("a fazenda, os arredores e os interiores numa campanha só, com a planta", () => {
     const cenas = fazenda();
-    assert.equal(cenas.length, 19);
+    assert.equal(cenas.length, 21);
     const camp =
       hotel.db.campaigns?.[String(Math.min(...cenas.map((r) => r.id)))];
     assert.equal(camp?.title, "Fazenda Olhos de Águia");

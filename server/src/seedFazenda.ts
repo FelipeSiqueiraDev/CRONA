@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 30;
+export const FAZENDA_REV = 31;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -531,6 +531,18 @@ const aoArLivre = (t: Terreno, porta: Door) => ({
   heightmap: t.planta(),
   door: porta,
 });
+
+/**
+ * A Casa de Mantimentos por dentro: a sala grande do depósito (22 × 8) e, na frente, o corredor da entrada (2 casas)
+ * entre o escritório do capataz e o quarto das ferramentas, com o vão da porta na parede da frente.
+ */
+function mantimentosPlan(): { heightmap: string; door: Door } {
+  const rows: string[] = [];
+  for (let y = 0; y < 8; y++) rows.push("0".repeat(22));
+  for (let y = 8; y < 15; y++) rows.push(Array.from({ length: 22 }, (_, x) => (x === 10 || x === 11 ? "0" : "x")).join(""));
+  rows.push(Array.from({ length: 22 }, (_, x) => (x === 11 ? "0" : "x")).join(""));
+  return { heightmap: rows.join("\n"), door: { x: 11, y: 15, dir: 0 } };
+}
 
 const CASA = "Casarão";
 const CASA2 = "Casarão 2º";
@@ -1079,62 +1091,93 @@ const CENAS_BRUTAS: CenaSpec[] = [
   },
   // ------------------------------------------------------------ casa de mantimentos e celeiro
   {
+    // As salas de dentro da Casa de Mantimentos são cenas próprias, de parede inteira (o Felipe, 14/10: "essas paredes
+    // são completas, pra ir até essas salas é outra cena"). O galpão abre para a frente da tela: a porta de fora fica
+    // na parede da frente (a que não aparece), no fim do corredor entre o escritório e o quarto das ferramentas.
     key: "mantimentos",
     name: FAZENDA + "Casa de Mantimentos",
     description:
-      "O depósito da fazenda: caixotes, barris e sacas de grão; o quartinho das ferramentas e o escritório do capataz.",
-    layout: planTop(22, 15, 10),
+      "O depósito da fazenda: caixotes, barris e sacas de grão, as prateleiras na parede. Pelo corredor da entrada, a porta do escritório do capataz de um lado e a do quarto das ferramentas do outro.",
+    layout: mantimentosPlan(),
     andar: GALPOES,
     style: "taco",
     darkness: 0.45,
     ambient: "#b88a50",
     particles: ["dust"],
     floor: [
-      ["portal", 10, 1, 4],
-      // o escritório do capataz (em cima à esquerda) e o das ferramentas (em cima à direita), de meia parede
-      ...cercaY(9, 1, 6, [4], "iwall_low"),
-      ...cercaX(7, 0, 8, [], "iwall_low"),
-      ...cercaY(12, 1, 6, [5], "iwall_low"),
-      ...cercaX(7, 13, 21, [], "iwall_low"),
-      ["desk_wood", 3, 2, 4],
-      ["chair_wood", 3, 1, 4],
-      ["papers", 3, 2, 4],
-      ["cabinet_file", 0, 1, 2],
-      ["bookshelf", 6, 1, 4],
-      ["rug_worn", 2, 4, 0],
-      ["plant", 8, 1, 0],
-      ["table_tools", 15, 2, 4],
-      ["crate_wood", 20, 1, 0],
-      ["crate_wood", 21, 1, 0],
-      ["barrel", 21, 3, 0],
-      // as prateleiras e as sacas
-      ["prateleira", 0, 9, 2],
-      ["prateleira", 0, 11, 2],
-      ["prateleira", 0, 13, 2],
-      ...de("sacas", [4, 10], [5, 10], [4, 11], [5, 11], [6, 11]),
-      ["barrel", 2, 15, 0],
-      ["barrel", 3, 15, 0],
-      // o depósito: caixotes e barris
-      ...de(
-        "crate_wood",
-        [20, 14],
-        [21, 14],
-        [21, 13],
-        [21, 13],
-        [15, 11],
-        [16, 11],
-        [15, 12],
-        [15, 12],
-      ),
-      ...de("barrel", [18, 15], [19, 15], [17, 12]),
-      ...lamps([5, 4], [17, 4], [10, 10], [16, 12], [4, 12]),
+      ["portal", 11, 14, 0],
+      ["portal", 10, 11, 2],
+      ["portal", 11, 11, 6],
+      // as prateleiras na parede da esquerda e as sacas
+      ["prateleira", 0, 0, 2],
+      ["prateleira", 0, 2, 2],
+      ["prateleira", 0, 4, 2],
+      ...de("sacas", [3, 1], [4, 1], [3, 2], [4, 2], [5, 2]),
+      ["barrel", 0, 7, 0],
+      ["barrel", 1, 7, 0],
+      // o depósito: caixotes e barris do lado de lá
+      ...de("crate_wood", [20, 0], [21, 0], [21, 1], [15, 3], [16, 3], [15, 4]),
+      ...de("barrel", [18, 0], [21, 3], [20, 6]),
+      ...lamps([5, 3], [16, 3], [10, 5]),
+    ],
+    wall: [],
+    links: [
+      [11, 14, "fazenda"],
+      [10, 11, "ferramentas"],
+      [11, 11, "capataz"],
+    ],
+    plan: { x: 0, y: 0 },
+  },
+  {
+    key: "capataz",
+    name: FAZENDA + "Escritório do Capataz",
+    description: "O escritório do capataz, do lado do corredor da entrada: a mesa com os papéis, o arquivo, a estante e o tapete gasto.",
+    // a porta para o corredor fica na parede da esquerda (o escritório está a leste do corredor)
+    layout: plan(8, 6, 2),
+    andar: GALPOES,
+    style: "taco",
+    darkness: 0.45,
+    ambient: "#b88a50",
+    particles: ["dust"],
+    floor: [
+      ["portal", 1, 2, 2],
+      ["chair_wood", 4, 0, 4],
+      ["desk_wood", 4, 1, 4],
+      ["papers", 4, 1, 4],
+      ["bookshelf", 6, 0, 4],
+      ["cabinet_file", 8, 0, 6],
+      ["rug_worn", 3, 3, 0],
+      ["plant", 8, 5, 0],
+      ...lamps([5, 3]),
+    ],
+    wall: [],
+    links: [[1, 2, "mantimentos"]],
+    plan: { x: 13, y: 9 },
+  },
+  {
+    key: "ferramentas",
+    name: FAZENDA + "Quarto das Ferramentas",
+    description: "O quarto das ferramentas, do outro lado do corredor: a bancada, o quadro de ferramentas e as lâminas na parede, os caixotes e o barril.",
+    // a porta para o corredor fica na parede da direita (o quarto está a oeste do corredor)
+    layout: planRight(8, 6, 2),
+    andar: GALPOES,
+    style: "taco",
+    darkness: 0.45,
+    ambient: "#b88a50",
+    particles: ["dust"],
+    floor: [
+      ["portal", 7, 2, 6],
+      ["table_tools", 2, 0, 4],
+      ...de("crate_wood", [0, 0], [0, 1]),
+      ["barrel", 0, 4, 0],
+      ...lamps([3, 3]),
     ],
     wall: [
-      ["tool_board", "r", 1, 17.0, 1.63],
-      ["blade_rack", "r", 1, 19.6, 2.09],
+      ["tool_board", "r", 0, 3.0, 1.63],
+      ["blade_rack", "r", 0, 5.8, 2.09],
     ],
-    links: [[10, 1, "fazenda"]],
-    plan: { x: 0, y: 0, r: 2 },
+    links: [[7, 2, "mantimentos"]],
+    plan: { x: 1, y: 9 },
   },
   {
     key: "celeiro",

@@ -106,7 +106,8 @@ describe("Locais do minimapa", () => {
       ),
       ["Calabouço", "Corredor Escuro", "Sala de Sangue"],
     );
-    assert.equal(predio("Casa de Mantimentos").cenas.length, 1);
+    // o depósito, o escritório do capataz e o quarto das ferramentas (14/10: cada sala uma cena)
+    assert.equal(predio("Casa de Mantimentos").cenas.length, 3);
     // toda cena tem um lugar
     for (const s of cenas) assert.ok(l.onde.has(s.id), s.name);
     assert.equal(
