@@ -240,32 +240,80 @@ def bar_shelf():
     peg(x0, x1, y0, y1)
 
 
-def bar_cabinet():
-    """O armarinho (1 m): a gaveta com a alça, as duas portinhas almofadadas, o rodapé, o tampo de nogueira."""
+def bar_cabinet(aberto=False):
+    """
+    O armarinho (1 m): a gaveta com a alça, as duas portinhas almofadadas, o rodapé, o tampo de nogueira. Aberto: as
+    duas portinhas giram a 90° para fora (o lado de dentro almofadado à vista), o vão escuro com uma prateleira, as
+    garrafas e os copos; a gaveta e o tampo ficam como estão.
+    """
     x0, x1, y0, y1 = 0.06, 0.69, 0.08, 0.6
     h = 1.63 / UN
     zg = h - 0.17
     meio = (x0 + x1) / 2
     pain = [(x0 + 0.03, x1 - 0.03, zg + 0.01, h - 0.05, 'g'), (x0 + 0.03, meio - 0.005, 0.14, zg - 0.01, 'p'), (meio + 0.005, x1 - 0.03, 0.14, zg - 0.01, 'p')]
     caixa((x0 + 0.02, x1 - 0.02, y0 + 0.02, y1 - 0.03, 0.0, 0.1), mad2(NOG_E, seed=241, passo=0.04))
-    caixa((x0, x1, y0, y1, 0.1, h - 0.04), {'frente': almofadas(WAL, pain, seed=242), 'costas': tab2(CA.PINHO, 0.12, '#6a4426', eixo=1, seed=243),
-                                            '*': mad2(WAL, eixo=1, seed=244, passo=0.05)})
+    if not aberto:
+        caixa((x0, x1, y0, y1, 0.1, h - 0.04), {'frente': almofadas(WAL, pain, seed=242), 'costas': tab2(CA.PINHO, 0.12, '#6a4426', eixo=1, seed=243),
+                                                '*': mad2(WAL, eixo=1, seed=244, passo=0.05)})
+    else:
+        e = 0.03
+        ESC = mad2('#4c2813', eixo=1, seed=246, passo=0.05)
+        LAT = {'*': mad2(WAL, eixo=1, seed=244, passo=0.05), 'dir': ESC, 'esq': ESC}
+        # a carcaça: o fundo, os lados, o teto (sob a gaveta), o piso do vão e os montantes da frente
+        caixa((x0, x1, y0, y0 + e, 0.1, zg), {'frente': ESC, 'costas': tab2(CA.PINHO, 0.12, '#6a4426', eixo=1, seed=243), '*': ESC})
+        caixa((x0, x0 + e, y0, y1, 0.1, zg), {'dir': ESC, '*': LAT['*']})
+        caixa((x1 - e, x1, y0, y1, 0.1, zg), {'esq': ESC, '*': LAT['*']})
+        caixa((x0 + e, x1 - e, y0 + e, y1, 0.1, 0.14), {'cima': liso('#5e3418'), '*': ESC})
+        caixa((x0 + e, x1 - e, y0 + e, y1 - 0.02, zg - 0.02, zg), {'baixo': ESC, '*': ESC})
+        # a prateleira do meio
+        zp = 0.5
+        caixa((x0 + e, x1 - e, y0 + e, y0 + 0.27, zp - 0.02, zp), {'cima': tab2(['#6a3a1e', '#643618'], 0.12, '#2a140a', seed=247, org=y0), '*': mad2('#5a2e16', seed=248, passo=0.04)})
+        # a gaveta e o tampo
+        caixa((x0, x1, y0, y1, zg, h - 0.04), {'frente': almofadas(WAL, [pain[0]], seed=242), 'costas': tab2(CA.PINHO, 0.12, '#6a4426', eixo=1, seed=243),
+                                                '*': mad2(WAL, eixo=1, seed=244, passo=0.05)})
+        # as garrafas e os copos (embaixo, na prateleira e um copo emborcado)
+        ym = (y0 + y1) / 2 + 0.04
+        for i, xx in enumerate((x0 + 0.1, x0 + 0.19, x0 + 0.28, x0 + 0.37, x0 + 0.46)):
+            garrafa(xx, y1 - 0.2 + 0.07 * (i % 2), 0.14, (1, 3, 2, 1, 5)[i], k=1.0)
+            garrafa(xx + 0.045, y1 - 0.34 + 0.07 * (i % 2), 0.14, (3, 5, 1, 2, 3)[i], k=0.9)
+        for i, xx in enumerate((x0 + 0.12, x0 + 0.24, x0 + 0.36)):
+            copo(xx, y0 + 0.17, zp, cheio=None, emborcado=(i == 1))
+        garrafa(x0 + 0.45, y0 + 0.17, zp, 3, k=1.0)
+        garrafa(x0 + 0.5, y0 + 0.2, zp, 1, k=0.9)
+    # o rodapé do tampo
     caixa((x0 - 0.015, x1 + 0.015, y0 - 0.01, y1 + 0.02, h - 0.04, h), {'cima': tab2(TAMPO_BAR, 0.18, '#3a1a0c', seed=245, org=y0),
                                                                         '*': _pau('#6a3018', quina=1.25, b=(0, 0, 0, 0, h - 0.04, h))})
     alca(meio, zg + 0.065, y1)
-    botao(meio - 0.06, zg - 0.2, y1)
-    botao(meio + 0.06, zg - 0.2, y1)
+    if not aberto:
+        botao(meio - 0.06, zg - 0.2, y1)
+        botao(meio + 0.06, zg - 0.2, y1)
+    else:
+        # as portinhas abertas de vez (180°): cada uma fica deitada rente à frente, para fora, com o lado de dentro
+        # almofadado para a frente; assim não tapam o vão
+        W = (x1 - x0) / 2 - 0.005
+        zb0, zb1 = 0.14, zg - 0.01
+        MAD = mad2(WAL, eixo=1, seed=249, passo=0.05)
+        for (xa, xb) in ((x0 - W - 0.008, x0 - 0.008), (x1 + 0.008, x1 + W + 0.008)):
+            pl = [(xa + 0.03, xb - 0.03, zb0 + 0.03, zb1 - 0.03, 'p')]
+            caixa((xa, xb, y1, y1 + 0.028, zb0, zb1), {'frente': almofadas(WAL, pl, seed=250), '*': MAD})
+        # as dobradiças e o puxador do lado de dentro
+        for xx in (x0 - 0.016, x1 + 0.016):
+            for zz in (zb0 + 0.1, zb1 - 0.1):
+                _barra((xx - 0.012, xx + 0.012, y1 + 0.01, y1 + 0.032, zz, zz + 0.05), LATAO, LATAO_L, quina=False)
+        botao(x0 - W + 0.05, 0.46, y1 + 0.028)
+        botao(x1 + W - 0.05, 0.46, y1 + 0.028)
     peg(x0, x1, y0, y1)
 
 
 # =====================================================================================================================
 # as geladeiras (de porta de vidro, acesas por dentro)
 # =====================================================================================================================
-def geladeira(x0, x1, y0, y1, h, corpo, frisos, prats, painel=None, base=0.1, conteudo='garrafas', puxador='#d8dcdc', seed=0):
+def geladeira(x0, x1, y0, y1, h, corpo, frisos, prats, painel=None, base=0.1, conteudo='garrafas', puxador='#d8dcdc', seed=0, aberto=False):
     """
     A geladeira de porta de vidro: a caixa (o fundo, os lados, o teto, a base), o forro claro aceso por dentro, as
     prateleiras de arame com as garrafas e latas, o vidro com o reflexo, o batente e o puxador. painel: (z0, cor, desenho)
-    a placa acesa em cima da porta.
+    a placa acesa em cima da porta. Aberta: a porta de vidro gira a 90° pela dobradiça da esquerda (o vidro e o puxador
+    ficam de lado, para fora) e o forro aceso fica branco-azulado, com as garrafas à mostra.
     """
     e = 0.05
     zt_vid = h - (0.26 if painel else 0.08)
@@ -292,8 +340,8 @@ def geladeira(x0, x1, y0, y1, h, corpo, frisos, prats, painel=None, base=0.1, co
 
     def forro(L, n, P):
         zz = P[:, 2]
-        out = np.tile(hx('#f4f2e2'), (len(P), 1))
-        out = np.where((zz > zt_vid - 0.12)[:, None], hx('#fffbe8'), out)
+        out = np.tile(hx('#e6f2fa' if aberto else '#f4f2e2'), (len(P), 1))
+        out = np.where((zz > zt_vid - 0.12)[:, None], hx('#f6fcff' if aberto else '#fffbe8'), out)
         if abs(n[0]) > 0.5:
             out = _tom(out, 0.9)
         return out
@@ -329,14 +377,32 @@ def geladeira(x0, x1, y0, y1, h, corpo, frisos, prats, painel=None, base=0.1, co
                     garrafa(xx, yy, zp, t, k=1.0)
         k += 1
     # o vidro (o reflexo e o tom) e o batente da porta com o puxador
-    CZ.vidros.append((a0, a1, b0, y1 + 0.01, base, zt_vid))
     FR = _pau(frisos, quina=1.2)
     _barra((x0, x1, y1 - 0.02, y1 + 0.01, zt_vid - 0.03, zt_vid), frisos, quina=1.2)
     _barra((x0, x1, y1 - 0.02, y1 + 0.01, base, base + 0.04), frisos, quina=1.2)
     _barra((x0, x0 + e, y1 - 0.02, y1 + 0.01, base, zt_vid), frisos, quina=False)
     _barra((x1 - e, x1, y1 - 0.02, y1 + 0.01, base, zt_vid), frisos, quina=False)
     zm = base + (zt_vid - base) * 0.55
-    _barra((x1 - e - 0.005, x1 - e + 0.02, y1 + 0.01, y1 + 0.035, zm - 0.18, zm + 0.18), puxador, '#ffffff', quina=False)
+    if not aberto:
+        CZ.vidros.append((a0, a1, b0, y1 + 0.01, base, zt_vid))
+        _barra((x1 - e - 0.005, x1 - e + 0.02, y1 + 0.01, y1 + 0.035, zm - 0.18, zm + 0.18), puxador, '#ffffff', quina=False)
+    else:
+        # a porta aberta a 90°: o quadro (frisos) e o vidro no plano x = x0, saindo para a frente (+y)
+        W = x1 - x0
+        xd0, xd1 = x0 - 0.035, x0 - 0.005
+        yd0, yd1 = y1 + 0.02, y1 + 0.02 + W
+        _barra((xd0, xd1, yd0, yd1, zt_vid - 0.04, zt_vid), frisos, quina=1.2)
+        _barra((xd0, xd1, yd0, yd1, base, base + 0.05), frisos, quina=1.2)
+        _barra((xd0, xd1, yd0, yd0 + 0.045, base, zt_vid), frisos, quina=False)
+        _barra((xd0, xd1, yd1 - 0.045, yd1, base, zt_vid), frisos, quina=False)
+        CZ.vidros.append((xd0 + 0.008, xd1 - 0.008, yd0 + 0.045, yd1 - 0.045, base + 0.05, zt_vid - 0.04))
+        # os brilhos do vidro (riscas em degraus, o resto fica vazado)
+        for k in range(3):
+            ya = yd0 + 0.07 + 0.11 * k
+            za = base + 0.12 + (zt_vid - base - 0.3) * (0.15 + 0.25 * k)
+            for j in range(4):
+                _barra((xd0 + 0.01, xd1 - 0.01, ya + 0.025 * j, ya + 0.025 * j + 0.03, za + 0.035 * j, za + 0.035 * j + 0.04), '#cfe6f0', '#f0fbff', quina=False)
+        _barra((xd0 - 0.022, xd0 + 0.005, yd1 - 0.07, yd1 - 0.03, zm - 0.18, zm + 0.18), puxador, '#ffffff', quina=False)
     if painel:
         z0p, corp, des = painel
         op = luz_obj()
@@ -351,14 +417,14 @@ def _hex(c):
     return '#%02x%02x%02x' % tuple(c)
 
 
-def beer_fridge():
+def beer_fridge(aberto=False):
     """
     A geladeira amarela (2 m), a do canto: o corpo amarelo, a porta de vidro com as garrafas acesas, o teclado
     numérico do lado direito (a porta da Sede está atrás dela).
     """
     x0, x1, y0, y1 = 0.06, 0.69, 0.06, 0.68
     h = 3.27 / UN
-    geladeira(x0, x1, y0, y1, h, '#d8a420', '#b88418', (0.62, 0.98, 1.34, 1.7), base=0.18, conteudo='misto', seed=251)
+    geladeira(x0, x1, y0, y1, h, '#d8a420', '#b88418', (0.62, 0.98, 1.34, 1.7), base=0.18, conteudo='misto', seed=251, aberto=aberto)
     # o teclado numérico na lateral direita (+x): a placa de metal, as 12 teclas, o visor verde
     xk = x1 + 0.004
     yc, zc = (y0 + y1) / 2 + 0.08, 1.12
@@ -380,7 +446,7 @@ def beer_fridge():
     C().caixa((x1, x1 + 0.012, yc - 0.12, yc + 0.11, zc - 0.17, zc + 0.16), {'dir': emissivo(tecl), '*': liso('#3a3e40')}, M, o)
 
 
-def fridge_drinks():
+def fridge_drinks(aberto=False):
     """O expositor de bebidas (2 m): o corpo vermelho, a placa acesa em cima (a onda branca, sem letra), a porta de vidro cheia."""
     x0, x1, y0, y1 = 0.06, 0.69, 0.06, 0.68
     h = 3.27 / UN
@@ -395,14 +461,14 @@ def fridge_drinks():
         out = np.where(((Z > h - 0.04 - PZ) | (Z < h - 0.22 + PZ))[:, None], hx('#a82420'), out)
         return out
     geladeira(x0, x1, y0, y1, h, '#b8261e', '#8e1c18', (0.52, 0.86, 1.2, 1.5), painel=(h - 0.22, '#d8342a', placa), base=0.14,
-              conteudo='latas', seed=252)
+              conteudo='latas', seed=252, aberto=aberto)
 
 
-def minibar():
+def minibar(aberto=False):
     """O frigobar de trás do balcão (0,90 m): o corpo preto, a porta de vidro com as long necks e as latas acesas, o tampo."""
     x0, x1, y0, y1 = 0.08, 0.67, 0.08, 0.62
     h = 1.47 / UN
-    geladeira(x0, x1, y0, y1, h - 0.03, '#2e2c2c', '#1e1c1c', (0.42,), base=0.1, conteudo='misto', puxador='#a8acb0', seed=253)
+    geladeira(x0, x1, y0, y1, h - 0.03, '#2e2c2c', '#1e1c1c', (0.42,), base=0.1, conteudo='misto', puxador='#a8acb0', seed=253, aberto=aberto)
     caixa((x0 - 0.005, x1 + 0.005, y0, y1 + 0.01, h - 0.03, h), {'cima': liso('#3a3838'), '*': _pau('#262424', quina=1.3, b=(0, 0, 0, 0, h - 0.03, h))})
 
 
@@ -1192,10 +1258,10 @@ ITENS = {
     'bar_counter': (2, 1, (0.0, 0.0), bar_counter, {}),
     'counter_wood': (2, 1, (0.0, 0.0), counter_wood, {}),
     'bar_shelf': (2, 1, (0.0, 0.0), bar_shelf, {}),
-    'bar_cabinet': (1, 1, (0.0, 0.0), bar_cabinet, {}),
-    'beer_fridge': (1, 1, (0.0, 0.0), beer_fridge, {}),
-    'fridge_drinks': (1, 1, (0.0, 0.0), fridge_drinks, {}),
-    'minibar': (1, 1, (0.0, 0.0), minibar, {}),
+    'bar_cabinet': (1, 1, (0.0, 0.0), bar_cabinet, {'1': lambda: bar_cabinet(True)}),
+    'beer_fridge': (1, 1, (0.0, 0.0), beer_fridge, {}),   # só serve à senha da passagem do bar: não abre (o Felipe, 14/10)
+    'fridge_drinks': (1, 1, (0.0, 0.0), fridge_drinks, {'1': lambda: fridge_drinks(True)}),
+    'minibar': (1, 1, (0.0, 0.0), minibar, {'1': lambda: minibar(True)}),
     'keg': (1, 1, (0.0, 0.0), keg, {}),
     'beer_crate': (1, 1, (0.0, 0.0), beer_crate, {}),
     'beer_glass': (1, 1, (0.0, 0.0), beer_glass, {}),

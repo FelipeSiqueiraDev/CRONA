@@ -220,7 +220,33 @@
       0.66,
       0.62,
       0.87
-    ]
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "crate_wood/giro-0-1.png",
+            "ax": 38,
+            "ay": 68
+          },
+          "2": {
+            "arquivo": "crate_wood/giro-2-1.png",
+            "ax": 38,
+            "ay": 85
+          },
+          "4": {
+            "arquivo": "crate_wood/giro-4-1.png",
+            "ax": 37,
+            "ay": 85
+          },
+          "6": {
+            "arquivo": "crate_wood/giro-6-1.png",
+            "ax": 37,
+            "ay": 68
+          }
+        }
+      }
+    }
   },
   "hospital_bed": {
     "escala": 1,
@@ -849,7 +875,33 @@
         122
       ]
     },
-    "encosta": true
+    "encosta": true,
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "fridge_drinks/giro-0-1.png",
+            "ax": 37,
+            "ay": 134
+          },
+          "2": {
+            "arquivo": "fridge_drinks/giro-2-1.png",
+            "ax": 37,
+            "ay": 134
+          },
+          "4": {
+            "arquivo": "fridge_drinks/giro-4-1.png",
+            "ax": 56,
+            "ay": 134
+          },
+          "6": {
+            "arquivo": "fridge_drinks/giro-6-1.png",
+            "ax": 37,
+            "ay": 135
+          }
+        }
+      }
+    }
   },
   "minibar": {
     "escala": 1,
@@ -892,7 +944,33 @@
         116
       ]
     },
-    "encosta": true
+    "encosta": true,
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "minibar/giro-0-1.png",
+            "ax": 35,
+            "ay": 75
+          },
+          "2": {
+            "arquivo": "minibar/giro-2-1.png",
+            "ax": 35,
+            "ay": 76
+          },
+          "4": {
+            "arquivo": "minibar/giro-4-1.png",
+            "ax": 51,
+            "ay": 76
+          },
+          "6": {
+            "arquivo": "minibar/giro-6-1.png",
+            "ax": 33,
+            "ay": 83
+          }
+        }
+      }
+    }
   },
   "beer_crate": {
     "escala": 1,
@@ -1019,7 +1097,33 @@
         111
       ]
     },
-    "encosta": true
+    "encosta": true,
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "sideboard/giro-0-1.png",
+            "ax": 69,
+            "ay": 93
+          },
+          "2": {
+            "arquivo": "sideboard/giro-2-1.png",
+            "ax": 37,
+            "ay": 93
+          },
+          "4": {
+            "arquivo": "sideboard/giro-4-1.png",
+            "ax": 75,
+            "ay": 98
+          },
+          "6": {
+            "arquivo": "sideboard/giro-6-1.png",
+            "ax": 45,
+            "ay": 94
+          }
+        }
+      }
+    }
   },
   "bar_cabinet": {
     "escala": 1,
@@ -1062,7 +1166,33 @@
         106
       ]
     },
-    "encosta": true
+    "encosta": true,
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "bar_cabinet/giro-0-1.png",
+            "ax": 36,
+            "ay": 80
+          },
+          "2": {
+            "arquivo": "bar_cabinet/giro-2-1.png",
+            "ax": 36,
+            "ay": 81
+          },
+          "4": {
+            "arquivo": "bar_cabinet/giro-4-1.png",
+            "ax": 38,
+            "ay": 81
+          },
+          "6": {
+            "arquivo": "bar_cabinet/giro-6-1.png",
+            "ax": 38,
+            "ay": 80
+          }
+        }
+      }
+    }
   },
   "armchair_red": {
     "escala": 1,
@@ -1561,7 +1691,33 @@
         102
       ]
     },
-    "encosta": true
+    "encosta": true,
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "medical_cabinet/giro-0-1.png",
+            "ax": 70,
+            "ay": 154
+          },
+          "2": {
+            "arquivo": "medical_cabinet/giro-2-1.png",
+            "ax": 37,
+            "ay": 145
+          },
+          "4": {
+            "arquivo": "medical_cabinet/giro-4-1.png",
+            "ax": 87,
+            "ay": 145
+          },
+          "6": {
+            "arquivo": "medical_cabinet/giro-6-1.png",
+            "ax": 55,
+            "ay": 154
+          }
+        }
+      }
+    }
   },
   "iv_stand": {
     "escala": 1,
@@ -4384,6 +4540,32 @@
         106,
         89
       ]
+    },
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "ammo_box/giro-0-1.png",
+            "ax": 34,
+            "ay": 58
+          },
+          "2": {
+            "arquivo": "ammo_box/giro-2-1.png",
+            "ax": 34,
+            "ay": 71
+          },
+          "4": {
+            "arquivo": "ammo_box/giro-4-1.png",
+            "ax": 33,
+            "ay": 70
+          },
+          "6": {
+            "arquivo": "ammo_box/giro-6-1.png",
+            "ax": 34,
+            "ay": 58
+          }
+        }
+      }
     }
   },
   "stool_metal": {
@@ -4553,7 +4735,33 @@
         102
       ]
     },
-    "encosta": true
+    "encosta": true,
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "locker_row/giro-0-1.png",
+            "ax": 69,
+            "ay": 151
+          },
+          "2": {
+            "arquivo": "locker_row/giro-2-1.png",
+            "ax": 37,
+            "ay": 145
+          },
+          "4": {
+            "arquivo": "locker_row/giro-4-1.png",
+            "ax": 78,
+            "ay": 145
+          },
+          "6": {
+            "arquivo": "locker_row/giro-6-1.png",
+            "ax": 46,
+            "ay": 151
+          }
+        }
+      }
+    }
   },
   "janitor_cart": {
     "escala": 1,
@@ -7182,6 +7390,32 @@
         256,
         106
       ]
+    },
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "armario_cozinha/giro-0-1.png",
+            "ax": 74,
+            "ay": 140
+          },
+          "2": {
+            "arquivo": "armario_cozinha/giro-2-1.png",
+            "ax": 42,
+            "ay": 148
+          },
+          "4": {
+            "arquivo": "armario_cozinha/giro-4-1.png",
+            "ax": 87,
+            "ay": 148
+          },
+          "6": {
+            "arquivo": "armario_cozinha/giro-6-1.png",
+            "ax": 58,
+            "ay": 153
+          }
+        }
+      }
     }
   },
   "banheira": {
@@ -7428,6 +7662,32 @@
         255,
         106
       ]
+    },
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "comoda/giro-0-1.png",
+            "ax": 69,
+            "ay": 92
+          },
+          "2": {
+            "arquivo": "comoda/giro-2-1.png",
+            "ax": 37,
+            "ay": 93
+          },
+          "4": {
+            "arquivo": "comoda/giro-4-1.png",
+            "ax": 67,
+            "ay": 93
+          },
+          "6": {
+            "arquivo": "comoda/giro-6-1.png",
+            "ax": 34,
+            "ay": 92
+          }
+        }
+      }
     }
   },
   "nightstand": {
@@ -7470,6 +7730,32 @@
         106,
         98
       ]
+    },
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "nightstand/giro-0-1.png",
+            "ax": 35,
+            "ay": 57
+          },
+          "2": {
+            "arquivo": "nightstand/giro-2-1.png",
+            "ax": 36,
+            "ay": 60
+          },
+          "4": {
+            "arquivo": "nightstand/giro-4-1.png",
+            "ax": 48,
+            "ay": 60
+          },
+          "6": {
+            "arquivo": "nightstand/giro-6-1.png",
+            "ax": 29,
+            "ay": 61
+          }
+        }
+      }
     }
   },
   "iwall_low": {
@@ -7664,6 +7950,32 @@
         256,
         115
       ]
+    },
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "guarda_roupa/giro-0-1.png",
+            "ax": 70,
+            "ay": 160
+          },
+          "2": {
+            "arquivo": "guarda_roupa/giro-2-1.png",
+            "ax": 39,
+            "ay": 152
+          },
+          "4": {
+            "arquivo": "guarda_roupa/giro-4-1.png",
+            "ax": 94,
+            "ay": 152
+          },
+          "6": {
+            "arquivo": "guarda_roupa/giro-6-1.png",
+            "ax": 65,
+            "ay": 159
+          }
+        }
+      }
     }
   },
   "mesa_cozinha": {
@@ -9550,6 +9862,32 @@
         256,
         106
       ]
+    },
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "armario_cozinha!vazio/giro-0-1.png",
+            "ax": 74,
+            "ay": 140
+          },
+          "2": {
+            "arquivo": "armario_cozinha!vazio/giro-2-1.png",
+            "ax": 42,
+            "ay": 148
+          },
+          "4": {
+            "arquivo": "armario_cozinha!vazio/giro-4-1.png",
+            "ax": 87,
+            "ay": 148
+          },
+          "6": {
+            "arquivo": "armario_cozinha!vazio/giro-6-1.png",
+            "ax": 58,
+            "ay": 153
+          }
+        }
+      }
     }
   },
   "comoda!vazio": {
@@ -9592,6 +9930,32 @@
         256,
         106
       ]
+    },
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "comoda!vazio/giro-0-1.png",
+            "ax": 69,
+            "ay": 92
+          },
+          "2": {
+            "arquivo": "comoda!vazio/giro-2-1.png",
+            "ax": 37,
+            "ay": 93
+          },
+          "4": {
+            "arquivo": "comoda!vazio/giro-4-1.png",
+            "ax": 67,
+            "ay": 93
+          },
+          "6": {
+            "arquivo": "comoda!vazio/giro-6-1.png",
+            "ax": 34,
+            "ay": 92
+          }
+        }
+      }
     }
   },
   "nightstand!vazio": {
@@ -9634,6 +9998,32 @@
         106,
         98
       ]
+    },
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "nightstand!vazio/giro-0-1.png",
+            "ax": 35,
+            "ay": 57
+          },
+          "2": {
+            "arquivo": "nightstand!vazio/giro-2-1.png",
+            "ax": 36,
+            "ay": 60
+          },
+          "4": {
+            "arquivo": "nightstand!vazio/giro-4-1.png",
+            "ax": 48,
+            "ay": 60
+          },
+          "6": {
+            "arquivo": "nightstand!vazio/giro-6-1.png",
+            "ax": 29,
+            "ay": 61
+          }
+        }
+      }
     }
   },
   "mesa_cozinha!vazio": {
@@ -11257,7 +11647,33 @@
       1.525,
       2.275,
       2.1
-    ]
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "armario_cozinha_l/giro-0-1.png",
+            "ax": 74,
+            "ay": 156
+          },
+          "2": {
+            "arquivo": "armario_cozinha_l/giro-2-1.png",
+            "ax": 106,
+            "ay": 180
+          },
+          "4": {
+            "arquivo": "armario_cozinha_l/giro-4-1.png",
+            "ax": 74,
+            "ay": 184
+          },
+          "6": {
+            "arquivo": "armario_cozinha_l/giro-6-1.png",
+            "ax": 66,
+            "ay": 180
+          }
+        }
+      }
+    }
   },
   "janela_cozinha": {
     "escala": 1,
@@ -13938,7 +14354,33 @@
       0.634,
       0.495,
       0.608
-    ]
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "0": {
+            "arquivo": "bau_madeira/giro-0-1.png",
+            "ax": 32,
+            "ay": 65
+          },
+          "2": {
+            "arquivo": "bau_madeira/giro-2-1.png",
+            "ax": 32,
+            "ay": 77
+          },
+          "4": {
+            "arquivo": "bau_madeira/giro-4-1.png",
+            "ax": 32,
+            "ay": 77
+          },
+          "6": {
+            "arquivo": "bau_madeira/giro-6-1.png",
+            "ax": 32,
+            "ay": 65
+          }
+        }
+      }
+    }
   },
   "escotilha": {
     "escala": 1,

@@ -1,8 +1,15 @@
-/* Teclado de senha (a geladeira amarela), grande no meio do tabuleiro: o tabuleiro desfocado
-   atrás, a chapa amarela esmaltada com o friso cromado, o visor verde e as teclas de borracha.
-   A arte de /arte/interface/teclado-geladeira/ entra por cima (classes arte-*). */
+/* Teclado de senha (a geladeira amarela), grande no meio do tabuleiro, em pixel art por código (14/10, a referência
+   do Felipe): o corpo cinza-lilás com o chanfro de luz em cima e de sombra embaixo, o contorno escuro grosso, o visor
+   escuro, as teclas brancas de numeral preto que afundam ao apertar e os LEDs quadrados. Tudo com sombras duras
+   (sem desfoque) para ler como pixel; nada de arte pintada por cima. */
 
 .tsg {
+  --tsg-corpo: #8587a6;
+  --tsg-luz: #aaacc9;
+  --tsg-sombra: #5d5f7b;
+  --tsg-linha: #23253b;
+  --tsg-tecla: #f3f3f8;
+  --tsg-tecla-sombra: #c1c3d8;
   position: absolute;
   inset: 0;
   z-index: 40;
@@ -17,58 +24,43 @@
   display: none;
 }
 
-/* ---------- a chapa ---------- */
+/* ---------- o corpo ---------- */
 .tsg-painel {
   position: relative;
-  width: 36rem;
-  padding: 2.8rem 2.8rem 2.8rem;
-  border-radius: 2.4rem;
-  background-color: #e0a923;
-  background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.2  0 0 0 0 0.02  0 0 0 0.35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
-    radial-gradient(ellipse at 18% 10%, rgba(255, 244, 200, 0.55), transparent 42%),
-    radial-gradient(ellipse at 90% 100%, rgba(110, 58, 0, 0.35), transparent 55%),
-    linear-gradient(170deg, #f1c447, #d79d16 55%, #b98410);
+  width: 31rem;
+  padding: 2.6rem 2.6rem 3.4rem;
+  border-radius: 0.9rem;
+  background: var(--tsg-corpo);
   box-shadow:
-    inset 0 0 0 0.42rem #cdd2d6,
-    inset 0 0 0 0.6rem #6b7075,
-    inset 0 0.25rem 0.5rem 0.4rem rgba(255, 255, 255, 0.28),
-    inset 0 -0.6rem 1.4rem rgba(90, 44, 0, 0.35),
-    0 0 0 0.12rem #241f18,
-    0 2.6rem 5rem rgba(0, 0, 0, 0.75),
-    0 0.6rem 1.2rem rgba(0, 0, 0, 0.5);
+    inset 0.4rem 0.4rem 0 var(--tsg-luz),
+    inset -0.4rem -0.4rem 0 var(--tsg-sombra),
+    0 0 0 0.4rem var(--tsg-linha),
+    0 1rem 0 0.4rem var(--tsg-linha),
+    0 3rem 5rem rgba(0, 0, 0, 0.7);
+  image-rendering: pixelated;
 }
-/* ferrugem nas bordas e arranhões finos */
+/* as frestas de baixo, como na referência */
 .tsg-painel::before {
   content: '';
   position: absolute;
-  inset: 0.6rem;
-  border-radius: 1.9rem;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse at 2% 60%, rgba(120, 52, 10, 0.35), transparent 14%),
-    radial-gradient(ellipse at 98% 22%, rgba(120, 52, 10, 0.3), transparent 12%),
-    radial-gradient(ellipse at 60% 99%, rgba(120, 52, 10, 0.3), transparent 18%),
-    repeating-linear-gradient(118deg, transparent 0 2.6rem, rgba(255, 245, 210, 0.08) 2.6rem 2.66rem, transparent 2.66rem 5.4rem);
+  left: 50%;
+  bottom: 1rem;
+  width: 8.8rem;
+  height: 0.8rem;
+  transform: translateX(-50%);
+  background: repeating-linear-gradient(90deg, var(--tsg-sombra) 0 0.4rem, transparent 0.4rem 1.1rem);
+  box-shadow: 0 0.2rem 0 var(--tsg-luz);
 }
+/* os parafusos: quadradinhos com luz no canto */
 .tsg-parafuso {
   position: absolute;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #f4f4f2, #a3a8ad 45%, #4a4f55 85%);
-  box-shadow: 0 0.12rem 0.2rem rgba(0, 0, 0, 0.55);
-}
-.tsg-parafuso::after {
-  content: '';
-  position: absolute;
-  left: 0.2rem;
-  right: 0.2rem;
-  top: 50%;
-  height: 0.18rem;
-  margin-top: -0.09rem;
-  background: #3a3e42;
-  transform: rotate(35deg);
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 0.2rem;
+  background: var(--tsg-sombra);
+  box-shadow:
+    inset 0.25rem 0.25rem 0 #c7c9df,
+    0 0 0 0.25rem var(--tsg-linha);
 }
 .tsg-parafuso.a {
   left: 1.3rem;
@@ -92,27 +84,33 @@
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  margin: -0.6rem 1.2rem 0.9rem 0;
+  margin: -0.4rem 0.4rem 1.1rem 0;
 }
 .tsg-led {
   width: 1.3rem;
   height: 1.3rem;
-  border-radius: 50%;
-  box-shadow: inset 0 0.1rem 0.3rem rgba(0, 0, 0, 0.7), 0 0.08rem 0 rgba(255, 255, 255, 0.4);
+  border-radius: 0.2rem;
+  box-shadow: 0 0 0 0.25rem var(--tsg-linha);
 }
 .tsg-led.vermelho {
-  background: radial-gradient(circle at 40% 35%, #8a3a33, #3a1210);
+  background: #5a2824;
 }
 .tsg-led.verde {
-  background: radial-gradient(circle at 40% 35%, #3f7a4a, #10291a);
+  background: #1f4a2c;
 }
 .tsg-led.vermelho.aceso {
-  background: radial-gradient(circle at 40% 35%, #ffb4a8, #f2412e 45%, #a8180e);
-  box-shadow: 0 0 0.9rem 0.25rem rgba(255, 60, 40, 0.65), inset 0 0.1rem 0.2rem rgba(255, 255, 255, 0.5);
+  background: #ff5a48;
+  box-shadow:
+    0 0 0 0.25rem var(--tsg-linha),
+    inset 0.25rem 0.25rem 0 #ffb0a4,
+    0 0 1.1rem 0.3rem rgba(255, 70, 50, 0.6);
 }
 .tsg-led.verde.aceso {
-  background: radial-gradient(circle at 40% 35%, #d8ffd0, #4dff7c 45%, #14a33a);
-  box-shadow: 0 0 1.1rem 0.35rem rgba(80, 255, 130, 0.7), inset 0 0.1rem 0.2rem rgba(255, 255, 255, 0.6);
+  background: #4dff7c;
+  box-shadow:
+    0 0 0 0.25rem var(--tsg-linha),
+    inset 0.25rem 0.25rem 0 #c6ffd2,
+    0 0 1.1rem 0.3rem rgba(80, 255, 130, 0.65);
 }
 .tsg-led.pisca {
   animation: tsg-pisca 0.22s steps(2) 4;
@@ -130,201 +128,168 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 10rem;
-  border-radius: 1rem;
+  height: 9.4rem;
+  border-radius: 0.6rem;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 28%, #1a3d2d, #08160f 72%);
+  background: #14161f;
   box-shadow:
-    inset 0 0.45rem 1.3rem rgba(0, 0, 0, 0.9),
-    inset 0 0 0 0.32rem #1b1d1e,
-    0 0.16rem 0 rgba(255, 245, 210, 0.45),
-    0 -0.1rem 0 rgba(80, 40, 0, 0.4);
+    inset 0.4rem 0.4rem 0 #080910,
+    inset -0.3rem -0.3rem 0 #2a2d44,
+    0 0 0 0.35rem var(--tsg-linha),
+    0 0.3rem 0 0.35rem var(--tsg-linha),
+    0 0.6rem 0 0.35rem var(--tsg-luz);
 }
-/* linhas de tela velha e o reflexo do vidro */
+/* o reflexo do vidro: uma faixa clara, dura, na diagonal */
 .tsg-visor::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.09), transparent 38%),
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 0.1rem, transparent 0.1rem 0.32rem);
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0 28%, transparent 28% 34%, rgba(255, 255, 255, 0.05) 34% 40%, transparent 40%);
 }
 .tsg-casas {
   display: flex;
-  gap: 1.1rem;
+  gap: 0.9rem;
 }
 .tsg-casa {
   display: grid;
   place-items: center;
-  width: 4.6rem;
-  height: 5.6rem;
-  border-bottom: 0.32rem solid rgba(120, 255, 175, 0.22);
-  font-family: 'Silkscreen', 'Courier Prime', monospace;
-  font-size: 4.4rem;
+  width: 4rem;
+  height: 5rem;
+  border-bottom: 0.4rem solid rgba(125, 255, 178, 0.2);
+  font-family: 'Silkscreen', 'Pixelify Sans', monospace;
+  font-size: 4rem;
   line-height: 1;
-  color: #93ffbd;
-  text-shadow: 0 0 0.9rem rgba(80, 255, 150, 0.7);
+  color: #7dffb2;
+  text-shadow: 0.2rem 0.2rem 0 rgba(0, 60, 30, 0.7);
 }
 .tsg-casa.cheia {
-  border-bottom-color: rgba(120, 255, 175, 0.55);
+  border-bottom-color: rgba(125, 255, 178, 0.6);
 }
 .tsg-aviso {
-  margin-top: 1rem;
-  font-family: 'Silkscreen', 'Courier Prime', monospace;
-  font-size: 1.25rem;
+  margin-top: 0.9rem;
+  font-family: 'Silkscreen', 'Pixelify Sans', monospace;
+  font-size: 1.15rem;
   letter-spacing: 0.14em;
-  color: rgba(147, 255, 189, 0.72);
-  text-shadow: 0 0 0.6rem rgba(80, 255, 150, 0.45);
+  color: rgba(125, 255, 178, 0.75);
 }
 .tsg[data-estado='errada'] .tsg-casa,
 .tsg[data-estado='errada'] .tsg-aviso {
   color: #ff7a66;
-  border-bottom-color: rgba(255, 110, 90, 0.5);
-  text-shadow: 0 0 0.9rem rgba(255, 70, 50, 0.75);
+  border-bottom-color: rgba(255, 110, 90, 0.55);
+  text-shadow: 0.2rem 0.2rem 0 rgba(80, 10, 0, 0.7);
 }
 .tsg[data-estado='certa'] .tsg-casa,
 .tsg[data-estado='certa'] .tsg-aviso {
   color: #d6ffe4;
-  text-shadow: 0 0 1.2rem rgba(80, 255, 150, 0.95);
 }
 .tsg[data-estado='certa'] .tsg-visor {
-  background: radial-gradient(ellipse at 50% 30%, #2d6a4b, #0b2417 72%);
+  background: #123522;
 }
 
 /* ---------- teclas ---------- */
 .tsg-grade {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.1rem;
-  margin-top: 1.7rem;
-  padding: 1.4rem;
-  border-radius: 1.3rem;
-  background: linear-gradient(#2e3133, #1b1d1f);
-  box-shadow: inset 0 0.3rem 0.9rem rgba(0, 0, 0, 0.75), 0 0.14rem 0 rgba(255, 245, 210, 0.4);
+  gap: 1.3rem 1.1rem;
+  margin-top: 2.2rem;
 }
 .tsg-tecla {
   position: relative;
   display: grid;
   place-items: center;
-  height: 5.6rem;
+  height: 5.2rem;
   padding: 0;
   border: 0;
-  border-radius: 0.9rem;
-  background: linear-gradient(#4b4f53, #2d3033 62%, #232628);
+  border-radius: 0.8rem;
+  background: var(--tsg-tecla);
   box-shadow:
-    0 0.5rem 0 #0d0e0f,
-    0 0.75rem 0.8rem rgba(0, 0, 0, 0.5),
-    inset 0 0.15rem 0 rgba(255, 255, 255, 0.18);
-  color: #ede7d8;
-  font-family: 'Chakra Petch', 'Courier Prime', sans-serif;
-  font-size: 2.8rem;
+    inset 0.3rem 0.3rem 0 #fff,
+    inset -0.3rem -0.4rem 0 var(--tsg-tecla-sombra),
+    0 0 0 0.3rem var(--tsg-linha),
+    0 0.55rem 0 0.3rem var(--tsg-linha);
+  color: #1b1c2c;
+  font-family: 'Pixel Numeros', 'Silkscreen', 'Pixelify Sans', monospace;
+  font-size: 3.2rem;
   font-weight: 700;
+  line-height: 1;
   cursor: pointer;
   transition:
-    transform 70ms,
-    box-shadow 70ms,
+    transform 60ms steps(2),
+    box-shadow 60ms steps(2),
     filter 120ms;
   -webkit-text-stroke: 0;
 }
 .tsg-tecla span {
-  text-shadow: 0 0.12rem 0 rgba(0, 0, 0, 0.6);
+  text-shadow: 0 0.2rem 0 rgba(255, 255, 255, 0.85);
 }
 .tsg-tecla:hover {
-  filter: brightness(1.14);
+  filter: brightness(1.06);
 }
 .tsg-tecla:active,
 .tsg-tecla.apertada {
-  transform: translateY(0.42rem);
+  transform: translateY(0.5rem);
   box-shadow:
-    0 0.08rem 0 #0d0e0f,
-    0 0.2rem 0.3rem rgba(0, 0, 0, 0.5),
-    inset 0 0.2rem 0.4rem rgba(0, 0, 0, 0.5);
+    inset 0.3rem 0.3rem 0 #fff,
+    inset -0.3rem -0.4rem 0 var(--tsg-tecla-sombra),
+    0 0 0 0.3rem var(--tsg-linha),
+    0 0.05rem 0 0.3rem var(--tsg-linha);
 }
+/* limpar e apagar: teclas de função, num cinza mais escuro */
 .tsg-tecla.fn {
-  color: #e2bd5c;
-  font-size: 2.3rem;
+  background: #d7d8e6;
+  color: #4a4c6e;
+  font-size: 2.6rem;
 }
 .tsg-tecla:focus-visible {
-  outline: 0.25rem solid #fff1b8;
-  outline-offset: 0.2rem;
+  outline: 0.3rem solid #fff1b8;
+  outline-offset: 0.5rem;
 }
 .tsg-largas {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.2rem;
-  margin-top: 1.5rem;
+  gap: 1.1rem;
+  margin-top: 1.9rem;
 }
 .tsg-tecla.larga {
-  height: 5rem;
-  font-size: 1.45rem;
-  letter-spacing: 0.14em;
+  height: 4.4rem;
+  font-family: 'Silkscreen', 'Pixelify Sans', monospace;
+  font-size: 1.35rem;
+  letter-spacing: 0.1em;
+  color: #fff;
+}
+.tsg-tecla.larga span {
+  text-shadow: 0.15rem 0.15rem 0 rgba(0, 0, 0, 0.55);
 }
 .tsg-tecla.cancelar {
-  background: linear-gradient(#cf4434, #9a2419 62%, #85180f);
+  background: #d9594b;
   box-shadow:
-    0 0.5rem 0 #430a06,
-    0 0.75rem 0.8rem rgba(0, 0, 0, 0.5),
-    inset 0 0.15rem 0 rgba(255, 210, 200, 0.35);
+    inset 0.3rem 0.3rem 0 #ff9f90,
+    inset -0.3rem -0.4rem 0 #9a2f26,
+    0 0 0 0.3rem var(--tsg-linha),
+    0 0.55rem 0 0.3rem var(--tsg-linha);
 }
 .tsg-tecla.confirmar {
-  background: linear-gradient(#4aa95a, #2a7637 62%, #215f2b);
+  background: #4cb868;
   box-shadow:
-    0 0.5rem 0 #0d3315,
-    0 0.75rem 0.8rem rgba(0, 0, 0, 0.5),
-    inset 0 0.15rem 0 rgba(210, 255, 215, 0.35);
+    inset 0.3rem 0.3rem 0 #a4f3b6,
+    inset -0.3rem -0.4rem 0 #2a7a42,
+    0 0 0 0.3rem var(--tsg-linha),
+    0 0.55rem 0 0.3rem var(--tsg-linha);
 }
 .tsg-tecla.cancelar:active,
-.tsg-tecla.cancelar.apertada,
+.tsg-tecla.cancelar.apertada {
+  box-shadow:
+    inset 0.3rem 0.3rem 0 #ff9f90,
+    inset -0.3rem -0.4rem 0 #9a2f26,
+    0 0 0 0.3rem var(--tsg-linha),
+    0 0.05rem 0 0.3rem var(--tsg-linha);
+}
 .tsg-tecla.confirmar:active,
 .tsg-tecla.confirmar.apertada {
   box-shadow:
-    0 0.08rem 0 rgba(0, 0, 0, 0.6),
-    0 0.2rem 0.3rem rgba(0, 0, 0, 0.5),
-    inset 0 0.2rem 0.4rem rgba(0, 0, 0, 0.45);
-}
-
-/* ---------- a arte, quando chega ---------- */
-.tsg.arte-painel .tsg-painel {
-  background: var(--tsg-painel) center / 100% 100% no-repeat;
-  box-shadow: 0 2.6rem 5rem rgba(0, 0, 0, 0.75);
-}
-.tsg.arte-painel .tsg-painel::before,
-.tsg.arte-painel .tsg-parafuso {
-  display: none;
-}
-.tsg.arte-tecla .tsg-tecla:not(.larga) {
-  background: var(--tsg-tecla) center / 100% 100% no-repeat;
-  box-shadow: none;
-}
-.tsg.arte-tecla-ap .tsg-tecla:not(.larga):active,
-.tsg.arte-tecla-ap .tsg-tecla:not(.larga).apertada {
-  background-image: var(--tsg-tecla-ap);
-  transform: none;
-}
-.tsg.arte-cancelar .tsg-tecla.cancelar {
-  background: var(--tsg-cancelar) center / 100% 100% no-repeat;
-  box-shadow: none;
-}
-.tsg.arte-cancelar-ap .tsg-tecla.cancelar:active,
-.tsg.arte-cancelar-ap .tsg-tecla.cancelar.apertada {
-  background-image: var(--tsg-cancelar-ap);
-  transform: none;
-}
-.tsg.arte-confirmar .tsg-tecla.confirmar {
-  background: var(--tsg-confirmar) center / 100% 100% no-repeat;
-  box-shadow: none;
-}
-.tsg.arte-confirmar-ap .tsg-tecla.confirmar:active,
-.tsg.arte-confirmar-ap .tsg-tecla.confirmar.apertada {
-  background-image: var(--tsg-confirmar-ap);
-  transform: none;
-}
-.tsg.arte-led-verde .tsg-led.verde.aceso {
-  background: var(--tsg-led-verde) center / contain no-repeat;
-  box-shadow: none;
-}
-.tsg.arte-led-vermelho .tsg-led.vermelho.aceso {
-  background: var(--tsg-led-vermelho) center / contain no-repeat;
-  box-shadow: none;
+    inset 0.3rem 0.3rem 0 #a4f3b6,
+    inset -0.3rem -0.4rem 0 #2a7a42,
+    0 0 0 0.3rem var(--tsg-linha),
+    0 0.05rem 0 0.3rem var(--tsg-linha);
 }

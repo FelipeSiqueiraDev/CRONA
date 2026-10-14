@@ -950,9 +950,10 @@ def lareira(acesa=True):
                      lados=12, tampa_mat=liso('#b0b2ac'))
     o = novo()
     C().cilindro(1.86, 0.4, 0.018, 1.44, 1.56, _pau('#eadcbc', quina=False), M, o, lados=10, tampa_mat=liso('#f8f0dc'))
-    # a coifa (sobe até 2,0 m e some nos últimos 40 cm)
-    oc = cx((0.3, 1.95, 0.0, 0.46, 1.26, 2.0), {'*': cantaria('#867e72', 7, 12, seed=118), 'cima': liso('#867e72')})
-    CZ.fades.append((oc, 1.6, 0.4))
+    # a coifa: sobe inteira até 2,0 m e fecha numa cornija de pedra (o Felipe, 14/10: sumindo em transparência ela
+    # parecia um fantasma)
+    cx((0.3, 1.95, 0.0, 0.46, 1.26, 1.9), {'*': cantaria('#867e72', 7, 12, seed=118), 'cima': liso('#867e72')})
+    cx((0.24, 2.01, 0.0, 0.52, 1.9, 2.0), {'*': cantaria('#7a7368', 4, 18, seed=119), 'cima': liso('#8e867a')})
     # os cães de ferro e a lenha
     for xx in (cxf - 0.28, cxf + 0.28):
         cx((xx - 0.02, xx + 0.02, 0.18, 0.5, 0.05, 0.09), ferro('#2a2624', '#4a4440'))
@@ -1071,33 +1072,60 @@ def cama_palha():
     peg(x0, x1, y0, y1)
 
 
-def bau_madeira():
+def bau_madeira(aberto=False):
     """
     O baú de madeira (1 x 1, a tampa a 0,6 m): o corpo de tábuas deitadas com os pezinhos, a tampa reta e grossa,
     as duas cintas de ferro dando a volta (frente, tampa e costas), as cantoneiras, o espelho da fechadura com a
-    aldraba e as alças de argola nos lados.
+    aldraba e as alças de argola nos lados. Aberto: a tampa em pé atrás (as cintas na face de fora, o forro de lã
+    vermelha por dentro), o corpo vazado com o forro de lã, as moedas, um pano dobrado e uma adaga.
     """
     x0, x1, y0, y1 = 0.08, 0.67, 0.16, 0.6
     zb, zt = 0.42, 0.6
     for (a, b) in ((x0 + 0.02, y0 + 0.02), (x1 - 0.07, y0 + 0.02), (x0 + 0.02, y1 - 0.07), (x1 - 0.07, y1 - 0.07)):
         cx((a, a + 0.05, b, b + 0.05, 0.0, 0.04), {'*': liso('#3a2414'), 'cima': liso('#5a3a22')})
     TB = tab2(['#5e3c22', '#583820', '#643f24'], 0.127, CARV_TJ, eixo=0, seed=131, org=0.04)
-    cx((x0, x1, y0, y1, 0.04, zb), {'frente': TB, 'costas': TB, 'esq': TB, 'dir': TB, 'cima': liso('#3a2414')})
-    cx((x0 - 0.02, x1 + 0.02, y0 - 0.02, y1 + 0.025, zb, zt), {'cima': tab2(['#7a5232', '#74502f'], 0.11, CARV_TJ, eixo=0, seed=132, org=y0),
-                                                                  '*': mad2('#5e3c22', seed=133, passo=0.04)})
+    LA = manta('#8a2a22')
+    if not aberto:
+        cx((x0, x1, y0, y1, 0.04, zb), {'frente': TB, 'costas': TB, 'esq': TB, 'dir': TB, 'cima': liso('#3a2414')})
+        cx((x0 - 0.02, x1 + 0.02, y0 - 0.02, y1 + 0.025, zb, zt), {'cima': tab2(['#7a5232', '#74502f'], 0.11, CARV_TJ, eixo=0, seed=132, org=y0),
+                                                                      '*': mad2('#5e3c22', seed=133, passo=0.04)})
+    else:
+        e = 0.035
+        TC = {'cima': tab2(['#6a4428', '#664226'], 0.11, CARV_TJ, eixo=0, seed=134, org=y0)}
+        cx((x0, x1, y0, y0 + e, 0.04, zb), {'*': TB, 'frente': LA, 'cima': TC['cima']})
+        cx((x0, x1, y1 - e, y1, 0.04, zb), {'*': TB, 'costas': LA, 'cima': TC['cima']})
+        cx((x0, x0 + e, y0, y1, 0.04, zb), {'*': TB, 'dir': LA, 'cima': TC['cima']})
+        cx((x1 - e, x1, y0, y1, 0.04, zb), {'*': TB, 'esq': LA, 'cima': TC['cima']})
+        cx((x0 + e, x1 - e, y0 + e, y1 - e, 0.04, zb - 0.055), {'cima': LA, '*': LA})
+        # o monte de lã fofa por baixo do conteúdo, o pano dobrado, as moedas e a adaga
+        _p1_malha((x0 + e + 0.005, x1 - e - 0.005, y0 + e + 0.005, y1 - e - 0.005, zb - 0.07, zb - 0.03), (0.04, 0.04, 0.02, 0.03), LA, seg=2)
+        _p1_malha((x0 + 0.07, x0 + 0.25, y0 + 0.25, y0 + 0.4, zb - 0.045, zb + 0.01), (0.03, 0.03, 0.02, 0.025),
+                  emissivo(lambda L, n, P: np.tile(hx('#d8cdb0'), (len(P), 1))), seg=2)
+        OURO, OURO_T = liso('#d8a826'), liso('#f6dc6a')
+        for (mx, my, n) in ((0.5, 0.25, 4), (0.58, 0.33, 3), (0.5, 0.47, 2), (0.36, 0.52, 2), (0.57, 0.42, 1)):
+            for k in range(n):
+                C().cilindro(mx, my, 0.032, zb - 0.045 + 0.011 * k, zb - 0.034 + 0.011 * k, OURO, M, novo(), lados=8, tampa_mat=OURO_T)
+        # a adaga deitada: a lâmina clara, a guarda, o cabo de couro e o pomo
+        cx((x0 + 0.1, x0 + 0.3, y0 + 0.18, y0 + 0.21, zb - 0.045, zb - 0.03), {'cima': liso('#d4dadc'), '*': liso('#8a9094')})
+        cx((x0 + 0.3, x0 + 0.325, y0 + 0.165, y0 + 0.225, zb - 0.045, zb - 0.025), liso('#a8823a'))
+        cx((x0 + 0.325, x0 + 0.4, y0 + 0.18, y0 + 0.21, zb - 0.045, zb - 0.028), {'cima': liso('#5a3420'), '*': liso('#3a2014')})
+        cx((x0 + 0.4, x0 + 0.42, y0 + 0.17, y0 + 0.22, zb - 0.045, zb - 0.024), liso('#c8a040'))
     FE = ferro('#2e2a28', '#5a524c')
     for xa in (x0 + 0.08, x1 - 0.12):
         cx((xa, xa + 0.04, y1, y1 + 0.012, 0.04, zb), FE)
-        cx((xa, xa + 0.04, y1 + 0.015, y1 + 0.027, zb, zt), FE)
-        cx((xa, xa + 0.04, y0 - 0.025, y1 + 0.027, zt, zt + 0.008), FE)
-        cx((xa, xa + 0.04, y0 - 0.024, y0 - 0.012, zb, zt), FE)
+        if not aberto:
+            cx((xa, xa + 0.04, y1 + 0.015, y1 + 0.027, zb, zt), FE)
+        if not aberto:
+            cx((xa, xa + 0.04, y0 - 0.025, y1 + 0.027, zt, zt + 0.008), FE)
+            cx((xa, xa + 0.04, y0 - 0.024, y0 - 0.012, zb, zt), FE)
         cx((xa, xa + 0.04, y0 - 0.012, y0, 0.04, zb), FE)
     # as cantoneiras em pé nas quatro quinas (a chapa dobrada em L)
     for (xa, ya, sx, sy) in ((x0, y1, 1, -1), (x1, y1, -1, -1), (x0, y0, 1, 1), (x1, y0, -1, 1)):
         e = 0.012
         cx((min(xa, xa + sx * 0.06), max(xa, xa + sx * 0.06), min(ya, ya - sy * e), max(ya, ya - sy * e), 0.04, zb), FE)
         cx((min(xa, xa - sx * e), max(xa, xa - sx * e), min(ya, ya + sy * 0.06), max(ya, ya + sy * 0.06), 0.04, zb), FE)
-    cx((x0 - 0.004, x1 + 0.004, y0 - 0.004, y1 + 0.004, zb - 0.012, zb), liso('#1e140c'), o=novo(contorno=False))
+    if not aberto:
+        cx((x0 - 0.004, x1 + 0.004, y0 - 0.004, y1 + 0.004, zb - 0.012, zb), liso('#1e140c'), o=novo(contorno=False))
     # a fechadura: o espelho com o buraco e a aldraba descendo da tampa
     xm = (x0 + x1) / 2
 
@@ -1109,7 +1137,19 @@ def bau_madeira():
             out = np.where((P[:, 2] > zb - 0.015 - PZ)[:, None], hx('#d8b060'), out)
         return out
     cx((xm - 0.05, xm + 0.05, y1, y1 + 0.014, zb - 0.12, zb - 0.015), {'*': emissivo(esp)})
-    cx((xm - 0.018, xm + 0.018, y1 + 0.015, y1 + 0.03, zb - 0.06, zt - 0.02), FE)
+    if not aberto:
+        cx((xm - 0.018, xm + 0.018, y1 + 0.015, y1 + 0.03, zb - 0.06, zt - 0.02), FE)
+    else:
+        # a tampa em pé atrás: a face de fora (tábuas, cintas) para trás, o forro de lã para a frente; as dobradiças
+        yt1, yt0 = y0 - 0.02, y0 - 0.12
+        alt = (y1 - y0) + 0.045
+        cx((x0 - 0.02, x1 + 0.02, yt0, yt1, zb, zb + alt),
+           {'frente': LA, 'costas': mad2('#5e3c22', eixo=0, seed=135, passo=0.04), 'cima': liso('#4a2e1a'), '*': mad2('#5e3c22', seed=133, passo=0.04)})
+        for xa in (x0 + 0.08, x1 - 0.12):
+            cx((xa, xa + 0.04, yt0 - 0.012, yt0, zb, zb + alt), FE)
+            cx((xa, xa + 0.04, yt0 - 0.012, yt1 + 0.0, zb + alt - 0.008, zb + alt), FE)
+            cx((xa, xa + 0.04, yt1 - 0.04, yt1 + 0.012, zb - 0.02, zb + 0.07), FE)
+        cx((xm - 0.045, xm + 0.045, yt0 - 0.014, yt0, zb + alt - 0.14, zb + alt - 0.04), {'*': emissivo(esp)})
     # as alças de argola nos lados
     for (xs, s) in ((x0 - 0.01, -1), (x1 + 0.01, 1)):
         cx((min(xs, xs + s * 0.012), max(xs, xs + s * 0.012), 0.34, 0.42, 0.3, 0.32), FE)
@@ -1681,7 +1721,7 @@ ITENS = {
     'barril_madeira': (1, 1, (0.0, 0.0), barril_madeira, {}),
     'lareira': (3, 1, (0.0, 0.0), lambda: lareira(True), {'1': lambda: lareira(False)}),
     'cama_palha': (2, 3, (0.0, 0.0), cama_palha, {}),
-    'bau_madeira': (1, 1, (0.0, 0.0), bau_madeira, {}),
+    'bau_madeira': (1, 1, (0.0, 0.0), bau_madeira, {'1': lambda: bau_madeira(True)}),
     'escotilha': (1, 1, (0.0, 0.0), escotilha(0), {'1': escotilha(1), '2': escotilha(2)}),
     'escada_espiral': (2, 2, (0.0, 0.0), escada_espiral, {}),
 }

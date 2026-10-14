@@ -884,10 +884,50 @@ def med_tray():
     peg(x0, x1, y0, y1)
 
 
-def medical_cabinet():
+def _med_baixo(x0, x1, y0, y1, zp0, zp1):
+    """O que há no corpo de baixo do armário médico aberto: caixas de remédio e de gaze no piso, rolos de atadura na prateleira."""
+    # no piso: as caixas de papelão e os galões de soro
+    for i, (a, b, alt, c) in enumerate(((0.03, 0.27, 0.2, '#b8946a'), (0.3, 0.52, 0.28, '#a8845a'), (0.58, 0.8, 0.18, '#c4a478'))):
+        caixa((x0 + a, x0 + b, y0 + 0.05, y0 + 0.3, zp0, zp0 + alt),
+              chapa(c, riscas=None, paineis=[('f', '#e6dcc0', x0 + a + 0.03, x0 + b - 0.03, zp0 + alt * 0.4, zp0 + alt * 0.4 + 0.05)]))
+    for xx in (x0 + 0.95, x0 + 1.06, x0 + 1.17):
+        poste(xx, y0 + 0.16, zp0, zp0 + 0.26, r=0.04, cor='#e8f0ee')
+        poste(xx, y0 + 0.16, zp0 + 0.26, zp0 + 0.3, r=0.015, cor='#3a6ab8')
+    # na prateleira: os rolos de atadura em pilha e as caixas de luva
+    for i in range(5):
+        for k in range(2):
+            o = novo()
+            C().cilindro(x0 + 0.06 + i * 0.1, y0 + 0.1 + k * 0.12, 0.045, zp1, zp1 + 0.1, vol(x0 + i * 0.1, y0, '#f0ece0'), M, o, lados=12,
+                         tampa_mat=liso('#d0ccbe'))
+    for i, c in enumerate(('#3a6ab8', '#3a8a5a')):
+        caixa((x0 + 0.7 + i * 0.22, x0 + 0.88 + i * 0.22, y0 + 0.06, y0 + 0.3, zp1, zp1 + 0.12),
+              chapa('#e6e2d8', riscas=None, paineis=[('f', c, x0 + 0.72 + i * 0.22, x0 + 0.86 + i * 0.22, zp1 + 0.04, zp1 + 0.09)]))
+
+
+def _med_portas(x0, x1, y1, meio, zm, zc, E, CORPO):
+    """As quatro folhas do armário médico abertas a 90° para fora (esquerda presa em x0, direita presa em x1)."""
+    W = meio - x0 - 0.01
+    FR = chapa(E, riscas='v', seed=77)
+    VID = '#b8d8d4'
+    for lado in (0, 1):
+        for (za, zb_, vidro) in ((0.11, zm - 0.03, False), (zm + 0.01, zc - 0.01, True)):
+            if lado == 0:
+                x_a, x_b, face, fl = x0 - 0.02, x0, 'dir', 'd'
+            else:
+                x_a, x_b, face, fl = x1, x1 + 0.02, 'esq', 'e'
+            if vidro:
+                pd = [(fl, VID, y1 + 0.06, y1 + W - 0.06, za + 0.06, zb_ - 0.06)]
+            else:
+                pd = [(fl, '#c4c0b0', y1 + 0.04, y1 + W - 0.04, za + 0.04, zb_ - 0.04)]
+            caixa((x_a, x_b, y1, y1 + W, za, zb_), {face: chapa(_hexs(_tom(hx(E), 0.85)), riscas='v', seed=78 + lado, paineis=pd), '*': CORPO})
+
+
+def medical_cabinet(aberto=False):
     """
     O armário de remédios (2 casas, 1,9 m): o rodapé recuado, o corpo de baixo com as duas portas de chapa, o de cima
     com as duas portas de vidro (os frascos, as caixas e os rolos de esparadrapo nas prateleiras), a cimalha e a cruz.
+    Aberto: as quatro folhas (duas de vidro, duas de chapa) abertas a 90° para fora, o corpo de baixo oco e escuro com
+    as caixas e os rolos de atadura, e os frascos de cima à vista.
     """
     x0, x1, y0, y1 = 0.04, 1.46, 0.07, 0.6
     zt = 3.1 / UN
@@ -895,23 +935,37 @@ def medical_cabinet():
     meio = (x0 + x1) / 2
     E = '#d2cebf'
     caixa((x0 + 0.04, x1 - 0.04, y0 + 0.03, y1 - 0.04, 0.0, 0.08), chapa('#3a3c3e', riscas=None))
+    e = 0.025
+    ESC = chapa('#6a685e', riscas='v', seed=75)           # o lado de dentro (escuro)
     pain = [('f', 'porta', x0 + 0.03, meio - 0.006, 0.11, zm - 0.03), ('f', 'porta', meio + 0.006, x1 - 0.03, 0.11, zm - 0.03),
             ('f', '#f2eee4', x0 + 0.08, x0 + 0.24, zm - 0.24, zm - 0.08), ('f', 'cruz:#c8302a', x0 + 0.08, x0 + 0.24, zm - 0.24, zm - 0.08)]
-    caixa((x0, x1, y0, y1, 0.08, zm), chapa(E, riscas='v', k=(1.03, 0.97), seed=71, gasto=0.08, paineis=pain))
-    for xx in (meio - 0.04, meio + 0.04 - PH * 1.2):
-        _barra((xx, xx + PH * 1.2, y1, y1 + 0.02, zm - 0.3, zm - 0.14), CROMO[0], CROMO[1], quina=False)
-    _barra((meio + 0.07, meio + 0.07 + 2 * PH, y1, y1 + 0.01, zm - 0.1, zm - 0.1 + 2 * PZ), '#3a3c3e', quina=False)
+    CORPO = chapa(E, riscas='v', k=(1.03, 0.97), seed=71, gasto=0.08, paineis=pain)
+    if not aberto:
+        caixa((x0, x1, y0, y1, 0.08, zm), CORPO)
+        for xx in (meio - 0.04, meio + 0.04 - PH * 1.2):
+            _barra((xx, xx + PH * 1.2, y1, y1 + 0.02, zm - 0.3, zm - 0.14), CROMO[0], CROMO[1], quina=False)
+        _barra((meio + 0.07, meio + 0.07 + 2 * PH, y1, y1 + 0.01, zm - 0.1, zm - 0.1 + 2 * PZ), '#3a3c3e', quina=False)
+    else:
+        # o corpo de baixo oco: o fundo, os lados, o piso e a prateleira do meio
+        caixa((x0, x1, y0, y0 + e, 0.08, zm), {'frente': ESC, '*': CORPO})
+        for xx in (x0, x1 - e):
+            caixa((xx, xx + e, y0, y1, 0.08, zm), {'dir': ESC, 'esq': ESC, '*': CORPO})
+        caixa((x0, x1, y0, y1, 0.08, 0.08 + e), {'cima': ESC, '*': CORPO})
+        zp = 0.08 + 0.4
+        caixa((x0 + e, x1 - e, y0 + e, y1 - 0.01, zp, zp + 0.018), {'cima': liso('#a8a698'), '*': ESC})
+        _med_baixo(x0 + e, x1 - e, y0 + e, y1 - 0.02, 0.08 + e, zp + 0.018)
     # a parte de cima: o fundo, os lados, o teto (finos: vê-se o lado de dentro pelo vidro)
     zc = zt - 0.08
     CAR = chapa(E, riscas='v', k=(1.03, 0.97), seed=72)
-    caixa((x0, x1, y0, y0 + 0.02, zm, zc), {'frente': liso('#e6e2d6'), '*': CAR})
+    DEN = ESC if aberto else None
+    caixa((x0, x1, y0, y0 + 0.02, zm, zc), {'frente': DEN or liso('#e6e2d6'), '*': CAR})
     for xx in (x0, x1 - 0.025):
-        caixa((xx, xx + 0.025, y0, y1, zm, zc), {'dir': liso('#dcd8cc'), 'esq': liso('#dcd8cc'), '*': CAR})
-    caixa((x0, x1, y0, y1, zm, zm + 0.02), {'cima': liso('#e8e4d8'), '*': CAR})
+        caixa((xx, xx + 0.025, y0, y1, zm, zc), {'dir': DEN or liso('#dcd8cc'), 'esq': DEN or liso('#dcd8cc'), '*': CAR})
+    caixa((x0, x1, y0, y1, zm, zm + 0.02), {'cima': liso('#a8a698') if aberto else liso('#e8e4d8'), '*': CAR})
     # as prateleiras de vidro e o que está nelas
     zs = [zm + 0.02, zm + 0.33, zm + 0.62]
     for zz in zs[1:]:
-        caixa((x0 + 0.025, x1 - 0.025, y0 + 0.02, y1 - 0.04, zz - 0.012, zz), {'cima': liso('#c8dcd8'), '*': liso('#9abcb6')})
+        caixa((x0 + 0.025, x1 - 0.025, y0 + 0.02, y1 - 0.04, zz - 0.012, zz), {'cima': liso('#8aa8a2') if aberto else liso('#c8dcd8'), '*': liso('#9abcb6')})
     k = 0
     for i, zz in enumerate(zs):
         xx = x0 + 0.09
@@ -939,15 +993,18 @@ def medical_cabinet():
             else:
                 xx += 0.08
     # as portas de vidro: a moldura (os montantes e as travessas) e o vidro
-    yf0, yf1 = y1 - 0.03, y1
-    FR = chapa(E, riscas=None, topo='#e8e4d8')
-    for (a, b) in ((x0, x0 + 0.045), (meio - 0.025, meio + 0.025), (x1 - 0.045, x1)):
-        caixa((a, b, yf0, yf1, zm, zc), FR)
-    for (za, zb_) in ((zm, zm + 0.05), (zc - 0.05, zc)):
-        caixa((x0, x1, yf0, yf1, za, zb_), FR)
-    for xx in (meio - 0.045, meio + 0.045 - PH * 1.2):
-        _barra((xx, xx + PH * 1.2, yf1, yf1 + 0.02, zm + 0.3, zm + 0.48), CROMO[0], CROMO[1], quina=False)
-    CZ.vidros.append((x0 + 0.03, x1 - 0.03, y0 + 0.025, yf1 - 0.001, zm + 0.05, zc - 0.05))
+    if not aberto:
+        yf0, yf1 = y1 - 0.03, y1
+        FR = chapa(E, riscas=None, topo='#e8e4d8')
+        for (a, b) in ((x0, x0 + 0.045), (meio - 0.025, meio + 0.025), (x1 - 0.045, x1)):
+            caixa((a, b, yf0, yf1, zm, zc), FR)
+        for (za, zb_) in ((zm, zm + 0.05), (zc - 0.05, zc)):
+            caixa((x0, x1, yf0, yf1, za, zb_), FR)
+        for xx in (meio - 0.045, meio + 0.045 - PH * 1.2):
+            _barra((xx, xx + PH * 1.2, yf1, yf1 + 0.02, zm + 0.3, zm + 0.48), CROMO[0], CROMO[1], quina=False)
+        CZ.vidros.append((x0 + 0.03, x1 - 0.03, y0 + 0.025, yf1 - 0.001, zm + 0.05, zc - 0.05))
+    else:
+        _med_portas(x0, x1, y1, meio, zm, zc, E, CORPO)
     # a cimalha
     caixa((x0 - 0.02, x1 + 0.02, y0 - 0.01, y1 + 0.02, zc, zt), {'cima': liso('#e2ded2'), '*': chapa(E, riscas=None)})
     peg(x0, x1, y0, y1)
@@ -1401,16 +1458,54 @@ def faca_deitada(x, y, z):
     CZ.itens_peq.append((x, x + 0.33, y - 0.035, y + 0.04, z))
 
 
-def lata_municao(x0, x1, y0, y1, z0, alto, seed=0, cor=OLIVA):
-    """A lata de munição: o corpo verde-oliva gasto, a tampa com a borda, a alça dobrada em cima, a trava do lado e a faixa amarela."""
+def lata_municao(x0, x1, y0, y1, z0, alto, seed=0, cor=OLIVA, aberta=None):
+    """
+    A lata de munição: o corpo verde-oliva gasto, a tampa com a borda, a alça dobrada em cima, a trava do lado e a faixa
+    amarela. `aberta` ('pentes' ou 'cartuchos'): a tampa erguida em pé atrás, o lado de dentro escuro e o conteúdo à vista.
+    """
     zt = z0 + alto
     zl = zt - 0.035
     pain = [('f', '#c8a83a', x0 + 0.03, x1 - 0.03, z0 + alto * 0.35, z0 + alto * 0.35 + 2 * PZ),
             ('d', '#c8a83a', y0 + 0.04, y1 - 0.04, z0 + alto * 0.35, z0 + alto * 0.35 + 2 * PZ)]
-    caixa((x0, x1, y0, y1, z0, zl), chapa(cor, riscas='h', seed=seed, k=(1.05, 0.94), gasto=0.14, paineis=pain))
+    COR = chapa(cor, riscas='h', seed=seed, k=(1.05, 0.94), gasto=0.14, paineis=pain)
+    cx = (x0 + x1) / 2
+    if aberta:
+        e = 0.02
+        IN = chapa('#23261a', riscas=None)
+        caixa((x0, x1, y0, y0 + e, z0, zt), {'frente': IN, '*': COR})
+        caixa((x0, x1, y1 - e, y1, z0, zt), COR)
+        caixa((x0, x0 + e, y0, y1, z0, zt), {'dir': IN, '*': COR})
+        caixa((x1 - e, x1, y0, y1, z0, zt), {'esq': IN, '*': COR})
+        caixa((x0 + e, x1 - e, y0 + e, y1 - e, z0, z0 + 0.02), liso('#1c1e14'))
+        zc = z0 + 0.02
+        if aberta == 'pentes':
+            # os carregadores de pé, lado a lado, e a caixinha de pentes extras
+            n = max(2, int((x1 - x0 - 0.06) / 0.05))
+            for i in range(n):
+                xx = x0 + 0.035 + i * ((x1 - x0 - 0.07 - 0.04) / max(1, n - 1))
+                _pe((xx, xx + 0.04, y0 + 0.08, y0 + 0.2, zc, zc + alto - 0.07), '#3a3c3e')
+                _pe((xx + 0.006, xx + 0.034, y0 + 0.08, y0 + 0.2, zc + alto - 0.07, zc + alto - 0.045), '#c8a050')
+            _pe((x0 + 0.03, x1 - 0.03, y0 + 0.24, y1 - 0.08, zc, zc + 0.05), '#4a4e36')
+        else:
+            # os cartuchos soltos de pé em fileiras (o latão e a ponta de cobre)
+            for j in range(3):
+                for i in range(int((x1 - x0 - 0.06) / 0.045)):
+                    xx = x0 + 0.04 + i * 0.045 + (0.02 if j % 2 else 0)
+                    yy = y0 + 0.1 + j * 0.13
+                    if xx > x1 - 0.04:
+                        continue
+                    poste(xx, yy, zc, zc + alto - 0.08, r=0.016, cor='#c8a03a', brilho=0.5)
+                    poste(xx, yy, zc + alto - 0.08, zc + alto - 0.045, r=0.012, cor='#a85a30', brilho=0.4)
+        # a tampa em pé atrás (a parte de dentro para a frente), com a alça
+        zh = y1 - y0
+        caixa((x0 - 0.008, x1 + 0.008, y0 - 0.04, y0 - 0.008, zt - 0.02, zt - 0.02 + zh),
+              {'frente': chapa(_hexs(_tom(hx(cor), 0.7)), riscas='h', seed=seed + 4),
+               '*': chapa(_hexs(_tom(hx(cor), 1.05)), riscas='h', seed=seed + 5, gasto=0.1)})
+        _barra((cx - 0.012, cx + 0.012, y0 - 0.008, y0 + 0.0, zt + zh * 0.45, zt + zh * 0.7), '#2a2c2e', '#4a4c4e', quina=False)
+        return
+    caixa((x0, x1, y0, y1, z0, zl), COR)
     caixa((x0 - 0.008, x1 + 0.008, y0 - 0.008, y1 + 0.008, zl, zt), {'cima': chapa(_hexs(_tom(hx(cor), 1.12)), riscas=None, gasto=0.1, seed=seed + 1),
                                                                     '*': chapa(_hexs(_tom(hx(cor), 0.9)), riscas=None)})
-    cx = (x0 + x1) / 2
     # a alça: a barra dobrada em cima, presa nos dois apoios
     for yy in (y0 + 0.07, y1 - 0.09):
         _barra((cx - 0.02, cx + 0.02, yy, yy + 0.02, zt, zt + 0.012), '#3a3e2a', quina=False)
@@ -1419,11 +1514,11 @@ def lata_municao(x0, x1, y0, y1, z0, alto, seed=0, cor=OLIVA):
     _barra((x1 + 0.008, x1 + 0.022, y1 - 0.12, y1 - 0.05, zt - 0.1, zt - 0.01), '#4a4e36', '#6e7450', quina=False)
 
 
-def ammo_box():
-    """A caixa de munição (0,3 m): duas latas verde-oliva lado a lado."""
+def ammo_box(aberto=False):
+    """A caixa de munição (0,3 m): duas latas verde-oliva lado a lado. Aberto: as duas com a tampa erguida, uma com os pentes e a outra com cartuchos soltos."""
     zt = 0.49 / UN
-    lata_municao(0.1, 0.35, 0.12, 0.64, 0.0, zt, seed=121)
-    lata_municao(0.4, 0.65, 0.1, 0.62, 0.0, zt, seed=122, cor='#545a36')
+    lata_municao(0.1, 0.35, 0.12, 0.64, 0.0, zt, seed=121, aberta='pentes' if aberto else None)
+    lata_municao(0.4, 0.65, 0.1, 0.62, 0.0, zt, seed=122, cor='#545a36', aberta='cartuchos' if aberto else None)
     peg(0.1, 0.65, 0.1, 0.64)
 
 
@@ -1484,7 +1579,7 @@ def _sobre(mat, paineis):
     return emissivo(f)
 
 
-def armario_aco(x0, x1, y0, y1, zt, cor, portas=1, aberto=False, conteudo=None, cadeado=True, seed=0):
+def armario_aco(x0, x1, y0, y1, zt, cor, portas=1, aberto=False, conteudo=None, cadeado=True, seed=0, abertas=None):
     """
     O armário de chapa: o rodapé, o corpo com as frestas, as portas com as venezianas em cima e embaixo, a plaquinha,
     o puxador e o cadeado. Aberto (uma porta): a carcaça fina, o lado de dentro, a porta aberta a 90° pela
@@ -1517,12 +1612,36 @@ def armario_aco(x0, x1, y0, y1, zt, cor, portas=1, aberto=False, conteudo=None, 
         caixa((x1 - e, x1, y0, y1, zb, zc), {'esq': IN, '*': CORPO})
         caixa((x0, x1, y0, y1, zb, zb + e), {'cima': IN, '*': CORPO})
         caixa((x0, x1, y0, y1, zc - e, zc), {'baixo': IN, '*': CORPO})
-        # a porta aberta (a parte de dentro olha para +x)
-        pd = [('d', 'porta', y1 + 0.02, y1 + W - 0.02, zb + 0.03, zc - 0.03), ('d', 'grade', y1 + 0.07, y1 + W - 0.07, zc - 0.2, zc - 0.08),
-              ('d', 'grade', y1 + 0.07, y1 + W - 0.07, zb + 0.08, zb + 0.2)]
-        caixa((x0 - 0.02, x0, y1, y1 + W, zb + 0.01, zc - 0.01), {'dir': chapa(_hexs(_tom(hx(cor), 0.88)), riscas='v', seed=seed + 2, paineis=pd), '*': CORPO})
+        # as divisórias entre os compartimentos (quando há mais de uma porta)
+        for i in range(1, portas):
+            xi = x0 + i * W
+            caixa((xi - e / 2, xi + e / 2, y0, y1, zb, zc), {'dir': IN, 'esq': IN, '*': CORPO})
+        # as portas abertas a 90° para fora, cada uma presa na borda de fora do seu lado; as outras ficam fechadas
+        abr = range(portas) if abertas is None else abertas
+        for i in range(portas):
+            if i not in abr:
+                a0, a1 = x0 + i * W, x0 + (i + 1) * W
+                caixa((a0, a1, y1 - 0.025, y1, zb, zc), {'frente': CORPO, '*': CORPO})
+                _barra((a1 - 0.09, a1 - 0.065, y1, y1 + 0.02, zc * 0.52 - 0.08, zc * 0.52 + 0.04), '#3a3c3e', '#6a6c6e', quina=False)
+                if cadeado:
+                    _cadeado(a1 - 0.0775, y1 + 0.02, zc * 0.52 - 0.13)
+                continue
+            dir_ = portas > 1 and i >= portas / 2
+            if not dir_:
+                xh = x0 + i * W
+                xa, xb, face, fl = xh - 0.02, xh, 'dir', 'd'
+            else:
+                xh = x0 + (i + 1) * W
+                xa, xb, face, fl = xh, xh + 0.02, 'esq', 'e'
+            pd = [(fl, 'porta', y1 + 0.02, y1 + W - 0.02, zb + 0.03, zc - 0.03), (fl, 'grade', y1 + 0.07, y1 + W - 0.07, zc - 0.2, zc - 0.08),
+                  (fl, 'grade', y1 + 0.07, y1 + W - 0.07, zb + 0.08, zb + 0.2)]
+            caixa((xa, xb, y1, y1 + W, zb + 0.01, zc - 0.01), {face: chapa(_hexs(_tom(hx(cor), 0.88)), riscas='v', seed=seed + 2 + i, paineis=pd), '*': CORPO})
         if conteudo:
-            conteudo(x0 + e, x1 - e, y0 + e, y1, zb + e, zc - e)
+            if portas == 1:
+                conteudo(x0 + e, x1 - e, y0 + e, y1, zb + e, zc - e)
+            else:
+                for i in abr:
+                    conteudo(x0 + i * W + e, x0 + (i + 1) * W - e, y0 + e, y1, zb + e, zc - e, i)
     caixa((x0 - 0.01, x1 + 0.01, y0 - 0.005, y1 + 0.01, zc, zt), {'cima': chapa(_hexs(_tom(hx(cor), 1.12)), riscas=None, gasto=0.1, seed=seed + 3),
                                                                  '*': chapa(_hexs(_tom(hx(cor), 0.92)), riscas=None)})
     peg(x0, x1, y0, y1)
@@ -1575,9 +1694,46 @@ def locker(aberto=False):
     armario_aco(0.12, 0.63, 0.1, 0.62, 3.18 / UN, CINZA_A, 1, aberto, dentro, cadeado=False, seed=171)
 
 
-def locker_row():
-    """Os armários de vestiário (2 casas, 1,9 m): três portas estreitas de aço azulado com as venezianas, as plaquinhas e os cadeados."""
-    armario_aco(0.04, 1.46, 0.08, 0.62, 3.1 / UN, AZUL_A, 3, seed=181)
+def locker_row(aberto=False):
+    """
+    Os armários de vestiário (2 casas, 1,9 m): três portas estreitas de aço azulado com as venezianas, as plaquinhas e os
+    cadeados. Aberto: as portas das pontas abertas (a do meio fica fechada); dentro, o uniforme verde e as botas, a camisa
+    vermelha e a mochila (o armário do meio, fechado, guarda o capacete e a toalha).
+    """
+    def dentro(x0, x1, y0, y1, z0, z1, i=0):
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        zs = z1 - 0.3
+        _prateleiras(x0, x1, y0, y1 - 0.04, [zs], AZUL_A)
+        tubo_x(x0, x1, cy, zs - 0.08, r=0.01)
+        if i == 0:
+            # o uniforme verde no cabide e as botas
+            _barra((cx - 0.13, cx + 0.13, cy - 0.01, cy + 0.01, zs - 0.15, zs - 0.13), '#8a5a34', quina=False)
+            VER = chapa('#4e5a36', riscas='v', seed=191, passo=0.04, k=(1.08, 0.9))
+            caixa((cx - 0.13, cx + 0.13, cy - 0.045, cy + 0.045, zs - 0.62, zs - 0.14), VER)
+            for dx in (-0.1, 0.02):
+                caixa((cx + dx, cx + dx + 0.08, cy - 0.04, cy + 0.04, zs - 1.1, zs - 0.62), VER)
+            for dx in (-0.12, 0.0):
+                _pe((cx + dx, cx + dx + 0.1, y0 + 0.15, y0 + 0.4, z0, z0 + 0.14), '#2a2018')
+            caixa((x0 + 0.04, x1 - 0.04, y0 + 0.08, y0 + 0.34, zs, zs + 0.09), {'cima': liso('#e8e4d8'), '*': chapa('#d8d2c2', riscas='h', passo=0.02)})
+        elif i == 1:
+            # o capacete e a toalha na prateleira, a calça dobrada embaixo
+            o = novo()
+            C().elipsoide(np.array([cx, y0 + 0.22, zs + 0.08]), np.array([0.14, 0.15, 0.09]), liso('#3a4028'), o, brilho=0.3)
+            caixa((x0 + 0.03, x1 - 0.03, y0 + 0.36, y1 - 0.08, zs, zs + 0.1), {'cima': liso('#f2eee4'), '*': chapa('#e0dac8', riscas='h', passo=0.02)})
+            for k in range(4):
+                caixa((x0 + 0.04, x1 - 0.04, y0 + 0.08, y0 + 0.36, z0 + k * 0.08, z0 + (k + 1) * 0.08 - 0.005),
+                      chapa(['#3a4a6a', '#4a5a7a', '#3a4a6a', '#56667e'][k], riscas='h', passo=0.02))
+            caixa((x0 + 0.04, x1 - 0.04, y0 + 0.4, y1 - 0.08, z0, z0 + 0.22), chapa('#6a4a2a', riscas=None))
+        else:
+            # a camisa vermelha no cabide, a mochila e o tênis
+            _barra((cx - 0.13, cx + 0.13, cy - 0.01, cy + 0.01, zs - 0.15, zs - 0.13), '#8a5a34', quina=False)
+            RUB = chapa('#b8382a', riscas='v', seed=193, passo=0.04, k=(1.08, 0.9))
+            caixa((cx - 0.14, cx + 0.14, cy - 0.04, cy + 0.04, zs - 0.6, zs - 0.14), RUB)
+            caixa((x0 + 0.05, x1 - 0.05, y0 + 0.1, y0 + 0.4, z0, z0 + 0.38),
+                  chapa('#6a6a3a', riscas='h', passo=0.03, paineis=[('f', '#3a3a24', x0 + 0.08, x1 - 0.08, z0 + 0.22, z0 + 0.26)]))
+            _pe((cx - 0.1, cx + 0.1, y0 + 0.44, y1 - 0.08, z0, z0 + 0.1), '#e8e4d8')
+            caixa((x0 + 0.03, x1 - 0.03, y0 + 0.08, y0 + 0.3, zs, zs + 0.1), {'cima': liso('#c8b078'), '*': chapa('#b8a068', riscas=None)})
+    armario_aco(0.04, 1.46, 0.08, 0.62, 3.1 / UN, AZUL_A, 3, aberto, dentro, seed=181, abertas=(0, 2))
 
 
 def weapon_rack():
@@ -1772,14 +1928,14 @@ ITENS = {
     'hospital_bed': (1, 3, (0.0, 0.0), hospital_bed, {}),
     'iv_stand': (1, 1, (0.0, 0.0), iv_stand, {}),
     'med_tray': (1, 1, (0.0, 0.0), med_tray, {}),
-    'medical_cabinet': (2, 1, (0.0, 0.0), medical_cabinet, {}),
+    'medical_cabinet': (2, 1, (0.0, 0.0), lambda: medical_cabinet(False), {'1': lambda: medical_cabinet(True)}),
     'monitor_suporte': (1, 1, (0.0, 0.0), lambda: monitor_suporte(True), {'1': lambda: monitor_suporte(False)}),
     'posto_enfermagem': (7, 3, (0.0, 0.0), posto_enfermagem, {}),
     'posto_enfermagem!vazio': (7, 3, (0.0, 0.0), lambda: posto_enfermagem(True), {}),   # a gêmea vazia: sem nada em cima
     'toilet_steel': (1, 1, (0.0, 0.0), toilet_steel, {}),
     'trash_bin': (1, 1, (0.0, 0.0), trash_bin, {}),
     'vitals_monitor': (1, 1, (0.0, 0.0), lambda: vitals_monitor(True), {'1': lambda: vitals_monitor(False)}),
-    'ammo_box': (1, 1, (0.0, 0.0), ammo_box, {}),
+    'ammo_box': (1, 1, (0.0, 0.0), lambda: ammo_box(False), {'1': lambda: ammo_box(True)}),
     'chest_army': (1, 1, (0.0, 0.0), lambda: chest_army(False), {'1': lambda: chest_army(True)}),
     'locker_ammo': (1, 1, (0.0, 0.0), lambda: locker_ammo(False), {'1': lambda: locker_ammo(True)}),
     'mesa_arsenal': (4, 2, (0.0, 0.0), mesa_arsenal, {}),
@@ -1787,5 +1943,5 @@ ITENS = {
     'weapon_rack': (2, 1, (0.0, 0.0), weapon_rack, {}),
     'bed': (1, 3, (0.0, 0.0), bed, {}),
     'locker': (1, 1, (0.0, 0.0), lambda: locker(False), {'1': lambda: locker(True)}),
-    'locker_row': (2, 1, (0.0, 0.0), locker_row, {}),
+    'locker_row': (2, 1, (0.0, 0.0), lambda: locker_row(False), {'1': lambda: locker_row(True)}),
 }

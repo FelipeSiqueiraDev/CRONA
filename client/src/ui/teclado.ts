@@ -1,7 +1,6 @@
 import type { FloorItem } from '@crona/shared';
 import type { App } from './app';
 import { h } from './dom';
-import { existeArte } from './icons';
 import { reduced, shake } from './motion';
 import { sfx } from './sfx';
 
@@ -12,24 +11,9 @@ import { sfx } from './sfx';
  * (os jogadores dizem a senha, ele digita). Teclado do computador também vale: números,
  * Backspace apaga, Enter confirma, Esc cancela.
  *
- * A arte (pasta /arte/interface/teclado-geladeira/) entra sozinha quando chegar: a chapa
- * amarela, as teclas em branco (o jogo escreve os números), as teclas de cancelar e de
- * confirmar e as duas luzes. Sem ela, o desenho é por CSS. A senha não aparece em lugar
- * nenhum: quem não sabe, não entra.
+ * O desenho é todo por CSS, em pixel art (teclado.css; a referência do Felipe, 14/10): a arte pintada do Códex que
+ * entrava por cima foi aposentada. A senha não aparece em lugar nenhum: quem não sabe, não entra.
  */
-const PASTA = '/arte/interface/teclado-geladeira/';
-const ARTE = {
-  painel: 'painel.png',
-  tecla: 'tecla.png',
-  teclaAp: 'tecla-apertada.png',
-  cancelar: 'tecla-cancelar.png',
-  cancelarAp: 'tecla-cancelar-apertada.png',
-  confirmar: 'tecla-confirmar.png',
-  confirmarAp: 'tecla-confirmar-apertada.png',
-  ledVerde: 'led-verde.png',
-  ledVermelho: 'led-vermelho.png',
-} as const;
-
 type Estado = 'digitando' | 'certa' | 'errada';
 
 export class TecladoSenha {
@@ -78,7 +62,6 @@ export class TecladoSenha {
     );
     this.el = h('div', { class: 'tsg hidden', onclick: (e: MouseEvent) => e.target === this.el && this.fechar() }, this.painel);
     document.addEventListener('keydown', (e) => this.tecladoDoPc(e));
-    void this.carregarArte();
   }
 
   get aberto() {
@@ -212,20 +195,4 @@ export class TecladoSenha {
     this.ledVermelho.classList.toggle('pisca', this.estado === 'errada');
   }
 
-  /** A arte que já chegou entra no lugar do desenho por CSS (cada peça por si). */
-  private async carregarArte() {
-    const s = this.el.style;
-    const usar = async (nome: string, varCss: string, classe: string) => {
-      if (!(await existeArte(PASTA + nome))) return false;
-      s.setProperty(varCss, `url("${PASTA}${nome}")`);
-      this.el.classList.add(classe);
-      return true;
-    };
-    await usar(ARTE.painel, '--tsg-painel', 'arte-painel');
-    if (await usar(ARTE.tecla, '--tsg-tecla', 'arte-tecla')) await usar(ARTE.teclaAp, '--tsg-tecla-ap', 'arte-tecla-ap');
-    if (await usar(ARTE.cancelar, '--tsg-cancelar', 'arte-cancelar')) await usar(ARTE.cancelarAp, '--tsg-cancelar-ap', 'arte-cancelar-ap');
-    if (await usar(ARTE.confirmar, '--tsg-confirmar', 'arte-confirmar')) await usar(ARTE.confirmarAp, '--tsg-confirmar-ap', 'arte-confirmar-ap');
-    await usar(ARTE.ledVerde, '--tsg-led-verde', 'arte-led-verde');
-    await usar(ARTE.ledVermelho, '--tsg-led-vermelho', 'arte-led-vermelho');
-  }
 }

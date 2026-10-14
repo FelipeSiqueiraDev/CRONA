@@ -1214,10 +1214,3 @@ html:not(.modo-ficha) .rq-travado {
         border-color: rgba(161, 136, 115, 0.75)
     }
 }
-/*  teclado.css  */
-html:not(.modo-ficha) .tsg-parafuso {
-    background: radial-gradient(circle at 35% 30%, rgba(20, 36, 64, 0.94), rgba(11, 21, 38, 0.94) 45%, #4a4f55 85%)
-}
-html:not(.modo-ficha) .tsg-led.verde.aceso {
-    background: radial-gradient(circle at 40% 35%, rgba(20, 36, 64, 0.94), #4dff7c 45%, #14a33a)
-}

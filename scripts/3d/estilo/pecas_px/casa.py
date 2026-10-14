@@ -56,11 +56,13 @@ def novo(contorno=True, sombra=True):
 
 
 # ------------------------------------------------------------------ materiais ------------------------------------------------------------------
-def almofadas(cor, paineis, eixo=0, seed=0, passo=0.06, fresta=None):
+def almofadas(cor, paineis, eixo=0, seed=0, passo=0.06, fresta=None, u_fn=None):
     """
     A madeira com gavetas e portas na face da frente (+y): paineis = (u0, u1, z0, z1, tipo), u = x. tipo 'g' gaveta
     (a fresta de 1 px, a luz em cima e à esquerda, a sombra embaixo e à direita), 'p' porta almofadada (com o rebaixo
     do meio), 'e' porta com espelho (o vidro prateado no rebaixo).
+    u_fn: para a folha de porta que gira (aberta): devolve o u de cada ponto (a distância ao longo da folha) e a
+    almofada vale em qualquer face (sem u_fn, só na da frente, +y, e u = x).
     """
     base = mad2(cor, eixo=eixo, seed=seed, passo=passo)
     c0 = hx(cor)
@@ -68,9 +70,9 @@ def almofadas(cor, paineis, eixo=0, seed=0, passo=0.06, fresta=None):
 
     def f(L, n, P):
         out = base(L, n, P)
-        if n[1] <= 0.5:
+        if u_fn is None and n[1] <= 0.5:
             return out
-        u, z = P[:, 0], P[:, 2]
+        u, z = (P[:, 0] if u_fn is None else u_fn(P)), P[:, 2]
         for (u0, u1, z0, z1, k) in paineis:
             d = (u >= u0) & (u < u1) & (z >= z0) & (z < z1)
             fr = d & ((u < u0 + PH) | (u >= u1 - PH) | (z < z0 + PZ) | (z >= z1 - PZ))
@@ -124,6 +126,114 @@ def pe_bola(x, y, z1, r, cor):
     """O pezinho em bola (a cômoda, o aparador)."""
     o = novo()
     _poligono_rodado(x, y, [(0.0, r * 0.7), (z1 * 0.35, r), (z1 * 0.75, r * 0.85), (z1, r * 0.9)], vol(x, y, cor), o, lados=12)
+
+
+# ------------------------------------------------------------------ os móveis ABERTOS (portas, gavetas) ------------------------------------------------------------------
+def dentro(cor='#2c170c', z0=0.0, z1=1.0):
+    """
+    O interior de um móvel aberto: bem mais escuro que a face de fora, com a sombra do tampo (os últimos pixels de
+    cima mais escuros) e um fio de luz perto do chão do vão; em degraus, sem degradê liso.
+    """
+    c0 = hx(cor)
+
+    def f(L, n, P):
+        z = P[:, 2]
+        out = np.tile(c0, (len(P), 1))
+        out = np.where((z > z1 - 5 * PZ)[:, None], _tom(c0, 0.82), out)
+        out = np.where((z > z1 - 2 * PZ)[:, None], _tom(c0, 0.64), out)
+        out = np.where((z < z0 + 1.5 * PZ)[:, None], _tom(c0, 1.18), out)
+        return out
+    return emissivo(f)
+
+
+def casca(x0, x1, y0, y1, zb, zc, e, fora, IN, costas, fundo=None, tras=None):
+    """
+    A carcaça de um móvel de abrir, sem a frente (+y): o fundo, as duas laterais e o chão do vão, com o lado de
+    dentro `IN` (escuro). fora: a madeira por fora. costas: a face de trás do fundo.
+    """
+    caixa((x0, x1, y0, y0 + e, zb, zc), {'frente': IN, 'costas': costas, '*': fora})
+    caixa((x0, x0 + e, y0 + e, y1, zb, zc), {'dir': IN, '*': fora})
+    caixa((x1 - e, x1, y0 + e, y1, zb, zc), {'esq': IN, '*': fora})
+    caixa((x0 + e, x1 - e, y0 + e, y1, zb, zb + e), {'cima': fundo or IN, '*': fora})
+
+
+def prateleira_in(x0, x1, y0, y1, z, e=0.02, fora=None, cor='#4a2a16'):
+    """Uma prateleira dentro do vão: o tampo claro (pega a luz) e a quina da frente."""
+    caixa((x0, x1, y0, y1, z - e, z), {'cima': liso(cor), '*': fora or mad2('#6c341c', eixo=1, seed=7, passo=0.05)})
+
+
+def porta_giro(H, ang, W, z0, z1, mat_f, mat_d, esp=0.026, lado=1, mat_b=None):
+    """
+    A folha de porta aberta: dobradiça em H = (x, y), a folha parte dela na direção `ang` (graus, de +x girando para
+    +y; a porta fechada da dobradiça da esquerda é 0, a da direita 180), de largura W e espessura esp; o lado de fora
+    (a face que era a da frente) é `mat_f` e o de dentro `mat_d`. lado = 1 dobradiça na esquerda, -1 na direita.
+    """
+    th = math.radians(ang)
+    dx, dy = math.cos(th), math.sin(th)
+    nx, ny = -lado * dy, lado * dx                      # a normal da face de fora
+    Hx, Hy = H
+    A, B = (Hx, Hy), (Hx + W * dx, Hy + W * dy)
+    A2, B2 = (Hx - esp * nx, Hy - esp * ny), (B[0] - esp * nx, B[1] - esp * ny)
+    o = novo()
+    fp = CZ.fp
+    mb = mat_b or mat_d
+
+    def q(P, Q, nn, m):
+        fp([(P[0], P[1], z0), (Q[0], Q[1], z0), (Q[0], Q[1], z1), (P[0], P[1], z1)], nn, m, o)
+    q(A, B, (nx, ny, 0), mat_f)
+    q(B2, A2, (-nx, -ny, 0), mat_d)
+    q(A2, A, (-dx, -dy, 0), mb)
+    q(B, B2, (dx, dy, 0), mb)
+    fp([(A[0], A[1], z1), (B[0], B[1], z1), (B2[0], B2[1], z1), (A2[0], A2[1], z1)], (0, 0, 1), mb, o)
+    return o
+
+
+def mat_folha(cor, paineis, H, ang, seed=0, passo=0.05):
+    """A madeira da folha de porta aberta, com as almofadas (u = a distância à dobradiça ao longo da folha)."""
+    th = math.radians(ang)
+    dx, dy = math.cos(th), math.sin(th)
+    return almofadas(cor, paineis, eixo=1, seed=seed, passo=passo, u_fn=lambda P: (P[:, 0] - H[0]) * dx + (P[:, 1] - H[1]) * dy)
+
+
+def tirador(H, ang, u, z, lado=1, esp=0.026, larg=0.012):
+    """O puxador de latão na face de fora de uma folha aberta (u = a distância à dobradiça)."""
+    th = math.radians(ang)
+    dx, dy = math.cos(th), math.sin(th)
+    nx, ny = -lado * dy, lado * dx
+    px, py = H[0] + u * dx + nx * 0.014, H[1] + u * dy + ny * 0.014
+    _barra((px - larg, px + larg, py - larg, py + larg, z - 0.03, z + 0.03), LATAO, LATAO_L, quina=False)
+
+
+def gaveta_puxada(gx0, gx1, yf, ge, gz0, gz1, fr_mat, funda=0.38, cor='#b08254', tecidos=(), alcas=(), esp=0.014):
+    """
+    A gaveta puxada: o vão escuro na frente do móvel (y = yf), a gaveta saindo `ge` para a frente (o fundo e as
+    laterais de pinho, a testeira com o material `fr_mat` e as alças em `alcas` = [x]), e o que ela guarda em
+    `tecidos` = [(x0, x1, y0, y1, cor)] (panos dobrados, que passam da borda).
+    """
+    caixa((gx0 - 0.005, gx1 + 0.005, yf, yf + 0.004, gz0 - 0.004, gz1 + 0.004), liso('#1c0e06'))
+    yb, yfr = yf - funda + ge, yf + ge
+    MAD = mad2(cor, eixo=0, seed=9, passo=0.04)
+    caixa((gx0 + 0.012, gx1 - 0.012, yb, yfr, gz0 + 0.01, gz0 + 0.026), {'cima': tab2(PINHO, 0.1, '#8a6038', eixo=0, seed=8, org=yb), '*': MAD})
+    caixa((gx0 + 0.012, gx0 + 0.012 + esp, yb, yfr, gz0 + 0.01, gz1 - 0.025), {'dir': liso('#a87a4c'), '*': MAD})
+    caixa((gx1 - 0.012 - esp, gx1 - 0.012, yb, yfr, gz0 + 0.01, gz1 - 0.025), {'esq': liso('#7a5430'), '*': MAD})
+    caixa((gx0 + 0.012, gx1 - 0.012, yb, yb + esp, gz0 + 0.01, gz1 - 0.025), {'frente': liso('#a0724a'), '*': MAD})
+    for (a0, a1, b0, b1, cc) in tecidos:
+        _p1_malha((a0, a1, yb + b0, yb + b1, gz0 + 0.026, gz1 - 0.005), (0.02, 0.02, 0.01, 0.025), liso(cc), seg=2)
+    caixa((gx0, gx1, yfr, yfr + 0.026, gz0, gz1), {'frente': fr_mat, '*': mad2(NOG, eixo=1, seed=4, passo=0.05)})
+    for xa in alcas:
+        alca(xa, (gz0 + gz1) / 2, yfr + 0.026, 0.07)
+
+
+def livro(x0, x1, y0, y1, z0, z1, cor, lomba='frente'):
+    """O livro deitado: a capa em cima, a lombada de cor numa das faces e as folhas creme nas outras."""
+    pag = emissivo(lambda L, n, P: np.where(((np.floor(P[:, 2] / PZ) % 2) == 0)[:, None], hx('#d8c8a0'), hx('#c0ae84')))
+    ca = liso(cor)
+    caixa((x0, x1, y0, y1, z0, z1), {'cima': ca, lomba: liso(_hexn(_tom(hx(cor), 0.8))), '*': pag})
+
+
+def _hexn(v):
+    v = np.clip(np.round(np.asarray(v, float)), 0, 255).astype(int)
+    return '#%02x%02x%02x' % tuple(v)
 
 
 def _ret_redondo(cx, cy, ax, ay, r, z, n=6):
@@ -184,26 +294,78 @@ def bacia(cx, cy, ax, ay, r, z, aro=0.045, agua=True, esmalte='#e8ece8'):
 # =====================================================================================================================
 # o quarto: o criado-mudo, a cômoda, o guarda-roupa
 # =====================================================================================================================
-def criado_mudo():
-    """O criado-mudo de nogueira (0,6 m): a gaveta com a alça, a portinha, os pés torneados curtos, o tampo."""
+def criado_mudo(aberto=False, vazio=False):
+    """
+    O criado-mudo de nogueira (0,6 m): a gaveta com a alça, a portinha, os pés torneados curtos, o tampo.
+    aberto: a gaveta puxada (o livro e a vela de cera no fundo dela) e a portinha aberta pela dobradiça da esquerda
+    (os livros empilhados e a jarra lá dentro); vazio: o mesmo aberto, sem o que ficava dentro.
+    """
     x0, x1, y0, y1 = 0.1, 0.65, 0.06, 0.54
     zt = 0.98 / UN
     pain = [(x0 + 0.03, x1 - 0.03, 0.43, 0.53, 'g'), (x0 + 0.03, x1 - 0.03, 0.13, 0.4, 'p')]
     for (a, b) in ((x0 + 0.04, y0 + 0.04), (x1 - 0.04, y0 + 0.04), (x0 + 0.04, y1 - 0.04), (x1 - 0.04, y1 - 0.04)):
         pe_bola(a, b, 0.09, 0.03, NOG_E)
-    caixa((x0, x1, y0, y1, 0.08, zt - 0.035), {'frente': almofadas(NOG, pain, seed=3), 'costas': tab2(PINHO, 0.12, '#6a4426', eixo=1, seed=5),
-                                               '*': mad2(NOG, eixo=1, seed=4, passo=0.05)})
+    zb, zc = 0.08, zt - 0.035
+    if not aberto:
+        caixa((x0, x1, y0, y1, zb, zc), {'frente': almofadas(NOG, pain, seed=3), 'costas': tab2(PINHO, 0.12, '#6a4426', eixo=1, seed=5),
+                                         '*': mad2(NOG, eixo=1, seed=4, passo=0.05)})
+    else:
+        e = 0.03
+        zd = 0.415                                    # a prateleira entre a gaveta e a portinha
+        FORA = mad2(NOG, eixo=1, seed=4, passo=0.05)
+        IN = dentro('#2a150b', zb, zc)
+        casca(x0, x1, y0, y1, zb, zc, e, FORA, IN, tab2(PINHO, 0.12, '#6a4426', eixo=1, seed=5), fundo=liso('#3a1e10'))
+        caixa((x0 + e, x1 - e, y0 + e, y1, zd - 0.02, zd), {'cima': liso('#5a3018'), 'frente': liso('#6a3a1e'), '*': FORA})
+        # a gaveta puxada uns 40%: a testeira com a alça, as laterais e o fundo de pinho
+        ge, gz0, gz1 = 0.2, 0.43, 0.53
+        gx0, gx1 = x0 + e + 0.01, x1 - e - 0.01
+        gy0, gy1 = y0 + 0.08, y1 + ge
+        PIN = tab2(PINHO, 0.1, '#8a6038', eixo=0, seed=8, org=gy0)
+        caixa((gx0, gx1, gy0, gy1, gz0, gz0 + 0.012), {'cima': PIN, '*': mad2('#b08254', eixo=0, seed=9, passo=0.04)})
+        caixa((gx0, gx0 + 0.015, gy0, gy1, gz0, gz1 - 0.02), {'dir': liso('#a87a4c'), '*': mad2('#b08254', eixo=0, seed=9, passo=0.04)})
+        caixa((gx1 - 0.015, gx1, gy0, gy1, gz0, gz1 - 0.02), {'esq': liso('#7a5430'), '*': mad2('#b08254', eixo=0, seed=9, passo=0.04)})
+        caixa((gx0, gx1, gy0, gy0 + 0.015, gz0, gz1 - 0.02), {'frente': liso('#a0724a'), '*': mad2('#b08254', eixo=0, seed=9, passo=0.04)})
+        caixa((gx0 - 0.01, gx1 + 0.01, gy1, gy1 + 0.025, gz0 - 0.005, gz1), {'frente': almofadas(NOG, [(gx0 + 0.02, gx1 - 0.02, gz0 + 0.0, gz1 - 0.005, 'g')], seed=3),
+                                                                             '*': mad2(NOG, eixo=1, seed=4, passo=0.05)})
+        alca((gx0 + gx1) / 2, 0.48, gy1 + 0.025)
+        if not vazio:
+            livro(gx0 + 0.04, gx0 + 0.2, gy0 + 0.1, gy0 + 0.3, gz0 + 0.012, gz0 + 0.04, '#3e5a74')
+            for (xx, cc) in ((gx1 - 0.1, '#e8e0c8'), (gx1 - 0.19, '#d0c8b0')):
+                caixa((xx - 0.025, xx + 0.025, gy0 + 0.08, gy0 + 0.17, gz0 + 0.012, gz0 + 0.1), {'cima': liso('#c07a3a'), '*': liso(cc)})
+        # a portinha aberta (dobradiça na esquerda, aberta uns 105 graus: a folha sai para a frente e um pouco para o lado)
+        pz0, pz1 = 0.095, 0.405
+        H = (x0, y1 + 0.0)
+        ang = 105
+        pd = [(0.03, y1 - y0 - 0.03 + 0.0, pz0 + 0.04, pz1 - 0.04, 'p')]
+        W = x1 - x0
+        pd = [(0.02, W - 0.02, pz0 + 0.02, pz1 - 0.02, 'p')]
+        porta_giro(H, ang, W, pz0, pz1, mat_folha(NOG, pd, H, ang, seed=3), mad2(_hexn(_tom(hx(NOG), 0.9)), eixo=1, seed=4, passo=0.05),
+                   mat_b=mad2(NOG, eixo=1, seed=4, passo=0.05))
+        if not vazio:
+            for (a0, a1, cc) in ((x0 + e + 0.03, x0 + e + 0.27, '#7a2a24'), (x0 + e + 0.02, x0 + e + 0.25, '#2e4c3c')):
+                pass
+            zz = zb + e
+            for k, (cc, d) in enumerate((('#7a2a24', 0.0), ('#2e4c3c', 0.01), ('#9e6a34', -0.01))):
+                livro(x0 + e + 0.03 + d, x0 + e + 0.3 + d, y0 + e + 0.1, y0 + e + 0.3, zz, zz + 0.035, cc)
+                zz += 0.035
+            vx, vy = x1 - e - 0.12, y0 + e + 0.15
+            o = novo()
+            _poligono_rodado(vx, vy, [(zb + e, 0.04), (zb + e + 0.05, 0.065), (zb + e + 0.12, 0.06), (zb + e + 0.17, 0.03), (zb + e + 0.2, 0.026)],
+                             vol(vx, vy, '#8a5a3a', brilho=0.3), o, lados=12)
     caixa((x0 - 0.015, x1 + 0.015, y0 - 0.01, y1 + 0.02, zt - 0.035, zt), {'cima': tab2(NOG_TAB, 0.16, '#3e1c0e', seed=6, org=y0),
                                                                             '*': _pau('#7e4026', quina=1.22, b=(0, 0, 0, 0, zt - 0.035, zt))})
-    alca((x0 + x1) / 2, 0.48, y1)
-    botao(x1 - 0.09, 0.3, y1)
+    if not aberto:
+        alca((x0 + x1) / 2, 0.48, y1)
+        botao(x1 - 0.09, 0.3, y1)
     peg(x0, x1, y0, y1)
 
 
-def comoda(vazio=False):
+def comoda(vazio=False, aberto=False):
     """
     A cômoda de quatro fiadas de gavetas (0,9 m): as duas de cima pequenas, as alças de latão, os pés em bola.
     vazio: a gêmea esvaziada (comoda!vazio), sem o caminho de crochê em cima; o móvel é o mesmo.
+    aberto: a gaveta pequena de cima (à esquerda) e a de baixo puxadas uns 40%, com os panos dobrados à vista
+    (na gêmea vazia, as gavetas puxadas e vazias).
     """
     x0, x1, y0, y1 = 0.05, 1.45, 0.07, 0.62
     zt = 1.47 / UN
@@ -223,24 +385,39 @@ def comoda(vazio=False):
                                             '*': mad2(NOG, eixo=1, seed=13, passo=0.05)})
     caixa((x0 - 0.02, x1 + 0.02, y0 - 0.01, y1 + 0.025, zt - 0.04, zt), {'cima': tab2(NOG_TAB, 0.18, '#3e1c0e', seed=14, org=y0),
                                                                          '*': _pau('#7e4026', quina=1.22, b=(0, 0, 0, 0, zt - 0.04, zt))})
+    puxadas = {3: 'e', 1: 'c'} if aberto else {}          # a fiada de cima, só a da esquerda; a segunda de baixo, inteira
     for i in range(4):
         zm = (fi[i] + fi[i + 1]) / 2
         if i == 3:
-            alca((x0 + meio) / 2, zm, y1, 0.07)
+            if puxadas.get(3) != 'e':
+                alca((x0 + meio) / 2, zm, y1, 0.07)
             alca((meio + x1) / 2, zm, y1, 0.07)
-        else:
+        elif i not in puxadas:
             alca(meio - 0.32, zm, y1)
             alca(meio + 0.32, zm, y1)
+    if aberto:
+        fr = almofadas(NOG, pain, seed=11)
+        T = [(0.05, 0.2, 0.0, 0.32, '#c8d0d8'), (0.25, 0.4, 0.0, 0.32, '#9a4a3a'), (0.45, 0.6, 0.0, 0.3, '#e0d8c0')]
+        # a de cima (esquerda): camisas dobradas
+        z0, z1 = fi[3] + 0.006, fi[4] - 0.006
+        gaveta_puxada(x0 + 0.04, meio - 0.006, y1, 0.2, z0, z1, fr, alcas=[(x0 + meio) / 2],
+                      tecidos=[] if vazio else [(x0 + 0.1, x0 + 0.34, 0.06, 0.34, '#4e6a8a'), (x0 + 0.38, x0 + 0.6, 0.06, 0.34, '#d8cfb8')])
+        # a segunda de baixo para cima (larga): meias e lençóis
+        z0, z1 = fi[1] + 0.006, fi[2] - 0.006
+        gaveta_puxada(x0 + 0.04, x1 - 0.04, y1, 0.24, z0, z1, fr, alcas=[meio - 0.32, meio + 0.32], funda=0.4,
+                      tecidos=[] if vazio else [(x0 + 0.1, x0 + 0.5, 0.06, 0.3, '#a8443a'), (x0 + 0.55, x0 + 0.95, 0.06, 0.3, '#e8dcc0'), (x0 + 1.0, x0 + 1.3, 0.06, 0.3, '#3e5a74')])
     # o caminho de crochê em cima (o que vai em cima fica por cima dele)
     if not vazio:
         CZ.toalhinha(x0 + 0.22, x1 - 0.22, y0 + 0.1, y1 - 0.1, zt + 0.0005)
     peg(x0, x1, y0, y1)
 
 
-def guarda_roupa():
+def guarda_roupa(aberto=False):
     """
     O guarda-roupa de jacarandá (2 m): duas portas almofadadas (a da direita com o espelho), as duas gavetas
     embaixo, o rodapé recuado, a cimalha saliente; as costas de pinho.
+    aberto: as duas folhas abertas (a da esquerda mostra o lado de dentro, a da direita o espelho de fora), o vão
+    escuro com a barra e as roupas penduradas (camisas, um vestido, um casaco) e uma prateleira com panos dobrados.
     """
     x0, x1, y0, y1 = 0.04, 1.46, 0.05, 0.66
     zt = 3.27 / UN
@@ -257,17 +434,50 @@ def guarda_roupa():
         pain_p.append((u0 + 0.06, u1 - 0.06, zg + 0.1, zg + 0.34, 'p'))
     pain = pain[:2] + pain_p
     caixa((x0 + 0.04, x1 - 0.04, y0 + 0.02, y1 - 0.04, 0.0, 0.12), mad2(NOG_E, seed=21, passo=0.04))
-    caixa((x0, x1, y0, y1, 0.12, zc), {'frente': almofadas(JAC, pain, eixo=1, seed=22, passo=0.05),
-                                       'costas': tab2(PINHO, 0.15, '#6a4426', eixo=1, seed=23),
-                                       '*': mad2(JAC, eixo=1, seed=24, passo=0.06), 'cima': liso('#6a3420')})
+    if not aberto:
+        caixa((x0, x1, y0, y1, 0.12, zc), {'frente': almofadas(JAC, pain, eixo=1, seed=22, passo=0.05),
+                                           'costas': tab2(PINHO, 0.15, '#6a4426', eixo=1, seed=23),
+                                           '*': mad2(JAC, eixo=1, seed=24, passo=0.06), 'cima': liso('#6a3420')})
+    else:
+        e = 0.04
+        FORA = mad2(JAC, eixo=1, seed=24, passo=0.06)
+        IN = dentro('#2a1208', 0.12 + e, zc)
+        casca(x0, x1, y0, y1, 0.12, zc, e, FORA, IN, tab2(PINHO, 0.15, '#6a4426', eixo=1, seed=23), fundo=liso('#3a1c0e'))
+        caixa((x0, x1, y0, y1, zc - e, zc), {'baixo': IN, 'cima': liso('#6a3420'), '*': FORA})
+        # o bloco das gavetas de baixo (fechadas) e o chão do vão
+        caixa((x0 + e, x1 - e, y0 + e, y1, 0.12, zg), {'frente': almofadas(JAC, pain[:2], eixo=1, seed=22, passo=0.05), 'cima': liso('#4a2812'), '*': FORA})
+        # a prateleira dos panos, na ponta direita, e a barra com as roupas
+        zp = zc - 0.55
+        prateleira_in(meio + 0.06, x1 - e, y0 + e, y1 - 0.06, zp, 0.025, FORA, '#5a3018')
+        zr = zc - 0.22
+        _barra((x0 + e, x1 - e, y0 + 0.28, y0 + 0.3, zr, zr + 0.022), '#8a8e92', '#c0c4c8', quina=False)
+        if True:
+            for k, (cc, ln) in enumerate((('#c8c0a8', 0.78), ('#3e5a74', 0.82), ('#8a3a30', 0.78), ('#d8d0b8', 0.74), ('#2e4c3c', 1.0),
+                                          ('#5a3446', 0.74))):
+                xx = x0 + e + 0.07 + k * 0.095
+                caixa((xx, xx + 0.055, y0 + 0.14, y0 + 0.46, zr - ln, zr - 0.02), {'*': liso(cc), 'dir': liso(_hexn(_tom(hx(cc), 0.9)))})
+                _barra((xx + 0.02, xx + 0.035, y0 + 0.28, y0 + 0.3, zr - 0.01, zr + 0.05), '#6a6e72', quina=False)
+            for k, cc in enumerate(('#d8d0b8', '#4e6a8a', '#a8443a')):
+                caixa((meio + 0.1, x1 - e - 0.06, y0 + e + 0.1, y0 + e + 0.36, zp + 0.01 + k * 0.05, zp + 0.06 + k * 0.05), liso(cc))
+        # as folhas: a da esquerda (dobradiça em x0) e a da direita (dobradiça em x1)
+        zf0, zf1 = zg + 0.02, zc - 0.05
+        Wp = meio - x0
+        for (lado, Hx, ang, kk) in ((1, x0, 100, 'p'), (-1, x1, 180 - 108, 'e')):
+            H = (Hx, y1)
+            pd = [(0.05, Wp - 0.05, zf0 + 0.0, zf1, 'g'), (0.11, Wp - 0.11, zf0 + 0.42, zf1 - 0.07, kk), (0.11, Wp - 0.11, zf0 + 0.1, zf0 + 0.36, 'p')]
+            pi = [(0.05, Wp - 0.05, zf0, zf1, 'g'), (0.11, Wp - 0.11, zf0 + 0.1, zf1 - 0.07, 'p')]
+            porta_giro(H, ang, Wp, zf0, zf1, mat_folha(JAC, pd, H, ang, seed=22), mat_folha(_hexn(_tom(hx(JAC), 0.92)), pi, H, ang, seed=26),
+                       lado=lado, mat_b=mad2(JAC, eixo=1, seed=24, passo=0.06))
+            tirador(H, ang, Wp - 0.05, 1.0, lado)
     # a cimalha: a moldura em dois degraus
     caixa((x0 - 0.02, x1 + 0.02, y0 - 0.01, y1 + 0.02, zc, zc + 0.04), _pau('#6e3820', quina=1.2, b=(0, 0, 0, 0, zc, zc + 0.04)))
     caixa((x0 - 0.04, x1 + 0.04, y0 - 0.015, y1 + 0.04, zc + 0.04, zt), {'cima': tab2(JAC_TAB, 0.2, '#3a1a0c', seed=25, org=y0),
                                                                          '*': _pau('#7a3e22', quina=1.25, b=(0, 0, 0, 0, zc + 0.04, zt))})
     # os puxadores das portas e as alças das gavetas, o espelho da fechadura
-    for xx in (meio - 0.05, meio + 0.05):
-        _barra((xx - PH, xx + PH, y1, y1 + 0.022, 1.0, 1.12), LATAO, LATAO_L, quina=False)
-    _barra((meio - 0.035 - PH, meio - 0.035 + PH, y1, y1 + 0.01, 1.18, 1.18 + 3 * PZ), '#2a1a10', quina=False)
+    if not aberto:
+        for xx in (meio - 0.05, meio + 0.05):
+            _barra((xx - PH, xx + PH, y1, y1 + 0.022, 1.0, 1.12), LATAO, LATAO_L, quina=False)
+        _barra((meio - 0.035 - PH, meio - 0.035 + PH, y1, y1 + 0.01, 1.18, 1.18 + 3 * PZ), '#2a1a10', quina=False)
     for xx in ((x0 + meio) / 2, (meio + x1) / 2):
         alca(xx, (0.15 + zg) / 2, y1)
     peg(x0, x1, y0, y1)
@@ -670,10 +880,12 @@ def armchair():
     peg(x0, x1, y0, y1)
 
 
-def sideboard():
+def sideboard(aberto=False):
     """
     O aparador de jacarandá (0,9 m): as duas gavetas e as três portas, as pernas torneadas curtas, o tampo; em cima o
     caminho, as garrafas, a licoreira e os copos.
+    aberto: a portinha da esquerda e a da direita abertas (garrafas, pratos e um jarro lá dentro), a gaveta da esquerda
+    puxada com os talheres; a do meio fica fechada.
     """
     x0, x1, y0, y1 = 0.04, 1.46, 0.08, 0.6
     zt = 1.47 / UN
@@ -685,14 +897,59 @@ def sideboard():
         pain.append((cols[i] + 0.006, cols[i + 1] - 0.006, zb + 0.04, zg - 0.012, 'p'))
     for (a, b) in ((x0 + 0.06, y0 + 0.06), (x1 - 0.06, y0 + 0.06), (x0 + 0.06, y1 - 0.06), (x1 - 0.06, y1 - 0.06)):
         perna_torneada(a, b, 0.0, zb + 0.01, 0.04, '#3e1c0e')
-    caixa((x0, x1, y0, y1, zb, zt - 0.04), {'frente': almofadas(JAC, pain, eixo=1, seed=91, passo=0.05),
-                                            'costas': tab2(PINHO, 0.14, '#6a4426', eixo=1, seed=92), '*': mad2(JAC, eixo=1, seed=93, passo=0.05)})
+    FORA = mad2(JAC, eixo=1, seed=93, passo=0.05)
+    if not aberto:
+        caixa((x0, x1, y0, y1, zb, zt - 0.04), {'frente': almofadas(JAC, pain, eixo=1, seed=91, passo=0.05),
+                                                'costas': tab2(PINHO, 0.14, '#6a4426', eixo=1, seed=92), '*': FORA})
+    else:
+        e = 0.035
+        IN = dentro('#2a1208', zb + e, zg)
+        casca(x0, x1, y0, y1, zb, zg, e, FORA, IN, tab2(PINHO, 0.14, '#6a4426', eixo=1, seed=92), fundo=liso('#3a1c0e'))
+        # a faixa das gavetas (fechada, menos a da esquerda) e o chão do vão
+        caixa((x0, x1, y0, y1, zg, zt - 0.04), {'frente': almofadas(JAC, pain[:2], eixo=1, seed=91, passo=0.05),
+                                                'costas': tab2(PINHO, 0.14, '#6a4426', eixo=1, seed=92), '*': FORA})
+        # a porta do meio (fechada) e a divisória
+        caixa((cols[1] + 0.006, cols[2] - 0.006, y1 - 0.025, y1, zb + 0.04, zg - 0.012),
+              {'frente': almofadas(JAC, [(cols[1] + 0.006, cols[2] - 0.006, zb + 0.04, zg - 0.012, 'p')], eixo=1, seed=91, passo=0.05), '*': FORA})
+        meio_ = (x0 + x1) / 2
+        # as prateleiras de dentro e o que guardam
+        for k, cc in enumerate(('#2e5a3c', '#5a3a1e', '#2a4a6a')):
+            xx = x0 + e + 0.07 + k * 0.1
+            o = novo()
+            zq = zb + e
+            _poligono_rodado(xx, y0 + 0.3, [(zq, 0.036), (zq + 0.17, 0.036), (zq + 0.22, 0.017), (zq + 0.32, 0.015)], vol(xx, y0 + 0.3, cc, brilho=0.5), o, lados=12)
+        for k in range(4):
+            xx = cols[2] + 0.12
+            o = novo()
+            C().cilindro(xx, y0 + 0.3, 0.12, zb + e + 0.014 * k, zb + e + 0.014 * (k + 1), vol(xx, y0 + 0.3, '#e8e0cc', brilho=0.4), M, o, lados=16, tampa_mat=liso('#f0e8d4'))
+        o = novo()
+        jx, jy = x1 - e - 0.14, y0 + 0.3
+        _poligono_rodado(jx, jy, [(zb + e, 0.05), (zb + e + 0.08, 0.085), (zb + e + 0.18, 0.07), (zb + e + 0.26, 0.04)], vol(jx, jy, '#8a5a3a', brilho=0.3), o, lados=14)
+        # as portinhas abertas
+        Wd = cols[1] - cols[0] - 0.012
+        zf0, zf1 = zb + 0.04, zg - 0.012
+        for (lado, Hx, ang) in ((1, cols[0] + 0.006, 100), (-1, cols[3] - 0.006, 180 - 108)):
+            H = (Hx, y1)
+            pd = [(0.04, Wd - 0.04, zf0 + 0.03, zf1 - 0.03, 'p')]
+            porta_giro(H, ang, Wd, zf0, zf1, mat_folha(JAC, pd, H, ang, seed=91), mat_folha(_hexn(_tom(hx(JAC), 0.92)), pd, H, ang, seed=95),
+                       lado=lado, mat_b=FORA)
+            tirador(H, ang, Wd - 0.06, (zf0 + zf1) / 2 + 0.05, lado)
+        # a gaveta da esquerda puxada: os talheres e o pano
+        gaveta_puxada(x0 + 0.04, meio_ - 0.006, y1, 0.17, zg + 0.012, zt - 0.05, almofadas(JAC, pain[:1], eixo=1, seed=91, passo=0.05),
+                      alcas=[(x0 + meio_) / 2], funda=0.4, cor='#8a5a34',
+                      tecidos=[(x0 + 0.1, x0 + 0.5, 0.05, 0.3, '#d8cfb8')])
+        for k in range(5):
+            _barra((x0 + 0.14 + k * 0.07, x0 + 0.155 + k * 0.07, y1 - 0.34 + 0.17 + 0.06, y1 - 0.34 + 0.17 + 0.2, zg + 0.04, zg + 0.052), '#b8bcc0', '#e8ecf0', quina=False)
     caixa((x0 + 0.02, x1 - 0.02, y0 + 0.02, y1 + 0.005, zb - 0.03, zb), _pau('#4a2412', quina=1.2, b=(0, 0, 0, 0, zb - 0.03, zb)))
     caixa((x0 - 0.025, x1 + 0.025, y0 - 0.01, y1 + 0.03, zt - 0.04, zt), {'cima': tab2(JAC_TAB, 0.17, '#3a1a0c', seed=94, org=y0),
                                                                           '*': _pau('#7a3e22', quina=1.25, b=(0, 0, 0, 0, zt - 0.04, zt))})
     for xx in ((x0 + x1) / 2 - 0.36, (x0 + x1) / 2 + 0.36):
+        if aberto and xx < (x0 + x1) / 2:
+            continue
         alca(xx, (zg + zt - 0.04) / 2, y1, 0.08)
     for i in range(3):
+        if aberto and i != 1:
+            continue
         botao((cols[i] + cols[i + 1]) / 2 + (0.13 if i == 0 else -0.13 if i == 2 else 0.0), (zb + zg) / 2 + 0.06, y1)
     peg(x0, x1, y0, y1)
     # em cima: o caminho de crochê, as garrafas, a licoreira de vidro e os copos
@@ -1412,17 +1669,17 @@ def ceiling_lamp(acesa=True):
 # o catálogo deste grupo: def -> (largura, fundo em casas, a quina da pegada, o desenho, {estado: desenho})
 # =====================================================================================================================
 ITENS = {
-    'guarda_roupa': (2, 1, (0.0, 0.0), guarda_roupa, {}),
-    'comoda': (2, 1, (0.0, 0.0), comoda, {}),
+    'guarda_roupa': (2, 1, (0.0, 0.0), guarda_roupa, {'1': lambda: guarda_roupa(True)}),
+    'comoda': (2, 1, (0.0, 0.0), comoda, {'1': lambda: comoda(False, True)}),
     'cama_casal': (2, 3, (0.0, 0.0), cama_casal, {}),
     'cama_solteiro': (1, 3, (0.0, 0.0), cama_solteiro, {}),
     'beliche': (1, 3, (0.0, 0.0), beliche, {}),
-    'nightstand': (1, 1, (0.0, 0.0), criado_mudo, {}),
+    'nightstand': (1, 1, (0.0, 0.0), criado_mudo, {'1': lambda: criado_mudo(True)}),
     'mesa_jantar': (4, 2, (0.0, 0.0), mesa_jantar, {}),
     # as gêmeas vazias (o jogo troca quando os jogadores pegam o que estava em cima/dentro): o mesmo móvel, a mesma
     # pegada e a mesma âncora, sem os objetos soltos. O criado-mudo não tem nada solto: a vazia é ele mesmo.
-    'comoda!vazio': (2, 1, (0.0, 0.0), lambda: comoda(True), {}),
-    'nightstand!vazio': (1, 1, (0.0, 0.0), criado_mudo, {}),
+    'comoda!vazio': (2, 1, (0.0, 0.0), lambda: comoda(True), {'1': lambda: comoda(True, True)}),
+    'nightstand!vazio': (1, 1, (0.0, 0.0), criado_mudo, {'1': lambda: criado_mudo(True, True)}),
     'mesa_jantar!vazio': (4, 2, (0.0, 0.0), lambda: mesa_jantar(True), {}),
     'prateleira!vazio': (2, 1, (0.0, 0.0), lambda: prateleira(True), {}),
     'desk_wood': (2, 1, (0.0, 0.0), desk_wood, {}),
@@ -1430,7 +1687,7 @@ ITENS = {
     'bookshelf': (2, 1, (0.0, 0.0), bookshelf, {}),
     'armchair': (1, 1, (0.0, 0.0), armchair, {}),
     'bench': (2, 1, (0.0, 0.0), bench, {}),
-    'sideboard': (2, 1, (0.0, 0.0), sideboard, {}),
+    'sideboard': (2, 1, (0.0, 0.0), sideboard, {'1': lambda: sideboard(True)}),
     'banheira': (1, 2, (0.0, 0.0), banheira, {}),
     'sink': (1, 1, (0.0, 0.0), sink, {}),
     'toilet': (1, 1, (0.0, 0.0), toilet, {}),
