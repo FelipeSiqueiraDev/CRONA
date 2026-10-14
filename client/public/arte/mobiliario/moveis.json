@@ -10466,5 +10466,22 @@
       2.275,
       2.1
     ]
+  },
+  "janela_cozinha": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "janela_cozinha/parede-r.png",
+        "ax": 45.0,
+        "ay": 50.1
+      },
+      "l": {
+        "arquivo": "janela_cozinha/parede-l.png",
+        "ax": 32.0,
+        "ay": 50.1
+      }
+    }
   }
 }

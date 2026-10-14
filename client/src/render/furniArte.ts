@@ -376,12 +376,14 @@ export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: stri
   const base = a.parede[parede] ? pronta(a.parede[parede].arquivo) : null;
   const med = a.inclina?.[parede] ?? inclinacaoDoDesenho((base ?? img).normal);
   const alvo = parede === 'r' ? 0.5 : -0.5;
-  const torto = med !== null && Math.abs(alvo - med) >= 0.04 ? alvo - med : 0;
+  // a arte em pixel feita por código já vem na inclinação exata da parede: sem endireitar e no pixel inteiro
+  const torto = a.pixel ? 0 : med !== null && Math.abs(alvo - med) >= 0.04 ? alvo - med : 0;
   ctx.save();
   if (torto) ctx.transform(1, torto, 0, 1, 0, -torto * x);
-  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingEnabled = !a.pixel;
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img.normal, x - vista.ax * k, y - vista.ay * k, img.normal.width * k, img.normal.height * k);
+  if (a.pixel) ctx.drawImage(img.normal, Math.round(x - vista.ax), Math.round(y - vista.ay));
+  else ctx.drawImage(img.normal, x - vista.ax * k, y - vista.ay * k, img.normal.width * k, img.normal.height * k);
   const tela = (a as MovelArte & { tela?: TelaParede }).tela as TelaParede | undefined;
   const spot = tela?.paredes?.[parede];
   if (tela && spot && !state) telaDeTv(ctx, tela, spot, x - vista.ax * k, y - vista.ay * k, k, seed);

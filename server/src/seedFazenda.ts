@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 23;
+export const FAZENDA_REV = 24;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -780,6 +780,8 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["shelf_wall", "r", 0, 8.5, 3.22],
       // a natureza-morta das frutas, em cima do fogão
       ["quadro_fazenda~02", "r", 0, 3.0, 2.54],
+      // a janela em cima da pia (14/10, pedido do Felipe: "tá faltando só a janela"): o meio a 5 casas e 2,84 unidades
+      ["janela_cozinha", "r", 0, 5.0, 1.75],
       ["clock", "l", 0, 4.5, 3.45],
     ],
     links: [[9, 3, "hall"]],

@@ -56,3 +56,22 @@ copiado: só os fatos, os nomes e o que serve para o visual.
 - Arte: pedir ao Códex (seção nova do pedido): as casas medievais, a torre, a ferraria, a taverna, o hotel, os cristais
   (4 cores, em pedra e "lampião"), o lodo, as árvores, as estátuas, o portão, a sebe do labirinto, a ilha do mapa e as
   duas chegadas. Até lá, desenho em código.
+
+## Como montar no código (levantamento de 14/10, seguindo o Orfanato)
+
+1. `server/src/seedSantoBerco.ts` no molde do `seedOrfanato.ts`: prefixo `SANTO_BERCO = "Santo Berço · "`,
+   `SANTO_BERCO_REV`, a lista `CENAS: CenaSpec[]` (de `seedFazenda.ts`: `key`, `name`, `layout`, `andar`, `style`,
+   luz, `floor`, `wall`, `links`, `plan`), `ligar`, `seed`, `rebuild` e `montarSantoBerco`. A **Vila ao ar livre vem
+   primeiro** (vira a chave da campanha e a entrada): `aberto: true`, `terreno` feito com `new Terreno(w, h)`.
+2. Portas: `portal` (ou `passagem_aberta`) dos DOIS lados, ligados por `links` (o teste confere a volta). Andares:
+   `stairs_up` ↔ `escada_desce` com `andar` diferente. Escotilha do Ferreiro: `alcapao` + `escada_vertical`.
+3. Prédios na Vila: uma peça grande não pisável (≥ 20 casas) com uma `entrada` encostada na porta, ligada ao interior;
+   o servidor monta os marcos do minimapa sozinho.
+4. `db.ts`: `santoBercoRev`. `seed.ts`: chamar `montarSantoBerco` nos dois caminhos do `upgradeDb` e pôr o prefixo
+   no `limparSalasDeExemplo` (e no `limpeza.test.ts`). `shared/src/lugares.ts`: posição e ícone pelo nome (hoje não há
+   ícone de vila: cai em `casa`).
+5. Teste `server/test/santoBerco.test.ts` como o do Orfanato (cenas, título da campanha, portas de ida e volta, todas
+   alcançáveis da entrada).
+6. Peças que NÃO existem no catálogo (`shared/src/furni.ts`) e precisam ser criadas: cristais (4 cores), lodo preto,
+   sebe do labirinto, estátuas dos Guardiões, forja e bigorna, poço, pedras, árvores retorcidas coloridas e os prédios
+   da vila. Desde 14/10 o tabuleiro é desenhado por código ([`GUIA-MAPAS-PIXEL.md`](GUIA-MAPAS-PIXEL.md)).

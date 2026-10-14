@@ -391,6 +391,8 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'painting_coliseu', name: 'Pintura do Coliseu', category: 'parede', kind: 'painting', w: 101, h: 63, colors: ['#b8903a', '#8a6a4a'] },
   { id: 'board_detective', name: 'Quadro de Detetive', category: 'parede', kind: 'board', w: 152, h: 82, colors: ['#8a6a44', '#b3261e'] },
   { id: 'board_investigation', name: 'Quadro de Investigação', category: 'parede', kind: 'board', w: 76, h: 50, colors: ['#6b4a2e', '#b3261e'] },
+  // a janela da cozinha da fazenda (14/10): pixel art feita por código (scripts/3d/estilo/exportar_parede_px.py)
+  { id: 'janela_cozinha', name: 'Janela com Cortina', category: 'parede', kind: 'window', w: 72, h: 70, colors: ['#9a5e36', '#bfe0f0', '#f0dfbf'], desc: 'Janela de madeira aberta para o pasto, com a cortina de linho e o varão de ferro.' },
   { id: 'window_barred', name: 'Janela Gradeada', category: 'parede', kind: 'window', w: 44, h: 54, states: 2, colors: ['#1c2a3a', '#5fa8ff'] },
   { id: 'sconce', name: 'Arandela de Velas', category: 'parede', kind: 'sconce', w: 16, h: 28, states: 2, colors: ['#8a6a2a', '#e8dcc0'] },
   { id: 'door_sealed', name: 'Porta Selada', category: 'parede', kind: 'door_sealed', w: 40, h: 122, colors: ['#5a1414', '#8a1010'] },
