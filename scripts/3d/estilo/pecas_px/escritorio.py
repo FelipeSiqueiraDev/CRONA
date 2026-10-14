@@ -1527,10 +1527,12 @@ def _servidor(x0, x1, y0, y1, z0, z1, k, moderno=False):
     leds('+y', y1 + 0.001, pos, z0 + (z1 - z0) / 2 - PZ / 2, cs, True)
 
 
-def rack_moderno():
+def rack_moderno(vazio=False):
     """
     O rack de servidores moderno (1 x 2 casas, 2 m): o armário preto fundo, a porta de malha perfurada (as fileiras de
     furos em riscas), por trás dela os servidores com os leds azuis e roxos, a faixa de luz no alto e o teto ventilado.
+    vazio: a gêmea esvaziada (rack_moderno!vazio): os servidores foram levados, pela malha só o fundo escuro; a faixa
+    de luz e o painelzinho da porta continuam (são do armário).
     """
     x0, x1 = 0.08, 0.67
     y0, y1 = 0.05, 1.45
@@ -1553,7 +1555,7 @@ def rack_moderno():
         # os servidores por trás (uma faixa a cada 6 px) e os leds na ponta esquerda de cada um
         fila = np.floor(v / 6)
         g = v - fila * 6
-        tem = ruido(fila, 2.7) > 0.06
+        tem = (ruido(fila, 2.7) > 0.06) & (not vazio)
         bez = tem & (np.floor(g) == 4) & (u >= 1) & (u < Wm - 1)
         out = np.where((bez & fen)[:, None], hx('#26303e'), out)
         led = tem & fen & (((u >= 2) & (u < 3 + np.floor(ruido(fila, 4.1) * 4)) & (np.floor(g) == 2)) | ((u >= 2) & (u < 2 + np.floor(ruido(fila, 5.3) * 3)) & (np.floor(g) == 0)))
@@ -1574,10 +1576,11 @@ def rack_moderno():
     peg(x0, x1, y0, y1)
 
 
-def torre_crt():
+def torre_crt(vazio=False):
     """
     A torre de monitores CRT (2 casas, 1,8 m): a estante baixa de madeira com o videocassete, os seis monitores de tubo
     empilhados (dois grandes embaixo, dois no meio, dois menores em cima), todos ligados em cores diferentes.
+    vazio: a gêmea esvaziada (torre_crt!vazio): levaram os monitores, o videocassete e as fitas; sobra a estante baixa.
     """
     x0, x1 = 0.04, 1.46
     y0, y1 = 0.06, 0.7
@@ -1589,6 +1592,9 @@ def torre_crt():
     for xx in (x0, (x0 + x1) / 2 - 0.02, x1 - 0.04):
         cx((xx, xx + 0.04, y0, y1, 0.03, zs - 0.03), {'cima': liso('#5a3a26'), '*': mad2('#4a2e1e', eixo=1, seed=91, passo=0.04)})
     cx((x0 + 0.04, x1 - 0.04, y0, y0 + 0.02, 0.03, zs - 0.03), liso('#24160e'))
+    if vazio:
+        peg(x0, x1, y0, y1)
+        return
     # o videocassete (a caixa preta, a boca da fita, o visor âmbar) e a caixa de fitas
     vx0, vx1 = x0 + 0.1, (x0 + x1) / 2 - 0.08
     cx((vx0, vx1, y0 + 0.08, y1 - 0.06, 0.03, 0.13), {'frente': metal('#1e1d22', (0, 0, 0, 0, 0.03, 0.13)), '*': metal('#1e1d22', (0, 0, 0, 0, 0.03, 0.13), topo='#34333a')})
@@ -1727,8 +1733,12 @@ def teclado_bege(x0, x1, y0, y1, z):
     peq(x0, x1, y0, y1, z)
 
 
-def bancada_eletronica():
+def bancada_eletronica(vazio=False):
     """
+    vazio: a gêmea esvaziada (bancada_eletronica!vazio): sem as caixas e a maleta de baixo, sem as ferramentas do
+    painel e sem nada em cima (a placa, o multímetro, o osciloscópio, o carretel, o ferro); ficam as queimadas no
+    tampo e a lupa, que é presa na borda.
+
     A bancada de eletrônica (2 casas, o tampo a 0,95 m): o tampo de madeira gasto com as queimadas, o quadro de pés de
     cantoneira, a prateleira de baixo com as caixas, o painel perfurado atrás com as ferramentas; em cima o ferro de
     solda no suporte (fumegando), a lupa com a luz presa na borda, a placa verde, o multímetro, o osciloscópio de tela
@@ -1757,24 +1767,18 @@ def bancada_eletronica():
         cx((a, a + 0.05, b, b + 0.05, 0.0, h - tp), {'cima': liso('#6a7470'), '*': metal(COR, quina=False)})
     zpr = 0.16
     cx((x0 + 0.03, x1 - 0.03, y0 + 0.03, y1 - 0.03, zpr, zpr + 0.03), {'cima': liso('#5a6460'), '*': metal(COR, (0, 0, 0, 0, zpr, zpr + 0.03))})
+    if vazio:
+        _painel_perfurado(x0, x1, y0, h, COR)
+        _lupa_bancada(x0, y1, h)
+        peg(x0, x1, y0, y1)
+        return
     caixa_papelao(x0 + 0.12, x0 + 0.55, y0 + 0.12, y1 - 0.08, zpr + 0.03, zpr + 0.28, aberta=True, seed=4, abas=False)
     caixa_papelao(x0 + 0.62, x0 + 0.98, y0 + 0.1, y1 - 0.12, zpr + 0.03, zpr + 0.22, aberta=False, seed=7)
     # a maleta de gavetinhas (os componentes) em cima da prateleira
     cx((x1 - 0.42, x1 - 0.1, y0 + 0.15, y1 - 0.1, zpr + 0.03, zpr + 0.3), {'frente': frente_metal('#c84a2a', [(x1 - 0.42 + 0.02 + j * 0.1, x1 - 0.42 + 0.02 + j * 0.1 + 0.08, zpr + 0.05 + i * 0.08, zpr + 0.05 + i * 0.08 + 0.065) for i in range(3) for j in range(3)], etiqueta=False),
                                                                   '*': metal('#c84a2a', (0, 0, 0, 0, zpr + 0.03, zpr + 0.3))})
     # o painel perfurado atrás, com as ferramentas penduradas
-    zt = h + 0.68
-
-    def perfurado(L, n, P):
-        out = np.tile(hx('#a88a62'), (len(P), 1))
-        if n[1] < 0.5:
-            return out
-        u, v = np.floor(P[:, 0] / PH), np.floor(P[:, 2] / PZ)
-        fu = (u % 4 == 0) & (v % 4 == 0)
-        return np.where(fu[:, None], hx('#4a3420'), out)
-    cx((x0 + 0.02, x1 - 0.02, y0, y0 + 0.025, h, zt), {'frente': emissivo(perfurado), 'cima': liso('#b89a72'), '*': liso('#8a6e4a')})
-    for (a0, a1) in ((x0, x0 + 0.04), (x1 - 0.04, x1)):
-        cx((a0, a1, y0, y0 + 0.04, h, zt + 0.02), {'cima': liso('#6a7470'), '*': metal(COR, quina=False)})
+    zt = _painel_perfurado(x0, x1, y0, h, COR)
     # as ferramentas: o alicate, a chave de fenda, o rolo de fio, a tesoura
     for (xx, cor, hh) in ((x0 + 0.2, '#c83a2a', 0.16), (x0 + 0.26, '#e0b030', 0.18), (x0 + 0.32, '#2a6ab8', 0.15), (x0 + 0.38, '#c83a2a', 0.14)):
         _barra((xx, xx + 2 * PH, y0 + 0.025, y0 + 0.04, zt - 0.12 - hh, zt - 0.12 - hh * 0.45), cor, quina=False)
@@ -1841,7 +1845,29 @@ def bancada_eletronica():
     of = novo(contorno=False, sombra=False)
     BE._fita([(-0.08, h + 0.07), (-0.09, h + 0.13), (-0.07, h + 0.18), (-0.09, h + 0.24)], fx + 0.0, fy + 0.04, liso('#d8d8d4'), of, 0.014)
     peq(fx - 0.06, fx + 0.06, fy - 0.05, fy + 0.05, h)
-    # a lupa com luz, presa na borda do tampo: a garra, o braço articulado e o anel aceso com a lente
+    _lupa_bancada(x0, y1, h)
+    peg(x0, x1, y0, y1)
+
+
+def _painel_perfurado(x0, x1, y0, h, COR):
+    """O painel perfurado atrás da bancada de eletrônica e os dois montantes; devolve o alto dele."""
+    zt = h + 0.68
+
+    def perfurado(L, n, P):
+        out = np.tile(hx('#a88a62'), (len(P), 1))
+        if n[1] < 0.5:
+            return out
+        u, v = np.floor(P[:, 0] / PH), np.floor(P[:, 2] / PZ)
+        fu = (u % 4 == 0) & (v % 4 == 0)
+        return np.where(fu[:, None], hx('#4a3420'), out)
+    cx((x0 + 0.02, x1 - 0.02, y0, y0 + 0.025, h, zt), {'frente': emissivo(perfurado), 'cima': liso('#b89a72'), '*': liso('#8a6e4a')})
+    for (a0, a1) in ((x0, x0 + 0.04), (x1 - 0.04, x1)):
+        cx((a0, a1, y0, y0 + 0.04, h, zt + 0.02), {'cima': liso('#6a7470'), '*': metal(COR, quina=False)})
+    return zt
+
+
+def _lupa_bancada(x0, y1, h):
+    """A lupa com luz, presa na borda do tampo: a garra, o braço articulado e o anel aceso com a lente."""
     gx, gy = x0 + 0.08, y1 - 0.02
     cx((gx - 0.03, gx + 0.03, gy - 0.05, gy + 0.03, h - 0.07, h + 0.04), metal('#d8d8d4', (0, 0, 0, 0, h - 0.07, h + 0.04)))
     o = novo()
@@ -1860,7 +1886,6 @@ def bancada_eletronica():
         out = np.where((r > 0.075)[:, None], hx('#fffbe8'), hx('#c8e4e8'))
         return np.where(((r < 0.06) & ((P[:, 0] - rx) - (P[:, 1] - ry) < -0.02) & ((P[:, 0] - rx) - (P[:, 1] - ry) > -0.04))[:, None], hx('#ffffff'), out)
     _disco(rx, ry, rz + 0.041, 0.1, emissivo(anel), o, lados=22)
-    peg(x0, x1, y0, y1)
 
 
 def gravador_rolo():
@@ -2359,11 +2384,13 @@ def whiteboard():
     peg(x0, x1, yc - 0.3, yc + 0.3)
 
 
-def mesa_holografica(ligada=True):
+def mesa_holografica(ligada=True, vazio=False):
     """
     A mesa holográfica (2 x 2 casas, 1 m): a mesa redonda de metal escuro no pedestal, o tampo de vidro preto com o
     anel de luz ciano e o emissor no meio; ligada, o feixe sobe e o mapa da cidade flutua no ar em linhas de luz
     (a grade, os prédios em arame, os pontos); desligada, tudo apagado.
+    vazio: a gêmea esvaziada (mesa_holografica!vazio): o mapa foi tirado da mesa; ligada, só o vidro com a grade e o
+    emissor aceso, sem o feixe e sem o mapa no ar.
     """
     cx_, cy_ = 0.75, 0.75
     r = 0.68
@@ -2406,7 +2433,7 @@ def mesa_holografica(ligada=True):
         return out
     o = novo()
     _disco(cx_, cy_, h, r, emissivo(vidro), o, lados=48)
-    if ligada:
+    if ligada and not vazio:
         # o feixe: as linhas de luz subindo do emissor até o mapa
         zm = h + 0.42
         ob = luz(novo(contorno=False, sombra=False))
@@ -2539,6 +2566,12 @@ ITENS = {
     'water_cooler': (1, 1, (0.0, 0.0), water_cooler, {}),
     'whiteboard': (3, 1, (0.0, 0.0), whiteboard, {}),
     'mesa_holografica': (2, 2, (0.0, 0.0), lambda: mesa_holografica(True), {'1': lambda: mesa_holografica(False)}),
+    # as gêmeas vazias (o jogo troca quando os jogadores pegam o que estava em cima/dentro): o mesmo móvel, a mesma
+    # pegada e a mesma âncora, sem os objetos soltos
+    'bancada_eletronica!vazio': (2, 1, (0.0, 0.0), lambda: bancada_eletronica(True), {}),
+    'mesa_holografica!vazio': (2, 2, (0.0, 0.0), lambda: mesa_holografica(True, True), {'1': lambda: mesa_holografica(False, True)}),
+    'rack_moderno!vazio': (1, 2, (0.0, 0.0), lambda: rack_moderno(True), {}),
+    'torre_crt!vazio': (2, 1, (0.0, 0.0), lambda: torre_crt(True), {}),
     'fluorescent': (1, 1, (0.0, 0.0), lambda: fluorescent(True), {'1': lambda: fluorescent(False)}),
     'papers': (1, 1, (0.0, 0.0), papers, {}),
 }

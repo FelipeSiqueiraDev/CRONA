@@ -853,14 +853,22 @@ def monitor_wall_off():
 # =====================================================================================================================
 # 10. mural de polaroids (46 x 31)
 # =====================================================================================================================
-def mural_polaroids():
+def mural_polaroids(vazio=False):
+    """
+    O mural de cortiça com as seis polaroids (presas com fita ou alfinete).
+    vazio: a gêmea esvaziada (mural_polaroids!vazio): levaram as fotos; na cortiça fica a marca mais clara de cada uma
+    (onde o sol não pegou), os alfinetes espetados e os pedaços de fita.
+    """
     X, Z = X0, _zm(2.6, 31)
     W, H, D = 44, 29, 2
     px = _quadro(W, H, '#2e2a28', 2, 31)
     pol = [(4, 3, 'mar', 'fita'), (17, 4, 'por', '#d23a2e'), (30, 3, 'mata', 'fita'),
            (8, 15, 'rosto2', '#3a6ad2'), (21, 16, 'noite', 'fita'), (33, 15, 'casa', '#e8c040')]
     for k, (i, v, tema, prende) in enumerate(pol):
-        foto(px, i, v, 10, 12, tema, seed=k, polaroid=True)
+        if vazio:
+            px.tom(px.m_ret(i, v, i + 10, v + 12), 1.1)
+        else:
+            foto(px, i, v, 10, 12, tema, seed=k, polaroid=True)
         if prende == 'fita':
             fita(px, i + 3, v - 1, 4, 2)
         else:
@@ -1434,6 +1442,7 @@ ITENS_PAREDE = {
     'fan_wall': (fan_wall, (X0, _zm(3.54, 30))),
     'monitor_wall': (monitor_wall, (X0, _zm(2.9, 52)), {'1': monitor_wall_off}),
     'mural_polaroids': (mural_polaroids, (X0, _zm(2.6, 31))),
+    'mural_polaroids!vazio': (lambda: mural_polaroids(True), (X0, _zm(2.6, 31))),   # a gêmea vazia: sem as fotos
     'neon_bar': (neon_bar, (X0, _zm(3.08, 26)), {'1': neon_bar_off}),
     'notes_wall': (notes_wall, (X0, _zm(2.36, 38))),
     'notice_board': (notice_board, (X0, _zm(2.0, 35))),

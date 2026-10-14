@@ -10,6 +10,9 @@ batente de cada lado) e a borda dele uma risca de 2 px até 2,16 m. A moldura co
 0,05 m e de 0,70 a 0,75 m, a verga até 2,21 m. Os estados: 0 aberta (a folha girada 90° para dentro, no lado da
 dobradiça, sem tapar o vão), 1 fechada, 2 trancada (a tranca de ferro atravessada e o cadeado). A arte só existe nas
 paredes do fundo (giros 4 e 2: SO_GIROS); a dobradiça fica do lado de trás na tela (giro 4: u pequeno; giro 2: u grande).
+A `portal@metal` (o Arsenal e a Prisão da Sede, piso 'metal'/'cela') é a mesma porta em aço: a moldura de chapa, a
+folha cinza com as duas chapas rebaixadas e os rebites, a maçaneta de alavanca; os mesmos estados, a mesma pegada e o
+mesmo vão escuro quando aberta.
 
 As paredes internas e a parede de cela são BLOCOS da casa inteira (0,75 x 0,75 m): emendam em fila, em L e em bloco
 (o anexo do Orfanato é um bloco de 5 x 6 delas; as celas da Sede têm paredes em L), sem o contorno escuro entre uma e
@@ -87,14 +90,14 @@ FERRO_T = '#5c5550'
 LATAO = '#b98d3e'
 
 
-def almofadas(cor, paineis, eixo='x', tela=1, seed=0, veio=1, borda_luz=1.13, borda_somb=0.8):
+def almofadas(cor, paineis, eixo='x', tela=1, seed=0, veio=1, borda_luz=1.13, borda_somb=0.8, base=None):
     """
     A madeira da folha com as almofadas (o painel rebaixado com o chanfro): a fresta escura de 1 px, o chanfro de
     2 px (claro em cima e do lado da luz, escuro embaixo e do outro lado) e o campo do meio. eixo 'x': a face olha
     para ±y (a = u); 'y': olha para ±x (a = v). tela: +1 se `a` cresce para a direita na tela, -1 se para a esquerda
-    (a luz vem de cima à esquerda). Só nas faces largas; o resto é a madeira com o veio.
+    (a luz vem de cima à esquerda). Só nas faces largas; o resto é a madeira com o veio (ou o material `base`).
     """
-    base = mad2(cor, eixo=veio, seed=seed, passo=0.07)
+    base = base or mad2(cor, eixo=veio, seed=seed, passo=0.07)
     c0 = hx(cor)
 
     def f(L, n, P):
@@ -166,6 +169,79 @@ def latao():
     return emissivo(f)
 
 
+ACO_P = '#6a7276'       # a folha de aço da porta de metal
+ACO_PT = '#8e989c'
+ACO_M = '#4a5256'       # a moldura de chapa
+ACO_MT = '#7a8488'
+
+
+def _rebites(lo, hi):
+    """Os rebites da folha de aço (a ao longo dela, z): as duas colunas nas beiradas e as fileiras em cima, no meio e embaixo."""
+    out = [(a, z) for a in (lo + 0.03, hi - 0.03 - 2 * PH) for z in np.arange(0.2, ZV - 0.16, 0.16)]
+    out += [(a, z) for a in np.arange(lo + 0.03, hi - 0.04, 0.095) for z in (0.06, 1.02, ZV - 0.085)]
+    return out
+
+
+def chapa_porta(a0, a1, eixo='x', cor=ACO_P, seed=0):
+    """
+    A chapa da folha de aço (a base das almofadas): o cinza com riscas compridas de 1 px (o escovado), os rebites em
+    volta da folha e na travessa do meio (2 x 2 px, o claro em cima e a sombrinha embaixo) e a ferrugem no pé.
+    a0..a1: a folha ao longo da face larga (eixo 'x': a = u; 'y': a = v).
+    """
+    c0 = hx(cor)
+
+    def f(L, n, P):
+        if n[2] > 0.5:
+            return np.tile(hx(ACO_PT), (len(P), 1))
+        if n[2] < -0.5:
+            return np.tile(_tom(c0, 0.7), (len(P), 1))
+        out = np.tile(c0, (len(P), 1))
+        larga = abs(n[1]) > 0.5 if eixo == 'x' else abs(n[0]) > 0.5
+        if not larga:
+            return out
+        a = L[:, 0] if eixo == 'x' else L[:, 1]
+        z = L[:, 2]
+        lo, hi = min(a0, a1), max(a0, a1)
+        # o escovado: riscas deitadas compridas, um tom acima ou abaixo
+        r = _celula(a, z, 0.21, PZ, seed + 5)
+        out = np.where((r > 0.95)[:, None], _tom(c0, 1.05), out)
+        out = np.where((r < 0.04)[:, None], _tom(c0, 0.95), out)
+        # os rebites (2 x 2 px, a sombrinha de 1 px embaixo): nas duas beiradas, em cima, embaixo e na travessa do meio
+        ia, iz = np.floor((a - lo) / PH), np.floor(z / PZ)
+        reb = np.zeros(len(P), bool)
+        sob = np.zeros(len(P), bool)
+        for (ar, zr) in _rebites(lo, hi):
+            i, j = math.floor((ar - lo) / PH), math.floor(zr / PZ)
+            em_a = (ia >= i) & (ia < i + 2)
+            reb |= em_a & (iz >= j) & (iz < j + 2)
+            sob |= em_a & (iz == j - 1)
+        out = np.where((sob & ~reb)[:, None], _tom(c0, 0.76), out)
+        out = np.where(reb[:, None], _tom(c0, 1.32), out)
+        # a ferrugem no pé (blocos compridos subindo um pouco)
+        esc = _celula(a, np.zeros_like(z), 2 * PH, 1.0, seed + 3)
+        fer = (z < 0.07) | ((z < 0.07 + 0.18 * esc) & (esc > 0.6))
+        out = np.where(fer[:, None], out * 0.62 + hx('#7a4428') * 0.38, out)
+        return out
+    return emissivo(f)
+
+
+def aco_moldura(eixo=1, frisos=(), cor=ACO_M, topo=ACO_MT):
+    """A moldura de chapa: o cinza escuro chapado, os frisos de 1 px ao longo dela na face da frente, o topo claro."""
+    c0, ct = hx(cor), hx(topo)
+
+    def f(L, n, P):
+        if n[2] > 0.5:
+            return np.tile(ct, (len(P), 1))
+        out = np.tile(c0, (len(P), 1))
+        if abs(n[1]) > 0.5 and frisos:
+            a = L[:, 0] if eixo == 1 else L[:, 2]
+            ee = PH if eixo == 1 else PZ
+            for (ff, k) in frisos:
+                out = np.where(((a >= ff) & (a < ff + ee))[:, None], _tom(c0, k), out)
+        return out
+    return emissivo(f)
+
+
 # =====================================================================================================================
 # a porta (portal)
 # =====================================================================================================================
@@ -184,8 +260,14 @@ def _paineis_folha(a0):
             (a0 - 0.055 + m[0], a0 - 0.055 + m[1], 1.13, 1.96), (a0 - 0.055 + m[2], a0 - 0.055 + m[3], 1.13, 1.96)]
 
 
-def _moldura():
-    """O batente e a guarnição: os dois batentes, a verga, a cornija e as soleira; o fundo do batente dentro do vão."""
+def _moldura(metal=False):
+    """
+    O batente e a guarnição: os dois batentes, a verga, a cornija e as soleira; o fundo do batente dentro do vão.
+    metal: a mesma moldura em chapa de aço (a porta de metal).
+    """
+    if metal:
+        _moldura_aco()
+        return
     # o fundo do batente (o forro dentro da parede), dos dois lados, e a soleira
     forro = mad2('#83502e', eixo=1, seed=31, passo=0.05)
     _cx((VAO0 - 0.015, VAO0, -REV, 0.0, 0.0, ZV), forro)
@@ -202,52 +284,93 @@ def _moldura():
     _cx((-0.015, CASA + 0.015, 0.0, 0.055, ZG, ZG + 0.035), _pau('#8a522e', '#c08048', quina=1.25, b=(0, 0, 0, 0, 0, ZG + 0.035)))
 
 
+def _moldura_aco():
+    """A moldura da porta de metal: as mesmas peças e medidas da de madeira, em chapa de aço; a soleira de chapa xadrez."""
+    forro = aco_moldura(cor='#3e4448', topo='#5a6266')
+    _cx((VAO0 - 0.015, VAO0, -REV, 0.0, 0.0, ZV), forro)
+    _cx((VAO1, VAO1 + 0.015, -REV, 0.0, 0.0, ZV), forro)
+
+    def xadrez(L, n, P):
+        out = np.tile(hx('#5e666a'), (len(P), 1))
+        if n[2] < 0.5:
+            return np.tile(hx('#40474b'), (len(P), 1))
+        u, v = np.floor(L[:, 0] / PH), np.floor(L[:, 1] / PH)
+        risca = ((u + v) % 4 == 0) & (np.floor(v / 2) % 2 == 0) | ((u - v) % 4 == 0) & (np.floor(v / 2) % 2 == 1)
+        return np.where(risca[:, None], hx('#7e888c'), out)
+    _cx((VAO0, VAO1, -REV, 0.03, 0.0, 0.022), emissivo(xadrez))
+    for (a0, a1) in ((0.0, VAO0), (VAO1, CASA)):
+        fr = ((a0 + 2 * PH, 0.78), (a1 - 2 * PH, 1.14))
+        _cx((a0, a1, 0.0, 0.035, 0.0, ZV), aco_moldura(eixo=1, frisos=fr))
+        _cx((a0 - 0.004, a1 + 0.004, 0.0, 0.045, 0.0, 0.15), _pau('#3a4044', '#5e666a', quina=1.2, b=(0, 0, 0, 0, 0, 0.15)))
+    _cx((0.0, CASA, 0.0, 0.04, ZV, ZG), aco_moldura(eixo=0, frisos=((ZV + 2 * PZ, 0.8),)))
+    _cx((-0.015, CASA + 0.015, 0.0, 0.055, ZG, ZG + 0.035), _pau('#3e4448', '#6e787c', quina=1.25, b=(0, 0, 0, 0, 0, ZG + 0.035)))
+
+
 def _na_face(eixo, face, s, a0, a1, d0, d1, z0, z1):
     """A caixa presa numa face: `a` ao longo dela, `d` para fora (s = +1/-1). eixo 'y': a face é um plano y; 'x': um plano x."""
     p0, p1 = sorted((face + s * d0, face + s * d1))
     return (a0, a1, p0, p1, z0, z1) if eixo == 'y' else (p0, p1, a0, a1, z0, z1)
 
 
-def _macaneta(eixo, face, s, a, z, sombra=True):
-    """A maçaneta de latão com o espelho (a placa comprida) e o buraco da chave embaixo dela."""
-    _cx(_na_face(eixo, face, s, a - 0.014, a + 0.014, 0.0, 0.008, z - 0.075, z + 0.06), latao(), sombra=sombra)
-    _cx(_na_face(eixo, face, s, a - 0.02, a + 0.02, 0.008, 0.035, z - 0.02, z + 0.02), latao(), sombra=sombra)
+def _macaneta(eixo, face, s, a, z, sombra=True, metal=False):
+    """A maçaneta de latão (metal: a alavanca de aço) com o espelho (a placa comprida) e o buraco da chave embaixo dela."""
+    m = ferro('#9aa2a6', '#c4cacc') if metal else latao()
+    _cx(_na_face(eixo, face, s, a - 0.014, a + 0.014, 0.0, 0.008, z - 0.075, z + 0.06), m, sombra=sombra)
+    if metal:
+        # o pino e a alavanca deitada, apontando para o meio da folha (a maçaneta fica sempre na beirada de fora)
+        _cx(_na_face(eixo, face, s, a - 0.012, a + 0.012, 0.008, 0.03, z - 0.012, z + 0.012), m, sombra=sombra)
+        l0, l1 = (a - 0.1, a + 0.012) if a > 0.4 else (a - 0.012, a + 0.1)
+        _cx(_na_face(eixo, face, s, l0, l1, 0.03, 0.05, z - 0.014, z + 0.01), m, sombra=sombra)
+    else:
+        _cx(_na_face(eixo, face, s, a - 0.02, a + 0.02, 0.008, 0.035, z - 0.02, z + 0.02), m, sombra=sombra)
     _cx(_na_face(eixo, face, s, a - 0.005, a + 0.005, 0.008, 0.01, z - 0.06, z - 0.035), liso('#1c1410'), sombra=sombra)
 
 
-def _dobradicas(x0, x1, y0, y1):
+def _dobradicas(x0, x1, y0, y1, metal=False):
     for z in (0.22, 1.02, 1.84):
-        _cx((x0, x1, y0, y1, z, z + 0.09), ferro())
+        _cx((x0, x1, y0, y1, z, z + 0.09), ferro('#2a2e30', '#50585c') if metal else ferro())
 
 
-def _folha_fechada(rot):
+def _mat_folha(a0, a1, eixo, tela, metal):
+    """A folha: a madeira com as 4 almofadas, ou (metal) a chapa de aço com as 2 chapas rebaixadas e os rebites."""
+    if not metal:
+        return almofadas(FOLHA, _paineis_folha(a0), eixo, tela, seed=41)
+    lo, hi = min(a0, a1), max(a0, a1)
+    pain = [(lo + 0.085, hi - 0.085, 0.2, 0.9), (lo + 0.085, hi - 0.085, 1.14, 1.92)]
+    return almofadas(ACO_P, pain, eixo, tela, base=chapa_porta(lo, hi, 'x' if eixo == 'x' else 'y', seed=43),
+                     borda_luz=1.14, borda_somb=0.76)
+
+
+def _folha_fechada(rot, metal=False):
     """A folha fechada no vão: as almofadas, as dobradiças do lado de trás na tela e a maçaneta do outro."""
     a0, a1 = VAO0 + 0.005, VAO1 - 0.005
-    _cx((a0, a1, FY - ESPF, FY, 0.006, ZV - 0.004), almofadas(FOLHA, _paineis_folha(a0), 'x', 1, seed=41))
+    mat = _mat_folha(a0, a1, 'x', 1, metal)
+    _cx((a0, a1, FY - ESPF, FY, 0.006, ZV - 0.004), mat)
     if rot == 2:
-        _macaneta('y', FY, 1, a0 + 0.075, 1.0)
-        _dobradicas(a1 - 0.014, a1, FY, FY + 0.006)
+        _macaneta('y', FY, 1, a0 + 0.075, 1.0, metal=metal)
+        _dobradicas(a1 - 0.014, a1, FY, FY + 0.006, metal)
     else:
-        _macaneta('y', FY, 1, a1 - 0.075, 1.0)
-        _dobradicas(a0, a0 + 0.014, FY, FY + 0.006)
+        _macaneta('y', FY, 1, a1 - 0.075, 1.0, metal=metal)
+        _dobradicas(a0, a0 + 0.014, FY, FY + 0.006, metal)
 
 
-def _folha_aberta(rot):
+def _folha_aberta(rot, metal=False):
     """
     A folha aberta: girada 90° para dentro da sala, na dobradiça do lado de trás na tela (giro 4: o batente de u
     pequeno; giro 2: o de u grande), encostada no pé do batente. Assim ela não tapa o vão. Fica fora da medida `real`.
     """
     L = VAO1 - VAO0 - 0.01        # a largura da folha
+    # (a madeira segue as almofadas de antes, que começam em FY + 0,06; o aço, a folha de FY a FY + L)
     if rot == 2:
         x1 = VAO1 - 0.005
         b = (x1 - ESPF, x1, FY, FY + L, 0.006, ZV - 0.004)
-        o = _cx(b, almofadas(FOLHA, _paineis_folha(FY + 0.06), 'y', 1, seed=41), sombra=False)
-        _macaneta('x', x1 - ESPF, -1, FY + L - 0.075, 1.0, sombra=False)
+        o = _cx(b, _mat_folha(FY + 0.06 if not metal else FY, FY + L, 'y', 1, metal), sombra=False)
+        _macaneta('x', x1 - ESPF, -1, FY + L - 0.075, 1.0, sombra=False, metal=metal)
     else:
         x0 = VAO0 + 0.005
         b = (x0, x0 + ESPF, FY, FY + L, 0.006, ZV - 0.004)
-        o = _cx(b, almofadas(FOLHA, _paineis_folha(FY + 0.06), 'y', -1, seed=41), sombra=False)
-        _macaneta('x', x0 + ESPF, 1, FY + L - 0.075, 1.0, sombra=False)
+        o = _cx(b, _mat_folha(FY + 0.06 if not metal else FY, FY + L, 'y', -1, metal), sombra=False)
+        _macaneta('x', x0 + ESPF, 1, FY + L - 0.075, 1.0, sombra=False, metal=metal)
     CZ.pegadas.append(tuple(b[:4]))
     return o
 
@@ -299,15 +422,16 @@ def _vao_escuro():
     _fp([(VAO0, y, 0.022), (VAO1, y, 0.022), (VAO1, y, ZV), (VAO0, y, ZV)], (0, 1, 0), emissivo(cor), o)
 
 
-def _porta(estado):
+def _porta(estado, metal=False):
+    """A porta no estado (0 aberta, 1 fechada, 2 trancada); metal: a porta de aço (portal@metal)."""
     def d():
         rot = _rot()
-        _moldura()
+        _moldura(metal)
         if estado == 0:
             _vao_escuro()
-            _folha_aberta(rot)
+            _folha_aberta(rot, metal)
         else:
-            _folha_fechada(rot)
+            _folha_fechada(rot, metal)
             if estado == 2:
                 _tranca()
     return d
@@ -897,6 +1021,8 @@ def _entrada(larg):
 # =====================================================================================================================
 ITENS = {
     'portal': (1, 1, (0.0, 0.0), _porta(0), {'1': _porta(1), '2': _porta(2)}),
+    # a porta de aço (o piso 'metal' e 'cela': o Arsenal e a Prisão da Sede): os mesmos estados, pegada e vão
+    'portal@metal': (1, 1, (0.0, 0.0), _porta(0, True), {'1': _porta(1, True), '2': _porta(2, True)}),
     'stairs_up': (1, 2, (0.0, 0.0), _stairs_up, {}),
     'escada_desce': (1, 2, (0.0, 0.0), _escada_desce, {}),
     'stairs_down': (1, 1, (0.0, 0.0), _stairs_down, {}),
@@ -913,4 +1039,4 @@ ITENS = {
     'entrada_larga': (2, 1, (0.0, 0.0), _entrada(2), {}),
 }
 # a porta só tem arte nas paredes do fundo (giro 4 na 'r', giro 2 na 'l'); nas outras, o jogo desenha a soleira
-SO_GIROS = {'portal': (4, 2)}
+SO_GIROS = {'portal': (4, 2), 'portal@metal': (4, 2)}

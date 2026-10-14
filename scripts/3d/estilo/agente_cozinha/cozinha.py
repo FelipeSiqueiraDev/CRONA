@@ -714,8 +714,11 @@ def prato_pe(cx, y, cz, r, aro='#3e5f8e', normal='y'):
 CREME, CREME_L, CREME_E = '#e2d6bc', '#efe6d2', '#c8b99a'
 
 
-def armario(o0, face, enfeite=0):
-    """o0: onde começa ao longo da parede; face '+y' (encostado no fundo, de x0 a x0 + 1,5) ou '+x' (na esquerda)."""
+def armario(o0, face, enfeite=0, vazio=False):
+    """
+    o0: onde começa ao longo da parede; face '+y' (encostado no fundo, de x0 a x0 + 1,5) ou '+x' (na esquerda).
+    vazio: a gêmea esvaziada (armario_cozinha!vazio): o mesmo armário sem a louça e sem os enfeites (ficam os trilhos).
+    """
     W, DL, DU = 1.5, 0.56, 0.34
     ZB, ZN, ZU, ZT = 0.86, 0.91, 1.36, 1.84
     ZP = 1.6                       # a prateleira do meio
@@ -795,7 +798,7 @@ def armario(o0, face, enfeite=0):
     caixa(B(0.035, W - 0.035, 0.012, DU - 0.03, ZP, ZP + 0.022), {'cima': liso('#6a8794'), '*': pintado()}, sombra=False)
     # a louça: os pratos em pé na frente (encostados no vidro, no trilho), as xícaras e as tigelas
     for zp, sem in ((ZU, 0 if enfeite != 1 else 2), (ZP + 0.022, 1)):
-        louca(B, fy, o0, zp, W, DU, sem)
+        louca(B, fy, o0, zp, W, DU, sem, so_trilho=vazio)
     # a cimalha em cima
     caixa(B(-0.025, W + 0.025, 0, DU + 0.03, ZT, ZT + 0.06), {'cima': tab2(['#b07440', '#a86e3c'], 0.12, '#5a2c16', eixo=ex, seed=64), '*': mad2('#8a5230', eixo=ex, seed=65, passo=0.03)}, sombra=False)
     # as portas de vidro: o caixilho creme (as duas folhas com a travessa e o pinázio) e o vidro
@@ -808,16 +811,19 @@ def armario(o0, face, enfeite=0):
         caixa(B(uk, uk + 0.02, DU, DU + 0.02, ZP - 0.06, ZP), _pau('#5a4a3a', '#8a7a62', quina=False), sombra=False)
     vidros.append(B(0.036, W - 0.036, 0.014, vf - 0.002, ZU + 0.001, ZT - 0.001))   # (depois do fundo: as costas ficam sem o vidro)
     # o vão aberto entre a bancada e o guarda-louça e em cima: os enfeites
-    enfeites_armario(B, fy, o0, W, ZN, ZT + 0.06, enfeite)
+    if not vazio:
+        enfeites_armario(B, fy, o0, W, ZN, ZT + 0.06, enfeite)
 
 
-def louca(B, fy, o0, z, W, DU, sem):
+def louca(B, fy, o0, z, W, DU, sem, so_trilho=False):
     """A louça de uma prateleira: os pratos em pé na frente (no trilho, de frente para o vidro), as xícaras e as tigelas."""
     r = 0.09 if sem != 1 else 0.08
     aro = ('#3e5f8e', '#a8442e', '#4e7a52')[sem]
     vp = DU - 0.075
     # o trilho de madeira que segura os pratos
     caixa(B(0.04, W - 0.04, vp + 0.015, vp + 0.03, z + 0.03, z + 0.045), _pau('#c8b896', quina=False), sombra=False)
+    if so_trilho:
+        return
     us = (0.14, 0.31, 0.48) if sem != 1 else (0.13, 0.28, 0.43, 0.58)
     for k, u in enumerate(us):
         bb = B(u, u, vp - 0.01 * (k % 2), 0, 0, 0)

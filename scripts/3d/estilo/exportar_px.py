@@ -45,6 +45,10 @@ ITENS = {
     'fogao_lenha': (2, 1, (1.5, 0.0), lambda: CZ.fogao(aceso=False), {'1': lambda: CZ.fogao(aceso=True)}),
     'pia_cozinha': (2, 1, (3.0, 0.0), lambda: CZ.pia(), {}),
     'mesa_cozinha': (3, 2, (3.0, 2.25), lambda: CZ.mesa(2.775, 2.1, 2.7, 1.8, 0.94), {}),
+    # as gêmeas vazias (o jogo troca quando os jogadores pegam o que estava em cima/dentro): o mesmo móvel e a mesma
+    # âncora, sem os objetos soltos. A mesa da cozinha já é só a mesa: a vazia é ela mesma.
+    'armario_cozinha!vazio': (2, 1, (0.0, 0.0), lambda: CZ.armario(0.0, '+y', enfeite=0, vazio=True), {}),
+    'mesa_cozinha!vazio': (3, 2, (3.0, 2.25), lambda: CZ.mesa(2.775, 2.1, 2.7, 1.8, 0.94), {}),
     'chair_wood': (1, 1, (0.0, 0.0), _cadeira, {}),
     'crate_wood': (1, 1, (0.0, 3.0), lambda: CZ.caixotes(0.05, 3.06), {}),
     'barrel': (1, 1, (0.0, 3.75), lambda: CZ.barril(0.37, 4.12), {}),
@@ -316,6 +320,14 @@ def main():
         # a tela acesa: as cores que piscam na luz do cômodo continuam; o ponto do brilho era da imagem antiga e sai
         if 'tela' in velho and 'tela' not in novo:
             novo['tela'] = {**velho['tela'], 'giros': {}, **({'paredes': {}} if 'paredes' in velho['tela'] else {})}
+        # a variante (`<def>!vazio`, `<def>@metal`): a caixa, o encostar e o resto do jogo são os da peça base
+        raiz = n.split('!')[0].split('@')[0]
+        base = lista.get(raiz, {}) if raiz != n else {}
+        for k in ('caixa', 'encosta', 'pendulo', 'falha'):
+            if k in base:
+                novo[k] = base[k]
+        if 'tela' in base and 'tela' not in novo:
+            novo['tela'] = {**base['tela'], 'giros': {}, **({'paredes': {}} if 'paredes' in base['tela'] else {})}
         lista[n] = novo
     os.makedirs(destino, exist_ok=True)
     json.dump(lista, open(arq, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)

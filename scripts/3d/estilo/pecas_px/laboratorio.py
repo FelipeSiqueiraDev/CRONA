@@ -1029,12 +1029,13 @@ def eletroencefalografo():
     peg(x0, x1, y0, y1)
 
 
-def posto_enfermagem():
+def posto_enfermagem(vazio=False):
     """
     O posto de enfermagem (7 x 3 casas, balcão em L de 1,1 m): o balcão comprido no fundo e o braço descendo pela
     esquerda até a frente; o corpo creme com as portas e as gavetas, o rodapé, o tampo de fórmica com a borda; em
     cima o computador antigo com o teclado, o telefone, as pastas, a bandeja de papéis, o porta-canetas e a fileira
     de fichários; a cruz verde na ponta do braço.
+    vazio: a gêmea esvaziada (posto_enfermagem!vazio): só o balcão, sem nada em cima.
     """
     h = 1.8 / UN
     tp = 0.035
@@ -1072,6 +1073,8 @@ def posto_enfermagem():
     caixa((lx0 - 0.015, lx1 + 0.025, y1 + 0.025, ly1 + 0.025, h - tp, h), TP)
     peg(x0, x1, y0, y1)
     peg(lx0, lx1, y1, ly1)
+    if vazio:
+        return
     # o computador (o monitor de tubo bege, o teclado) no canto
     _crt(1.25, 0.3, h)
     _teclado(1.05, 1.5, 0.55, 0.7, h)
@@ -1772,6 +1775,7 @@ ITENS = {
     'medical_cabinet': (2, 1, (0.0, 0.0), medical_cabinet, {}),
     'monitor_suporte': (1, 1, (0.0, 0.0), lambda: monitor_suporte(True), {'1': lambda: monitor_suporte(False)}),
     'posto_enfermagem': (7, 3, (0.0, 0.0), posto_enfermagem, {}),
+    'posto_enfermagem!vazio': (7, 3, (0.0, 0.0), lambda: posto_enfermagem(True), {}),   # a gêmea vazia: sem nada em cima
     'toilet_steel': (1, 1, (0.0, 0.0), toilet_steel, {}),
     'trash_bin': (1, 1, (0.0, 0.0), trash_bin, {}),
     'vitals_monitor': (1, 1, (0.0, 0.0), lambda: vitals_monitor(True), {'1': lambda: vitals_monitor(False)}),

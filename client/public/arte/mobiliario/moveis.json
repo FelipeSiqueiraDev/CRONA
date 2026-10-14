@@ -5475,31 +5475,40 @@
     "encosta": true
   },
   "portal@metal": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "portal@metal/giro-4.png",
-        "ax": 6.9,
-        "ay": 290.6
+        "ax": 35.0,
+        "ay": 150.0
       },
       "2": {
         "arquivo": "portal@metal/giro-2.png",
-        "ax": 64.1,
-        "ay": 290.5
+        "ax": 34.0,
+        "ay": 150.0
       }
     },
+    "real": [
+      0.78,
+      0.135,
+      2.245
+    ],
+    "soGiros": true,
     "estados": {
       "1": {
         "giros": {
           "4": {
             "arquivo": "portal@metal/giro-4-1.png",
-            "ax": 6.9,
-            "ay": 290.6
+            "ax": 3.0,
+            "ay": 150.0
           },
           "2": {
             "arquivo": "portal@metal/giro-2-1.png",
-            "ax": 64.1,
-            "ay": 290.5
+            "ax": 34.0,
+            "ay": 150.0
           }
         }
       },
@@ -5507,13 +5516,13 @@
         "giros": {
           "4": {
             "arquivo": "portal@metal/giro-4-2.png",
-            "ax": 6.9,
-            "ay": 290.6
+            "ax": 3.0,
+            "ay": 150.0
           },
           "2": {
             "arquivo": "portal@metal/giro-2-2.png",
-            "ax": 64.1,
-            "ay": 290.5
+            "ax": 34.0,
+            "ay": 150.0
           }
         }
       }
@@ -5524,12 +5533,6 @@
       0,
       1,
       0,
-      2.17
-    ],
-    "soGiros": true,
-    "real": [
-      0.75,
-      0.08,
       2.17
     ],
     "encosta": true
@@ -9482,32 +9485,35 @@
     }
   },
   "armario_cozinha!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "armario_cozinha!vazio/giro-4.png",
-        "ax": 117.5,
-        "ay": 306.3
-      },
-      "6": {
-        "arquivo": "armario_cozinha!vazio/giro-6.png",
-        "ax": 53.5,
-        "ay": 304.3
-      },
-      "0": {
-        "arquivo": "armario_cozinha!vazio/giro-0.png",
-        "ax": 117.5,
-        "ay": 306.3
+        "ax": 66.0,
+        "ay": 148.0
       },
       "2": {
         "arquivo": "armario_cozinha!vazio/giro-2.png",
-        "ax": 53.5,
-        "ay": 307.3
+        "ax": 42.0,
+        "ay": 148.0
+      },
+      "0": {
+        "arquivo": "armario_cozinha!vazio/giro-0.png",
+        "ax": 74.0,
+        "ay": 140.0
+      },
+      "6": {
+        "arquivo": "armario_cozinha!vazio/giro-6.png",
+        "ax": 34.0,
+        "ay": 140.0
       }
     },
     "real": [
-      1.5,
-      0.5,
+      1.55,
+      0.585,
       1.9
     ],
     "cima": {
@@ -9521,32 +9527,35 @@
     }
   },
   "comoda!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "comoda!vazio/giro-4.png",
-        "ax": 117.5,
-        "ay": 160.3
-      },
-      "6": {
-        "arquivo": "comoda!vazio/giro-6.png",
-        "ax": 53.5,
-        "ay": 164.3
-      },
-      "0": {
-        "arquivo": "comoda!vazio/giro-0.png",
-        "ax": 117.5,
-        "ay": 168.3
+        "ax": 67.0,
+        "ay": 93.0
       },
       "2": {
         "arquivo": "comoda!vazio/giro-2.png",
-        "ax": 53.5,
-        "ay": 163.3
+        "ax": 37.0,
+        "ay": 93.0
+      },
+      "0": {
+        "arquivo": "comoda!vazio/giro-0.png",
+        "ax": 69.0,
+        "ay": 92.0
+      },
+      "6": {
+        "arquivo": "comoda!vazio/giro-6.png",
+        "ax": 34.0,
+        "ay": 92.0
       }
     },
     "real": [
-      1.5,
-      0.5,
+      1.44,
+      0.586,
       0.9
     ],
     "cima": {
@@ -9560,32 +9569,35 @@
     }
   },
   "nightstand!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "nightstand!vazio/giro-4.png",
-        "ax": 38.5,
-        "ay": 100.8
-      },
-      "6": {
-        "arquivo": "nightstand!vazio/giro-6.png",
-        "ax": 38.5,
-        "ay": 100.8
-      },
-      "0": {
-        "arquivo": "nightstand!vazio/giro-0.png",
-        "ax": 38.5,
-        "ay": 101.8
+        "ax": 29.0,
+        "ay": 60.0
       },
       "2": {
         "arquivo": "nightstand!vazio/giro-2.png",
-        "ax": 38.5,
-        "ay": 101.8
+        "ax": 36.0,
+        "ay": 60.0
+      },
+      "0": {
+        "arquivo": "nightstand!vazio/giro-0.png",
+        "ax": 35.0,
+        "ay": 57.0
+      },
+      "6": {
+        "arquivo": "nightstand!vazio/giro-6.png",
+        "ax": 29.0,
+        "ay": 57.0
       }
     },
     "real": [
-      0.5,
-      0.4,
+      0.58,
+      0.516,
       0.6
     ],
     "cima": {
@@ -9599,33 +9611,36 @@
     }
   },
   "mesa_cozinha!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "mesa_cozinha!vazio/giro-4.png",
-        "ax": 192.0,
-        "ay": 236.0
-      },
-      "6": {
-        "arquivo": "mesa_cozinha!vazio/giro-6.png",
-        "ax": 128.0,
-        "ay": 238.0
-      },
-      "0": {
-        "arquivo": "mesa_cozinha!vazio/giro-0.png",
-        "ax": 192.0,
-        "ay": 241.0
+        "ax": 122.0,
+        "ay": 137.0
       },
       "2": {
         "arquivo": "mesa_cozinha!vazio/giro-2.png",
-        "ax": 128.0,
-        "ay": 238.0
+        "ax": 90.0,
+        "ay": 137.0
+      },
+      "0": {
+        "arquivo": "mesa_cozinha!vazio/giro-0.png",
+        "ax": 122.0,
+        "ay": 137.0
+      },
+      "6": {
+        "arquivo": "mesa_cozinha!vazio/giro-6.png",
+        "ax": 90.0,
+        "ay": 137.0
       }
     },
     "real": [
-      2.25,
-      1.5,
-      0.78
+      2.7,
+      1.8,
+      0.94
     ],
     "cima": {
       "arquivo": "mesa_cozinha!vazio/cima.png",
@@ -9638,33 +9653,36 @@
     }
   },
   "mesa_jantar!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "mesa_jantar!vazio/giro-4.png",
-        "ax": 256.0,
-        "ay": 279.0
-      },
-      "6": {
-        "arquivo": "mesa_jantar!vazio/giro-6.png",
-        "ax": 128.0,
-        "ay": 265.0
-      },
-      "0": {
-        "arquivo": "mesa_jantar!vazio/giro-0.png",
-        "ax": 256.0,
-        "ay": 280.0
+        "ax": 157.0,
+        "ay": 155.0
       },
       "2": {
         "arquivo": "mesa_jantar!vazio/giro-2.png",
-        "ax": 128.0,
-        "ay": 275.0
+        "ax": 94.0,
+        "ay": 155.0
+      },
+      "0": {
+        "arquivo": "mesa_jantar!vazio/giro-0.png",
+        "ax": 157.0,
+        "ay": 155.0
+      },
+      "6": {
+        "arquivo": "mesa_jantar!vazio/giro-6.png",
+        "ax": 94.0,
+        "ay": 155.0
       }
     },
     "real": [
-      3.0,
-      1.5,
-      0.78
+      3.6,
+      1.8,
+      0.943
     ],
     "cima": {
       "arquivo": "mesa_jantar!vazio/cima.png",
@@ -9677,33 +9695,36 @@
     }
   },
   "prateleira!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "prateleira!vazio/giro-4.png",
-        "ax": 115.0,
-        "ay": 320.4
-      },
-      "6": {
-        "arquivo": "prateleira!vazio/giro-6.png",
-        "ax": 51.0,
-        "ay": 333.4
-      },
-      "0": {
-        "arquivo": "prateleira!vazio/giro-0.png",
-        "ax": 115.0,
-        "ay": 338.4
+        "ax": 66.0,
+        "ay": 161.0
       },
       "2": {
         "arquivo": "prateleira!vazio/giro-2.png",
-        "ax": 51.0,
-        "ay": 341.4
+        "ax": 39.0,
+        "ay": 161.0
+      },
+      "0": {
+        "arquivo": "prateleira!vazio/giro-0.png",
+        "ax": 71.0,
+        "ay": 159.0
+      },
+      "6": {
+        "arquivo": "prateleira!vazio/giro-6.png",
+        "ax": 34.0,
+        "ay": 159.0
       }
     },
     "real": [
-      1.5,
-      0.45,
-      2.2
+      1.42,
+      0.56,
+      2.198
     ],
     "cima": {
       "arquivo": "prateleira!vazio/cima.png",
@@ -9840,35 +9861,37 @@
     "encosta": true
   },
   "rack_moderno!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "rack_moderno!vazio/giro-4.png",
-        "ax": 15.2,
-        "ay": 301.5
-      },
-      "6": {
-        "arquivo": "rack_moderno!vazio/giro-6.png",
-        "ax": 79.2,
-        "ay": 280.2
-      },
-      "0": {
-        "arquivo": "rack_moderno!vazio/giro-0.png",
-        "ax": 57.8,
-        "ay": 280.2
+        "ax": 36.0,
+        "ay": 150.0
       },
       "2": {
         "arquivo": "rack_moderno!vazio/giro-2.png",
-        "ax": 121.8,
-        "ay": 301.5
+        "ax": 69.0,
+        "ay": 150.0
+      },
+      "0": {
+        "arquivo": "rack_moderno!vazio/giro-0.png",
+        "ax": 36.0,
+        "ay": 150.0
+      },
+      "6": {
+        "arquivo": "rack_moderno!vazio/giro-6.png",
+        "ax": 69.0,
+        "ay": 150.0
       }
     },
     "real": [
-      0.6,
-      1.0,
-      2.0
+      0.59,
+      1.43,
+      2.002
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "rack_moderno!vazio/cima.png",
       "caixa": [
@@ -9877,7 +9900,8 @@
         116,
         215
       ]
-    }
+    },
+    "encosta": true
   },
   "lixeira_lanches": {
     "escala": 1,
@@ -9965,35 +9989,37 @@
     "encosta": true
   },
   "torre_crt!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "torre_crt!vazio/giro-4.png",
-        "ax": 123.9,
-        "ay": 291.1
-      },
-      "6": {
-        "arquivo": "torre_crt!vazio/giro-6.png",
-        "ax": 59.9,
-        "ay": 282.0
-      },
-      "0": {
-        "arquivo": "torre_crt!vazio/giro-0.png",
-        "ax": 128.1,
-        "ay": 282.0
+        "ax": 70.0,
+        "ay": 61.0
       },
       "2": {
         "arquivo": "torre_crt!vazio/giro-2.png",
-        "ax": 64.1,
-        "ay": 284.1
+        "ax": 38.0,
+        "ay": 61.0
+      },
+      "0": {
+        "arquivo": "torre_crt!vazio/giro-0.png",
+        "ax": 70.0,
+        "ay": 62.0
+      },
+      "6": {
+        "arquivo": "torre_crt!vazio/giro-6.png",
+        "ax": 39.0,
+        "ay": 62.0
       }
     },
     "real": [
-      1.5,
-      0.7,
-      1.8
+      1.42,
+      0.64,
+      0.3
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "torre_crt!vazio/cima.png",
       "caixa": [
@@ -10002,7 +10028,8 @@
         256,
         123
       ]
-    }
+    },
+    "encosta": true
   },
   "bancada_eletronica": {
     "escala": 1,
@@ -10048,35 +10075,37 @@
     "encosta": true
   },
   "bancada_eletronica!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "bancada_eletronica!vazio/giro-4.png",
-        "ax": 123.9,
-        "ay": 195.1
-      },
-      "6": {
-        "arquivo": "bancada_eletronica!vazio/giro-6.png",
-        "ax": 59.9,
-        "ay": 193.0
-      },
-      "0": {
-        "arquivo": "bancada_eletronica!vazio/giro-0.png",
-        "ax": 128.1,
-        "ay": 193.0
+        "ax": 72.0,
+        "ay": 132.0
       },
       "2": {
         "arquivo": "bancada_eletronica!vazio/giro-2.png",
-        "ax": 64.1,
-        "ay": 195.1
+        "ax": 38.0,
+        "ay": 132.0
+      },
+      "0": {
+        "arquivo": "bancada_eletronica!vazio/giro-0.png",
+        "ax": 71.0,
+        "ay": 120.0
+      },
+      "6": {
+        "arquivo": "bancada_eletronica!vazio/giro-6.png",
+        "ax": 40.0,
+        "ay": 120.0
       }
     },
     "real": [
-      1.5,
-      0.7,
-      0.95
+      1.44,
+      0.67,
+      1.649
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "bancada_eletronica!vazio/cima.png",
       "caixa": [
@@ -10085,7 +10114,8 @@
         256,
         123
       ]
-    }
+    },
+    "encosta": true
   },
   "mesa_holografica": {
     "escala": 1,
@@ -10167,34 +10197,63 @@
     }
   },
   "mesa_holografica!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "mesa_holografica!vazio/giro-4.png",
-        "ax": 84.5,
-        "ay": 120.3
-      },
-      "6": {
-        "arquivo": "mesa_holografica!vazio/giro-6.png",
-        "ax": 84.5,
-        "ay": 121.3
-      },
-      "0": {
-        "arquivo": "mesa_holografica!vazio/giro-0.png",
-        "ax": 84.5,
-        "ay": 123.3
+        "ax": 46.0,
+        "ay": 105.0
       },
       "2": {
         "arquivo": "mesa_holografica!vazio/giro-2.png",
-        "ax": 84.5,
-        "ay": 120.3
+        "ax": 46.0,
+        "ay": 105.0
+      },
+      "0": {
+        "arquivo": "mesa_holografica!vazio/giro-0.png",
+        "ax": 46.0,
+        "ay": 105.0
+      },
+      "6": {
+        "arquivo": "mesa_holografica!vazio/giro-6.png",
+        "ax": 46.0,
+        "ay": 105.0
       }
     },
     "real": [
-      1.4,
-      1.4,
-      1.0
+      1.36,
+      1.36,
+      0.998
     ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "mesa_holografica!vazio/giro-4-1.png",
+            "ax": 46.0,
+            "ay": 105.0
+          },
+          "2": {
+            "arquivo": "mesa_holografica!vazio/giro-2-1.png",
+            "ax": 46.0,
+            "ay": 105.0
+          },
+          "0": {
+            "arquivo": "mesa_holografica!vazio/giro-0-1.png",
+            "ax": 46.0,
+            "ay": 105.0
+          },
+          "6": {
+            "arquivo": "mesa_holografica!vazio/giro-6-1.png",
+            "ax": 46.0,
+            "ay": 105.0
+          }
+        }
+      }
+    },
     "cima": {
       "arquivo": "mesa_holografica!vazio/cima.png",
       "caixa": [
@@ -10290,33 +10349,36 @@
     }
   },
   "posto_enfermagem!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "posto_enfermagem!vazio/giro-4.png",
-        "ax": 448.0,
-        "ay": 371.0
-      },
-      "6": {
-        "arquivo": "posto_enfermagem!vazio/giro-6.png",
-        "ax": 192.0,
-        "ay": 544.0
-      },
-      "0": {
-        "arquivo": "posto_enfermagem!vazio/giro-0.png",
-        "ax": 448.0,
-        "ay": 351.0
+        "ax": 231.0,
+        "ay": 216.0
       },
       "2": {
         "arquivo": "posto_enfermagem!vazio/giro-2.png",
-        "ax": 192.0,
-        "ay": 544.0
+        "ax": 103.0,
+        "ay": 216.0
+      },
+      "0": {
+        "arquivo": "posto_enfermagem!vazio/giro-0.png",
+        "ax": 231.0,
+        "ay": 186.0
+      },
+      "6": {
+        "arquivo": "posto_enfermagem!vazio/giro-6.png",
+        "ax": 42.0,
+        "ay": 217.0
       }
     },
     "real": [
-      5.25,
-      2.25,
-      1.1
+      5.22,
+      2.195,
+      1.102
     ],
     "cima": {
       "arquivo": "posto_enfermagem!vazio/cima.png",
@@ -10363,17 +10425,19 @@
     }
   },
   "mural_polaroids!vazio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "mural_polaroids!vazio/parede-r.png",
-        "ax": 39.5,
-        "ay": 51.5
+        "ax": 23.0,
+        "ay": 26.3
       },
       "l": {
         "arquivo": "mural_polaroids!vazio/parede-l.png",
-        "ax": 39.5,
-        "ay": 51.5
+        "ax": 23.0,
+        "ay": 26.3
       }
     }
   },

@@ -200,8 +200,11 @@ def criado_mudo():
     peg(x0, x1, y0, y1)
 
 
-def comoda():
-    """A cômoda de quatro fiadas de gavetas (0,9 m): as duas de cima pequenas, as alças de latão, os pés em bola."""
+def comoda(vazio=False):
+    """
+    A cômoda de quatro fiadas de gavetas (0,9 m): as duas de cima pequenas, as alças de latão, os pés em bola.
+    vazio: a gêmea esvaziada (comoda!vazio), sem o caminho de crochê em cima; o móvel é o mesmo.
+    """
     x0, x1, y0, y1 = 0.05, 1.45, 0.07, 0.62
     zt = 1.47 / UN
     zb = 0.1
@@ -229,7 +232,8 @@ def comoda():
             alca(meio - 0.32, zm, y1)
             alca(meio + 0.32, zm, y1)
     # o caminho de crochê em cima (o que vai em cima fica por cima dele)
-    CZ.toalhinha(x0 + 0.22, x1 - 0.22, y0 + 0.1, y1 - 0.1, zt + 0.0005)
+    if not vazio:
+        CZ.toalhinha(x0 + 0.22, x1 - 0.22, y0 + 0.1, y1 - 0.1, zt + 0.0005)
     peg(x0, x1, y0, y1)
 
 
@@ -454,12 +458,17 @@ def mesa_tampo_pernas(x, y, w, d, h, tampo=0.07, saia=0.11, perna=0.055, cores=N
     peg(x, x + w, y, y + d)
 
 
-def mesa_jantar():
-    """A mesa de jantar (4 x 2 casas, aumento 1,2: 3,6 x 1,8 m; 0,94 m): o tampo, as pernas torneadas, o caminho e a fruteira."""
+def mesa_jantar(vazio=False):
+    """
+    A mesa de jantar (4 x 2 casas, aumento 1,2: 3,6 x 1,8 m; 0,94 m): o tampo, as pernas torneadas, o caminho e a fruteira.
+    vazio: a gêmea esvaziada (mesa_jantar!vazio), só a mesa, sem o caminho e a fruteira.
+    """
     w, d = 3.0 * 1.2, 1.5 * 1.2
     x, y = 1.5 - w / 2, 0.75 - d / 2
     h = 1.54 / UN
     mesa_tampo_pernas(x, y, w, d, h, seed=51)
+    if vazio:
+        return
     CZ.toalhinha(x + 0.6, x + w - 0.6, 0.75 - 0.17, 0.75 + 0.17, h + 0.0005)
     CZ.fruteira(1.5, 0.75, h + 0.0005)
 
@@ -935,10 +944,11 @@ def saco(x, y, z, r=0.12, h=0.3, cor='#b89a6a'):
     _barra((x - r * 0.37, x + r * 0.37, y - r * 0.32, y + r * 0.32, z + h * 0.8, z + h * 0.8 + 2 * PZ), '#6a4a2a', '#8a6a3a', quina=False)
 
 
-def prateleira():
+def prateleira(vazio=False):
     """
     A prateleira rústica de mantimentos (2,2 m): os quatro montantes, cinco tábuas, a travessa de trás; os sacos de
     estopa, os potes de vidro, as latas, os potes de barro, o cesto e as garrafas.
+    vazio: a gêmea esvaziada (prateleira!vazio), só a armação e as tábuas.
     """
     x0, x1 = 0.04, 1.46
     y0, y1 = 0.04, 0.6
@@ -955,6 +965,9 @@ def prateleira():
     for z in (0.34, 1.26, 2.0):
         caixa((x0 + 0.06, x1 - 0.06, y0, y0 + 0.025, z, z + 0.05), _pau('#7a4426', quina=False))
     zz = [z + 0.04 for z in pr]
+    if vazio:
+        peg(x0, x1, y0, y1)
+        return
     # 1: os sacos de estopa e o caixote
     saco(x0 + 0.22, (y0 + y1) / 2, zz[0], r=0.15, h=0.36)
     saco(x0 + 0.52, (y0 + y1) / 2 + 0.03, zz[0], r=0.13, h=0.3, cor='#c4a878')
@@ -1406,6 +1419,12 @@ ITENS = {
     'beliche': (1, 3, (0.0, 0.0), beliche, {}),
     'nightstand': (1, 1, (0.0, 0.0), criado_mudo, {}),
     'mesa_jantar': (4, 2, (0.0, 0.0), mesa_jantar, {}),
+    # as gêmeas vazias (o jogo troca quando os jogadores pegam o que estava em cima/dentro): o mesmo móvel, a mesma
+    # pegada e a mesma âncora, sem os objetos soltos. O criado-mudo não tem nada solto: a vazia é ele mesmo.
+    'comoda!vazio': (2, 1, (0.0, 0.0), lambda: comoda(True), {}),
+    'nightstand!vazio': (1, 1, (0.0, 0.0), criado_mudo, {}),
+    'mesa_jantar!vazio': (4, 2, (0.0, 0.0), lambda: mesa_jantar(True), {}),
+    'prateleira!vazio': (2, 1, (0.0, 0.0), lambda: prateleira(True), {}),
     'desk_wood': (2, 1, (0.0, 0.0), desk_wood, {}),
     'prateleira': (2, 1, (0.0, 0.0), prateleira, {}),
     'bookshelf': (2, 1, (0.0, 0.0), bookshelf, {}),
