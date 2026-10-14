@@ -14,7 +14,8 @@ export type FurniCategory =
   | 'arsenal'
   | 'fazenda'
   | 'casa'
-  | 'parede';
+  | 'parede'
+  | 'vila';
 
 export const CATEGORY_NAMES: Record<FurniCategory, string> = {
   estrutura: 'Estrutura',
@@ -31,6 +32,7 @@ export const CATEGORY_NAMES: Record<FurniCategory, string> = {
   fazenda: 'Fazenda',
   casa: 'Casa',
   parede: 'Parede',
+  vila: 'Santo Berço',
 };
 
 /**
@@ -383,6 +385,40 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'banheira', name: 'Banheira', category: 'casa', kind: 'banheira', width: 1, depth: 2, height: 0.6, rotations: ALL, colors: ['#ece6da', '#b8a070'] },
   { id: 'prateleira', name: 'Prateleira de Madeira', category: 'casa', kind: 'shelf', width: 2, depth: 1, height: 2.2, rotations: ALL, colors: ['#7a5a3a', '#4a3424'] },
   { id: 'escada_desce', name: 'Escada que Desce', category: 'casa', kind: 'escada_desce', width: 1, depth: 2, height: 0, walkable: true, portal: true, rotations: ALL, colors: ['#6a4a2e', '#1a1410'], desc: 'O vão da escada, com o corrimão: pare em cima para descer (o mestre escolhe o destino).' },
+  // Santo Berço (14/10): a vila medieval em volta do Labirinto Infinito (docs/SANTO-BERCO.md); arte em pixel por código
+  { id: 'casa_vila', name: 'Casa da Vila', category: 'vila', kind: 'predio_vila', width: 6, depth: 5, height: 5.0, xray: true, rotations: ALL, colors: ['#d8c8a4', '#9a2f22', '#5a3a24', '#2a2018'], desc: 'Casinha medieval de enxaimel, paredes de taipa clara e telhado vermelho de telha.' },
+  { id: 'taverna_predio', name: 'Taverna', category: 'vila', kind: 'predio_vila', width: 10, depth: 7, height: 6.0, xray: true, rotations: ALL, colors: ['#cdb894', '#8e2a1e', '#4a3020', '#2a2018'], desc: 'A taverna da vila: dois pisos de enxaimel, a placa pendurada na frente e a luz vermelha dos cristais na janela.' },
+  { id: 'ferraria_predio', name: 'Ferraria', category: 'vila', kind: 'predio_vila', width: 8, depth: 6, height: 5.0, xray: true, rotations: ALL, colors: ['#8a8278', '#8e2a1e', '#3a2a1e', '#e0602a'], desc: 'A ferraria de pedra com a chaminé larga e o alpendre aberto da forja.' },
+  { id: 'hotel_predio', name: 'Hotel', category: 'vila', kind: 'predio_vila', width: 10, depth: 8, height: 7.5, xray: true, rotations: ALL, colors: ['#d4c4a0', '#8e2a1e', '#4a3020', '#2a2018'], desc: 'O hotel de dois andares, com a varanda de madeira em cima da porta.' },
+  { id: 'casa_doutor', name: 'Casa do Doutor', category: 'vila', kind: 'predio_vila', width: 10, depth: 8, height: 7.0, xray: true, rotations: ALL, colors: ['#c8bca4', '#7a2a22', '#3a2a20', '#2a2018'], desc: 'O casarão do Doutor, de pedra e madeira, o consultório no térreo.' },
+  { id: 'torre_porteiro', name: 'Torre do Porteiro', category: 'vila', kind: 'predio_vila', width: 4, depth: 4, height: 9.0, xray: true, rotations: ALL, colors: ['#9a9284', '#8e2a1e', '#3a2a1e', '#e04a2a'], desc: 'A torre redonda de pedra na entrada da vila, como um farol, com o cristal vermelho aceso no alto.' },
+  { id: 'portao_vila', name: 'Portão da Vila', category: 'vila', kind: 'portao_vila', width: 4, depth: 1, height: 4.5, walkable: true, xray: true, rotations: ALL, colors: ['#6a4a2c', '#3a2a1c'], desc: 'O arco de troncos no fim da estrada, a entrada de Santo Berço.' },
+  { id: 'estatua_guardiao', name: 'Estátua de Guardião', category: 'vila', kind: 'estatua', width: 2, depth: 2, height: 3.6, xray: true, rotations: ALL, colors: ['#8a8680', '#4a4640'], desc: 'Uma das estátuas dos Cinco Guardiões em volta do Labirinto: pedra gasta, coberta de musgo, o rosto apagado.' },
+  { id: 'poste_cristal', name: 'Poste de Cristal', category: 'vila', kind: 'luz_cristal', width: 1, depth: 1, height: 2.6, states: 2, rotations: ALL, colors: ['#3a2a1e', '#ff5a3a'], desc: 'O poste de madeira com um cristal vermelho na ponta: a luz (e o calor) da vila. Clique duplo cobre e descobre.' },
+  { id: 'cristal_vermelho', name: 'Cristal Vermelho', category: 'vila', kind: 'luz_cristal', width: 1, depth: 1, height: 0.9, states: 2, rotations: ALL, colors: ['#6a1a14', '#ff5a3a'], desc: 'Cristal de calor e luz; os grandes são quentes como lava.' },
+  { id: 'cristal_verde', name: 'Cristal Verde', category: 'vila', kind: 'luz_cristal', width: 1, depth: 1, height: 0.9, states: 2, rotations: ALL, colors: ['#1a5a2a', '#5aff8a'], desc: 'Cristal de cura: fecha ferida na hora; na boca, anestesia. Brilha menos conforme gasta.' },
+  { id: 'cristal_azul', name: 'Cristal Azul', category: 'vila', kind: 'luz_cristal', width: 1, depth: 1, height: 0.9, states: 2, rotations: ALL, colors: ['#1a3a6a', '#6ac8ff'], desc: 'Cristal de frio extremo: a geladeira da vila.' },
+  { id: 'cristal_preto', name: 'Cristal Preto', category: 'vila', kind: 'cristal_preto', width: 1, depth: 1, height: 1.1, rotations: ALL, colors: ['#121016', '#5a4a6a'], desc: 'O cristal da Provação: quem toca vira Luzidio. Só existe nas minas.' },
+  { id: 'lodo_preto', name: 'Poça de Lodo Preto', category: 'vila', kind: 'lodo', width: 2, depth: 2, height: 0.02, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#0a080c', '#3a2a4a'], desc: 'Lodo preto, brilhante e hipnótico: atrai quem olha e solta tentáculos se ameaçado.' },
+  { id: 'sebe', name: 'Sebe do Labirinto', category: 'vila', kind: 'sebe', width: 1, depth: 1, height: 2.4, xray: true, rotations: ALL, colors: ['#3a5a3a', '#6a3a7a'], desc: 'A parede viva do Labirinto Infinito: folhas escuras com flores roxas, que mudam de lugar.' },
+  { id: 'arvore_retorcida', name: 'Árvore Retorcida', category: 'vila', kind: 'arvore', width: 1, depth: 1, height: 5.0, xray: true, rotations: ALL, colors: ['#7a3a8a', '#3a2a22'], desc: 'Árvore de tronco torto e copa de cor estranha (roxa, amarela ou azulada).' },
+  { id: 'arbusto_estranho', name: 'Arbusto Estranho', category: 'vila', kind: 'arbusto', width: 1, depth: 1, height: 0.9, rotations: ALL, colors: ['#8a6a2a', '#4a3a6a'] },
+  { id: 'poco', name: 'Poço', category: 'vila', kind: 'poco', width: 2, depth: 2, height: 1.4, rotations: ALL, colors: ['#8a8278', '#4a3020'], desc: 'O poço de pedra com o sarilho de madeira e o balde.' },
+  { id: 'pedras', name: 'Pedras', category: 'vila', kind: 'rubble', width: 1, depth: 1, height: 0.6, rotations: ALL, colors: ['#7a7468', '#4a463e'] },
+  { id: 'forja', name: 'Forja', category: 'vila', kind: 'forja', width: 3, depth: 2, height: 1.4, states: 2, rotations: ALL, colors: ['#5a524a', '#ff7a2a'], desc: 'A forja de pedra com o fole de couro e as brasas acesas (um cristal vermelho no meio do carvão). Clique duplo acende/apaga.' },
+  { id: 'bigorna', name: 'Bigorna', category: 'vila', kind: 'bigorna', width: 1, depth: 1, height: 0.85, stackable: true, rotations: ALL, colors: ['#3a3a40', '#5a3a24'], desc: 'A bigorna num toco de madeira, com o martelo e a tenaz.' },
+  { id: 'rack_medieval', name: 'Armas Medievais', category: 'vila', kind: 'rack_medieval', width: 2, depth: 1, height: 1.9, rotations: ALL, colors: ['#5a3a24', '#a8a8b0'], desc: 'O suporte de madeira com espadas, machados e arcos.' },
+  { id: 'armadura_medieval', name: 'Armadura', category: 'vila', kind: 'pedestal', width: 1, depth: 1, height: 1.9, rotations: ALL, colors: ['#8a8a90', '#4a3020'], desc: 'Uma armadura de placas num cavalete, com o escudo de lado.' },
+  { id: 'tina_agua', name: 'Tina de Têmpera', category: 'vila', kind: 'tina', width: 1, depth: 1, height: 0.7, rotations: ALL, colors: ['#5a3a24', '#2a3a4a'], desc: 'A tina de madeira com água para temperar o ferro.' },
+  { id: 'mesa_rustica', name: 'Mesa Rústica', category: 'vila', kind: 'mesa', width: 3, depth: 2, height: 0.8, vao: 'vazada', stackable: true, rotations: ALL, colors: ['#6a4a2c', '#3a2a1c'], desc: 'Mesa comprida de tábuas grossas, marcada de faca e de caneca.' },
+  { id: 'banco_rustico', name: 'Banco Rústico', category: 'vila', kind: 'bench', width: 2, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#6a4a2c', '#3a2a1c'] },
+  { id: 'balcao_taverna', name: 'Balcão da Taverna', category: 'vila', kind: 'counter', width: 4, depth: 1, height: 1.05, stackable: true, rotations: ALL, colors: ['#5a3a24', '#3a2a1c'], desc: 'O balcão de madeira escura com as canecas de estanho e a jarra.' },
+  { id: 'barril_madeira', name: 'Barril de Madeira', category: 'vila', kind: 'barrel', width: 1, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#7a5232', '#3a3a3a'], desc: 'Barril de aduelas com aros de ferro.' },
+  { id: 'lareira', name: 'Lareira', category: 'vila', kind: 'lareira', width: 3, depth: 1, height: 2.0, states: 2, rotations: ALL, colors: ['#7a7268', '#ff6a2a'], desc: 'A lareira de pedra encostada na parede, com o caldeirão pendurado. Clique duplo acende/apaga.' },
+  { id: 'cama_palha', name: 'Cama de Palha', category: 'vila', kind: 'bed', width: 2, depth: 3, height: 0.55, rotations: ALL, colors: ['#c8a868', '#6a4a2c'], desc: 'O estrado de madeira com o colchão de palha e a manta de lã.' },
+  { id: 'bau_madeira', name: 'Baú de Madeira', category: 'vila', kind: 'bau', width: 1, depth: 1, height: 0.6, stackable: true, rotations: ALL, colors: ['#6a4a2c', '#3a3a3a'] },
+  { id: 'escotilha', name: 'Escotilha Pesada', category: 'vila', kind: 'escotilha', width: 1, depth: 1, height: 0.04, walkable: true, stackable: true, portal: true, flat: true, states: 3, openState: 0, rotations: ALL, colors: ['#4a4a50', '#070505'], desc: 'A escotilha de ferro no chão do quarto do Ferreiro: só abre por baixo. Dá no bunker.' },
+  { id: 'escada_espiral', name: 'Escada em Espiral', category: 'vila', kind: 'escada_espiral', width: 2, depth: 2, height: 0, walkable: true, portal: true, rotations: ALL, colors: ['#8a8278', '#3a2a1e'], desc: 'A escada de pedra em caracol da torre. Pare em cima para subir ou descer.' },
 ];
 
 export const WALL_FURNI_LIST: WallFurniDef[] = [
@@ -438,6 +474,11 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'quadro_fazenda', name: 'Quadro da Fazenda', category: 'parede', kind: 'painting', w: 36, h: 30, colors: ['#8a6a3a', '#3a2a1a'], desc: 'Um dos doze quadros do casarão: o pasto, a família em sépia, o cavalo, o bordado, o rio na neblina...' },
   { id: 'escrita_sangue', name: 'Escrita de Sangue', category: 'parede', kind: 'escrita', w: 340, h: 136, colors: ['#c81414'], desc: 'Frases escritas com sangue na parede, à mão.' },
   { id: 'fuligem_parede', name: 'Fuligem na Parede', category: 'parede', kind: 'fuligem', w: 70, h: 110, colors: ['#0f0c0a'], desc: 'As marcas pretas que o fogo deixou subindo pela parede.' },
+  // Santo Berço (14/10)
+  { id: 'lampiao_cristal', name: 'Lampião de Cristal', category: 'parede', kind: 'lampiao_cristal', w: 18, h: 30, states: 2, colors: ['#3a2a1e', '#ff5a3a'], desc: 'O lampião de ferro com o cristal vermelho dentro: a luz de dentro das casas. Clique duplo cobre e descobre.' },
+  { id: 'armas_parede', name: 'Escudo e Espadas', category: 'parede', kind: 'armas_parede', w: 60, h: 46, colors: ['#8a2a22', '#a8a8b0'], desc: 'O escudo redondo com duas espadas cruzadas atrás.' },
+  { id: 'ferramentas_parede', name: 'Ferramentas da Forja', category: 'parede', kind: 'ferramentas_parede', w: 64, h: 36, colors: ['#5a3a24', '#5a5a60'], desc: 'A tábua com os ganchos: tenazes, martelos e ferraduras.' },
+  { id: 'placa_taverna', name: 'Cardápio da Taverna', category: 'parede', kind: 'placa', w: 40, h: 34, colors: ['#6a4a2c', '#e8dcc0'], desc: 'O prato do dia escrito a giz ("Manteiga na Manteiga"). Nada se paga.' },
 ];
 
 /** Metros → unidades de altura (duas casas). */
@@ -492,4 +533,17 @@ export function ocupa(def: Pick<FurniDef, 'width' | 'depth' | 'vazio'>, rot: num
 export function nextRotation(def: FurniDef, rot: number): number {
   const i = def.rotations.indexOf(rot);
   return def.rotations[(i + 1) % def.rotations.length] ?? def.rotations[0];
+}
+
+/**
+ * O próximo giro que cabe (14/10): se o de 90° não cabe (a peça comprida num corredor), pula para o seguinte, e assim
+ * a peça ao menos inverte o lado (180°). Null quando nenhum outro giro cabe.
+ */
+export function giroQueCabe(def: FurniDef, rot: number, cabe: (rot: number) => boolean): number | null {
+  let r = rot;
+  for (let i = 1; i < def.rotations.length; i++) {
+    r = nextRotation(def, r);
+    if (r !== rot && cabe(r)) return r;
+  }
+  return null;
 }

@@ -1,4 +1,4 @@
-import { anyFurniName, CATEGORY_NAMES, getFurni, getWallFurni, HINT_ICONS, nextRotation, type Hint, type HintIcon } from '@crona/shared';
+import { anyFurniName, CATEGORY_NAMES, getFurni, getWallFurni, HINT_ICONS, giroQueCabe, nextRotation, type Hint, type HintIcon } from '@crona/shared';
 import { drawHintGlyph } from '../render/hints';
 import { thumbCopy } from '../render/thumbs';
 import type { App } from './app';
@@ -97,9 +97,8 @@ export class Infostand {
       if (floor && fdef && fdef.rotations.length > 1)
         actions.append(
           act('rotate', 'Girar', () => {
-            const rot = nextRotation(fdef, floor.rot);
-            const res = map.canPlace(floor.defId, floor.x, floor.y, rot, floor.id);
-            if (!res.ok) return toast(res.reason ?? 'Não dá para girar aqui.', 'error');
+            const rot = giroQueCabe(fdef, floor.rot, (r) => map.canPlace(floor.defId, floor.x, floor.y, r, floor.id).ok);
+            if (rot === null) return toast(map.canPlace(floor.defId, floor.x, floor.y, nextRotation(fdef, floor.rot), floor.id).reason ?? 'Não dá para girar aqui.', 'error');
             net.send({ t: 'moveItem', id: floor.id, x: floor.x, y: floor.y, rot });
           }),
         );

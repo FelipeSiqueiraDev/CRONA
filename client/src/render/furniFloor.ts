@@ -3,6 +3,7 @@ import { hash, rgba, rng, shade } from './color';
 import { OUTLINE, type LBox, type LFace, type Painter } from './painter';
 import { B, BATENTE_PORTA_M, crateFace, drawers, faceRange, lightIf, N, naParede, PAPER, V, VAO_PORTA_M, vents, wallBlock, WARM, type Builder, type FNode, type FVisual, type LightDef } from './furniKit';
 import { SEDE_BUILDERS } from './furniSede';
+import { VILA_BUILDERS } from './furniVila';
 import { FAZENDA_BUILDERS } from './furniFazenda';
 import { VAN_BUILDERS } from './furniVan';
 
@@ -10,6 +11,7 @@ export type { FNode, FVisual, LightDef, LightKind } from './furniKit';
 
 const builders: Record<string, Builder> = {
   ...SEDE_BUILDERS,
+  ...VILA_BUILDERS,
   ...FAZENDA_BUILDERS,
   ...VAN_BUILDERS,
   desk(def) {

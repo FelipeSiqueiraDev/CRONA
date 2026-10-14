@@ -16,8 +16,8 @@ export const MAX_CHAT = 140;
 export const MAX_NAME = 16;
 /** Nome de personagem (peça): cabe nome e sobrenome. */
 export const MAX_TOKEN_NAME = 24;
-/** Altura máxima de empilhamento de mobis. */
-export const STACK_LIMIT = 12;
+/** Altura máxima de empilhamento de mobis (16 = ~9,8 m: cabe a torre do Porteiro de Santo Berço, 9 m). */
+export const STACK_LIMIT = 16;
 /** Pixels de tela (eixo x) por tile ao longo de uma parede. */
 export const WALL_PX_PER_TILE = 32;
 /** Pixels de tela por unidade de altura. */

@@ -50,6 +50,9 @@ export const FLOOR_STYLES = [
   { id: 'calabouco', name: 'Pedra do calabouço' },
   // pixel art 1:1 (13/10): o ladrilho e a parede de azulejo e cal da cozinha da fazenda (scripts/3d/estilo/texturas_px.py)
   { id: 'cozinha_fazenda', name: 'Ladrilho da cozinha da fazenda' },
+  // Santo Berço (14/10): as tábuas largas com a parede de taipa e vigas (taverna, casas) e a pedra escura da ferraria
+  { id: 'enxaimel', name: 'Tábuas e enxaimel' },
+  { id: 'ferraria', name: 'Pedra da ferraria' },
 ] as const;
 export type FloorStyle = (typeof FLOOR_STYLES)[number]['id'];
 export const isFloorStyle = (s: unknown): s is FloorStyle => FLOOR_STYLES.some((f) => f.id === s);

@@ -8,6 +8,7 @@ import {
   lootKindLabel,
   lootParaItem,
   MAX_TOKEN_NAME,
+  giroQueCabe,
   nextRotation,
   parseHeightmap,
   turnFacing,
@@ -1554,8 +1555,9 @@ export class Shell {
     if (floor && fdef && fdef.rotations.length > 1)
       bts.append(
         this.botaoObj('Girar', null, 'girarD', () => {
-          const rot = nextRotation(fdef, floor.rot);
-          if (!this.app.view.map!.canPlace(floor.defId, floor.x, floor.y, rot, floor.id).ok) return toast('Não dá para girar aqui.', 'error');
+          const map = this.app.view.map!;
+          const rot = giroQueCabe(fdef, floor.rot, (r) => map.canPlace(floor.defId, floor.x, floor.y, r, floor.id).ok);
+          if (rot === null) return toast('Não dá para girar aqui.', 'error');
           net.send({ t: 'moveItem', id: floor.id, x: floor.x, y: floor.y, rot });
         }),
       );
@@ -1649,9 +1651,9 @@ export class Shell {
       if (floor && fdef && fdef.rotations.length > 1)
         tools.append(
           tool('Girar', () => {
-            const rot = nextRotation(fdef, floor.rot);
             const map = this.app.view.map!;
-            if (!map.canPlace(floor.defId, floor.x, floor.y, rot, floor.id).ok) return toast('Não dá para girar aqui.', 'error');
+            const rot = giroQueCabe(fdef, floor.rot, (r) => map.canPlace(floor.defId, floor.x, floor.y, r, floor.id).ok);
+            if (rot === null) return toast('Não dá para girar aqui.', 'error');
             net.send({ t: 'moveItem', id: floor.id, x: floor.x, y: floor.y, rot });
           }),
         );
