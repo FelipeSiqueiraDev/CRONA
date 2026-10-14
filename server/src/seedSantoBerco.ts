@@ -1,7 +1,7 @@
 import { getFurni, RoomMap, type Hint } from "@crona/shared";
 import type { Database, RoomData } from "./db";
 import { type FloorSeed } from "./seed";
-import { planTop } from "./seedSede";
+import { planBottom, planRight, planTop } from "./seedSede";
 import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
 
 /**
@@ -19,7 +19,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Doutor a sudoeste, o bosque ao sul, as minas a oeste.
  */
 export const SANTO_BERCO = "Santo Berço · ";
-export const SANTO_BERCO_REV = 6;
+export const SANTO_BERCO_REV = 9;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -106,28 +106,28 @@ const PREDIOS_DESENHO: [string, number, number, 0 | 4, string | null][] = [
   ["ferraria_predio", 8, 6, 4, "ferraria"],
   ["taverna_predio", 31, 3, 4, "taverna"],
   ["torre_porteiro", 40, 14, 4, "torre"],
-  ["hotel_predio", 34, 25, 0, null],
-  ["casa_doutor", 5, 31, 0, null],
-  ["celeiro", 17, 0, 4, null],
-  ["casa_vila", 1, 12, 4, null],
-  ["casa_vila", 18, 37, 0, null],
-  ["casa_vila", 27, 36, 0, null],
-  ["casa_vila", 36, 36, 0, null],
+  ["hotel_predio", 34, 25, 0, "hotel"],
+  ["casa_doutor", 5, 31, 0, "doutor"],
+  ["celeiro", 17, 0, 4, "celeiro"],
+  ["casa_vila", 1, 12, 4, "casa1"],
+  ["casa_vila", 18, 37, 0, "casa2"],
+  ["casa_vila", 27, 36, 0, "casa3"],
+  ["casa_vila", 36, 36, 0, "casa4"],
 ];
 const PREDIOS = PREDIOS_DESENHO.map(([id, x, y, r, cena]) => [id, ...espalha(id, x, y), r, cena] as [string, number, number, 0 | 4, string | null]);
 const ENTRADAS = new Map(PREDIOS.filter((p) => p[4]).map(([id, x, y, r, cena]) => [cena!, porta(id, x, y, r)]));
 
 /**
- * As quatro entradas do labirinto (o Felipe, 14/10): uma em cada ponta dele na tela, em cima, à direita, embaixo e à
- * esquerda (no chão, as diagonais: noroeste, nordeste, sudeste e sudoeste), cada uma com a sua estátua do lado.
+ * As quatro entradas do labirinto (o Felipe, 14/10, marcadas no print): no meio de cada lado dele na tela (no chão, o
+ * norte, o leste, o sul e o oeste), cada uma com a sua estátua do lado.
  */
-const ENTRADAS_LAB = [-0.75 * Math.PI, -0.25 * Math.PI, 0.25 * Math.PI, 0.75 * Math.PI];
+const ENTRADAS_LAB = [-0.5 * Math.PI, 0, 0.5 * Math.PI, Math.PI];
 /** a distância entre dois ângulos (0..π) */
 const entre = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
 
 /**
- * A sebe do labirinto: o anel de fora com as quatro entradas; duas paredes (norte e sul) cortam o corredor em duas
- * metades; o anel de dentro só abre a leste e a oeste, então de cada entrada se dá a volta até o miolo.
+ * A sebe do labirinto: o anel de fora com as quatro entradas; duas paredes (sudeste e noroeste) cortam o corredor em
+ * duas metades; o anel de dentro abre só a nordeste e a sudoeste, então de cada entrada se dá a volta até o miolo.
  */
 function labirinto(): FloorSeed[] {
   const f: FloorSeed[] = [];
@@ -136,21 +136,22 @@ function labirinto(): FloorSeed[] {
       const d = dist(x, y);
       const ang = Math.atan2(y + 0.5 - CY, x + 0.5 - CX);
       const fora = d >= R_LAB - 0.5 && d < R_LAB + 0.5 && ENTRADAS_LAB.every((e) => entre(ang, e) > 0.15);
-      const dentro = d >= R_DENTRO && d < R_DENTRO + 1 && entre(ang, 0) > 0.24 && entre(ang, Math.PI) > 0.24;
-      const raio = d >= R_DENTRO + 1 && d < R_LAB - 0.5 && (entre(ang, Math.PI / 2) < 0.08 || entre(ang, -Math.PI / 2) < 0.08);
+      const dentro = d >= R_DENTRO && d < R_DENTRO + 1 && entre(ang, -0.25 * Math.PI) > 0.24 && entre(ang, 0.75 * Math.PI) > 0.24;
+      const raio = d >= R_DENTRO + 1 && d < R_LAB - 0.5 && (entre(ang, 0.25 * Math.PI) < 0.08 || entre(ang, -0.75 * Math.PI) < 0.08);
       if (fora || dentro || raio) f.push(["sebe", x, y, 0]);
     }
   return f;
 }
 
-/** as quatro estátuas dos Guardiões (2 × 2): uma do lado de cada entrada do labirinto, olhando para ela */
+/** as quatro estátuas dos Guardiões (2 × 2): uma do lado de cada entrada do labirinto, de costas para ele */
 function estatuas(): FloorSeed[] {
   return ENTRADAS_LAB.map((e, i) => {
     const a = e + 0.3;
     const x = Math.round(CX + Math.cos(a) * R_EST - 1);
     const y = Math.round(CY + Math.sin(a) * R_EST - 1);
-    const rot = Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? (Math.cos(a) > 0 ? 6 : 2) : Math.sin(a) > 0 ? 0 : 4;
-    return [i % 2 ? "estatua_guardiao~b" : "estatua_guardiao", x, y, rot, hint("Estátua de Guardião", "Uma das quatro estátuas dos Guardiões, de vigia numa entrada do Labirinto. O rosto foi gasto até sumir.")] as FloorSeed;
+    // de costas para o labirinto, olhando para quem chega (o Felipe, 14/10)
+    const rot = Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? (Math.cos(a) > 0 ? 2 : 6) : Math.sin(a) > 0 ? 4 : 0;
+    return [i % 2 ? "estatua_guardiao~b" : "estatua_guardiao", x, y, rot, hint("Estátua de Guardião", "Uma das quatro estátuas dos Guardiões, de costas para o Labirinto, de vigia numa entrada dele. O rosto foi gasto até sumir.")] as FloorSeed;
   });
 }
 
@@ -226,6 +227,49 @@ function vilaPiso(): FloorSeed[] {
 
 // ------------------------------------------------------------------ as cenas
 
+/**
+ * A casinha padrão, sem nome (o Felipe, 14/10: "simples mas completinha e bonita"), para toda casa da vila ainda sem interior
+ * próprio: a sala de enxaimel com a lareira, a mesa comprida com os bancos, a cama de palha com o criado, a prateleira,
+ * o baú, os barris e os lampiões. `lado`: a porta de fora está virada para a frente da tela (a de dentro na parede da
+ * frente, a que não aparece) ou para o fundo (na parede do fundo).
+ */
+function casaPadrao(key: string, nome: string, lado: "frente" | "fundo", description: string): CenaSpec {
+  const fundo = lado === "fundo";
+  // na planta com a porta no fundo, a sala começa na fileira 1 (a 0 é o vão da porta)
+  const y0 = fundo ? 1 : 0;
+  const Y = (y: number) => y + y0;
+  return {
+    key,
+    name: SANTO_BERCO + nome,
+    description,
+    layout: fundo ? planTop(9, 7, 4) : planBottom(9, 7, 4),
+    andar: nome,
+    style: "enxaimel",
+    ...DENTRO,
+    floor: [
+      fundo ? ["portal", 4, 1, 4] : ["portal", 4, 6, 0],
+      ["lareira", 0, Y(1), 2],
+      ["prateleira", 2, Y(0), 4],
+      ["cama_palha", 7, Y(0), 4],
+      ["nightstand", 6, Y(0), 4],
+      ["mesa_rustica", 3, Y(3), 4],
+      ["banco_rustico", 3, Y(2), 4],
+      ["banco_rustico", 3, Y(5), 0],
+      ["rug_worn", 6, Y(3), 0],
+      ["bau_madeira", 8, Y(4), 6],
+      ["barril_madeira", 0, Y(6), 0],
+      ["barril_madeira", 1, Y(6), 0],
+    ],
+    wall: [
+      ["lampiao_cristal", "r", y0, 6.2, 2.6],
+      ["window_barred", "r", y0, 7.6, 2.2],
+      ["lampiao_cristal", "l", 0, Y(5), 2.6],
+    ],
+    links: [[4, fundo ? 1 : 6, "vila"]],
+    plan: { x: 0, y: 0 },
+  };
+}
+
 const CENAS: CenaSpec[] = [
   {
     key: "vila",
@@ -247,33 +291,36 @@ const CENAS: CenaSpec[] = [
     plan: { x: 0, y: 0 },
   },
   // ------------------------------------------------------------ a Torre do Porteiro
+  // A porta de dentro fica do MESMO lado da de fora (o Felipe, 14/10, como na Sede em 05/10): o prédio com a porta
+  // virada para a frente da tela tem a de dentro na parede da frente, a que não aparece (planBottom); virado para o
+  // fundo, na parede do fundo (planTop).
   {
     key: "torre",
     name: SANTO_BERCO + "Torre do Porteiro",
     description:
       "O térreo da torre redonda da entrada: pedra fria, a escada em caracol subindo pelo meio, a mesa do Porteiro com o livro de quem chega, o baú, os lampiões de cristal. Pela seteira se vê a estrada do portão.",
-    layout: planTop(7, 7, 3),
+    layout: planBottom(7, 7, 3),
     andar: TORRE,
     style: "calabouco",
     ...DENTRO,
     floor: [
-      ["portal", 3, 1, 4],
-      ["escada_espiral", 4, 4, 0],
-      ["mesa_rustica", 0, 2, 2],
-      ["banco_rustico", 2, 2, 2],
-      ["books_stack", 0, 3, 0, hint("Livro do Porteiro", "A lista de quem entrou na vila. Os nomes de fora têm, do lado, \"Ajudante do Porteiro\" escrito depois.")],
-      ["bau_madeira", 0, 7, 2],
-      ["barril_madeira", 6, 2, 0],
-      ["candles", 1, 6, 0],
+      ["portal", 3, 6, 0],
+      ["escada_espiral", 4, 3, 0],
+      ["mesa_rustica", 0, 1, 2],
+      ["banco_rustico", 2, 1, 2],
+      ["books_stack", 0, 2, 0, hint("Livro do Porteiro", "A lista de quem entrou na vila. Os nomes de fora têm, do lado, \"Ajudante do Porteiro\" escrito depois.")],
+      ["bau_madeira", 0, 6, 2],
+      ["barril_madeira", 6, 1, 0],
+      ["candles", 1, 5, 0],
     ],
     wall: [
-      ["lampiao_cristal", "r", 1, 1.5, 2.6],
+      ["lampiao_cristal", "r", 0, 1.5, 2.6],
       ["lampiao_cristal", "l", 0, 5.0, 2.6],
-      ["armas_parede", "r", 1, 5.4, 2.4],
+      ["armas_parede", "r", 0, 5.4, 2.4],
     ],
     links: [
-      [3, 1, "vila"],
-      [4, 4, "torre2"],
+      [3, 6, "vila"],
+      [4, 3, "torre2"],
     ],
     plan: { x: 0, y: 0 },
   },
@@ -282,23 +329,23 @@ const CENAS: CenaSpec[] = [
     name: SANTO_BERCO + "Alto da Torre",
     description:
       "O alto da torre: o quarto do Porteiro, a cama de palha, e no meio o cristal vermelho grande que faz da torre um farol, quente como brasa. Das janelas se vê a vila inteira e o labirinto coberto de névoa.",
-    layout: planTop(7, 7, 3),
+    layout: planBottom(7, 7, 3),
     andar: TORRE2,
     style: "calabouco",
     ...DENTRO,
     darkness: 0.38,
     floor: [
-      ["escada_espiral", 4, 4, 0],
-      ["cama_palha", 0, 1, 2],
-      ["bau_madeira", 0, 4, 2],
-      ["cristal_vermelho", 3, 2, 0, hint("O farol", "Um cristal vermelho do tamanho de uma cabeça. Esquenta o quarto inteiro; perto dele, o ar treme.")],
-      ["cristal_vermelho", 3, 3, 0],
+      ["escada_espiral", 4, 3, 0],
+      ["cama_palha", 0, 0, 2],
+      ["bau_madeira", 0, 3, 2],
+      ["cristal_vermelho", 3, 1, 0, hint("O farol", "Um cristal vermelho do tamanho de uma cabeça. Esquenta o quarto inteiro; perto dele, o ar treme.")],
+      ["cristal_vermelho", 3, 2, 0],
     ],
     wall: [
-      ["window_barred", "r", 1, 5.2, 2.2],
+      ["window_barred", "r", 0, 5.2, 2.2],
       ["window_barred", "l", 0, 5.5, 2.2],
     ],
-    links: [[4, 4, "torre"]],
+    links: [[4, 3, "torre"]],
     plan: { x: 0, y: 0 },
   },
   // ------------------------------------------------------------ a Taverna
@@ -307,40 +354,40 @@ const CENAS: CenaSpec[] = [
     name: SANTO_BERCO + "Taverna",
     description:
       "A taverna: o salão baixo de tábuas e vigas, as mesas compridas com os bancos, o balcão com as canecas de estanho e os barris atrás, a lareira acesa com o caldeirão. O Taverneiro serve \"Manteiga na Manteiga\" a quem chegar, de graça. Os Luzidios comem em silêncio e sorriem demais.",
-    layout: planTop(14, 10, 7),
+    layout: planBottom(14, 10, 7),
     andar: TAVERNA,
     style: "enxaimel",
     ...DENTRO,
     particles: ["dust", "smoke"],
     floor: [
-      ["portal", 7, 1, 4],
+      ["portal", 7, 9, 0],
       // o balcão no fundo à direita, os barris atrás
-      ["balcao_taverna", 9, 4, 4],
-      ...de("barril_madeira", [9, 2], [10, 2], [12, 2], [13, 2]),
-      ["barril_madeira", 13, 4, 0],
-      ["stool", 9, 5, 0],
-      ["stool", 11, 5, 0],
+      ["balcao_taverna", 9, 3, 4],
+      ...de("barril_madeira", [9, 1], [10, 1], [12, 1], [13, 1]),
+      ["barril_madeira", 13, 3, 0],
+      ["stool", 9, 4, 0],
+      ["stool", 11, 4, 0],
       // a lareira na parede da esquerda
-      ["lareira", 0, 4, 2],
+      ["lareira", 0, 3, 2],
       // as mesas compridas com os bancos
-      ["mesa_rustica", 2, 6, 4],
-      ["banco_rustico", 2, 5, 4],
-      ["banco_rustico", 2, 8, 0],
-      ["mesa_rustica", 7, 7, 4],
-      ["banco_rustico", 7, 6, 4],
-      ["banco_rustico", 7, 9, 0],
-      ["bau_madeira", 13, 10, 0],
+      ["mesa_rustica", 2, 5, 4],
+      ["banco_rustico", 2, 4, 4],
+      ["banco_rustico", 2, 7, 0],
+      ["mesa_rustica", 9, 6, 4],
+      ["banco_rustico", 9, 5, 4],
+      ["banco_rustico", 9, 8, 0],
+      ["bau_madeira", 13, 9, 0],
     ],
     wall: [
-      ["placa_taverna", "r", 1, 11.0, 2.6],
-      ["lampiao_cristal", "r", 1, 4.0, 2.7],
-      ["lampiao_cristal", "r", 1, 13.0, 2.7],
-      ["lampiao_cristal", "l", 0, 8.5, 2.7],
-      ["armas_parede", "l", 0, 2.0, 2.5],
+      ["placa_taverna", "r", 0, 11.0, 2.6],
+      ["lampiao_cristal", "r", 0, 4.0, 2.7],
+      ["lampiao_cristal", "r", 0, 13.0, 2.7],
+      ["lampiao_cristal", "l", 0, 7.5, 2.7],
+      ["armas_parede", "l", 0, 1.5, 2.5],
     ],
-    links: [[7, 1, "vila"]],
+    links: [[7, 9, "vila"]],
     plan: { x: 0, y: 0 },
-    chao: [[8, 8, "Caneca de Estanho", 1, "misc"]],
+    chao: [[12, 7, "Caneca de Estanho", 1, "misc"]],
   },
   // ------------------------------------------------------------ a Ferraria e o quarto do Ferreiro
   {
@@ -348,7 +395,7 @@ const CENAS: CenaSpec[] = [
     name: SANTO_BERCO + "Ferraria",
     description:
       "A forja do Ferreiro, o líder da vila: o chão de pedra preto de fuligem, a forja acesa com um cristal vermelho no meio do carvão, a bigorna, a tina de têmpera, e por toda parte espadas, machados, arcos, escudos e armaduras — nenhuma arma de fogo. No fundo à esquerda, a porta do quarto dele.",
-    layout: planTop(11, 8, 5),
+    layout: planBottom(11, 8, 5),
     andar: FERRARIA,
     style: "ferraria",
     ...DENTRO,
@@ -356,26 +403,26 @@ const CENAS: CenaSpec[] = [
     ambient: "#c07850",
     particles: ["dust", "embers"],
     floor: [
-      ["portal", 5, 1, 4],
-      ["portal", 0, 2, 2],
-      ["forja", 7, 2, 4, hint("A forja", "Não tem carvão de verdade: no meio das brasas, um cristal vermelho mantém o ferro em brasa sem nunca apagar.")],
-      ["bigorna", 7, 5, 0],
-      ["tina_agua", 9, 5, 0],
-      ["rack_medieval", 10, 6, 6],
-      ["armadura_medieval", 10, 8, 6],
-      ["armadura_medieval", 0, 8, 2],
-      ["table_tools", 2, 6, 2],
-      ["barril_madeira", 0, 5, 0],
-      ["crate_wood", 3, 8, 0],
+      ["portal", 5, 7, 0],
+      ["portal", 0, 1, 2],
+      ["forja", 7, 1, 4, hint("A forja", "Não tem carvão de verdade: no meio das brasas, um cristal vermelho mantém o ferro em brasa sem nunca apagar.")],
+      ["bigorna", 7, 4, 0],
+      ["tina_agua", 9, 4, 0],
+      ["rack_medieval", 10, 5, 6],
+      ["armadura_medieval", 10, 7, 6],
+      ["armadura_medieval", 0, 7, 2],
+      ["table_tools", 2, 5, 2],
+      ["barril_madeira", 0, 4, 0],
+      ["crate_wood", 3, 7, 0],
     ],
     wall: [
-      ["ferramentas_parede", "r", 1, 3.0, 2.3],
-      ["armas_parede", "r", 1, 9.6, 2.6],
-      ["lampiao_cristal", "l", 0, 6.0, 2.6],
+      ["ferramentas_parede", "r", 0, 3.0, 2.3],
+      ["armas_parede", "r", 0, 9.6, 2.6],
+      ["lampiao_cristal", "l", 0, 5.0, 2.6],
     ],
     links: [
-      [5, 1, "vila"],
-      [0, 2, "quarto_ferreiro"],
+      [5, 7, "vila"],
+      [0, 1, "quarto_ferreiro"],
     ],
     plan: { x: 7, y: 0 },
   },
@@ -384,22 +431,53 @@ const CENAS: CenaSpec[] = [
     name: SANTO_BERCO + "Quarto do Ferreiro",
     description:
       "O quarto do Ferreiro, atrás da forja: a cama de palha, o baú, a mesinha com a vela. No chão, uma escotilha de ferro pesada, sem puxador por cima: só abre por baixo.",
-    layout: planTop(6, 6, 3),
+    // a porta para a forja fica do lado dela (à direita do quarto)
+    layout: planRight(6, 6, 1),
     andar: FERRARIA,
     style: "enxaimel",
     ...DENTRO,
     darkness: 0.56,
     floor: [
-      ["portal", 3, 1, 4],
-      ["cama_palha", 0, 1, 2],
-      ["bau_madeira", 0, 4, 2],
-      ["nightstand", 0, 5, 2],
-      ["candles", 0, 6, 0],
-      ["rug_worn", 3, 3, 0],
-      ["escotilha", 4, 6, 0, oculta("A escotilha", "Ferro grosso, sem argola nem fechadura deste lado. Por baixo dela, um barulho de vento — ou de respiração."), 2],
+      ["portal", 5, 1, 6],
+      ["cama_palha", 0, 0, 2],
+      ["bau_madeira", 0, 3, 2],
+      ["nightstand", 0, 4, 2],
+      ["candles", 0, 5, 0],
+      ["rug_worn", 2, 2, 0],
+      ["escotilha", 4, 5, 0, oculta("A escotilha", "Ferro grosso, sem argola nem fechadura deste lado. Por baixo dela, um barulho de vento — ou de respiração."), 2],
     ],
-    wall: [["lampiao_cristal", "r", 1, 1.6, 2.6]],
-    links: [[3, 1, "ferraria"]],
+    wall: [["lampiao_cristal", "r", 0, 1.6, 2.6]],
+    links: [[5, 1, "ferraria"]],
+    plan: { x: 0, y: 0 },
+  },
+  // ------------------------------------------------------------ as casas ainda sem interior próprio (a casinha padrão)
+  casaPadrao("hotel", "Hotel", "frente", "O hall do hotel por enquanto: a lareira, a mesa comprida, o baú das chaves. O Hoteleiro recebe todo mundo com o mesmo sorriso. (O hotel inteiro, com os quadros dos Hoteleiros e o corredor dos quartos, vem depois.)"),
+  casaPadrao("doutor", "Casa do Doutor", "frente", "A sala da casa do Doutor por enquanto: a lareira, a mesa, a cama do canto. (O consultório vem depois.)"),
+  // as casinhas comuns da vila não têm nome próprio (o Felipe, 14/10): só os lugares importantes do mapa têm
+  casaPadrao("casa1", "Casa", "fundo", "Uma casinha da vila: a lareira acesa, a mesa com os bancos, a cama de palha, a prateleira e os barris. Simples e arrumada."),
+  casaPadrao("casa2", "Casa", "frente", "Uma casinha da vila: a lareira acesa, a mesa com os bancos, a cama de palha, a prateleira e os barris. Simples e arrumada."),
+  casaPadrao("casa3", "Casa", "frente", "Uma casinha da vila: a lareira acesa, a mesa com os bancos, a cama de palha, a prateleira e os barris. Simples e arrumada."),
+  casaPadrao("casa4", "Casa", "frente", "Uma casinha da vila: a lareira acesa, a mesa com os bancos, a cama de palha, a prateleira e os barris. Simples e arrumada."),
+  {
+    key: "celeiro",
+    name: SANTO_BERCO + "Celeiro da Fazendeira",
+    description: "O celeiro da Fazenda da vila: as baias, o feno, as sacas e a carroça. Os bichos se escondem aqui toda noite.",
+    layout: planBottom(12, 8, 6),
+    andar: "Celeiro da Fazendeira",
+    style: "terra",
+    ...DENTRO,
+    darkness: 0.5,
+    ambient: "#b08a60",
+    floor: [
+      ["portal", 6, 7, 0],
+      ...[0, 2, 4].map((x): FloorSeed => ["baia", x, 0, 4]),
+      ...de("feno", [9, 0], [10, 0], [11, 0], [10, 1], [11, 1]),
+      ...de("sacas", [0, 5], [1, 5], [0, 6]),
+      ["carroca", 8, 3, 0],
+      ["barril_madeira", 11, 6, 0],
+    ],
+    wall: [["lampiao_cristal", "r", 0, 6.5, 2.7]],
+    links: [[6, 7, "vila"]],
     plan: { x: 0, y: 0 },
   },
 ];
@@ -457,8 +535,11 @@ function rebuildSantoBerco(db: Database): boolean {
   if (!existing.length) return false;
   const key = Math.min(...existing.map((r) => r.id));
   const built = new Map<string, RoomData>();
+  // várias cenas com o mesmo nome (as casinhas comuns): cada uma refaz a sua, na ordem em que foram criadas
+  const usadas = new Set<number>();
   for (const spec of CENAS) {
-    let room = existing.find((r) => r.name === spec.name);
+    let room = existing.find((r) => r.name === spec.name && !usadas.has(r.id));
+    if (room) usadas.add(room.id);
     const fresh = montar(db, spec);
     if (room) {
       db.nextRoomId--;

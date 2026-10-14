@@ -490,7 +490,7 @@ export class RoomInstance {
         if (!p.link || !getFurni(p.defId)?.portal) return false;
         return p.x >= it.x - 1 && p.x <= it.x + fp.sx && p.y >= it.y - 1 && p.y <= it.y + fp.sy;
       });
-      out.push({ x: it.x, y: it.y, w: fp.sx, h: fp.sy, nome: def.name, kind: def.kind, ...(encostada?.link ? { entra: encostada.link } : {}) });
+      out.push({ x: it.x, y: it.y, w: fp.sx, h: fp.sy, nome: def.semNome ? '' : def.name, kind: def.kind, ...(encostada?.link ? { entra: encostada.link } : {}) });
     }
     return out;
   }

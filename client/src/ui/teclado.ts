@@ -166,8 +166,7 @@ export class TecladoSenha {
       if (this.digitado.length >= this.tamanho) return;
       this.digitado += valor;
       sfx.beep(Number(valor));
-      // casas cheias: confere sozinho, depois de mostrar o último número
-      if (this.digitado.length === this.tamanho) this.timer = window.setTimeout(() => this.enviar(), 260);
+      // casas cheias: espera o CONFIRMAR (ou o Enter); a passagem não abre sozinha (o Felipe, 14/10)
     }
     this.mostrar();
   }

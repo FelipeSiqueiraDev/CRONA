@@ -102,6 +102,8 @@ export interface FurniDef {
   rotations: number[];
   colors: string[];
   desc?: string;
+  /** prédio sem nome no mapa (a casinha comum da vila: só os lugares importantes têm rótulo) */
+  semNome?: boolean;
 }
 
 /** Mobi de parede. Tamanho em pixels de tela. */
@@ -197,11 +199,11 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'shelf_metal', name: 'Estante de Metal', category: 'armazenamento', kind: 'shelf', width: 2, depth: 1, height: 2.2, rotations: ALL, colors: ['#3a3d42', '#23262a'] },
   { id: 'locker', name: 'Armário de Metal', category: 'armazenamento', kind: 'locker', width: 1, depth: 1, height: 1.95, states: 2, rotations: ALL, colors: ['#3d4148', '#2a2d32'], desc: 'Clique duplo abre a porta.' },
   { id: 'pilha_chao', name: 'Itens no Chão', category: 'armazenamento', kind: 'pilha', width: 1, depth: 1, height: 0.12, walkable: true, interno: true, rotations: [0], colors: ['#5c4630', '#2e241a'], desc: 'O que alguém largou aqui. Quem passar pode pegar.' },
-  { id: 'crate_wood', name: 'Caixote de Madeira', category: 'armazenamento', kind: 'crate', width: 1, depth: 1, height: 0.8, stackable: true, rotations: ALL, colors: ['#6b4a2e', '#4a321f'] },
+  { id: 'crate_wood', name: 'Caixote de Madeira', category: 'armazenamento', kind: 'crate', width: 1, depth: 1, height: 0.8, states: 2, stackable: true, rotations: ALL, colors: ['#6b4a2e', '#4a321f'], desc: 'Clique duplo abre e fecha.' },
   { id: 'crate_metal', name: 'Caixa Metálica', category: 'armazenamento', kind: 'crate_metal', width: 1, depth: 1, height: 0.8, stackable: true, rotations: ALL, colors: ['#35393f', '#24272b', '#7a6a4a'] },
   { id: 'chest_military', name: 'Baú Militar Grande', category: 'armazenamento', kind: 'chest', width: 2, depth: 1, height: 0.7, stackable: true, rotations: ALL, colors: ['#3e3a2c', '#2a271e', '#8a8060'] },
   { id: 'chest_army', name: 'Baú Militar', category: 'arsenal', kind: 'chest', width: 1, depth: 1, height: 0.45, stackable: true, states: 2, rotations: ALL, colors: ['#5a6a2a', '#2a2d1e', '#8a7a5a'], desc: 'Madeira e metal verde-oliva. Clique duplo abre: coletes e lanternas dentro.' },
-  { id: 'ammo_box', name: 'Caixa de Munição', category: 'arsenal', kind: 'crate_metal', width: 1, depth: 1, height: 0.3, stackable: true, rotations: ALL, colors: ['#4a5a2a', '#2a2d1e', '#8a7a5a'] },
+  { id: 'ammo_box', name: 'Caixa de Munição', category: 'arsenal', kind: 'crate_metal', width: 1, depth: 1, height: 0.3, states: 2, stackable: true, rotations: ALL, colors: ['#4a5a2a', '#2a2d1e', '#8a7a5a'], desc: 'Clique duplo abre e fecha.' },
   { id: 'barrel', name: 'Barril', category: 'armazenamento', kind: 'barrel', width: 1, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#3a3f2e', '#1f2219'] },
 
   // ---------- Decoração ----------
@@ -213,7 +215,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'stall_panel', name: 'Divisória de Cabine', category: 'estrutura', kind: 'iwall', width: 1, depth: 1, height: 1.6, xray: true, rotations: ALL, colors: ['#c8b89a'], desc: 'Painel de fórmica entre os vasos do banheiro.' },
   { id: 'trash_bin', name: 'Lixeira', category: 'saude', kind: 'crate', width: 1, depth: 1, height: 0.4, rotations: ALL, colors: ['#d8d0c0', '#8a8478'] },
   { id: 'trash_can', name: 'Lixeira de Metal', category: 'decoracao', kind: 'crate', width: 1, depth: 1, height: 0.6, rotations: ALL, colors: ['#8a8478', '#5a4a3a'], desc: 'Redonda, amassada, de tampa basculante.' },
-  { id: 'locker_row', name: 'Armários de Vestiário', category: 'armazenamento', kind: 'locker', width: 2, depth: 1, height: 1.9, rotations: ALL, colors: ['#6a6e66', '#3a3d38'], desc: 'Três portas estreitas com cadeado.' },
+  { id: 'locker_row', name: 'Armários de Vestiário', category: 'armazenamento', kind: 'locker', width: 2, depth: 1, height: 1.9, states: 2, rotations: ALL, colors: ['#6a6e66', '#3a3d38'], desc: 'Três portas estreitas com cadeado. Clique duplo abre e fecha.' },
   { id: 'janitor_cart', name: 'Carrinho de Limpeza', category: 'decoracao', kind: 'crate', width: 1, depth: 1, height: 1.1, rotations: ALL, colors: ['#e8c020', '#2a2a2a'], desc: 'Balde, esfregão, borrifadores e o saco de lixo.' },
   { id: 'wet_sign', name: 'Placa de Piso Molhado', category: 'decoracao', kind: 'crate', width: 1, depth: 1, height: 0.6, rotations: ALL, colors: ['#e8c020', '#2a2a2a'] },
   { id: 'puddle', name: 'Poça de Água', category: 'decoracao', kind: 'dirt', width: 1, depth: 1, height: 0.01, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#5a6a7a', '#8aa0b0'] },
@@ -234,15 +236,15 @@ const FURNI_METERS: FurniDef[] = [
   // bar
   { id: 'bar_counter', name: 'Balcão do Bar', category: 'bar', kind: 'bar_counter', width: 2, depth: 1, height: 1.1, stackable: true, rotations: ALL, colors: ['#6a1a16', '#2e1a12', '#b8904a'] },
   { id: 'bar_shelf', name: 'Prateleira de Garrafas', category: 'bar', kind: 'bar_shelf', width: 2, depth: 1, height: 2.0, rotations: ALL, colors: ['#3a2418', '#241610'] },
-  { id: 'beer_fridge', name: 'Geladeira Amarela', category: 'bar', kind: 'beer_fridge', width: 1, depth: 1, height: 2.0, rotations: [4, 2], colors: ['#b8901c', '#ffe9a0'], desc: 'Geladeira amarela de porta de vidro, cheia de garrafas. Tem um teclado numérico do lado.' },
-  { id: 'fridge_drinks', name: 'Expositor de Bebidas', category: 'bar', kind: 'beer_fridge', width: 1, depth: 1, height: 2.0, rotations: [4, 2], colors: ['#26343a', '#cfeaff'], desc: 'Geladeira de porta de vidro, cheia de garrafas.' },
-  { id: 'minibar', name: 'Frigobar', category: 'bar', kind: 'beer_fridge', width: 1, depth: 1, height: 0.9, stackable: true, rotations: [4, 2], colors: ['#3a3f44', '#ffe9b0'], desc: 'A geladeirinha de trás do balcão.' },
+  { id: 'beer_fridge', name: 'Geladeira Amarela', category: 'bar', kind: 'beer_fridge', width: 1, depth: 1, height: 2.0, states: 2, rotations: [4, 2], colors: ['#b8901c', '#ffe9a0'], desc: 'Geladeira amarela de porta de vidro, cheia de garrafas. Tem um teclado numérico do lado. Clique duplo abre e fecha.' },
+  { id: 'fridge_drinks', name: 'Expositor de Bebidas', category: 'bar', kind: 'beer_fridge', width: 1, depth: 1, height: 2.0, states: 2, rotations: [4, 2], colors: ['#26343a', '#cfeaff'], desc: 'Geladeira de porta de vidro, cheia de garrafas. Clique duplo abre e fecha.' },
+  { id: 'minibar', name: 'Frigobar', category: 'bar', kind: 'beer_fridge', width: 1, depth: 1, height: 0.9, states: 2, stackable: true, rotations: [4, 2], colors: ['#3a3f44', '#ffe9b0'], desc: 'A geladeirinha de trás do balcão. Clique duplo abre e fecha.' },
   { id: 'pool_table', name: 'Mesa de Sinuca', category: 'bar', kind: 'pool_table', width: 2, depth: 4, height: 0.85, stackable: true, rotations: ALL, colors: ['#3fae4a', '#4a2c1a'] },
   { id: 'jukebox', name: 'Jukebox', category: 'bar', kind: 'jukebox', width: 1, depth: 1, height: 1.6, states: 2, rotations: ALL, colors: ['#3a1a24', '#ff7ab0', '#ffb14a'], desc: 'Clique duplo liga/desliga.' },
   { id: 'arcade', name: 'Feliperama', category: 'bar', kind: 'jukebox', width: 1, depth: 1, height: 1.8, states: 2, rotations: ALL, colors: ['#16123a', '#6a5aff', '#5ad8ff'], desc: 'O Feliperama, o fliperama do bar: a tela ilumina o bar inteiro. Clique duplo liga/desliga; com um agente escolhido, Jogar leva o agente até ele (o jogo abre no celular do jogador quando ele chega).' },
   { id: 'beer_crate', name: 'Engradado de Cerveja', category: 'bar', kind: 'crate', width: 1, depth: 1, height: 0.35, stackable: true, rotations: ALL, colors: ['#a8842e', '#5a4020'] },
   { id: 'chair_stack', name: 'Pilha de Cadeiras', category: 'bar', kind: 'crate', width: 1, depth: 1, height: 1.3, rotations: ALL, colors: ['#c99a2e', '#7a5a1a'], desc: 'Cadeiras de plástico empilhadas no canto.' },
-  { id: 'bar_cabinet', name: 'Armarinho', category: 'bar', kind: 'nightstand', width: 1, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#4a3020', '#c9a86a'] },
+  { id: 'bar_cabinet', name: 'Armarinho', category: 'bar', kind: 'nightstand', width: 1, depth: 1, height: 1.0, states: 2, stackable: true, rotations: ALL, colors: ['#4a3020', '#c9a86a'], desc: 'Clique duplo abre e fecha.' },
   { id: 'ashtray', name: 'Cinzeiro', category: 'bar', kind: 'mug', width: 1, depth: 1, height: 0.05, rotations: ALL, colors: ['#8a8a8a'] },
   { id: 'beer_glass', name: 'Copo', category: 'bar', kind: 'mug', width: 1, depth: 1, height: 0.15, rotations: ALL, colors: ['#e8d8a0'] },
   { id: 'stool_bar', name: 'Banqueta de Balcão', category: 'bar', kind: 'stool_high', width: 1, depth: 1, height: 0.9, aumento: 1.2, sit: true, rotations: ALL, colors: ['#6a1a16', '#1d1a18'] },
@@ -250,11 +252,11 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'chair_bar', name: 'Cadeira de Bar', category: 'bar', kind: 'chair', width: 1, depth: 1, height: 0.55, aumento: 1.2, sit: true, rotations: ALL, colors: ['#a8842e', '#5a4020'] },
   { id: 'sofa_booth', name: 'Sofá Vermelho', category: 'bar', kind: 'sofa', width: 2, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#7a1c1a'] },
   { id: 'armchair_red', name: 'Poltrona Vermelha', category: 'bar', kind: 'armchair', width: 1, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#8a1c1a'] },
-  { id: 'sideboard', name: 'Aparador', category: 'bar', kind: 'table_big', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#4a3020', '#2e1d12', '#9a7a4a'], desc: 'Aparador de madeira escura, com garrafas e copos em cima.' },
+  { id: 'sideboard', name: 'Aparador', category: 'bar', kind: 'table_big', width: 2, depth: 1, height: 0.9, states: 2, stackable: true, rotations: ALL, colors: ['#4a3020', '#2e1d12', '#9a7a4a'], desc: 'Aparador de madeira escura, com garrafas e copos em cima. Clique duplo abre e fecha.' },
   { id: 'keg', name: 'Barril de Chope', category: 'bar', kind: 'barrel', width: 1, depth: 1, height: 0.6, stackable: true, rotations: ALL, colors: ['#8a8e92', '#4a4e52'] },
   // dormitório
   { id: 'bed', name: 'Cama de Cela', category: 'mobilia', kind: 'bed', width: 1, depth: 3, height: 0.5, rotations: ALL, colors: ['#5a5a2e', '#2a2622', '#d8d0c0'] },
-  { id: 'nightstand', name: 'Criado-Mudo', category: 'mobilia', kind: 'nightstand', width: 1, depth: 1, height: 0.6, stackable: true, rotations: ALL, colors: ['#4b3120', '#c9a86a'] },
+  { id: 'nightstand', name: 'Criado-Mudo', category: 'mobilia', kind: 'nightstand', width: 1, depth: 1, height: 0.6, states: 2, stackable: true, rotations: ALL, colors: ['#4b3120', '#c9a86a'], desc: 'Clique duplo abre e fecha.' },
   { id: 'bench', name: 'Banco de Madeira', category: 'mobilia', kind: 'bench', width: 2, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#5a3a24', '#2a1d14'] },
   // salas
   { id: 'sofa_velvet', name: 'Sofá de Veludo', category: 'mobilia', kind: 'sofa', width: 2, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#8a74c0'] },
@@ -294,7 +296,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'bed_curtain', name: 'Cortina do Leito', category: 'saude', kind: 'divider', width: 3, depth: 4, height: 2.2, states: 2, openState: 1, xray: true, vazio: [0, 1, 2].flatMap((u) => [0, 1, 2].map((v) => [u, v] as [number, number])), aberto: ['fundo'], rotations: ALL, colors: ['#a8d0b8', '#9aa0a8'], desc: 'O trilho em U com a cortina verde-clara, com espaço para andar em volta do leito. Fechada, a frente fica cerrada; aberta, a cortina fica franzida nos cantos de trás.' },
   { id: 'hospital_bed', name: 'Leito Hospitalar', category: 'saude', kind: 'hospital_bed', width: 1, depth: 3, height: 0.7, rotations: ALL, colors: ['#7fb88a', '#c9ccd0'] },
   { id: 'iv_stand', name: 'Suporte de Soro', category: 'saude', kind: 'iv_stand', width: 1, depth: 1, height: 1.9, rotations: ALL, colors: ['#9aa0a8', '#d8e8f0'] },
-  { id: 'medical_cabinet', name: 'Armário de Remédios', category: 'saude', kind: 'medical_cabinet', width: 2, depth: 1, height: 1.9, rotations: ALL, colors: ['#d8dcdf', '#b3261e'] },
+  { id: 'medical_cabinet', name: 'Armário de Remédios', category: 'saude', kind: 'medical_cabinet', width: 2, depth: 1, height: 1.9, states: 2, rotations: ALL, colors: ['#d8dcdf', '#b3261e'], desc: 'Clique duplo abre e fecha.' },
   { id: 'divider', name: 'Divisória Hospitalar', category: 'saude', kind: 'divider', width: 1, depth: 1, height: 1.6, xray: true, rotations: ALL, colors: ['#c9d4c8', '#8a9098'] },
   // arsenal
   { id: 'weapon_rack', name: 'Armário de Armas', category: 'arsenal', kind: 'weapon_rack', width: 2, depth: 1, height: 2.0, rotations: ALL, colors: ['#2a2d31', '#1a1c1f'] },
@@ -374,10 +376,10 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'cama_casal', name: 'Cama de Casal', category: 'casa', kind: 'bed', width: 2, depth: 3, height: 0.55, rotations: ALL, colors: ['#7a2e2a', '#4a3020', '#e2dccc'] },
   { id: 'cama_solteiro', name: 'Cama de Solteiro', category: 'casa', kind: 'bed', width: 1, depth: 3, height: 0.55, rotations: ALL, colors: ['#3e5a7a', '#5a3a24', '#e2dccc'] },
   { id: 'beliche', name: 'Beliche', category: 'casa', kind: 'beliche', width: 1, depth: 3, height: 1.85, sit: true, leitos: [0.55, 1.52], rotations: ALL, colors: ['#3e5a7a', '#5a3a24', '#e2dccc'], desc: 'Duas camas de solteiro empilhadas, com a escadinha no pé. A peça fica na de baixo; para a de cima, "Na cama de cima" (a escalada).' },
-  { id: 'guarda_roupa', name: 'Guarda-roupa', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 2.0, rotations: ALL, colors: ['#5a3a24', '#c9a86a'] },
-  { id: 'comoda', name: 'Cômoda', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#6a4428', '#c9a86a'] },
-  { id: 'armario_cozinha', name: 'Armário de Cozinha', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 1.9, rotations: ALL, colors: ['#e2d6bc', '#5a4a3a'] },
-  { id: 'armario_cozinha_l', name: 'Armário de Cozinha em L', category: 'casa', kind: 'armario', width: 2, depth: 3, height: 1.9, vazio: [[1, 1], [1, 2]], rotations: ALL, colors: ['#e2d6bc', '#5a4a3a'], desc: 'O armário do canto da cozinha, num móvel só: o braço do fundo e o da esquerda com o balcão contínuo e o louceiro em cima.' },
+  { id: 'guarda_roupa', name: 'Guarda-roupa', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 2.0, states: 2, rotations: ALL, colors: ['#5a3a24', '#c9a86a'], desc: 'Clique duplo abre e fecha.' },
+  { id: 'comoda', name: 'Cômoda', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 0.9, states: 2, stackable: true, rotations: ALL, colors: ['#6a4428', '#c9a86a'], desc: 'Clique duplo abre e fecha.' },
+  { id: 'armario_cozinha', name: 'Armário de Cozinha', category: 'casa', kind: 'armario', width: 2, depth: 1, height: 1.9, states: 2, rotations: ALL, colors: ['#e2d6bc', '#5a4a3a'], desc: 'Clique duplo abre e fecha.' },
+  { id: 'armario_cozinha_l', name: 'Armário de Cozinha em L', category: 'casa', kind: 'armario', width: 2, depth: 3, height: 1.9, states: 2, vazio: [[1, 1], [1, 2]], rotations: ALL, colors: ['#e2d6bc', '#5a4a3a'], desc: 'O armário do canto da cozinha, num móvel só: o braço do fundo e o da esquerda com o balcão contínuo e o louceiro em cima. Clique duplo abre e fecha.' },
   { id: 'fogao_lenha', name: 'Fogão a Lenha', category: 'casa', kind: 'fogao', width: 2, depth: 1, height: 0.85, states: 2, rotations: ALL, colors: ['#c8bca4', '#2a2420'], desc: 'Clique duplo acende/apaga.' },
   { id: 'pia_cozinha', name: 'Pia de Cozinha', category: 'casa', kind: 'pia_cozinha', width: 2, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#e2d6bc', '#9aa4a8'] },
   { id: 'mesa_jantar', name: 'Mesa de Jantar', category: 'casa', kind: 'mesa', width: 4, depth: 2, height: 0.94, vao: 'vazada', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#6a4428', '#4a2e1a'] },
@@ -386,7 +388,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'prateleira', name: 'Prateleira de Madeira', category: 'casa', kind: 'shelf', width: 2, depth: 1, height: 2.2, rotations: ALL, colors: ['#7a5a3a', '#4a3424'] },
   { id: 'escada_desce', name: 'Escada que Desce', category: 'casa', kind: 'escada_desce', width: 1, depth: 2, height: 0, walkable: true, portal: true, rotations: ALL, colors: ['#6a4a2e', '#1a1410'], desc: 'O vão da escada, com o corrimão: pare em cima para descer (o mestre escolhe o destino).' },
   // Santo Berço (14/10): a vila medieval em volta do Labirinto Infinito (docs/SANTO-BERCO.md); arte em pixel por código
-  { id: 'casa_vila', name: 'Casa da Vila', category: 'vila', kind: 'predio_vila', width: 6, depth: 5, height: 5.0, xray: true, rotations: ALL, colors: ['#d8c8a4', '#9a2f22', '#5a3a24', '#2a2018'], desc: 'Casinha medieval de enxaimel, paredes de taipa clara e telhado vermelho de telha.' },
+  { id: 'casa_vila', name: 'Casa', category: 'vila', kind: 'predio_vila', semNome: true, width: 6, depth: 5, height: 5.0, xray: true, rotations: ALL, colors: ['#d8c8a4', '#9a2f22', '#5a3a24', '#2a2018'], desc: 'Casinha medieval de enxaimel, paredes de taipa clara e telhado vermelho de telha.' },
   { id: 'taverna_predio', name: 'Taverna', category: 'vila', kind: 'predio_vila', width: 10, depth: 7, height: 6.0, xray: true, rotations: ALL, colors: ['#cdb894', '#8e2a1e', '#4a3020', '#2a2018'], desc: 'A taverna da vila: dois pisos de enxaimel, a placa pendurada na frente e a luz vermelha dos cristais na janela.' },
   { id: 'ferraria_predio', name: 'Ferraria', category: 'vila', kind: 'predio_vila', width: 8, depth: 6, height: 5.0, xray: true, rotations: ALL, colors: ['#8a8278', '#8e2a1e', '#3a2a1e', '#e0602a'], desc: 'A ferraria de pedra com a chaminé larga e o alpendre aberto da forja.' },
   { id: 'hotel_predio', name: 'Hotel', category: 'vila', kind: 'predio_vila', width: 10, depth: 8, height: 7.5, xray: true, rotations: ALL, colors: ['#d4c4a0', '#8e2a1e', '#4a3020', '#2a2018'], desc: 'O hotel de dois andares, com a varanda de madeira em cima da porta.' },
@@ -416,7 +418,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'barril_madeira', name: 'Barril de Madeira', category: 'vila', kind: 'barrel', width: 1, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#7a5232', '#3a3a3a'], desc: 'Barril de aduelas com aros de ferro.' },
   { id: 'lareira', name: 'Lareira', category: 'vila', kind: 'lareira', width: 3, depth: 1, height: 2.0, states: 2, rotations: ALL, colors: ['#7a7268', '#ff6a2a'], desc: 'A lareira de pedra encostada na parede, com o caldeirão pendurado. Clique duplo acende/apaga.' },
   { id: 'cama_palha', name: 'Cama de Palha', category: 'vila', kind: 'bed', width: 2, depth: 3, height: 0.55, rotations: ALL, colors: ['#8a6a4a', '#6a4a2c', '#c8a868'], desc: 'O estrado de madeira com o colchão de palha e a manta de lã.' },
-  { id: 'bau_madeira', name: 'Baú de Madeira', category: 'vila', kind: 'bau', width: 1, depth: 1, height: 0.6, stackable: true, rotations: ALL, colors: ['#6a4a2c', '#3a3a3a'] },
+  { id: 'bau_madeira', name: 'Baú de Madeira', category: 'vila', kind: 'bau', width: 1, depth: 1, height: 0.6, states: 2, stackable: true, rotations: ALL, colors: ['#6a4a2c', '#3a3a3a'], desc: 'Clique duplo abre e fecha.' },
   { id: 'escotilha', name: 'Escotilha Pesada', category: 'vila', kind: 'escotilha', width: 1, depth: 1, height: 0.04, walkable: true, stackable: true, portal: true, flat: true, states: 3, openState: 0, rotations: ALL, colors: ['#4a4a50', '#070505'], desc: 'A escotilha de ferro no chão do quarto do Ferreiro: só abre por baixo. Dá no bunker.' },
   { id: 'neblina_densa', name: 'Neblina Densa', category: 'decoracao', kind: 'neblina', width: 1, depth: 1, height: 0.02, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#a8b2a8'], desc: 'Um banco de neblina grossa, que se mexe devagar e esconde o que está dentro (o miolo do Labirinto Infinito). O tamanho da peça é o tamanho da neblina.' },
   { id: 'escada_espiral', name: 'Escada em Espiral', category: 'vila', kind: 'escada_espiral', width: 2, depth: 2, height: 0, walkable: true, portal: true, rotations: ALL, colors: ['#8a8278', '#3a2a1e'], desc: 'A escada de pedra em caracol da torre. Pare em cima para subir ou descer.' },

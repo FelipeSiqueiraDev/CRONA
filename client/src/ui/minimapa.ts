@@ -867,7 +867,7 @@ export class Minimapa {
       const y = Math.round(O.y + m.y * S);
       const w = Math.round(m.w * S);
       const hh = Math.round(m.h * S);
-      alvos.push({ tipo: 'predio', id, nome: `${p.nome}: clique para ver dentro`, x, y, w, h: hh });
+      alvos.push({ tipo: 'predio', id, nome: `${p.nome || 'Casa'}: clique para ver dentro`, x, y, w, h: hh });
       const atual = ondeCur?.predio === id;
       if (atual) {
         ctx.save();
@@ -898,6 +898,12 @@ export class Minimapa {
     const ocupado: Caixa[] = [];
     const bate = (a: Caixa, b: Caixa) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
     for (const t of telhados) {
+      // a casinha comum não tem rótulo (só os lugares importantes têm): fica o telhado clicável e o selo de quem está lá
+      if (!t.nome) {
+        alvos.push({ tipo: 'predio', id: t.id, nome: 'Casa: clique para ver dentro', x: t.x, y: t.y, w: t.w, h: t.h });
+        if (t.gente.length) selo(ctx, t.gente, t.x + t.w - 2, t.y + t.h - fs(13));
+        continue;
+      }
       const m = medirPlaca(ctx, t.nome);
       const lugares = [
         ...(m.w <= t.w * 1.3 && m.h <= t.h * 1.2 ? [[t.x + t.w / 2, t.y + t.h / 2]] : []),

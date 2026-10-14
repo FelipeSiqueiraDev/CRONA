@@ -13824,22 +13824,22 @@
       "4": {
         "arquivo": "lareira/giro-4.png",
         "ax": 104.0,
-        "ay": 148.0
+        "ay": 163.0
       },
       "2": {
         "arquivo": "lareira/giro-2.png",
         "ax": 41.0,
-        "ay": 148.0
+        "ay": 163.0
       },
       "0": {
         "arquivo": "lareira/giro-0.png",
         "ax": 104.0,
-        "ay": 142.0
+        "ay": 158.0
       },
       "6": {
         "arquivo": "lareira/giro-6.png",
         "ax": 40.0,
-        "ay": 142.0
+        "ay": 158.0
       }
     },
     "real": [
@@ -13853,22 +13853,22 @@
           "4": {
             "arquivo": "lareira/giro-4-1.png",
             "ax": 104.0,
-            "ay": 148.0
+            "ay": 163.0
           },
           "2": {
             "arquivo": "lareira/giro-2-1.png",
             "ax": 41.0,
-            "ay": 148.0
+            "ay": 163.0
           },
           "0": {
             "arquivo": "lareira/giro-0-1.png",
             "ax": 104.0,
-            "ay": 142.0
+            "ay": 158.0
           },
           "6": {
             "arquivo": "lareira/giro-6-1.png",
             "ax": 40.0,
-            "ay": 142.0
+            "ay": 158.0
           }
         }
       }
