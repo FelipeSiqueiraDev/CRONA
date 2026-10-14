@@ -61,19 +61,19 @@ export function desenhoDaVan(): HTMLCanvasElement {
   ret(ctx, 12, 16, 112, 60, '#1c1c23');
   ret(ctx, 14, 18, 108, 56, '#4b4f57');
   for (let x = 16; x < 120; x += 6) ret(ctx, x, 19, 1, 54, '#444850');
-  // o painel, o volante (do lado do motorista, embaixo) e o para-brisa
+  // o painel, o volante (do lado do motorista, em cima: a esquerda de quem vai para a direita) e o para-brisa
   ret(ctx, 116, 18, 8, 56, '#24242c');
   ret(ctx, 117, 19, 6, 54, '#31313b');
   ctx.fillStyle = CONTORNO;
   ctx.beginPath();
-  ctx.arc(113, 64, 5, 0, Math.PI * 2);
+  ctx.arc(113, 28, 5, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#5a5a66';
   ctx.beginPath();
-  ctx.arc(113, 64, 3.5, 0, Math.PI * 2);
+  ctx.arc(113, 28, 3.5, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = CONTORNO;
-  ctx.fillRect(112, 63, 2, 2);
+  ctx.fillRect(112, 27, 2, 2);
   ret(ctx, 124, 16, 10, 60, CONTORNO);
   ret(ctx, 125, 17, 8, 58, '#5f8fae');
   ret(ctx, 126, 18, 2, 30, '#9cc6dc');
@@ -108,7 +108,13 @@ export function desenhoDaVan(): HTMLCanvasElement {
       img.onload = () => {
         ctx.clearRect(0, 0, VAN_W, VAN_H);
         ctx.imageSmoothingEnabled = false;
+        // a arte veio com o volante embaixo (à direita de quem dirige): espelhada de cima para baixo, ele vai para a
+        // esquerda, como no Brasil (o resto da van é simétrico)
+        ctx.save();
+        ctx.translate(0, VAN_H);
+        ctx.scale(1, -1);
         ctx.drawImage(img, 0, 0, VAN_W, VAN_H);
+        ctx.restore();
       };
       img.src = VAN_ARTE;
     })

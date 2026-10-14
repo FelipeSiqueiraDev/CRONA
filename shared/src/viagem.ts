@@ -131,10 +131,13 @@ export interface BancoVan {
   y: number;
 }
 
-/** Os oito bancos: o motorista e o carona na frente (junto do painel) e duas fileiras de três atrás. */
+/**
+ * Os oito bancos: o motorista e o carona na frente (junto do painel) e duas fileiras de três atrás. A van anda para +x,
+ * então a esquerda de quem dirige é y = 0: o motorista senta ali (o volante do Brasil, 14/10).
+ */
 export const BANCOS_VAN: BancoVan[] = [
-  { id: 0, nome: 'Motorista', x: 4, y: 2 },
-  { id: 1, nome: 'Carona', x: 4, y: 0 },
+  { id: 0, nome: 'Motorista', x: 4, y: 0 },
+  { id: 1, nome: 'Carona', x: 4, y: 2 },
   { id: 2, nome: 'Fila 2 · porta', x: 2, y: 2 },
   { id: 3, nome: 'Fila 2 · meio', x: 2, y: 1 },
   { id: 4, nome: 'Fila 2 · janela', x: 2, y: 0 },

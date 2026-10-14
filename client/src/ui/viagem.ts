@@ -21,26 +21,96 @@ export function abrirViagem(app: App, party: PartyMember[], destinoInicial?: Lug
   if (!app.state.room?.isOwner) return;
   const agentes = party.filter((p) => p.id);
   if (!agentes.length) return;
-  // quem vai (todos, de começo); cada um senta num banco, na ordem
-  const vai = new Set(agentes.slice(0, BANCOS_VAN.length).map((p) => p.id!));
+  // quem vai (todos, de começo) e em que banco senta: na ordem, o primeiro ao volante; o mestre arrasta para trocar
+  const assento = new Map<number, number>();
+  const livre = () => BANCOS_VAN.find((b) => ![...assento.values()].includes(b.id))?.id;
+  for (const p of agentes.slice(0, BANCOS_VAN.length)) assento.set(p.id!, livre()!);
   const j = janela('VIAGEM', 'correr', () => {}, 70);
   const quem = h('div', { class: 'vg-quem' });
   const desenho = desenhoDaVan();
   desenho.classList.add('vg-van-arte');
   const bancos = h('div', { class: 'vg-van-bancos' });
   const van = h('div', { class: 'vg-van', role: 'img', 'aria-label': 'A van, com quem vai sentado' }, desenho, bancos);
-  const noBanco = () => {
-    const m = new Map<number, number>();
-    agentes.filter((p) => vai.has(p.id!)).forEach((p, i) => m.set(BANCOS_VAN[i].id, p.id!));
-    return m;
+  const aviso = h('p', { class: 'vg-aviso', role: 'status' });
+  const quemNoBanco = (bancoId: number) => [...assento].find(([, b]) => b === bancoId)?.[0];
+  /** o meio do banco, em % da van */
+  const ondeFica = (bancoId: number) => {
+    const b = BANCOS_VAN.find((x) => x.id === bancoId)!;
+    const [mx, my] = meioDoBanco(b.x, b.y);
+    return [(mx / VAN_W) * 100, (my / VAN_H) * 100];
+  };
+  /** senta no banco; se tinha alguém nele, os dois trocam de lugar */
+  const sentar = (tokenId: number, bancoId: number) => {
+    const de = assento.get(tokenId);
+    const outro = quemNoBanco(bancoId);
+    if (outro !== undefined && outro !== tokenId) {
+      if (de === undefined) assento.delete(outro);
+      else assento.set(outro, de);
+    }
+    assento.set(tokenId, bancoId);
+  };
+  // o banco escolhido num clique (sem arrastar): o próximo clique noutro banco troca os dois
+  let escolhido: number | null = null;
+
+  /** arrasta a bolinha do agente pela van; solta perto de um banco, senta nele (ou troca com quem estava) */
+  const arrastar = (ev: PointerEvent, el: HTMLElement, tokenId: number) => {
+    ev.preventDefault();
+    const caixa = van.getBoundingClientRect();
+    const x0 = ev.clientX;
+    const y0 = ev.clientY;
+    let moveu = false;
+    el.setPointerCapture(ev.pointerId);
+    const mover = (e: PointerEvent) => {
+      if (!moveu && Math.hypot(e.clientX - x0, e.clientY - y0) < 4) return;
+      moveu = true;
+      van.classList.add('arrastando');
+      el.classList.add('pego');
+      el.style.left = `${((e.clientX - caixa.left) / caixa.width) * 100}%`;
+      el.style.top = `${((e.clientY - caixa.top) / caixa.height) * 100}%`;
+    };
+    const soltar = (e: PointerEvent) => {
+      el.removeEventListener('pointermove', mover);
+      el.removeEventListener('pointerup', soltar);
+      el.removeEventListener('pointercancel', soltar);
+      van.classList.remove('arrastando');
+      if (!moveu) {
+        // clique: escolhe este banco; com outro já escolhido, os dois trocam
+        const meu = assento.get(tokenId)!;
+        if (escolhido === null) escolhido = meu;
+        else if (escolhido === meu) escolhido = null;
+        else {
+          sentar(tokenId, escolhido);
+          escolhido = null;
+        }
+        sfx.click();
+        return desenhar();
+      }
+      const px = ((e.clientX - caixa.left) / caixa.width) * 100;
+      const py = ((e.clientY - caixa.top) / caixa.height) * 100;
+      let melhor: number | null = null;
+      let perto = 12;
+      for (const b of BANCOS_VAN) {
+        const [bx, by] = ondeFica(b.id);
+        const d = Math.hypot(bx - px, (by - py) * (VAN_H / VAN_W));
+        if (d < perto) [melhor, perto] = [b.id, d];
+      }
+      if (melhor !== null) {
+        sentar(tokenId, melhor);
+        sfx.click();
+      }
+      escolhido = null;
+      desenhar();
+    };
+    el.addEventListener('pointermove', mover);
+    el.addEventListener('pointerup', soltar);
+    el.addEventListener('pointercancel', soltar);
   };
 
   const desenhar = () => {
-    const sentados = noBanco();
     quem.replaceChildren(
-      h('p', { class: 'vg-dica' }, 'Toque para tirar ou pôr na van.'),
+      h('p', { class: 'vg-dica' }, 'Toque para tirar ou pôr na van. Na van, arraste para trocar de banco.'),
       ...agentes.map((p) => {
-        const dentro = vai.has(p.id!);
+        const dentro = assento.has(p.id!);
         return h(
           'button',
           {
@@ -49,41 +119,72 @@ export function abrirViagem(app: App, party: PartyMember[], destinoInicial?: Lug
             'aria-pressed': String(dentro),
             onclick: () => {
               sfx.click();
-              if (dentro) vai.delete(p.id!);
-              else if (vai.size < BANCOS_VAN.length) vai.add(p.id!);
+              if (dentro) assento.delete(p.id!);
+              else {
+                const b = livre();
+                if (b !== undefined) assento.set(p.id!, b);
+              }
+              escolhido = null;
               desenhar();
             },
           },
           h('span', { class: 'vg-foto' }, portraitCanvas(p.look, 56, { dir: 2 })),
-          h('span', { class: 'vg-nome' }, h('b', null, p.name.split(' ')[0]), h('small', null, dentro ? 'vai' : 'fica')),
+          h('span', { class: 'vg-nome' }, h('b', null, p.name.split(' ')[0]), h('small', null, dentro ? (assento.get(p.id!) === 0 ? 'dirige' : 'vai') : 'fica')),
         );
       }),
     );
     bancos.replaceChildren(
-      ...[...sentados].map(([bancoId, pecaId]) => {
-        const banco = BANCOS_VAN.find((b) => b.id === bancoId)!;
-        const [mx, my] = meioDoBanco(banco.x, banco.y);
-        const p = agentes.find((x) => x.id === pecaId)!;
-        return h('span', { class: 'vg-banco ocupado', style: `left:${(mx / VAN_W) * 100}%;top:${(my / VAN_H) * 100}%`, title: `${p.name} · ${banco.nome}` }, portraitCanvas(p.look, 48, { dir: 2 }));
+      ...BANCOS_VAN.map((banco) => {
+        const [x, y] = ondeFica(banco.id);
+        const pecaId = quemNoBanco(banco.id);
+        const p = pecaId === undefined ? undefined : agentes.find((a) => a.id === pecaId);
+        if (!p) {
+          // o banco vazio: aparece enquanto se arrasta (onde dá para soltar) ou com um banco escolhido no clique
+          return h('span', {
+            class: `vg-banco vazio${banco.id === 0 ? ' volante' : ''}`,
+            style: `left:${x}%;top:${y}%`,
+            title: banco.nome,
+            onclick: () => {
+              if (escolhido === null) return;
+              const quemEra = quemNoBanco(escolhido);
+              if (quemEra !== undefined) sentar(quemEra, banco.id);
+              escolhido = null;
+              sfx.click();
+              desenhar();
+            },
+          });
+        }
+        const el = h(
+          'span',
+          { class: `vg-banco ocupado${escolhido === banco.id ? ' escolhendo' : ''}`, style: `left:${x}%;top:${y}%`, title: `${p.name} · ${banco.nome}` },
+          portraitCanvas(p.look, 48, { dir: 2 }),
+        );
+        el.addEventListener('pointerdown', (ev) => arrastar(ev, el, p.id!));
+        return el;
       }),
     );
+    van.classList.toggle('escolhendo', escolhido !== null);
+    // sem ninguém ao volante, a van não sai
+    const semMotorista = assento.size > 0 && quemNoBanco(0) === undefined;
+    partir.disabled = !assento.size || semMotorista;
+    aviso.textContent = semMotorista ? 'Falta alguém no banco do motorista.' : '';
   };
 
   /** Parte para o lugar escolhido: o cenário sai do destino (a estrada de terra para o campo, a rodovia para a cidade). */
   const partirPara = (l: LugarInfo) => {
-    const bancosEscolhidos = [...noBanco()].map(([banco, tokenId]) => ({ tokenId, banco }));
-    if (!bancosEscolhidos.length) return;
+    const bancosEscolhidos = [...assento].map(([tokenId, banco]) => ({ tokenId, banco }));
+    if (!bancosEscolhidos.length || quemNoBanco(0) === undefined) return;
     app.net.send({ t: 'viagem', acao: 'iniciar', bancos: bancosEscolhidos, destinoId: l.entrada });
     j.fechar();
   };
   const partir = botao('Partir', 'correr', 'forte', () => {
-    if (!vai.size) return;
+    if (!assento.size || quemNoBanco(0) === undefined) return;
     if (destinoInicial) return partirPara(destinoInicial);
     abrirMapaMundi(app, { escolher: partirPara, titulo: 'PARA ONDE VAMOS?', rotulo: 'Partir para cá' });
   });
   const cancelar = botao('Cancelar', 'fechar', 'claro', () => j.fechar());
 
-  j.corpo.append(h('div', { class: 'vg' }, quem, h('div', { class: 'vg-meio' }, h('h4', null, destinoInicial ? `Rumo a ${destinoInicial.nome}` : 'Quem vai na van'), van)));
+  j.corpo.append(h('div', { class: 'vg' }, quem, h('div', { class: 'vg-meio' }, h('h4', null, destinoInicial ? `Rumo a ${destinoInicial.nome}` : 'Quem vai na van'), van, aviso)));
   j.rodape.append(cancelar, partir);
   desenhar();
 }

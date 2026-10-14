@@ -3288,6 +3288,39 @@ html:not(.modo-ficha) .vg-banco.ocupado {
   background: #0b1424;
   overflow: hidden;
   box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.6);
+  cursor: grab;
+  touch-action: none;
+}
+/* arrastando a bolinha: ela segue o dedo por cima de tudo; os bancos vazios aparecem como alvo */
+html:not(.modo-ficha) .vg-banco.pego {
+  z-index: 2;
+  cursor: grabbing;
+  transition: none;
+  transform: translate(-50%, -50%) scale(1.12);
+}
+html:not(.modo-ficha) .vg-banco.vazio {
+  opacity: 0;
+  pointer-events: none;
+}
+html:not(.modo-ficha) .vg-van.arrastando .vg-banco.vazio,
+html:not(.modo-ficha) .vg-van.escolhendo .vg-banco.vazio {
+  opacity: 1;
+  pointer-events: auto;
+  border-color: rgba(255, 214, 140, 0.6);
+  background: rgba(11, 20, 36, 0.45);
+}
+/* o banco do motorista vazio fica sempre marcado: sem ele, a van não sai */
+html:not(.modo-ficha) .vg-banco.vazio.volante {
+  opacity: 1;
+  border: 0.2rem dashed var(--r-perigo);
+  background: rgba(60, 10, 10, 0.35);
+}
+html:not(.modo-ficha) .vg-aviso {
+  min-height: 1.4rem;
+  margin: 0.6rem 0 0;
+  font: 500 1.1rem / 1.3 var(--r-corpo);
+  color: var(--r-perigo);
+  text-align: center;
 }
 html:not(.modo-ficha) .vg-mais {
   font: 700 2.6rem / 1 var(--r-pixel);
