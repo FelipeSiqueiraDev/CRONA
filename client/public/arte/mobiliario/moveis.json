@@ -1,27 +1,70 @@
 {
   "console": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "console/giro-4.png",
-        "ax": 126.0,
-        "ay": 161.1
-      },
-      "6": {
-        "arquivo": "console/giro-6.png",
-        "ax": 62.0,
-        "ay": 161.1
-      },
-      "0": {
-        "arquivo": "console/giro-0.png",
-        "ax": 126.0,
-        "ay": 151.1
+        "ax": 71.0,
+        "ay": 103.0
       },
       "2": {
         "arquivo": "console/giro-2.png",
-        "ax": 62.0,
-        "ay": 162.1
+        "ax": 38.0,
+        "ay": 103.0
+      },
+      "0": {
+        "arquivo": "console/giro-0.png",
+        "ax": 71.0,
+        "ay": 99.0
+      },
+      "6": {
+        "arquivo": "console/giro-6.png",
+        "ax": 39.0,
+        "ay": 99.0
       }
+    },
+    "real": [
+      1.44,
+      0.655,
+      1.178
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "console/giro-4-1.png",
+            "ax": 71.0,
+            "ay": 103.0
+          },
+          "2": {
+            "arquivo": "console/giro-2-1.png",
+            "ax": 38.0,
+            "ay": 103.0
+          },
+          "0": {
+            "arquivo": "console/giro-0-1.png",
+            "ax": 71.0,
+            "ay": 99.0
+          },
+          "6": {
+            "arquivo": "console/giro-6-1.png",
+            "ax": 39.0,
+            "ay": 99.0
+          }
+        }
+      }
+    },
+    "cima": {
+      "arquivo": "console/cima.png",
+      "caixa": [
+        0,
+        4,
+        256,
+        123
+      ]
     },
     "tela": {
       "cores": [
@@ -32,90 +75,67 @@
       "ms": 800,
       "modo": "tv",
       "forca": 0.24,
-      "giros": {
-        "4": {
-          "x": 92.1,
-          "y": 46.4,
-          "r": 48.9
-        },
-        "2": {
-          "x": 109.0,
-          "y": 46.7,
-          "r": 48.9
-        }
+      "giros": {}
+    }
+  },
+  "cabinet_file": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cabinet_file/giro-4.png",
+        "ax": 35.0,
+        "ay": 99.0
+      },
+      "2": {
+        "arquivo": "cabinet_file/giro-2.png",
+        "ax": 34.0,
+        "ay": 99.0
+      },
+      "0": {
+        "arquivo": "cabinet_file/giro-0.png",
+        "ax": 35.0,
+        "ay": 99.0
+      },
+      "6": {
+        "arquivo": "cabinet_file/giro-6.png",
+        "ax": 36.0,
+        "ay": 99.0
       }
     },
+    "real": [
+      0.51,
+      0.668,
+      1.347
+    ],
     "estados": {
       "1": {
         "giros": {
           "4": {
-            "arquivo": "console/giro-4-1.png",
-            "ax": 126.0,
-            "ay": 161.1
-          },
-          "6": {
-            "arquivo": "console/giro-6-1.png",
-            "ax": 62.0,
-            "ay": 161.1
-          },
-          "0": {
-            "arquivo": "console/giro-0-1.png",
-            "ax": 126.0,
-            "ay": 151.1
+            "arquivo": "cabinet_file/giro-4-1.png",
+            "ax": 42.0,
+            "ay": 99.0
           },
           "2": {
-            "arquivo": "console/giro-2-1.png",
-            "ax": 62.0,
-            "ay": 162.1
+            "arquivo": "cabinet_file/giro-2-1.png",
+            "ax": 34.0,
+            "ay": 99.0
+          },
+          "0": {
+            "arquivo": "cabinet_file/giro-0-1.png",
+            "ax": 35.0,
+            "ay": 106.0
+          },
+          "6": {
+            "arquivo": "cabinet_file/giro-6-1.png",
+            "ax": 42.0,
+            "ay": 106.0
           }
         }
       }
     },
-    "real": [
-      1.5,
-      0.7,
-      1.2
-    ],
-    "cima": {
-      "arquivo": "console/cima.png",
-      "caixa": [
-        0,
-        4,
-        256,
-        123
-      ]
-    }
-  },
-  "cabinet_file": {
-    "escala": 0.5,
-    "giros": {
-      "2": {
-        "arquivo": "cabinet_file/giro-2.png",
-        "ax": 50.1,
-        "ay": 191.9
-      },
-      "6": {
-        "arquivo": "cabinet_file/giro-6.png",
-        "ax": 47.4,
-        "ay": 185.3
-      },
-      "0": {
-        "arquivo": "cabinet_file/giro-0.png",
-        "ax": 49.6,
-        "ay": 185.1
-      },
-      "4": {
-        "arquivo": "cabinet_file/giro-4.png",
-        "ax": 49.5,
-        "ay": 190.7
-      }
-    },
-    "real": [
-      0.5,
-      0.65,
-      1.35
-    ],
-    "encosta": true,
     "cima": {
       "arquivo": "cabinet_file/cima.png",
       "caixa": [
@@ -124,36 +144,40 @@
         106,
         119
       ]
-    }
+    },
+    "encosta": true
   },
   "chair_office": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
+      "4": {
+        "arquivo": "chair_office/giro-4.png",
+        "ax": 37.0,
+        "ay": 86.0
+      },
       "2": {
         "arquivo": "chair_office/giro-2.png",
-        "ax": 39.2,
-        "ay": 161.2
+        "ax": 36.0,
+        "ay": 86.0
       },
       "0": {
         "arquivo": "chair_office/giro-0.png",
-        "ax": 43.0,
-        "ay": 158.3
+        "ax": 35.0,
+        "ay": 74.0
       },
       "6": {
         "arquivo": "chair_office/giro-6.png",
-        "ax": 53.0,
-        "ay": 156.3
-      },
-      "4": {
-        "arquivo": "chair_office/giro-4.png",
-        "ax": 39.7,
-        "ay": 161.6
+        "ax": 36.0,
+        "ay": 74.0
       }
     },
     "real": [
-      0.62,
-      0.62,
-      1.0
+      0.645,
+      0.655,
+      1.16
     ],
     "cima": {
       "arquivo": "chair_office/cima.png",
@@ -769,7 +793,20 @@
         126
       ]
     },
-    "encosta": true
+    "encosta": true,
+    "tela": {
+      "cores": [
+        "#5ad8ff",
+        "#ffd84a",
+        "#c06aff",
+        "#5aff8a",
+        "#ff5a5a",
+        "#5a7aff",
+        "#ffa04a"
+      ],
+      "ms": 1100,
+      "giros": {}
+    }
   },
   "fridge_drinks": {
     "escala": 1,
@@ -1220,27 +1257,61 @@
     ]
   },
   "ceiling_lamp": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
-      "0": {
-        "arquivo": "ceiling_lamp/giro-0.png",
-        "ax": 21.5,
-        "ay": 319.4
+      "4": {
+        "arquivo": "ceiling_lamp/giro-4.png",
+        "ax": 12.0,
+        "ay": 163.0
       },
       "2": {
         "arquivo": "ceiling_lamp/giro-2.png",
-        "ax": 21.5,
-        "ay": 319.4
+        "ax": 12.0,
+        "ay": 163.0
       },
-      "4": {
-        "arquivo": "ceiling_lamp/giro-4.png",
-        "ax": 21.5,
-        "ay": 319.4
+      "0": {
+        "arquivo": "ceiling_lamp/giro-0.png",
+        "ax": 12.0,
+        "ay": 163.0
       },
       "6": {
         "arquivo": "ceiling_lamp/giro-6.png",
-        "ax": 21.5,
-        "ay": 319.4
+        "ax": 12.0,
+        "ay": 163.0
+      }
+    },
+    "real": [
+      0.4,
+      0.397,
+      2.5
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "ceiling_lamp/giro-4-1.png",
+            "ax": 12.0,
+            "ay": 163.0
+          },
+          "2": {
+            "arquivo": "ceiling_lamp/giro-2-1.png",
+            "ax": 12.0,
+            "ay": 163.0
+          },
+          "0": {
+            "arquivo": "ceiling_lamp/giro-0-1.png",
+            "ax": 12.0,
+            "ay": 163.0
+          },
+          "6": {
+            "arquivo": "ceiling_lamp/giro-6-1.png",
+            "ax": 12.0,
+            "ay": 163.0
+          }
+        }
       }
     },
     "caixa": [
@@ -1254,11 +1325,6 @@
     "pendulo": {
       "graus": 1.6,
       "ms": 4600
-    },
-    "brilho": {
-      "x": 21.5,
-      "y": 62.7,
-      "r": 32.2
     }
   },
   "rug_worn": {
@@ -1295,63 +1361,47 @@
     ]
   },
   "clock": {
-    "escala": 0.5,
-    "inclina": {
-      "r": 0.26,
-      "l": -0.28
-    },
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "clock/parede-r.png",
-        "ax": 19.8,
-        "ay": 21.5
+        "ax": 13.0,
+        "ay": 12.7
       },
       "l": {
         "arquivo": "clock/parede-l.png",
-        "ax": 16.2,
-        "ay": 21.0
+        "ax": 12.0,
+        "ay": 12.7
       }
     }
   },
   "sconce": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "sconce/parede-r.png",
-        "ax": 21.1,
-        "ay": 25.0
-      },
-      "r-1": {
-        "arquivo": "sconce/parede-r-1.png",
-        "ax": 21.1,
-        "ay": 25.5
+        "ax": 14.0,
+        "ay": 12.4
       },
       "l": {
         "arquivo": "sconce/parede-l.png",
-        "ax": 5.7,
-        "ay": 25.0
+        "ax": 5.0,
+        "ay": 12.4
+      },
+      "r-1": {
+        "arquivo": "sconce/parede-r-1.png",
+        "ax": 14.0,
+        "ay": 6.4
       },
       "l-1": {
         "arquivo": "sconce/parede-l-1.png",
-        "ax": 5.7,
-        "ay": 25.0
+        "ax": 5.0,
+        "ay": 6.4
       }
-    },
-    "chamas": {
-      "r": [
-        [
-          7.8,
-          12.5,
-          6.5
-        ]
-      ],
-      "l": [
-        [
-          18.9,
-          13.0,
-          5.5
-        ]
-      ]
     }
   },
   "tv_wall": {
@@ -1369,6 +1419,16 @@
         "ax": 12.0,
         "ay": 18.3
       }
+    },
+    "tela": {
+      "cores": [
+        "#9fe3ae",
+        "#b8d0ff",
+        "#e8f0d0"
+      ],
+      "forca": 0.16,
+      "paredes": {},
+      "giros": {}
     }
   },
   "fan_wall": {
@@ -1670,33 +1730,36 @@
     }
   },
   "desk_metal": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "desk_metal/giro-4.png",
-        "ax": 125.0,
-        "ay": 177.0
-      },
-      "6": {
-        "arquivo": "desk_metal/giro-6.png",
-        "ax": 61.0,
-        "ay": 177.0
-      },
-      "0": {
-        "arquivo": "desk_metal/giro-0.png",
-        "ax": 125.0,
-        "ay": 177.0
+        "ax": 84.0,
+        "ay": 103.0
       },
       "2": {
         "arquivo": "desk_metal/giro-2.png",
-        "ax": 61.0,
-        "ay": 177.0
+        "ax": 52.0,
+        "ay": 103.0
+      },
+      "0": {
+        "arquivo": "desk_metal/giro-0.png",
+        "ax": 84.0,
+        "ay": 103.0
+      },
+      "6": {
+        "arquivo": "desk_metal/giro-6.png",
+        "ax": 52.0,
+        "ay": 103.0
       }
     },
     "real": [
-      1.5,
-      0.65,
-      0.78
+      1.8,
+      0.9,
+      1.131
     ],
     "cima": {
       "arquivo": "desk_metal/cima.png",
@@ -1774,6 +1837,15 @@
         94,
         84
       ]
+    },
+    "tela": {
+      "cores": [
+        "#4fe39a"
+      ],
+      "ms": 900,
+      "modo": "pulso",
+      "forca": 0.5,
+      "giros": {}
     }
   },
   "med_tray": {
@@ -1880,17 +1952,61 @@
     }
   },
   "fluorescent": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
-      "0": {
-        "arquivo": "fluorescent/giro-0.png",
-        "ax": 57.5,
-        "ay": 319.4
+      "4": {
+        "arquivo": "fluorescent/giro-4.png",
+        "ax": 21.0,
+        "ay": 166.0
       },
       "2": {
         "arquivo": "fluorescent/giro-2.png",
-        "ax": 57.5,
-        "ay": 319.4
+        "ax": 21.0,
+        "ay": 166.0
+      },
+      "0": {
+        "arquivo": "fluorescent/giro-0.png",
+        "ax": 21.0,
+        "ay": 166.0
+      },
+      "6": {
+        "arquivo": "fluorescent/giro-6.png",
+        "ax": 21.0,
+        "ay": 166.0
+      }
+    },
+    "real": [
+      0.26,
+      0.71,
+      2.46
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "fluorescent/giro-4-1.png",
+            "ax": 21.0,
+            "ay": 166.0
+          },
+          "2": {
+            "arquivo": "fluorescent/giro-2-1.png",
+            "ax": 21.0,
+            "ay": 166.0
+          },
+          "0": {
+            "arquivo": "fluorescent/giro-0-1.png",
+            "ax": 21.0,
+            "ay": 166.0
+          },
+          "6": {
+            "arquivo": "fluorescent/giro-6-1.png",
+            "ax": 21.0,
+            "ay": 166.0
+          }
+        }
       }
     },
     "caixa": [
@@ -1905,12 +2021,7 @@
       "graus": 0.5,
       "ms": 6400
     },
-    "falha": true,
-    "brilho": {
-      "x": 57.5,
-      "y": 62.7,
-      "r": 32.2
-    }
+    "falha": true
   },
   "emergency_light": {
     "escala": 1,
@@ -2067,17 +2178,19 @@
     }
   },
   "mirror": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "mirror/parede-r.png",
-        "ax": 22.5,
-        "ay": 50.5
+        "ax": 15.0,
+        "ay": 22.4
       },
       "l": {
         "arquivo": "mirror/parede-l.png",
-        "ax": 22.5,
-        "ay": 50.5
+        "ax": 15.0,
+        "ay": 22.4
       }
     }
   },
@@ -2099,33 +2212,36 @@
     }
   },
   "table_work": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "table_work/giro-4.png",
-        "ax": 169.0,
-        "ay": 222.7
-      },
-      "6": {
-        "arquivo": "table_work/giro-6.png",
-        "ax": 104.5,
-        "ay": 227.7
-      },
-      "0": {
-        "arquivo": "table_work/giro-0.png",
-        "ax": 169.0,
-        "ay": 227.7
+        "ax": 122.0,
+        "ay": 137.0
       },
       "2": {
         "arquivo": "table_work/giro-2.png",
-        "ax": 105.0,
-        "ay": 218.7
+        "ax": 90.0,
+        "ay": 137.0
+      },
+      "0": {
+        "arquivo": "table_work/giro-0.png",
+        "ax": 122.0,
+        "ay": 137.0
+      },
+      "6": {
+        "arquivo": "table_work/giro-6.png",
+        "ax": 90.0,
+        "ay": 137.0
       }
     },
     "real": [
-      2.25,
-      0.95,
-      0.78
+      2.7,
+      1.8,
+      1.043
     ],
     "cima": {
       "arquivo": "table_work/cima.png",
@@ -2633,17 +2749,19 @@
     }
   },
   "pipes": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "pipes/parede-r.png",
-        "ax": 64.5,
-        "ay": 47.7
+        "ax": 38.0,
+        "ay": 21.7
       },
       "l": {
         "arquivo": "pipes/parede-l.png",
-        "ax": 59.5,
-        "ay": 47.7
+        "ax": 34.0,
+        "ay": 21.7
       }
     }
   },
@@ -2886,33 +3004,36 @@
     }
   },
   "books_stack": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "books_stack/giro-4.png",
-        "ax": 29.0,
-        "ay": 81.6
-      },
-      "6": {
-        "arquivo": "books_stack/giro-6.png",
-        "ax": 29.5,
-        "ay": 81.3
-      },
-      "0": {
-        "arquivo": "books_stack/giro-0.png",
-        "ax": 31.0,
-        "ay": 80.7
+        "ax": 30.0,
+        "ay": 46.0
       },
       "2": {
         "arquivo": "books_stack/giro-2.png",
-        "ax": 29.5,
-        "ay": 81.3
+        "ax": 31.0,
+        "ay": 46.0
+      },
+      "0": {
+        "arquivo": "books_stack/giro-0.png",
+        "ax": 30.0,
+        "ay": 45.0
+      },
+      "6": {
+        "arquivo": "books_stack/giro-6.png",
+        "ax": 30.0,
+        "ay": 46.0
       }
     },
     "real": [
-      0.3,
-      0.22,
-      0.4
+      0.425,
+      0.537,
+      0.505
     ],
     "cima": {
       "arquivo": "books_stack/cima.png",
@@ -2941,9 +3062,36 @@
   },
   "papers": {
     "escala": 1,
-    "chao": {
-      "arquivo": "papers/chao.png"
-    }
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "papers/giro-4.png",
+        "ax": 21.0,
+        "ay": 25.0
+      },
+      "2": {
+        "arquivo": "papers/giro-2.png",
+        "ax": 17.0,
+        "ay": 28.0
+      },
+      "0": {
+        "arquivo": "papers/giro-0.png",
+        "ax": 23.0,
+        "ay": 25.0
+      },
+      "6": {
+        "arquivo": "papers/giro-6.png",
+        "ax": 16.0,
+        "ay": 27.0
+      }
+    },
+    "real": [
+      0.553,
+      0.67,
+      0.011
+    ]
   },
   "flasks": {
     "escala": 1,
@@ -3027,28 +3175,71 @@
     }
   },
   "monitor": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "monitor/giro-4.png",
-        "ax": 37.5,
-        "ay": 98.3
-      },
-      "6": {
-        "arquivo": "monitor/giro-6.png",
-        "ax": 44.0,
-        "ay": 95.0
-      },
-      "0": {
-        "arquivo": "monitor/giro-0.png",
-        "ax": 42.0,
-        "ay": 97.0
+        "ax": 23.0,
+        "ay": 43.0
       },
       "2": {
         "arquivo": "monitor/giro-2.png",
-        "ax": 39.0,
-        "ay": 97.5
+        "ax": 21.0,
+        "ay": 43.0
+      },
+      "0": {
+        "arquivo": "monitor/giro-0.png",
+        "ax": 20.0,
+        "ay": 45.0
+      },
+      "6": {
+        "arquivo": "monitor/giro-6.png",
+        "ax": 23.0,
+        "ay": 45.0
       }
+    },
+    "real": [
+      0.5,
+      0.14,
+      0.43
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "monitor/giro-4-1.png",
+            "ax": 23.0,
+            "ay": 43.0
+          },
+          "2": {
+            "arquivo": "monitor/giro-2-1.png",
+            "ax": 21.0,
+            "ay": 43.0
+          },
+          "0": {
+            "arquivo": "monitor/giro-0-1.png",
+            "ax": 20.0,
+            "ay": 45.0
+          },
+          "6": {
+            "arquivo": "monitor/giro-6-1.png",
+            "ax": 23.0,
+            "ay": 45.0
+          }
+        }
+      }
+    },
+    "cima": {
+      "arquivo": "monitor/cima.png",
+      "caixa": [
+        21,
+        30,
+        106,
+        98
+      ]
     },
     "tela": {
       "cores": [
@@ -3059,58 +3250,7 @@
       "ms": 900,
       "modo": "tv",
       "forca": 0.22,
-      "giros": {
-        "4": {
-          "x": 40.5,
-          "y": 33.1,
-          "r": 24.0
-        },
-        "2": {
-          "x": 28.9,
-          "y": 33.1,
-          "r": 25.0
-        }
-      }
-    },
-    "estados": {
-      "1": {
-        "giros": {
-          "4": {
-            "arquivo": "monitor/giro-4-1.png",
-            "ax": 37.5,
-            "ay": 98.3
-          },
-          "6": {
-            "arquivo": "monitor/giro-6-1.png",
-            "ax": 44.0,
-            "ay": 95.0
-          },
-          "0": {
-            "arquivo": "monitor/giro-0-1.png",
-            "ax": 42.0,
-            "ay": 97.0
-          },
-          "2": {
-            "arquivo": "monitor/giro-2-1.png",
-            "ax": 39.0,
-            "ay": 97.5
-          }
-        }
-      }
-    },
-    "real": [
-      0.5,
-      0.4,
-      0.45
-    ],
-    "cima": {
-      "arquivo": "monitor/cima.png",
-      "caixa": [
-        21,
-        30,
-        106,
-        98
-      ]
+      "giros": {}
     }
   },
   "monitor_green": {
@@ -3274,33 +3414,36 @@
     }
   },
   "table_tools": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "table_tools/giro-4.png",
-        "ax": 126.5,
-        "ay": 148.6
-      },
-      "6": {
-        "arquivo": "table_tools/giro-6.png",
-        "ax": 62.5,
-        "ay": 150.6
-      },
-      "0": {
-        "arquivo": "table_tools/giro-0.png",
-        "ax": 126.5,
-        "ay": 141.6
+        "ax": 84.0,
+        "ay": 103.0
       },
       "2": {
         "arquivo": "table_tools/giro-2.png",
-        "ax": 62.5,
-        "ay": 146.6
+        "ax": 52.0,
+        "ay": 103.0
+      },
+      "0": {
+        "arquivo": "table_tools/giro-0.png",
+        "ax": 84.0,
+        "ay": 106.0
+      },
+      "6": {
+        "arquivo": "table_tools/giro-6.png",
+        "ax": 52.0,
+        "ay": 103.0
       }
     },
     "real": [
-      1.5,
-      0.72,
-      0.8
+      1.8,
+      0.9,
+      1.139
     ],
     "cima": {
       "arquivo": "table_tools/cima.png",
@@ -3465,33 +3608,36 @@
     }
   },
   "skull": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "skull/giro-4.png",
-        "ax": 17.5,
-        "ay": 72.3
-      },
-      "6": {
-        "arquivo": "skull/giro-6.png",
-        "ax": 20.0,
-        "ay": 71.0
-      },
-      "0": {
-        "arquivo": "skull/giro-0.png",
-        "ax": 21.5,
-        "ay": 70.4
+        "ax": 22.0,
+        "ay": 40.0
       },
       "2": {
         "arquivo": "skull/giro-2.png",
-        "ax": 19.5,
-        "ay": 70.3
+        "ax": 22.0,
+        "ay": 39.0
+      },
+      "0": {
+        "arquivo": "skull/giro-0.png",
+        "ax": 22.0,
+        "ay": 37.0
+      },
+      "6": {
+        "arquivo": "skull/giro-6.png",
+        "ax": 22.0,
+        "ay": 38.0
       }
     },
     "real": [
-      0.18,
-      0.22,
-      0.3
+      0.313,
+      0.391,
+      0.368
     ],
     "cima": {
       "arquivo": "skull/cima.png",
@@ -3504,68 +3650,153 @@
     }
   },
   "poster_sigil": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "poster_sigil/parede-r.png",
-        "ax": 22.0,
-        "ay": 39.0
+        "ax": 18.0,
+        "ay": 31.4
       },
       "l": {
         "arquivo": "poster_sigil/parede-l.png",
-        "ax": 22.0,
-        "ay": 40.0
+        "ax": 20.0,
+        "ay": 31.4
       }
     }
   },
   "sigil_floor": {
     "escala": 1,
-    "chao": {
-      "arquivo": "sigil_floor/chao.png"
-    }
-  },
-  "blood_drops": {
-    "escala": 1,
-    "chao": {
-      "arquivo": "blood_drops/chao.png"
-    }
-  },
-  "blood_pool": {
-    "escala": 1,
-    "chao": {
-      "arquivo": "blood_pool/chao.png"
-    }
-  },
-  "server_rack": {
-    "escala": 0.5,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
-        "arquivo": "server_rack/giro-4.png",
-        "ax": 50.2,
-        "ay": 228.0
-      },
-      "6": {
-        "arquivo": "server_rack/giro-6.png",
-        "ax": 50.2,
-        "ay": 227.2
-      },
-      "0": {
-        "arquivo": "server_rack/giro-0.png",
-        "ax": 57.8,
-        "ay": 228.2
+        "arquivo": "sigil_floor/giro-4.png",
+        "ax": 63.0,
+        "ay": 80.0
       },
       "2": {
-        "arquivo": "server_rack/giro-2.png",
-        "ax": 57.8,
-        "ay": 235.0
+        "arquivo": "sigil_floor/giro-2.png",
+        "ax": 63.0,
+        "ay": 80.0
+      },
+      "0": {
+        "arquivo": "sigil_floor/giro-0.png",
+        "ax": 63.0,
+        "ay": 80.0
+      },
+      "6": {
+        "arquivo": "sigil_floor/giro-6.png",
+        "ax": 63.0,
+        "ay": 80.0
       }
     },
     "real": [
-      0.6,
-      0.66,
-      2.0
+      2.099,
+      2.1,
+      0.005
+    ]
+  },
+  "blood_drops": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "blood_drops/giro-4.png",
+        "ax": 17.0,
+        "ay": 28.0
+      },
+      "2": {
+        "arquivo": "blood_drops/giro-2.png",
+        "ax": 24.0,
+        "ay": 26.0
+      },
+      "0": {
+        "arquivo": "blood_drops/giro-0.png",
+        "ax": 20.0,
+        "ay": 33.0
+      },
+      "6": {
+        "arquivo": "blood_drops/giro-6.png",
+        "ax": 33.0,
+        "ay": 25.0
+      }
+    },
+    "real": [
+      0.772,
+      0.632,
+      0.004
+    ]
+  },
+  "blood_pool": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "blood_pool/giro-4.png",
+        "ax": 21.0,
+        "ay": 28.0
+      },
+      "2": {
+        "arquivo": "blood_pool/giro-2.png",
+        "ax": 24.0,
+        "ay": 26.0
+      },
+      "0": {
+        "arquivo": "blood_pool/giro-0.png",
+        "ax": 21.0,
+        "ay": 30.0
+      },
+      "6": {
+        "arquivo": "blood_pool/giro-6.png",
+        "ax": 28.0,
+        "ay": 27.0
+      }
+    },
+    "real": [
+      0.642,
+      0.649,
+      0.004
+    ]
+  },
+  "server_rack": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "server_rack/giro-4.png",
+        "ax": 36.0,
+        "ay": 133.0
+      },
+      "2": {
+        "arquivo": "server_rack/giro-2.png",
+        "ax": 36.0,
+        "ay": 133.0
+      },
+      "0": {
+        "arquivo": "server_rack/giro-0.png",
+        "ax": 36.0,
+        "ay": 133.0
+      },
+      "6": {
+        "arquivo": "server_rack/giro-6.png",
+        "ax": 36.0,
+        "ay": 133.0
+      }
+    },
+    "real": [
+      0.55,
+      0.65,
+      2.002
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "server_rack/cima.png",
       "caixa": [
@@ -3574,36 +3805,40 @@
         115,
         120
       ]
-    }
+    },
+    "encosta": true
   },
   "printer_dot": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "printer_dot/giro-4.png",
-        "ax": 47.0,
-        "ay": 148.5
-      },
-      "6": {
-        "arquivo": "printer_dot/giro-6.png",
-        "ax": 47.0,
-        "ay": 137.5
-      },
-      "0": {
-        "arquivo": "printer_dot/giro-0.png",
-        "ax": 47.0,
-        "ay": 155.5
+        "ax": 37.0,
+        "ay": 72.0
       },
       "2": {
         "arquivo": "printer_dot/giro-2.png",
-        "ax": 47.0,
-        "ay": 159.5
+        "ax": 34.0,
+        "ay": 72.0
+      },
+      "0": {
+        "arquivo": "printer_dot/giro-0.png",
+        "ax": 33.0,
+        "ay": 71.0
+      },
+      "6": {
+        "arquivo": "printer_dot/giro-6.png",
+        "ax": 37.0,
+        "ay": 71.0
       }
     },
     "real": [
-      0.6,
-      0.5,
-      1.0
+      0.51,
+      0.67,
+      0.92
     ],
     "cima": {
       "arquivo": "printer_dot/cima.png",
@@ -3616,31 +3851,34 @@
     }
   },
   "whiteboard": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "whiteboard/giro-4.png",
-        "ax": 176.5,
-        "ay": 289.7
-      },
-      "6": {
-        "arquivo": "whiteboard/giro-6.png",
-        "ax": 48.5,
-        "ay": 290.7
-      },
-      "0": {
-        "arquivo": "whiteboard/giro-0.png",
-        "ax": 177.0,
-        "ay": 289.7
+        "ax": 100.0,
+        "ay": 149.0
       },
       "2": {
         "arquivo": "whiteboard/giro-2.png",
-        "ax": 50.0,
-        "ay": 290.1
+        "ax": 36.0,
+        "ay": 149.0
+      },
+      "0": {
+        "arquivo": "whiteboard/giro-0.png",
+        "ax": 100.0,
+        "ay": 149.0
+      },
+      "6": {
+        "arquivo": "whiteboard/giro-6.png",
+        "ax": 37.0,
+        "ay": 149.0
       }
     },
     "real": [
-      1.6,
+      2.17,
       0.6,
       1.8
     ],
@@ -3655,35 +3893,37 @@
     }
   },
   "media_shelf": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "media_shelf/giro-4.png",
-        "ax": 92.2,
-        "ay": 188.9
-      },
-      "6": {
-        "arquivo": "media_shelf/giro-6.png",
-        "ax": 28.2,
-        "ay": 178.6
-      },
-      "0": {
-        "arquivo": "media_shelf/giro-0.png",
-        "ax": 113.1,
-        "ay": 177.4
+        "ax": 66.0,
+        "ay": 102.0
       },
       "2": {
         "arquivo": "media_shelf/giro-2.png",
-        "ax": 49.3,
-        "ay": 187.8
+        "ax": 35.0,
+        "ay": 102.0
+      },
+      "0": {
+        "arquivo": "media_shelf/giro-0.png",
+        "ax": 68.0,
+        "ay": 101.0
+      },
+      "6": {
+        "arquivo": "media_shelf/giro-6.png",
+        "ax": 34.0,
+        "ay": 101.0
       }
     },
     "real": [
-      0.9,
-      0.4,
-      1.1
+      1.42,
+      0.48,
+      1.102
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "media_shelf/cima.png",
       "caixa": [
@@ -3692,35 +3932,39 @@
         205,
         98
       ]
-    }
+    },
+    "encosta": true
   },
   "water_cooler": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "water_cooler/giro-4.png",
-        "ax": 31.5,
-        "ay": 172.4
-      },
-      "6": {
-        "arquivo": "water_cooler/giro-6.png",
-        "ax": 31.5,
-        "ay": 171.2
-      },
-      "0": {
-        "arquivo": "water_cooler/giro-0.png",
-        "ax": 32.5,
-        "ay": 171.8
+        "ax": 25.0,
+        "ay": 82.0
       },
       "2": {
         "arquivo": "water_cooler/giro-2.png",
-        "ax": 31.5,
-        "ay": 171.2
+        "ax": 25.0,
+        "ay": 82.0
+      },
+      "0": {
+        "arquivo": "water_cooler/giro-0.png",
+        "ax": 26.0,
+        "ay": 82.0
+      },
+      "6": {
+        "arquivo": "water_cooler/giro-6.png",
+        "ax": 27.0,
+        "ay": 82.0
       }
     },
     "real": [
-      0.35,
-      0.35,
+      0.397,
+      0.4,
       1.2
     ],
     "cima": {
@@ -3734,33 +3978,36 @@
     }
   },
   "parts_boxes": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "parts_boxes/giro-4.png",
-        "ax": 55.5,
-        "ay": 103.3
-      },
-      "6": {
-        "arquivo": "parts_boxes/giro-6.png",
-        "ax": 53.0,
-        "ay": 104.4
-      },
-      "0": {
-        "arquivo": "parts_boxes/giro-0.png",
-        "ax": 51.0,
-        "ay": 105.5
+        "ax": 38.0,
+        "ay": 51.0
       },
       "2": {
         "arquivo": "parts_boxes/giro-2.png",
-        "ax": 60.0,
-        "ay": 101.1
+        "ax": 35.0,
+        "ay": 49.0
+      },
+      "0": {
+        "arquivo": "parts_boxes/giro-0.png",
+        "ax": 34.0,
+        "ay": 48.0
+      },
+      "6": {
+        "arquivo": "parts_boxes/giro-6.png",
+        "ax": 37.0,
+        "ay": 50.0
       }
     },
     "real": [
       0.6,
-      0.5,
-      0.5
+      0.62,
+      0.586
     ],
     "cima": {
       "arquivo": "parts_boxes/cima.png",
@@ -3773,32 +4020,35 @@
     }
   },
   "ups": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "ups/giro-4.png",
-        "ax": 43.5,
-        "ay": 75.4
-      },
-      "6": {
-        "arquivo": "ups/giro-6.png",
-        "ax": 48.5,
-        "ay": 72.7
-      },
-      "0": {
-        "arquivo": "ups/giro-0.png",
-        "ax": 47.0,
-        "ay": 74.5
+        "ax": 36.0,
+        "ay": 44.0
       },
       "2": {
         "arquivo": "ups/giro-2.png",
-        "ax": 48.0,
-        "ay": 73.1
+        "ax": 35.0,
+        "ay": 39.0
+      },
+      "0": {
+        "arquivo": "ups/giro-0.png",
+        "ax": 35.0,
+        "ay": 40.0
+      },
+      "6": {
+        "arquivo": "ups/giro-6.png",
+        "ax": 36.0,
+        "ay": 44.0
       }
     },
     "real": [
-      0.45,
-      0.35,
+      0.6,
+      0.612,
       0.3
     ],
     "cima": {
@@ -3836,6 +4086,15 @@
         "ax": 29.0,
         "ay": 38.2
       }
+    },
+    "tela": {
+      "cores": [
+        "#d8e4f0",
+        "#b8c8d8"
+      ],
+      "forca": 0.14,
+      "paredes": {},
+      "giros": {}
     }
   },
   "ac_wall": {
@@ -3856,25 +4115,54 @@
     }
   },
   "shelf_wall": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "shelf_wall/parede-r.png",
-        "ax": 51.0,
-        "ay": 49.6
+        "ax": 31.0,
+        "ay": 16.4
       },
       "l": {
         "arquivo": "shelf_wall/parede-l.png",
-        "ax": 51.0,
-        "ay": 51.5
+        "ax": 22.0,
+        "ay": 16.4
       }
     }
   },
   "cables_floor": {
     "escala": 1,
-    "chao": {
-      "arquivo": "cables_floor/chao.png"
-    }
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cables_floor/giro-4.png",
+        "ax": 89.0,
+        "ay": 61.0
+      },
+      "2": {
+        "arquivo": "cables_floor/giro-2.png",
+        "ax": 22.0,
+        "ay": 59.0
+      },
+      "0": {
+        "arquivo": "cables_floor/giro-0.png",
+        "ax": 83.0,
+        "ay": 61.0
+      },
+      "6": {
+        "arquivo": "cables_floor/giro-6.png",
+        "ax": 22.0,
+        "ay": 62.0
+      }
+    },
+    "real": [
+      2.331,
+      0.5,
+      0.044
+    ]
   },
   "weapon_rack": {
     "escala": 1,
@@ -4141,32 +4429,36 @@
     }
   },
   "tool_board": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "tool_board/parede-r.png",
-        "ax": 47.0,
-        "ay": 58.5
+        "ax": 30.0,
+        "ay": 33.6
       },
       "l": {
         "arquivo": "tool_board/parede-l.png",
-        "ax": 47.0,
-        "ay": 58.5
+        "ax": 30.0,
+        "ay": 33.6
       }
     }
   },
   "blade_rack": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "blade_rack/parede-r.png",
-        "ax": 49.0,
-        "ay": 40.8
+        "ax": 29.0,
+        "ay": 30.6
       },
       "l": {
         "arquivo": "blade_rack/parede-l.png",
-        "ax": 49.0,
-        "ay": 40.4
+        "ax": 28.0,
+        "ay": 30.6
       }
     }
   },
@@ -4189,9 +4481,36 @@
   },
   "oil_stain": {
     "escala": 1,
-    "chao": {
-      "arquivo": "oil_stain/chao.png"
-    }
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "oil_stain/giro-4.png",
+        "ax": 15.0,
+        "ay": 26.0
+      },
+      "2": {
+        "arquivo": "oil_stain/giro-2.png",
+        "ax": 20.0,
+        "ay": 23.0
+      },
+      "0": {
+        "arquivo": "oil_stain/giro-0.png",
+        "ax": 14.0,
+        "ay": 28.0
+      },
+      "6": {
+        "arquivo": "oil_stain/giro-6.png",
+        "ax": 24.0,
+        "ay": 24.0
+      }
+    },
+    "real": [
+      0.632,
+      0.531,
+      0.004
+    ]
   },
   "locker_row": {
     "escala": 1,
@@ -4237,33 +4556,36 @@
     "encosta": true
   },
   "janitor_cart": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "janitor_cart/giro-4.png",
-        "ax": 51.0,
-        "ay": 170.6
-      },
-      "6": {
-        "arquivo": "janitor_cart/giro-6.png",
-        "ax": 51.5,
-        "ay": 170.1
-      },
-      "0": {
-        "arquivo": "janitor_cart/giro-0.png",
-        "ax": 56.0,
-        "ay": 168.1
+        "ax": 34.0,
+        "ay": 83.0
       },
       "2": {
         "arquivo": "janitor_cart/giro-2.png",
-        "ax": 51.0,
-        "ay": 170.6
+        "ax": 34.0,
+        "ay": 83.0
+      },
+      "0": {
+        "arquivo": "janitor_cart/giro-0.png",
+        "ax": 35.0,
+        "ay": 80.0
+      },
+      "6": {
+        "arquivo": "janitor_cart/giro-6.png",
+        "ax": 34.0,
+        "ay": 77.0
       }
     },
     "real": [
-      0.45,
-      0.7,
-      1.1
+      0.55,
+      0.588,
+      1.163
     ],
     "cima": {
       "arquivo": "janitor_cart/cima.png",
@@ -4276,33 +4598,36 @@
     }
   },
   "wet_sign": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "wet_sign/giro-4.png",
-        "ax": 36.0,
-        "ay": 103.0
-      },
-      "6": {
-        "arquivo": "wet_sign/giro-6.png",
-        "ax": 36.5,
-        "ay": 101.8
-      },
-      "0": {
-        "arquivo": "wet_sign/giro-0.png",
-        "ax": 36.0,
-        "ay": 102.0
+        "ax": 23.0,
+        "ay": 51.0
       },
       "2": {
         "arquivo": "wet_sign/giro-2.png",
-        "ax": 37.0,
-        "ay": 101.4
+        "ax": 23.0,
+        "ay": 51.0
+      },
+      "0": {
+        "arquivo": "wet_sign/giro-0.png",
+        "ax": 23.0,
+        "ay": 51.0
+      },
+      "6": {
+        "arquivo": "wet_sign/giro-6.png",
+        "ax": 23.0,
+        "ay": 51.0
       }
     },
     "real": [
       0.3,
-      0.3,
-      0.6
+      0.295,
+      0.643
     ],
     "cima": {
       "arquivo": "wet_sign/cima.png",
@@ -4315,33 +4640,36 @@
     }
   },
   "trash_can": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "trash_can/giro-4.png",
         "ax": 29.0,
-        "ay": 110.5
-      },
-      "6": {
-        "arquivo": "trash_can/giro-6.png",
-        "ax": 29.0,
-        "ay": 110.7
-      },
-      "0": {
-        "arquivo": "trash_can/giro-0.png",
-        "ax": 29.0,
-        "ay": 110.5
+        "ay": 51.0
       },
       "2": {
         "arquivo": "trash_can/giro-2.png",
         "ax": 29.0,
-        "ay": 110.4
+        "ay": 51.0
+      },
+      "0": {
+        "arquivo": "trash_can/giro-0.png",
+        "ax": 29.0,
+        "ay": 52.0
+      },
+      "6": {
+        "arquivo": "trash_can/giro-6.png",
+        "ax": 29.0,
+        "ay": 52.0
       }
     },
     "real": [
-      0.35,
-      0.35,
-      0.6
+      0.46,
+      0.467,
+      0.61
     ],
     "cima": {
       "arquivo": "trash_can/cima.png",
@@ -4423,15 +4751,69 @@
   },
   "vent": {
     "escala": 1,
-    "chao": {
-      "arquivo": "vent/chao.png"
-    }
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "vent/giro-4.png",
+        "ax": 21.0,
+        "ay": 27.0
+      },
+      "2": {
+        "arquivo": "vent/giro-2.png",
+        "ax": 21.0,
+        "ay": 27.0
+      },
+      "0": {
+        "arquivo": "vent/giro-0.png",
+        "ax": 21.0,
+        "ay": 27.0
+      },
+      "6": {
+        "arquivo": "vent/giro-6.png",
+        "ax": 21.0,
+        "ay": 27.0
+      }
+    },
+    "real": [
+      0.51,
+      0.47,
+      0.019
+    ]
   },
   "puddle": {
     "escala": 1,
-    "chao": {
-      "arquivo": "puddle/chao.png"
-    }
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "puddle/giro-4.png",
+        "ax": 20.0,
+        "ay": 26.0
+      },
+      "2": {
+        "arquivo": "puddle/giro-2.png",
+        "ax": 20.0,
+        "ay": 26.0
+      },
+      "0": {
+        "arquivo": "puddle/giro-0.png",
+        "ax": 20.0,
+        "ay": 29.0
+      },
+      "6": {
+        "arquivo": "puddle/giro-6.png",
+        "ax": 25.0,
+        "ay": 27.0
+      }
+    },
+    "real": [
+      0.718,
+      0.57,
+      0.004
+    ]
   },
   "cell_bars": {
     "escala": 0.5,
@@ -4635,109 +5017,146 @@
     ]
   },
   "food_tray": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "food_tray/giro-4.png",
-        "ax": 34.0,
-        "ay": 54.9
-      },
-      "6": {
-        "arquivo": "food_tray/giro-6.png",
-        "ax": 36.0,
-        "ay": 54.1
-      },
-      "0": {
-        "arquivo": "food_tray/giro-0.png",
-        "ax": 35.0,
-        "ay": 54.6
+        "ax": 29.0,
+        "ay": 28.0
       },
       "2": {
         "arquivo": "food_tray/giro-2.png",
-        "ax": 34.0,
-        "ay": 55.0
+        "ax": 30.0,
+        "ay": 27.0
+      },
+      "0": {
+        "arquivo": "food_tray/giro-0.png",
+        "ax": 28.0,
+        "ay": 33.0
+      },
+      "6": {
+        "arquivo": "food_tray/giro-6.png",
+        "ax": 27.0,
+        "ay": 27.0
       }
     },
     "real": [
-      0.4,
-      0.3,
-      0.1
+      0.55,
+      0.489,
+      0.11
     ]
   },
   "tally_marks": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "tally_marks/parede-r.png",
-        "ax": 22.0,
-        "ay": 16.5
+        "ax": 14.0,
+        "ay": 14.3
       },
       "l": {
         "arquivo": "tally_marks/parede-l.png",
-        "ax": 22.0,
-        "ay": 17.5
+        "ax": 14.0,
+        "ay": 14.3
       }
     }
   },
   "cage_lamp": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
-        "arquivo": "cage_lamp/parede-l.png",
-        "ax": 17.0,
-        "ay": 24.0
+        "arquivo": "cage_lamp/parede-r.png",
+        "ax": 13.0,
+        "ay": 3.4
       },
       "l": {
-        "arquivo": "cage_lamp/parede-r.png",
-        "ax": 17.0,
-        "ay": 22.8
+        "arquivo": "cage_lamp/parede-l.png",
+        "ax": 4.0,
+        "ay": 3.4
       },
       "r-1": {
-        "arquivo": "cage_lamp/parede-l-1.png",
-        "ax": 17.0,
-        "ay": 24.0
+        "arquivo": "cage_lamp/parede-r-1.png",
+        "ax": 13.0,
+        "ay": 3.4
       },
       "l-1": {
-        "arquivo": "cage_lamp/parede-r-1.png",
-        "ax": 17.0,
-        "ay": 22.8
+        "arquivo": "cage_lamp/parede-l-1.png",
+        "ax": 4.0,
+        "ay": 3.4
       }
     }
   },
   "drain": {
     "escala": 1,
-    "chao": {
-      "arquivo": "drain/chao.png"
-    }
-  },
-  "altar": {
-    "escala": 0.5,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
-        "arquivo": "altar/giro-4.png",
-        "ax": 93.0,
-        "ay": 142.0
-      },
-      "6": {
-        "arquivo": "altar/giro-6.png",
-        "ax": 29.0,
-        "ay": 142.0
-      },
-      "0": {
-        "arquivo": "altar/giro-0.png",
-        "ax": 93.0,
-        "ay": 142.0
+        "arquivo": "drain/giro-4.png",
+        "ax": 20.0,
+        "ay": 26.0
       },
       "2": {
-        "arquivo": "altar/giro-2.png",
-        "ax": 29.0,
-        "ay": 142.0
+        "arquivo": "drain/giro-2.png",
+        "ax": 20.0,
+        "ay": 25.0
+      },
+      "0": {
+        "arquivo": "drain/giro-0.png",
+        "ax": 18.0,
+        "ay": 30.0
+      },
+      "6": {
+        "arquivo": "drain/giro-6.png",
+        "ax": 28.0,
+        "ay": 26.0
       }
     },
     "real": [
-      0.9,
-      0.5,
-      0.6
+      0.661,
+      0.634,
+      0.006
+    ]
+  },
+  "altar": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "altar/giro-4.png",
+        "ax": 69.0,
+        "ay": 81.0
+      },
+      "2": {
+        "arquivo": "altar/giro-2.png",
+        "ax": 38.0,
+        "ay": 77.0
+      },
+      "0": {
+        "arquivo": "altar/giro-0.png",
+        "ax": 70.0,
+        "ay": 78.0
+      },
+      "6": {
+        "arquivo": "altar/giro-6.png",
+        "ax": 38.0,
+        "ay": 81.0
+      }
+    },
+    "real": [
+      1.4,
+      0.652,
+      0.838
     ],
     "cima": {
       "arquivo": "altar/cima.png",
@@ -4750,33 +5169,36 @@
     }
   },
   "rubble": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "rubble/giro-4.png",
-        "ax": 103.5,
-        "ay": 149.8
-      },
-      "6": {
-        "arquivo": "rubble/giro-6.png",
-        "ax": 99.5,
-        "ay": 149.7
-      },
-      "0": {
-        "arquivo": "rubble/giro-0.png",
-        "ax": 103.0,
-        "ay": 151.2
+        "ax": 53.0,
+        "ay": 63.0
       },
       "2": {
         "arquivo": "rubble/giro-2.png",
-        "ax": 99.5,
-        "ay": 152.4
+        "ax": 48.0,
+        "ay": 61.0
+      },
+      "0": {
+        "arquivo": "rubble/giro-0.png",
+        "ax": 52.0,
+        "ay": 72.0
+      },
+      "6": {
+        "arquivo": "rubble/giro-6.png",
+        "ax": 57.0,
+        "ay": 61.0
       }
     },
     "real": [
-      1.2,
-      1.2,
-      0.5
+      1.234,
+      1.293,
+      0.538
     ],
     "cima": {
       "arquivo": "rubble/cima.png",
@@ -4789,33 +5211,36 @@
     }
   },
   "pedestal": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "pedestal/giro-4.png",
-        "ax": 31.5,
-        "ay": 151.2
-      },
-      "6": {
-        "arquivo": "pedestal/giro-6.png",
-        "ax": 31.5,
-        "ay": 151.3
-      },
-      "0": {
-        "arquivo": "pedestal/giro-0.png",
         "ax": 32.0,
-        "ay": 150.0
+        "ay": 74.0
       },
       "2": {
         "arquivo": "pedestal/giro-2.png",
         "ax": 32.0,
-        "ay": 149.9
+        "ay": 74.0
+      },
+      "0": {
+        "arquivo": "pedestal/giro-0.png",
+        "ax": 32.0,
+        "ay": 74.0
+      },
+      "6": {
+        "arquivo": "pedestal/giro-6.png",
+        "ax": 32.0,
+        "ay": 74.0
       }
     },
     "real": [
-      0.35,
-      0.35,
-      1.0
+      0.51,
+      0.51,
+      1.013
     ],
     "cima": {
       "arquivo": "pedestal/cima.png",
@@ -4828,61 +5253,121 @@
     }
   },
   "chains_wall": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "chains_wall/parede-r.png",
-        "ax": 30.0,
-        "ay": 55.5
+        "ax": 12.0,
+        "ay": 28.8
       },
       "l": {
         "arquivo": "chains_wall/parede-l.png",
-        "ax": 30.0,
-        "ay": 59.0
+        "ax": 12.0,
+        "ay": 28.8
       }
     }
   },
   "crack_glow": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "crack_glow/parede-r.png",
-        "ax": 35.0,
-        "ay": 61.0
+        "ax": 17.0,
+        "ay": 49.4
       },
       "l": {
         "arquivo": "crack_glow/parede-l.png",
-        "ax": 35.0,
-        "ay": 61.0
+        "ax": 11.0,
+        "ay": 49.4
       }
     }
   },
   "sigil_scratch": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "sigil_scratch/parede-r.png",
-        "ax": 26.0,
-        "ay": 33.0
+        "ax": 14.0,
+        "ay": 21.6
       },
       "l": {
         "arquivo": "sigil_scratch/parede-l.png",
-        "ax": 26.0,
-        "ay": 33.0
+        "ax": 14.0,
+        "ay": 21.6
       }
     }
   },
   "sigil_gold": {
     "escala": 1,
-    "chao": {
-      "arquivo": "sigil_gold/chao.png"
-    }
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "sigil_gold/giro-4.png",
+        "ax": 65.0,
+        "ay": 81.0
+      },
+      "2": {
+        "arquivo": "sigil_gold/giro-2.png",
+        "ax": 65.0,
+        "ay": 81.0
+      },
+      "0": {
+        "arquivo": "sigil_gold/giro-0.png",
+        "ax": 65.0,
+        "ay": 81.0
+      },
+      "6": {
+        "arquivo": "sigil_gold/giro-6.png",
+        "ax": 65.0,
+        "ay": 81.0
+      }
+    },
+    "real": [
+      2.16,
+      2.16,
+      0.006
+    ]
   },
   "wax_pool": {
     "escala": 1,
-    "chao": {
-      "arquivo": "wax_pool/chao.png"
-    }
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "wax_pool/giro-4.png",
+        "ax": 22.0,
+        "ay": 28.0
+      },
+      "2": {
+        "arquivo": "wax_pool/giro-2.png",
+        "ax": 19.0,
+        "ay": 24.0
+      },
+      "0": {
+        "arquivo": "wax_pool/giro-0.png",
+        "ax": 16.0,
+        "ay": 30.0
+      },
+      "6": {
+        "arquivo": "wax_pool/giro-6.png",
+        "ax": 29.0,
+        "ay": 27.0
+      }
+    },
+    "real": [
+      0.681,
+      0.617,
+      0.12
+    ]
   },
   "stairs_down": {
     "escala": 1,
@@ -6080,35 +6565,37 @@
     }
   },
   "shelf_verissimo": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "shelf_verissimo/giro-4.png",
-        "ax": 358.2,
-        "ay": 495.8
-      },
-      "6": {
-        "arquivo": "shelf_verissimo/giro-6.png",
-        "ax": 38.2,
-        "ay": 478.0
-      },
-      "0": {
-        "arquivo": "shelf_verissimo/giro-0.png",
-        "ax": 383.8,
-        "ay": 483.0
+        "ax": 191.0,
+        "ay": 248.0
       },
       "2": {
         "arquivo": "shelf_verissimo/giro-2.png",
-        "ax": 63.8,
-        "ay": 500.8
+        "ax": 40.0,
+        "ay": 248.0
+      },
+      "0": {
+        "arquivo": "shelf_verissimo/giro-0.png",
+        "ax": 200.0,
+        "ay": 244.0
+      },
+      "6": {
+        "arquivo": "shelf_verissimo/giro-6.png",
+        "ax": 30.0,
+        "ay": 244.0
       }
     },
     "real": [
-      4.5,
-      0.45,
-      2.6
+      4.52,
+      0.53,
+      2.603
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "shelf_verissimo/cima.png",
       "caixa": [
@@ -6117,36 +6604,40 @@
         768,
         102
       ]
-    }
+    },
+    "encosta": true
   },
   "desk_verissimo": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "desk_verissimo/giro-4.png",
-        "ax": 173.0,
-        "ay": 237.6
-      },
-      "6": {
-        "arquivo": "desk_verissimo/giro-6.png",
-        "ax": 109.0,
-        "ay": 262.6
-      },
-      "0": {
-        "arquivo": "desk_verissimo/giro-0.png",
-        "ax": 173.0,
-        "ay": 273.6
+        "ax": 122.0,
+        "ay": 140.0
       },
       "2": {
         "arquivo": "desk_verissimo/giro-2.png",
-        "ax": 109.0,
-        "ay": 273.6
+        "ax": 90.0,
+        "ay": 146.0
+      },
+      "0": {
+        "arquivo": "desk_verissimo/giro-0.png",
+        "ax": 122.0,
+        "ay": 138.0
+      },
+      "6": {
+        "arquivo": "desk_verissimo/giro-6.png",
+        "ax": 90.0,
+        "ay": 138.0
       }
     },
     "real": [
-      2.2,
-      1.1,
-      0.8
+      2.7,
+      1.8,
+      1.366
     ],
     "cima": {
       "arquivo": "desk_verissimo/cima.png",
@@ -6159,33 +6650,36 @@
     }
   },
   "chair_verissimo": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "chair_verissimo/giro-4.png",
-        "ax": 69.5,
-        "ay": 213.1
-      },
-      "6": {
-        "arquivo": "chair_verissimo/giro-6.png",
-        "ax": 69.0,
-        "ay": 200.4
-      },
-      "0": {
-        "arquivo": "chair_verissimo/giro-0.png",
-        "ax": 69.0,
-        "ay": 198.4
+        "ax": 36.0,
+        "ay": 100.0
       },
       "2": {
         "arquivo": "chair_verissimo/giro-2.png",
-        "ax": 68.5,
-        "ay": 213.7
+        "ax": 36.0,
+        "ay": 100.0
+      },
+      "0": {
+        "arquivo": "chair_verissimo/giro-0.png",
+        "ax": 36.0,
+        "ay": 88.0
+      },
+      "6": {
+        "arquivo": "chair_verissimo/giro-6.png",
+        "ax": 37.0,
+        "ay": 88.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      1.45
+      0.614,
+      0.652,
+      1.38
     ],
     "cima": {
       "arquivo": "chair_verissimo/cima.png",
@@ -6198,33 +6692,36 @@
     }
   },
   "sofa_verissimo": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "sofa_verissimo/giro-4.png",
-        "ax": 197.5,
-        "ay": 213.3
-      },
-      "6": {
-        "arquivo": "sofa_verissimo/giro-6.png",
-        "ax": 69.0,
-        "ay": 217.5
-      },
-      "0": {
-        "arquivo": "sofa_verissimo/giro-0.png",
-        "ax": 197.0,
-        "ay": 221.5
+        "ax": 104.0,
+        "ay": 100.0
       },
       "2": {
         "arquivo": "sofa_verissimo/giro-2.png",
-        "ax": 68.5,
-        "ay": 213.6
+        "ax": 39.0,
+        "ay": 100.0
+      },
+      "0": {
+        "arquivo": "sofa_verissimo/giro-0.png",
+        "ax": 103.0,
+        "ay": 100.0
+      },
+      "6": {
+        "arquivo": "sofa_verissimo/giro-6.png",
+        "ax": 39.0,
+        "ay": 100.0
       }
     },
     "real": [
-      2.1,
-      0.75,
-      0.9
+      2.19,
+      0.69,
+      0.78
     ],
     "cima": {
       "arquivo": "sofa_verissimo/cima.png",
@@ -6237,33 +6734,36 @@
     }
   },
   "armchair_verissimo": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "armchair_verissimo/giro-4.png",
-        "ax": 71.0,
-        "ay": 165.6
-      },
-      "6": {
-        "arquivo": "armchair_verissimo/giro-6.png",
-        "ax": 70.5,
-        "ay": 153.8
-      },
-      "0": {
-        "arquivo": "armchair_verissimo/giro-0.png",
-        "ax": 70.5,
-        "ay": 152.8
+        "ax": 40.0,
+        "ay": 72.0
       },
       "2": {
         "arquivo": "armchair_verissimo/giro-2.png",
-        "ax": 70.0,
-        "ay": 166.1
+        "ax": 40.0,
+        "ay": 72.0
+      },
+      "0": {
+        "arquivo": "armchair_verissimo/giro-0.png",
+        "ax": 39.0,
+        "ay": 63.0
+      },
+      "6": {
+        "arquivo": "armchair_verissimo/giro-6.png",
+        "ax": 40.0,
+        "ay": 63.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      1.0
+      0.69,
+      0.68,
+      0.86
     ],
     "cima": {
       "arquivo": "armchair_verissimo/cima.png",
@@ -6276,33 +6776,36 @@
     }
   },
   "armor_display": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "armor_display/giro-4.png",
-        "ax": 58.0,
-        "ay": 266.9
-      },
-      "6": {
-        "arquivo": "armor_display/giro-6.png",
-        "ax": 58.5,
-        "ay": 272.9
-      },
-      "0": {
-        "arquivo": "armor_display/giro-0.png",
-        "ax": 58.5,
-        "ay": 265.9
+        "ax": 33.0,
+        "ay": 126.0
       },
       "2": {
         "arquivo": "armor_display/giro-2.png",
-        "ax": 58.5,
-        "ay": 266.8
+        "ax": 34.0,
+        "ay": 126.0
+      },
+      "0": {
+        "arquivo": "armor_display/giro-0.png",
+        "ax": 34.0,
+        "ay": 123.0
+      },
+      "6": {
+        "arquivo": "armor_display/giro-6.png",
+        "ax": 32.0,
+        "ay": 123.0
       }
     },
     "real": [
       0.7,
-      0.6,
-      2.0
+      0.59,
+      2.07
     ],
     "cima": {
       "arquivo": "armor_display/cima.png",
@@ -6315,35 +6818,37 @@
     }
   },
   "vitrine_paranormal": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "vitrine_paranormal/giro-4.png",
-        "ax": 106.8,
-        "ay": 319.7
-      },
-      "6": {
-        "arquivo": "vitrine_paranormal/giro-6.png",
-        "ax": 42.8,
-        "ay": 315.0
-      },
-      "0": {
-        "arquivo": "vitrine_paranormal/giro-0.png",
-        "ax": 128.2,
-        "ay": 301.0
+        "ax": 67.0,
+        "ay": 151.0
       },
       "2": {
         "arquivo": "vitrine_paranormal/giro-2.png",
-        "ax": 64.2,
-        "ay": 316.7
+        "ax": 37.0,
+        "ay": 151.0
+      },
+      "0": {
+        "arquivo": "vitrine_paranormal/giro-0.png",
+        "ax": 69.0,
+        "ay": 150.0
+      },
+      "6": {
+        "arquivo": "vitrine_paranormal/giro-6.png",
+        "ax": 35.0,
+        "ay": 150.0
       }
     },
     "real": [
-      1.5,
-      0.5,
-      2.0
+      1.48,
+      0.58,
+      2.002
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "vitrine_paranormal/cima.png",
       "caixa": [
@@ -6352,36 +6857,40 @@
         256,
         106
       ]
-    }
+    },
+    "encosta": true
   },
   "pedestal_relic": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "pedestal_relic/giro-4.png",
-        "ax": 43.5,
-        "ay": 189.3
-      },
-      "6": {
-        "arquivo": "pedestal_relic/giro-6.png",
-        "ax": 43.0,
-        "ay": 188.4
-      },
-      "0": {
-        "arquivo": "pedestal_relic/giro-0.png",
-        "ax": 43.0,
-        "ay": 189.4
+        "ax": 29.0,
+        "ay": 90.0
       },
       "2": {
         "arquivo": "pedestal_relic/giro-2.png",
-        "ax": 43.0,
-        "ay": 189.4
+        "ax": 29.0,
+        "ay": 90.0
+      },
+      "0": {
+        "arquivo": "pedestal_relic/giro-0.png",
+        "ax": 29.0,
+        "ay": 90.0
+      },
+      "6": {
+        "arquivo": "pedestal_relic/giro-6.png",
+        "ax": 29.0,
+        "ay": 90.0
       }
     },
     "real": [
-      0.5,
-      0.5,
-      1.3
+      0.45,
+      0.45,
+      1.308
     ],
     "cima": {
       "arquivo": "pedestal_relic/cima.png",
@@ -6394,17 +6903,19 @@
     }
   },
   "painting_coliseu": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "painting_coliseu/parede-r.png",
-        "ax": 71.0,
-        "ay": 88.5
+        "ax": 52.0,
+        "ay": 55.4
       },
       "l": {
         "arquivo": "painting_coliseu/parede-l.png",
-        "ax": 71.0,
-        "ay": 90.0
+        "ax": 52.0,
+        "ay": 55.4
       }
     }
   },
@@ -6459,33 +6970,36 @@
     ]
   },
   "desk_u": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "desk_u/giro-4.png",
-        "ax": 384.0,
-        "ay": 472.0
-      },
-      "6": {
-        "arquivo": "desk_u/giro-6.png",
-        "ax": 256.0,
-        "ay": 428.0
-      },
-      "0": {
-        "arquivo": "desk_u/giro-0.png",
-        "ax": 384.0,
-        "ay": 439.0
+        "ax": 199.0,
+        "ay": 199.0
       },
       "2": {
         "arquivo": "desk_u/giro-2.png",
-        "ax": 256.0,
-        "ay": 481.0
+        "ax": 135.0,
+        "ay": 199.0
+      },
+      "0": {
+        "arquivo": "desk_u/giro-0.png",
+        "ax": 199.0,
+        "ay": 217.0
+      },
+      "6": {
+        "arquivo": "desk_u/giro-6.png",
+        "ax": 135.0,
+        "ay": 217.0
       }
     },
     "real": [
-      4.5,
+      4.42,
       3.0,
-      1.25
+      1.178
     ],
     "cima": {
       "arquivo": "desk_u/cima.png",
@@ -8506,123 +9020,135 @@
     }
   },
   "estrado_altar": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "estrado_altar/giro-4.png",
-        "ax": 226.5,
-        "ay": 282.0
-      },
-      "6": {
-        "arquivo": "estrado_altar/giro-6.png",
-        "ax": 226.5,
-        "ay": 282.0
-      },
-      "0": {
-        "arquivo": "estrado_altar/giro-0.png",
-        "ax": 226.5,
-        "ay": 281.0
+        "ax": 135.0,
+        "ay": 173.0
       },
       "2": {
         "arquivo": "estrado_altar/giro-2.png",
-        "ax": 226.5,
-        "ay": 281.0
+        "ax": 135.0,
+        "ay": 177.0
+      },
+      "0": {
+        "arquivo": "estrado_altar/giro-0.png",
+        "ax": 135.0,
+        "ay": 172.0
+      },
+      "6": {
+        "arquivo": "estrado_altar/giro-6.png",
+        "ax": 135.0,
+        "ay": 173.0
       }
     },
     "real": [
-      3.75,
-      3.75,
-      0.61
+      3.7,
+      3.7,
+      0.83
     ]
   },
   "pedra_sacrificio": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "pedra_sacrificio/giro-4.png",
-        "ax": 177.0,
-        "ay": 234.5
-      },
-      "6": {
-        "arquivo": "pedra_sacrificio/giro-6.png",
-        "ax": 113.0,
-        "ay": 229.5
-      },
-      "0": {
-        "arquivo": "pedra_sacrificio/giro-0.png",
-        "ax": 177.0,
-        "ay": 228.5
+        "ax": 103.0,
+        "ay": 127.0
       },
       "2": {
         "arquivo": "pedra_sacrificio/giro-2.png",
-        "ax": 113.0,
-        "ay": 232.5
+        "ax": 71.0,
+        "ay": 127.0
+      },
+      "0": {
+        "arquivo": "pedra_sacrificio/giro-0.png",
+        "ax": 103.0,
+        "ay": 127.0
+      },
+      "6": {
+        "arquivo": "pedra_sacrificio/giro-6.png",
+        "ax": 71.0,
+        "ay": 127.0
       }
     },
     "real": [
-      2.2,
-      1.2,
-      1.0
+      2.559,
+      1.639,
+      0.998
     ]
   },
   "corpo_lencol": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "corpo_lencol/giro-4.png",
-        "ax": 42.5,
-        "ay": 135.7
-      },
-      "6": {
-        "arquivo": "corpo_lencol/giro-6.png",
-        "ax": 170.5,
-        "ay": 135.7
-      },
-      "0": {
-        "arquivo": "corpo_lencol/giro-0.png",
-        "ax": 42.5,
-        "ay": 134.7
+        "ax": 38.0,
+        "ay": 65.0
       },
       "2": {
         "arquivo": "corpo_lencol/giro-2.png",
-        "ax": 170.5,
-        "ay": 141.7
+        "ax": 101.0,
+        "ay": 65.0
+      },
+      "0": {
+        "arquivo": "corpo_lencol/giro-0.png",
+        "ax": 38.0,
+        "ay": 66.0
+      },
+      "6": {
+        "arquivo": "corpo_lencol/giro-6.png",
+        "ax": 101.0,
+        "ay": 66.0
       }
     },
     "real": [
-      0.6,
-      1.9,
-      0.3
+      0.63,
+      2.145,
+      0.28
     ]
   },
   "corpo_saco": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "corpo_saco/giro-4.png",
-        "ax": 42.5,
-        "ay": 138.7
-      },
-      "6": {
-        "arquivo": "corpo_saco/giro-6.png",
-        "ax": 170.5,
-        "ay": 140.7
-      },
-      "0": {
-        "arquivo": "corpo_saco/giro-0.png",
-        "ax": 42.5,
-        "ay": 140.7
+        "ax": 33.0,
+        "ay": 65.0
       },
       "2": {
         "arquivo": "corpo_saco/giro-2.png",
-        "ax": 170.5,
-        "ay": 131.7
+        "ax": 100.0,
+        "ay": 65.0
+      },
+      "0": {
+        "arquivo": "corpo_saco/giro-0.png",
+        "ax": 37.0,
+        "ay": 65.0
+      },
+      "6": {
+        "arquivo": "corpo_saco/giro-6.png",
+        "ax": 98.0,
+        "ay": 65.0
       }
     },
     "real": [
-      0.6,
-      1.9,
-      0.3
+      0.65,
+      2.06,
+      0.316
     ]
   },
   "tanque_corpo": {
@@ -8785,33 +9311,36 @@
     }
   },
   "pilha_cranios": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "pilha_cranios/giro-4.png",
-        "ax": 64.0,
-        "ay": 91.0
-      },
-      "6": {
-        "arquivo": "pilha_cranios/giro-6.png",
-        "ax": 64.0,
-        "ay": 88.0
-      },
-      "0": {
-        "arquivo": "pilha_cranios/giro-0.png",
-        "ax": 64.0,
-        "ay": 85.0
+        "ax": 33.0,
+        "ay": 40.0
       },
       "2": {
         "arquivo": "pilha_cranios/giro-2.png",
-        "ax": 64.0,
-        "ay": 85.0
+        "ax": 31.0,
+        "ay": 41.0
+      },
+      "0": {
+        "arquivo": "pilha_cranios/giro-0.png",
+        "ax": 32.0,
+        "ay": 43.0
+      },
+      "6": {
+        "arquivo": "pilha_cranios/giro-6.png",
+        "ax": 33.0,
+        "ay": 41.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      0.45
+      0.543,
+      0.496,
+      0.47
     ],
     "cima": {
       "arquivo": "pilha_cranios/cima.png",
@@ -8909,32 +9438,46 @@
     }
   },
   "estandarte_sangue": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "estandarte_sangue/parede-r.png",
-        "ax": 36.5,
-        "ay": 75.0
+        "ax": 23.0,
+        "ay": 42.6
       },
       "l": {
         "arquivo": "estandarte_sangue/parede-l.png",
-        "ax": 36.5,
-        "ay": 75.0
+        "ax": 21.0,
+        "ay": 42.6
       }
     }
   },
   "tocha_parede": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "tocha_parede/parede-r.png",
-        "ax": 21.5,
-        "ay": 49.5
+        "ax": 9.0,
+        "ay": 18.4
       },
       "l": {
         "arquivo": "tocha_parede/parede-l.png",
-        "ax": 21.5,
-        "ay": 45.0
+        "ax": 4.0,
+        "ay": 18.4
+      },
+      "r-1": {
+        "arquivo": "tocha_parede/parede-r-1.png",
+        "ax": 7.0,
+        "ay": 5.4
+      },
+      "l-1": {
+        "arquivo": "tocha_parede/parede-l-1.png",
+        "ax": 4.0,
+        "ay": 5.4
       }
     }
   },
@@ -9173,33 +9716,36 @@
     }
   },
   "cadeira_gamer": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "cadeira_gamer/giro-4.png",
-        "ax": 55.5,
-        "ay": 212.3
-      },
-      "6": {
-        "arquivo": "cadeira_gamer/giro-6.png",
-        "ax": 55.5,
-        "ay": 217.3
-      },
-      "0": {
-        "arquivo": "cadeira_gamer/giro-0.png",
-        "ax": 55.5,
-        "ay": 218.3
+        "ax": 39.0,
+        "ay": 106.0
       },
       "2": {
         "arquivo": "cadeira_gamer/giro-2.png",
-        "ax": 55.5,
-        "ay": 226.3
+        "ax": 36.0,
+        "ay": 106.0
+      },
+      "0": {
+        "arquivo": "cadeira_gamer/giro-0.png",
+        "ax": 37.0,
+        "ay": 95.0
+      },
+      "6": {
+        "arquivo": "cadeira_gamer/giro-6.png",
+        "ax": 39.0,
+        "ay": 95.0
       }
     },
     "real": [
-      0.65,
-      0.65,
-      1.3
+      0.695,
+      0.688,
+      1.562
     ],
     "cima": {
       "arquivo": "cadeira_gamer/cima.png",
@@ -9251,35 +9797,37 @@
     }
   },
   "rack_moderno": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "rack_moderno/giro-4.png",
-        "ax": 15.2,
-        "ay": 301.5
-      },
-      "6": {
-        "arquivo": "rack_moderno/giro-6.png",
-        "ax": 79.2,
-        "ay": 279.2
-      },
-      "0": {
-        "arquivo": "rack_moderno/giro-0.png",
-        "ax": 57.8,
-        "ay": 278.2
+        "ax": 36.0,
+        "ay": 150.0
       },
       "2": {
         "arquivo": "rack_moderno/giro-2.png",
-        "ax": 121.8,
-        "ay": 300.5
+        "ax": 69.0,
+        "ay": 150.0
+      },
+      "0": {
+        "arquivo": "rack_moderno/giro-0.png",
+        "ax": 36.0,
+        "ay": 150.0
+      },
+      "6": {
+        "arquivo": "rack_moderno/giro-6.png",
+        "ax": 69.0,
+        "ay": 150.0
       }
     },
     "real": [
-      0.6,
-      1.0,
-      2.0
+      0.59,
+      1.43,
+      2.002
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "rack_moderno/cima.png",
       "caixa": [
@@ -9288,7 +9836,8 @@
         115,
         213
       ]
-    }
+    },
+    "encosta": true
   },
   "rack_moderno!vazio": {
     "escala": 0.5,
@@ -9331,33 +9880,36 @@
     }
   },
   "lixeira_lanches": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "lixeira_lanches/giro-4.png",
-        "ax": 34.0,
-        "ay": 110.9
-      },
-      "6": {
-        "arquivo": "lixeira_lanches/giro-6.png",
-        "ax": 34.0,
-        "ay": 110.9
-      },
-      "0": {
-        "arquivo": "lixeira_lanches/giro-0.png",
-        "ax": 34.0,
-        "ay": 110.9
+        "ax": 26.0,
+        "ay": 64.0
       },
       "2": {
         "arquivo": "lixeira_lanches/giro-2.png",
-        "ax": 34.0,
-        "ay": 110.9
+        "ax": 29.0,
+        "ay": 58.0
+      },
+      "0": {
+        "arquivo": "lixeira_lanches/giro-0.png",
+        "ax": 28.0,
+        "ay": 49.0
+      },
+      "6": {
+        "arquivo": "lixeira_lanches/giro-6.png",
+        "ax": 25.0,
+        "ay": 54.0
       }
     },
     "real": [
-      0.4,
-      0.4,
-      0.6
+      0.57,
+      0.564,
+      0.72
     ],
     "cima": {
       "arquivo": "lixeira_lanches/cima.png",
@@ -9370,35 +9922,37 @@
     }
   },
   "torre_crt": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "torre_crt/giro-4.png",
-        "ax": 123.9,
-        "ay": 283.1
-      },
-      "6": {
-        "arquivo": "torre_crt/giro-6.png",
-        "ax": 59.9,
-        "ay": 280.0
-      },
-      "0": {
-        "arquivo": "torre_crt/giro-0.png",
-        "ax": 128.1,
-        "ay": 278.0
+        "ax": 70.0,
+        "ay": 131.0
       },
       "2": {
         "arquivo": "torre_crt/giro-2.png",
-        "ax": 64.1,
-        "ay": 286.1
+        "ax": 38.0,
+        "ay": 131.0
+      },
+      "0": {
+        "arquivo": "torre_crt/giro-0.png",
+        "ax": 70.0,
+        "ay": 137.0
+      },
+      "6": {
+        "arquivo": "torre_crt/giro-6.png",
+        "ax": 39.0,
+        "ay": 137.0
       }
     },
     "real": [
-      1.5,
-      0.7,
+      1.42,
+      0.64,
       1.8
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "torre_crt/cima.png",
       "caixa": [
@@ -9407,7 +9961,8 @@
         255,
         123
       ]
-    }
+    },
+    "encosta": true
   },
   "torre_crt!vazio": {
     "escala": 0.5,
@@ -9450,35 +10005,37 @@
     }
   },
   "bancada_eletronica": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "bancada_eletronica/giro-4.png",
-        "ax": 123.9,
-        "ay": 195.1
-      },
-      "6": {
-        "arquivo": "bancada_eletronica/giro-6.png",
-        "ax": 59.9,
-        "ay": 196.0
-      },
-      "0": {
-        "arquivo": "bancada_eletronica/giro-0.png",
-        "ax": 128.1,
-        "ay": 194.0
+        "ax": 72.0,
+        "ay": 132.0
       },
       "2": {
         "arquivo": "bancada_eletronica/giro-2.png",
-        "ax": 64.1,
-        "ay": 196.1
+        "ax": 38.0,
+        "ay": 132.0
+      },
+      "0": {
+        "arquivo": "bancada_eletronica/giro-0.png",
+        "ax": 71.0,
+        "ay": 120.0
+      },
+      "6": {
+        "arquivo": "bancada_eletronica/giro-6.png",
+        "ax": 40.0,
+        "ay": 120.0
       }
     },
     "real": [
-      1.5,
-      0.7,
-      0.95
+      1.44,
+      0.705,
+      1.649
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "bancada_eletronica/cima.png",
       "caixa": [
@@ -9487,7 +10044,8 @@
         256,
         123
       ]
-    }
+    },
+    "encosta": true
   },
   "bancada_eletronica!vazio": {
     "escala": 0.5,
@@ -9530,60 +10088,63 @@
     }
   },
   "mesa_holografica": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "mesa_holografica/giro-4.png",
-        "ax": 84.5,
-        "ay": 126.3
-      },
-      "6": {
-        "arquivo": "mesa_holografica/giro-6.png",
-        "ax": 84.5,
-        "ay": 124.3
-      },
-      "0": {
-        "arquivo": "mesa_holografica/giro-0.png",
-        "ax": 84.5,
-        "ay": 126.3
+        "ax": 46.0,
+        "ay": 125.0
       },
       "2": {
         "arquivo": "mesa_holografica/giro-2.png",
-        "ax": 84.5,
-        "ay": 120.3
+        "ax": 46.0,
+        "ay": 124.0
+      },
+      "0": {
+        "arquivo": "mesa_holografica/giro-0.png",
+        "ax": 46.0,
+        "ay": 129.0
+      },
+      "6": {
+        "arquivo": "mesa_holografica/giro-6.png",
+        "ax": 46.0,
+        "ay": 122.0
       }
     },
+    "real": [
+      1.36,
+      1.36,
+      0.998
+    ],
     "estados": {
       "1": {
         "giros": {
           "4": {
             "arquivo": "mesa_holografica/giro-4-1.png",
-            "ax": 84.5,
-            "ay": 120.0
-          },
-          "6": {
-            "arquivo": "mesa_holografica/giro-6-1.png",
-            "ax": 84.5,
-            "ay": 121.8
-          },
-          "0": {
-            "arquivo": "mesa_holografica/giro-0-1.png",
-            "ax": 84.5,
-            "ay": 123.1
+            "ax": 46.0,
+            "ay": 105.0
           },
           "2": {
             "arquivo": "mesa_holografica/giro-2-1.png",
-            "ax": 84.5,
-            "ay": 120.3
+            "ax": 46.0,
+            "ay": 105.0
+          },
+          "0": {
+            "arquivo": "mesa_holografica/giro-0-1.png",
+            "ax": 46.0,
+            "ay": 105.0
+          },
+          "6": {
+            "arquivo": "mesa_holografica/giro-6-1.png",
+            "ax": 46.0,
+            "ay": 105.0
           }
         }
       }
     },
-    "real": [
-      1.4,
-      1.4,
-      1.0
-    ],
     "cima": {
       "arquivo": "mesa_holografica/cima.png",
       "caixa": [
@@ -9645,33 +10206,36 @@
     }
   },
   "frigobar_energetico": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "frigobar_energetico/giro-4.png",
-        "ax": 47.0,
-        "ay": 149.5
-      },
-      "6": {
-        "arquivo": "frigobar_energetico/giro-6.png",
-        "ax": 47.0,
-        "ay": 149.5
-      },
-      "0": {
-        "arquivo": "frigobar_energetico/giro-0.png",
-        "ax": 47.0,
-        "ay": 149.5
+        "ax": 35.0,
+        "ay": 75.0
       },
       "2": {
         "arquivo": "frigobar_energetico/giro-2.png",
-        "ax": 47.0,
-        "ay": 149.5
+        "ax": 34.0,
+        "ay": 75.0
+      },
+      "0": {
+        "arquivo": "frigobar_energetico/giro-0.png",
+        "ax": 35.0,
+        "ay": 75.0
+      },
+      "6": {
+        "arquivo": "frigobar_energetico/giro-6.png",
+        "ax": 35.0,
+        "ay": 75.0
       }
     },
     "real": [
       0.55,
-      0.55,
-      0.9
+      0.635,
+      1.02
     ],
     "cima": {
       "arquivo": "frigobar_energetico/cima.png",
@@ -10178,182 +10742,206 @@
     }
   },
   "quadro_fazenda": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda/parede-r.png",
-        "ax": 32.0,
-        "ay": 35.5
+        "ax": 20.0,
+        "ay": 24.4
       },
       "l": {
         "arquivo": "quadro_fazenda/parede-l.png",
-        "ax": 32.0,
-        "ay": 36.0
+        "ax": 20.0,
+        "ay": 24.4
       }
     }
   },
   "quadro_fazenda~02": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~02/parede-r.png",
-        "ax": 32.0,
-        "ay": 35.5
+        "ax": 20.0,
+        "ay": 24.4
       },
       "l": {
         "arquivo": "quadro_fazenda~02/parede-l.png",
-        "ax": 32.0,
-        "ay": 36.0
+        "ax": 20.0,
+        "ay": 24.4
       }
     }
   },
   "quadro_fazenda~03": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~03/parede-r.png",
-        "ax": 32.0,
-        "ay": 41.5
+        "ax": 13.0,
+        "ay": 18.4
       },
       "l": {
         "arquivo": "quadro_fazenda~03/parede-l.png",
-        "ax": 32.0,
-        "ay": 41.0
+        "ax": 13.0,
+        "ay": 18.4
       }
     }
   },
   "quadro_fazenda~04": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~04/parede-r.png",
-        "ax": 32.0,
-        "ay": 35.5
+        "ax": 20.0,
+        "ay": 24.4
       },
       "l": {
         "arquivo": "quadro_fazenda~04/parede-l.png",
-        "ax": 32.0,
-        "ay": 36.0
+        "ax": 20.0,
+        "ay": 24.4
       }
     }
   },
   "quadro_fazenda~05": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~05/parede-r.png",
-        "ax": 32.0,
-        "ay": 35.5
+        "ax": 20.0,
+        "ay": 24.4
       },
       "l": {
         "arquivo": "quadro_fazenda~05/parede-l.png",
-        "ax": 32.0,
-        "ay": 36.0
+        "ax": 20.0,
+        "ay": 24.4
       }
     }
   },
   "quadro_fazenda~06": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~06/parede-r.png",
-        "ax": 32.0,
-        "ay": 44.0
+        "ax": 11.0,
+        "ay": 17.4
       },
       "l": {
         "arquivo": "quadro_fazenda~06/parede-l.png",
-        "ax": 32.0,
-        "ay": 44.0
+        "ax": 12.0,
+        "ay": 17.4
       }
     }
   },
   "quadro_fazenda~07": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~07/parede-r.png",
-        "ax": 32.0,
-        "ay": 35.5
+        "ax": 20.0,
+        "ay": 24.4
       },
       "l": {
         "arquivo": "quadro_fazenda~07/parede-l.png",
-        "ax": 32.0,
-        "ay": 36.0
+        "ax": 20.0,
+        "ay": 24.4
       }
     }
   },
   "quadro_fazenda~08": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~08/parede-r.png",
-        "ax": 32.0,
-        "ay": 29.5
+        "ax": 22.0,
+        "ay": 21.4
       },
       "l": {
         "arquivo": "quadro_fazenda~08/parede-l.png",
-        "ax": 32.0,
-        "ay": 28.5
+        "ax": 22.0,
+        "ay": 21.4
       }
     }
   },
   "quadro_fazenda~09": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~09/parede-r.png",
-        "ax": 32.0,
-        "ay": 35.5
+        "ax": 20.0,
+        "ay": 24.4
       },
       "l": {
         "arquivo": "quadro_fazenda~09/parede-l.png",
-        "ax": 32.0,
-        "ay": 36.0
+        "ax": 20.0,
+        "ay": 24.4
       }
     }
   },
   "quadro_fazenda~10": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~10/parede-r.png",
-        "ax": 32.0,
-        "ay": 35.5
+        "ax": 16.0,
+        "ay": 23.4
       },
       "l": {
         "arquivo": "quadro_fazenda~10/parede-l.png",
-        "ax": 32.0,
-        "ay": 36.0
+        "ax": 16.0,
+        "ay": 23.4
       }
     }
   },
   "quadro_fazenda~11": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~11/parede-r.png",
-        "ax": 32.0,
-        "ay": 35.5
+        "ax": 20.0,
+        "ay": 24.4
       },
       "l": {
         "arquivo": "quadro_fazenda~11/parede-l.png",
-        "ax": 32.0,
-        "ay": 36.0
+        "ax": 20.0,
+        "ay": 24.4
       }
     }
   },
   "quadro_fazenda~12": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
     "parede": {
       "r": {
         "arquivo": "quadro_fazenda~12/parede-r.png",
-        "ax": 32.0,
-        "ay": 35.5
+        "ax": 19.0,
+        "ay": 23.4
       },
       "l": {
         "arquivo": "quadro_fazenda~12/parede-l.png",
-        "ax": 32.0,
-        "ay": 36.0
+        "ax": 19.0,
+        "ay": 23.4
       }
     }
   },
@@ -11375,5 +11963,580 @@
         "ay": 28.4
       }
     }
+  },
+  "gravador_rolo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "gravador_rolo/giro-4.png",
+        "ax": 34.0,
+        "ay": 78.0
+      },
+      "2": {
+        "arquivo": "gravador_rolo/giro-2.png",
+        "ax": 35.0,
+        "ay": 78.0
+      },
+      "0": {
+        "arquivo": "gravador_rolo/giro-0.png",
+        "ax": 34.0,
+        "ay": 78.0
+      },
+      "6": {
+        "arquivo": "gravador_rolo/giro-6.png",
+        "ax": 35.0,
+        "ay": 78.0
+      }
+    },
+    "real": [
+      0.611,
+      0.59,
+      0.984
+    ]
+  },
+  "camera_tripe": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "camera_tripe/giro-4.png",
+        "ax": 39.0,
+        "ay": 101.0
+      },
+      "2": {
+        "arquivo": "camera_tripe/giro-2.png",
+        "ax": 35.0,
+        "ay": 100.0
+      },
+      "0": {
+        "arquivo": "camera_tripe/giro-0.png",
+        "ax": 36.0,
+        "ay": 102.0
+      },
+      "6": {
+        "arquivo": "camera_tripe/giro-6.png",
+        "ax": 39.0,
+        "ay": 102.0
+      }
+    },
+    "real": [
+      0.594,
+      0.611,
+      1.589
+    ]
+  },
+  "fuligem": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "fuligem/giro-4.png",
+        "ax": 20.0,
+        "ay": 27.0
+      },
+      "2": {
+        "arquivo": "fuligem/giro-2.png",
+        "ax": 22.0,
+        "ay": 26.0
+      },
+      "0": {
+        "arquivo": "fuligem/giro-0.png",
+        "ax": 20.0,
+        "ay": 32.0
+      },
+      "6": {
+        "arquivo": "fuligem/giro-6.png",
+        "ax": 31.0,
+        "ay": 26.0
+      }
+    },
+    "real": [
+      0.703,
+      0.686,
+      0.004
+    ]
+  },
+  "cinzas": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cinzas/giro-4.png",
+        "ax": 22.0,
+        "ay": 25.0
+      },
+      "2": {
+        "arquivo": "cinzas/giro-2.png",
+        "ax": 18.0,
+        "ay": 25.0
+      },
+      "0": {
+        "arquivo": "cinzas/giro-0.png",
+        "ax": 17.0,
+        "ay": 30.0
+      },
+      "6": {
+        "arquivo": "cinzas/giro-6.png",
+        "ax": 28.0,
+        "ay": 27.0
+      }
+    },
+    "real": [
+      0.708,
+      0.598,
+      0.06
+    ]
+  },
+  "dirt": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "dirt/giro-4.png",
+        "ax": 15.0,
+        "ay": 27.0
+      },
+      "2": {
+        "arquivo": "dirt/giro-2.png",
+        "ax": 21.0,
+        "ay": 26.0
+      },
+      "0": {
+        "arquivo": "dirt/giro-0.png",
+        "ax": 21.0,
+        "ay": 27.0
+      },
+      "6": {
+        "arquivo": "dirt/giro-6.png",
+        "ax": 22.0,
+        "ay": 24.0
+      }
+    },
+    "real": [
+      0.752,
+      0.595,
+      0.004
+    ]
+  },
+  "cama_queimada": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cama_queimada/giro-4.png",
+        "ax": 40.0,
+        "ay": 118.0
+      },
+      "2": {
+        "arquivo": "cama_queimada/giro-2.png",
+        "ax": 104.0,
+        "ay": 105.0
+      },
+      "0": {
+        "arquivo": "cama_queimada/giro-0.png",
+        "ax": 40.0,
+        "ay": 93.0
+      },
+      "6": {
+        "arquivo": "cama_queimada/giro-6.png",
+        "ax": 104.0,
+        "ay": 95.0
+      }
+    },
+    "real": [
+      0.735,
+      2.225,
+      1.09
+    ]
+  },
+  "catre": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "catre/giro-4.png",
+        "ax": 35.0,
+        "ay": 79.0
+      },
+      "2": {
+        "arquivo": "catre/giro-2.png",
+        "ax": 98.0,
+        "ay": 79.0
+      },
+      "0": {
+        "arquivo": "catre/giro-0.png",
+        "ax": 35.0,
+        "ay": 81.0
+      },
+      "6": {
+        "arquivo": "catre/giro-6.png",
+        "ax": 98.0,
+        "ay": 81.0
+      }
+    },
+    "real": [
+      0.55,
+      2.09,
+      0.478
+    ]
+  },
+  "colchao_chao": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "colchao_chao/giro-4.png",
+        "ax": 38.0,
+        "ay": 51.0
+      },
+      "2": {
+        "arquivo": "colchao_chao/giro-2.png",
+        "ax": 71.0,
+        "ay": 51.0
+      },
+      "0": {
+        "arquivo": "colchao_chao/giro-0.png",
+        "ax": 38.0,
+        "ay": 51.0
+      },
+      "6": {
+        "arquivo": "colchao_chao/giro-6.png",
+        "ax": 71.0,
+        "ay": 51.0
+      }
+    },
+    "real": [
+      0.67,
+      1.4,
+      0.241
+    ]
+  },
+  "viga_queimada": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "viga_queimada/giro-4.png",
+        "ax": 30.0,
+        "ay": 69.0
+      },
+      "2": {
+        "arquivo": "viga_queimada/giro-2.png",
+        "ax": 91.0,
+        "ay": 71.0
+      },
+      "0": {
+        "arquivo": "viga_queimada/giro-0.png",
+        "ax": 28.0,
+        "ay": 67.0
+      },
+      "6": {
+        "arquivo": "viga_queimada/giro-6.png",
+        "ax": 95.0,
+        "ay": 66.0
+      }
+    },
+    "real": [
+      0.59,
+      2.243,
+      0.28
+    ]
+  },
+  "escombros": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "escombros/giro-4.png",
+        "ax": 53.0,
+        "ay": 67.0
+      },
+      "2": {
+        "arquivo": "escombros/giro-2.png",
+        "ax": 48.0,
+        "ay": 58.0
+      },
+      "0": {
+        "arquivo": "escombros/giro-0.png",
+        "ax": 52.0,
+        "ay": 79.0
+      },
+      "6": {
+        "arquivo": "escombros/giro-6.png",
+        "ax": 57.0,
+        "ay": 81.0
+      }
+    },
+    "real": [
+      1.322,
+      1.277,
+      0.692
+    ]
+  },
+  "fogueira": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "fogueira/giro-4.png",
+        "ax": 61.0,
+        "ay": 86.0
+      },
+      "2": {
+        "arquivo": "fogueira/giro-2.png",
+        "ax": 61.0,
+        "ay": 86.0
+      },
+      "0": {
+        "arquivo": "fogueira/giro-0.png",
+        "ax": 61.0,
+        "ay": 86.0
+      },
+      "6": {
+        "arquivo": "fogueira/giro-6.png",
+        "ax": 61.0,
+        "ay": 86.0
+      }
+    },
+    "real": [
+      1.373,
+      1.299,
+      0.334
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "fogueira/giro-4-1.png",
+            "ax": 61.0,
+            "ay": 59.0
+          },
+          "2": {
+            "arquivo": "fogueira/giro-2-1.png",
+            "ax": 61.0,
+            "ay": 59.0
+          },
+          "0": {
+            "arquivo": "fogueira/giro-0-1.png",
+            "ax": 61.0,
+            "ay": 59.0
+          },
+          "6": {
+            "arquivo": "fogueira/giro-6-1.png",
+            "ax": 61.0,
+            "ay": 59.0
+          }
+        }
+      }
+    }
+  },
+  "gancho_carne": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "gancho_carne/giro-4.png",
+        "ax": 33.0,
+        "ay": 138.0
+      },
+      "2": {
+        "arquivo": "gancho_carne/giro-2.png",
+        "ax": 66.0,
+        "ay": 138.0
+      },
+      "0": {
+        "arquivo": "gancho_carne/giro-0.png",
+        "ax": 33.0,
+        "ay": 138.0
+      },
+      "6": {
+        "arquivo": "gancho_carne/giro-6.png",
+        "ax": 66.0,
+        "ay": 138.0
+      }
+    },
+    "real": [
+      0.52,
+      1.34,
+      1.898
+    ]
+  },
+  "monitor_energia": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "monitor_energia/giro-4.png",
+        "ax": 36.0,
+        "ay": 102.0
+      },
+      "2": {
+        "arquivo": "monitor_energia/giro-2.png",
+        "ax": 36.0,
+        "ay": 102.0
+      },
+      "0": {
+        "arquivo": "monitor_energia/giro-0.png",
+        "ax": 36.0,
+        "ay": 105.0
+      },
+      "6": {
+        "arquivo": "monitor_energia/giro-6.png",
+        "ax": 36.0,
+        "ay": 105.0
+      }
+    },
+    "real": [
+      0.762,
+      0.702,
+      1.518
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "monitor_energia/giro-4-1.png",
+            "ax": 36.0,
+            "ay": 102.0
+          },
+          "2": {
+            "arquivo": "monitor_energia/giro-2-1.png",
+            "ax": 36.0,
+            "ay": 102.0
+          },
+          "0": {
+            "arquivo": "monitor_energia/giro-0-1.png",
+            "ax": 36.0,
+            "ay": 105.0
+          },
+          "6": {
+            "arquivo": "monitor_energia/giro-6-1.png",
+            "ax": 36.0,
+            "ay": 105.0
+          }
+        }
+      }
+    }
+  },
+  "window_barred": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "window_barred/parede-r.png",
+        "ax": 26.0,
+        "ay": 44.6
+      },
+      "l": {
+        "arquivo": "window_barred/parede-l.png",
+        "ax": 24.0,
+        "ay": 44.6
+      },
+      "r-1": {
+        "arquivo": "window_barred/parede-r-1.png",
+        "ax": 26.0,
+        "ay": 44.6
+      },
+      "l-1": {
+        "arquivo": "window_barred/parede-l-1.png",
+        "ax": 24.0,
+        "ay": 44.6
+      }
+    }
+  },
+  "fuligem_parede": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "fuligem_parede/parede-r.png",
+        "ax": 33.0,
+        "ay": 51.5
+      },
+      "l": {
+        "arquivo": "fuligem_parede/parede-l.png",
+        "ax": 34.0,
+        "ay": 51.5
+      }
+    }
+  },
+  "escrita_sangue": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "escrita_sangue/parede-r.png",
+        "ax": 137.0,
+        "ay": 119.2
+      },
+      "l": {
+        "arquivo": "escrita_sangue/parede-l.png",
+        "ax": 150.0,
+        "ay": 119.2
+      }
+    }
+  },
+  "mug": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "mug/giro-4.png",
+        "ax": 5.0,
+        "ay": 25.0
+      },
+      "2": {
+        "arquivo": "mug/giro-2.png",
+        "ax": 5.0,
+        "ay": 24.0
+      },
+      "0": {
+        "arquivo": "mug/giro-0.png",
+        "ax": 3.0,
+        "ay": 24.0
+      },
+      "6": {
+        "arquivo": "mug/giro-6.png",
+        "ax": 3.0,
+        "ay": 25.0
+      }
+    },
+    "real": [
+      0.153,
+      0.153,
+      0.13
+    ]
   }
 }

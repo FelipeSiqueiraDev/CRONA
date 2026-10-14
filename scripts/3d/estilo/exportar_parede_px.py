@@ -229,7 +229,12 @@ def main():
             lista = json.load(f)
     os.makedirs(destino, exist_ok=True)
     for n in nomes:
-        lista[n] = exportar_sozinho(n, destino) if n in ITENS_PAREDE else exportar(n, destino, t)
+        novo = exportar_sozinho(n, destino) if n in ITENS_PAREDE else exportar(n, destino, t)
+        velho = lista.get(n, {})
+        # a tela acesa (a TV): as cores que piscam na luz continuam; o ponto do brilho era da imagem antiga e sai
+        if 'tela' in velho and 'tela' not in novo:
+            novo['tela'] = {**velho['tela'], 'paredes': {}}
+        lista[n] = novo
     with open(jpath, 'w', encoding='utf-8') as f:
         json.dump(lista, f, ensure_ascii=False, indent=2)
         f.write('\n')

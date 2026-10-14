@@ -310,9 +310,12 @@ def main():
         velho = lista.get(n, {})
         # o que a arte nova não traz e o jogo usa continua o de antes: a vista de cima (mapa tático), a caixa da
         # ordem de desenho e o encostar na parede (a porta é parede na ordem de desenho), o balanço da lâmpada
-        for k in ('cima', 'caixa', 'encosta', 'pendulo'):
+        for k in ('cima', 'caixa', 'encosta', 'pendulo', 'falha', 'cimaEstados'):
             if k in velho and k not in novo:
                 novo[k] = velho[k]
+        # a tela acesa: as cores que piscam na luz do cômodo continuam; o ponto do brilho era da imagem antiga e sai
+        if 'tela' in velho and 'tela' not in novo:
+            novo['tela'] = {**velho['tela'], 'giros': {}, **({'paredes': {}} if 'paredes' in velho['tela'] else {})}
         lista[n] = novo
     os.makedirs(destino, exist_ok=True)
     json.dump(lista, open(arq, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
