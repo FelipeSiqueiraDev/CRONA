@@ -1882,7 +1882,7 @@ def _x_porta(face, plano, a0, a1, z0, z1, cor='#d2cab8', larg=0.09):
         c.face_plana(pts, n, m, M, o, dois_lados=True)
 
 
-def _celeiro():
+def _celeiro(aberto=True):
     c = CZ.c
     W, D = 12 * CASA, 8 * CASA
     X0, X1, Y0, Y1 = 0.25, W - 0.25, 0.3, D - 0.3
@@ -1910,16 +1910,24 @@ def _celeiro():
     # a faixa branca na base do oitão (frente e fundo)
     for (yy, s) in ((Y1, 1), (Y0, -1)):
         caixa((X0, X1, min(yy, yy + s * 0.04), max(yy, yy + s * 0.04), ZE - 0.02, ZE + 0.1), liso('#d2cab8'))
-    # o portão grande (duas folhas de correr, o quadro e o X brancos) na frente e no fundo
+    # o portão grande (duas folhas de correr, o quadro e o X brancos) na frente e no fundo; o da frente abre (14/10):
+    # as folhas correm no trilho para os lados e fica o vão escuro do celeiro, com o chão de terra e palha na boca
     for (face, yy, w, h) in (('+y', Y1, 3.0, 2.9), ('-y', Y0, 2.2, 2.5)):
         sg = 1 if face == '+y' else -1
         a0, a1 = XM - w / 2, XM + w / 2
         caixa((a0 - 0.05, a1 + 0.05, min(yy, yy + sg * 0.02), max(yy, yy + sg * 0.02), 0, h + 0.05), liso('#3a1610'))
-        for (l0, l1) in ((a0, XM), (XM, a1)):
+        abre = aberto and face == '+y'
+        if abre:
+            caixa(_bx(face, yy, a0, a1, 0.0, 0.035, 0.0, h), liso('#0c0806'))
+            caixa(_bx(face, yy, a0, a1, 0.0, 0.036, 0.0, 0.16), liso('#2a2016'))
+            caixa(_bx(face, yy, a0 + 0.3, a1 - 0.5, 0.0, 0.037, 0.0, 0.07), liso('#4a3c22'))
+        folhas = ((a0 - w / 2, a0), (a1, a1 + w / 2)) if abre else ((a0, XM), (XM, a1))
+        for (l0, l1) in folhas:
             caixa(_bx(face, yy, l0 + 0.01, l1 - 0.01, 0.0, 0.02, 0.02, h), mat_tabua_v(['#6e3a2e', '#68362a'], 0.18, '#34160e', seed=5, descasca=0.7))
             _x_porta(face, yy, l0 + 0.01, l1 - 0.01, 0.02, h)
-        # o trilho da porta de correr
-        caixa(_bx(face, yy, a0 - 0.5, a1 + 0.5, 0.0, 0.08, h + 0.05, h + 0.15), liso('#3a3634'))
+        # o trilho da porta de correr (aberto, comprido o bastante para as folhas)
+        folga = w / 2 + 0.1 if abre else 0.5
+        caixa(_bx(face, yy, a0 - folga, a1 + folga, 0.0, 0.08, h + 0.05, h + 0.15), liso('#3a3634'))
     # a porta do palheiro em cima, com o X, e a viga da roldana saindo do alto do oitão
     zp0, zp1 = ZE + 0.25, ZE + 1.1
     caixa(_bx('+y', Y1, XM - 0.55, XM + 0.55, 0.0, 0.02, zp0, zp1), mat_tabua_v(['#6e3a2e', '#68362a'], 0.18, '#34160e', seed=6, descasca=0.7))
@@ -2132,7 +2140,8 @@ ITENS = {
     'carroca': (2, 3, (0.0, 0.0), _carroca, {}),
     'fonte': (3, 3, (0.0, 0.0), _fonte, {}),
     'casarao': (14, 9, (0.0, 0.0), _casarao, {}),
-    'celeiro': (12, 8, (0.0, 0.0), _celeiro, {}),
+    # estado 0 o portão da frente aberto (o padrão: dá para entrar), 1 fechado
+    'celeiro': (12, 8, (0.0, 0.0), _celeiro, {'1': lambda: _celeiro(False)}),
     'galpao': (8, 6, (0.0, 0.0), _galpao, {}),
     'orfanato_predio': (16, 46, (0.0, 0.0), _orfanato, {}),
     'porteira': (3, 1, (0.0, 0.0), lambda: _porteira(False), {'1': lambda: _porteira(True)}),

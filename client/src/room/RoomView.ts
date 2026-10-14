@@ -1383,7 +1383,16 @@ export class RoomView {
           else this.select(null);
           this.mark(target.x, target.y);
           this.events.walk(target.x, target.y);
-        } else this.select({ kind: 'floor', id: it.id });
+        } else {
+          // o prédio ao ar livre (o celeiro, o casarão): um clique no desenho dele, na porta inclusive, leva a peça
+          // até a entrada encostada nele, e ela entra; o clique duplo continua escolhendo o prédio
+          const entrada = !dbl && def.width * def.depth >= 20 ? this.entradaDoPredio(it) : null;
+          if (entrada) {
+            this.select(null);
+            this.mark(entrada.x, entrada.y);
+            this.events.walk(entrada.x, entrada.y);
+          } else this.select({ kind: 'floor', id: it.id });
+        }
         return;
       }
     }
@@ -1392,6 +1401,17 @@ export class RoomView {
       this.mark(tile.x, tile.y);
       this.events.walk(tile.x, tile.y);
     }
+  }
+
+  /** A passagem (a Entrada na frente da porta) encostada no prédio, como a planta do servidor acha (`marcos`). */
+  private entradaDoPredio(it: FloorItem): { x: number; y: number } | null {
+    const def = getFurni(it.defId);
+    if (!def || def.walkable || !this.map) return null;
+    const fp = footprint(def, it.rot);
+    const p = this.map
+      .allItems()
+      .find((q) => q.link !== undefined && getFurni(q.defId)?.portal && q.x >= it.x - 1 && q.x <= it.x + fp.sx && q.y >= it.y - 1 && q.y <= it.y + fp.sy);
+    return p ? { x: p.x, y: p.y } : null;
   }
 
   /** Marca no chão onde a peça ativa vai parar. */

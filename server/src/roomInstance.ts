@@ -265,7 +265,9 @@ export class RoomInstance {
     const valid = !back && this.map.floorHeight(t.x, t.y) !== null && fromRoomId === null;
     let sx = back ? back.x : valid ? t.x : d.x;
     let sy = back ? back.y : valid ? t.y : d.y;
-    let sdir = back ? (back.rot + 4) % 8 : valid ? t.dir : d.dir;
+    // chegando de outra cena (a viagem, a passagem, o grupo levado pelo mestre): de frente para quem olha a tela (3 = SE,
+    // o rosto para a câmera); antes virava de costas para a passagem, e pela porta do fundo chegava olhando a parede
+    let sdir = fromRoomId !== null ? 3 : valid ? t.dir : d.dir;
     // descendo pela escada: a peça chega no pé dela, virada para a sala (em cima dos degraus, no chão, ela sumia atrás da escada);
     // subindo, chega na frente do vão da escada do andar de cima
     const pe = back?.defId === 'stairs_up' || back?.defId === 'escada_desce' || back?.defId === 'escada_vertical' ? this.stairFoot(back) : null;

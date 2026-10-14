@@ -8412,6 +8412,32 @@
       6.698,
       6.527
     ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "celeiro/giro-4-1.png",
+            "ax": 386.0,
+            "ay": 565.0
+          },
+          "2": {
+            "arquivo": "celeiro/giro-2-1.png",
+            "ax": 258.0,
+            "ay": 565.0
+          },
+          "0": {
+            "arquivo": "celeiro/giro-0-1.png",
+            "ax": 386.0,
+            "ay": 565.0
+          },
+          "6": {
+            "arquivo": "celeiro/giro-6-1.png",
+            "ax": 258.0,
+            "ay": 565.0
+          }
+        }
+      }
+    },
     "cima": {
       "arquivo": "celeiro/cima.png",
       "caixa": [
