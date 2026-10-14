@@ -152,6 +152,25 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 14/10 (branch `claude/existidos`): Existidos, rituais e o Códex sem tabuleiro
+
+- **O Códex não desenha mais nada do tabuleiro** (decisão do Felipe, 14/10): móveis, chão, paredes, cenários, prédios,
+  decalques e personagens/monstros do tabuleiro saíram do `PEDIDO-UNICO-CODEX.txt` (o tabuleiro segue o
+  [`GUIA-MAPAS-PIXEL.md`](GUIA-MAPAS-PIXEL.md): pixel art 1:1 por código). O pedido antigo inteiro ficou em
+  `_arquivo\prompts\PEDIDO-UNICO-CODEX-ate-14-10.txt`. Ficam com o Códex: interface, ilustrações, retratos e telas do
+  celular. **A fila nova:** (1) os ícones das modificações das armas e da munição, 16 (`icones/mod-<id>.png`, teste
+  primeiro: Cruel, Mira laser, Silenciador e Dum dum); (2) os joguinhos do bar no celular.
+- **Rituais:** os 97 do livro têm arte (`arte/rituais/<id>.png`; chegaram Conhecimento, Energia, Morte e Medo). Nenhum
+  ritual do catálogo ficou sem imagem. Aparecem na aba Rituais do celular do jogador.
+- **Ícones das modificações:** o selo da arma e a janela do item já procuram `icones/mod-<id>.png`; até a arte chegar,
+  fica a engrenagem.
+- **Existidos:** a arte chegou (`existido.zip`): as 8 direções (poses HD por `arte:poses --hd`), o retrato e o ícone
+  CRIATURAS. A arte de uma aparência do bestiário que chega na pasta `arte/personagens/<arte>/` vira personagem sozinha
+  (`criaturasComArte` no `hotel.ts`); a janela CRIATURAS mostra o retrato. Criatura não tem PE nem SAN: o máximo pode
+  ser 0 (antes era forçado a 1 e o monstro aparecia "Enlouquecendo").
+- **Chegaram e ainda não estão no jogo:** `escrita-sangue.zip`, `mapa-hd.zip` (as ilhas do mapa-múndi) e
+  `orfanato-queimado-teste.zip` (do tabuleiro: parado).
+
 ## Em andamento em 13/10 (na nuvem, branch `claude/arte-codigo`): a Alosi nova (gerador + limpeza por código) e a cozinha à noite
 
 Tudo em `docs/PERSONAGEM-GERADOR.md` (o caminho, os prompts, os arquivos e o que falta).

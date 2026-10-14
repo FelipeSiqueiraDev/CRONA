@@ -38,7 +38,8 @@ export function applyVital(v: Vitals, key: VitalKey, change: { delta?: number; v
   const mk = maxKey(key);
   const int = (n: unknown) => (typeof n === 'number' && Number.isFinite(n) ? Math.round(n) : undefined);
   const max = int(change.max);
-  if (max !== undefined) out[mk] = Math.max(1, Math.min(VITAL_LIMIT, max));
+  // PE e SAN podem ter máximo 0 (as criaturas não têm); o PV tem pelo menos 1
+  if (max !== undefined) out[mk] = Math.max(key === 'pv' ? 1 : 0, Math.min(VITAL_LIMIT, max));
   const value = int(change.value);
   const delta = int(change.delta);
   let cur = out[key];
@@ -72,7 +73,8 @@ export function vitalConditions(v: Vitals | undefined): VitalConditions {
     machucado: v.pv < v.pvMax / 2,
     morrendo: v.pv <= 0,
     perturbado: v.san < v.sanMax / 2,
-    enlouquecendo: v.san <= 0,
+    // quem não tem Sanidade (as criaturas: SAN 0 de 0) não enlouquece
+    enlouquecendo: v.sanMax > 0 && v.san <= 0,
     cansado: v.pe < v.peMax / 2,
   };
 }

@@ -74,7 +74,7 @@ import {
 import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSessao, SENHA_MIN, type Conta } from './contas';
 import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type TokenData, type UserData } from './db';
 import { RoomInstance, type Client, type HotelApi } from './roomInstance';
-import { refreshPortraits } from './portraits';
+import { folhaDaPasta, refreshPortraits } from './portraits';
 import { limparSalasDeExemplo, seedDb, SYSTEM_OWNER, upgradeDb } from './seed';
 
 const NAME_RE = /^[\p{L}\p{N}_\-. ]+$/u;
@@ -211,6 +211,14 @@ export class Hotel implements HotelApi {
       this.db.gmKey = crypto.randomBytes(9).toString('base64url');
       dirty = true;
     }
+    if (this.criaturasComArte(true)) dirty = true;
+    // as criaturas não têm PE nem SAN: as peças de antes (o máximo era forçado a 1) "enlouqueciam" com SAN 0 de 1
+    for (const r of this.db.rooms)
+      for (const t of r.tokens ?? [])
+        if (t.criatura && t.vitals && t.vitals.sanMax === 1 && t.vitals.san === 0) {
+          t.vitals = { ...t.vitals, pe: 0, peMax: 0, san: 0, sanMax: 0 };
+          dirty = true;
+        }
     if (refreshPortraits(this.db.characters)) dirty = true;
     for (const r of this.db.rooms) this.rooms.set(r.id, new RoomInstance(r, this));
     if (this.migrarMochilas()) dirty = true;
@@ -233,7 +241,8 @@ export class Hotel implements HotelApi {
 
   /** Procura retratos e poses do tabuleiro novos (ou removidos) nas pastas dos personagens. */
   checkPortraits() {
-    if (!refreshPortraits(this.db.characters)) return;
+    const novas = this.criaturasComArte(false);
+    if (!refreshPortraits(this.db.characters) && !novas) return;
     this.save();
     this.broadcastCharacters();
   }
@@ -343,6 +352,34 @@ export class Hotel implements HotelApi {
     for (const o of this.clients.values()) this.bestiarioPara(o);
     // as fichas do combate (a da criatura mudou): os mestres recebem de novo
     this.touch();
+  }
+
+  /**
+   * A arte do bestiário que o Códex entregou (a pasta arte/personagens/<arte>/ com a folha) vira personagem sozinha:
+   * criatura nova não precisa de código. Ao subir o servidor (`pecas`), as peças já em campo sem cara ganham a dela.
+   */
+  private criaturasComArte(pecas: boolean): boolean {
+    let mudou = false;
+    for (const cr of this.db.bestiario ?? [])
+      for (const ap of cr.aparencias) {
+        if (!ap.arte || this.charDaArte(ap.arte) !== null) continue;
+        const sheet = folhaDaPasta(ap.arte);
+        if (!sheet) continue;
+        // a folha é a grade 4 × 2 das 8 direções; o tabuleiro usa as poses (tabuleiro-32bits), a folha é só o reserva
+        this.db.characters.push({ id: this.db.nextCharId++, name: `${cr.nome} (${ap.nome})`, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height: 104, fps: 4, sequence: [0], removeBg: false });
+        mudou = true;
+      }
+    if (pecas)
+      for (const r of this.db.rooms)
+        for (const t of r.tokens ?? []) {
+          if (!t.criatura || t.look?.charId) continue;
+          const ap = this.db.bestiario?.find((x) => x.id === t.criatura!.id)?.aparencias.find((a) => a.id === t.criatura!.aparencia);
+          const id = this.charDaArte(ap?.arte);
+          if (id === null) continue;
+          t.look = { ...t.look, charId: id };
+          mudou = true;
+        }
+    return mudou;
   }
 
   /** A arte de uma aparência: o personagem (folha) da pasta arte/personagens/<arte>/, se o Códex já entregou. */

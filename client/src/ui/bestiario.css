@@ -180,3 +180,18 @@
 .bs-apagar {
   margin-left: auto;
 }
+
+/* o retrato da arte do Códex no quadro do card (o rosto em cima, cortado no peito) */
+.bs-retrato {
+  display: block;
+  width: 8rem;
+  height: 8rem;
+  object-fit: cover;
+  object-position: 50% 12%;
+  border-radius: 0.4rem;
+}
+.bs-varias .bs-retrato {
+  width: 4rem;
+  height: 6rem;
+  margin: 0 0.1rem;
+}

@@ -20,7 +20,7 @@ export function abrirBestiario(app: App) {
   let sel: string | null = app.state.bestiario[0]?.id ?? null;
   let aparencia = 'variadas';
   let quantidade = 3;
-  const j = janela('CRIATURAS', 'caveira', () => app.off('bestiario', desenhar), 92);
+  const j = janela('CRIATURAS', 'caveira', () => (app.off('bestiario', desenhar), app.off('characters', desenhar)), 92);
   const topo = h('div', { class: 'bs-topo cards-v' });
   const detalhe = h('div', { class: 'bs-detalhe' });
   j.corpo.append(
@@ -32,8 +32,13 @@ export function abrirBestiario(app: App) {
   const salvar = (c: Criatura) => app.net.send({ t: 'criaturaSalvar', criatura: c });
   const atual = () => app.state.bestiario.find((c) => c.id === sel) ?? null;
 
-  /** O boneco da aparência dentro do quadro (o de pixel, até chegar a arte). */
+  /** O retrato que o Códex entregou para a aparência (o personagem da pasta arte/personagens/<arte>/), se já chegou. */
+  const retrato = (a: AparenciaCriatura) => (a.arte ? app.state.characters.find((ch) => ch.sheet.includes(`/personagens/${a.arte}/`))?.portraits?.desarmado?.open : undefined);
+
+  /** O quadro da aparência: o retrato da arte; sem arte, o boneco de pixel. */
   const boneco = (a: AparenciaCriatura) => {
+    const url = retrato(a);
+    if (url) return h('img', { class: 'bs-retrato', src: url, alt: a.nome, decoding: 'async' });
     const cv = h('canvas', { class: 'bs-boneco', width: 90, height: 90 });
     const g = cv.getContext('2d')!;
     g.imageSmoothingEnabled = false;
@@ -112,7 +117,7 @@ export function abrirBestiario(app: App) {
             cls: `bs-ap${aparencia === a.id ? ' escolhido' : ''}`,
             titulo: a.nome,
             quadro: boneco(a),
-            placa: a.arte ? 'arte a caminho' : 'boneco de pixel',
+            placa: retrato(a) ? 'arte do Códex' : a.arte ? 'arte a caminho' : 'boneco de pixel',
             pe: aparencia === a.id ? 'Escolhida' : 'Usar',
             onclick: () => ((aparencia = a.id), desenhar()),
             extra: [
@@ -202,6 +207,8 @@ export function abrirBestiario(app: App) {
   };
 
   app.on('bestiario', desenhar);
+  // a arte que chega (o retrato da aparência) entra sem fechar a janela
+  app.on('characters', desenhar);
   j.rodape.append(botao('Fechar', 'fechar', 'claro', () => j.fechar()));
   app.net.send({ t: 'bestiario' });
   desenhar();

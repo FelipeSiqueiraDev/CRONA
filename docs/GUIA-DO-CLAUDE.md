@@ -133,6 +133,10 @@ Desde 12/10 o caminho é outro: o tabuleiro em pixel art 1:1 feita pelo motor, s
 
 ## A arte (o caminho do Códex)
 
+**Desde 14/10 o Códex não desenha o tabuleiro** (móveis, chão, paredes, cenários, personagens do tabuleiro): o
+tabuleiro é pixel art por código, no [`GUIA-MAPAS-PIXEL.md`](GUIA-MAPAS-PIXEL.md). O Códex fica com interface,
+ilustrações, retratos e telas do celular. Não ponha pedido de tabuleiro no `PEDIDO-UNICO-CODEX.txt`.
+
 **A pasta da arte**
 - Fica em `F:\Dhellow\CRONA\arte\TEXTURAS MAPA\BASE - Ordo Realitas\`.
 - Desde 07/10 (noite), TUDO o que falta para o Códex está num arquivo só, o `PEDIDO-UNICO-CODEX.txt` (o que já chegou, a fila

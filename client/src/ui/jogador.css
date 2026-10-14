@@ -2880,3 +2880,19 @@ html.modo-ficha .fj:not(.rq) .fj-chips {
   overflow: hidden;
   border-radius: calc(var(--raio) * 0.55);
 }
+
+/* o ícone da modificação ao lado do nome, na janela do item (icones/mod-<id>.png) */
+.jg-mi-mod-ic {
+  display: inline-grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+.jg-mi-mod-ic img,
+.jg-mi-mod-ic .ic {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

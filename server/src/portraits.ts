@@ -234,6 +234,15 @@ export function findBoneco(sheet: string, dir = ART_DIR): BonecoTabuleiro | unde
 }
 
 /** Atualiza os retratos, as poses, os passos e o boneco do tabuleiro de todos os personagens. Devolve true se algo mudou. */
+/**
+ * A folha de um personagem entregue numa pasta de arte/personagens/<nome>/ (a das 8 direções ou a folha antiga),
+ * como URL servida; undefined = a pasta não existe ou ainda não tem folha.
+ */
+export function folhaDaPasta(nome: string, dir = ART_DIR): string | undefined {
+  const acha = finder(`/arte/personagens/${nome}/`, dir);
+  return acha?.('oito-direcoes') ?? acha?.('folha');
+}
+
 export function refreshPortraits(list: CharacterDef[], dir = ART_DIR): boolean {
   let changed = false;
   for (const def of list) {

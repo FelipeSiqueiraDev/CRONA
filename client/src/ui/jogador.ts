@@ -1111,7 +1111,8 @@ function selosDoItem(it: regras.ItemFicha): HTMLElement | null {
   return h(
     'span',
     { class: 'jg-selos', title: mods.map((m) => cat.modificacao(m)?.nome ?? m).join(', ') },
-    ...mods.slice(0, 3).map(() => h('i', { class: 'jg-selo-mod' }, pintado('combate-habilidade', 'engrenagem'))),
+    // o ícone de cada modificação (icones/mod-<id>.png, pedido ao Códex em 14/10); até chegar, a engrenagem
+    ...mods.slice(0, 3).map((m) => h('i', { class: 'jg-selo-mod', title: cat.modificacao(m)?.nome ?? m }, pintado([`mod-${m}`, 'combate-habilidade'], 'engrenagem'))),
     mods.length > 3 ? h('i', { class: 'jg-selo-mais' }, `+${mods.length - 3}`) : null,
   );
 }
@@ -1119,9 +1120,9 @@ function selosDoItem(it: regras.ItemFicha): HTMLElement | null {
 /** As modificações e maldições no modal do item: o nome e o que fazem. */
 function melhoriasDoItem(it: regras.ItemFicha): HTMLElement[] {
   const linhas = [
-    ...(it.modificacoes ?? []).map((m) => ({ nome: cat.modificacao(m)?.nome ?? m, cls: 'mod', texto: (cat.modificacao(m) as { resumo?: string } | undefined)?.resumo ?? '' })),
-    ...(it.maldicoes ?? []).map((m) => ({ nome: cat.maldicao(m)?.nome ?? m, cls: `mal ${cat.maldicao(m)?.elemento ?? ''}`, texto: cat.maldicao(m) ? `Maldição de ${NOME_ELEMENTO[cat.maldicao(m)!.elemento]}` : '' })),
+    ...(it.modificacoes ?? []).map((m) => ({ nome: cat.modificacao(m)?.nome ?? m, cls: 'mod', texto: (cat.modificacao(m) as { resumo?: string } | undefined)?.resumo ?? '', icone: `mod-${m}` })),
+    ...(it.maldicoes ?? []).map((m) => ({ nome: cat.maldicao(m)?.nome ?? m, cls: `mal ${cat.maldicao(m)?.elemento ?? ''}`, texto: cat.maldicao(m) ? `Maldição de ${NOME_ELEMENTO[cat.maldicao(m)!.elemento]}` : '', icone: '' })),
   ];
   if (!linhas.length) return [];
-  return [h('div', { class: 'jg-mi-mods' }, ...linhas.map((l) => h('p', { class: `jg-mi-mod ${l.cls}` }, h('b', null, l.nome), l.texto ? ` · ${l.texto}` : '')))];
+  return [h('div', { class: 'jg-mi-mods' }, ...linhas.map((l) => h('p', { class: `jg-mi-mod ${l.cls}` }, l.icone ? h('span', { class: 'jg-mi-mod-ic' }, pintado([l.icone, 'combate-habilidade'], 'engrenagem')) : null, h('b', null, l.nome), l.texto ? ` · ${l.texto}` : '')))];
 }
