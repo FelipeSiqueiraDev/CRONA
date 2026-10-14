@@ -1,3 +1,4 @@
+import { CODEX_NO_TABULEIRO } from '../render/arteCodex';
 import {
   DEFAULT_PARTICLE_LEVEL,
   footprint,
@@ -2052,7 +2053,7 @@ export class RoomView {
       if (esconde && this.itemOculto(real)) continue;
       // o que alguém largou no chão: a arte pintada do item (a mesma da mochila), deitada na casa
       if (real.defId === PILHA_CHAO && real.loot?.length) {
-        const imgs = real.loot.slice(0, 3).map((l) => imagemDoMapa(`/arte/itens/pintados/${l.item?.id ?? regrasShared.slug(l.name)}.png`)).filter((x): x is HTMLImageElement => !!x);
+        const imgs = CODEX_NO_TABULEIRO ? real.loot.slice(0, 3).map((l) => imagemDoMapa(`/arte/itens/pintados/${l.item?.id ?? regrasShared.slug(l.name)}.png`)).filter((x): x is HTMLImageElement => !!x) : [];
         if (imgs.length) {
           const z = real.z;
           const box: WBox = { x0: real.x, x1: real.x + 1, y0: real.y, y1: real.y + 1, z0: z, z1: z + 0.2 };

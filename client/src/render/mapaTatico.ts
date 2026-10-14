@@ -1,3 +1,4 @@
+import { CODEX_NO_TABULEIRO } from './arteCodex';
 import { combate as cb, footprint, getFurni, M_POR_CASA, PILHA_CHAO, regras, terrenoEm, Z_PER_M, type FloorItem, type FloorStyle, type FurniDef, type RoomMap } from '@crona/shared';
 import { imagemDoMapa } from './mapaImagem';
 import { desenharItemNoChao } from './itemNoChao';
@@ -399,7 +400,7 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
  * ali. Enquanto a imagem não chega, `semArte` desenha o volume de sempre.
  */
 function desenharItemLargado(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorItem, semArte: () => void) {
-  const imgs = (it.loot ?? [])
+  const imgs = (CODEX_NO_TABULEIRO ? it.loot ?? [] : [])
     .slice(0, 3)
     .map((l) => imagemDoMapa(`/arte/itens/pintados/${l.item?.id ?? regras.slug(l.name)}.png`))
     .filter((x): x is HTMLImageElement => !!x);
@@ -624,6 +625,7 @@ function silhueta(img: HTMLCanvasElement): HTMLCanvasElement {
 const artesTaticas = new Map<string, HTMLImageElement | null>();
 /** Uma imagem de client/public/arte/tatico/ (a parede do piso, o aro das fichas); null enquanto carrega ou se não existe. */
 function arteTatica(nome: string): HTMLImageElement | null {
+  if (!CODEX_NO_TABULEIRO) return null;
   const img = artesTaticas.get(nome);
   if (img === undefined) {
     const el = new Image();

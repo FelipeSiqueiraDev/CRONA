@@ -1,3 +1,4 @@
+import { CODEX_NO_TABULEIRO } from './arteCodex';
 import { casaVista, type NevoaCena, type RoomMap } from '@crona/shared';
 import { existeArte } from '../ui/icons';
 import { iso } from './iso';
@@ -40,7 +41,7 @@ function fumoSprite() {
 /** A textura pintada da névoa (arte/texturas/nevoa-mesa.png, que repete); sem ela, as nuvens desenhadas. */
 let textura: HTMLImageElement | null = null;
 void existeArte('/arte/texturas/nevoa-mesa.png').then((ok) => {
-  if (!ok) return;
+  if (!ok || !CODEX_NO_TABULEIRO) return;
   const img = new Image();
   img.onload = () => (textura = img);
   img.src = '/arte/texturas/nevoa-mesa.png';

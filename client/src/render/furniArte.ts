@@ -1,3 +1,4 @@
+import { moveisDoCodex } from './arteCodex';
 import { M_POR_CASA, Z_PER_M, type FurniDef } from '@crona/shared';
 import { rgba } from './color';
 import { N, naParede, V, type FVisual } from './furniKit';
@@ -194,9 +195,10 @@ function carregarLista(tentativa = 0) {
       return r.json() as Promise<Record<string, MovelArte>>;
     })
     .then((j) => {
-      lista = j;
+      // a arte pintada do Códex não entra no tabuleiro (arteCodex.ts): só o que tem pixel art por código
+      lista = Object.fromEntries(Object.entries(j).filter(([k, v]) => moveisDoCodex(k, v)));
       modelos.clear();
-      for (const chave of Object.keys(j).sort()) {
+      for (const chave of Object.keys(lista).sort()) {
         const i = chave.indexOf('~');
         if (i > 0) modelos.set(chave.slice(0, i), [...(modelos.get(chave.slice(0, i)) ?? []), chave]);
       }

@@ -141,8 +141,8 @@ const view = new RoomView(canvas, {
     if (!app.isGm) return;
     const id = app.view.myId;
     if (app.view.grupo.size > 1) return andarEmGrupo(x, y);
+    // sem peça escolhida o clique no chão não faz nada, e sem aviso (o Felipe, 14/10: o toast repetia a cada clique)
     if (id) net.send({ t: 'tokenWalk', tokenId: id, x, y });
-    else toast('Clique num personagem para comandá-lo.');
   },
   grupoMudou: (n) => {
     if (n > 1) toast(`${n} peças andando juntas. Clique no chão para mandar o grupo; Shift + clique numa peça junta ou tira; clique sem Shift desfaz.`);
