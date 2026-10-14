@@ -323,33 +323,36 @@
     }
   },
   "chair_bar": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "chair_bar/giro-4.png",
-        "ax": 55.2,
-        "ay": 144.2
+        "ax": 33.0,
+        "ay": 79.0
       },
       "2": {
         "arquivo": "chair_bar/giro-2.png",
-        "ax": 43.9,
-        "ay": 144.3
+        "ax": 33.0,
+        "ay": 79.0
       },
       "0": {
         "arquivo": "chair_bar/giro-0.png",
-        "ax": 48.9,
-        "ay": 124.4
+        "ax": 33.0,
+        "ay": 68.0
       },
       "6": {
         "arquivo": "chair_bar/giro-6.png",
-        "ax": 48.2,
-        "ay": 124.5
+        "ax": 33.0,
+        "ay": 68.0
       }
     },
     "real": [
-      0.56,
-      0.56,
-      0.82
+      0.528,
+      0.553,
+      0.983
     ],
     "cima": {
       "arquivo": "chair_bar/cima.png",
@@ -362,33 +365,36 @@
     }
   },
   "pool_table": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "pool_table/giro-4.png",
-        "ax": 121.5,
-        "ay": 258.1
-      },
-      "0": {
-        "arquivo": "pool_table/giro-0.png",
-        "ax": 117.0,
-        "ay": 260.6
+        "ax": 67.0,
+        "ay": 137.0
       },
       "2": {
         "arquivo": "pool_table/giro-2.png",
-        "ax": 246.0,
-        "ay": 258.9
+        "ax": 132.0,
+        "ay": 137.0
+      },
+      "0": {
+        "arquivo": "pool_table/giro-0.png",
+        "ax": 67.0,
+        "ay": 137.0
       },
       "6": {
         "arquivo": "pool_table/giro-6.png",
-        "ax": 247.0,
-        "ay": 259.4
+        "ax": 132.0,
+        "ay": 137.0
       }
     },
     "real": [
-      1.42,
-      2.54,
-      0.82
+      1.39,
+      2.84,
+      0.895
     ],
     "cima": {
       "arquivo": "pool_table/cima.png",
@@ -482,33 +488,36 @@
     }
   },
   "table_bar": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "table_bar/giro-4.png",
-        "ax": 63.0,
-        "ay": 138.6
-      },
-      "6": {
-        "arquivo": "table_bar/giro-6.png",
-        "ax": 62.0,
-        "ay": 139.0
-      },
-      "0": {
-        "arquivo": "table_bar/giro-0.png",
-        "ax": 63.5,
-        "ay": 138.2
+        "ax": 33.0,
+        "ay": 74.0
       },
       "2": {
         "arquivo": "table_bar/giro-2.png",
-        "ax": 63.0,
-        "ay": 138.7
+        "ax": 33.0,
+        "ay": 74.0
+      },
+      "0": {
+        "arquivo": "table_bar/giro-0.png",
+        "ax": 33.0,
+        "ay": 74.0
+      },
+      "6": {
+        "arquivo": "table_bar/giro-6.png",
+        "ax": 33.0,
+        "ay": 74.0
       }
     },
     "real": [
-      0.7,
-      0.7,
-      0.75
+      0.72,
+      0.72,
+      0.9
     ],
     "cima": {
       "arquivo": "table_bar/cima.png",
@@ -521,33 +530,36 @@
     }
   },
   "bar_counter": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "bar_counter/giro-4.png",
-        "ax": 123.0,
-        "ay": 209.0
+        "ax": 73.0,
+        "ay": 105.0
       },
       "2": {
         "arquivo": "bar_counter/giro-2.png",
-        "ax": 59.0,
-        "ay": 209.0
+        "ax": 41.0,
+        "ay": 105.0
       },
       "0": {
         "arquivo": "bar_counter/giro-0.png",
-        "ax": 123.0,
-        "ay": 209.0
+        "ax": 73.0,
+        "ay": 105.0
       },
       "6": {
         "arquivo": "bar_counter/giro-6.png",
-        "ax": 59.0,
-        "ay": 209.0
+        "ax": 42.0,
+        "ay": 105.0
       }
     },
     "real": [
       1.5,
-      0.6,
-      1.1
+      0.72,
+      1.102
     ],
     "cima": {
       "arquivo": "bar_counter/cima.png",
@@ -560,33 +572,36 @@
     }
   },
   "stool_bar": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "stool_bar/giro-4.png",
-        "ax": 31.4,
-        "ay": 126.9
-      },
-      "6": {
-        "arquivo": "stool_bar/giro-6.png",
-        "ax": 35.1,
-        "ay": 127.3
-      },
-      "0": {
-        "arquivo": "stool_bar/giro-0.png",
-        "ax": 29.5,
-        "ay": 128.0
+        "ax": 23.0,
+        "ay": 68.0
       },
       "2": {
         "arquivo": "stool_bar/giro-2.png",
-        "ax": 38.5,
-        "ay": 126.8
+        "ax": 23.0,
+        "ay": 68.0
+      },
+      "0": {
+        "arquivo": "stool_bar/giro-0.png",
+        "ax": 23.0,
+        "ay": 68.0
+      },
+      "6": {
+        "arquivo": "stool_bar/giro-6.png",
+        "ax": 23.0,
+        "ay": 68.0
       }
     },
     "real": [
-      0.42,
-      0.42,
-      0.76
+      0.418,
+      0.418,
+      0.9
     ],
     "cima": {
       "arquivo": "stool_bar/cima.png",
@@ -599,35 +614,37 @@
     }
   },
   "bar_shelf": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "bar_shelf/giro-4.png",
-        "ax": 100.0,
-        "ay": 307.0
-      },
-      "6": {
-        "arquivo": "bar_shelf/giro-6.png",
-        "ax": 36.0,
-        "ay": 292.0
-      },
-      "0": {
-        "arquivo": "bar_shelf/giro-0.png",
-        "ax": 129.0,
-        "ay": 292.0
+        "ax": 63.0,
+        "ay": 152.0
       },
       "2": {
         "arquivo": "bar_shelf/giro-2.png",
-        "ax": 65.0,
-        "ay": 307.0
+        "ax": 40.0,
+        "ay": 152.0
+      },
+      "0": {
+        "arquivo": "bar_shelf/giro-0.png",
+        "ax": 71.0,
+        "ay": 147.0
+      },
+      "6": {
+        "arquivo": "bar_shelf/giro-6.png",
+        "ax": 30.0,
+        "ay": 147.0
       }
     },
     "real": [
-      1.5,
-      0.4,
-      2.0
+      1.51,
+      0.49,
+      2.002
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "bar_shelf/cima.png",
       "caixa": [
@@ -636,38 +653,41 @@
         256,
         101
       ]
-    }
+    },
+    "encosta": true
   },
   "beer_fridge": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "beer_fridge/giro-4.png",
-        "ax": 51.0,
-        "ay": 273.0
-      },
-      "6": {
-        "arquivo": "beer_fridge/giro-6.png",
-        "ax": 51.0,
-        "ay": 267.0
-      },
-      "0": {
-        "arquivo": "beer_fridge/giro-0.png",
-        "ax": 62.0,
-        "ay": 267.0
+        "ax": 36.0,
+        "ay": 134.0
       },
       "2": {
         "arquivo": "beer_fridge/giro-2.png",
-        "ax": 62.0,
-        "ay": 273.0
+        "ax": 37.0,
+        "ay": 134.0
+      },
+      "0": {
+        "arquivo": "beer_fridge/giro-0.png",
+        "ax": 37.0,
+        "ay": 134.0
+      },
+      "6": {
+        "arquivo": "beer_fridge/giro-6.png",
+        "ax": 37.0,
+        "ay": 134.0
       }
     },
     "real": [
-      0.66,
-      0.62,
-      2.0
+      0.642,
+      0.655,
+      2.002
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "beer_fridge/cima.png",
       "caixa": [
@@ -676,62 +696,67 @@
         126,
         122
       ]
-    }
+    },
+    "encosta": true
   },
   "arcade": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "arcade/giro-4.png",
-        "ax": 60.9,
-        "ay": 257.6
-      },
-      "6": {
-        "arquivo": "arcade/giro-6.png",
-        "ax": 61.6,
-        "ay": 261.4
-      },
-      "0": {
-        "arquivo": "arcade/giro-0.png",
-        "ax": 63.4,
-        "ay": 265.4
+        "ax": 38.0,
+        "ay": 123.0
       },
       "2": {
         "arquivo": "arcade/giro-2.png",
-        "ax": 63.2,
-        "ay": 257.0
-      }
-    },
-    "tela": {
-      "cores": [
-        "#5ad8ff",
-        "#ffd84a",
-        "#c06aff",
-        "#5aff8a",
-        "#ff5a5a",
-        "#5a7aff",
-        "#ffa04a"
-      ],
-      "ms": 1100,
-      "giros": {
-        "4": {
-          "x": 49.6,
-          "y": 97.3,
-          "r": 52.1
-        },
-        "2": {
-          "x": 72.5,
-          "y": 97.3,
-          "r": 52.5
-        }
+        "ax": 36.0,
+        "ay": 123.0
+      },
+      "0": {
+        "arquivo": "arcade/giro-0.png",
+        "ax": 36.0,
+        "ay": 120.0
+      },
+      "6": {
+        "arquivo": "arcade/giro-6.png",
+        "ax": 37.0,
+        "ay": 120.0
       }
     },
     "real": [
-      0.74,
-      0.74,
-      1.85
+      0.62,
+      0.62,
+      1.8
     ],
-    "encosta": true,
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "arcade/giro-4-1.png",
+            "ax": 38.0,
+            "ay": 123.0
+          },
+          "2": {
+            "arquivo": "arcade/giro-2-1.png",
+            "ax": 36.0,
+            "ay": 123.0
+          },
+          "0": {
+            "arquivo": "arcade/giro-0-1.png",
+            "ax": 36.0,
+            "ay": 120.0
+          },
+          "6": {
+            "arquivo": "arcade/giro-6-1.png",
+            "ax": 37.0,
+            "ay": 120.0
+          }
+        }
+      }
+    },
     "cima": {
       "arquivo": "arcade/cima.png",
       "caixa": [
@@ -740,38 +765,41 @@
         122,
         126
       ]
-    }
+    },
+    "encosta": true
   },
   "fridge_drinks": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "fridge_drinks/giro-4.png",
-        "ax": 49.0,
-        "ay": 272.0
-      },
-      "6": {
-        "arquivo": "fridge_drinks/giro-6.png",
-        "ax": 49.0,
-        "ay": 266.0
-      },
-      "0": {
-        "arquivo": "fridge_drinks/giro-0.png",
-        "ax": 60.0,
-        "ay": 266.0
+        "ax": 36.0,
+        "ay": 134.0
       },
       "2": {
         "arquivo": "fridge_drinks/giro-2.png",
-        "ax": 60.0,
-        "ay": 272.0
+        "ax": 37.0,
+        "ay": 134.0
+      },
+      "0": {
+        "arquivo": "fridge_drinks/giro-0.png",
+        "ax": 37.0,
+        "ay": 134.0
+      },
+      "6": {
+        "arquivo": "fridge_drinks/giro-6.png",
+        "ax": 37.0,
+        "ay": 134.0
       }
     },
     "real": [
-      0.62,
-      0.62,
-      2.0
+      0.63,
+      0.655,
+      2.002
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "fridge_drinks/cima.png",
       "caixa": [
@@ -780,38 +808,41 @@
         122,
         122
       ]
-    }
+    },
+    "encosta": true
   },
   "minibar": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "minibar/giro-4.png",
-        "ax": 39.0,
-        "ay": 153.0
-      },
-      "6": {
-        "arquivo": "minibar/giro-6.png",
-        "ax": 39.0,
-        "ay": 144.0
-      },
-      "0": {
-        "arquivo": "minibar/giro-0.png",
-        "ax": 56.0,
-        "ay": 144.0
+        "ax": 33.0,
+        "ay": 76.0
       },
       "2": {
         "arquivo": "minibar/giro-2.png",
-        "ax": 56.0,
-        "ay": 153.0
+        "ax": 35.0,
+        "ay": 76.0
+      },
+      "0": {
+        "arquivo": "minibar/giro-0.png",
+        "ax": 35.0,
+        "ay": 75.0
+      },
+      "6": {
+        "arquivo": "minibar/giro-6.png",
+        "ax": 33.0,
+        "ay": 75.0
       }
     },
     "real": [
-      0.52,
-      0.55,
-      0.88
+      0.6,
+      0.575,
+      0.9
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "minibar/cima.png",
       "caixa": [
@@ -820,36 +851,40 @@
         113,
         116
       ]
-    }
+    },
+    "encosta": true
   },
   "beer_crate": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "beer_crate/giro-4.png",
-        "ax": 33.2,
-        "ay": 83.6
-      },
-      "0": {
-        "arquivo": "beer_crate/giro-0.png",
-        "ax": 33.5,
-        "ay": 79.4
+        "ax": 29.0,
+        "ay": 42.0
       },
       "2": {
         "arquivo": "beer_crate/giro-2.png",
-        "ax": 33.3,
-        "ay": 78.8
+        "ax": 30.0,
+        "ay": 42.0
+      },
+      "0": {
+        "arquivo": "beer_crate/giro-0.png",
+        "ax": 29.0,
+        "ay": 42.0
       },
       "6": {
         "arquivo": "beer_crate/giro-6.png",
-        "ax": 32.4,
-        "ay": 80.0
+        "ax": 30.0,
+        "ay": 42.0
       }
     },
     "real": [
-      0.4,
-      0.33,
-      0.33
+      0.51,
+      0.39,
+      0.349
     ],
     "cima": {
       "arquivo": "beer_crate/cima.png",
@@ -862,33 +897,36 @@
     }
   },
   "chair_stack": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "chair_stack/giro-4.png",
-        "ax": 60.5,
-        "ay": 180.9
+        "ax": 34.0,
+        "ay": 98.0
       },
       "2": {
         "arquivo": "chair_stack/giro-2.png",
-        "ax": 59.0,
-        "ay": 181.6
-      },
-      "6": {
-        "arquivo": "chair_stack/giro-6.png",
-        "ax": 59.5,
-        "ay": 163.2
+        "ax": 34.0,
+        "ay": 98.0
       },
       "0": {
         "arquivo": "chair_stack/giro-0.png",
-        "ax": 59.5,
-        "ay": 160.2
+        "ax": 34.0,
+        "ay": 87.0
+      },
+      "6": {
+        "arquivo": "chair_stack/giro-6.png",
+        "ax": 34.0,
+        "ay": 87.0
       }
     },
     "real": [
-      0.56,
-      0.56,
-      1.25
+      0.528,
+      0.601,
+      1.343
     ],
     "cima": {
       "arquivo": "chair_stack/cima.png",
@@ -944,35 +982,37 @@
     "encosta": true
   },
   "bar_cabinet": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "bar_cabinet/giro-4.png",
-        "ax": 33.9,
-        "ay": 161.2
-      },
-      "6": {
-        "arquivo": "bar_cabinet/giro-6.png",
-        "ax": 33.4,
-        "ay": 147.6
-      },
-      "0": {
-        "arquivo": "bar_cabinet/giro-0.png",
-        "ax": 59.1,
-        "ay": 147.6
+        "ax": 33.0,
+        "ay": 81.0
       },
       "2": {
         "arquivo": "bar_cabinet/giro-2.png",
-        "ax": 59.1,
-        "ay": 160.2
+        "ax": 36.0,
+        "ay": 81.0
+      },
+      "0": {
+        "arquivo": "bar_cabinet/giro-0.png",
+        "ax": 36.0,
+        "ay": 80.0
+      },
+      "6": {
+        "arquivo": "bar_cabinet/giro-6.png",
+        "ax": 33.0,
+        "ay": 80.0
       }
     },
     "real": [
-      0.62,
-      0.45,
-      0.95
+      0.66,
+      0.556,
+      0.998
     ],
-    "encosta": true,
     "cima": {
       "arquivo": "bar_cabinet/cima.png",
       "caixa": [
@@ -981,36 +1021,40 @@
         122,
         106
       ]
-    }
+    },
+    "encosta": true
   },
   "armchair_red": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "armchair_red/giro-4.png",
-        "ax": 58.5,
-        "ay": 141.0
+        "ax": 40.0,
+        "ay": 78.0
       },
       "2": {
         "arquivo": "armchair_red/giro-2.png",
-        "ax": 62.5,
-        "ay": 139.0
+        "ax": 40.0,
+        "ay": 78.0
       },
       "0": {
         "arquivo": "armchair_red/giro-0.png",
-        "ax": 60.0,
-        "ay": 117.0
+        "ax": 40.0,
+        "ay": 68.0
       },
       "6": {
         "arquivo": "armchair_red/giro-6.png",
-        "ax": 60.5,
-        "ay": 118.0
+        "ax": 40.0,
+        "ay": 68.0
       }
     },
     "real": [
-      0.66,
-      0.66,
-      0.78
+      0.71,
+      0.69,
+      0.98
     ],
     "cima": {
       "arquivo": "armchair_red/cima.png",
@@ -1023,33 +1067,36 @@
     }
   },
   "sofa_booth": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "sofa_booth/giro-4.png",
-        "ax": 129.5,
-        "ay": 183.3
-      },
-      "6": {
-        "arquivo": "sofa_booth/giro-6.png",
-        "ax": 68.0,
-        "ay": 176.9
-      },
-      "0": {
-        "arquivo": "sofa_booth/giro-0.png",
-        "ax": 132.0,
-        "ay": 175.9
+        "ax": 72.0,
+        "ay": 100.0
       },
       "2": {
         "arquivo": "sofa_booth/giro-2.png",
+        "ax": 38.0,
+        "ay": 100.0
+      },
+      "0": {
+        "arquivo": "sofa_booth/giro-0.png",
         "ax": 71.0,
-        "ay": 180.5
+        "ay": 92.0
+      },
+      "6": {
+        "arquivo": "sofa_booth/giro-6.png",
+        "ax": 40.0,
+        "ay": 92.0
       }
     },
     "real": [
-      1.5,
-      0.72,
-      0.85
+      1.456,
+      0.68,
+      1.03
     ],
     "cima": {
       "arquivo": "sofa_booth/cima.png",
@@ -1062,27 +1109,30 @@
     }
   },
   "keg": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "keg/giro-4.png",
-        "ax": 30.0,
-        "ay": 109.3
-      },
-      "6": {
-        "arquivo": "keg/giro-6.png",
-        "ax": 30.3,
-        "ay": 109.3
-      },
-      "0": {
-        "arquivo": "keg/giro-0.png",
-        "ax": 30.4,
-        "ay": 109.2
+        "ax": 28.0,
+        "ay": 50.0
       },
       "2": {
         "arquivo": "keg/giro-2.png",
-        "ax": 30.2,
-        "ay": 109.3
+        "ax": 28.0,
+        "ay": 50.0
+      },
+      "0": {
+        "arquivo": "keg/giro-0.png",
+        "ax": 28.0,
+        "ay": 50.0
+      },
+      "6": {
+        "arquivo": "keg/giro-6.png",
+        "ax": 28.0,
+        "ay": 50.0
       }
     },
     "real": [
@@ -1101,63 +1151,69 @@
     }
   },
   "beer_glass": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "beer_glass/giro-4.png",
-        "ax": 8.9,
-        "ay": 48.3
-      },
-      "6": {
-        "arquivo": "beer_glass/giro-6.png",
-        "ax": 6.4,
-        "ay": 48.5
-      },
-      "0": {
-        "arquivo": "beer_glass/giro-0.png",
-        "ax": 8.9,
-        "ay": 48.6
+        "ax": 13.0,
+        "ay": 25.0
       },
       "2": {
         "arquivo": "beer_glass/giro-2.png",
-        "ax": 8.9,
-        "ay": 50.7
+        "ax": 13.0,
+        "ay": 25.0
+      },
+      "0": {
+        "arquivo": "beer_glass/giro-0.png",
+        "ax": 13.0,
+        "ay": 25.0
+      },
+      "6": {
+        "arquivo": "beer_glass/giro-6.png",
+        "ax": 13.0,
+        "ay": 25.0
       }
     },
     "real": [
-      0.08,
-      0.08,
-      0.14
+      0.09,
+      0.09,
+      0.147
     ]
   },
   "ashtray": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "ashtray/giro-4.png",
-        "ax": 8.9,
-        "ay": 39.3
-      },
-      "6": {
-        "arquivo": "ashtray/giro-6.png",
-        "ax": 7.1,
-        "ay": 42.2
-      },
-      "0": {
-        "arquivo": "ashtray/giro-0.png",
-        "ax": 7.2,
-        "ay": 39.3
+        "ax": 16.0,
+        "ay": 21.0
       },
       "2": {
         "arquivo": "ashtray/giro-2.png",
-        "ax": 9.5,
-        "ay": 40.8
+        "ax": 16.0,
+        "ay": 21.0
+      },
+      "0": {
+        "arquivo": "ashtray/giro-0.png",
+        "ax": 16.0,
+        "ay": 21.0
+      },
+      "6": {
+        "arquivo": "ashtray/giro-6.png",
+        "ax": 16.0,
+        "ay": 21.0
       }
     },
     "real": [
-      0.12,
-      0.12,
-      0.04
+      0.16,
+      0.148,
+      0.061
     ]
   },
   "ceiling_lamp": {
@@ -2229,33 +2285,36 @@
     }
   },
   "table_chess": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "table_chess/giro-4.png",
-        "ax": 62.5,
-        "ay": 127.7
-      },
-      "6": {
-        "arquivo": "table_chess/giro-6.png",
-        "ax": 67.5,
-        "ay": 125.3
-      },
-      "0": {
-        "arquivo": "table_chess/giro-0.png",
-        "ax": 64.0,
-        "ay": 126.0
+        "ax": 41.0,
+        "ay": 76.0
       },
       "2": {
         "arquivo": "table_chess/giro-2.png",
-        "ax": 62.5,
-        "ay": 127.8
+        "ax": 41.0,
+        "ay": 76.0
+      },
+      "0": {
+        "arquivo": "table_chess/giro-0.png",
+        "ax": 41.0,
+        "ay": 76.0
+      },
+      "6": {
+        "arquivo": "table_chess/giro-6.png",
+        "ax": 41.0,
+        "ay": 76.0
       }
     },
     "real": [
-      0.6,
-      0.6,
-      0.72
+      0.72,
+      0.72,
+      0.957
     ],
     "cima": {
       "arquivo": "table_chess/cima.png",
@@ -2430,40 +2489,63 @@
     }
   },
   "floor_lamp": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "floor_lamp/giro-4.png",
-        "ax": 34.5,
-        "ay": 210.3
-      },
-      "6": {
-        "arquivo": "floor_lamp/giro-6.png",
-        "ax": 34.0,
-        "ay": 210.3
-      },
-      "0": {
-        "arquivo": "floor_lamp/giro-0.png",
-        "ax": 34.5,
-        "ay": 210.3
+        "ax": 25.0,
+        "ay": 120.0
       },
       "2": {
         "arquivo": "floor_lamp/giro-2.png",
-        "ax": 34.0,
-        "ay": 210.3
+        "ax": 25.0,
+        "ay": 120.0
+      },
+      "0": {
+        "arquivo": "floor_lamp/giro-0.png",
+        "ax": 25.0,
+        "ay": 120.0
+      },
+      "6": {
+        "arquivo": "floor_lamp/giro-6.png",
+        "ax": 25.0,
+        "ay": 120.0
       }
     },
-    "brilho": {
-      "x": 34.0,
-      "y": 22.6,
-      "r": 47.6,
-      "cor": "#ffd98a"
-    },
     "real": [
-      0.45,
-      0.45,
-      1.8
+      0.5,
+      0.5,
+      1.899
     ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "floor_lamp/giro-4-1.png",
+            "ax": 25.0,
+            "ay": 120.0
+          },
+          "2": {
+            "arquivo": "floor_lamp/giro-2-1.png",
+            "ax": 25.0,
+            "ay": 120.0
+          },
+          "0": {
+            "arquivo": "floor_lamp/giro-0-1.png",
+            "ax": 25.0,
+            "ay": 120.0
+          },
+          "6": {
+            "arquivo": "floor_lamp/giro-6-1.png",
+            "ax": 25.0,
+            "ay": 120.0
+          }
+        }
+      }
+    },
     "cima": {
       "arquivo": "floor_lamp/cima.png",
       "caixa": [
@@ -2550,9 +2632,36 @@
   },
   "compass_floor": {
     "escala": 1,
-    "chao": {
-      "arquivo": "compass_floor/chao.png"
-    }
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "compass_floor/giro-4.png",
+        "ax": 64.0,
+        "ay": 81.0
+      },
+      "2": {
+        "arquivo": "compass_floor/giro-2.png",
+        "ax": 64.0,
+        "ay": 81.0
+      },
+      "0": {
+        "arquivo": "compass_floor/giro-0.png",
+        "ax": 64.0,
+        "ay": 81.0
+      },
+      "6": {
+        "arquivo": "compass_floor/giro-6.png",
+        "ax": 64.0,
+        "ay": 81.0
+      }
+    },
+    "real": [
+      2.12,
+      2.12,
+      0.017
+    ]
   },
   "locker": {
     "escala": 0.5,
@@ -3095,32 +3204,35 @@
     }
   },
   "counter_wood": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "counter_wood/giro-4.png",
-        "ax": 121.5,
-        "ay": 135.2
-      },
-      "6": {
-        "arquivo": "counter_wood/giro-6.png",
-        "ax": 57.5,
-        "ay": 131.2
-      },
-      "0": {
-        "arquivo": "counter_wood/giro-0.png",
-        "ax": 121.5,
-        "ay": 136.2
+        "ax": 73.0,
+        "ay": 94.0
       },
       "2": {
         "arquivo": "counter_wood/giro-2.png",
-        "ax": 57.5,
-        "ay": 135.2
+        "ax": 40.0,
+        "ay": 94.0
+      },
+      "0": {
+        "arquivo": "counter_wood/giro-0.png",
+        "ax": 73.0,
+        "ay": 94.0
+      },
+      "6": {
+        "arquivo": "counter_wood/giro-6.png",
+        "ax": 41.0,
+        "ay": 94.0
       }
     },
     "real": [
       1.5,
-      0.6,
+      0.68,
       0.9
     ],
     "cima": {
@@ -7187,33 +7299,36 @@
     }
   },
   "baia": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "baia/giro-4.png",
-        "ax": 37.0,
-        "ay": 180.4
-      },
-      "6": {
-        "arquivo": "baia/giro-6.png",
-        "ax": 37.0,
-        "ay": 174.4
-      },
-      "0": {
-        "arquivo": "baia/giro-0.png",
-        "ax": 37.0,
-        "ay": 174.4
+        "ax": 32.0,
+        "ay": 98.0
       },
       "2": {
         "arquivo": "baia/giro-2.png",
-        "ax": 37.0,
-        "ay": 179.4
+        "ax": 32.0,
+        "ay": 87.0
+      },
+      "0": {
+        "arquivo": "baia/giro-0.png",
+        "ax": 29.0,
+        "ay": 87.0
+      },
+      "6": {
+        "arquivo": "baia/giro-6.png",
+        "ax": 28.0,
+        "ay": 98.0
       }
     },
     "real": [
       0.75,
-      0.12,
-      1.4
+      0.15,
+      1.402
     ],
     "cima": {
       "arquivo": "baia/cima.png",
@@ -7226,33 +7341,36 @@
     }
   },
   "arvore": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "arvore/giro-4.png",
-        "ax": 216.0,
-        "ay": 631.9
-      },
-      "6": {
-        "arquivo": "arvore/giro-6.png",
-        "ax": 225.5,
-        "ay": 631.9
-      },
-      "0": {
-        "arquivo": "arvore/giro-0.png",
-        "ax": 220.5,
-        "ay": 631.9
+        "ax": 110.0,
+        "ay": 311.0
       },
       "2": {
         "arquivo": "arvore/giro-2.png",
-        "ax": 223.5,
-        "ay": 631.9
+        "ax": 84.0,
+        "ay": 319.0
+      },
+      "0": {
+        "arquivo": "arvore/giro-0.png",
+        "ax": 112.0,
+        "ay": 307.0
+      },
+      "6": {
+        "arquivo": "arvore/giro-6.png",
+        "ax": 105.0,
+        "ay": 309.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      5.86
+      3.317,
+      3.138,
+      5.377
     ],
     "cima": {
       "arquivo": "arvore/cima.png",
@@ -7265,33 +7383,36 @@
     }
   },
   "arvore~b": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "arvore~b/giro-4.png",
-        "ax": 218.5,
-        "ay": 631.9
-      },
-      "6": {
-        "arquivo": "arvore~b/giro-6.png",
-        "ax": 223.5,
-        "ay": 631.9
-      },
-      "0": {
-        "arquivo": "arvore~b/giro-0.png",
-        "ax": 222.5,
-        "ay": 631.9
+        "ax": 72.0,
+        "ay": 307.0
       },
       "2": {
         "arquivo": "arvore~b/giro-2.png",
-        "ax": 221.0,
-        "ay": 631.9
+        "ax": 61.0,
+        "ay": 304.0
+      },
+      "0": {
+        "arquivo": "arvore~b/giro-0.png",
+        "ax": 72.0,
+        "ay": 306.0
+      },
+      "6": {
+        "arquivo": "arvore~b/giro-6.png",
+        "ax": 69.0,
+        "ay": 304.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      5.86
+      2.278,
+      2.09,
+      5.33
     ],
     "cima": {
       "arquivo": "arvore~b/cima.png",
@@ -7304,33 +7425,36 @@
     }
   },
   "arvore~c": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "arvore~c/giro-4.png",
-        "ax": 190.5,
-        "ay": 521.4
-      },
-      "6": {
-        "arquivo": "arvore~c/giro-6.png",
-        "ax": 183.5,
-        "ay": 521.4
-      },
-      "0": {
-        "arquivo": "arvore~c/giro-0.png",
-        "ax": 185.5,
-        "ay": 521.4
+        "ax": 70.0,
+        "ay": 297.0
       },
       "2": {
         "arquivo": "arvore~c/giro-2.png",
-        "ax": 193.5,
-        "ay": 521.4
+        "ax": 66.0,
+        "ay": 299.0
+      },
+      "0": {
+        "arquivo": "arvore~c/giro-0.png",
+        "ax": 70.0,
+        "ay": 298.0
+      },
+      "6": {
+        "arquivo": "arvore~c/giro-6.png",
+        "ax": 75.0,
+        "ay": 297.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      4.81
+      2.124,
+      2.151,
+      5.377
     ],
     "cima": {
       "arquivo": "arvore~c/cima.png",
@@ -7343,33 +7467,36 @@
     }
   },
   "arbusto": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "arbusto/giro-4.png",
-        "ax": 50.0,
-        "ay": 118.9
-      },
-      "6": {
-        "arquivo": "arbusto/giro-6.png",
-        "ax": 45.5,
-        "ay": 118.9
-      },
-      "0": {
-        "arquivo": "arbusto/giro-0.png",
-        "ax": 49.0,
-        "ay": 118.9
+        "ax": 40.0,
+        "ay": 65.0
       },
       "2": {
         "arquivo": "arbusto/giro-2.png",
-        "ax": 43.5,
-        "ay": 118.9
+        "ax": 40.0,
+        "ay": 66.0
+      },
+      "0": {
+        "arquivo": "arbusto/giro-0.png",
+        "ax": 40.0,
+        "ay": 68.0
+      },
+      "6": {
+        "arquivo": "arbusto/giro-6.png",
+        "ax": 40.0,
+        "ay": 66.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      0.98
+      0.902,
+      0.876,
+      0.872
     ],
     "cima": {
       "arquivo": "arbusto/cima.png",
@@ -7382,33 +7509,36 @@
     }
   },
   "arbusto~b": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "arbusto~b/giro-4.png",
-        "ax": 46.0,
-        "ay": 107.9
-      },
-      "6": {
-        "arquivo": "arbusto~b/giro-6.png",
-        "ax": 50.0,
-        "ay": 107.9
-      },
-      "0": {
-        "arquivo": "arbusto~b/giro-0.png",
-        "ax": 46.5,
-        "ay": 107.9
+        "ax": 40.0,
+        "ay": 64.0
       },
       "2": {
         "arquivo": "arbusto~b/giro-2.png",
-        "ax": 45.0,
-        "ay": 107.9
+        "ax": 40.0,
+        "ay": 67.0
+      },
+      "0": {
+        "arquivo": "arbusto~b/giro-0.png",
+        "ax": 40.0,
+        "ay": 66.0
+      },
+      "6": {
+        "arquivo": "arbusto~b/giro-6.png",
+        "ax": 40.0,
+        "ay": 68.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      0.87
+      0.816,
+      0.858,
+      0.913
     ],
     "cima": {
       "arquivo": "arbusto~b/cima.png",
@@ -7421,33 +7551,36 @@
     }
   },
   "milharal": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "milharal/giro-4.png",
-        "ax": 64.0,
-        "ay": 190.0
-      },
-      "6": {
-        "arquivo": "milharal/giro-6.png",
-        "ax": 64.0,
-        "ay": 216.0
-      },
-      "0": {
-        "arquivo": "milharal/giro-0.png",
-        "ax": 64.0,
-        "ay": 205.0
+        "ax": 36.0,
+        "ay": 108.0
       },
       "2": {
         "arquivo": "milharal/giro-2.png",
-        "ax": 64.0,
-        "ay": 206.0
+        "ax": 36.0,
+        "ay": 105.0
+      },
+      "0": {
+        "arquivo": "milharal/giro-0.png",
+        "ax": 36.0,
+        "ay": 108.0
+      },
+      "6": {
+        "arquivo": "milharal/giro-6.png",
+        "ax": 36.0,
+        "ay": 108.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      1.9
+      1.079,
+      0.82,
+      1.734
     ],
     "cima": {
       "arquivo": "milharal/cima.png",
@@ -7460,33 +7593,36 @@
     }
   },
   "horta": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "horta/giro-4.png",
-        "ax": 64.0,
-        "ay": 73.0
-      },
-      "6": {
-        "arquivo": "horta/giro-6.png",
-        "ax": 64.0,
-        "ay": 69.0
-      },
-      "0": {
-        "arquivo": "horta/giro-0.png",
-        "ax": 64.0,
-        "ay": 76.0
+        "ax": 35.0,
+        "ay": 42.0
       },
       "2": {
         "arquivo": "horta/giro-2.png",
-        "ax": 64.0,
-        "ay": 77.0
+        "ax": 36.0,
+        "ay": 40.0
+      },
+      "0": {
+        "arquivo": "horta/giro-0.png",
+        "ax": 35.0,
+        "ay": 44.0
+      },
+      "6": {
+        "arquivo": "horta/giro-6.png",
+        "ax": 36.0,
+        "ay": 43.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      0.45
+      0.764,
+      0.47,
+      0.409
     ],
     "cima": {
       "arquivo": "horta/cima.png",
@@ -7499,33 +7635,36 @@
     }
   },
   "sacas": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "sacas/giro-4.png",
-        "ax": 64.0,
-        "ay": 101.0
-      },
-      "6": {
-        "arquivo": "sacas/giro-6.png",
-        "ax": 64.0,
-        "ay": 104.0
-      },
-      "0": {
-        "arquivo": "sacas/giro-0.png",
-        "ax": 64.0,
-        "ay": 102.0
+        "ax": 37.0,
+        "ay": 57.0
       },
       "2": {
         "arquivo": "sacas/giro-2.png",
-        "ax": 64.0,
-        "ay": 101.0
+        "ax": 38.0,
+        "ay": 64.0
+      },
+      "0": {
+        "arquivo": "sacas/giro-0.png",
+        "ax": 38.0,
+        "ay": 56.0
+      },
+      "6": {
+        "arquivo": "sacas/giro-6.png",
+        "ax": 37.0,
+        "ay": 49.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      0.7
+      0.65,
+      0.67,
+      0.718
     ],
     "cima": {
       "arquivo": "sacas/cima.png",
@@ -7538,33 +7677,36 @@
     }
   },
   "feno": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "feno/giro-4.png",
-        "ax": 64.0,
-        "ay": 117.0
-      },
-      "6": {
-        "arquivo": "feno/giro-6.png",
-        "ax": 64.0,
-        "ay": 117.0
-      },
-      "0": {
-        "arquivo": "feno/giro-0.png",
-        "ax": 64.0,
-        "ay": 117.0
+        "ax": 38.0,
+        "ay": 54.0
       },
       "2": {
         "arquivo": "feno/giro-2.png",
-        "ax": 64.0,
-        "ay": 116.0
+        "ax": 39.0,
+        "ay": 54.0
+      },
+      "0": {
+        "arquivo": "feno/giro-0.png",
+        "ax": 38.0,
+        "ay": 54.0
+      },
+      "6": {
+        "arquivo": "feno/giro-6.png",
+        "ax": 39.0,
+        "ay": 54.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      0.5
+      0.83,
+      0.83,
+      0.606
     ],
     "cima": {
       "arquivo": "feno/cima.png",
@@ -7577,33 +7719,36 @@
     }
   },
   "cerca": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "cerca/giro-4.png",
-        "ax": 37.0,
-        "ay": 145.4
-      },
-      "6": {
-        "arquivo": "cerca/giro-6.png",
-        "ax": 37.0,
-        "ay": 148.4
-      },
-      "0": {
-        "arquivo": "cerca/giro-0.png",
-        "ax": 37.0,
-        "ay": 148.4
+        "ax": 31.0,
+        "ay": 81.0
       },
       "2": {
         "arquivo": "cerca/giro-2.png",
-        "ax": 37.0,
-        "ay": 145.4
+        "ax": 31.0,
+        "ay": 68.0
+      },
+      "0": {
+        "arquivo": "cerca/giro-0.png",
+        "ax": 29.0,
+        "ay": 69.0
+      },
+      "6": {
+        "arquivo": "cerca/giro-6.png",
+        "ax": 28.0,
+        "ay": 81.0
       }
     },
     "real": [
       0.75,
       0.12,
-      1.1
+      1.102
     ],
     "cima": {
       "arquivo": "cerca/cima.png",
@@ -7616,32 +7761,35 @@
     }
   },
   "carroca": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "carroca/giro-4.png",
-        "ax": 128.0,
-        "ay": 267.0
-      },
-      "6": {
-        "arquivo": "carroca/giro-6.png",
-        "ax": 192.0,
-        "ay": 239.0
-      },
-      "0": {
-        "arquivo": "carroca/giro-0.png",
-        "ax": 128.0,
-        "ay": 239.0
+        "ax": 53.0,
+        "ay": 135.0
       },
       "2": {
         "arquivo": "carroca/giro-2.png",
-        "ax": 192.0,
-        "ay": 267.0
+        "ax": 91.0,
+        "ay": 135.0
+      },
+      "0": {
+        "arquivo": "carroca/giro-0.png",
+        "ax": 59.0,
+        "ay": 129.0
+      },
+      "6": {
+        "arquivo": "carroca/giro-6.png",
+        "ax": 85.0,
+        "ay": 129.0
       }
     },
     "real": [
-      1.5,
-      2.25,
+      1.34,
+      2.08,
       1.2
     ],
     "cima": {
@@ -7655,59 +7803,36 @@
     }
   },
   "casarao": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "casarao/giro-4.png",
-        "ax": 896.0,
-        "ay": 1359.0
-      },
-      "6": {
-        "arquivo": "casarao/giro-6.png",
-        "ax": 576.0,
-        "ay": 1273.0
-      },
-      "0": {
-        "arquivo": "casarao/giro-0.png",
-        "ax": 896.0,
-        "ay": 1313.0
+        "ax": 452.0,
+        "ay": 649.0
       },
       "2": {
         "arquivo": "casarao/giro-2.png",
-        "ax": 576.0,
-        "ay": 1336.0
-      }
-    },
-    "estados": {
-      "1": {
-        "giros": {
-          "4": {
-            "arquivo": "casarao/giro-4-1.png",
-            "ax": 898.0,
-            "ay": 1360.0
-          },
-          "6": {
-            "arquivo": "casarao/giro-6-1.png",
-            "ax": 576.0,
-            "ay": 1273.0
-          },
-          "0": {
-            "arquivo": "casarao/giro-0-1.png",
-            "ax": 896.0,
-            "ay": 1313.0
-          },
-          "2": {
-            "arquivo": "casarao/giro-2-1.png",
-            "ax": 577.5,
-            "ay": 1337.0
-          }
-        }
+        "ax": 288.0,
+        "ay": 657.0
+      },
+      "0": {
+        "arquivo": "casarao/giro-0.png",
+        "ax": 448.0,
+        "ay": 625.0
+      },
+      "6": {
+        "arquivo": "casarao/giro-6.png",
+        "ax": 289.0,
+        "ay": 625.0
       }
     },
     "real": [
-      10.5,
-      6.75,
-      6.5
+      11.275,
+      7.381,
+      7.049
     ],
     "cima": {
       "arquivo": "casarao/cima.png",
@@ -7720,59 +7845,36 @@
     }
   },
   "celeiro": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "celeiro/giro-4.png",
-        "ax": 768.0,
-        "ay": 1123.0
-      },
-      "6": {
-        "arquivo": "celeiro/giro-6.png",
-        "ax": 512.0,
-        "ay": 1101.0
-      },
-      "0": {
-        "arquivo": "celeiro/giro-0.png",
-        "ax": 768.0,
-        "ay": 1104.0
+        "ax": 386.0,
+        "ay": 565.0
       },
       "2": {
         "arquivo": "celeiro/giro-2.png",
-        "ax": 512.0,
-        "ay": 1122.0
-      }
-    },
-    "estados": {
-      "1": {
-        "giros": {
-          "4": {
-            "arquivo": "celeiro/giro-4-1.png",
-            "ax": 770.3,
-            "ay": 1126.0
-          },
-          "6": {
-            "arquivo": "celeiro/giro-6-1.png",
-            "ax": 512.0,
-            "ay": 1101.0
-          },
-          "0": {
-            "arquivo": "celeiro/giro-0-1.png",
-            "ax": 768.0,
-            "ay": 1104.0
-          },
-          "2": {
-            "arquivo": "celeiro/giro-2-1.png",
-            "ax": 511.3,
-            "ay": 1119.7
-          }
-        }
+        "ax": 258.0,
+        "ay": 565.0
+      },
+      "0": {
+        "arquivo": "celeiro/giro-0.png",
+        "ax": 386.0,
+        "ay": 565.0
+      },
+      "6": {
+        "arquivo": "celeiro/giro-6.png",
+        "ax": 258.0,
+        "ay": 565.0
       }
     },
     "real": [
-      9.0,
-      6.0,
-      6.5
+      9.673,
+      6.698,
+      6.527
     ],
     "cima": {
       "arquivo": "celeiro/cima.png",
@@ -7785,59 +7887,36 @@
     }
   },
   "galpao": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "galpao/giro-4.png",
-        "ax": 512.0,
-        "ay": 787.0
-      },
-      "6": {
-        "arquivo": "galpao/giro-6.png",
-        "ax": 384.0,
-        "ay": 790.0
-      },
-      "0": {
-        "arquivo": "galpao/giro-0.png",
-        "ax": 512.0,
-        "ay": 783.0
+        "ax": 247.0,
+        "ay": 420.0
       },
       "2": {
         "arquivo": "galpao/giro-2.png",
-        "ax": 384.0,
-        "ay": 796.0
-      }
-    },
-    "estados": {
-      "1": {
-        "giros": {
-          "4": {
-            "arquivo": "galpao/giro-4-1.png",
-            "ax": 512.8,
-            "ay": 789.3
-          },
-          "6": {
-            "arquivo": "galpao/giro-6-1.png",
-            "ax": 384.0,
-            "ay": 790.0
-          },
-          "0": {
-            "arquivo": "galpao/giro-0-1.png",
-            "ax": 512.0,
-            "ay": 783.0
-          },
-          "2": {
-            "arquivo": "galpao/giro-2-1.png",
-            "ax": 384.2,
-            "ay": 797.0
-          }
-        }
+        "ax": 193.0,
+        "ay": 420.0
+      },
+      "0": {
+        "arquivo": "galpao/giro-0.png",
+        "ax": 257.0,
+        "ay": 415.0
+      },
+      "6": {
+        "arquivo": "galpao/giro-6.png",
+        "ax": 183.0,
+        "ay": 415.0
       }
     },
     "real": [
-      6.0,
-      4.5,
-      4.6
+      6.588,
+      4.971,
+      4.629
     ],
     "cima": {
       "arquivo": "galpao/cima.png",
@@ -7850,33 +7929,36 @@
     }
   },
   "fonte": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "fonte/giro-4.png",
-        "ax": 136.0,
-        "ay": 275.0
-      },
-      "6": {
-        "arquivo": "fonte/giro-6.png",
-        "ax": 136.0,
-        "ay": 275.0
-      },
-      "0": {
-        "arquivo": "fonte/giro-0.png",
-        "ax": 135.5,
-        "ay": 275.0
+        "ax": 76.0,
+        "ay": 133.0
       },
       "2": {
         "arquivo": "fonte/giro-2.png",
-        "ax": 134.5,
-        "ay": 275.0
+        "ax": 77.0,
+        "ay": 133.0
+      },
+      "0": {
+        "arquivo": "fonte/giro-0.png",
+        "ax": 76.0,
+        "ay": 133.0
+      },
+      "6": {
+        "arquivo": "fonte/giro-6.png",
+        "ax": 77.0,
+        "ay": 133.0
       }
     },
     "real": [
-      2.25,
-      2.25,
-      2.17
+      2.14,
+      2.14,
+      1.62
     ],
     "cima": {
       "arquivo": "fonte/cima.png",
@@ -7889,33 +7971,36 @@
     }
   },
   "placa": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "placa/giro-4.png",
-        "ax": 37.0,
-        "ay": 211.5
-      },
-      "6": {
-        "arquivo": "placa/giro-6.png",
-        "ax": 39.0,
-        "ay": 211.5
-      },
-      "0": {
-        "arquivo": "placa/giro-0.png",
-        "ax": 37.0,
-        "ay": 211.5
+        "ax": 20.0,
+        "ay": 109.0
       },
       "2": {
         "arquivo": "placa/giro-2.png",
-        "ax": 33.0,
-        "ay": 211.5
+        "ax": 15.0,
+        "ay": 109.0
+      },
+      "0": {
+        "arquivo": "placa/giro-0.png",
+        "ax": 15.0,
+        "ay": 110.0
+      },
+      "6": {
+        "arquivo": "placa/giro-6.png",
+        "ax": 21.0,
+        "ay": 110.0
       }
     },
     "real": [
-      0.7,
-      0.15,
-      1.76
+      0.75,
+      0.14,
+      1.8
     ],
     "cima": {
       "arquivo": "placa/cima.png",
@@ -8045,33 +8130,36 @@
     }
   },
   "arbusto~c": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "arbusto~c/giro-4.png",
-        "ax": 43.5,
-        "ay": 118.9
-      },
-      "6": {
-        "arquivo": "arbusto~c/giro-6.png",
-        "ax": 48.0,
-        "ay": 118.9
-      },
-      "0": {
-        "arquivo": "arbusto~c/giro-0.png",
-        "ax": 45.5,
-        "ay": 118.9
+        "ax": 40.0,
+        "ay": 68.0
       },
       "2": {
         "arquivo": "arbusto~c/giro-2.png",
-        "ax": 46.5,
-        "ay": 118.9
+        "ax": 40.0,
+        "ay": 67.0
+      },
+      "0": {
+        "arquivo": "arbusto~c/giro-0.png",
+        "ax": 40.0,
+        "ay": 66.0
+      },
+      "6": {
+        "arquivo": "arbusto~c/giro-6.png",
+        "ax": 40.0,
+        "ay": 68.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      0.98
+      0.86,
+      0.842,
+      0.909
     ],
     "cima": {
       "arquivo": "arbusto~c/cima.png",
@@ -9963,33 +10051,36 @@
     }
   },
   "poltrona_preta": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "poltrona_preta/giro-4.png",
-        "ax": 64.0,
-        "ay": 163.0
-      },
-      "6": {
-        "arquivo": "poltrona_preta/giro-6.png",
-        "ax": 64.0,
-        "ay": 163.0
-      },
-      "0": {
-        "arquivo": "poltrona_preta/giro-0.png",
-        "ax": 64.0,
-        "ay": 163.0
+        "ax": 40.0,
+        "ay": 77.0
       },
       "2": {
         "arquivo": "poltrona_preta/giro-2.png",
-        "ax": 64.0,
-        "ay": 163.0
+        "ax": 40.0,
+        "ay": 77.0
+      },
+      "0": {
+        "arquivo": "poltrona_preta/giro-0.png",
+        "ax": 40.0,
+        "ay": 67.0
+      },
+      "6": {
+        "arquivo": "poltrona_preta/giro-6.png",
+        "ax": 40.0,
+        "ay": 67.0
       }
     },
     "real": [
-      0.75,
-      0.75,
-      0.95
+      0.71,
+      0.69,
+      0.949
     ],
     "cima": {
       "arquivo": "poltrona_preta/cima.png",
@@ -10949,5 +11040,149 @@
       0.63,
       0.04
     ]
+  },
+  "horta~b": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "horta~b/giro-4.png",
+        "ax": 35.0,
+        "ay": 54.0
+      },
+      "2": {
+        "arquivo": "horta~b/giro-2.png",
+        "ax": 36.0,
+        "ay": 52.0
+      },
+      "0": {
+        "arquivo": "horta~b/giro-0.png",
+        "ax": 35.0,
+        "ay": 55.0
+      },
+      "6": {
+        "arquivo": "horta~b/giro-6.png",
+        "ax": 36.0,
+        "ay": 52.0
+      }
+    },
+    "real": [
+      0.758,
+      0.47,
+      0.664
+    ]
+  },
+  "pilha_chao": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "pilha_chao/giro-4.png",
+        "ax": 31.0,
+        "ay": 32.0
+      },
+      "2": {
+        "arquivo": "pilha_chao/giro-2.png",
+        "ax": 33.0,
+        "ay": 30.0
+      },
+      "0": {
+        "arquivo": "pilha_chao/giro-0.png",
+        "ax": 34.0,
+        "ay": 30.0
+      },
+      "6": {
+        "arquivo": "pilha_chao/giro-6.png",
+        "ax": 32.0,
+        "ay": 30.0
+      }
+    },
+    "real": [
+      0.54,
+      0.5,
+      0.125
+    ]
+  },
+  "orfanato_predio": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "0": {
+        "arquivo": "orfanato_predio/giro-0.png",
+        "ax": 508.0,
+        "ay": 1158.0
+      }
+    },
+    "real": [
+      11.9,
+      34.6,
+      5.431
+    ],
+    "soGiros": true
+  },
+  "porteira": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "porteira/giro-4.png",
+        "ax": 94.0,
+        "ay": 139.0
+      },
+      "2": {
+        "arquivo": "porteira/giro-2.png",
+        "ax": 30.0,
+        "ay": 139.0
+      },
+      "0": {
+        "arquivo": "porteira/giro-0.png",
+        "ax": 94.0,
+        "ay": 139.0
+      },
+      "6": {
+        "arquivo": "porteira/giro-6.png",
+        "ax": 30.0,
+        "ay": 139.0
+      }
+    },
+    "real": [
+      2.21,
+      0.2,
+      1.6
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "porteira/giro-4-1.png",
+            "ax": 123.0,
+            "ay": 139.0
+          },
+          "2": {
+            "arquivo": "porteira/giro-2-1.png",
+            "ax": 30.0,
+            "ay": 139.0
+          },
+          "0": {
+            "arquivo": "porteira/giro-0-1.png",
+            "ax": 94.0,
+            "ay": 139.0
+          },
+          "6": {
+            "arquivo": "porteira/giro-6-1.png",
+            "ax": 59.0,
+            "ay": 139.0
+          }
+        }
+      }
+    }
   }
 }
