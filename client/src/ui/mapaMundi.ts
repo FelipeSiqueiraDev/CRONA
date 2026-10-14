@@ -157,7 +157,7 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
         ctx.fillRect(x + 6, y + SPRITE_H - 9, SPRITE_W - 12, 1);
       }
       // a ilha em alta definição, quando chegar (o detalhe inteiro); senão a de escala 1, em pixels grandes
-      const hd = ilhaHD(l.nome);
+      const hd = ilhaHD(l.nome, l.icone);
       if (hd) {
         ctx.imageSmoothingEnabled = true;
         ctx.drawImage(hd.img, x, y + hd.dy, SPRITE_W, SPRITE_H);

@@ -223,6 +223,11 @@ const cache = new Map<IconeLugar, HTMLCanvasElement>();
  */
 const PASTA_MAPA = '/arte/mapa/';
 const CENTRO_ARTE: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'tiradentes': 43, 'igarape': 43, 'santo-berco': 43, 'generico-casa': 41 };
+/**
+ * O meio da grama de cada ilha HD (288 × 256), em pixels da escala 1 (÷ 4): os centros que o Códex mediu em
+ * mapa-hd.zip (14/10). O Igarapé e o Santo Berço só existem em HD.
+ */
+const CENTRO_HD: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'tiradentes': 43, 'igarape': 42, 'santo-berco': 41, 'generico-casa': 41 };
 const artes = new Map<string, HTMLCanvasElement | null>();
 let existentes: Set<string> | null = null;
 void arteCarregada.then((s) => (existentes = s));
@@ -262,9 +267,11 @@ export function arteDoMapa(nome: string, centroY?: number): HTMLCanvasElement | 
  * meio da grama cair no SPRITE_CENTRO (o mesmo centro da ilha de escala 1, em pixels dela).
  */
 const hds = new Map<string, HTMLImageElement | null>();
-export function ilhaHD(nome?: string): { img: HTMLImageElement; dy: number } | null {
-  const s = nome ? slug(nome) : '';
-  if (!s || !(s in CENTRO_ARTE) || !existentes) return null;
+export function ilhaHD(nome?: string, icone?: IconeLugar): { img: HTMLImageElement; dy: number } | null {
+  let s = nome ? slug(nome) : '';
+  // lugar sem ilha própria: a casinha genérica (só para o ícone "casa", como na de escala 1)
+  if (!(s in CENTRO_HD) && icone === 'casa') s = 'generico-casa';
+  if (!s || !(s in CENTRO_HD) || !existentes) return null;
   const url = `${PASTA_MAPA}lugar-${s}-hd.png`;
   if (!hds.has(s)) {
     hds.set(s, null);
@@ -275,7 +282,7 @@ export function ilhaHD(nome?: string): { img: HTMLImageElement; dy: number } | n
     }
   }
   const img = hds.get(s);
-  return img ? { img, dy: SPRITE_CENTRO[1] - CENTRO_ARTE[s] } : null;
+  return img ? { img, dy: SPRITE_CENTRO[1] - CENTRO_HD[s] } : null;
 }
 
 function ilhaPintada(icone: IconeLugar, nome?: string): HTMLCanvasElement | null {
