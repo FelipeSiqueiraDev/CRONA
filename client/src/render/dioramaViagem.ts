@@ -97,6 +97,11 @@ const VAN = {
   ] as Pt[],
   meio: [21, 28] as Pt,
   roda: [4, 5] as Pt,
+  /** os dois faróis no desenho (o de cá e o de lá), de onde sai o facho */
+  farois: [
+    [41, 32],
+    [50.5, 29],
+  ] as Pt[],
   bancos: [
     [19, 13],
     [14, 16],
@@ -265,13 +270,7 @@ export class DioramaViagem {
         this.luzes.push(() => {
           // depois da tinta da noite: a lâmpada acesa de novo por cima e o cone de luz no chão
           ctx.drawImage(arte, bx - PE_BEIRA.poste[0], by - PE_BEIRA.poste[1]);
-          ctx.fillStyle = 'rgba(255,233,160,0.2)';
-          ctx.beginPath();
-          ctx.moveTo(bx + 2, by - 23);
-          ctx.lineTo(bx + 13, by + 4);
-          ctx.lineTo(bx - 9, by + 4);
-          ctx.closePath();
-          ctx.fill();
+          this.luzDoPoste(ctx, bx + 2, by - 23, by);
         });
       return;
     }
@@ -287,14 +286,98 @@ export class DioramaViagem {
       this.luzes.push(() => {
         ctx.fillStyle = '#fff2b8';
         ctx.fillRect(bx + 5, by - 25, 2, 1);
-        ctx.fillStyle = 'rgba(255,233,160,0.2)';
-        ctx.beginPath();
-        ctx.moveTo(bx + 6, by - 24);
-        ctx.lineTo(bx + 17, by + 4);
-        ctx.lineTo(bx - 5, by + 4);
-        ctx.closePath();
-        ctx.fill();
+        this.luzDoPoste(ctx, bx + 6, by - 24, by);
       });
+  }
+
+  /**
+   * A luz de um poste (14/10, o Felipe: "as luzes estão bem DURAS"): o halo em volta da lâmpada, o cone que desce
+   * sumindo aos poucos e a poça de luz no chão, tudo com borda macia e somando luz (não um triângulo chapado).
+   */
+  private luzDoPoste(ctx: CanvasRenderingContext2D, hx: number, hy: number, chao: number) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.filter = 'blur(1.5px)';
+    // o cone: estreito na lâmpada, abrindo até o chão, mais forte em cima
+    const cone = ctx.createLinearGradient(hx, hy, hx, chao + 3);
+    cone.addColorStop(0, 'rgba(255,232,165,0.22)');
+    cone.addColorStop(0.7, 'rgba(255,228,160,0.09)');
+    cone.addColorStop(1, 'rgba(255,224,155,0)');
+    ctx.fillStyle = cone;
+    ctx.beginPath();
+    ctx.moveTo(hx - 1.5, hy + 1);
+    ctx.lineTo(hx + 1.5, hy + 1);
+    ctx.lineTo(hx + 11, chao + 3);
+    ctx.lineTo(hx - 11, chao + 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    // a poça no chão (achatada como o chão da ilha)
+    this.poca(ctx, hx, chao + 1, 15, 7, 0.26);
+    this.brilho(ctx, hx, hy, 6, 0.75);
+  }
+
+  /** Um brilho redondo e macio (a lâmpada, o farol), somando luz. */
+  private brilho(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, alfa: number) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, `rgba(255,246,210,${alfa})`);
+    g.addColorStop(0.4, `rgba(255,232,170,${alfa * 0.45})`);
+    g.addColorStop(1, 'rgba(255,224,160,0)');
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** A poça de luz no chão: uma elipse que some na borda. */
+  private poca(ctx: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, alfa: number) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.translate(x, y);
+    ctx.scale(1, ry / rx);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+    g.addColorStop(0, `rgba(255,232,165,${alfa})`);
+    g.addColorStop(0.6, `rgba(255,228,160,${alfa * 0.4})`);
+    g.addColorStop(1, 'rgba(255,224,155,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, rx, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /**
+   * O facho de um farol no asfalto: sai do farol (sx, sy), anda no sentido da estrada (`sentido` 1 = para +x, que na
+   * tela desce para a direita; -1 = para -x) e abre até `largura`, sumindo aos poucos. Macio e somando luz.
+   */
+  private facho(ctx: CanvasRenderingContext2D, sx: number, sy: number, sentido: number, comprimento: number, largura: number, alfa: number) {
+    // o eixo x do mundo na tela (2:1) e o lado (o eixo y do mundo), para o facho abrir deitado no chão
+    const ux = (sentido * 2) / Math.sqrt(5);
+    const uy = sentido / Math.sqrt(5);
+    const lx = -2 / Math.sqrt(5);
+    const ly = 1 / Math.sqrt(5);
+    // o facho desce do farol até o asfalto
+    const ex = sx + ux * comprimento;
+    const ey = sy + uy * comprimento + 4;
+    const g = ctx.createLinearGradient(sx, sy, ex, ey);
+    g.addColorStop(0, `rgba(255,240,190,${alfa})`);
+    g.addColorStop(0.45, `rgba(255,234,170,${alfa * 0.5})`);
+    g.addColorStop(1, 'rgba(255,228,160,0)');
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.filter = 'blur(1.5px)';
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(sx + lx, sy + ly);
+    ctx.lineTo(ex + lx * largura, ey + ly * largura);
+    ctx.quadraticCurveTo(ex + ux * largura * 0.5, ey + uy * largura * 0.5, ex - lx * largura, ey - ly * largura);
+    ctx.lineTo(sx - lx, sy - ly);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 
   private arbusto(ctx: CanvasRenderingContext2D, x: number, y: number, i = 0) {
@@ -359,14 +442,8 @@ export class DioramaViagem {
     const z = 4 + (Math.sin(now / 90) > 0.6 ? 1 : 0);
     const alto = 15;
     const lataria = '#2c2c36';
-    // a sombra na estrada e o facho dos faróis no escuro
+    // a sombra na estrada
     this.chao(ctx, x0 - 0.4, x1 + 3.6, y0 + 0.8, y1 + 1.4, 0, 'rgba(0,0,0,0.3)');
-    if (escuro)
-      this.luzes.push(() => {
-        this.poli(ctx, [this.p(x1 + 3.2, y0 + 0.6, 0), this.p(x1 + 14, y0 - 1.8, 0), this.p(x1 + 14, y1 + 1.6, 0), this.p(x1 + 3.2, y1 - 0.6, 0)], 'rgba(255,236,170,0.24)');
-        this.faceX(ctx, x1 + 3.2, y0 + 0.8, y0 + 1.7, z + 4, z + 6, '#fff6c8');
-        this.faceX(ctx, x1 + 3.2, y1 - 1.7, y1 - 0.8, z + 4, z + 6, '#fff6c8');
-      });
     // a van pintada (arte/viagem/pixel/van-corpo.png e as 4 rodas): as rodas primeiro, o corpo por cima (o para-lama
     // cobre o pneu) e os agentes nos bancos dela; o corpo treme com o motor, as rodas não
     const corpo = (escuro && pixel('van-noite')) || pixel('van-corpo');
@@ -379,6 +456,16 @@ export class DioramaViagem {
       for (const [ex, ey] of VAN.eixos) ctx.drawImage(roda, ox + ex - VAN.roda[0], oy + ey - VAN.roda[1]);
       const sobe = z - 4;
       ctx.drawImage(corpo, ox, oy - sobe);
+      // no escuro, o facho sai dos faróis do próprio desenho (antes saía do capô do desenho antigo, solto na frente)
+      if (escuro)
+        this.luzes.push(() => {
+          for (const [fx, fy] of VAN.farois) {
+            const sx = ox + fx;
+            const sy = oy + fy - sobe;
+            this.facho(ctx, sx, sy, 1, 44, 13, 0.3);
+            this.brilho(ctx, sx, sy, 5, 0.8);
+          }
+        });
       VAN.bancos.forEach(([bx, by], k) => {
         const q = figuras[k];
         if (q) this.sentado(ctx, q, ox + bx, oy + by - sobe);
@@ -423,7 +510,15 @@ export class DioramaViagem {
     this.faceX(ctx, x1, y0 + 0.6, y1 - 0.6, z + 8, z + alto - 1, '#9cc9de', true);
     this.faceX(ctx, x1, y0 + 1.2, y0 + 2, z + 9, z + alto - 2, '#d4ecf6');
     this.faceY(ctx, y1 + 0.5, x1 - 0.5, x1 + 0.3, z + 10, z + 12, CONTORNO);
-    // o capô, a grade e os faróis
+    // o capô, a grade e os faróis (no escuro, o facho sai deles)
+    if (escuro)
+      this.luzes.push(() => {
+        for (const yy of [y0 + 1.25, y1 - 1.25]) {
+          const [sx, sy] = this.p(x1 + 3.2, yy, z + 5);
+          this.facho(ctx, sx, sy, 1, 44, 13, 0.3);
+          this.brilho(ctx, sx, sy, 5, 0.8);
+        }
+      });
     this.caixa(ctx, x1, x1 + 3.2, y0 + 0.3, y1 - 0.3, z, z + 8, '#3c3c48', lataria, '#202028');
     this.faceX(ctx, x1 + 3.2, y0 + 0.8, y0 + 1.7, z + 4, z + 6, '#f2d77a');
     this.faceX(ctx, x1 + 3.2, y1 - 1.7, y1 - 0.8, z + 4, z + 6, '#f2d77a');
@@ -463,6 +558,15 @@ export class DioramaViagem {
     const z = 3;
     this.chao(ctx, x0 - 0.3, x0 + len + 0.6, y0 + 0.5, y1 + 0.9, 0, 'rgba(0,0,0,0.28)');
     // o carro pintado (arte/viagem/pixel/): um por vez, em rodízio; as rodas por cima do corpo, nos eixos dele
+    // no escuro, os faróis acesos na frente (o carro vai para lá): o facho no asfalto à frente dele (o Felipe, 14/10)
+    if (escuro)
+      this.luzes.push(() => {
+        for (const yy of [y0 + 0.9, y1 - 0.9]) {
+          const [sx, sy] = this.p(x0 + 0.1, yy, z + 2);
+          this.facho(ctx, sx, sy, -1, 34, 10, 0.26);
+          this.brilho(ctx, sx, sy, 4, 0.75);
+        }
+      });
     const c = CARROS[n % CARROS.length];
     const corpoArte = pixel(c.nome);
     const rodasArte = [1, 2, 3, 4].map((i) => pixel(`roda-${c.roda}-${i}`));
