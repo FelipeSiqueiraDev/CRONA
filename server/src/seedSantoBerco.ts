@@ -10,7 +10,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Infinito, com as estradas de terra em anel e em raios; a luz vem dos cristais vermelhos. Os moradores (Luzidios)
  * vivem numa hipnose confortável e nada se paga.
  *
- * Primeira leva: a vila de fora inteira (todos os prédios no lugar, o labirinto, as estátuas dos Cinco Guardiões, os
+ * Primeira leva: a vila de fora inteira (todos os prédios no lugar, o labirinto, as quatro estátuas dos Guardiões, os
  * postes de cristal, o lodo preto) e por dentro a Torre do Porteiro (dois andares), a Taverna, a Ferraria e o quarto
  * do Ferreiro (com a escotilha que dá no bunker, trancada até o bunker existir). Hotel, Casa do Doutor, Fazenda,
  * Bosque da Provação, Minas, Bunker, Labirinto e Caverna vêm nas próximas levas.
@@ -19,7 +19,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Doutor a sudoeste, o bosque ao sul, as minas a oeste.
  */
 export const SANTO_BERCO = "Santo Berço · ";
-export const SANTO_BERCO_REV = 5;
+export const SANTO_BERCO_REV = 6;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -117,30 +117,40 @@ const PREDIOS_DESENHO: [string, number, number, 0 | 4, string | null][] = [
 const PREDIOS = PREDIOS_DESENHO.map(([id, x, y, r, cena]) => [id, ...espalha(id, x, y), r, cena] as [string, number, number, 0 | 4, string | null]);
 const ENTRADAS = new Map(PREDIOS.filter((p) => p[4]).map(([id, x, y, r, cena]) => [cena!, porta(id, x, y, r)]));
 
-/** a sebe do labirinto: o anel de fora com a entrada virada para o portão, e um anel de dentro com outra brecha */
+/**
+ * As quatro entradas do labirinto (o Felipe, 14/10): uma em cada ponta dele na tela, em cima, à direita, embaixo e à
+ * esquerda (no chão, as diagonais: noroeste, nordeste, sudeste e sudoeste), cada uma com a sua estátua do lado.
+ */
+const ENTRADAS_LAB = [-0.75 * Math.PI, -0.25 * Math.PI, 0.25 * Math.PI, 0.75 * Math.PI];
+/** a distância entre dois ângulos (0..π) */
+const entre = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+
+/**
+ * A sebe do labirinto: o anel de fora com as quatro entradas; duas paredes (norte e sul) cortam o corredor em duas
+ * metades; o anel de dentro só abre a leste e a oeste, então de cada entrada se dá a volta até o miolo.
+ */
 function labirinto(): FloorSeed[] {
   const f: FloorSeed[] = [];
   for (let y = 0; y < VH; y++)
     for (let x = 0; x < VW; x++) {
       const d = dist(x, y);
       const ang = Math.atan2(y + 0.5 - CY, x + 0.5 - CX);
-      const fora = d >= R_LAB - 0.5 && d < R_LAB + 0.5 && Math.abs(ang) > 0.28;
-      const dentro = d >= R_DENTRO && d < R_DENTRO + 1 && Math.abs(ang - Math.PI / 2) > 0.32 && Math.abs(Math.abs(ang) - 2.4) > 0.22;
-      const raio = d >= R_DENTRO + 1 && d < R_LAB - 0.5 && (Math.abs(ang + 1.9) < 0.09 || Math.abs(ang - 0.9) < 0.09);
+      const fora = d >= R_LAB - 0.5 && d < R_LAB + 0.5 && ENTRADAS_LAB.every((e) => entre(ang, e) > 0.15);
+      const dentro = d >= R_DENTRO && d < R_DENTRO + 1 && entre(ang, 0) > 0.24 && entre(ang, Math.PI) > 0.24;
+      const raio = d >= R_DENTRO + 1 && d < R_LAB - 0.5 && (entre(ang, Math.PI / 2) < 0.08 || entre(ang, -Math.PI / 2) < 0.08);
       if (fora || dentro || raio) f.push(["sebe", x, y, 0]);
     }
   return f;
 }
 
-/** as cinco estátuas dos Guardiões em volta do labirinto (2 × 2), uma a cada 72°, a primeira ao norte */
+/** as quatro estátuas dos Guardiões (2 × 2): uma do lado de cada entrada do labirinto, olhando para ela */
 function estatuas(): FloorSeed[] {
-  return Array.from({ length: 5 }, (_, i) => {
-    const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+  return ENTRADAS_LAB.map((e, i) => {
+    const a = e + 0.3;
     const x = Math.round(CX + Math.cos(a) * R_EST - 1);
     const y = Math.round(CY + Math.sin(a) * R_EST - 1);
-    // cada uma olha para o labirinto
     const rot = Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? (Math.cos(a) > 0 ? 6 : 2) : Math.sin(a) > 0 ? 0 : 4;
-    return [i % 2 ? "estatua_guardiao~b" : "estatua_guardiao", x, y, rot, hint("Estátua de Guardião", "Uma das cinco estátuas dos Guardiões em volta do Labirinto. O rosto foi gasto até sumir.")] as FloorSeed;
+    return [i % 2 ? "estatua_guardiao~b" : "estatua_guardiao", x, y, rot, hint("Estátua de Guardião", "Uma das quatro estátuas dos Guardiões, de vigia numa entrada do Labirinto. O rosto foi gasto até sumir.")] as FloorSeed;
   });
 }
 
@@ -221,7 +231,7 @@ const CENAS: CenaSpec[] = [
     key: "vila",
     name: SANTO_BERCO + "Vila",
     description:
-      "Santo Berço: a vila de casinhas de enxaimel e telhado vermelho em anel em volta do Labirinto Infinito, a sebe viva coberta de neblina com as estátuas dos Cinco Guardiões em volta. As estradas de terra correm em anel e em raios: a ferraria a noroeste, a taverna a nordeste, a torre do Porteiro na entrada, o hotel a leste, a casa do Doutor a sudoeste, o bosque da Provação ao sul, as minas na montanha a oeste. Nada de luz elétrica: postes com cristais vermelhos acesos. As árvores são tortas e de cores erradas (roxas, amarelas, azuladas), e aqui e ali o lodo preto brilha no chão.",
+      "Santo Berço: a vila de casinhas de enxaimel e telhado vermelho em anel em volta do Labirinto Infinito, a sebe viva cheia de neblina, com quatro entradas e uma estátua de Guardião de vigia em cada uma. As estradas de terra correm em anel e em raios: a ferraria a noroeste, a taverna a nordeste, a torre do Porteiro na entrada, o hotel a leste, a casa do Doutor a sudoeste, o bosque da Provação ao sul, as minas na montanha a oeste. Nada de luz elétrica: postes com cristais vermelhos acesos. As árvores são tortas e de cores erradas (roxas, amarelas, azuladas), e aqui e ali o lodo preto brilha no chão.",
     layout: { heightmap: T_VILA.planta(), door: { x: VW - 1, y: ESTRADA_Y, dir: 6 } },
     andar: VILA,
     style: "grama",

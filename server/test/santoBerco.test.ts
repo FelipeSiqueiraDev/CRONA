@@ -44,11 +44,11 @@ describe("Santo Berço", () => {
     assert.equal(vistos.size, salas.length, "alguma sala ficou sem caminho");
   });
 
-  test("a vila tem o labirinto de sebe, as cinco estátuas e os postes de cristal", () => {
+  test("a vila tem o labirinto de sebe, as quatro estátuas e os postes de cristal", () => {
     const vila = porNome("Vila");
     const conta = (id: string) => vila.items.filter((i) => i.defId === id).length;
     assert.ok(conta("sebe") > 30, "o labirinto ficou pequeno");
-    assert.equal(conta("estatua_guardiao"), 5);
+    assert.equal(conta("estatua_guardiao"), 4);
     assert.ok(conta("poste_cristal") >= 8);
   });
 });

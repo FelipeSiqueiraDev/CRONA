@@ -18,6 +18,7 @@ html:not(.modo-ficha) .p-plan.mm .p-title.mm-titulo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  width: 100%;
   min-width: 0;
   white-space: nowrap;
 }
@@ -29,9 +30,10 @@ html:not(.modo-ficha) .p-plan.mm .p-title.mm-titulo {
   color: var(--r-texto-3, #a3978a);
 }
 .mm-trilha .mm-migalha.on {
-  flex: 0 0 auto;
+  /* o lugar de agora aparece inteiro; só corta (com reticências) se não couber mesmo */
+  flex: 0 1 auto;
   min-width: 0;
-  max-width: 70%;
+  max-width: 100%;
   color: var(--r-ouro-hi, #ffd27a);
 }
 .mm-trilha .mm-sep {

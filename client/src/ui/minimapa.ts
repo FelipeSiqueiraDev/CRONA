@@ -119,7 +119,7 @@ const mesma = (a: Vista | null, b: Vista | null) =>
   !!a && !!b && a.tipo === b.tipo && (a.tipo === 'terreno' ? a.cena === (b as typeof a).cena : a.predio === (b as typeof a).predio && a.andar === (b as typeof a).andar);
 
 export class Minimapa {
-  readonly trilha = h('div', { class: 'p-title mm-trilha' });
+  readonly trilha = h('div', { class: 'mm-trilha' });
   readonly canvas = h('canvas', { class: 'plan-canvas mm-canvas' });
   readonly cartao = h('div', { class: 'mm-cartao hidden' });
   readonly botoes = h('div', { class: 'mm-botoes' });
