@@ -217,13 +217,16 @@ const MATERIAL: Record<string, string> = { metal: 'metal', cela: 'metal' };
  */
 export function chaveDaArte(defId: string, seed: number, piso?: string, vazio = false, modelo?: string): string {
   if (!lista) return defId;
+  // a peça já desenhada por código (14/10) não cai mais numa skin do Códex: só vale a variante também feita por código
+  const L = lista;
+  const serve = (k: string) => !!L[k] && (!L[defId]?.pixel || !!L[k].pixel);
   // o modelo que a montagem escolheu (os 12 quadros da fazenda, cada um o seu)
-  if (modelo && lista[`${defId}~${modelo}`]) return `${defId}~${modelo}`;
+  if (modelo && serve(`${defId}~${modelo}`)) return `${defId}~${modelo}`;
   // o móvel que ficou sem nada: a gêmea vazia ("mesa-gabinete-vazio"), se já chegou
-  if (vazio && lista[`${defId}!vazio`]) return `${defId}!vazio`;
+  if (vazio && serve(`${defId}!vazio`)) return `${defId}!vazio`;
   const mat = piso ? MATERIAL[piso] : undefined;
-  if (mat && lista[`${defId}@${mat}`]) return `${defId}@${mat}`;
-  const outros = modelos.get(defId);
+  if (mat && serve(`${defId}@${mat}`)) return `${defId}@${mat}`;
+  const outros = modelos.get(defId)?.filter(serve);
   if (!outros?.length) return defId;
   const i = (Math.imul(seed | 0, 2654435761) >>> 0) % (outros.length + 1);
   return i === 0 ? defId : outros[i - 1];
