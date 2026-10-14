@@ -58,10 +58,14 @@ python texturas_px.py <estilo> --destino <SUA pasta de teste>
 
 ## O que a primeira leva ensinou (14/10)
 
-- **Estados:** 0 é o "ligado/aceso/aberto" (o padrão), e o estado `'1'` o outro (apagado, desligado, fechado). Veja
-  `states` no def; a porta tem 0 aberta, 1 fechada, 2 trancada.
+- **Estados:** luzes e portas: 0 é o "aceso/aberto" (o padrão) e `'1'` o outro (apagado, fechado); a porta tem 0
+  aberta, 1 fechada, 2 trancada. **Móveis de abrir (baú, armário, cômoda, gaveteiro, geladeira de vidro, caixote):
+  0 FECHADO (o padrão), `'1'` ABERTO** (14/10), e a gêmea `!vazio` também ganha o aberto vazio. Veja `states` no def
+  e o quadro em `docs/ATUALIZACAO-14-10.md`.
 - **Item de parede com estados:** `ITENS_PAREDE = {def: (desenho, (x, z), {'1': desenho_do_estado_1})}`.
 - **Não refaça:** a lâmpada do teto (`ceiling_lamp`), a janela da cozinha, a teia e os móveis da cozinha já estão bons.
+- **Exportar para o jogo é no fim, uma vez só:** quem desenha usa sempre `--destino`; e o `moveis.json` só é escrito
+  pelos exportadores em Python (outra ferramenta reordena as chaves e vira um diff de milhares de linhas).
 - **Clima de cada lugar:** a Fazenda está ABANDONADA há mais de um ano (sóbria, poeira, nada vivo); a Sede é o prédio
   da Ordem, em uso (bar embaixo, laboratório, tecnologia, arsenal, prisão); o Orfanato está QUEIMADO e virou covil.
 - **Decalque de chão** (sangue, fuligem, poça, sigilo, sujeira): uma placa de 1 px de altura, sem pegada, sem contorno
