@@ -108,6 +108,8 @@ export interface CampaignState {
   layout: Record<number, { x: number; y: number; r?: number }>;
   log: LogEntry[];
   party: PartyMember[];
+  /** os agentes do jogo inteiro, em qualquer lugar (o painel AGENTES de baixo mostra sempre todos; party é só do lugar) */
+  agentes?: PartyMember[];
   scenes: SceneInfo[];
   /** anotações do mestre na planta, por andar */
   notas?: NotaPlanta[];

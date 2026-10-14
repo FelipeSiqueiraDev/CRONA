@@ -1167,25 +1167,29 @@ export class Hotel implements HotelApi {
     // grupo = as peças de todas as cenas da campanha
     const load = new Map<string, number>();
     for (const r of rooms) for (const l of r.heldLoot()) load.set(l.holder.toLowerCase(), (load.get(l.holder.toLowerCase()) ?? 0) + l.espacos);
+    const membro = (r: RoomInstance, t: ReturnType<RoomInstance['tokenList']>[number]): PartyMember => {
+      // com ficha, a carga é a da mochila (espaços, LR p. 53)
+      const fc = this.fichaDoPersonagem(t.look?.charId);
+      const carga = fc ? this.calcDe(fc)?.carga : undefined;
+      return {
+        name: t.name,
+        id: t.id,
+        look: t.look,
+        load: carga ? carga.usados : Math.round((load.get(t.name.toLowerCase()) ?? 0) * 10) / 10,
+        capacity: carga ? carga.espacos : (t.capacity ?? DEFAULT_CAPACITY),
+        roomId: r.data.id,
+        color: t.color ?? playerColorFor(t.name),
+        armed: t.armed,
+        hurt: t.hurt,
+        vitals: t.vitals,
+      };
+    };
     const party = new Map<string, PartyMember>();
-    for (const r of rooms)
-      for (const t of r.tokenList()) {
-        // com ficha, a carga é a da mochila (espaços, LR p. 53)
-        const fc = this.fichaDoPersonagem(t.look?.charId);
-        const carga = fc ? this.calcDe(fc)?.carga : undefined;
-        party.set(`t${t.id}`, {
-          name: t.name,
-          id: t.id,
-          look: t.look,
-          load: carga ? carga.usados : Math.round((load.get(t.name.toLowerCase()) ?? 0) * 10) / 10,
-          capacity: carga ? carga.espacos : (t.capacity ?? DEFAULT_CAPACITY),
-          roomId: r.data.id,
-          color: t.color ?? playerColorFor(t.name),
-          armed: t.armed,
-          hurt: t.hurt,
-          vitals: t.vitals,
-        });
-      }
+    for (const r of rooms) for (const t of r.tokenList()) party.set(`t${t.id}`, membro(r, t));
+    // os agentes do jogo inteiro (o painel de baixo mostra sempre todos, para clicar e levar a cena até eles), na ordem das fichas
+    const agentes: PartyMember[] = [];
+    for (const r of this.rooms.values()) for (const t of r.tokenList()) if (this.ehAgente(t.look?.charId)) agentes.push(membro(r, t));
+    agentes.sort((a, b) => (a.look?.charId ?? 0) - (b.look?.charId ?? 0) || (a.id ?? 0) - (b.id ?? 0));
     return {
       key,
       title: camp.title,
@@ -1195,6 +1199,7 @@ export class Hotel implements HotelApi {
       layout: camp.layout,
       log: camp.log.slice(-30),
       party: [...party.values()].sort((a, b) => (a.id ?? 0) > (b.id ?? 0) ? -1 : 1),
+      agentes,
       scenes,
       notas: camp.notas ?? [],
       visitadas: camp.visitadas ?? [],

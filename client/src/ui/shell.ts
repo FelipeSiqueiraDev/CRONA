@@ -2361,8 +2361,13 @@ export class Shell {
   }
 
   // ================= baixo =================
+  /** O painel AGENTES de baixo mostra sempre todos os agentes do jogo (em qualquer lugar); o da direita, só os do lugar. */
+  private agentesDoJogo(): PartyMember[] {
+    return this.campaign?.agentes ?? this.campaign?.party ?? [];
+  }
+
   private renderParty() {
-    const party = this.campaign?.party ?? [];
+    const party = this.agentesDoJogo();
     const view = this.app.view;
     const cur = this.app.state.room?.id;
     if (!this.changed('party', [party, cur, view.myId, this.gm])) return;
@@ -2466,7 +2471,7 @@ export class Shell {
   }
 
   private pickCard(id: number) {
-    const p = this.campaign?.party.find((x) => x.id === id);
+    const p = this.agentesDoJogo().find((x) => x.id === id) ?? this.campaign?.party.find((x) => x.id === id);
     if (!p || !p.id) return;
     const view = this.app.view;
     sfx.click();
@@ -2588,7 +2593,8 @@ export class Shell {
   }
 
   private sceneName(id: number | null) {
-    const s = this.sceneList().find((x) => x.id === id);
+    // o agente pode estar em outro lugar do mapa (outra campanha): vale a lista de todas as cenas
+    const s = this.sceneList().find((x) => x.id === id) ?? this.app.state.rooms.find((x) => x.id === id);
     return s ? s.name.split('·').pop()!.trim() : '';
   }
 }
