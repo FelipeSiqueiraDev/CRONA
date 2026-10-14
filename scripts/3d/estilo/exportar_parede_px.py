@@ -75,31 +75,35 @@ _carregar_grupos()
 
 
 def exportar_sozinho(nome, destino):
-    """Um item de parede desenhado sozinho, pelo exportador dos móveis (a mesma luz, o mesmo contorno)."""
+    """
+    Um item de parede desenhado sozinho, pelo exportador dos móveis (a mesma luz, o mesmo contorno). O valor em
+    ITENS_PAREDE é (desenho, (x, z)) ou (desenho, (x, z), {estado: desenho}); os estados saem como 'r-1', 'l-1'...
+    """
     import exportar_px as EP
-    desenho, (X, Z) = ITENS_PAREDE[nome]
+    ent = ITENS_PAREDE[nome]
+    desenho, (X, Z) = ent[0], ent[1]
+    estados = ent[2] if len(ent) > 2 else {}
     ox, oy = X - 0.75, 0.0
-    EP.ITENS['__parede'] = (2, 1, (ox, oy), desenho, {})
-    img, (ax, ay), _ = EP.desenhar('__parede', 4, desenho)
-    del EP.ITENS['__parede']
-    # a âncora do exportador é a quina da frente da pegada; a do item de parede é o meio dele na parede
     q = tela(np.array([[ox + 2 * 0.75, oy + 0.75, 0.0]]))[0]
     m = tela(np.array([[X, 0.0, Z]]))[0]
-    ax, ay = ax + (m[0] - q[0]), ay + (m[1] - q[1])
     pasta = os.path.join(destino, nome)
     os.makedirs(pasta, exist_ok=True)
-    im = Image.fromarray(img, 'RGBA')
-    im.save(os.path.join(pasta, 'parede-r.png'), optimize=True)
-    im.transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(pasta, 'parede-l.png'), optimize=True)
-    w, h = im.size
-    print(f'{nome}: {w}x{h} px, âncora ({ax:.1f}, {ay:.1f})')
-    return {
-        'escala': 1, 'pixel': True, 'codigo': True,
-        'parede': {
-            'r': {'arquivo': f'{nome}/parede-r.png', 'ax': round(float(ax), 1), 'ay': round(float(ay), 1)},
-            'l': {'arquivo': f'{nome}/parede-l.png', 'ax': round(float(w - ax), 1), 'ay': round(float(ay), 1)},
-        },
-    }
+    parede = {}
+    for est, des in [('0', desenho)] + list(estados.items()):
+        EP.ITENS['__parede'] = (2, 1, (ox, oy), des, {})
+        img, (ax, ay), _ = EP.desenhar('__parede', 4, des)
+        del EP.ITENS['__parede']
+        # a âncora do exportador é a quina da frente da pegada; a do item de parede é o meio dele na parede
+        ax, ay = ax + (m[0] - q[0]), ay + (m[1] - q[1])
+        suf = '' if est == '0' else f'-{est}'
+        im = Image.fromarray(img, 'RGBA')
+        im.save(os.path.join(pasta, f'parede-r{suf}.png'), optimize=True)
+        im.transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(pasta, f'parede-l{suf}.png'), optimize=True)
+        w, h = im.size
+        parede['r' + suf] = {'arquivo': f'{nome}/parede-r{suf}.png', 'ax': round(float(ax), 1), 'ay': round(float(ay), 1)}
+        parede['l' + suf] = {'arquivo': f'{nome}/parede-l{suf}.png', 'ax': round(float(w - ax), 1), 'ay': round(float(ay), 1)}
+        print(f'{nome} estado {est}: {w}x{h} px, âncora ({ax:.1f}, {ay:.1f})')
+    return {'escala': 1, 'pixel': True, 'codigo': True, 'parede': parede}
 
 
 def _dilatar(m, r):

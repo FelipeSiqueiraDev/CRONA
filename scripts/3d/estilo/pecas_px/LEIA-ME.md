@@ -55,3 +55,15 @@ python texturas_px.py <estilo> --destino <SUA pasta de teste>
 
 **Nunca** grave sem `--destino` (sem ele, vai direto para a arte do jogo, `client/public/arte/`). A folha mostra os
 4 giros de cada móvel lado a lado: abra, amplie (recortes em NEAREST) e confira cada peça de perto.
+
+## O que a primeira leva ensinou (14/10)
+
+- **Estados:** 0 é o "ligado/aceso/aberto" (o padrão), e o estado `'1'` o outro (apagado, desligado, fechado). Veja
+  `states` no def; a porta tem 0 aberta, 1 fechada, 2 trancada.
+- **Item de parede com estados:** `ITENS_PAREDE = {def: (desenho, (x, z), {'1': desenho_do_estado_1})}`.
+- **Não refaça:** a lâmpada do teto (`ceiling_lamp`), a janela da cozinha, a teia e os móveis da cozinha já estão bons.
+- **Clima de cada lugar:** a Fazenda está ABANDONADA há mais de um ano (sóbria, poeira, nada vivo); a Sede é o prédio
+  da Ordem, em uso (bar embaixo, laboratório, tecnologia, arsenal, prisão); o Orfanato está QUEIMADO e virou covil.
+- **Decalque de chão** (sangue, fuligem, poça, sigilo, sujeira): uma placa de 1 px de altura, sem pegada, sem contorno
+  forte; formas irregulares e legíveis, sem pixel solto.
+- **Telas e luzes:** a peça acesa precisa se diferenciar da apagada de longe (a tela clara e colorida, a lâmpada amarela).

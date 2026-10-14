@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 27;
+export const FAZENDA_REV = 30;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -1429,7 +1429,31 @@ const CENAS_BRUTAS: CenaSpec[] = [
 ];
 
 /** As cenas como o desenho as põe: as salas com `plan.r` giram para a porta cair na parede do desenho. */
-const CENAS: CenaSpec[] = CENAS_BRUTAS.map(giraSala);
+/**
+ * A fazenda abandonada há mais de um ano (14/10, o Felipe: "nada vivo, sóbrio, mas a cena com vida"): no casarão,
+ * sem energia e sem ninguém, as lâmpadas, as arandelas, as luminárias e as velas ficam apagadas (estado 1), só a
+ * poeira no ar, e a teia de aranha no canto do teto (o que não couber na parede o seed só avisa e pula).
+ */
+const APAGA = new Set(["ceiling_lamp", "desk_lamp", "candles", "candelabra", "floor_lamp"]);
+const APAGA_PAREDE = new Set(["sconce", "cage_lamp"]);
+function abandonada(s: CenaSpec): CenaSpec {
+  if (s.andar !== CASA && s.andar !== CASA2) return s;
+  const floor = s.floor.map((f): FloorSeed => (APAGA.has(f[0]) ? [f[0], f[1], f[2], f[3], f[4], 1] : f));
+  const wall = (s.wall ?? []).map((w): WallSeed => (APAGA_PAREDE.has(w[0]) ? [w[0], w[1], w[2], w[3], w[4], w[5], 1] : w));
+  if (!wall.some((w) => w[0] === "teia")) {
+    // o canto de trás de verdade: a primeira linha com chão (o plano da parede do fundo) e a primeira casa dela
+    const linhas = s.layout.heightmap.replace(/\r/g, "").split("\n");
+    // a linha que é só o vão da porta (uma casa) não é a parede: a de baixo dela é
+    const conta = (l: string) => (l.match(/[0-9a-w]/g) ?? []).length;
+    let y0 = linhas.findIndex((l) => conta(l) > 0);
+    if (y0 >= 0 && conta(linhas[y0]) === 1) y0++;
+    const x0 = y0 < 0 ? -1 : linhas[y0].search(/[0-9a-w]/);
+    if (x0 >= 0) wall.push(["teia", "r", y0, x0 + 0.6, 3.55]);
+  }
+  return { ...s, floor, wall, particles: ["dust"] };
+}
+
+const CENAS: CenaSpec[] = CENAS_BRUTAS.map(giraSala).map(abandonada);
 
 // ------------------------------------------------------------------ montagem
 
