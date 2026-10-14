@@ -58,6 +58,8 @@ ZR = 2.38                  # a altura do varão
 ZC0, ZC1 = 1.12, 2.37      # a cortina: a barra de baixo e o alto (presa no varão)
 LARG = 0.36                # a largura de cada folha da cortina (franzida)
 PREGAS = 3                 # as pregas de cada folha
+# a janela FECHADA (14/10, o estado 1 do jogo): as duas folhas de vidro fecham o vão de baixo e a cortina fica parada
+FECHADA = {'ok': False}
 SOL = np.array([2.4, 0.35, -1.0]) if os.environ.get('NOITE') != '1' else np.array([2.2, 0.5, -0.85])     # o sentido em que a luz anda (de fora para dentro e para baixo), no quadro da parede
 SOL = SOL / np.linalg.norm(SOL)
 SOL_W = _w(SOL)                         # o mesmo sentido no mundo
@@ -116,7 +118,7 @@ def _folha(lado, t):
     s = np.linspace(0, 1, ns + 1)[:, None]          # 0 = a ponta de fora (na parede), 1 = a beira solta
     zz = np.linspace(0, 1, nz + 1)[None, :]          # 0 = o alto, 1 = a barra
     fase = 0.0 if lado > 0 else 0.18
-    v = _onda(t, fase)
+    v = 0.0 if FECHADA['ok'] else _onda(t, fase)
     w = zz ** 1.7                                    # o vento mexe mais embaixo
     solta = 0.35 + 0.65 * s                          # e mais na beira solta que na ponta presa
     # onde fica a folha: de fora (passa um pouco do vão) para dentro do vão
@@ -126,7 +128,7 @@ def _folha(lado, t):
         y_fora, y_dentro = YA - 0.24, YA - 0.24 + LARG
     para_dentro = -lado                              # o sentido do meio do vão
     # as pregas: a fazenda vai e volta da parede (fundo da prega na parede, a crista para a sala)
-    gira = 0.45 * w * solta * math.sin(2 * math.pi * (t + fase) + 0.8) + 0 * s
+    gira = (0.0 if FECHADA['ok'] else 0.45) * w * solta * math.sin(2 * math.pi * (t + fase) + 0.8) + 0 * s
     pr = 0.5 - 0.5 * np.cos(2 * math.pi * PREGAS * s + gira)
     fundo = 0.075 * (1 - 0.25 * zz)                  # embaixo a prega abre um pouco
     X = XR - 0.04 + fundo * pr
@@ -134,7 +136,8 @@ def _folha(lado, t):
     X = X + 0.065 * w * solta * v
     Y = y_fora + (y_dentro - y_fora) * s
     Y = Y + para_dentro * (0.02 * zz + 0.035 * w * s * v)
-    Y = Y + 0.012 * w * s * math.sin(2 * math.pi * (t + fase) * 2 + 1.3)
+    if not FECHADA['ok']:
+        Y = Y + 0.012 * w * s * math.sin(2 * math.pi * (t + fase) * 2 + 1.3)
     # a barra sobe um tiquinho quando o pano é empurrado (o comprimento se mantém)
     Z = ZC1 - (ZC1 - ZC0) * zz
     Z = Z + 0.035 * w * solta * v
@@ -298,6 +301,17 @@ def janela(c, t):
     # 4. o caixilho: a travessa da bandeira, o pinázio e o vidro fixo em cima
     _caixa(c, (XV - 0.04, XV, YA, YB, ZT, ZT + TT), _madeira('#8a5232', eixo=0))
     _caixa(c, (XV - 0.04, XV, YM - 0.022, YM + 0.022, ZT + TT, ZB), _madeira('#8a5232'))
+    if FECHADA['ok']:
+        # as duas folhas fechadas no vão de baixo: o quadro de cada uma, o pinázio do meio e o vidro
+        FL = _madeira('#8a5232', eixo=0)
+        _caixa(c, (XV - 0.04, XV, YA, YB, ZA, ZA + TT), FL)
+        _caixa(c, (XV - 0.04, XV, YM - 0.03, YM + 0.03, ZA + TT, ZT), _madeira('#8a5232'))
+        _caixa(c, (XV - 0.04, XV, YA, YA + 0.04, ZA + TT, ZT), _madeira('#8a5232'))
+        _caixa(c, (XV - 0.04, XV, YB - 0.04, YB, ZA + TT, ZT), _madeira('#8a5232'))
+        for y0, y1 in ((YA + 0.04, YM - 0.03), (YM + 0.03, YB - 0.04)):
+            _caixa(c, (XV - 0.04, XV, (y0 + y1) / 2 - 0.012, (y0 + y1) / 2 + 0.012, ZA + TT, ZT), _madeira('#8a5232'))
+        o = c.novo_obj(2, contorno=False)
+        c.face_plana([(XV - 0.02, YA, ZA + TT), (XV - 0.02, YB, ZA + TT), (XV - 0.02, YB, ZT), (XV - 0.02, YA, ZT)], (1, 0, 0), _vidro, M, o)
     o = c.novo_obj(2, contorno=False)
     c.face_plana([(XV - 0.02, YA, ZT + TT), (XV - 0.02, YB, ZT + TT), (XV - 0.02, YB, ZB), (XV - 0.02, YA, ZB)], (1, 0, 0), _vidro, M, o)
     # 5. o batente por dentro (as duas ombreiras e a verga com a cornija) e o peitoril com o avental

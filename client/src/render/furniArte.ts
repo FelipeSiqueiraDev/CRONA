@@ -44,6 +44,12 @@ export interface MovelArte {
   chao?: { arquivo: string };
   /** item de parede: a vista presa na parede da direita ('r') e na da esquerda ('l'), e os outros estados ('r-1'...); a âncora é o ponto de encosto */
   parede?: Record<string, VistaArte>;
+  /**
+   * item de parede animado no estado 0 (a cortina no vento, feita por código): os quadros de cada parede, todos no
+   * mesmo recorte, trocados a cada `ms`
+   */
+  quadros?: Partial<Record<'l' | 'r', VistaArte[]>>;
+  ms?: number;
   /** item de parede redondo (o relógio): a inclinação das bordas que a arte trouxe, por parede; o jogo inclina a diferença até a da parede */
   inclina?: Record<string, number>;
   /**
@@ -366,8 +372,11 @@ export function tamanhoReal(defId: string): { real: [number, number, number]; en
 export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: string, parede: 'l' | 'r', state: number, x: number, y: number, seed = 0, vazio = false, modelo?: string): boolean {
   const a = lista?.[chaveDaArte(defId, seed, undefined, vazio, modelo)];
   if (!a?.parede) return false;
-  const vista = (state ? a.parede[`${parede}-${state}`] : undefined) ?? a.parede[parede];
+  let vista = (state ? a.parede[`${parede}-${state}`] : undefined) ?? a.parede[parede];
   if (!vista) return false;
+  // a animação (o estado 0): o quadro da vez, cada item na sua fase; até todos chegarem, o primeiro
+  const qs = !state ? a.quadros?.[parede] : undefined;
+  if (qs?.length && qs.every((q) => pronta(q.arquivo))) vista = qs[Math.floor((performance.now() + seed * 977) / (a.ms ?? 140)) % qs.length];
   const img = pronta(vista.arquivo);
   if (!img) return false;
   const k = a.escala;

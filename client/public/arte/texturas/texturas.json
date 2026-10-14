@@ -10,7 +10,8 @@
   },
   "parede": {
    "arquivo": "parede-lambri.png"
-  }
+  },
+  "px": "madeira"
  },
  "ladrilho": {
   "piso": {
@@ -23,7 +24,8 @@
   },
   "parede": {
    "arquivo": "parede-hospital.png"
-  }
+  },
+  "px": "ladrilho"
  },
  "concreto": {
   "piso": {
@@ -36,7 +38,8 @@
   },
   "parede": {
    "arquivo": "parede-pedra.png"
-  }
+  },
+  "px": "concreto"
  },
  "xadrez": {
   "piso": {
@@ -49,7 +52,8 @@
   },
   "parede": {
    "arquivo": "parede-banheiro.png"
-  }
+  },
+  "px": "xadrez"
  },
  "taco": {
   "piso": {
@@ -58,7 +62,8 @@
   },
   "parede": {
    "arquivo": "parede-gabinete.png"
-  }
+  },
+  "px": "taco"
  },
  "azulejo": {
   "piso": {
@@ -71,7 +76,8 @@
   },
   "parede": {
    "arquivo": "parede-laboratorio.png"
-  }
+  },
+  "px": "azulejo"
  },
  "musgo": {
   "piso": {
@@ -80,7 +86,8 @@
   },
   "parede": {
    "arquivo": "parede-musgo.png"
-  }
+  },
+  "px": "musgo"
  },
  "carpete": {
   "piso": {
@@ -89,7 +96,8 @@
   },
   "parede": {
    "arquivo": "parede-tecnologia.png"
-  }
+  },
+  "px": "carpete"
  },
  "metal": {
   "piso": {
@@ -98,7 +106,8 @@
   },
   "parede": {
    "arquivo": "parede-arsenal.png"
-  }
+  },
+  "px": "metal"
  },
  "bloco": {
   "piso": {
@@ -107,7 +116,8 @@
   },
   "parede": {
    "arquivo": "parede-bloco.png"
-  }
+  },
+  "px": "bloco"
  },
  "cela": {
   "piso": {
@@ -116,7 +126,8 @@
   },
   "parede": {
    "arquivo": "parede-cela.png"
-  }
+  },
+  "px": "cela"
  },
  "selo": {
   "piso": {
@@ -125,31 +136,36 @@
   },
   "parede": {
    "arquivo": "parede-selo.png"
-  }
+  },
+  "px": "selo"
  },
  "grama": {
   "piso": {
    "arquivo": "piso-grama.png",
    "casas": 4
-  }
+  },
+  "px": "grama"
  },
  "estrada": {
   "piso": {
    "arquivo": "piso-estrada.png",
    "casas": 4
-  }
+  },
+  "px": "estrada"
  },
  "lavoura": {
   "piso": {
    "arquivo": "piso-lavoura.png",
    "casas": 4
-  }
+  },
+  "px": "lavoura"
  },
  "cascalho": {
   "piso": {
    "arquivo": "piso-cascalho.png",
    "casas": 4
-  }
+  },
+  "px": "cascalho"
  },
  "terra": {
   "piso": {
@@ -158,13 +174,15 @@
   },
   "parede": {
    "arquivo": "parede-celeiro.png"
-  }
+  },
+  "px": "terra"
  },
  "pier": {
   "piso": {
    "arquivo": "piso-pier.png",
    "casas": 4
-  }
+  },
+  "px": "pier"
  },
  "calabouco": {
   "piso": {
@@ -173,7 +191,8 @@
   },
   "parede": {
    "arquivo": "parede-calabouco.png"
-  }
+  },
+  "px": "calabouco"
  },
  "loja": {
   "piso": {

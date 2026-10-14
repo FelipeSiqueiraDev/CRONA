@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 24;
+export const FAZENDA_REV = 27;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -753,14 +753,15 @@ const CENAS_BRUTAS: CenaSpec[] = [
     layout: planRight(10, 6, 3),
     andar: CASA,
     style: "cozinha_fazenda",
-    darkness: 0.35,
-    ambient: "#c08a50",
-    particles: ["dust", "smoke"],
+    // abandonada há mais de um ano (14/10, o Felipe): sem luz elétrica e o fogão frio; a luz vem da janela
+    darkness: 0.5,
+    ambient: "#9a8f7c",
+    particles: ["dust"],
     floor: [
       ["portal", 9, 3, 6],
       // o armário do canto em L (13/10, pedido do Felipe: um móvel só, no lugar de dois armários)
       ["armario_cozinha_l", 0, 0, 4],
-      ["fogao_lenha", 2, 0, 4, undefined, 1],
+      ["fogao_lenha", 2, 0, 4],
       ["pia_cozinha", 4, 0, 4],
       ["armario_cozinha", 6, 0, 4],
       ["crate_wood", 0, 4, 0],
@@ -774,7 +775,9 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["chair_wood", 5, 5, 0],
       ["mug", 5, 3, 0],
       ["plant", 9, 5, 0],
-      ...lamps([4, 2], [8, 2]),
+      // as lâmpadas apagadas (estado 1), balançando no fio com o vento da janela
+      ["ceiling_lamp", 4, 2, 0, undefined, 1],
+      ["ceiling_lamp", 8, 2, 0, undefined, 1],
     ],
     wall: [
       ["shelf_wall", "r", 0, 8.5, 3.22],
@@ -783,6 +786,8 @@ const CENAS_BRUTAS: CenaSpec[] = [
       // a janela em cima da pia (14/10, pedido do Felipe: "tá faltando só a janela"): o meio a 5 casas e 2,84 unidades
       ["janela_cozinha", "r", 0, 5.0, 1.75],
       ["clock", "l", 0, 4.5, 3.45],
+      // a teia de aranha no canto do teto, tremendo com o vento
+      ["teia", "r", 0, 0.6, 3.55],
     ],
     links: [[9, 3, "hall"]],
     plan: { x: 0, y: 0 },

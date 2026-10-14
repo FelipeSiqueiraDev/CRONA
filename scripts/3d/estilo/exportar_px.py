@@ -308,8 +308,11 @@ def main():
     for n in nomes:
         novo = exportar(n, destino)
         velho = lista.get(n, {})
-        if 'cima' in velho:
-            novo['cima'] = velho['cima']   # a vista de cima (mapa tático) continua a que era
+        # o que a arte nova não traz e o jogo usa continua o de antes: a vista de cima (mapa tático), a caixa da
+        # ordem de desenho e o encostar na parede (a porta é parede na ordem de desenho), o balanço da lâmpada
+        for k in ('cima', 'caixa', 'encosta', 'pendulo'):
+            if k in velho and k not in novo:
+                novo[k] = velho[k]
         lista[n] = novo
     os.makedirs(destino, exist_ok=True)
     json.dump(lista, open(arq, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)

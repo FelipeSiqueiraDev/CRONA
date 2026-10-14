@@ -38,10 +38,18 @@ def _janela_cozinha():
     return JC.janela, meio
 
 
+def _janela_fechada(ok):
+    JC.FECHADA['ok'] = ok
+
+
 # def do catálogo: (a função que constrói o item e o meio dele na parede de trás, em metros)
 ITENS = {
     'janela_cozinha': _janela_cozinha,
 }
+# animação do estado 0: quantos quadros (o loop inteiro, t de 0 a 1) e quanto tempo cada um fica (ms)
+QUADROS = {'janela_cozinha': (12, 140)}
+# os outros estados: estado -> a função que liga (True) e desliga (False) o jeito daquele estado
+ESTADOS = {'janela_cozinha': {'1': _janela_fechada}}
 
 # Os itens de parede dos outros cômodos, desenhados SOZINHOS (sem a cena inteira): nos módulos de pecas_px/,
 # ITENS_PAREDE = {def: (desenho, (x, z))}. O desenho põe o item na parede de trás (o plano y = 0, saindo para +y),
@@ -94,29 +102,6 @@ def exportar_sozinho(nome, destino):
     }
 
 
-def _desenhar(t, com_item, construir):
-    """A cena inteira em 1:1. Com o item: anota o primeiro objeto dele."""
-    marca = {'n0': None}
-    original = JC.janela
-
-    def com(c, tt):
-        marca['n0'] = len(c.objs)
-        construir(c, tt)
-
-    def sem(c, tt):
-        return None
-
-    JC.janela = com if com_item else sem
-    CZ.JANELA['ok'] = com_item
-    try:
-        img = CZ.montar(t, 1.0, t)
-    finally:
-        JC.janela = original
-        CZ.JANELA['ok'] = True
-    c = CZ.c
-    return np.asarray(img).astype(np.int16), c.obj.copy(), c.tipo.copy(), marca['n0'], (c.x0, c.y0)
-
-
 def _dilatar(m, r):
     out = m.copy()
     for dy in range(-r, r + 1):
@@ -125,44 +110,93 @@ def _dilatar(m, r):
     return out
 
 
-def exportar(nome, destino, t):
-    construir, meio = ITENS[nome]()
-    cor_a, obj_a, tipo_a, n0, (x0, y0) = _desenhar(t, True, construir)
-    cor_b, _, _, _, _ = _desenhar(t, False, construir)
+def _render_item(construir, tj, sem):
+    """O item no instante tj (a cortina), com o fogo parado: os pixels dele e o que ele muda na parede."""
+    cor_a, obj_a, tipo_a, n0, (x0, y0) = _desenhar_t(tj, True, construir)
     do_item = obj_a >= n0
-    mudou = np.abs(cor_a - cor_b).max(axis=-1) > 0
-    # na parede, em volta do item, o que ele muda (o contorno de 1 px, a sombra do batente e da cortina)
-    em_volta = _dilatar(do_item, 3) & mudou & (tipo_a == 2)
-    m = do_item | em_volta
-    ys, xs = np.nonzero(m)
-    if not len(xs):
-        raise SystemExit(f'{nome}: nada desenhado')
+    mudou = np.abs(cor_a - sem).max(axis=-1) > 0
+    m = do_item | (_dilatar(do_item, 3) & mudou & (tipo_a == 2))
+    return cor_a, m, (x0, y0)
+
+
+def _desenhar_t(tj, com_item, construir):
+    marca = {'n0': None}
+    original = JC.janela
+
+    def com(c, tt):
+        marca['n0'] = len(c.objs)
+        construir(c, tt)
+
+    JC.janela = com if com_item else (lambda c, tt: None)
+    CZ.JANELA['ok'] = com_item
+    try:
+        img = CZ.montar(0.0, 0.0, tj)        # o fogo apagado e parado: só o item mexe
+    finally:
+        JC.janela = original
+        CZ.JANELA['ok'] = True
+    c = CZ.c
+    return np.asarray(img).astype(np.int16), c.obj.copy(), c.tipo.copy(), marca['n0'], (c.x0, c.y0)
+
+
+def exportar(nome, destino, t):
+    """O item no estado 0 (com os quadros da animação, se tiver) e nos outros estados, todos no MESMO recorte."""
+    construir, meio = ITENS[nome]()
+    sem = _desenhar_t(0.0, False, construir)[0]
+    n, ms = QUADROS.get(nome, (1, 0))
+    vistas = []          # (chave, quadro, cor, máscara)
+    for k in range(n):
+        cor, m, org = _render_item(construir, (t + k / n) % 1.0 if n > 1 else t, sem)
+        vistas.append(('0', k, cor, m))
+    for est, liga in ESTADOS.get(nome, {}).items():
+        liga(True)
+        try:
+            cor, m, org = _render_item(construir, 0.0, sem)
+        finally:
+            liga(False)
+        vistas.append((est, 0, cor, m))
+    x0, y0 = org
+    uniao = np.zeros_like(vistas[0][3])
+    for _, _, _, m in vistas:
+        uniao |= m
+    ys, xs = np.nonzero(uniao)
     a0, a1, b0, b1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
-    rgba = np.zeros((b1 - b0, a1 - a0, 4), np.uint8)
-    rgba[..., :3] = np.clip(cor_a[b0:b1, a0:a1], 0, 255)
-    rgba[..., 3] = np.where(m[b0:b1, a0:a1], 255, 0)
-    # a âncora: o meio do item na parede, na tela (a mesma conta do motor e do jogo), dentro do recorte
     X, Y, Z = meio
     sx, sy = tela(np.array([[X, Y, Z]]))[0][:2]
-    ax = sx - x0 - a0
-    ay = sy - y0 - b0
+    ax, ay = float(sx - x0 - a0), float(sy - y0 - b0)
+    w = int(a1 - a0)
     pasta = os.path.join(destino, nome)
     os.makedirs(pasta, exist_ok=True)
-    img = Image.fromarray(rgba, 'RGBA')
-    img.save(os.path.join(pasta, 'parede-r.png'))
-    img.transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(pasta, 'parede-l.png'))
-    w, h = img.size
-    linha = {
-        'escala': 1, 'pixel': True, 'codigo': True,
-        'parede': {
-            'r': {'arquivo': f'{nome}/parede-r.png', 'ax': round(float(ax), 1), 'ay': round(float(ay), 1)},
-            'l': {'arquivo': f'{nome}/parede-l.png', 'ax': round(float(w - ax), 1), 'ay': round(float(ay), 1)},
-        },
-    }
-    altura_m = (JC.ZR + 0.03) - (JC.ZA - 0.17)
-    largura_m = (JC.YB - JC.YA) + 0.72
-    print(f'{nome}: {w}x{h} px, âncora ({ax:.1f}, {ay:.1f}); meio a {X / M_CASA:.2f} casas e {Z * Z_PER_M:.2f} unidades;'
-          f' no catálogo, w ≈ {largura_m / M_CASA * 32:.0f} px e h ≈ {altura_m * Z_PER_M * 32:.0f} px')
+
+    def grava(cor, m, arq):
+        rgba = np.zeros((b1 - b0, a1 - a0, 4), np.uint8)
+        rgba[..., :3] = np.clip(cor[b0:b1, a0:a1], 0, 255)
+        rgba[..., 3] = np.where(m[b0:b1, a0:a1], 255, 0)
+        im = Image.fromarray(rgba, 'RGBA')
+        im.save(os.path.join(pasta, f'parede-r{arq}.png'), optimize=True)
+        im.transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(pasta, f'parede-l{arq}.png'), optimize=True)
+
+    def vista(lado, arq):
+        return {'arquivo': f'{nome}/parede-{lado}{arq}.png', 'ax': round(ax if lado == 'r' else w - ax, 1), 'ay': round(ay, 1)}
+
+    parede = {}
+    quadros = {'r': [], 'l': []}
+    for est, k, cor, m in vistas:
+        if est == '0':
+            arq = '' if k == 0 else f'-q{k}'
+            grava(cor, m, arq)
+            if k == 0:
+                parede['r'], parede['l'] = vista('r', ''), vista('l', '')
+            if n > 1:
+                quadros['r'].append(vista('r', arq))
+                quadros['l'].append(vista('l', arq))
+        else:
+            grava(cor, m, f'-{est}')
+            parede[f'r-{est}'], parede[f'l-{est}'] = vista('r', f'-{est}'), vista('l', f'-{est}')
+    linha = {'escala': 1, 'pixel': True, 'codigo': True, 'parede': parede}
+    if n > 1:
+        linha['quadros'] = quadros
+        linha['ms'] = ms
+    print(f'{nome}: {w}x{int(b1 - b0)} px, âncora ({ax:.1f}, {ay:.1f}), {n} quadro(s), estados {["0"] + list(ESTADOS.get(nome, {}))}')
     return linha
 
 

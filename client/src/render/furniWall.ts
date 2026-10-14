@@ -663,6 +663,10 @@ const draws: Record<string, Draw> = {
   },
 };
 
+// a janela do sol desenha como a janela comum enquanto a arte não chega; a teia sem arte não aparece
+draws.janela_sol = draws.window;
+draws.teia = () => {};
+
 export function drawWallFurni(ctx: CanvasRenderingContext2D, def: WallFurniDef, state: number, seed: number, t: number) {
   const f = draws[def.kind];
   if (f) f(ctx, def, state, seed, t);
@@ -672,6 +676,9 @@ export function drawWallFurni(ctx: CanvasRenderingContext2D, def: WallFurniDef, 
 export function wallLights(def: WallFurniDef, state: number): WallLight[] {
   const on = state === 0;
   switch (def.kind) {
+    case 'janela_sol':
+      // a janela aberta para o dia: o sol morno entra e é a luz do cômodo (a cozinha abandonada, sem energia)
+      return on ? [{ x: def.w / 2, y: def.h * 0.6, radius: 230, color: '#ffe0a8', intensity: 0.85, kind: 'natural' }] : [];
     case 'window':
       return on ? [{ x: def.w / 2, y: def.h / 2, radius: 140, color: '#6fa8ff', intensity: 0.55, kind: 'natural' }] : [];
     case 'sconce':
