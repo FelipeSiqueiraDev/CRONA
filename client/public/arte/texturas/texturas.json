@@ -132,7 +132,7 @@
  "selo": {
   "piso": {
    "arquivo": "piso-selo.png",
-   "casas": 4.0
+   "casas": 4
   },
   "parede": {
    "arquivo": "parede-selo.png"
@@ -220,5 +220,29 @@
    "arquivo": "parede-hospital.png"
   },
   "px": "cozinha_fazenda"
+ },
+ "enxaimel": {
+  "piso": {
+   "arquivo": "piso-madeira.png",
+   "casas": 4,
+   "origem": [
+    41,
+    0
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-lambri.png"
+  },
+  "px": "enxaimel"
+ },
+ "ferraria": {
+  "piso": {
+   "arquivo": "piso-calabouco.png",
+   "casas": 4
+  },
+  "parede": {
+   "arquivo": "parede-calabouco.png"
+  },
+  "px": "ferraria"
  }
 }

@@ -3,6 +3,7 @@ import { describe, test } from "node:test";
 import { limparSalasDeExemplo, seedDb, upgradeDb } from "../src/seed";
 import { FAZENDA } from "../src/seedFazenda";
 import { ORFANATO } from "../src/seedOrfanato";
+import { SANTO_BERCO } from "../src/seedSantoBerco";
 import { SEDE } from "../src/seedSede";
 
 const AGENTES = ["D.Tepes", "Catarina Albuquerque", "Alosi Walker", "Cora Falcão"];
@@ -21,7 +22,7 @@ describe("limpeza das salas de exemplo", () => {
     assert.ok(db.rooms.some((r) => r.name.startsWith("Mansão Alvarez")), "o banco de exemplo tem a Mansão");
     assert.equal(limparSalasDeExemplo(db), true);
     assert.ok(db.rooms.length < antes);
-    for (const r of db.rooms) assert.ok(r.name.startsWith(SEDE) || r.name.startsWith(FAZENDA) || r.name.startsWith(ORFANATO), `sobrou ${r.name}`);
+    for (const r of db.rooms) assert.ok(r.name.startsWith(SEDE) || r.name.startsWith(FAZENDA) || r.name.startsWith(ORFANATO) || r.name.startsWith(SANTO_BERCO), `sobrou ${r.name}`);
     // as campanhas que sobram são as das salas que sobram
     const ids = new Set(db.rooms.map((r) => r.id));
     for (const k of Object.keys(db.campaigns ?? {})) assert.ok(ids.has(Number(k)), `campanha ${k} sem sala`);

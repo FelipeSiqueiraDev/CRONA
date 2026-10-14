@@ -134,6 +134,8 @@ export interface Database {
   fazendaRev?: number;
   /** versão da montagem do Orfanato Filhos do Dragão (seedOrfanato) */
   orfanatoRev?: number;
+  /** versão da montagem de Santo Berço (seedSantoBerco) */
+  santoBercoRev?: number;
   /** o bestiário (10/10): as criaturas, cada uma com uma ficha e várias aparências */
   bestiario?: Criatura[];
   /** as salas e campanhas de exemplo antigas já foram tiradas (seed.ts, limparSalasDeExemplo) */
