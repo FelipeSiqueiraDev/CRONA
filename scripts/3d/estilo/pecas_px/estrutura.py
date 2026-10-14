@@ -283,11 +283,28 @@ def _tranca():
     _cx((xm - 0.045, xm + 0.045, 0.06, 0.1, zb - 0.17, zb - 0.07), emissivo(corpo))
 
 
+def _vao_escuro():
+    """
+    O vão da porta aberta: o escuro do outro lado (14/10, o Felipe: "as portas estão com parede dentro"). Só a porta
+    principal do cômodo abre buraco na parede do jogo; as outras são peças encostadas nela, e sem este fundo a parede
+    aparecia dentro do batente. Um pouco mais claro embaixo, onde o chão do outro cômodo pega luz.
+    """
+    def cor(L, n, P):
+        z = L[:, 2]
+        out = np.tile(hx('#0b0908'), (len(L), 1))
+        out = np.where((z < 0.32)[:, None], hx('#15110e'), out)
+        return np.where((z < 0.12)[:, None], hx('#1e1813'), out)
+    o = CZ.c.novo_obj(3, contorno=False, sombra=False)
+    y = -REV + 0.004
+    _fp([(VAO0, y, 0.022), (VAO1, y, 0.022), (VAO1, y, ZV), (VAO0, y, ZV)], (0, 1, 0), emissivo(cor), o)
+
+
 def _porta(estado):
     def d():
         rot = _rot()
         _moldura()
         if estado == 0:
+            _vao_escuro()
             _folha_aberta(rot)
         else:
             _folha_fechada(rot)
