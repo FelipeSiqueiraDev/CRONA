@@ -1182,7 +1182,6 @@ export class Shell {
       levar: (roomId, tokens, entrar) => (sfx.click(), this.app.net.send({ t: 'grupoPara', roomId, ...(tokens ? { tokens } : {}), ...(entrar === false ? { entrar } : {}) })),
       marcarVisita: (roomId, visitada) => this.app.net.send(roomId === null ? { t: 'visitada', campanha: this.app.state.room?.id, visitada } : { t: 'visitada', roomId, visitada }),
       ehAgente: (charId) => !!charId && this.fichasMapa.some((f) => f.personagem === charId),
-      moverCena: (roomId, x, y) => this.app.net.send({ t: 'layoutSet', roomId, x, y }),
     };
   }
 

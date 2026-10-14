@@ -27,7 +27,7 @@ import { sfx } from './sfx';
 export interface MinimapaHost {
   campanha(): CampaignState | null;
   cenaAtual(): number | undefined;
-  /** o mestre arruma a planta (Alt + arrastar um cômodo) */
+  /** o mestre: arrasta as peças de um lugar para outro e marca as visitas */
   mestre(): boolean;
   ir(id: number): void;
   /**
@@ -39,7 +39,6 @@ export interface MinimapaHost {
   marcarVisita(roomId: number | null, visitada: boolean): void;
   /** o personagem é de um agente (tem ficha): só esses vão no "Levar o grupo" */
   ehAgente(charId: number | null | undefined): boolean;
-  moverCena(id: number, x: number, y: number): void;
 }
 
 type Vista = { tipo: 'terreno'; cena: number } | { tipo: 'predio'; predio: string; andar: string };
@@ -136,7 +135,6 @@ export class Minimapa {
   private raf = 0;
   private hatch = { room: -1, t: 1 };
   private fade = { room: -1, t: 1 };
-  private drag: { id: number; sx: number; sy: number; ox: number; oy: number; moved: boolean } | null = null;
   /** a peça arrastada no minimapa (leva só ela para onde soltar) */
   private arraste: { token: number; de: number; sx: number; sy: number; x: number; y: number; moved: boolean } | null = null;
   /** no cartão: os agentes que o mestre tirou do "Levar" (ficam onde estão) */
@@ -172,7 +170,8 @@ export class Minimapa {
     if (cur !== this.ultimaCena) {
       this.ultimaCena = cur;
       this.seguindo = true;
-      this.sel = null;
+      // o cartão do cômodo para onde se acabou de ir continua aberto (o Levar o grupo); o de outro fecha
+      if (this.sel?.id !== cur) this.sel = null;
       this.anim = null;
     }
     const aqui = cur !== undefined ? this.vistaDe(cur) : null;
@@ -327,12 +326,6 @@ export class Minimapa {
         this.sel = null;
         return this.desenhar();
       }
-      if (a.tipo === 'cena' && e.altKey && this.host.mestre() && this.vista?.tipo === 'predio') {
-        const lay = this.host.campanha()?.layout[a.id as number] ?? { x: 0, y: 0 };
-        const p = at(e);
-        this.drag = { id: a.id as number, sx: p.x, sy: p.y, ox: lay.x, oy: lay.y, moved: false };
-        c.setPointerCapture(e.pointerId);
-      }
     });
     c.addEventListener('pointermove', (e) => {
       const p = at(e);
@@ -346,18 +339,6 @@ export class Minimapa {
         this.hover = k;
         c.style.cursor = 'grabbing';
         this.desenhar();
-        return;
-      }
-      const d = this.drag;
-      if (d) {
-        const camp = this.host.campanha();
-        const dx = Math.round((p.x - d.sx) / this.S);
-        const dy = Math.round((p.y - d.sy) / this.S);
-        if (dx || dy) d.moved = true;
-        if (d.moved && camp) {
-          camp.layout[d.id] = { ...camp.layout[d.id], x: d.ox + dx, y: d.oy + dy };
-          this.desenhar();
-        }
         return;
       }
       const a = acerta(p);
@@ -392,13 +373,6 @@ export class Minimapa {
         this.desenhar();
         return;
       }
-      const d = this.drag;
-      this.drag = null;
-      if (d?.moved) {
-        const l = this.host.campanha()?.layout[d.id];
-        if (l) this.host.moverCena(d.id, l.x, l.y);
-        return;
-      }
       if (e.button !== 0 || this.anim) return;
       const a = acerta(at(e));
       if (!a) return;
@@ -418,7 +392,11 @@ export class Minimapa {
         return;
       }
       const id = a.id as number;
-      if (this.sel?.id !== id) sfx.click();
+      // na planta do andar, um clique leva ao cômodo (14/10, o Felipe: "clique em dois passos, ruim de usar") e
+      // abre o cartão dele, com o Levar o grupo; no terreno, clicar no chão só mostra o cartão (errar o prédio
+      // não leva ninguém para o meio do pasto)
+      if (this.vista?.tipo === 'predio' && id !== this.host.cenaAtual()) this.host.ir(id);
+      else if (this.sel?.id !== id) sfx.click();
       this.sel = { tipo: 'cena', id };
       this.desenhar();
     });
@@ -1039,17 +1017,30 @@ export class Minimapa {
    * aceso de ouro (sobe com a varredura de luz quando o grupo entra), o escolhido em azul, o
    * não visitado apagado, e as peças como pontos de luz.
    */
+  /** A planta montada sozinha de cada andar, guardada até as cenas mudarem. */
+  private plantas = new Map<string, { sig: string; pos: Map<number, { x: number; y: number; r: number }> }>();
+  private plantaDoAndar(p: LocalPredio, andar: string, cenas: SceneInfo[]) {
+    const chave = `${p.id}/${andar}`;
+    const sig = JSON.stringify(cenas.map((s) => [s.id, s.heightmap.length, s.door, s.portals]));
+    let g = this.plantas.get(chave);
+    if (!g || g.sig !== sig) {
+      g = { sig, pos: plantaAutomatica(cenas, (s) => this.hm(s), p.entrada) };
+      this.plantas.set(chave, g);
+    }
+    return g.pos;
+  }
+
   private desenharAndar(ctx: CanvasRenderingContext2D, p: LocalPredio, andar: string, W: number, H: number, alvos: Alvo[]) {
     const camp = this.host.campanha();
     const a = p.andares.find((x) => x.nome === andar);
     if (!camp || !a) return;
     ctx.imageSmoothingEnabled = true;
     const cur = this.host.cenaAtual();
-    const parsed = a.cenas
-      .map((id) => this.cena(id))
-      .filter((s): s is SceneInfo => !!s)
+    const cenasDoAndar = a.cenas.map((id) => this.cena(id)).filter((s): s is SceneInfo => !!s);
+    const auto = this.plantaDoAndar(p, andar, cenasDoAndar);
+    const parsed = cenasDoAndar
       .map((s) => {
-        const pos = camp.layout[s.id] ?? { x: 0, y: 0 };
+        const pos = auto.get(s.id) ?? camp.layout[s.id] ?? { x: 0, y: 0 };
         const raw = this.hm(s);
         const rot = (x: number, y: number) => rotatePt(raw, pos.r ?? 0, x, y);
         const porta = s.aberto ? null : rot(s.door.x, s.door.y);
@@ -1068,14 +1059,11 @@ export class Minimapa {
     }
     const bw = Math.max(1, x1 - x0);
     const bh = Math.max(1, y1 - y0);
-    // arrastando um cômodo, a escala fica parada (senão a planta foge do mouse)
     const pad = this.opc.grande ? 34 : PAD;
-    if (!this.drag) {
-      const sozinho = parsed.length === 1;
-      const teto = sozinho ? Math.min((W * 0.6) / bw, (H * 0.7) / bh) : Infinity;
-      this.S = Math.max(1.5, Math.min(teto, (W - pad * 2) / bw, (H - pad * 2) / bh));
-      this.O = { x: Math.round(pad + (W - pad * 2 - bw * this.S) / 2 - x0 * this.S), y: Math.round(pad + (H - pad * 2 - bh * this.S) / 2 - y0 * this.S) };
-    }
+    const sozinho = parsed.length === 1;
+    const teto = sozinho ? Math.min((W * 0.6) / bw, (H * 0.7) / bh) : Infinity;
+    this.S = Math.max(1.5, Math.min(teto, (W - pad * 2) / bw, (H - pad * 2) / bh));
+    this.O = { x: Math.round(pad + (W - pad * 2 - bw * this.S) / 2 - x0 * this.S), y: Math.round(pad + (H - pad * 2 - bh * this.S) / 2 - y0 * this.S) };
     const S = this.S;
     // o cartão fica por cima do mapa: se o cômodo escolhido cair atrás dele, o mapa sobe (sem encolher)
     let dy = 0;
@@ -1239,7 +1227,7 @@ export class Minimapa {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const fonte = fs(10);
+    const fonte = fs(11);
     ctx.font = `600 ${fonte}px ${FONTE}`;
     const postas: { x0: number; y0: number; x1: number; y1: number }[] = [];
     const ordem = [...rotulos].sort((r1, r2) => r2.w * r2.h - r1.w * r1.h || r1.y - r2.y || r1.x - r2.x);
@@ -1777,4 +1765,88 @@ export function rotatePt(hm: Heightmap, r: number, x: number, y: number): [numbe
   if (k === 2) return [hm.width - 1 - x, hm.height - 1 - y];
   if (k === 3) return [y, hm.width - 1 - x];
   return [x, y];
+}
+
+/**
+ * A planta montada sozinha (14/10, o Felipe: "os cômodos soltos, horrível de usar"): começa pela entrada e encaixa
+ * cada cômodo vizinho pela porta que liga os dois, a casa de dentro de um encostada na do outro (a parede entre eles
+ * fica fina, como numa casa de verdade). O vizinho gira de quarto em quarto de volta até as portas ficarem de frente;
+ * se encostar num cômodo já posto, desliza de lado. O que não se liga por porta fica à direita.
+ */
+export function plantaAutomatica(cenas: SceneInfo[], hmDe: (s: SceneInfo) => Heightmap, entrada?: number): Map<number, { x: number; y: number; r: number }> {
+  const porId = new Map(cenas.map((s) => [s.id, s]));
+  const pos = new Map<number, { x: number; y: number; r: number }>();
+  const ocupado = new Set<string>();
+  const DIRS: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  /** as casas de chão do cômodo girado (sem o vão da porta) e o vão */
+  const forma = (s: SceneInfo, r: number) => {
+    const raw = hmDe(s);
+    const hm = rotateHm(raw, r);
+    const vao = s.aberto ? null : rotatePt(raw, r, s.door.x, s.door.y);
+    const chao = (x: number, y: number) => hm.tiles[y]?.[x] !== null && hm.tiles[y]?.[x] !== undefined && !(vao && vao[0] === x && vao[1] === y);
+    const casas: [number, number][] = [];
+    for (let y = 0; y < hm.height; y++) for (let x = 0; x < hm.width; x++) if (chao(x, y)) casas.push([x, y]);
+    return { raw, chao, casas };
+  };
+  /** a casa de dentro da porta e o lado de fora dela (para onde a porta abre) */
+  const saida = (s: SceneInfo, r: number, px: number, py: number) => {
+    const f = forma(s, r);
+    let [cx, cy] = rotatePt(f.raw, r, px, py);
+    if (!f.chao(cx, cy)) {
+      const dentro = DIRS.find(([dx, dy]) => f.chao(cx + dx, cy + dy));
+      if (!dentro) return null;
+      [cx, cy] = [cx + dentro[0], cy + dentro[1]];
+    }
+    const fora = DIRS.find(([dx, dy]) => !f.chao(cx + dx, cy + dy));
+    return fora ? { cx, cy, dx: fora[0], dy: fora[1], f } : null;
+  };
+  const cabe = (casas: [number, number][], ox: number, oy: number) => casas.every(([x, y]) => !ocupado.has(`${ox + x},${oy + y}`));
+  const por = (s: SceneInfo, x: number, y: number, r: number) => {
+    pos.set(s.id, { x, y, r });
+    for (const [cx, cy] of forma(s, r).casas) ocupado.add(`${x + cx},${y + cy}`);
+  };
+  const raiz = porId.get(entrada ?? -1) ?? cenas[0];
+  if (!raiz) return pos;
+  por(raiz, 0, 0, 0);
+  const fila = [raiz];
+  while (fila.length) {
+    const a = fila.shift()!;
+    const pa = pos.get(a.id)!;
+    for (const pt of a.portals) {
+      const b = porId.get(pt.link);
+      if (!b || pos.has(b.id)) continue;
+      const sa = saida(a, pa.r, pt.x, pt.y);
+      const volta = b.portals.find((q) => q.link === a.id);
+      if (!sa || !volta) continue;
+      // a casa do outro lado da parede, onde fica a casa de dentro da porta do vizinho
+      const tx = pa.x + sa.cx + sa.dx;
+      const ty = pa.y + sa.cy + sa.dy;
+      let posto = false;
+      // as portas de frente primeiro; depois qualquer giro; e deslizando de lado até caber
+      const giros = [0, 1, 2, 3].map((r) => ({ r, sb: saida(b, r, volta.x, volta.y) })).filter((g) => g.sb);
+      giros.sort((g1, g2) => Number(!(g1.sb!.dx === -sa.dx && g1.sb!.dy === -sa.dy)) - Number(!(g2.sb!.dx === -sa.dx && g2.sb!.dy === -sa.dy)));
+      for (const desl of [0, 1, -1, 2, -2, 3, -3, 4, -4]) {
+        for (const { r, sb } of giros) {
+          const ox = tx - sb!.cx + (sa.dx === 0 ? desl : 0);
+          const oy = ty - sb!.cy + (sa.dy === 0 ? desl : 0);
+          if (!cabe(sb!.f.casas, ox, oy)) continue;
+          por(b, ox, oy, r);
+          posto = true;
+          break;
+        }
+        if (posto) break;
+      }
+      if (posto) fila.push(b);
+    }
+  }
+  // o que ficou sem porta para o resto: à direita, um ao lado do outro
+  let x1 = 0;
+  for (const [id, p] of pos) x1 = Math.max(x1, p.x + rotateHm(hmDe(porId.get(id)!), p.r).width);
+  let x = x1 + 2;
+  for (const s of cenas) {
+    if (pos.has(s.id)) continue;
+    por(s, x, 0, 0);
+    x += hmDe(s).width + 2;
+  }
+  return pos;
 }

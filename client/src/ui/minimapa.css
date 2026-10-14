@@ -564,3 +564,8 @@ html:not(.modo-ficha) .p-plan.mm .mm-cartao {
   right: 3.4rem;
   bottom: 2rem;
 }
+
+/* a planta maior na coluna (14/10, o Felipe: "pequeno demais"): o cartão da sala e o "Nesta cena" ficam com o resto */
+html:not(.modo-ficha) .shell .col-map .p-plan.wide.mm {
+  height: 42rem !important;
+}
