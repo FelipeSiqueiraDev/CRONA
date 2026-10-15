@@ -571,3 +571,55 @@ html:not(.modo-ficha) .p-plan.mm .mm-cartao {
 html:not(.modo-ficha) .shell .col-map .p-plan.wide.mm {
   height: 42rem !important;
 }
+
+/* o cartão do local: a foto da cena, o texto e as conexões (15/10) */
+.mm-c-det {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 0.7rem;
+  align-items: flex-start;
+}
+.mm-c-foto {
+  flex: none;
+  width: 9rem;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border: 0.12rem solid rgba(161, 136, 115, 0.55);
+  image-rendering: auto;
+}
+.mm-c-corpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.mm-c-desc {
+  margin: 0;
+  font: 400 1.1rem/1.35 var(--r-corpo, sans-serif);
+  color: var(--r-texto-2, #cdbfa9);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mm-c-lig {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  font: 500 1rem/1 var(--r-corpo, sans-serif);
+  color: var(--r-texto-3, #a3978a);
+}
+.mm-c-lig button {
+  padding: 0.25rem 0.7rem;
+  border: 0.12rem solid rgba(161, 136, 115, 0.55);
+  border-radius: 99rem;
+  background: none;
+  font: 500 1rem/1 var(--r-corpo, sans-serif);
+  color: var(--r-texto, #f3e9d8);
+  cursor: pointer;
+}
+.mm-c-lig button:hover {
+  border-color: var(--r-ouro, #e9a944);
+}

@@ -651,7 +651,7 @@ export class Minimapa {
     const vao = deFora.filter((q) => !this.ficam.has(q.id!));
     const visitada = s ? this.visitada(s.id) : true;
     const mestre = this.host.mestre();
-    const sig = JSON.stringify([sel?.id, s?.name, quem, cur, deFora.map((q) => [q.id, q.name, q.color, q.roomId]), [...this.ficam], visitada, mestre]);
+    const sig = JSON.stringify([sel?.id, s?.name, s?.descricao, s?.portals.map((q) => q.link), quem, cur, deFora.map((q) => [q.id, q.name, q.color, q.roomId]), [...this.ficam], visitada, mestre]);
     if (this.cartao.dataset.sig === sig) return;
     this.cartao.dataset.sig = sig;
     clear(this.cartao).classList.toggle('hidden', !s);
@@ -678,6 +678,8 @@ export class Minimapa {
           : '',
         h('button', { class: 'mm-c-x', type: 'button', title: 'Fechar o cartão', 'aria-label': 'Fechar o cartão', onclick: () => ((this.sel = null), sfx.tick(), this.desenhar()) }, ic('fechar')),
       ),
+      // a foto da cena, o texto dela e por onde se vai (cada conexão mostra o lugar no minimapa)
+      this.detalhes(s),
       // o grupo dividido: quem vai (aceso) e quem fica (apagado)
       deFora.length > 1 || (deFora.length === 1 && this.ficam.size)
         ? h(
@@ -721,6 +723,36 @@ export class Minimapa {
         aqui
           ? h('span', { class: 'mm-c-aqui' }, ic('pino'), 'Aqui')
           : h('button', { class: 'mm-c-entrar', type: 'button', title: 'Só a cena (e a mesa) vai para lá; as peças ficam (clique duplo também)', onclick: () => this.host.ir(s.id) }, ic('entrar'), 'Entrar'),
+      ),
+    );
+  }
+
+  /** A foto (a última captura da cena), a descrição e as conexões do cômodo escolhido. */
+  private detalhes(s: SceneInfo): HTMLElement | '' {
+    let foto: string | null = null;
+    try {
+      foto = localStorage.getItem(`crona.thumb.${s.id}`);
+    } catch {
+      /* sem armazenamento: fica sem foto */
+    }
+    const ligacoes = [...new Set(s.portals.map((q) => q.link))].filter((id) => this.cena(id));
+    if (!foto && !s.descricao && !ligacoes.length) return '';
+    return h(
+      'div',
+      { class: 'mm-c-det' },
+      foto ? h('img', { class: 'mm-c-foto', src: foto, alt: '' }) : '',
+      h(
+        'div',
+        { class: 'mm-c-corpo' },
+        s.descricao ? h('p', { class: 'mm-c-desc' }, s.descricao) : '',
+        ligacoes.length
+          ? h(
+              'div',
+              { class: 'mm-c-lig' },
+              h('span', null, 'Conexões'),
+              ...ligacoes.map((id) => h('button', { type: 'button', title: 'Mostrar no minimapa', onclick: () => (sfx.tick(), this.focar(id)) }, nomeCurto(this.cena(id)!.name))),
+            )
+          : '',
       ),
     );
   }

@@ -1160,6 +1160,7 @@ export class Hotel implements HotelApi {
       heightmap: r.data.heightmap,
       door: r.data.door,
       portals: r.portals(),
+      ...(r.data.description ? { descricao: r.data.description.slice(0, 280) } : {}),
       users: r.userPositions(),
       ...(r.data.floorStyle ? { estilo: r.data.floorStyle } : {}),
       ...(r.data.viagem ? { viagem: true } : {}),

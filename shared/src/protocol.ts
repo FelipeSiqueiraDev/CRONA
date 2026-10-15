@@ -337,6 +337,8 @@ export interface SceneInfo {
   heightmap: string;
   door: Door;
   portals: { x: number; y: number; link: number }[];
+  /** o texto do lugar (Configurar cena), para o cartão do minimapa */
+  descricao?: string;
   users: { id: number; name: string; x: number; y: number }[];
   /** o piso do cômodo: a planta pinta o cômodo na cor dele (ladrilho, carpete, taco...) */
   estilo?: FloorStyle;
