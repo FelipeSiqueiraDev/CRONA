@@ -6,7 +6,7 @@ import { contornoArea, type Casa } from '../room/combateGeo';
 import type { MarcasCombate } from './combateMarcas';
 import { imagemDeCima, imagemDoChao, tamanhoReal, chaveDaArte } from './furniArte';
 import { VAO_PORTA_M } from './furniKit';
-import { texturaPiso } from './texturas';
+import { pisoDeCima } from './pisoTatico';
 
 /**
  * Mapa tático: a sala vista de cima, como um mapa de batalha, e o caminho da câmera do
@@ -284,16 +284,11 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
   ctx.setTransform(matrizNaAltura(v, 0));
   const pisoPath = new Path2D();
   for (let y = 0; y < map.height; y++) for (let x = 0; x < map.width; x++) if (chao(x, y)) pisoPath.rect(x, y, 1.002, 1.002);
-  const padraoDe = (estilo: FloorStyle | undefined): CanvasPattern | null => {
-    const t = texturaPiso(estilo);
-    const pat = t?.img.complete && t.img.naturalWidth ? ctx.createPattern(t.img, 'repeat') : null;
-    if (pat) pat.setTransform(new DOMMatrix().scale(t!.casas / t!.img.naturalWidth));
-    return pat;
-  };
+  // o piso é desenhado em código, casa a casa (pisoTatico.ts), e não mais com a textura pintada
+  const px = 1 / v.escala;
   const linhasTerreno = opcoes.terreno ? opcoes.terreno.replace(/\r/g, '').split('\n') : undefined;
   if (linhasTerreno) {
     // ao ar livre: cada casa com o chão dela (a textura de cima de cada estilo) e a água nas casas vazias
-    const porEstilo = new Map<FloorStyle | undefined, Path2D>();
     const agua = new Path2D();
     for (let y = 0; y < map.height; y++)
       for (let x = 0; x < map.width; x++) {
@@ -302,19 +297,12 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
           if (t === 'agua') agua.rect(x, y, 1.002, 1.002);
           continue;
         }
-        const estilo = t && t !== 'agua' ? t : piso;
-        if (!porEstilo.has(estilo)) porEstilo.set(estilo, new Path2D());
-        porEstilo.get(estilo)!.rect(x, y, 1.002, 1.002);
+        pisoDeCima(ctx, x, y, t && t !== 'agua' ? t : piso, px);
       }
     ctx.fillStyle = COR_AGUA;
     ctx.fill(agua);
-    for (const [estilo, path] of porEstilo) {
-      ctx.fillStyle = padraoDe(estilo) ?? (estilo ? COR_TERRENO[estilo] : undefined) ?? '#4a4038';
-      ctx.fill(path);
-    }
   } else {
-    ctx.fillStyle = padraoDe(piso) ?? '#4a4038';
-    ctx.fill(pisoPath);
+    for (let y = 0; y < map.height; y++) for (let x = 0; x < map.width; x++) if (chao(x, y)) pisoDeCima(ctx, x, y, piso, px);
   }
   if (opcoes.imagemChao) ctx.drawImage(opcoes.imagemChao, 0, 0, map.width, map.height);
   else {
@@ -324,7 +312,6 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
   for (const { it, def } of itens) if (def.flat) desenharTapete(ctx, it, def);
   ctx.save();
   ctx.clip(pisoPath);
-  const px = 1 / v.escala;
   ctx.lineWidth = px;
   ctx.strokeStyle = 'rgba(240, 225, 195, 0.06)';
   ctx.beginPath();
@@ -541,6 +528,7 @@ function desenharMovel(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorIte
   ctx.fill(path);
   ctx.save();
   ctx.clip(path);
+  const desenhou = !planta && detalheDeCima(ctx, r, `${def.id} ${def.kind}`, it, corBase, 1 / v.escala);
   if (planta) {
     const cx = r.x + r.w / 2;
     const cy = r.y + r.h / 2;
@@ -552,6 +540,8 @@ function desenharMovel(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorIte
       ctx.ellipse(cx + Math.cos(a) * rr * 0.45, cy + Math.sin(a) * rr * 0.45, rr * 0.42, rr * 0.2, a, 0, Math.PI * 2);
       ctx.fill();
     }
+  } else if (desenhou) {
+    // o detalhe do tipo já foi desenhado
   } else if (mesa) {
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
     ctx.lineWidth = 0.03;
@@ -580,6 +570,130 @@ function desenharMovel(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorIte
   ctx.strokeStyle = '#0f0c0a';
   ctx.lineWidth = Math.max(1 / v.escala, 0.05);
   ctx.stroke(path);
+}
+
+/**
+ * O que se vê de cima nos móveis comuns, em código (cama com travesseiro, baú com a tampa e o fecho, barril com os aros,
+ * caixote com o X, armário e estante com as portas, fogão com as bocas, fogueira com a brasa, pia com a bacia).
+ * Devolve true se desenhou algo. `px` = um pixel da tela em casas.
+ */
+function detalheDeCima(ctx: CanvasRenderingContext2D, r: { x: number; y: number; w: number; h: number }, tipo: string, it: FloorItem, corBase: string, px: number): boolean {
+  const lw = Math.max(px, 0.025);
+  const cx = r.x + r.w / 2;
+  const cy = r.y + r.h / 2;
+  ctx.lineWidth = lw;
+  // o lado da cabeceira/do fundo, pelo giro (giro 4: o fundo no y menor)
+  const fundo = it.rot === 4 ? 'y-' : it.rot === 0 ? 'y+' : it.rot === 2 ? 'x-' : 'x+';
+  if (/bed|cama|beliche|rede|maca|colchao|hammock|berco/.test(tipo)) {
+    const comp = Math.max(r.w, r.h);
+    const larg = Math.min(r.w, r.h);
+    const vert = r.h >= r.w;
+    // o lençol (a cor do móvel mais clara) e o travesseiro na cabeceira
+    ctx.fillStyle = misturar(corBase, '#d9d2c2', 0.45);
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.fillStyle = misturar(corBase, '#000000', 0.15);
+    const dobra = comp * 0.45;
+    if (vert) ctx.fillRect(r.x, fundo === 'y-' ? r.y + r.h - dobra : r.y, r.w, dobra);
+    else ctx.fillRect(fundo === 'x-' ? r.x + r.w - dobra : r.x, r.y, dobra, r.h);
+    ctx.fillStyle = '#e8e1d2';
+    const pw = vert ? larg * 0.78 : comp * 0.2;
+    const ph = vert ? comp * 0.2 : larg * 0.78;
+    const px0 = vert ? cx - pw / 2 : fundo === 'x-' ? r.x + comp * 0.06 : r.x + r.w - comp * 0.06 - pw;
+    const py0 = vert ? (fundo === 'y-' ? r.y + comp * 0.06 : r.y + r.h - comp * 0.06 - ph) : cy - ph / 2;
+    ctx.fillRect(px0, py0, pw, ph);
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.strokeRect(px0, py0, pw, ph);
+    return true;
+  }
+  if (/chest|bau|baú|trunk|bagagem|cofre/.test(tipo)) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.strokeRect(r.x + r.w * 0.08, r.y + r.h * 0.08, r.w * 0.84, r.h * 0.84);
+    ctx.beginPath();
+    if (r.w >= r.h) (ctx.moveTo(cx, r.y), ctx.lineTo(cx, r.y + r.h));
+    else (ctx.moveTo(r.x, cy), ctx.lineTo(r.x + r.w, cy));
+    ctx.stroke();
+    ctx.fillStyle = '#d9b24a';
+    ctx.fillRect(cx - 0.05, cy - 0.05, 0.1, 0.1);
+    return true;
+  }
+  if (/barrel|barril|tonel|cask/.test(tipo)) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    for (const f of [0.42, 0.26]) {
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, Math.min(r.w, r.h) * f, Math.min(r.w, r.h) * f, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(cx - 0.03, cy - 0.03, 0.06, 0.06);
+    return true;
+  }
+  if (/crate|caixote|engradado|caixa|cx_/.test(tipo)) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.strokeRect(r.x + r.w * 0.1, r.y + r.h * 0.1, r.w * 0.8, r.h * 0.8);
+    ctx.beginPath();
+    ctx.moveTo(r.x + r.w * 0.1, r.y + r.h * 0.1);
+    ctx.lineTo(r.x + r.w * 0.9, r.y + r.h * 0.9);
+    ctx.moveTo(r.x + r.w * 0.9, r.y + r.h * 0.1);
+    ctx.lineTo(r.x + r.w * 0.1, r.y + r.h * 0.9);
+    ctx.stroke();
+    return true;
+  }
+  if (/stove|fogao|fogão|oven|forno|cooktop/.test(tipo)) {
+    ctx.fillStyle = '#26221f';
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    const n = r.w >= r.h ? 2 : 1;
+    const m = r.w >= r.h ? 1 : 2;
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < m; j++) {
+        const bx = r.x + (r.w * (i + 0.5)) / n;
+        const by = r.y + (r.h * (j + 0.5)) / m;
+        ctx.strokeStyle = 'rgba(200,190,175,0.55)';
+        ctx.beginPath();
+        ctx.arc(bx, by, Math.min(r.w / n, r.h / m) * 0.3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(120,40,20,0.8)';
+        ctx.beginPath();
+        ctx.arc(bx, by, Math.min(r.w / n, r.h / m) * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    return true;
+  }
+  if (/fogueira|campfire|lareira|fireplace|forja|forge|braseiro|brasa/.test(tipo)) {
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(r.w, r.h) * 0.5);
+    g.addColorStop(0, 'rgba(255,200,90,0.95)');
+    g.addColorStop(0.45, 'rgba(240,110,30,0.85)');
+    g.addColorStop(1, 'rgba(60,30,20,0.9)');
+    ctx.fillStyle = g;
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    return true;
+  }
+  if (/sink|pia|banheira|tub|bacia|basin|lavat/.test(tipo)) {
+    ctx.fillStyle = 'rgba(200,225,235,0.75)';
+    ctx.fillRect(r.x + r.w * 0.14, r.y + r.h * 0.14, r.w * 0.72, r.h * 0.72);
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.strokeRect(r.x + r.w * 0.14, r.y + r.h * 0.14, r.w * 0.72, r.h * 0.72);
+    return true;
+  }
+  if (/shelf|prateleira|estante|bookcase|armario|armário|wardrobe|guarda|cabinet|dresser|comoda|cômoda|cupboard|louceiro|gaveteiro|aparador|vitrine|geladeira|fridge/.test(tipo)) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    const comp = Math.max(r.w, r.h);
+    const n = Math.max(2, Math.round(comp / 0.5));
+    ctx.beginPath();
+    for (let i = 1; i < n; i++) {
+      if (r.w >= r.h) (ctx.moveTo(r.x + (r.w * i) / n, r.y), ctx.lineTo(r.x + (r.w * i) / n, r.y + r.h));
+      else (ctx.moveTo(r.x, r.y + (r.h * i) / n), ctx.lineTo(r.x + r.w, r.y + (r.h * i) / n));
+    }
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(230,205,140,0.8)';
+    for (let i = 0; i < n; i++) {
+      const hx = r.w >= r.h ? r.x + (r.w * (i + 0.5)) / n : cx;
+      const hy = r.w >= r.h ? cy : r.y + (r.h * (i + 0.5)) / n;
+      ctx.fillRect(hx - 0.03, hy - 0.03, 0.06, 0.06);
+    }
+    return true;
+  }
+  void corBase;
+  return false;
 }
 
 /**
