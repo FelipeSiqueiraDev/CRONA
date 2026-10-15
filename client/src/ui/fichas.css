@@ -3557,3 +3557,61 @@ select.fx-inp {
   gap: 0.6rem;
   min-width: 0;
 }
+
+/* =====================================================================
+   A FICHAS ARRUMADA (14/10, o Felipe: "botão cortado, as informações cada
+   uma de um tamanho, tudo torto").
+   - A fileira de botões: uma barra só, alinhada à direita embaixo dos
+     painéis (antes cada botão tinha a sua coordenada e, em fila, os
+     deslocamentos somavam e o último saía da tela).
+   - Uma escala só de texto: título do painel, rótulo (cinza, caixa alta),
+     valor e número grande. Nada de rótulo de 5 px.
+   ===================================================================== */
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+  html:not(.modo-ficha) .fx-barra {
+    position: absolute;
+    left: 47.6rem;
+    top: 88rem;
+    width: 118.6rem;
+    height: 4.4rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1.2rem;
+  }
+  html:not(.modo-ficha) .fx-barra .fx-bt {
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    width: auto;
+    min-width: 12rem;
+    padding: 0 1.6rem;
+    flex: none;
+  }
+
+  /* o título de cada painel */
+  html:not(.modo-ficha) .fx :is(.fx-tit h3, .fx-ag-tit) {
+    font-size: 2.05rem !important;
+  }
+  /* o rótulo: cinza, caixa alta, sempre do mesmo tamanho */
+  html:not(.modo-ficha) .fx :is(.fx-id-r, .fx-dv-l, .fx-tab-cab span, .fx-lim, .fx-g-aba, .fx-at-n, .fx-rc-n, .fx-nex small, .fx-id-v small) {
+    font-size: 1.3rem !important;
+  }
+  /* o rótulo das caixinhas (derivados e combate): um degrau menor, para caber numa linha */
+  html:not(.modo-ficha) .fx :is(.fx-dv-r, .fx-tc > span) {
+    font-size: 1rem !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap;
+  }
+  /* o valor e o texto das tabelas */
+  html:not(.modo-ficha) .fx :is(.fx-id-v, .fx-id-v strong, .fx-id-v > span, .fx-nex b, .fx-tc > b, .fx-tab-l > span, .fx-tab-l > b, .fx-pi-n, .fx-pg h4, .fx-carga, .fx-bar > span) {
+    font-size: 1.55rem !important;
+  }
+  html:not(.modo-ficha) .fx :is(.fx-eq-obs, .fx-pi-n small, .fx-tc > b + b) {
+    font-size: 1.3rem !important;
+  }
+  /* o número grande (atributo, defesa, deslocamento, os máximos) */
+  html:not(.modo-ficha) .fx :is(.fx-at-v, .fx-dv-v) {
+    font-size: 2.2rem !important;
+  }
+}
