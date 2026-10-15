@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 31;
+export const FAZENDA_REV = 33;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -903,7 +903,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     ambient: "#c08a50",
     floor: [
       ["portal", 1, 4, 2],
-      ["desk_wood", 5, 3, 4],
+      ["desk_wood", 5, 3, 0],
       ["chair_wood", 5, 2, 4],
       ["chair_wood", 6, 4, 0],
       ["desk_lamp", 6, 3, 4],
@@ -1097,7 +1097,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     key: "mantimentos",
     name: FAZENDA + "Casa de Mantimentos",
     description:
-      "O depósito da fazenda: caixotes, barris e sacas de grão, as prateleiras na parede. Pelo corredor da entrada, a porta do escritório do capataz de um lado e a do quarto das ferramentas do outro.",
+      "O depósito da fazenda: caixotes, barris e sacas de grão, as prateleiras na parede. Pelo corredor da entrada, a porta do escritório do capataz de um lado e a da sala de utensílios do outro.",
     layout: mantimentosPlan(),
     andar: GALPOES,
     style: "taco",
@@ -1123,7 +1123,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     wall: [],
     links: [
       [11, 14, "fazenda"],
-      [10, 11, "ferramentas"],
+      [10, 11, "utensilios"],
       [11, 11, "capataz"],
     ],
     plan: { x: 0, y: 0 },
@@ -1142,7 +1142,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     floor: [
       ["portal", 1, 2, 2],
       ["chair_wood", 4, 0, 4],
-      ["desk_wood", 4, 1, 4],
+      ["desk_wood", 4, 1, 0],
       ["papers", 4, 1, 4],
       ["bookshelf", 6, 0, 4],
       ["cabinet_file", 8, 0, 6],
@@ -1155,10 +1155,11 @@ const CENAS_BRUTAS: CenaSpec[] = [
     plan: { x: 13, y: 9 },
   },
   {
-    key: "ferramentas",
-    name: FAZENDA + "Quarto das Ferramentas",
-    description: "O quarto das ferramentas, do outro lado do corredor: a bancada, o quadro de ferramentas e as lâminas na parede, os caixotes e o barril.",
-    // a porta para o corredor fica na parede da direita (o quarto está a oeste do corredor)
+    key: "utensilios",
+    name: FAZENDA + "Sala de Utensílios",
+    description:
+      "A sala de utensílios, do outro lado do corredor: as estantes cheias de panelas, frigideiras, pratos esmaltados, canecas e bules, a régua de ganchos com as conchas e as escumadeiras, a mesa no meio. Tudo debaixo de um ano de poeira.",
+    // a porta para o corredor fica na parede da direita (a sala está a oeste do corredor)
     layout: planRight(8, 6, 2),
     andar: GALPOES,
     style: "taco",
@@ -1167,15 +1168,16 @@ const CENAS_BRUTAS: CenaSpec[] = [
     particles: ["dust"],
     floor: [
       ["portal", 7, 2, 6],
-      ["table_tools", 2, 0, 4],
-      ...de("crate_wood", [0, 0], [0, 1]),
-      ["barrel", 0, 4, 0],
-      ...lamps([3, 3]),
+      // as estantes encostadas na parede do fundo e na da esquerda
+      ["estante_utensilios", 0, 0, 4],
+      ["estante_utensilios", 2, 0, 4],
+      ["estante_utensilios", 4, 0, 4],
+      ["estante_utensilios", 0, 2, 2],
+      ["mesa_cozinha", 3, 3, 4],
+      ["barrel", 0, 5, 0],
+      ...lamps([4, 2]),
     ],
-    wall: [
-      ["tool_board", "r", 0, 3.0, 1.63],
-      ["blade_rack", "r", 0, 5.8, 2.09],
-    ],
+    wall: [["utensilios_parede", "l", 0, 5.0, 2.2]],
     links: [[7, 2, "mantimentos"]],
     plan: { x: 1, y: 9 },
   },

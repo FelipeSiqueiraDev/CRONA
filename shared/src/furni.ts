@@ -386,6 +386,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'mesa_cozinha', name: 'Mesa da Cozinha', category: 'casa', kind: 'mesa', width: 3, depth: 2, height: 0.94, vao: 'vazada', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#9a7448', '#6a4a2e'] },
   { id: 'banheira', name: 'Banheira', category: 'casa', kind: 'banheira', width: 1, depth: 2, height: 0.6, rotations: ALL, colors: ['#ece6da', '#b8a070'] },
   { id: 'prateleira', name: 'Prateleira de Madeira', category: 'casa', kind: 'shelf', width: 2, depth: 1, height: 2.2, rotations: ALL, colors: ['#7a5a3a', '#4a3424'] },
+  { id: 'estante_utensilios', name: 'Estante de Utensílios', category: 'casa', kind: 'shelf', width: 2, depth: 1, height: 2.0, rotations: ALL, colors: ['#7a5232', '#9aa0a8'], desc: 'A estante de tábuas da sala de utensílios: panelas empilhadas, frigideiras, pratos, canecas, bules e potes.' },
   { id: 'escada_desce', name: 'Escada que Desce', category: 'casa', kind: 'escada_desce', width: 1, depth: 2, height: 0, walkable: true, portal: true, rotations: ALL, colors: ['#6a4a2e', '#1a1410'], desc: 'O vão da escada, com o corrimão: pare em cima para descer (o mestre escolhe o destino).' },
   // Santo Berço (14/10): a vila medieval em volta do Labirinto Infinito (docs/SANTO-BERCO.md); arte em pixel por código
   { id: 'casa_vila', name: 'Casa', category: 'vila', kind: 'predio_vila', semNome: true, width: 6, depth: 5, height: 5.0, xray: true, rotations: ALL, colors: ['#d8c8a4', '#9a2f22', '#5a3a24', '#2a2018'], desc: 'Casinha medieval de enxaimel, paredes de taipa clara e telhado vermelho de telha.' },
@@ -477,6 +478,7 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'quadro_fazenda', name: 'Quadro da Fazenda', category: 'parede', kind: 'painting', w: 36, h: 30, colors: ['#8a6a3a', '#3a2a1a'], desc: 'Um dos doze quadros do casarão: o pasto, a família em sépia, o cavalo, o bordado, o rio na neblina...' },
   { id: 'escrita_sangue', name: 'Escrita de Sangue', category: 'parede', kind: 'escrita', w: 340, h: 136, colors: ['#c81414'], desc: 'Frases escritas com sangue na parede, à mão.' },
   { id: 'fuligem_parede', name: 'Fuligem na Parede', category: 'parede', kind: 'fuligem', w: 70, h: 110, colors: ['#0f0c0a'], desc: 'As marcas pretas que o fogo deixou subindo pela parede.' },
+  { id: 'utensilios_parede', name: 'Utensílios Pendurados', category: 'parede', kind: 'utensilios', w: 64, h: 40, colors: ['#5a3a24', '#9aa0a8'], desc: 'A régua de madeira com ganchos: frigideiras, conchas, escumadeiras, colheres de pau e uma peneira.' },
   // Santo Berço (14/10)
   { id: 'lampiao_cristal', name: 'Lampião de Cristal', category: 'parede', kind: 'lampiao_cristal', w: 18, h: 30, states: 2, colors: ['#3a2a1e', '#ff5a3a'], desc: 'O lampião de ferro com o cristal vermelho dentro: a luz de dentro das casas. Clique duplo cobre e descobre.' },
   { id: 'armas_parede', name: 'Escudo e Espadas', category: 'parede', kind: 'armas_parede', w: 60, h: 46, colors: ['#8a2a22', '#a8a8b0'], desc: 'O escudo redondo com duas espadas cruzadas atrás.' },
