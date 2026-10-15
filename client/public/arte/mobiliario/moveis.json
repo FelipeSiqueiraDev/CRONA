@@ -12809,22 +12809,22 @@
       "4": {
         "arquivo": "fogueira/giro-4.png",
         "ax": 61.0,
-        "ay": 86.0
+        "ay": 59.0
       },
       "2": {
         "arquivo": "fogueira/giro-2.png",
         "ax": 61.0,
-        "ay": 86.0
+        "ay": 59.0
       },
       "0": {
         "arquivo": "fogueira/giro-0.png",
         "ax": 61.0,
-        "ay": 86.0
+        "ay": 59.0
       },
       "6": {
         "arquivo": "fogueira/giro-6.png",
         "ax": 61.0,
-        "ay": 86.0
+        "ay": 59.0
       }
     },
     "real": [

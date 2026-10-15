@@ -996,6 +996,10 @@ def rubble():
     peg(0.3, 1.3, 0.3, 1.3)
 
 
+# a chama desenhada no sprite (False: só a chama viva do cliente, em pixel)
+CHAMA_ASSADA = False
+
+
 def chama_corpo(cx, cy, s, z0, larg, alto, cor, frente, torto=0.0, o=None):
     """
     Uma chama de frente para a câmera: o corpo arredondado (o octógono largo embaixo, afinando) e a ponta torta, em
@@ -1067,7 +1071,9 @@ def fogueira(acesa=True):
               {'*': carvao('#3a2c22' if acesa else '#262020', brasa=0.3 if acesa else 0.0, seed=20 + k, celula=(5, 3)),
                'frente': liso('#c8a070' if k % 2 else '#b08a5a'), 'costas': liso('#1a1412')},
               yaw=math.degrees(a) - 90, pitch=-38)
-    if acesa:
+    # a chama é VIVA no cliente (particles.ts: a grade de calor em pixel); aqui fica só a lenha e a brasa. Para assar a
+    # chama no desenho de novo, mude CHAMA_ASSADA para True.
+    if acesa and CHAMA_ASSADA:
         o1 = C().novo_obj(3, contorno=False, sombra=False)
         chama_corpo(cx, cy, 0.0, 0.06, 0.42, 0.5, '#c8401a', 0.0, 0.0, o1)
         for (s, lg, al, tt) in ((-0.15, 0.14, 0.5, -0.04), (0.02, 0.18, 0.8, 0.03), (0.15, 0.13, 0.58, 0.05)):

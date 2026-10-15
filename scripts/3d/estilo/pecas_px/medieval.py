@@ -279,6 +279,8 @@ def fogo(cx_, cy_, larg=0.42, alto=0.42, z0=0.0, frente=0.0):
     o laranja e o miolo amarelo), a mais alta no meio, a base baixa juntando todas, e as fagulhas. Centrado em
     (cx, cy), com a base em z0.
     """
+    if not OC.CHAMA_ASSADA:
+        return  # a chama é viva no cliente (particles.ts); o desenho fica só com a lenha e a brasa
     linguas = ((-0.34, 0.3, 0.55, -0.06), (-0.1, 0.34, 0.85, -0.03), (0.13, 0.36, 1.0, 0.05), (0.36, 0.28, 0.62, 0.07))
     o1, o2, o3 = luz_obj(), luz_obj(), luz_obj()
     chama(cx_, cy_, 0.0, z0, larg * 1.05, alto * 0.3, '#c8401a', frente, 0.0, o1)
