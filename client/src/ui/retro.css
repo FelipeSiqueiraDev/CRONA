@@ -832,3 +832,16 @@ html:not(.modo-ficha) .tool-sel {
 html:not(.modo-ficha) .itab .tab-ring {
   display: none !important;
 }
+/* a etiqueta do item (o papel bege pendurado no espaço da mochila): letra escura no papel, com contraste
+   (o tema escuro deixava a letra clara e ela sumia no bege; o Felipe, 14/10) */
+html:not(.modo-ficha) .q-tag {
+  color: #1c1612 !important;
+  text-shadow: none !important;
+}
+html:not(.modo-ficha) .q-tag b {
+  color: #1c1612 !important;
+}
+html:not(.modo-ficha) .q-tag small {
+  color: #4a3d30 !important;
+  font-weight: 600;
+}
