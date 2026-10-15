@@ -188,6 +188,9 @@ export interface HotelOptions {
   timers?: boolean;
 }
 
+/** O nome da campanha (a história inteira, em todos os lugares), até o mestre mudar. */
+const NOME_CAMPANHA = 'Segredos do Outro Lado';
+
 export class Hotel implements HotelApi {
   db: Database;
   rooms = new Map<number, RoomInstance>();
@@ -1195,6 +1198,7 @@ export class Hotel implements HotelApi {
       title: camp.title,
       subtitle: camp.subtitle,
       operacao: camp.operacao,
+      nomeCampanha: this.db.nomeCampanha ?? NOME_CAMPANHA,
       objectives: camp.objectives,
       layout: camp.layout,
       log: camp.log.slice(-30),

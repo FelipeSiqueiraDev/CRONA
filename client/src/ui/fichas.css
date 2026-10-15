@@ -3615,3 +3615,80 @@ select.fx-inp {
     font-size: 2.2rem !important;
   }
 }
+
+/* =====================================================================
+   A IDENTIFICAÇÃO SIMÉTRICA E A FONTE ÚNICA (14/10, o Felipe: "por que
+   tem coisa com a fonte nova e coisa sem?", "a identificação mais
+   bonitinha, simétrica").
+   - A ficha inteira na fonte pixel do HUD (era meio a meio com a Roboto).
+   - A identificação numa grade de 4 colunas por 3 linhas, o rótulo em cima
+     do valor, todas as casas iguais; o nome ocupa duas.
+   ===================================================================== */
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+  html:not(.modo-ficha) .fx,
+  html:not(.modo-ficha) .fx :is(span, b, strong, small, em, i, p, h2, h3, h4, button, input, textarea, select, label, td, th, div) {
+    font-family: var(--r-pixel) !important;
+  }
+
+  html:not(.modo-ficha) .fx-ident .fx-corpo-p {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-auto-rows: 1fr !important;
+    gap: 0.3rem 1.2rem !important;
+    align-content: stretch !important;
+    padding: 0.4rem 1.4rem 0.4rem !important;
+  }
+  html:not(.modo-ficha) .fx-ident .fx-id-l {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start !important;
+    gap: 0.15rem;
+    min-width: 0;
+    min-height: 0;
+    padding: 0 0 0 0.9rem;
+    border: 0 !important;
+    border-left: 0.2rem solid rgba(233, 169, 68, 0.35) !important;
+  }
+  html:not(.modo-ficha) .fx-ident :is(.fx-id-r, .fx-id-v, .fx-id-v strong, .fx-id-v > span) {
+    line-height: 1.1 !important;
+  }
+  html:not(.modo-ficha) .fx-ident .fx-id-r {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--r-texto-3, #a3978a);
+  }
+  html:not(.modo-ficha) .fx-ident :is(.fx-id-v, .fx-id-v strong, .fx-id-v > span) {
+    font-weight: 600 !important;
+    text-align: left;
+    justify-content: flex-start;
+  }
+  /* a ordem: Nome e Campanha (duas casas cada) / Jogador, Origem, Classe, Trilha / NEX, Patente, Tema, Local. A idade
+     vai pequena ao lado do nome; editando, a casa da Idade volta no lugar do Local (que não se edita) */
+  html:not(.modo-ficha) .fx-ident [data-campo='Nome'] { order: 1; grid-column: span 2; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Campanha'] { order: 2; grid-column: span 2; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Jogador'] { order: 3; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Origem'] { order: 4; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Classe'] { order: 5; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Trilha'] { order: 6; }
+  html:not(.modo-ficha) .fx-ident [data-campo='NEX'] { order: 7; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Patente'] { order: 8; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Tema'] { order: 9; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Local'] { order: 10; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Idade'] { order: 10; display: none !important; }
+  html:not(.modo-ficha) .fx.editando .fx-ident [data-campo='Idade'] { display: flex !important; }
+  html:not(.modo-ficha) .fx.editando .fx-ident [data-campo='Local'] { display: none !important; }
+  html:not(.modo-ficha) .fx-ident .fx-id-idade {
+    font-size: 1.3rem !important;
+    color: var(--r-texto-3, #a3978a);
+  }
+  html:not(.modo-ficha) .fx-ident [data-campo='Nome'] .fx-id-v strong {
+    font-size: 1.7rem !important;
+    color: var(--r-ouro-hi, #ffd27a);
+  }
+  /* as tabelas (perícias, itens): a fonte pixel é mais larga, o texto delas um degrau menor para caber */
+  html:not(.modo-ficha) :is(.fx-per, .fx-equip) :is(.fx-tab-l > span, .fx-tab-l > b, .fx-tab-n, .fx-eq-obs) {
+    font-size: 1.3rem !important;
+    letter-spacing: -0.02em !important;
+  }
+}

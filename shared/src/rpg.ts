@@ -103,6 +103,8 @@ export interface CampaignState {
   subtitle: string;
   /** nome da operação em andamento ("Fulgor"), no topo da tela */
   operacao?: string;
+  /** o nome da campanha inteira (a história, em todos os lugares), na ficha: "Segredos do Outro Lado" */
+  nomeCampanha?: string;
   objectives: Objective[];
   /** posição de cada cena na planta (em células); r = giro em quartos de volta */
   layout: Record<number, { x: number; y: number; r?: number }>;

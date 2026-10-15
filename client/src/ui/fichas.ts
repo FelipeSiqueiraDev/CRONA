@@ -558,7 +558,7 @@ export class FichasScreen {
     const linha = (rotulo: string, valor: Node | string, acao?: () => void, dica?: string) =>
       h(
         'div',
-        { class: `fx-id-l${acao ? ' clica' : ''}` },
+        { class: `fx-id-l${acao ? ' clica' : ''}`, 'data-campo': rotulo },
         h('span', { class: 'fx-id-r' }, rotulo),
         acao ? h('button', { class: 'fx-id-v', type: 'button', onclick: acao, 'data-dica': dica }, valor, ic('lapis', 'ic fx-id-lapis')) : h('span', { class: 'fx-id-v', 'data-dica': dica }, valor),
       );
@@ -572,7 +572,7 @@ export class FichasScreen {
     const esquerda = h(
       'div',
       { class: 'fx-id-col' },
-      linha('Nome', h('strong', null, fs.nome), ed ? () => this.editarTexto('Nome do agente', 'Nome', fs.nome, (v) => ((fs.nome = v || 'Sem nome'), (f.nome = fs.nome))) : undefined),
+      linha('Nome', h('span', null, h('strong', null, fs.nome), f.textos?.idade ? h('small', { class: 'fx-id-idade' }, ` · ${f.textos.idade}`) : null), ed ? () => this.editarTexto('Nome do agente', 'Nome', fs.nome, (v) => ((fs.nome = v || 'Sem nome'), (f.nome = fs.nome))) : undefined),
       linha('Jogador', f.jogador || '—', ed ? () => this.editarTexto('Jogador', 'Quem joga', f.jogador ?? '', (v) => (f.jogador = v || undefined)) : undefined),
       linha('Origem', origem?.nome ?? 'Escolher…', ed ? escolherF('origem', f.comecouMundano ? 0 : 5) : undefined, origem ? `${origem.resumo ?? ''} (${textoRef(origem.ref)})` : undefined),
       linha('Classe', CLASSE_NOME(f.classe), ed ? escolherF('classe', 5) : undefined),
@@ -585,7 +585,7 @@ export class FichasScreen {
       linha('Patente', h('span', null, pat, h('small', null, ` ${f.pp} PP`)), ed && this.gm ? () => this.editarPP() : undefined, c.patente ? `Crédito ${c.patente.credito}. Só o mestre muda os pontos de prestígio.` : undefined),
       linha('Idade', f.textos?.idade || '—', ed ? () => this.editarTexto('Idade', 'Idade', f.textos?.idade ?? '', (v) => ((f.textos ??= {}), (f.textos.idade = v || undefined))) : undefined),
       linha('Tema', NOME_TEMA[fs.tema ?? 'ordem'], ed ? () => this.escolherTema() : undefined, 'O tema da interface do agente: veste a ficha, a requisição e o celular dele.'),
-      linha('Campanha', this.campanha?.title || '—'),
+      linha('Campanha', this.campanha?.nomeCampanha || this.campanha?.title || '—'),
       linha('Local', local),
     );
     corpo.replaceChildren(esquerda, h('span', { class: 'fx-id-div', 'aria-hidden': 'true' }), direita, h('span', { class: 'fx-selo', 'aria-hidden': 'true' }));
