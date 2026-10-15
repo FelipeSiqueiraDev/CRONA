@@ -3692,3 +3692,173 @@ select.fx-inp {
     letter-spacing: -0.02em !important;
   }
 }
+
+/* =====================================================================
+   A MOCHILA NUMA LINHA POR VEZ (14/10, o Felipe: "aumentar a mochila,
+   uma linha aparecendo por vez e deixar claro que tem mais pra baixo").
+   Vale no computador e no celular do jogador: o tamanho das casas vem do
+   código (mochilaUmaLinha, em fichas.ts), pela altura do painel ou, no
+   celular, pela largura.
+   ===================================================================== */
+.fx-sl-caixa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  height: 100%;
+  min-height: 0;
+}
+html .fx .fx-sl-grade.uma-linha {
+  flex: none;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  justify-content: center;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+html .fx .fx-sl-grade.uma-linha::-webkit-scrollbar {
+  display: none;
+}
+html .fx .fx-sl-grade.uma-linha > .fx-sl {
+  width: var(--sl) !important;
+  height: var(--sl) !important;
+  scroll-snap-align: start;
+  opacity: 1;
+}
+html .fx .fx-sl-grade.uma-linha > .fx-sl.sobra {
+  opacity: 0.35;
+}
+/* as setas sempre nos cantos, paradas: o texto do meio muda de largura e não pode empurrar as setas (o Felipe, 14/10) */
+.fx-sl-nav {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.2rem;
+  flex: none;
+}
+.fx-sl-onde {
+  min-width: 0;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--r-pixel, monospace);
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+  color: var(--r-texto-3, #a3978a);
+}
+.fx-sl-seta {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 2.4rem;
+  padding: 0;
+  border: 0.15rem solid rgba(233, 169, 68, 0.55);
+  border-radius: 0.4rem;
+  background: rgba(11, 21, 38, 0.85);
+  color: var(--r-ouro-hi, #ffd27a);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.fx-sl-seta:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.fx-sl-seta:not(:disabled):hover {
+  background: rgba(233, 169, 68, 0.18);
+}
+/* tem item nas linhas de baixo: a seta de descer pulsa devagar (sem pular) */
+.fx-sl-seta.chama:not(:disabled) {
+  animation: fx-sl-chama 1.6s ease-in-out infinite;
+}
+@keyframes fx-sl-chama {
+  50% {
+    box-shadow: 0 0 0.8rem rgba(255, 210, 122, 0.55);
+    border-color: var(--r-ouro-hi, #ffd27a);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-sl-seta.chama:not(:disabled) {
+    animation: none;
+    border-color: var(--r-ouro-hi, #ffd27a);
+  }
+}
+
+/* a aba Fichas do mestre no celular: a ficha rola dentro da tela (antes a .ui não rolava e da Perícias para baixo
+   ficava fora de alcance; a mochila, os poderes e os rituais não apareciam). 14/10 */
+@media (max-width: 820px) and (orientation: portrait), (max-width: 560px) {
+  .shell.aba-fichas > .ui {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    pointer-events: auto;
+  }
+}
+/* a mochila no celular: o painel cresce com a casa (uma linha) e a faixa de baixo, sem cortar a faixa */
+@media (max-width: 820px) and (orientation: portrait), (max-width: 560px) {
+  .fx-inv {
+    height: auto !important;
+  }
+  .fx-inv .fx-corpo-p {
+    overflow: visible;
+  }
+  .fx-sl-caixa {
+    height: auto;
+    gap: 1rem;
+  }
+  /* a faixa legível e as setas do tamanho do dedo (o painel já vem ampliado 1,45x) */
+  .fx-sl-nav {
+    gap: 2rem;
+  }
+  html .fx .fx-sl-onde {
+    font-size: 2.5rem !important;
+  }
+  .fx-sl-seta {
+    width: 8rem;
+    height: 6.4rem;
+    border-width: 0.3rem;
+    font-size: 2.6rem;
+  }
+  /* os botões de baixo (Cancelar, Editar, Salvar) dentro da tela: a coordenada do computador (left 93,5 rem...)
+     não vale aqui, eles dividem a barra em três */
+  html:not(.modo-ficha) .fx-barra .fx-bt {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: auto !important;
+    min-width: 0;
+  }
+  /* a barra vem ampliada 1,45x com o palco: ~44 px de altura e ~13 px de letra na tela, tamanho de dedo */
+  html:not(.modo-ficha) .fx-barra .fx-bt {
+    height: 7.6rem !important;
+    padding: 0 1rem !important;
+    gap: 1rem;
+  }
+  html:not(.modo-ficha) .fx-barra .fx-bt,
+  html:not(.modo-ficha) .fx-barra .fx-bt span {
+    font-size: 2.3rem !important;
+    white-space: nowrap;
+  }
+  html:not(.modo-ficha) .fx-barra .fx-bt :is(.ic, .arte-ic) {
+    width: 2.8rem !important;
+    height: 2.8rem !important;
+    flex: none;
+  }
+  .fx-palco {
+    padding-bottom: 11rem;
+  }
+  /* a identificação inteira, sem rolagem escondida (o Local ficava cortado); o boneco do lado acompanha a altura */
+  .fx-ident {
+    height: auto !important;
+    min-height: 30rem;
+  }
+  .fx-ident .fx-corpo-p {
+    overflow: visible;
+  }
+  .fx-corpo {
+    height: auto !important;
+    min-height: 30rem;
+  }
+}
+

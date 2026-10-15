@@ -1525,7 +1525,11 @@ export class FichasScreen {
     const livres = Math.max(1, Math.floor(c.carga.espacos - c.carga.usados));
     const total = Math.max(15, Math.ceil((slots.length + livres) / 5) * 5);
     for (let i = slots.length; i < total; i++) slots.push(h('button', { class: 'fx-sl vazio', type: 'button', 'aria-label': 'Adicionar item', disabled: i > slots.length, onclick: () => this.adicionarItem() }, i === fs.ficha.inventario.length ? ic('mais') : null));
-    corpo.replaceChildren(avisarRolagem(h('div', { class: 'fx-sl-grade' }, ...slots)));
+    // a mochila (14/10, o Felipe): casas grandes, uma linha por vez, e a faixa embaixo dizendo que tem mais
+    const grade = h('div', { class: 'fx-sl-grade uma-linha' }, ...slots);
+    const nav = h('div', { class: 'fx-sl-nav' });
+    corpo.replaceChildren(h('div', { class: 'fx-sl-caixa' }, grade, nav));
+    mochilaUmaLinha(grade, nav, fs.ficha.inventario.length);
     const lim = c.itens.map((l) => h('span', { class: `fx-lim${l.usados > l.limite ? ' passou' : ''}`, 'data-dica': `Categoria ${romano(l.categoria)}: ${l.usados} de ${l.limite} pela patente.` }, `${romano(l.categoria)} ${l.usados}/${l.limite}`));
     this.extraDe(this.pInv).replaceChildren(
       h('span', { class: 'fx-lims' }, ...lim),
@@ -1817,4 +1821,59 @@ function avisarRolagem<T extends HTMLElement>(el: T): T {
   el.addEventListener('scroll', ver, { passive: true });
   requestAnimationFrame(ver);
   return el;
+}
+
+/**
+ * A mochila numa linha por vez (14/10): as casas ficam quadradas e do tamanho que a altura deixa (no celular, pela
+ * largura), a rolagem para em cada linha e a faixa embaixo mostra em que linha se está e quantos itens há nas de
+ * baixo, com as setas para subir e descer. Recalcula quando o painel muda de tamanho.
+ */
+function mochilaUmaLinha(grade: HTMLElement, nav: HTMLElement, itens: number) {
+  const caixa = grade.parentElement!;
+  const sobe = h('button', { class: 'fx-sl-seta', type: 'button', 'aria-label': 'Linha de cima' }, '▲');
+  const desce = h('button', { class: 'fx-sl-seta', type: 'button', 'aria-label': 'Linha de baixo' }, '▼');
+  const texto = h('span', { class: 'fx-sl-onde' });
+  nav.replaceChildren(sobe, texto, desce);
+  let lado = 0;
+  let cols = 1;
+  let gap = 0;
+  const celular = () => window.matchMedia('(max-width: 820px) and (orientation: portrait), (max-width: 560px)').matches;
+  const atualizar = () => {
+    const passo = lado + gap;
+    if (!passo) return;
+    const total = Math.max(1, Math.ceil(grade.children.length / cols));
+    const linha = Math.min(total - 1, Math.round(grade.scrollTop / passo));
+    const abaixo = Math.max(0, itens - (linha + 1) * cols);
+    texto.textContent = `Linha ${linha + 1} de ${total}` + (abaixo ? ` · ${abaixo} ${abaixo === 1 ? 'item' : 'itens'} embaixo` : '');
+    sobe.disabled = linha === 0;
+    desce.disabled = linha >= total - 1;
+    desce.classList.toggle('chama', abaixo > 0);
+  };
+  const montar = () => {
+    const cs = getComputedStyle(grade);
+    gap = parseFloat(cs.rowGap) || parseFloat(cs.columnGap) || 0;
+    const w = grade.clientWidth;
+    if (!w) return;
+    const disp = caixa.clientHeight - nav.offsetHeight - (parseFloat(getComputedStyle(caixa).rowGap) || 0);
+    // a casa nunca menor que um dedo: no celular a rem é pequena (~4 px), então o mínimo é em px (o painel lá já
+    // vem ampliado 1,45x, então 52 px viram ~75 px na tela)
+    const minimo = Math.max(52, parseFloat(getComputedStyle(document.documentElement).fontSize) * 6);
+    // no computador a altura do painel manda (as casas cabem nela); no celular, a largura (casas de ~6 rem)
+    cols = celular() || disp < minimo ? Math.max(4, Math.floor((w + gap) / (minimo + gap))) : Math.max(3, Math.ceil((w + gap) / (disp + gap)));
+    lado = Math.floor((w - gap * (cols - 1)) / cols);
+    // a última linha cheia: as casas que sobram viram casas vazias apagadas
+    for (const s of [...grade.querySelectorAll('.fx-sl.sobra')]) s.remove();
+    const falta = (cols - (grade.children.length % cols)) % cols;
+    for (let i = 0; i < falta; i++) grade.append(h('button', { class: 'fx-sl vazio sobra', type: 'button', disabled: true, 'aria-hidden': 'true', tabindex: '-1' }));
+    grade.style.setProperty('--sl', `${lado}px`);
+    grade.style.setProperty('grid-template-columns', `repeat(${cols}, ${lado}px)`, 'important');
+    grade.style.setProperty('grid-auto-rows', `${lado}px`, 'important');
+    grade.style.setProperty('height', `${lado}px`, 'important');
+    atualizar();
+  };
+  sobe.onclick = () => grade.scrollBy({ top: -(lado + gap), behavior: 'smooth' });
+  desce.onclick = () => grade.scrollBy({ top: lado + gap, behavior: 'smooth' });
+  grade.addEventListener('scroll', atualizar, { passive: true });
+  new ResizeObserver(montar).observe(caixa);
+  requestAnimationFrame(montar);
 }
