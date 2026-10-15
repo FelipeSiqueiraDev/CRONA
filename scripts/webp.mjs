@@ -42,8 +42,9 @@ async function trabalhar() {
       // já convertido e mais novo que o PNG: pula (a segunda vez é rápida)
       const destino = copia(p);
       if (fs.existsSync(destino) && fs.statSync(destino).mtimeMs >= fs.statSync(p).mtimeMs) continue;
-      // pixel art (as ilhas do mapa, a viagem em pixel): sem perda, senão os blocos borram (10/10)
-      const pixel = /[\\/](mapa|pixel)[\\/]/i.test(p);
+      // pixel art (as ilhas do mapa, a viagem em pixel e, desde 15/10, os móveis, os bonecos e as texturas do tabuleiro): sem
+      // perda, senão os blocos borram (10/10)
+      const pixel = /[\\/](mapa|pixel|mobiliario|personagens|texturas)[\\/]/i.test(p);
       const buf = await sharp(p).webp(pixel ? { lossless: true, effort: 5 } : { quality: 88, alphaQuality: 100, effort: 4 }).toBuffer();
       const tam = fs.statSync(p).size;
       antes += tam;
@@ -53,7 +54,11 @@ async function trabalhar() {
         fs.writeFileSync(destino, buf);
         depois += buf.length;
         feitos++;
-      } else depois += tam;
+      } else {
+        depois += tam;
+        // sem cópia leve nova: a velha sai (15/10), senão o servidor manda a arte de antes no lugar da nova
+        if (fs.existsSync(destino)) fs.unlinkSync(destino);
+      }
     } catch (e) {
       console.warn(`[webp] pulei ${p}: ${e.message}`);
     }
