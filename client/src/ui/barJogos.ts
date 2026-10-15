@@ -73,7 +73,45 @@ export class BarJogos {
     private app: App,
     private modo: 'celular' | 'mestre',
     private firmeza: () => number = () => 0.5,
-  ) {}
+  ) {
+    this.travarZoom();
+  }
+
+  /**
+   * Sem zoom com um joguinho aberto (15/10, o Felipe): a roda e o beliscar não aproximam o tabuleiro nem a página
+   * (o zoom do mapa também fica travado em `zoomTravado`), e Ctrl + / - / 0 não mexem no zoom do navegador.
+   */
+  private travarZoom() {
+    const jogando = () => this.abertas.size > 0;
+    const nele = (e: Event) => e.target instanceof Element && !!e.target.closest('canvas, .bar-janela, .bar-tela');
+    window.addEventListener(
+      'wheel',
+      (e) => {
+        if (jogando() && (e.ctrlKey || nele(e))) e.preventDefault();
+      },
+      { passive: false, capture: true },
+    );
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if (jogando() && (e.ctrlKey || e.metaKey) && ['+', '=', '-', '_', '0'].includes(e.key)) e.preventDefault();
+      },
+      { capture: true },
+    );
+    window.addEventListener(
+      'touchmove',
+      (e) => {
+        if (jogando() && e.touches.length > 1) e.preventDefault();
+      },
+      { passive: false, capture: true },
+    );
+    for (const g of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(g, (e) => jogando() && e.preventDefault());
+  }
+
+  /** O tabuleiro só aceita zoom quando não há joguinho aberto. */
+  private atualizarTrava() {
+    this.app.view.zoomTravado = this.abertas.size > 0;
+  }
 
   receber(m: ServerMsg) {
     if (m.t === 'bar') void this.abrir(m);
@@ -108,6 +146,7 @@ export class BarJogos {
           : h('div', { class: 'bar-tela some', role: 'dialog' }, h('div', { class: 'bar-conteudo' }, tela.el), h('canvas', { class: 'bar-pixels', 'aria-hidden': 'true' }));
       a = { tipo: m.tipo, tela, caixa, titulo, mesa: null, saindo: false };
       this.abertas.set(m.mesa, a);
+      this.atualizarTrava();
       if (this.modo === 'mestre') {
         // as janelas abertas ficam uma do lado da outra
         caixa.style.setProperty('--n', String(this.abertas.size - 1));
@@ -159,7 +198,7 @@ export class BarJogos {
       a.tela.desligar();
       if (this.modo === 'celular') await this.pixels(a, false);
       a.caixa.remove();
-      if (this.abertas.get(id) === a) this.abertas.delete(id);
+      if (this.abertas.get(id) === a) (this.abertas.delete(id), this.atualizarTrava());
       if (aviso) toast(aviso);
     })();
     return a.fechou;

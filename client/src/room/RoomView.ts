@@ -1037,7 +1037,11 @@ export class RoomView {
     this.bubbles.clear();
   }
 
+  /** Enquanto um joguinho do bar está aberto (15/10, o Felipe): o zoom do tabuleiro (roda, botões +/-, mapa tático) não responde. */
+  zoomTravado = false;
+
   zoomStep(dir: 1 | -1, ax?: number, ay?: number) {
+    if (this.zoomTravado) return;
     // próximo nível acima/abaixo do zoom atual (que pode ser contínuo após enquadrar)
     const n = dir > 0 ? ZOOMS.find((z) => z > this.zoom + 1e-3) : [...ZOOMS].reverse().find((z) => z < this.zoom - 1e-3);
     if (n) this.setZoom(n, ax, ay);
@@ -1045,6 +1049,7 @@ export class RoomView {
 
   /** Aproxima (f > 1) ou afasta o mapa tático, com o ponto (px, py) do canvas parado; de 1x a 5x. */
   zoomTatico(f: number, px: number, py: number) {
+    if (this.zoomTravado) return;
     const z = this.tatZoom;
     const k = Math.max(1, Math.min(5, z.k * f));
     if (k === 1) {
@@ -1130,7 +1135,7 @@ export class RoomView {
       'wheel',
       (e) => {
         e.preventDefault();
-        if (this.watchOnly) return;
+        if (this.watchOnly || this.zoomTravado) return;
         if (this.tat.t >= 1) this.zoomTatico(e.deltaY < 0 ? 1.25 : 1 / 1.25, e.offsetX * this.dpr, e.offsetY * this.dpr);
         else if (this.tat.t <= 0) this.zoomStep(e.deltaY < 0 ? 1 : -1, e.offsetX, e.offsetY);
       },
