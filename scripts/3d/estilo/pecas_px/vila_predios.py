@@ -504,12 +504,40 @@ _canvas_alto()
 # =====================================================================================================================
 # um corpo de enxaimel (as quatro faces de um andar, com as janelas e as portas)
 # =====================================================================================================================
+def _ocupa(v, z0):
+    """O que um vão ocupa na fachada: (a0, a1, z0, z1), com o batente e, na janela, as duas folhas abertas."""
+    if v[0] == 'j':
+        _, a, zj, w, h, _, folhas = v
+        lado = w / 2 + FR + ((w * 0.5 + FR * 0.5) if folhas else 0.0)
+        return (a - lado, a + lado, zj - FR, zj + h + FR)
+    _, a, w, h, _, _ = v
+    return (a - w / 2 - FR, a + w / 2 + FR, z0, z0 + h + FR)
+
+
+def _conferir_vaos(vaos, z0):
+    """
+    Nada em cima de nada na mesma fachada (14/10, o Felipe: "janelas bugadas"; a folha aberta da janela caía em cima
+    da porta). Para na hora de exportar, com o que bateu, para não ir errado para o jogo.
+    """
+    erros = []
+    for face, lista in vaos.items():
+        caixas = [(v, _ocupa(v, z0)) for v in lista]
+        for i in range(len(caixas)):
+            for k in range(i + 1, len(caixas)):
+                (va, A), (vb, Bx) = caixas[i], caixas[k]
+                if A[0] < Bx[1] - 1e-6 and Bx[0] < A[1] - 1e-6 and A[2] < Bx[3] - 1e-6 and Bx[2] < A[3] - 1e-6:
+                    erros.append(f'{face}: {va[0]} em {va[1]:.2f} m bate em {vb[0]} em {vb[1]:.2f} m')
+    if erros:
+        raise ValueError('vãos encavalados na fachada: ' + '; '.join(erros))
+
+
 def _andar(B, z0, z1, vaos, riegel=None, cor=VIGA_COR, seed=0, soleira=True, escoras=True):
     """
     vaos: {face: [('j', a, zj, w, h, acesa, folhas) | ('p', a, w, h, folhas, postigo)]} as janelas e as portas do andar
     em cada face. Desenha as janelas, as portas e o enxaimel em volta delas.
     """
     L = _lados(B)
+    _conferir_vaos(vaos, z0)
     for face, (plano, l0, l1) in L.items():
         abert = []
         for k, v in enumerate(vaos.get(face, [])):
@@ -630,7 +658,8 @@ def _taverna():
     YM = (Y0 + Y1) / 2
     jw, jh = 0.68, 0.82
     vaos1 = {
-        '+y': [('p', XP, 1.25, 2.0, 2, False), ('j', X0 + 0.9, 1.05, jw, jh, True, True), ('j', X0 + 2.35, 1.05, jw, jh, True, True),
+        # a primeira janela 10 cm para a quina: as folhas abertas dela e da vizinha batiam (14/10)
+        '+y': [('p', XP, 1.25, 2.0, 2, False), ('j', X0 + 0.8, 1.05, jw, jh, True, True), ('j', X0 + 2.35, 1.05, jw, jh, True, True),
                ('j', X1 - 0.85, 1.05, jw, jh, True, True)],
         '-y': [('j', X0 + 1.2, 1.05, jw, jh, True, True), ('j', X0 + 3.3, 1.05, jw, jh, False, True), ('j', X1 - 1.4, 1.05, jw, jh, True, True)],
         '+x': [('j', YM, 1.05, jw, jh, True, True)],
@@ -844,16 +873,19 @@ def _hotel():
     jw, jh = 0.62, 0.86
     xs = [X0 + 0.85, X0 + 2.2, X1 - 2.0, X1 - 0.75]
     vaos1 = {
-        '+y': [('p', XP, 1.15, 2.05, 2, True)] + [('j', x, 1.1, jw, jh, k != 1, True) for k, x in enumerate(xs)],
-        '-y': [('j', x, 1.1, jw, jh, k in (0, 3), True) for k, x in enumerate(xs[::2])] + [('p', X1 - 2.6, 0.9, 1.95, 1, False)],
+        # as duas janelas do meio sem folhas: abertas, a da direita caía na porta e as do meio batiam nas da quina (14/10)
+        '+y': [('p', XP, 1.15, 2.05, 2, True)] + [('j', x, 1.1, jw, jh, k != 1, k in (0, 3)) for k, x in enumerate(xs)],
+        # a porta de trás no vão entre as duas janelas (em X1 - 2,6 ela entrava 16 cm na janela da direita; 14/10)
+        '-y': [('j', x, 1.1, jw, jh, k in (0, 3), True) for k, x in enumerate(xs[::2])] + [('p', X1 - 3.6, 0.9, 1.95, 1, False)],
         '+x': [('j', Y0 + 1.3, 1.1, jw, jh, True, True), ('j', Y1 - 1.3, 1.1, jw, jh, True, True)],
         '-x': [('j', Y0 + 1.3, 1.1, jw, jh, False, True), ('j', Y1 - 1.3, 1.1, jw, jh, True, True)],
     }
     _andar(B, ZB, ZF, vaos1, riegel=1.1 - FR - 0.07, seed=31)
     z2 = ZF + 0.72
     vaos2 = {
-        '+y': [('p', XP, 1.0, 1.95, 2, True)] + [('j', x, z2, jw, jh, k in (0, 2, 3), True) for k, x in enumerate(xs)],
-        '-y': [('j', x, z2, jw, jh, k != 2, True) for k, x in enumerate(xs)],
+        # em cima também: folhas só nas janelas da quina (as do meio batiam na porta da sacada e nas vizinhas)
+        '+y': [('p', XP, 1.0, 1.95, 2, True)] + [('j', x, z2, jw, jh, k in (0, 2, 3), k in (0, 3)) for k, x in enumerate(xs)],
+        '-y': [('j', x, z2, jw, jh, k != 2, k in (0, 3)) for k, x in enumerate(xs)],
         '+x': [('j', Y0 + 1.3, z2, jw, jh, False, True), ('j', Y1 - 1.3, z2, jw, jh, True, True)],
         '-x': [('j', Y0 + 1.3, z2, jw, jh, True, True), ('j', Y1 - 1.3, z2, jw, jh, True, True)],
     }
@@ -998,7 +1030,8 @@ def _casa_doutor():
     # o andar de cima (enxaimel escuro, as janelas com as folhas fechadas na maioria)
     z2 = ZF + 0.55
     jh2 = 0.95
-    xs = [X0 + 0.8, X0 + 2.1, X1 - 2.2, X1 - 0.9]
+    # as janelas da quina 5 cm para fora: as folhas abertas batiam nas das vizinhas por 1 cm (14/10)
+    xs = [X0 + 0.75, X0 + 2.1, X1 - 2.2, X1 - 0.85]
     vaos2 = {
         '+y': [('j', x, z2, jw, jh2, k == 1, True) for k, x in enumerate(xs)],
         '-y': [('j', x, z2, jw, jh2, False, True) for k, x in enumerate(xs)],
