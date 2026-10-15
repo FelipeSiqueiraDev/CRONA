@@ -14575,5 +14575,55 @@
         "ay": 24.4
       }
     }
+  },
+  "estante_utensilios": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "estante_utensilios/giro-4.png",
+        "ax": 62.0,
+        "ay": 151.0
+      },
+      "2": {
+        "arquivo": "estante_utensilios/giro-2.png",
+        "ax": 39.0,
+        "ay": 151.0
+      },
+      "0": {
+        "arquivo": "estante_utensilios/giro-0.png",
+        "ax": 71.0,
+        "ay": 147.0
+      },
+      "6": {
+        "arquivo": "estante_utensilios/giro-6.png",
+        "ax": 30.0,
+        "ay": 147.0
+      }
+    },
+    "real": [
+      1.46,
+      0.62,
+      2.0
+    ]
+  },
+  "utensilios_parede": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "utensilios_parede/parede-r.png",
+        "ax": 32.0,
+        "ay": 31.6
+      },
+      "l": {
+        "arquivo": "utensilios_parede/parede-l.png",
+        "ax": 30.0,
+        "ay": 31.6
+      }
+    }
   }
 }
