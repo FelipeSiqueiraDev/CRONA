@@ -3691,6 +3691,39 @@ select.fx-inp {
     font-size: 1.3rem !important;
     letter-spacing: -0.02em !important;
   }
+  /* Itens e Ataques maior (o Felipe, 14/10: "tá bem pequena"): letra, linha e ícone maiores (a altura do painel
+     continua a mesma: dividida com a mochila, que precisa das casas grandes) */
+  html:not(.modo-ficha) .fx-g-itens > .fx-equip {
+    flex: 1 1 56%;
+  }
+  html:not(.modo-ficha) .fx-g-itens > .fx-inv {
+    flex: 1 1 44%;
+  }
+  html:not(.modo-ficha) .fx-equip .fx-tab-cab {
+    height: 2.6rem;
+  }
+  html:not(.modo-ficha) .fx-equip .fx-tab-l {
+    height: 3.2rem;
+  }
+  html:not(.modo-ficha) .fx-equip :is(.fx-tab-l > span, .fx-tab-l > b, .fx-tab-n, .fx-eq-obs) {
+    font-size: 1.5rem !important;
+    letter-spacing: 0 !important;
+  }
+  html:not(.modo-ficha) .fx-equip .fx-tab-cab span {
+    font-size: 1.35rem !important;
+  }
+  html:not(.modo-ficha) .fx-equip .fx-eq-ic :is(.ic, .arte-ic) {
+    width: 2.9rem;
+    height: 2.9rem;
+  }
+  html:not(.modo-ficha) .fx-equip .fx-eq-bt .ic {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+  html:not(.modo-ficha) .fx-equip .fx-tab-cab,
+  html:not(.modo-ficha) .fx-equip .fx-tab-l {
+    grid-template-columns: 5rem 20rem 12rem 14rem 1fr 4rem;
+  }
 }
 
 /* =====================================================================

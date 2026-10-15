@@ -487,8 +487,6 @@ export class TelaJogador {
     if (!it) return;
     const inf = infoItem(it, this.calc);
     const lugar = regras.lugarDoItem(it);
-    const base = it.tipo === 'cena' ? undefined : (regras.baseDoItem(it) as { resumo?: string } | undefined);
-    const resumo = it.descricao || base?.resumo || '';
     const j = janela(inf.nome.toUpperCase(), 'mochila', () => {}, 46);
     j.el.classList.add('tela-toda', 'jg-modal-item');
     const fazer = (fn: () => void) => () => (fn(), j.fechar());
@@ -514,27 +512,7 @@ export class TelaJogador {
         j.fechar();
       }),
     );
-    const campo = (rot: string, valor: string) => h('div', { class: 'jg-mi-campo' }, h('small', null, rot), h('b', null, valor));
-    const efeito = [inf.efeito, inf.obs].filter((x) => x && x !== '—').join(' · ');
-    j.corpo.append(
-      h(
-        'div',
-        { class: 'jg-mi' },
-        h('div', { class: `jg-mi-arte${auraDoItem(it) ? ` aura ${auraDoItem(it)}` : ''}` }, arteDoItem(it, inf.icone), selosDoItem(it)),
-        h(
-          'div',
-          { class: 'jg-mi-campos' },
-          campo('Tipo', inf.tipo),
-          campo('Peso', `${numero(inf.espacos * (it.qtd ?? 1))} esp.${(it.qtd ?? 1) > 1 ? ` (${it.qtd} un.)` : ''}`),
-          campo('Categoria', it.tipo === 'cena' ? 'achado' : ['0', 'I', 'II', 'III', 'IV'][inf.categoria] ?? '—'),
-          campo('Onde', lugar === 'mao' ? 'Na mão' : lugar === 'vestido' ? 'Vestido' : 'Na mochila'),
-        ),
-        efeito ? h('p', { class: 'jg-mi-efeito' }, efeito) : null,
-        resumo ? h('p', { class: 'jg-mi-txt' }, resumo) : null,
-        ...melhoriasDoItem(it),
-        inf.ref ? h('p', { class: 'jg-det-meta' }, textoRef(inf.ref)) : null,
-      ),
-    );
+    j.corpo.append(corpoDoItem(it, this.calc));
     if (acoes.length) j.rodape.append(...acoes);
     else j.rodape.append(h('span', { class: 'fj-esp' }), botao('Fechar', 'ok', 'forte', () => j.fechar()));
   }
@@ -1096,6 +1074,37 @@ function buscaHabilidade(id: string): regras.Habilidade | undefined {
 function textoTesteAtaque(a: regras.Ataque): string {
   const r = regras.rolagem(a.dados, a.penalidadeDados);
   return `${r.dados}d20${a.bonus ? (a.bonus > 0 ? `+${a.bonus}` : `${a.bonus}`) : ''}${r.fica === 'menor' ? ' (pior)' : ''}`;
+}
+
+/**
+ * O miolo da janela do item (a arte grande, Tipo, Peso, Categoria e Onde, o efeito em destaque, o texto do livro, as
+ * modificações e a página). O mesmo no celular do jogador e na aba Fichas do mestre (o Felipe, 14/10: "quando abre
+ * um item por lá fica ótimo").
+ */
+export function corpoDoItem(it: regras.ItemFicha, calc: regras.Calculado | null): HTMLElement {
+  const inf = infoItem(it, calc);
+  const lugar = regras.lugarDoItem(it);
+  const base = it.tipo === 'cena' ? undefined : (regras.baseDoItem(it) as { resumo?: string } | undefined);
+  const resumo = it.descricao || base?.resumo || '';
+  const campo = (rot: string, valor: string) => h('div', { class: 'jg-mi-campo' }, h('small', null, rot), h('b', null, valor));
+  const efeito = [inf.efeito, inf.obs].filter((x) => x && x !== '—').join(' · ');
+  return h(
+    'div',
+    { class: 'jg-mi' },
+    h('div', { class: `jg-mi-arte${auraDoItem(it) ? ` aura ${auraDoItem(it)}` : ''}` }, arteDoItem(it, inf.icone), selosDoItem(it)),
+    h(
+      'div',
+      { class: 'jg-mi-campos' },
+      campo('Tipo', inf.tipo),
+      campo('Peso', `${numero(inf.espacos * (it.qtd ?? 1))} esp.${(it.qtd ?? 1) > 1 ? ` (${it.qtd} un.)` : ''}`),
+      campo('Categoria', it.tipo === 'cena' ? 'achado' : ['0', 'I', 'II', 'III', 'IV'][inf.categoria] ?? '—'),
+      campo('Onde', lugar === 'mao' ? 'Na mão' : lugar === 'vestido' ? 'Vestido' : 'Na mochila'),
+    ),
+    efeito ? h('p', { class: 'jg-mi-efeito' }, efeito) : null,
+    resumo ? h('p', { class: 'jg-mi-txt' }, resumo) : null,
+    ...melhoriasDoItem(it),
+    inf.ref ? h('p', { class: 'jg-det-meta' }, textoRef(inf.ref)) : null,
+  );
 }
 
 /** A cor da maldição do item (a do primeiro elemento): a aura da arte. */

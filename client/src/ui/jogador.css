@@ -12,7 +12,9 @@
    ===================================================================== */
 
 html.modo-ficha,
-.bar-janela {
+.bar-janela,
+/* a janela do item aberta na aba Fichas do mestre: o mesmo miolo da do celular, nas mesmas medidas */
+.fj-item-jg {
   --u: calc(min(100vw, 480px) / 94);
   /* espaços */
   --s1: calc(var(--u) * 2);
@@ -2896,3 +2898,42 @@ html.modo-ficha .fj:not(.rq) .fj-chips {
   height: 100%;
   object-fit: contain;
 }
+
+/* a janela do item na aba Fichas do mestre (fichas.ts, corpoDoItem): no celular sem o aumento de 1,45x das outras
+   janelas da ficha (as medidas daqui já são do celular) */
+.fj-item-jg .jg-mi {
+  padding-top: var(--s1);
+}
+@media (max-width: 820px) and (orientation: portrait), (max-width: 560px) {
+  html:not(.modo-ficha) .fj-item-jg .fj {
+    zoom: 1 !important;
+    width: 94vw !important;
+    max-height: 88vh !important;
+  }
+  /* o título, o X e os botões de baixo nas medidas do celular (sem o aumento, vinham com 8 px) */
+  html:not(.modo-ficha) .fj-item-jg .fx-tit h3 {
+    font-size: var(--t-titulo) !important;
+  }
+  html:not(.modo-ficha) .fj-item-jg :is(.fx-tit-ic, .fj-x) :is(.ic, .arte-ic) {
+    width: calc(var(--u) * 6) !important;
+    height: calc(var(--u) * 6) !important;
+  }
+  html:not(.modo-ficha) .fj-item-jg .fj-x {
+    width: calc(var(--u) * 10) !important;
+    height: calc(var(--u) * 10) !important;
+  }
+  html:not(.modo-ficha) .fj-item-jg .fj-rodape .fx-bt {
+    height: calc(var(--u) * 11) !important;
+    padding: 0 var(--s3) !important;
+    gap: var(--s1);
+  }
+  html:not(.modo-ficha) .fj-item-jg .fj-rodape .fx-bt,
+  html:not(.modo-ficha) .fj-item-jg .fj-rodape .fx-bt span {
+    font-size: var(--t-ui) !important;
+  }
+  html:not(.modo-ficha) .fj-item-jg .fj-rodape .fx-bt .ic {
+    width: calc(var(--u) * 5) !important;
+    height: calc(var(--u) * 5) !important;
+  }
+}
+
