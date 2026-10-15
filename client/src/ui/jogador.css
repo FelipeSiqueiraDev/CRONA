@@ -248,6 +248,36 @@ html.modo-ficha .fj:not(.rq) .arte-ic img {
   text-shadow: var(--sombra-pixel);
   overflow-wrap: anywhere;
 }
+/* a arma na mão, em pixel, logo depois do nome (iconesPixel.ts) */
+.jg-nome .jg-arma {
+  display: inline-block;
+  /* em "em": acompanha a letra do nome quando ela encolhe para caber (font: inherit tira a letra miúda que a regra
+     ".jg-nome span" põe em todo span) */
+  font: inherit;
+  width: 1em;
+  height: 1em;
+  margin-left: 0.32em;
+  vertical-align: -0.12em;
+  overflow: visible;
+  white-space: normal;
+  filter: drop-shadow(0 calc(var(--u) * 0.5) 0 rgba(0, 0, 0, 0.6));
+}
+.jg-nome .jg-arma.desarmado {
+  visibility: hidden;
+}
+/* o nome numa linha só, com o lugar da arma no fim (caberNumaLinha encolhe a letra se faltar espaço) */
+.jg-nome b {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+.jg-nome .jg-arma svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 .jg-nome span {
   /* na fonte pixel, como o resto do cartão (14/10: estava na condensada), numa linha só (o NEX não quebra: se faltar
      espaço, caberNumaLinha encolhe a letra) */

@@ -26,6 +26,7 @@ import { sprites } from '../render/sprites';
 import type { App } from './app';
 import { arteDoItem } from './arteItem';
 import { h, toast, trocarFilhos } from './dom';
+import { iconePixel } from './iconesPixel';
 import { botao, confirmar, escolher, janela } from './fichaModal';
 import { opcoesMelhoria } from './melhorias';
 import { infoItem, NOME_ELEMENTO, textoRef } from './fichaRegras';
@@ -310,7 +311,8 @@ export class TelaJogador {
       ...(auto ? (Object.entries(auto) as [string, boolean][]).filter(([, v]) => v).map(([k]) => cat.condicao(k)?.nome ?? k[0].toUpperCase() + k.slice(1)) : []),
       ...(fs.condicoes ?? []).map((k) => cat.condicao(k)?.nome ?? k),
     ];
-    const chave = JSON.stringify([fs.nome, f.classe, f.trilha, f.nex, fs.personagem, nomes, regras.armado(f.inventario), !!(look && sprites.def(look.charId!))]);
+    const arma = regras.armado(f.inventario) ? armaNaMao(f) : null;
+    const chave = JSON.stringify([fs.nome, f.classe, f.trilha, f.nex, fs.personagem, nomes, arma, !!(look && sprites.def(look.charId!))]);
     if (chave === this.chaves.perfil) return;
     this.chaves.perfil = chave;
     const chips = nomes.length
@@ -322,7 +324,9 @@ export class TelaJogador {
       h(
         'div',
         { class: 'jg-quem' },
-        h('div', { class: 'jg-nome' }, h('b', null, fs.nome), caberNumaLinha(h('span', { class: 'jg-nome-sub' }, [classe, trilha, `NEX ${f.nex}%`].filter(Boolean).join(' · ')))),
+        // armado: a arma logo depois do nome, em pixel, como no painel do mestre (14/10)
+        // o lugar da arma existe sempre (escondido quando desarmado): o nome tem o mesmo tamanho armado ou não
+        h('div', { class: 'jg-nome' }, caberNumaLinha(h('b', null, fs.nome, iconeArma(arma)), 0.7), caberNumaLinha(h('span', { class: 'jg-nome-sub' }, [classe, trilha, `NEX ${f.nex}%`].filter(Boolean).join(' · ')))),
         h('div', { class: 'jg-chips' }, ...chips),
       ),
     );
@@ -1137,20 +1141,43 @@ export function corpoDoItem(it: regras.ItemFicha, calc: regras.Calculado | null)
 }
 
 /**
- * Uma linha que não pode quebrar ("Especialista · Infiltrador · NEX 20%", 14/10): se não couber, a letra encolhe só o
- * necessário (até 80%), em vez de cortar ou mandar o fim para a linha de baixo.
+ * Uma linha que não pode quebrar ("Especialista · Infiltrador · NEX 20%", o nome com a arma; 14/10): se não couber, a
+ * letra encolhe só o necessário (até `minimo`, 80%), em vez de cortar ou mandar o fim para a linha de baixo.
  */
-function caberNumaLinha<T extends HTMLElement>(el: T): T {
+function caberNumaLinha<T extends HTMLElement>(el: T, minimo = 0.8): T {
   const ajustar = () => {
     el.style.fontSize = '';
     const sobra = el.clientWidth;
     const precisa = el.scrollWidth;
     if (!sobra || precisa <= sobra) return;
     const atual = parseFloat(getComputedStyle(el).fontSize);
-    el.style.fontSize = `${Math.max(atual * 0.8, (atual * sobra) / precisa - 0.1)}px`;
+    el.style.fontSize = `${Math.max(atual * minimo, (atual * sobra) / precisa - 0.1)}px`;
   };
-  // o observador avisa quando o elemento entra na tela e quando o espaço muda
+  // o observador avisa quando o elemento entra na tela e quando o espaço muda; a fonte pixel que chega depois muda a
+  // largura do texto sem mudar a caixa, então mede de novo quando as fontes terminam de carregar
   new ResizeObserver(ajustar).observe(el);
+  setTimeout(ajustar, 0);
+  void document.fonts.ready.then(() => setTimeout(ajustar, 0));
+  return el;
+}
+
+/** A arma na mão: de fogo (fogo e disparo) ou branca (o mesmo critério do servidor, hotel.ts armaNaMao). */
+function armaNaMao(f: regras.Ficha): 'fogo' | 'branca' {
+  const it = f.inventario.find((x) => x.tipo === 'arma' && regras.lugarDoItem(x) === 'mao');
+  const tipo = it ? cat.arma(it.id)?.tipo : undefined;
+  return tipo === 'fogo' || tipo === 'disparo' ? 'fogo' : 'branca';
+}
+
+/** O ícone em pixel da arma na mão (espada ou pistola), para ir depois do nome. */
+function iconeArma(arma: 'fogo' | 'branca' | null): HTMLElement {
+  const el = iconePixel(arma === 'fogo' ? 'pistola' : 'espada', `jg-arma${arma ? '' : ' desarmado'}`);
+  if (!arma) {
+    el.setAttribute('aria-hidden', 'true');
+    return el;
+  }
+  el.title = arma === 'fogo' ? 'Arma de fogo na mão' : 'Arma na mão';
+  el.setAttribute('role', 'img');
+  el.setAttribute('aria-label', el.title);
   return el;
 }
 
