@@ -299,7 +299,7 @@ export class TelaJogador {
       h(
         'div',
         { class: 'jg-quem' },
-        h('div', { class: 'jg-nome' }, h('b', null, fs.nome), h('span', null, [classe, trilha, `NEX ${f.nex}%`].filter(Boolean).join(' · '))),
+        h('div', { class: 'jg-nome' }, h('b', null, fs.nome), caberNumaLinha(h('span', { class: 'jg-nome-sub' }, [classe, trilha, `NEX ${f.nex}%`].filter(Boolean).join(' · ')))),
         h('div', { class: 'jg-chips' }, ...chips),
       ),
     );
@@ -1105,6 +1105,24 @@ export function corpoDoItem(it: regras.ItemFicha, calc: regras.Calculado | null)
     ...melhoriasDoItem(it),
     inf.ref ? h('p', { class: 'jg-det-meta' }, textoRef(inf.ref)) : null,
   );
+}
+
+/**
+ * Uma linha que não pode quebrar ("Especialista · Infiltrador · NEX 20%", 14/10): se não couber, a letra encolhe só o
+ * necessário (até 80%), em vez de cortar ou mandar o fim para a linha de baixo.
+ */
+function caberNumaLinha<T extends HTMLElement>(el: T): T {
+  const ajustar = () => {
+    el.style.fontSize = '';
+    const sobra = el.clientWidth;
+    const precisa = el.scrollWidth;
+    if (!sobra || precisa <= sobra) return;
+    const atual = parseFloat(getComputedStyle(el).fontSize);
+    el.style.fontSize = `${Math.max(atual * 0.8, (atual * sobra) / precisa - 0.1)}px`;
+  };
+  // o observador avisa quando o elemento entra na tela e quando o espaço muda
+  new ResizeObserver(ajustar).observe(el);
+  return el;
 }
 
 /** A cor da maldição do item (a do primeiro elemento): a aura da arte. */

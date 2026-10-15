@@ -249,7 +249,14 @@ html.modo-ficha .fj:not(.rq) .arte-ic img {
   overflow-wrap: anywhere;
 }
 .jg-nome span {
-  font: 500 var(--t-meta) / 1.2 var(--f-corpo);
+  /* na fonte pixel, como o resto do cartão (14/10: estava na condensada), numa linha só (o NEX não quebra: se faltar
+     espaço, caberNumaLinha encolhe a letra) */
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+  font: 500 var(--t-meta) / 1.25 var(--f-pixel);
   color: var(--c-texto-2);
 }
 .jg-chips {
@@ -317,6 +324,28 @@ html.modo-ficha .fj:not(.rq) .arte-ic img {
 .jg-vital-topo {
   flex-wrap: nowrap;
   min-width: 0;
+}
+/* o número cabe no cartão (14/10, o Felipe: "os números de SAN estão saindo do espaço dele"): o cartão de ~81 px
+   úteis não comportava "SAN 12/28" (96 px). Menos borda dos lados, menos vão e o rótulo sem espaçamento: sobra ~5 px
+   com o rótulo de 3 letras */
+.jg-vitais {
+  gap: calc(var(--u) * 1.5);
+}
+.jg-vital {
+  padding-inline: var(--s1);
+}
+.jg-vital-topo {
+  gap: var(--u);
+}
+.jg-vital-topo b {
+  letter-spacing: 0;
+}
+/* máximo de 3 algarismos (PV acima de 100): o "/máx" desce para baixo do número em vez de sair do cartão */
+.jg-vital-n.n3 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: calc(var(--u) * 0.6);
 }
 .jg-vital-n {
   flex: none;

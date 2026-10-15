@@ -1,7 +1,7 @@
 """
 Pixel Letras: o "c" da Pixelify Sans com a boca aberta (14/10): a fonte desenha o c/C como um o/O com um dente de menos de 1 pixel do
 grid à direita, que some no tamanho da interface ("Orime", "FIOHA"). Aqui as pontas da direita (os dois tocos) ficam
-mais curtas, a boca cresce, e o resto do desenho e a largura ficam iguais. Sai só c, C, ç e Ç, em 4 pesos, servidos
+mais curtas, a boca cresce, e o resto do desenho e a largura ficam iguais. Sai só c, C, ç, Ç e o H (a barra reta, sem o dente do meio que o fazia parecer um W), em 4 pesos, servidos
 como a família 'Pixel Letras' na frente da Pixelify (client/src/ui/tema.css). Feita com 0.5 0.5.
 A Pixelify variável vem de github.com/google/fonts (ofl/pixelifysans/PixelifySans[wght].ttf); licença OFL em
 client/public/fontes/OFL-pixelify-sans.txt.
@@ -52,6 +52,23 @@ def abrir_boca(glyf, nome, fracao):
     return (toco_baixo, toco_cima, '->', novo_baixo, novo_cima)
 
 
+def achatar_h(glyf, nome):
+    """O H da Pixelify tem um dente de 1 pixel subindo no meio da barra: com as duas hastes, parece um W
+    ("MOOWILA"). A barra fica reta: o dente desce até o topo da barra."""
+    g = glyf[nome]
+    coords = g.coordinates
+    pts = [tuple(coords[i]) for i in range(len(coords))]
+    xs = sorted({x for x, _ in pts})
+    # entre as hastes (de dentro da esquerda à de dentro da direita)
+    dentro = [(x, y) for x, y in pts if xs[1] < x < xs[-2]]
+    ys = sorted({y for _, y in dentro})
+    topo_barra, topo_dente = ys[-2], ys[-1]
+    for i, (x, y) in enumerate(pts):
+        if y == topo_dente and xs[1] < x < xs[-2]:
+            coords[i] = (x, topo_barra)
+    return (topo_dente, '->', topo_barra)
+
+
 for peso in PESOS:
     f = instancer.instantiateVariableFont(TTFont(SRC), {'wght': peso})
     glyf = f['glyf']
@@ -63,13 +80,14 @@ for peso in PESOS:
             if g.isComposite():
                 continue  # a cedilha monta em cima do c já mexido
             print(peso, ch, abrir_boca(glyf, nome, fracao))
-    # só as quatro letras, sem as regras de layout (a fonte é só o desenho delas)
+    print(peso, 'H', achatar_h(glyf, cmap[ord('H')]))
+    # só essas letras, sem as regras de layout (a fonte é só o desenho delas)
     opts = subset.Options()
     opts.layout_features = []
     opts.name_IDs = ['*']
     opts.notdef_outline = True
     sub = subset.Subsetter(opts)
-    sub.populate(unicodes=[ord(c) for c in 'cCçÇ'])
+    sub.populate(unicodes=[ord(c) for c in 'cCçÇH'])
     sub.subset(f)
     # derivada da Pixelify Sans (OFL, sem nome reservado): leva outro nome, como a licença pede para versões mexidas
     nomes = f['name']
