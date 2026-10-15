@@ -44,7 +44,8 @@ export class Lighting {
     l.globalCompositeOperation = 'source-over';
     l.clearRect(0, 0, W, H);
     // o escuro puxa para a cor do cômodo (roxo na tecnologia, vermelho nos rituais...)
-    l.fillStyle = ambient ? rgba(shade(ambient, -0.86), darkness) : `rgba(14,11,34,${darkness})`;
+    // (e sempre com um fundo azul-violeta: a sombra fria contra a luz quente é o que dá o contraste de cor das cenas bonitas)
+    l.fillStyle = ambient ? rgba(esfriar(shade(ambient, -0.86)), darkness) : `rgba(14,11,34,${darkness})`;
     l.fillRect(0, 0, W, H);
     l.globalCompositeOperation = 'destination-out';
     const active = lights.map((L) => {
@@ -100,4 +101,15 @@ export class Lighting {
     }
     main.restore();
   }
+}
+
+/** Puxa uma cor escura para o azul-violeta (a sombra fria): metade do caminho até #0e0b22. */
+function esfriar(hex: string): string {
+  const h = hex.replace('#', '');
+  const n = parseInt(h.length === 3 ? h.split('').map((x) => x + x).join('') : h.slice(0, 6), 16);
+  const m = (v: number, alvo: number) => Math.round(v * 0.45 + alvo * 0.55);
+  const r = m((n >> 16) & 255, 14);
+  const g = m((n >> 8) & 255, 11);
+  const b = m(n & 255, 34);
+  return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
 }
