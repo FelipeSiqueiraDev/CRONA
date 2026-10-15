@@ -7,11 +7,11 @@
 export const CODEX_NO_TABULEIRO = false;
 
 /**
- * As exceções que o Felipe aprovou uma a uma: arte do Códex que entra no tabuleiro mesmo com a chave desligada.
- * - escrita_sangue (15/10): a escrita de sangue do Orfanato, a imagem que o Códex entregou em 12/10
- *   (escrita-sangue.zip); a versão feita por código (parede-l.png e parede-r.png) continua na pasta.
+ * As exceções de arte do Códex dentro do tabuleiro. Desde 15/10 (o Felipe: "não quero arte do Códex em absolutamente
+ * NADA do meu tabuleiro") a lista é vazia: a escrita de sangue do Orfanato, que era aprovada, volta ao desenho por
+ * código. Só a van da viagem (`van_*`) continua, até o Felipe decidir.
  */
-const CODEX_APROVADO = new Set(['escrita_sangue']);
+const CODEX_APROVADO = new Set<string>();
 
 /** O móvel entra na cena? Só com pixel art feita por código (e a van, da viagem, e as exceções aprovadas). */
 export const moveisDoCodex = (chave: string, arte: { pixel?: boolean }) =>

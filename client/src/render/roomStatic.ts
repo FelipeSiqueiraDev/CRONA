@@ -1,3 +1,4 @@
+import { CODEX_NO_TABULEIRO } from './arteCodex';
 import { DIRS, M_POR_CASA, terrenoEm, Z_PER_M, type FloorStyle, type RoomMap, type WallSeg } from '@crona/shared';
 import { hash, shade } from './color';
 import { BATENTE_PORTA_M, VAO_PORTA_M } from './furniKit';
@@ -723,8 +724,9 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
   ctx.setTransform(scale, 0, 0, scale, -x * scale, -y * scale);
   ctx.lineJoin = 'round';
   // texturas desenhadas do estilo do cômodo (chão e parede), quando já chegaram
-  const tPiso = texturaPiso(style);
-  const tParede = texturaParede(style);
+  // (a pintada é arte do Códex: só com a chave ligada; sem ela, o estilo sem pixel usa o chão e a parede de código)
+  const tPiso = CODEX_NO_TABULEIRO ? texturaPiso(style) : undefined;
+  const tParede = CODEX_NO_TABULEIRO ? texturaParede(style) : undefined;
   const tPx = texturaPx(style);
   const pintarPiso = tPx ? pintorPisoPx(ctx, tPx) : tPiso ? pintorPiso(ctx, tPiso) : undefined;
   const pintarParede = tPx ? pintorParedePx(ctx, tPx) : tParede ? pintorParede(ctx, map, tParede.img) : undefined;
@@ -737,7 +739,7 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
     if (!pintores.has(t)) {
       // o chão do terreno em pixel art (a grama, a estrada) quando o estilo tem; senão a textura de antes
       const tp = texturaPx(t);
-      const tt = tp ? null : texturaPiso(t);
+      const tt = tp || !CODEX_NO_TABULEIRO ? null : texturaPiso(t);
       pintores.set(t, tp ? pintorPisoPx(ctx, tp) : tt ? pintorPiso(ctx, tt) : undefined);
     }
     return [floorLook(t), pintores.get(t)];

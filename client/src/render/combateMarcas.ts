@@ -5,6 +5,7 @@
  * círculo de quem sustenta ritual, a medida e a área. A tela COMBATE diz o que
  * mostrar; o RoomView desenha a cada quadro, com as peças onde estiverem.
  */
+import { CODEX_NO_TABULEIRO } from './arteCodex';
 import { combate as cb } from '@crona/shared';
 import { contornoArea, type Area, type Casa } from '../room/combateGeo';
 import { UI_FONT } from './bubbles';
@@ -53,7 +54,8 @@ export const COR_LADO = { agente: '#3fc6ff', inimigo: '#ff3b35', neutro: '#b9b3a
 function imagem(url: string) {
   const im = new Image();
   im.decoding = 'async';
-  im.src = url;
+  // a base e o círculo pintados são arte do Códex: só com a chave ligada (15/10); sem ela, o anel e o círculo de código
+  if (CODEX_NO_TABULEIRO) im.src = url;
   return im;
 }
 const KIT = {
