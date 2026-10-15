@@ -149,6 +149,8 @@ export class Fliperama implements TelaDoBar {
   /** o nível que veio no convite (em dupla vale o de quem chamou) */
   private conviteNivel: Nivel = 1;
   private dedo: { x: number; y: number } | null = null;
+  /** o dedo que começou o jogo: não conta como movimento até soltar */
+  private dedoIgnorado = false;
   private tocou = false;
   // o que está na tela
   private estado: Estado = 'menu';
@@ -203,7 +205,7 @@ export class Fliperama implements TelaDoBar {
     this.tela.addEventListener('pointermove', (e) => {
       if (this.dedo) this.dedo = this.noJogo(e);
     });
-    const soltar = () => (this.dedo = null);
+    const soltar = () => ((this.dedo = null), (this.dedoIgnorado = false));
     this.tela.addEventListener('pointerup', soltar);
     this.tela.addEventListener('pointercancel', soltar);
 
@@ -471,7 +473,7 @@ export class Fliperama implements TelaDoBar {
     e.stopPropagation();
     if (e.type === 'keyup') return void this.segura.delete(b);
     if (!e.repeat) this.apertou.add(b);
-    else if ((this.estado === 'menu' || this.estado === 'nome') && e.timeStamp - this.ultRepeticao > 110) (this.apertou.add(b), (this.ultRepeticao = e.timeStamp));
+    else if (b !== 'a' && (this.estado === 'menu' || this.estado === 'nome') && e.timeStamp - this.ultRepeticao > 110) (this.apertou.add(b), (this.ultRepeticao = e.timeStamp));
     this.segura.add(b);
   };
 
@@ -493,7 +495,7 @@ export class Fliperama implements TelaDoBar {
   };
 
   private entrada(): Entrada {
-    return { segura: this.segura, apertou: this.apertou, dedo: this.dedo, tocou: this.tocou, eixo: this.eixo() };
+    return { segura: this.segura, apertou: this.apertou, dedo: this.dedoIgnorado ? null : this.dedo, tocou: this.tocou, eixo: this.eixo() };
   }
 
   /** A força de cada eixo: a alavanca analógica (com a zona morta e a curva) ou o teclado; vezes a sensibilidade. */
@@ -703,7 +705,7 @@ export class Fliperama implements TelaDoBar {
       const dele = p.fimOutro ?? (j instanceof Atravessa ? (j.outro?.p ?? 0) : j instanceof PulaPula ? (j.outro?.p ?? 0) : 0);
       return j.pontos >= dele;
     }
-    return this.ehNovoRecorde();
+    return this.entraNoRecorde();
   }
 
   /** O que vai para o outro celular durante a partida em dupla. */
@@ -731,7 +733,8 @@ export class Fliperama implements TelaDoBar {
 
   private comecar() {
     this.jogo = JOGOS[this.sel].novo(undefined, this.nivel);
-    this.dedo = null;
+    // o dedo que apertou o menu para começar não vira movimento: fica ignorado até soltar (e segue vivo depois)
+    if (this.dedo) this.dedoIgnorado = true;
     this.partida = null;
     this.estado = 'jogo';
     this.quadro = 0;
@@ -785,11 +788,19 @@ export class Fliperama implements TelaDoBar {
     return j.recorde && p > 0 && (!guardados.length || p > Math.max(...guardados.map((r) => r.p)));
   }
 
+  /** As três letras do nome de quem joga neste celular. */
+  private iniciaisDaMesa() {
+    const meu = this.m?.jogadores[this.m.eu[0]] ?? '';
+    return (semAcento(meu).replace(/[^A-Z]/g, '') + 'AAA').slice(0, 3);
+  }
+
   /** `mostrar` = abre a tabela com o destaque (novo recorde); sem ele, só guarda e segue. */
   private gravar(mostrar = true) {
     const p = this.jogo?.pontos ?? 0;
-    const l = [...this.lista(), { n: this.iniciais, p }].sort((x, y) => y.p - x.p).slice(0, MAX_RECORDES);
-    this.destaque = l.findIndex((r) => r.n === this.iniciais && r.p === p);
+    // sem perguntar (não é o melhor): as letras de quem está na máquina, e não as de outra sessão
+    const ini = mostrar ? this.iniciais : this.iniciaisDaMesa();
+    const l = [...this.lista(), { n: ini, p }].sort((x, y) => y.p - x.p).slice(0, MAX_RECORDES);
+    this.destaque = l.findIndex((r) => r.n === ini && r.p === p);
     this.recordes = { ...lerRecordes(), [JOGOS[this.sel].id]: l.filter((r) => !ehLenda(r)) };
     gravarRecordes(this.recordes);
     if (!mostrar) return;

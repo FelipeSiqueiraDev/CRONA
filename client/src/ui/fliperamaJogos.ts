@@ -417,7 +417,7 @@ export class Atravessa implements Jogo {
   private y = 186;
   private passos = 0;
   private atropelado = 0;
-  /** depois de atropelado, uns 40 quadros sem poder ser atropelado de novo (15/10) */
+  /** depois do recuo, 14 quadros sem poder ser atropelado de novo (15/10) */
   private protegido = 0;
   private faixas: { y: number; vel: number; dir: number; carros: Carro[] }[] = [];
   /** em dupla: o outro agente (a altura e os pontos que o celular dele manda) */
@@ -490,13 +490,13 @@ export class Atravessa implements Jogo {
       sfx.arpejo([523, 659, 784, 1046], 0.06);
       return;
     }
-    // o carro: o agente ocupa x..x+7 e y-9..y
+    // o carro: o agente ocupa x..x+7 e y-9..y; a caixa que bate é do tronco para baixo (y-6..y), cabe no vão entre as faixas
     for (const f of this.faixas) {
-      if (this.protegido > 0 || this.y - 4 > f.y + 12 || this.y < f.y + 4) continue;
+      if (this.protegido > 0 || this.y - 6 > f.y + 12 || this.y < f.y + 4) continue;
       for (const c of f.carros)
         if (this.x + 6 > c.x && this.x + 1 < c.x + c.w) {
           this.atropelado = 18;
-          this.protegido = 18 + 40;
+          this.protegido = 18 + 14;
           sfx.chip(320, 70, 0.3, 0.1);
           sfx.ruido(0.2, 900, 0.15, 200);
           fx.tremer(5);
@@ -684,7 +684,7 @@ export class PulaPula implements Jogo {
     }
     if (this.vy > 0)
       for (const p of this.plats) {
-        if (p.quebrada || antes > p.y || this.y < p.y || this.x + 5 < p.x || this.x - 5 > p.x + p.w) continue;
+        if (p.quebrada || antes > p.y || this.y < p.y || this.x + 4 < p.x || this.x - 4 > p.x + p.w) continue;
         if (p.tipo === 'quebra') {
           p.quebrada = true;
           sfx.chip(160, 60, 0.12);
