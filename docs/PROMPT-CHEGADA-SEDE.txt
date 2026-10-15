@@ -1,0 +1,46 @@
+PEDIDO AO CÓDEX — A CHEGADA NA SEDE DA ORDEM (14/10)
+=====================================================
+
+O que é: a ilustração que aparece na tela quando o grupo CHEGA de viagem na Sede da Ordem (a tela de chegada,
+como as da Fazenda e do Orfanato). A de hoje mostra um restaurante de tijolo chique que não tem nada a ver com
+a Sede. A Sede da Ordem é ESCONDIDA atrás de um bar de fachada, o "Suvaco Seco", em São Paulo: velho, simples,
+de esquina. A referência obrigatória é a ilha do mapa-múndi: client/public/arte/mapa/lugar-sede-da-ordem-hd.png
+(anexar junto). A chegada tem que ser AQUELA fachada, vista da rua.
+
+ENTREGA
+- 2 imagens, 1920 × 1080 (16:9), PNG:
+  - chegada-sede-da-ordem-1.png  — fim de tarde (a luz dourada baixa, as primeiras luzes acendendo)
+  - chegada-sede-da-ordem-2.png  — noite (a rua molhada da garoa, o letreiro e as lâmpadas acesos)
+- Elas substituem as duas que existem em client/public/arte/viagem/ilustracoes/ (mesmo nome).
+
+ESTILO (igual às outras chegadas: chegada-fazenda-olhos-de-aguia-1.png, chegada-orfanato-filhos-do-dragao-1.png)
+- Pintura digital semi-realista, cinematográfica, luz quente e contrastada, detalhe rico, câmera na altura de
+  uma pessoa na rua. Mesma paleta e mesmo acabamento das outras chegadas: elas vão aparecer lado a lado.
+- A VAN do grupo chegando, a mesma das outras chegadas: van de passageiros PRETA, fosca e um pouco suja, vista de
+  trás em três quartos, as lanternas traseiras vermelhas acesas, parando junto ao meio-fio na frente do bar.
+  Sem placa legível, sem logotipo.
+
+A FACHADA (fiel à ilha)
+- Prédio de esquina, de um pavimento alto, reboco amarelo-creme GASTO e descascado, com manchas de umidade, a
+  pintura antiga aparecendo por baixo; uma faixa de reboco mais escura na base.
+- Telhado de telha de barro vermelha, com a caixa d'água de fibrocimento em cima.
+- Na fachada principal: a porta de enrolar de metal cinza (meio aberta, com a luz do bar saindo por baixo), a
+  janela com grade de ferro e o toldo verde de lona, curto, sobre a entrada do bar.
+- O letreiro pintado à mão, "Suvaco Seco", em letras vermelhas sobre fundo creme, um pouco desbotado.
+- Na calçada: duas ou três mesinhas e cadeiras de plástico AMARELAS (genéricas, sem marca), engradados de
+  cerveja vermelhos empilhados, uma lixeira de metal; a calçada de cimento rachada, o meio-fio alto.
+- A rua de asfalto remendado, a esquina, um poste de concreto com fios emaranhados e um orelhão velho ao lado.
+- Por dentro (visto pela porta): o balcão de madeira, garrafas na prateleira, a geladeira amarela no fundo e a
+  luz quente e amarelada de lâmpada. Ninguém sabe que lá embaixo fica a Sede: o bar é só um bar.
+
+CLIMA
+- Bairro antigo de São Paulo, sobrados e comércio fechado na rua, prédios ao fundo, céu de cidade.
+- Fim de tarde: o sol baixo atravessando a rua, sombras compridas. Noite: o asfalto molhado refletindo o
+  letreiro e as lâmpadas, a luz do bar escapando pela porta de enrolar.
+- Sóbrio, um pouco decadente, convidativo: o refúgio da Ordem disfarçado de boteco de esquina.
+
+NÃO PODE
+- Nada de marca real (cerveja, refrigerante, banco, operadora): tudo genérico.
+- Nada de texto além do "Suvaco Seco" do letreiro.
+- Nada de pessoas em primeiro plano; no máximo um vulto dentro do bar.
+- Nada de restaurante chique, tijolo à vista, toldo listrado ou varanda de ferro (é o erro da imagem de hoje).
