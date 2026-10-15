@@ -48,5 +48,9 @@ export function posicaoInicial(nome: string, i: number): [number, number] {
   if (/sede|ordem|ordo/i.test(nome)) return [0.596, 0.69];
   if (/fazenda/i.test(nome)) return [0.53, 0.44];
   if (/orfanato/i.test(nome)) return [0.7, 0.49];
+  // Igarapé (15/10): a cidadezinha do rio no interior de Minas, a oeste de Belo Horizonte
+  if (/igarap[eé]/i.test(nome)) return [0.635, 0.6];
+  // Tiradentes (15/10): a cidadezinha histórica no sul de Minas, entre a Sede e Igarapé
+  if (/tiradentes/i.test(nome)) return [0.585, 0.625];
   return POSICOES_INICIAIS[i % POSICOES_INICIAIS.length];
 }

@@ -136,6 +136,10 @@ export interface Database {
   orfanatoRev?: number;
   /** versão da montagem de Santo Berço (seedSantoBerco) */
   santoBercoRev?: number;
+  /** versão da montagem de Igarapé (seedIgarape) */
+  igarapeRev?: number;
+  /** versão da montagem de Tiradentes (seedTiradentes) */
+  tiradentesRev?: number;
   /** o nome da campanha (a história inteira, em todos os lugares): "Segredos do Outro Lado" */
   nomeCampanha?: string;
   /** o bestiário (10/10): as criaturas, cada uma com uma ficha e várias aparências */

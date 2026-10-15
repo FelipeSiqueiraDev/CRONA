@@ -14628,5 +14628,2422 @@
         "ay": 31.6
       }
     }
+  },
+  "igarape_casa": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_casa/giro-4.png",
+        "ax": 216.0,
+        "ay": 396.0
+      },
+      "2": {
+        "arquivo": "igarape_casa/giro-2.png",
+        "ax": 160.0,
+        "ay": 463.0
+      },
+      "0": {
+        "arquivo": "igarape_casa/giro-0.png",
+        "ax": 224.0,
+        "ay": 413.0
+      },
+      "6": {
+        "arquivo": "igarape_casa/giro-6.png",
+        "ax": 152.0,
+        "ay": 391.0
+      }
+    },
+    "real": [
+      5.25,
+      3.643,
+      4.752
+    ]
+  },
+  "igarape_casa~b": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_casa~b/giro-4.png",
+        "ax": 216.0,
+        "ay": 396.0
+      },
+      "2": {
+        "arquivo": "igarape_casa~b/giro-2.png",
+        "ax": 160.0,
+        "ay": 463.0
+      },
+      "0": {
+        "arquivo": "igarape_casa~b/giro-0.png",
+        "ax": 224.0,
+        "ay": 413.0
+      },
+      "6": {
+        "arquivo": "igarape_casa~b/giro-6.png",
+        "ax": 152.0,
+        "ay": 391.0
+      }
+    },
+    "real": [
+      5.25,
+      3.643,
+      4.752
+    ]
+  },
+  "igarape_venda": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_venda/giro-4.png",
+        "ax": 243.0,
+        "ay": 452.0
+      },
+      "2": {
+        "arquivo": "igarape_venda/giro-2.png",
+        "ax": 190.0,
+        "ay": 452.0
+      },
+      "0": {
+        "arquivo": "igarape_venda/giro-0.png",
+        "ax": 254.0,
+        "ay": 446.0
+      },
+      "6": {
+        "arquivo": "igarape_venda/giro-6.png",
+        "ax": 179.0,
+        "ay": 446.0
+      }
+    },
+    "real": [
+      6.0,
+      4.55,
+      5.23
+    ]
+  },
+  "igarape_capela": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_capela/giro-4.png",
+        "ax": 150.0,
+        "ay": 501.0
+      },
+      "2": {
+        "arquivo": "igarape_capela/giro-2.png",
+        "ax": 229.0,
+        "ay": 517.0
+      },
+      "0": {
+        "arquivo": "igarape_capela/giro-0.png",
+        "ax": 197.0,
+        "ay": 589.0
+      },
+      "6": {
+        "arquivo": "igarape_capela/giro-6.png",
+        "ax": 244.0,
+        "ay": 573.0
+      }
+    },
+    "real": [
+      4.3,
+      5.515,
+      8.1
+    ]
+  },
+  "igarape_palafita": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_palafita/giro-4.png",
+        "ax": 126.0,
+        "ay": 356.0
+      },
+      "2": {
+        "arquivo": "igarape_palafita/giro-2.png",
+        "ax": 173.0,
+        "ay": 355.0
+      },
+      "0": {
+        "arquivo": "igarape_palafita/giro-0.png",
+        "ax": 171.0,
+        "ay": 324.0
+      },
+      "6": {
+        "arquivo": "igarape_palafita/giro-6.png",
+        "ax": 125.0,
+        "ay": 325.0
+      }
+    },
+    "real": [
+      3.7,
+      3.93,
+      4.23
+    ]
+  },
+  "igarape_palafita_b": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_palafita_b/giro-4.png",
+        "ax": 126.0,
+        "ay": 356.0
+      },
+      "2": {
+        "arquivo": "igarape_palafita_b/giro-2.png",
+        "ax": 173.0,
+        "ay": 355.0
+      },
+      "0": {
+        "arquivo": "igarape_palafita_b/giro-0.png",
+        "ax": 171.0,
+        "ay": 324.0
+      },
+      "6": {
+        "arquivo": "igarape_palafita_b/giro-6.png",
+        "ax": 125.0,
+        "ay": 325.0
+      }
+    },
+    "real": [
+      3.7,
+      3.93,
+      4.23
+    ]
+  },
+  "igarape_ponte": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_ponte/giro-4.png",
+        "ax": 201.0,
+        "ay": 197.0
+      },
+      "2": {
+        "arquivo": "igarape_ponte/giro-2.png",
+        "ax": 72.0,
+        "ay": 197.0
+      },
+      "0": {
+        "arquivo": "igarape_ponte/giro-0.png",
+        "ax": 201.0,
+        "ay": 197.0
+      },
+      "6": {
+        "arquivo": "igarape_ponte/giro-6.png",
+        "ax": 72.0,
+        "ay": 197.0
+      }
+    },
+    "real": [
+      4.54,
+      1.52,
+      1.3
+    ]
+  },
+  "igarape_canoa": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_canoa/giro-4.png",
+        "ax": 30.0,
+        "ay": 91.0
+      },
+      "2": {
+        "arquivo": "igarape_canoa/giro-2.png",
+        "ax": 126.0,
+        "ay": 91.0
+      },
+      "0": {
+        "arquivo": "igarape_canoa/giro-0.png",
+        "ax": 30.0,
+        "ay": 107.0
+      },
+      "6": {
+        "arquivo": "igarape_canoa/giro-6.png",
+        "ax": 126.0,
+        "ay": 97.0
+      }
+    },
+    "real": [
+      0.62,
+      2.76,
+      0.62
+    ]
+  },
+  "igarape_ipe": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_ipe/giro-4.png",
+        "ax": 102.0,
+        "ay": 327.0
+      },
+      "2": {
+        "arquivo": "igarape_ipe/giro-2.png",
+        "ax": 84.0,
+        "ay": 324.0
+      },
+      "0": {
+        "arquivo": "igarape_ipe/giro-0.png",
+        "ax": 96.0,
+        "ay": 326.0
+      },
+      "6": {
+        "arquivo": "igarape_ipe/giro-6.png",
+        "ax": 91.0,
+        "ay": 324.0
+      }
+    },
+    "real": [
+      3.72,
+      2.663,
+      5.783
+    ]
+  },
+  "igarape_rede": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_rede/giro-4.png",
+        "ax": 22.0,
+        "ay": 148.0
+      },
+      "2": {
+        "arquivo": "igarape_rede/giro-2.png",
+        "ax": 86.0,
+        "ay": 148.0
+      },
+      "0": {
+        "arquivo": "igarape_rede/giro-0.png",
+        "ax": 22.0,
+        "ay": 148.0
+      },
+      "6": {
+        "arquivo": "igarape_rede/giro-6.png",
+        "ax": 86.0,
+        "ay": 148.0
+      }
+    },
+    "real": [
+      0.6,
+      2.17,
+      1.75
+    ]
+  },
+  "igarape_banco_igreja": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_banco_igreja/giro-4.png",
+        "ax": 100.0,
+        "ay": 113.0
+      },
+      "2": {
+        "arquivo": "igarape_banco_igreja/giro-2.png",
+        "ax": 38.0,
+        "ay": 113.0
+      },
+      "0": {
+        "arquivo": "igarape_banco_igreja/giro-0.png",
+        "ax": 102.0,
+        "ay": 102.0
+      },
+      "6": {
+        "arquivo": "igarape_banco_igreja/giro-6.png",
+        "ax": 36.0,
+        "ay": 102.0
+      }
+    },
+    "real": [
+      2.17,
+      0.58,
+      0.98
+    ]
+  },
+  "igarape_altar": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_altar/giro-4.png",
+        "ax": 98.0,
+        "ay": 123.0
+      },
+      "2": {
+        "arquivo": "igarape_altar/giro-2.png",
+        "ax": 35.0,
+        "ay": 123.0
+      },
+      "0": {
+        "arquivo": "igarape_altar/giro-0.png",
+        "ax": 98.0,
+        "ay": 122.0
+      },
+      "6": {
+        "arquivo": "igarape_altar/giro-6.png",
+        "ax": 35.0,
+        "ay": 122.0
+      }
+    },
+    "real": [
+      2.17,
+      0.66,
+      1.48
+    ]
+  },
+  "igarape_santa": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_santa/giro-4.png",
+        "ax": 31.0,
+        "ay": 107.0
+      },
+      "2": {
+        "arquivo": "igarape_santa/giro-2.png",
+        "ax": 31.0,
+        "ay": 107.0
+      },
+      "0": {
+        "arquivo": "igarape_santa/giro-0.png",
+        "ax": 31.0,
+        "ay": 106.0
+      },
+      "6": {
+        "arquivo": "igarape_santa/giro-6.png",
+        "ax": 31.0,
+        "ay": 106.0
+      }
+    },
+    "real": [
+      0.48,
+      0.48,
+      1.7
+    ]
+  },
+  "igarape_rede_pesca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_rede_pesca/giro-4.png",
+        "ax": 30.0,
+        "ay": 29.0
+      },
+      "2": {
+        "arquivo": "igarape_rede_pesca/giro-2.png",
+        "ax": 29.0,
+        "ay": 30.0
+      },
+      "0": {
+        "arquivo": "igarape_rede_pesca/giro-0.png",
+        "ax": 30.0,
+        "ay": 31.0
+      },
+      "6": {
+        "arquivo": "igarape_rede_pesca/giro-6.png",
+        "ax": 29.0,
+        "ay": 30.0
+      }
+    },
+    "real": [
+      0.62,
+      0.517,
+      0.2
+    ]
+  },
+  "igarape_cesto": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_cesto/giro-4.png",
+        "ax": 27.0,
+        "ay": 41.0
+      },
+      "2": {
+        "arquivo": "igarape_cesto/giro-2.png",
+        "ax": 27.0,
+        "ay": 43.0
+      },
+      "0": {
+        "arquivo": "igarape_cesto/giro-0.png",
+        "ax": 27.0,
+        "ay": 41.0
+      },
+      "6": {
+        "arquivo": "igarape_cesto/giro-6.png",
+        "ax": 27.0,
+        "ay": 42.0
+      }
+    },
+    "real": [
+      0.5,
+      0.494,
+      0.395
+    ]
+  },
+  "igarape_varal": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_varal/giro-4.png",
+        "ax": 24.0,
+        "ay": 140.0
+      },
+      "2": {
+        "arquivo": "igarape_varal/giro-2.png",
+        "ax": 87.0,
+        "ay": 140.0
+      },
+      "0": {
+        "arquivo": "igarape_varal/giro-0.png",
+        "ax": 24.0,
+        "ay": 140.0
+      },
+      "6": {
+        "arquivo": "igarape_varal/giro-6.png",
+        "ax": 87.0,
+        "ay": 140.0
+      }
+    },
+    "real": [
+      0.08,
+      2.09,
+      1.62
+    ]
+  },
+  "casa_colonial": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "casa_colonial/giro-4.png",
+        "ax": 222.0,
+        "ay": 396.0
+      },
+      "2": {
+        "arquivo": "casa_colonial/giro-2.png",
+        "ax": 165.0,
+        "ay": 396.0
+      },
+      "0": {
+        "arquivo": "casa_colonial/giro-0.png",
+        "ax": 229.0,
+        "ay": 393.0
+      },
+      "6": {
+        "arquivo": "casa_colonial/giro-6.png",
+        "ax": 158.0,
+        "ay": 393.0
+      }
+    },
+    "real": [
+      5.35,
+      3.807,
+      4.63
+    ]
+  },
+  "casa_colonial~b": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "casa_colonial~b/giro-4.png",
+        "ax": 222.0,
+        "ay": 396.0
+      },
+      "2": {
+        "arquivo": "casa_colonial~b/giro-2.png",
+        "ax": 165.0,
+        "ay": 396.0
+      },
+      "0": {
+        "arquivo": "casa_colonial~b/giro-0.png",
+        "ax": 229.0,
+        "ay": 393.0
+      },
+      "6": {
+        "arquivo": "casa_colonial~b/giro-6.png",
+        "ax": 158.0,
+        "ay": 393.0
+      }
+    },
+    "real": [
+      5.35,
+      3.788,
+      4.63
+    ]
+  },
+  "casa_colonial~c": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "casa_colonial~c/giro-4.png",
+        "ax": 222.0,
+        "ay": 396.0
+      },
+      "2": {
+        "arquivo": "casa_colonial~c/giro-2.png",
+        "ax": 165.0,
+        "ay": 396.0
+      },
+      "0": {
+        "arquivo": "casa_colonial~c/giro-0.png",
+        "ax": 229.0,
+        "ay": 393.0
+      },
+      "6": {
+        "arquivo": "casa_colonial~c/giro-6.png",
+        "ax": 158.0,
+        "ay": 393.0
+      }
+    },
+    "real": [
+      5.35,
+      3.83,
+      4.63
+    ]
+  },
+  "casa_colonial~d": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "casa_colonial~d/giro-4.png",
+        "ax": 222.0,
+        "ay": 396.0
+      },
+      "2": {
+        "arquivo": "casa_colonial~d/giro-2.png",
+        "ax": 165.0,
+        "ay": 396.0
+      },
+      "0": {
+        "arquivo": "casa_colonial~d/giro-0.png",
+        "ax": 229.0,
+        "ay": 393.0
+      },
+      "6": {
+        "arquivo": "casa_colonial~d/giro-6.png",
+        "ax": 158.0,
+        "ay": 393.0
+      }
+    },
+    "real": [
+      5.35,
+      3.79,
+      4.63
+    ]
+  },
+  "pousada_predio": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "pousada_predio/giro-4.png",
+        "ax": 280.0,
+        "ay": 584.0
+      },
+      "2": {
+        "arquivo": "pousada_predio/giro-2.png",
+        "ax": 197.0,
+        "ay": 584.0
+      },
+      "0": {
+        "arquivo": "pousada_predio/giro-0.png",
+        "ax": 293.0,
+        "ay": 578.0
+      },
+      "6": {
+        "arquivo": "pousada_predio/giro-6.png",
+        "ax": 184.0,
+        "ay": 578.0
+      }
+    },
+    "real": [
+      6.85,
+      4.438,
+      7.43
+    ]
+  },
+  "venda_predio": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "venda_predio/giro-4.png",
+        "ax": 284.0,
+        "ay": 439.0
+      },
+      "2": {
+        "arquivo": "venda_predio/giro-2.png",
+        "ax": 165.0,
+        "ay": 439.0
+      },
+      "0": {
+        "arquivo": "venda_predio/giro-0.png",
+        "ax": 293.0,
+        "ay": 435.0
+      },
+      "6": {
+        "arquivo": "venda_predio/giro-6.png",
+        "ax": 156.0,
+        "ay": 435.0
+      }
+    },
+    "real": [
+      6.85,
+      3.77,
+      4.83
+    ]
+  },
+  "boteco_predio": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "boteco_predio/giro-4.png",
+        "ax": 222.0,
+        "ay": 396.0
+      },
+      "2": {
+        "arquivo": "boteco_predio/giro-2.png",
+        "ax": 165.0,
+        "ay": 396.0
+      },
+      "0": {
+        "arquivo": "boteco_predio/giro-0.png",
+        "ax": 229.0,
+        "ay": 393.0
+      },
+      "6": {
+        "arquivo": "boteco_predio/giro-6.png",
+        "ax": 158.0,
+        "ay": 393.0
+      }
+    },
+    "real": [
+      5.35,
+      3.73,
+      4.63
+    ]
+  },
+  "igreja_barroca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igreja_barroca/giro-4.png",
+        "ax": 360.0,
+        "ay": 713.0
+      },
+      "2": {
+        "arquivo": "igreja_barroca/giro-2.png",
+        "ax": 248.0,
+        "ay": 713.0
+      },
+      "0": {
+        "arquivo": "igreja_barroca/giro-0.png",
+        "ax": 344.0,
+        "ay": 772.0
+      },
+      "6": {
+        "arquivo": "igreja_barroca/giro-6.png",
+        "ax": 263.0,
+        "ay": 772.0
+      }
+    },
+    "real": [
+      9.45,
+      7.23,
+      9.18
+    ]
+  },
+  "chafariz": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "chafariz/giro-4.png",
+        "ax": 79.0,
+        "ay": 158.0
+      },
+      "2": {
+        "arquivo": "chafariz/giro-2.png",
+        "ax": 80.0,
+        "ay": 158.0
+      },
+      "0": {
+        "arquivo": "chafariz/giro-0.png",
+        "ax": 79.0,
+        "ay": 158.0
+      },
+      "6": {
+        "arquivo": "chafariz/giro-6.png",
+        "ax": 80.0,
+        "ay": 158.0
+      }
+    },
+    "real": [
+      2.014,
+      2.014,
+      2.09
+    ]
+  },
+  "coreto": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "coreto/giro-4.png",
+        "ax": 100.0,
+        "ay": 275.0
+      },
+      "2": {
+        "arquivo": "coreto/giro-2.png",
+        "ax": 100.0,
+        "ay": 275.0
+      },
+      "0": {
+        "arquivo": "coreto/giro-0.png",
+        "ax": 100.0,
+        "ay": 275.0
+      },
+      "6": {
+        "arquivo": "coreto/giro-6.png",
+        "ax": 100.0,
+        "ay": 275.0
+      }
+    },
+    "real": [
+      2.993,
+      3.177,
+      4.02
+    ]
+  },
+  "poste_ferro": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "poste_ferro/giro-4.png",
+        "ax": 19.0,
+        "ay": 198.0
+      },
+      "2": {
+        "arquivo": "poste_ferro/giro-2.png",
+        "ax": 19.0,
+        "ay": 198.0
+      },
+      "0": {
+        "arquivo": "poste_ferro/giro-0.png",
+        "ax": 19.0,
+        "ay": 198.0
+      },
+      "6": {
+        "arquivo": "poste_ferro/giro-6.png",
+        "ax": 19.0,
+        "ay": 198.0
+      }
+    },
+    "real": [
+      0.34,
+      0.34,
+      3.47
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "poste_ferro/giro-4-1.png",
+            "ax": 19.0,
+            "ay": 198.0
+          },
+          "2": {
+            "arquivo": "poste_ferro/giro-2-1.png",
+            "ax": 19.0,
+            "ay": 198.0
+          },
+          "0": {
+            "arquivo": "poste_ferro/giro-0-1.png",
+            "ax": 19.0,
+            "ay": 198.0
+          },
+          "6": {
+            "arquivo": "poste_ferro/giro-6-1.png",
+            "ax": 19.0,
+            "ay": 198.0
+          }
+        }
+      }
+    }
+  },
+  "banco_praca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "banco_praca/giro-4.png",
+        "ax": 64.0,
+        "ay": 91.0
+      },
+      "2": {
+        "arquivo": "banco_praca/giro-2.png",
+        "ax": 33.0,
+        "ay": 91.0
+      },
+      "0": {
+        "arquivo": "banco_praca/giro-0.png",
+        "ax": 66.0,
+        "ay": 80.0
+      },
+      "6": {
+        "arquivo": "banco_praca/giro-6.png",
+        "ax": 32.0,
+        "ay": 80.0
+      }
+    },
+    "real": [
+      1.34,
+      0.555,
+      0.9
+    ]
+  },
+  "vaso_flores": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "vaso_flores/giro-4.png",
+        "ax": 30.0,
+        "ay": 66.0
+      },
+      "2": {
+        "arquivo": "vaso_flores/giro-2.png",
+        "ax": 30.0,
+        "ay": 66.0
+      },
+      "0": {
+        "arquivo": "vaso_flores/giro-0.png",
+        "ax": 30.0,
+        "ay": 66.0
+      },
+      "6": {
+        "arquivo": "vaso_flores/giro-6.png",
+        "ax": 30.0,
+        "ay": 68.0
+      }
+    },
+    "real": [
+      0.701,
+      0.647,
+      0.886
+    ]
+  },
+  "cruzeiro": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cruzeiro/giro-4.png",
+        "ax": 38.0,
+        "ay": 188.0
+      },
+      "2": {
+        "arquivo": "cruzeiro/giro-2.png",
+        "ax": 38.0,
+        "ay": 188.0
+      },
+      "0": {
+        "arquivo": "cruzeiro/giro-0.png",
+        "ax": 38.0,
+        "ay": 188.0
+      },
+      "6": {
+        "arquivo": "cruzeiro/giro-6.png",
+        "ax": 38.0,
+        "ay": 188.0
+      }
+    },
+    "real": [
+      1.0,
+      0.66,
+      3.25
+    ]
+  },
+  "lajeado": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "0": {
+        "arquivo": "lajeado/giro-0.png",
+        "ax": 64.0,
+        "ay": 64.0
+      }
+    },
+    "real": [
+      1.5,
+      1.5,
+      0.012
+    ],
+    "soGiros": true
+  },
+  "banco_igreja": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "banco_igreja/giro-4.png",
+        "ax": 101.0,
+        "ay": 114.0
+      },
+      "2": {
+        "arquivo": "banco_igreja/giro-2.png",
+        "ax": 37.0,
+        "ay": 114.0
+      },
+      "0": {
+        "arquivo": "banco_igreja/giro-0.png",
+        "ax": 101.0,
+        "ay": 107.0
+      },
+      "6": {
+        "arquivo": "banco_igreja/giro-6.png",
+        "ax": 38.0,
+        "ay": 107.0
+      }
+    },
+    "real": [
+      2.21,
+      0.58,
+      1.02
+    ]
+  },
+  "altar_barroco": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "altar_barroco/giro-4.png",
+        "ax": 135.0,
+        "ay": 197.0
+      },
+      "2": {
+        "arquivo": "altar_barroco/giro-2.png",
+        "ax": 39.0,
+        "ay": 197.0
+      },
+      "0": {
+        "arquivo": "altar_barroco/giro-0.png",
+        "ax": 134.0,
+        "ay": 190.0
+      },
+      "6": {
+        "arquivo": "altar_barroco/giro-6.png",
+        "ax": 39.0,
+        "ay": 190.0
+      }
+    },
+    "real": [
+      2.88,
+      0.72,
+      2.64
+    ]
+  },
+  "prateleira_venda": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "prateleira_venda/giro-4.png",
+        "ax": 67.0,
+        "ay": 161.0
+      },
+      "2": {
+        "arquivo": "prateleira_venda/giro-2.png",
+        "ax": 38.0,
+        "ay": 161.0
+      },
+      "0": {
+        "arquivo": "prateleira_venda/giro-0.png",
+        "ax": 70.0,
+        "ay": 159.0
+      },
+      "6": {
+        "arquivo": "prateleira_venda/giro-6.png",
+        "ax": 35.0,
+        "ay": 159.0
+      }
+    },
+    "real": [
+      1.42,
+      0.58,
+      2.2
+    ]
+  },
+  "oratorio": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "oratorio/parede-r.png",
+        "ax": 20.0,
+        "ay": 20.4
+      },
+      "l": {
+        "arquivo": "oratorio/parede-l.png",
+        "ax": 9.0,
+        "ay": 20.4
+      }
+    }
+  },
+  "balcao_hotel": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "balcao_hotel/giro-4.png",
+        "ax": 136.0,
+        "ay": 134.0
+      },
+      "2": {
+        "arquivo": "balcao_hotel/giro-2.png",
+        "ax": 40.0,
+        "ay": 134.0
+      },
+      "0": {
+        "arquivo": "balcao_hotel/giro-0.png",
+        "ax": 137.0,
+        "ay": 134.0
+      },
+      "6": {
+        "arquivo": "balcao_hotel/giro-6.png",
+        "ax": 40.0,
+        "ay": 134.0
+      }
+    },
+    "real": [
+      3.0,
+      0.68,
+      1.287
+    ]
+  },
+  "maca_doutor": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "maca_doutor/giro-4.png",
+        "ax": 36.0,
+        "ay": 96.0
+      },
+      "2": {
+        "arquivo": "maca_doutor/giro-2.png",
+        "ax": 100.0,
+        "ay": 96.0
+      },
+      "0": {
+        "arquivo": "maca_doutor/giro-0.png",
+        "ax": 36.0,
+        "ay": 94.0
+      },
+      "6": {
+        "arquivo": "maca_doutor/giro-6.png",
+        "ax": 99.0,
+        "ay": 94.0
+      }
+    },
+    "real": [
+      0.59,
+      2.12,
+      0.76
+    ]
+  },
+  "armario_boticario": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "armario_boticario/giro-4.png",
+        "ax": 65.0,
+        "ay": 144.0
+      },
+      "2": {
+        "arquivo": "armario_boticario/giro-2.png",
+        "ax": 35.0,
+        "ay": 144.0
+      },
+      "0": {
+        "arquivo": "armario_boticario/giro-0.png",
+        "ax": 67.0,
+        "ay": 143.0
+      },
+      "6": {
+        "arquivo": "armario_boticario/giro-6.png",
+        "ax": 34.0,
+        "ay": 143.0
+      }
+    },
+    "real": [
+      1.5,
+      0.53,
+      1.9
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "armario_boticario/giro-4-1.png",
+            "ax": 65.0,
+            "ay": 144.0
+          },
+          "2": {
+            "arquivo": "armario_boticario/giro-2-1.png",
+            "ax": 35.0,
+            "ay": 144.0
+          },
+          "0": {
+            "arquivo": "armario_boticario/giro-0-1.png",
+            "ax": 67.0,
+            "ay": 143.0
+          },
+          "6": {
+            "arquivo": "armario_boticario/giro-6-1.png",
+            "ax": 34.0,
+            "ay": 143.0
+          }
+        }
+      }
+    }
+  },
+  "armario_boticario!vazio": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "armario_boticario!vazio/giro-4.png",
+        "ax": 65.0,
+        "ay": 144.0
+      },
+      "2": {
+        "arquivo": "armario_boticario!vazio/giro-2.png",
+        "ax": 35.0,
+        "ay": 144.0
+      },
+      "0": {
+        "arquivo": "armario_boticario!vazio/giro-0.png",
+        "ax": 67.0,
+        "ay": 143.0
+      },
+      "6": {
+        "arquivo": "armario_boticario!vazio/giro-6.png",
+        "ax": 34.0,
+        "ay": 143.0
+      }
+    },
+    "real": [
+      1.5,
+      0.53,
+      1.9
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "armario_boticario!vazio/giro-4-1.png",
+            "ax": 65.0,
+            "ay": 144.0
+          },
+          "2": {
+            "arquivo": "armario_boticario!vazio/giro-2-1.png",
+            "ax": 35.0,
+            "ay": 144.0
+          },
+          "0": {
+            "arquivo": "armario_boticario!vazio/giro-0-1.png",
+            "ax": 67.0,
+            "ay": 143.0
+          },
+          "6": {
+            "arquivo": "armario_boticario!vazio/giro-6-1.png",
+            "ax": 34.0,
+            "ay": 143.0
+          }
+        }
+      }
+    }
+  },
+  "mesa_doutor": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "mesa_doutor/giro-4.png",
+        "ax": 70.0,
+        "ay": 87.0
+      },
+      "2": {
+        "arquivo": "mesa_doutor/giro-2.png",
+        "ax": 38.0,
+        "ay": 87.0
+      },
+      "0": {
+        "arquivo": "mesa_doutor/giro-0.png",
+        "ax": 69.0,
+        "ay": 88.0
+      },
+      "6": {
+        "arquivo": "mesa_doutor/giro-6.png",
+        "ax": 38.0,
+        "ay": 88.0
+      }
+    },
+    "real": [
+      1.44,
+      0.61,
+      0.8
+    ]
+  },
+  "frascos_boticario": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "frascos_boticario/giro-4.png",
+        "ax": 15.0,
+        "ay": 35.0
+      },
+      "2": {
+        "arquivo": "frascos_boticario/giro-2.png",
+        "ax": 15.0,
+        "ay": 33.0
+      },
+      "0": {
+        "arquivo": "frascos_boticario/giro-0.png",
+        "ax": 8.0,
+        "ay": 32.0
+      },
+      "6": {
+        "arquivo": "frascos_boticario/giro-6.png",
+        "ax": 16.0,
+        "ay": 28.0
+      }
+    },
+    "real": [
+      0.435,
+      0.449,
+      0.26
+    ]
+  },
+  "olhos_escuro": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "olhos_escuro/giro-4.png",
+        "ax": 30.0,
+        "ay": 34.0
+      },
+      "2": {
+        "arquivo": "olhos_escuro/giro-2.png",
+        "ax": 28.0,
+        "ay": 33.0
+      },
+      "0": {
+        "arquivo": "olhos_escuro/giro-0.png",
+        "ax": 30.0,
+        "ay": 32.0
+      },
+      "6": {
+        "arquivo": "olhos_escuro/giro-6.png",
+        "ax": 32.0,
+        "ay": 32.0
+      }
+    },
+    "real": [
+      0.46,
+      0.44,
+      0.3
+    ]
+  },
+  "lenha": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "lenha/giro-4.png",
+        "ax": 35.0,
+        "ay": 52.0
+      },
+      "2": {
+        "arquivo": "lenha/giro-2.png",
+        "ax": 35.0,
+        "ay": 58.0
+      },
+      "0": {
+        "arquivo": "lenha/giro-0.png",
+        "ax": 35.0,
+        "ay": 63.0
+      },
+      "6": {
+        "arquivo": "lenha/giro-6.png",
+        "ax": 35.0,
+        "ay": 57.0
+      }
+    },
+    "real": [
+      0.55,
+      0.55,
+      0.788
+    ]
+  },
+  "cesta_pao": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cesta_pao/giro-4.png",
+        "ax": 11.0,
+        "ay": 27.0
+      },
+      "2": {
+        "arquivo": "cesta_pao/giro-2.png",
+        "ax": 11.0,
+        "ay": 29.0
+      },
+      "0": {
+        "arquivo": "cesta_pao/giro-0.png",
+        "ax": 12.0,
+        "ay": 28.0
+      },
+      "6": {
+        "arquivo": "cesta_pao/giro-6.png",
+        "ax": 11.0,
+        "ay": 27.0
+      }
+    },
+    "real": [
+      0.41,
+      0.41,
+      0.16
+    ]
+  },
+  "jarra_canecas": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "jarra_canecas/giro-4.png",
+        "ax": 14.0,
+        "ay": 34.0
+      },
+      "2": {
+        "arquivo": "jarra_canecas/giro-2.png",
+        "ax": 10.0,
+        "ay": 32.0
+      },
+      "0": {
+        "arquivo": "jarra_canecas/giro-0.png",
+        "ax": 8.0,
+        "ay": 28.0
+      },
+      "6": {
+        "arquivo": "jarra_canecas/giro-6.png",
+        "ax": 11.0,
+        "ay": 31.0
+      }
+    },
+    "real": [
+      0.389,
+      0.37,
+      0.26
+    ]
+  },
+  "casa_fazendeira": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "casa_fazendeira/giro-4.png",
+        "ax": 211.0,
+        "ay": 475.0
+      },
+      "2": {
+        "arquivo": "casa_fazendeira/giro-2.png",
+        "ax": 191.0,
+        "ay": 432.0
+      },
+      "0": {
+        "arquivo": "casa_fazendeira/giro-0.png",
+        "ax": 223.0,
+        "ay": 413.0
+      },
+      "6": {
+        "arquivo": "casa_fazendeira/giro-6.png",
+        "ax": 178.0,
+        "ay": 449.0
+      }
+    },
+    "real": [
+      5.356,
+      4.61,
+      5.302
+    ]
+  },
+  "boca_mina": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "boca_mina/giro-4.png",
+        "ax": 162.0,
+        "ay": 289.0
+      },
+      "2": {
+        "arquivo": "boca_mina/giro-2.png",
+        "ax": 130.0,
+        "ay": 289.0
+      },
+      "0": {
+        "arquivo": "boca_mina/giro-0.png",
+        "ax": 162.0,
+        "ay": 272.0
+      },
+      "6": {
+        "arquivo": "boca_mina/giro-6.png",
+        "ax": 130.0,
+        "ay": 272.0
+      }
+    },
+    "real": [
+      4.15,
+      3.07,
+      3.9
+    ]
+  },
+  "toco_morador": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "toco_morador/giro-4.png",
+        "ax": 31.0,
+        "ay": 45.0
+      },
+      "2": {
+        "arquivo": "toco_morador/giro-2.png",
+        "ax": 29.0,
+        "ay": 45.0
+      },
+      "0": {
+        "arquivo": "toco_morador/giro-0.png",
+        "ax": 29.0,
+        "ay": 45.0
+      },
+      "6": {
+        "arquivo": "toco_morador/giro-6.png",
+        "ax": 30.0,
+        "ay": 45.0
+      }
+    },
+    "real": [
+      0.641,
+      0.612,
+      0.452
+    ]
+  },
+  "tumulo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "tumulo/giro-4.png",
+        "ax": 33.0,
+        "ay": 70.0
+      },
+      "2": {
+        "arquivo": "tumulo/giro-2.png",
+        "ax": 65.0,
+        "ay": 70.0
+      },
+      "0": {
+        "arquivo": "tumulo/giro-0.png",
+        "ax": 32.0,
+        "ay": 50.0
+      },
+      "6": {
+        "arquivo": "tumulo/giro-6.png",
+        "ax": 65.0,
+        "ay": 50.0
+      }
+    },
+    "real": [
+      0.49,
+      1.3,
+      0.62
+    ]
+  },
+  "tumulo~b": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "tumulo~b/giro-4.png",
+        "ax": 33.0,
+        "ay": 68.0
+      },
+      "2": {
+        "arquivo": "tumulo~b/giro-2.png",
+        "ax": 65.0,
+        "ay": 68.0
+      },
+      "0": {
+        "arquivo": "tumulo~b/giro-0.png",
+        "ax": 32.0,
+        "ay": 50.0
+      },
+      "6": {
+        "arquivo": "tumulo~b/giro-6.png",
+        "ax": 65.0,
+        "ay": 50.0
+      }
+    },
+    "real": [
+      0.49,
+      1.32,
+      0.52
+    ]
+  },
+  "boca_caverna": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "boca_caverna/giro-4.png",
+        "ax": 47.0,
+        "ay": 58.0
+      },
+      "2": {
+        "arquivo": "boca_caverna/giro-2.png",
+        "ax": 47.0,
+        "ay": 58.0
+      },
+      "0": {
+        "arquivo": "boca_caverna/giro-0.png",
+        "ax": 45.0,
+        "ay": 59.0
+      },
+      "6": {
+        "arquivo": "boca_caverna/giro-6.png",
+        "ax": 46.0,
+        "ay": 59.0
+      }
+    },
+    "real": [
+      1.235,
+      1.304,
+      0.129
+    ]
+  },
+  "boca_tunel": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "boca_tunel/giro-4.png",
+        "ax": 17.0,
+        "ay": 157.0
+      },
+      "2": {
+        "arquivo": "boca_tunel/giro-2.png",
+        "ax": 42.0,
+        "ay": 158.0
+      }
+    },
+    "real": [
+      1.04,
+      0.27,
+      2.408
+    ],
+    "soGiros": true
+  },
+  "boca_tunel~b": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "boca_tunel~b/giro-4.png",
+        "ax": 17.0,
+        "ay": 137.0
+      },
+      "2": {
+        "arquivo": "boca_tunel~b/giro-2.png",
+        "ax": 42.0,
+        "ay": 137.0
+      }
+    },
+    "real": [
+      1.118,
+      0.17,
+      2.122
+    ],
+    "soGiros": true
+  },
+  "trilho_mina": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "trilho_mina/giro-4.png",
+        "ax": 24.0,
+        "ay": 31.0
+      },
+      "2": {
+        "arquivo": "trilho_mina/giro-2.png",
+        "ax": 24.0,
+        "ay": 31.0
+      },
+      "0": {
+        "arquivo": "trilho_mina/giro-0.png",
+        "ax": 25.0,
+        "ay": 31.0
+      },
+      "6": {
+        "arquivo": "trilho_mina/giro-6.png",
+        "ax": 25.0,
+        "ay": 31.0
+      }
+    },
+    "real": [
+      0.63,
+      0.5,
+      0.05
+    ]
+  },
+  "carrinho_mina": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "carrinho_mina/giro-4.png",
+        "ax": 35.0,
+        "ay": 69.0
+      },
+      "2": {
+        "arquivo": "carrinho_mina/giro-2.png",
+        "ax": 35.0,
+        "ay": 69.0
+      },
+      "0": {
+        "arquivo": "carrinho_mina/giro-0.png",
+        "ax": 35.0,
+        "ay": 69.0
+      },
+      "6": {
+        "arquivo": "carrinho_mina/giro-6.png",
+        "ax": 35.0,
+        "ay": 69.0
+      }
+    },
+    "real": [
+      0.554,
+      0.672,
+      0.825
+    ]
+  },
+  "escora_mina": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "escora_mina/giro-4.png",
+        "ax": 18.0,
+        "ay": 151.0
+      },
+      "2": {
+        "arquivo": "escora_mina/giro-2.png",
+        "ax": 24.0,
+        "ay": 151.0
+      },
+      "0": {
+        "arquivo": "escora_mina/giro-0.png",
+        "ax": 24.0,
+        "ay": 144.0
+      },
+      "6": {
+        "arquivo": "escora_mina/giro-6.png",
+        "ax": 17.0,
+        "ay": 144.0
+      }
+    },
+    "real": [
+      0.32,
+      0.47,
+      2.38
+    ]
+  },
+  "toca_toupeira": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "toca_toupeira/giro-4.png",
+        "ax": 33.0,
+        "ay": 32.0
+      },
+      "2": {
+        "arquivo": "toca_toupeira/giro-2.png",
+        "ax": 32.0,
+        "ay": 31.0
+      },
+      "0": {
+        "arquivo": "toca_toupeira/giro-0.png",
+        "ax": 31.0,
+        "ay": 32.0
+      },
+      "6": {
+        "arquivo": "toca_toupeira/giro-6.png",
+        "ax": 33.0,
+        "ay": 32.0
+      }
+    },
+    "real": [
+      0.774,
+      0.721,
+      0.241
+    ]
+  },
+  "cristal_grande_verde": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cristal_grande_verde/giro-4.png",
+        "ax": 50.0,
+        "ay": 158.0
+      },
+      "2": {
+        "arquivo": "cristal_grande_verde/giro-2.png",
+        "ax": 49.0,
+        "ay": 159.0
+      },
+      "0": {
+        "arquivo": "cristal_grande_verde/giro-0.png",
+        "ax": 50.0,
+        "ay": 164.0
+      },
+      "6": {
+        "arquivo": "cristal_grande_verde/giro-6.png",
+        "ax": 49.0,
+        "ay": 162.0
+      }
+    },
+    "real": [
+      1.467,
+      1.326,
+      1.907
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "cristal_grande_verde/giro-4-1.png",
+            "ax": 50.0,
+            "ay": 129.0
+          },
+          "2": {
+            "arquivo": "cristal_grande_verde/giro-2-1.png",
+            "ax": 49.0,
+            "ay": 130.0
+          },
+          "0": {
+            "arquivo": "cristal_grande_verde/giro-0-1.png",
+            "ax": 50.0,
+            "ay": 135.0
+          },
+          "6": {
+            "arquivo": "cristal_grande_verde/giro-6-1.png",
+            "ax": 49.0,
+            "ay": 131.0
+          }
+        }
+      }
+    }
+  },
+  "cristal_grande_vermelho": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cristal_grande_vermelho/giro-4.png",
+        "ax": 50.0,
+        "ay": 158.0
+      },
+      "2": {
+        "arquivo": "cristal_grande_vermelho/giro-2.png",
+        "ax": 49.0,
+        "ay": 159.0
+      },
+      "0": {
+        "arquivo": "cristal_grande_vermelho/giro-0.png",
+        "ax": 50.0,
+        "ay": 164.0
+      },
+      "6": {
+        "arquivo": "cristal_grande_vermelho/giro-6.png",
+        "ax": 49.0,
+        "ay": 162.0
+      }
+    },
+    "real": [
+      1.467,
+      1.326,
+      1.907
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "cristal_grande_vermelho/giro-4-1.png",
+            "ax": 50.0,
+            "ay": 129.0
+          },
+          "2": {
+            "arquivo": "cristal_grande_vermelho/giro-2-1.png",
+            "ax": 49.0,
+            "ay": 130.0
+          },
+          "0": {
+            "arquivo": "cristal_grande_vermelho/giro-0-1.png",
+            "ax": 50.0,
+            "ay": 135.0
+          },
+          "6": {
+            "arquivo": "cristal_grande_vermelho/giro-6-1.png",
+            "ax": 49.0,
+            "ay": 131.0
+          }
+        }
+      }
+    }
+  },
+  "cristal_grande_azul": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cristal_grande_azul/giro-4.png",
+        "ax": 50.0,
+        "ay": 158.0
+      },
+      "2": {
+        "arquivo": "cristal_grande_azul/giro-2.png",
+        "ax": 49.0,
+        "ay": 159.0
+      },
+      "0": {
+        "arquivo": "cristal_grande_azul/giro-0.png",
+        "ax": 50.0,
+        "ay": 164.0
+      },
+      "6": {
+        "arquivo": "cristal_grande_azul/giro-6.png",
+        "ax": 49.0,
+        "ay": 162.0
+      }
+    },
+    "real": [
+      1.467,
+      1.326,
+      1.907
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "cristal_grande_azul/giro-4-1.png",
+            "ax": 50.0,
+            "ay": 129.0
+          },
+          "2": {
+            "arquivo": "cristal_grande_azul/giro-2-1.png",
+            "ax": 49.0,
+            "ay": 130.0
+          },
+          "0": {
+            "arquivo": "cristal_grande_azul/giro-0-1.png",
+            "ax": 50.0,
+            "ay": 135.0
+          },
+          "6": {
+            "arquivo": "cristal_grande_azul/giro-6-1.png",
+            "ax": 49.0,
+            "ay": 131.0
+          }
+        }
+      }
+    }
+  },
+  "cristal_grande_preto": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cristal_grande_preto/giro-4.png",
+        "ax": 50.0,
+        "ay": 153.0
+      },
+      "2": {
+        "arquivo": "cristal_grande_preto/giro-2.png",
+        "ax": 49.0,
+        "ay": 154.0
+      },
+      "0": {
+        "arquivo": "cristal_grande_preto/giro-0.png",
+        "ax": 50.0,
+        "ay": 159.0
+      },
+      "6": {
+        "arquivo": "cristal_grande_preto/giro-6.png",
+        "ax": 49.0,
+        "ay": 157.0
+      }
+    },
+    "real": [
+      1.467,
+      1.326,
+      1.907
+    ]
+  },
+  "cela_branca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cela_branca/giro-4.png",
+        "ax": 42.0,
+        "ay": 147.0
+      },
+      "2": {
+        "arquivo": "cela_branca/giro-2.png",
+        "ax": 42.0,
+        "ay": 147.0
+      },
+      "0": {
+        "arquivo": "cela_branca/giro-0.png",
+        "ax": 42.0,
+        "ay": 147.0
+      },
+      "6": {
+        "arquivo": "cela_branca/giro-6.png",
+        "ax": 42.0,
+        "ay": 147.0
+      }
+    },
+    "real": [
+      0.75,
+      0.75,
+      2.2
+    ]
+  },
+  "porta_cela_branca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "porta_cela_branca/giro-4.png",
+        "ax": 42.0,
+        "ay": 147.0
+      },
+      "2": {
+        "arquivo": "porta_cela_branca/giro-2.png",
+        "ax": 42.0,
+        "ay": 147.0
+      },
+      "0": {
+        "arquivo": "porta_cela_branca/giro-0.png",
+        "ax": 42.0,
+        "ay": 147.0
+      },
+      "6": {
+        "arquivo": "porta_cela_branca/giro-6.png",
+        "ax": 42.0,
+        "ay": 147.0
+      }
+    },
+    "real": [
+      0.75,
+      0.75,
+      2.2
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "porta_cela_branca/giro-4-1.png",
+            "ax": 42.0,
+            "ay": 147.0
+          },
+          "2": {
+            "arquivo": "porta_cela_branca/giro-2-1.png",
+            "ax": 42.0,
+            "ay": 147.0
+          },
+          "0": {
+            "arquivo": "porta_cela_branca/giro-0-1.png",
+            "ax": 42.0,
+            "ay": 147.0
+          },
+          "6": {
+            "arquivo": "porta_cela_branca/giro-6-1.png",
+            "ax": 42.0,
+            "ay": 147.0
+          }
+        }
+      }
+    }
+  },
+  "ninho_parasita": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "ninho_parasita/giro-4.png",
+        "ax": 73.0,
+        "ay": 128.0
+      },
+      "2": {
+        "arquivo": "ninho_parasita/giro-2.png",
+        "ax": 73.0,
+        "ay": 138.0
+      },
+      "0": {
+        "arquivo": "ninho_parasita/giro-0.png",
+        "ax": 73.0,
+        "ay": 131.0
+      },
+      "6": {
+        "arquivo": "ninho_parasita/giro-6.png",
+        "ax": 73.0,
+        "ay": 129.0
+      }
+    },
+    "real": [
+      2.472,
+      1.716,
+      1.559
+    ]
+  },
+  "quadro_hoteleiro": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "quadro_hoteleiro/parede-r.png",
+        "ax": 19.0,
+        "ay": 30.4
+      },
+      "l": {
+        "arquivo": "quadro_hoteleiro/parede-l.png",
+        "ax": 19.0,
+        "ay": 30.4
+      }
+    }
+  },
+  "quadro_hoteleiro~2": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "quadro_hoteleiro~2/parede-r.png",
+        "ax": 19.0,
+        "ay": 30.4
+      },
+      "l": {
+        "arquivo": "quadro_hoteleiro~2/parede-l.png",
+        "ax": 19.0,
+        "ay": 30.4
+      }
+    }
+  },
+  "quadro_hoteleiro~3": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "quadro_hoteleiro~3/parede-r.png",
+        "ax": 19.0,
+        "ay": 30.4
+      },
+      "l": {
+        "arquivo": "quadro_hoteleiro~3/parede-l.png",
+        "ax": 19.0,
+        "ay": 30.4
+      }
+    }
+  },
+  "quadro_hoteleiro~4": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "quadro_hoteleiro~4/parede-r.png",
+        "ax": 19.0,
+        "ay": 30.4
+      },
+      "l": {
+        "arquivo": "quadro_hoteleiro~4/parede-l.png",
+        "ax": 19.0,
+        "ay": 30.4
+      }
+    }
+  },
+  "quadro_chaves": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "quadro_chaves/parede-r.png",
+        "ax": 27.0,
+        "ay": 27.4
+      },
+      "l": {
+        "arquivo": "quadro_chaves/parede-l.png",
+        "ax": 26.0,
+        "ay": 27.4
+      }
+    }
+  },
+  "veio_cristal_verde": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "veio_cristal_verde/parede-r.png",
+        "ax": 24.0,
+        "ay": 39.1
+      },
+      "l": {
+        "arquivo": "veio_cristal_verde/parede-l.png",
+        "ax": 25.0,
+        "ay": 39.1
+      }
+    }
+  },
+  "veio_cristal_vermelho": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "veio_cristal_vermelho/parede-r.png",
+        "ax": 24.0,
+        "ay": 39.1
+      },
+      "l": {
+        "arquivo": "veio_cristal_vermelho/parede-l.png",
+        "ax": 25.0,
+        "ay": 39.1
+      }
+    }
+  },
+  "veio_cristal_azul": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "veio_cristal_azul/parede-r.png",
+        "ax": 24.0,
+        "ay": 39.1
+      },
+      "l": {
+        "arquivo": "veio_cristal_azul/parede-l.png",
+        "ax": 25.0,
+        "ay": 39.1
+      }
+    }
+  },
+  "morcegosas": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "morcegosas/parede-r.png",
+        "ax": 31.0,
+        "ay": 29.0
+      },
+      "l": {
+        "arquivo": "morcegosas/parede-l.png",
+        "ax": 32.0,
+        "ay": 29.0
+      }
+    }
+  },
+  "lodo_parede": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "lodo_parede/parede-r.png",
+        "ax": 20.0,
+        "ay": 44.7
+      },
+      "l": {
+        "arquivo": "lodo_parede/parede-l.png",
+        "ax": 21.0,
+        "ay": 44.7
+      }
+    }
   }
 }
+
