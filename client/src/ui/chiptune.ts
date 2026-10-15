@@ -136,6 +136,48 @@ const MUSICAS: Record<string, Musica> = {
       { voz: 'bateria', vol: 0.35, notas: vezes(4, 'k . h . s . h h k . h . s . h .') },
     ],
   },
+  // o INVASORES (15/10): marcha tensa de fliperama (lá menor: Am, F, E, Am, F, Dm, E), o baixo martelando
+  invasores: {
+    bpm: 138,
+    faixas: [
+      {
+        voz: 'pulso',
+        vol: 0.085,
+        notas: t(
+          'A4 . A4 . E5 . A4 . C5 . B4 . A4 . G#4 .',
+          'A4 . A4 . E5 . A4 . D5 . C5 . B4 . E4 .',
+          'F4 . F4 . C5 . F4 . A4 . G4 . F4 . E4 .',
+          'E4 . G#4 . B4 . E5 . D5 - B4 - G#4 - - .',
+          'A4 . C5 . E5 . A5 . G5 . E5 . C5 . E5 .',
+          'F5 . E5 . D5 . C5 . B4 . D5 . E5 - - .',
+          'D5 . F5 . A5 . F5 . E5 . C5 . A4 . C5 .',
+          'B4 . G#4 . E4 . G#4 . A4 - - - . . . .',
+        ),
+      },
+      { voz: 'quadrada', vol: 0.028, notas: t(...['A3 C4 E4 C4', 'A3 C4 E4 C4', 'F3 A3 C4 A3', 'E3 G#3 B3 G#3', 'A3 C4 E4 C4', 'F3 A3 C4 A3', 'D4 F4 A4 F4', 'E3 G#3 B3 G#3'].map((a) => `${a} ${a} ${a} ${a}`)) },
+      { voz: 'triangulo', vol: 0.22, notas: t(...['A2 . A3 .', 'A2 . A3 .', 'F2 . F3 .', 'E2 . E3 .', 'A2 . A3 .', 'F2 . F3 .', 'D2 . D3 .', 'E2 . E3 .'].map((b) => `${b} ${b} ${b} ${b}`)) },
+      { voz: 'bateria', vol: 0.4, notas: vezes(8, 'k . h . s . h . k . h . s . h h') },
+    ],
+  },
+  // o CHEFE do INVASORES: mais rápido e sombrio (ré menor), o baixo em colcheias
+  invasoresChefe: {
+    bpm: 164,
+    faixas: [
+      {
+        voz: 'pulso',
+        vol: 0.09,
+        notas: t(
+          'D4 . D4 D4 . D4 F4 . D4 . A4 . G4 . F4 .',
+          'D4 . D4 D4 . D4 F4 . D4 . C5 . A#4 . A4 .',
+          'A#3 . A#3 A#3 . A#3 D4 . A#3 . F4 . E4 . D4 .',
+          'A3 . C#4 . E4 . A4 . C#5 - A4 - E4 - - .',
+        ),
+      },
+      { voz: 'quadrada', vol: 0.03, notas: t(...['D4 F4 A4 F4', 'D4 F4 A4 F4', 'A#3 D4 F4 D4', 'A3 C#4 E4 C#4'].map((a) => `${a} ${a} ${a} ${a}`)) },
+      { voz: 'triangulo', vol: 0.24, notas: t(...['D2 D2 D3 D2', 'D2 D2 D3 D2', 'A#1 A#1 A#2 A#1', 'A1 A1 A2 A1'].map((b) => `${b} ${b} ${b} ${b}`)) },
+      { voz: 'bateria', vol: 0.45, notas: vezes(4, 'k h s h k k s h k h s h k k s s') },
+    ],
+  },
   // o recorde: a fanfarra das iniciais
   recorde: {
     bpm: 140,

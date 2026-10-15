@@ -55,6 +55,8 @@ export interface Jogo {
   desenhar(g: CanvasRenderingContext2D, quadro: number): void;
   /** a linha da tela de fim ("VOCE VENCEU 7 A 4") */
   resumo(): string;
+  /** a música de agora, se o jogo troca de música (o INVASORES no chefe); sem isso vale a do jogo */
+  musica?(): string;
 }
 
 /** A paleta, tirada da do Atari 2600 (NTSC). */
