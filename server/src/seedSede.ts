@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 52;
+export const SEDE_REV = 53;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -212,8 +212,52 @@ const ROOMS: RoomSpec[] = [
       ['dirt', 18, 11, 2],
       ['dirt', 10, 14, 4],
       ['dirt', 13, 12, 0],
+      // ---- adensado (15/10): conjuntos médios e objetinhos, sem fechar a passagem ----
+      // em cima do balcão: o que o atendente largou (a comanda com a vela, a jarra, a garrafa colorida e o caixa velho)
+      ['mug', 1, 3, 0],
+      ['papers', 2, 3, 0],
+      ['candles', 2, 3, 0],
+      ['beer_glass', 3, 3, 0],
+      ['ashtray', 5, 3, 0],
+      ['beer_glass', 6, 3, 0],
+      ['jarra_canecas', 7, 3, 0],
+      ['flasks', 9, 3, 0],
+      ['computer_old', 12, 3, 0],
+      // no fundo, em cima dos frigobares, do chope e do engradado
+      ['flasks', 5, 0, 4],
+      ['beer_glass', 6, 0, 4],
+      ['beer_glass', 12, 0, 0],
+      ['mug', 13, 0, 0],
+      // atrás do balcão e no canto das cervejas: o lixo e os engradados empilhados
+      ['trash_can', 1, 1, 4],
+      ['beer_crate', 14, 0, 4],
+      ['beer_crate', 14, 0, 4],
+      ['keg', 15, 0, 0],
+      ['crate_wood', 15, 1, 4],
+      // o aparador e o armarinho da direita
+      ['beer_glass', 20, 8, 0],
+      ['flasks', 20, 9, 0],
+      ['candles', 20, 13, 0],
+      // o canto da poltrona: a mesinha de apoio e, na parede da esquerda, a luminária de chão
+      ['table_small', 2, 5, 0],
+      ['mug', 2, 5, 0],
+      ['floor_lamp', 1, 7, 0],
+      // do lado da sinuca: onde se deixa o copo
+      ['table_small', 16, 8, 0],
+      ['beer_glass', 16, 8, 0],
+      // o canto do fundo da direita: caixotes e engradados empilhados, a lixeira e o armarinho
+      ['crate_wood', 18, 14, 4],
+      ['beer_crate', 18, 14, 4],
+      ['beer_crate', 19, 14, 0],
+      ['trash_can', 16, 14, 4],
+      ['crate_wood', 3, 14, 4],
+      // o chão: o cabo do fliperama, a cerveja derramada e uma tábua rala de sujeira
+      ['cables_floor', 2, 8, 4],
+      ['puddle', 3, 5, 0],
+      ['puddle', 8, 11, 0],
     ],
     wall: [
+      ['painting', 'l', 1, 5.6, 2.6],
       ['neon_bar', 'r', 0, 14.5, 3.08],
       ['clock', 'r', 0, 5.5, 3.72],
       ['sconce', 'l', 1, 9.4, 2.9],
@@ -290,6 +334,41 @@ const ROOMS: RoomSpec[] = [
       ['plant', 34, 13, 0],
       ['compass_floor', 16, 7, 0],
       ...lamps([6, 8], [14, 8], [21, 8], [27, 8], [31, 11]),
+      // ---- adensado (15/10): cada mesa de trabalho com o seu jeito (monitor sempre virado para a cadeira) ----
+      ['monitor', 11, 3, 6],
+      ['papers', 11, 4, 0],
+      ['mug', 11, 4, 0],
+      ['books_stack', 12, 5, 0],
+      ['mug', 12, 3, 0],
+      ['computer_old', 17, 4, 6],
+      ['papers', 17, 5, 0],
+      ['desk_lamp', 18, 3, 2],
+      ['monitor', 18, 4, 2],
+      ['mug', 18, 5, 0],
+      ['books_stack', 23, 3, 0],
+      ['papers', 23, 5, 0],
+      ['mug', 23, 5, 0],
+      ['monitor', 24, 3, 2],
+      ['papers', 24, 4, 0],
+      ['desk_lamp', 24, 5, 2],
+      ['monitor', 29, 4, 6],
+      ['mug', 29, 5, 0],
+      ['papers', 30, 3, 0],
+      ['books_stack', 30, 4, 0],
+      ['computer_old', 30, 5, 2],
+      // os arquivos, a mesa de xadrez e o canto de conversa
+      ['books_stack', 33, 0, 4],
+      ['papers', 34, 0, 4],
+      ['mug', 34, 0, 0],
+      ['mug', 5, 12, 0],
+      ['rug_worn', 4, 10, 2],
+      // o fundo do salão: bebedouro, lixeira, estante e o canto dos caixotes
+      ['water_cooler', 10, 0, 4],
+      ['trash_can', 14, 0, 4],
+      ['bookshelf', 24, 0, 4],
+      ['crate_wood', 32, 13, 4],
+      ['crate_wood', 32, 13, 4],
+      ['crate_wood', 31, 13, 0],
     ],
     wall: [
       ['board_investigation', 'r', 0, 12.0, 2.36],
@@ -345,6 +424,18 @@ const ROOMS: RoomSpec[] = [
       ['puddle', 32, 1, 0],
       ['wet_sign', 31, 2, 4],
       ...lamps([4, 1], [11, 1], [18, 1], [25, 1], [32, 1]),
+      // ---- adensado (15/10): o corredor também é usado ----
+      ['water_cooler', 2, 0, 4],
+      ['table_small', 11, 0, 4],
+      ['mug', 11, 0, 0],
+      ['trolley', 8, 2, 0],
+      ['crate_wood', 5, 0, 4],
+      ['crate_wood', 5, 0, 4],
+      ['rug_worn', 10, 1, 2],
+      ['cables_floor', 33, 0, 4],
+      ['dirt', 14, 1, 0],
+      ['dirt', 28, 2, 0],
+      ['oil_stain', 21, 2, 0],
     ],
     wall: [
       ['cctv', 'r', 0, 2.0, 3.63],
@@ -420,6 +511,34 @@ const ROOMS: RoomSpec[] = [
       ['drain', 17, 12, 0],
       ['ceiling_lamp', 11, 9, 0],
       ...lamps([7, 6], [17, 6], [7, 13], [18, 12]),
+      // ---- adensado (15/10): sóbrio, mas com sinal de uso ----
+      // o posto do carcereiro (a caneca esfriando e os papéis) e o armário
+      ['papers', 20, 0, 4],
+      ['mug', 20, 0, 0],
+      ['books_stack', 23, 3, 0],
+      ['cables_floor', 20, 2, 4],
+      ['trash_can', 23, 6, 6],
+      // o interrogatório: a ficha do preso e a luminária apontada para ele
+      ['papers', 11, 9, 0],
+      ['desk_lamp', 12, 9, 4],
+      // as celas: sujeira, ralo e poça junto do vaso
+      ['dirt', 1, 1, 0],
+      ['drain', 2, 2, 0],
+      ['puddle', 3, 2, 0],
+      ['dirt', 6, 2, 2],
+      ['dirt', 11, 1, 0],
+      ['puddle', 16, 2, 0],
+      ['drain', 13, 2, 0],
+      ['dirt', 1, 5, 0],
+      ['drain', 2, 7, 0],
+      // o pátio: a vala do ralo, a poça, o banco dos presos e os caixotes de suprimento no fundo
+      ['puddle', 8, 12, 0],
+      ['dirt', 16, 8, 0],
+      ['bench', 14, 15, 4],
+      ['crate_wood', 5, 15, 4],
+      ['crate_wood', 5, 15, 4],
+      ['crate_wood', 6, 15, 0],
+      ['barrel', 7, 15, 0],
     ],
     wall: [
       // dentro das celas do fundo: a lâmpada de grade e os dias riscados
@@ -473,6 +592,16 @@ const ROOMS: RoomSpec[] = [
       ['candelabra', 6, 6, 0],
       // o entulho no canto, perto da passagem
       ['rubble', 0, 5, 0],
+      // ---- adensado (15/10): o que sobrou de quem esteve aqui antes ----
+      // as cinzas dos pedestais, as pilhas de crânios e o outro candelabro
+      ['cinzas', 2, 1, 0],
+      ['cinzas', 5, 1, 0],
+      ['pilha_cranios', 1, 0, 0],
+      ['pilha_cranios', 6, 1, 0],
+      ['candelabra', 6, 0, 0],
+      // a cera das velas que já se foram, nas laterais
+      ['wax_pool', 0, 3, 0],
+      ['wax_pool', 6, 3, 0],
     ],
     wall: [
       // a rachadura que vaza luz em cima do altar, as correntes e o sigilo riscado à unha
@@ -516,6 +645,30 @@ const ROOMS: RoomSpec[] = [
       ['chair_office', 6, 2, 0],
       ['trolley', 7, 7, 0],
       ...lamps([2, 2], [4, 5], [7, 3]),
+      // ---- adensado (15/10): limpo e frio, mas com trabalho em andamento ----
+      // a bancada de canto: o microscópio e os frascos
+      ['microscope', 0, 0, 4],
+      ['flasks', 1, 0, 4],
+      // a bancada da parede (a cadeira está do lado de cá)
+      ['flasks', 0, 3, 2],
+      ['microscope', 0, 4, 2],
+      ['papers', 0, 5, 2],
+      ['mug', 0, 5, 2],
+      ['med_tray', 0, 6, 2],
+      // as ilhas do meio: o corredor de banquetas fica entre elas, os microscópios viram para ele
+      ['flasks', 3, 3, 2],
+      ['microscope', 3, 4, 2],
+      ['papers', 3, 5, 2],
+      ['mug', 3, 5, 2],
+      ['books_stack', 3, 6, 2],
+      ['papers', 5, 3, 6],
+      ['flasks', 5, 4, 6],
+      ['microscope', 5, 5, 6],
+      ['mug', 5, 6, 6],
+      // o chão: o cabo da impressora, o bebedouro e a lixeira
+      ['cables_floor', 5, 1, 4],
+      ['water_cooler', 1, 9, 4],
+      ['trash_bin', 8, 7, 0],
     ],
     wall: [
       // o quadro de investigação em cima dos arquivos (atrás do quadro branco, ele sumia)
@@ -568,6 +721,16 @@ const ROOMS: RoomSpec[] = [
       ['parts_boxes', 12, 8, 6],
       ['lixeira_lanches', 9, 8, 0],
       ...lamps([3, 3], [6, 2], [8, 7]),
+      // ---- adensado (15/10): o carpete, os cabos e as tralhas de quem passa a noite aqui ----
+      ['rug_purple', 4, 4, 0],
+      ['computer_old', 0, 3, 2],
+      ['cables_floor', 7, 4, 4],
+      ['cables_floor', 10, 2, 4],
+      ['parts_boxes', 12, 7, 6],
+      ['crate_wood', 12, 5, 4],
+      ['crate_wood', 12, 5, 4],
+      ['table_small', 2, 6, 0],
+      ['mug', 2, 6, 0],
     ],
     wall: [
       // a tela enorme do C.R.I.S em cima da mesa em U (o sistema da Ordem que procura o paranormal) e o painel de telas
@@ -622,6 +785,23 @@ const ROOMS: RoomSpec[] = [
       ['armor_display', 10, 6, 6],
       ['plant', 11, 9, 0],
       ...lamps([6, 4], [6, 8], [3, 7], [10, 5]),
+      // ---- adensado (15/10): a mesa do Veríssimo em uso, a mesinha das poltronas e o canto do sofá ----
+      // trabalho do lado dele (y 2), visitante do lado de cá (y 3)
+      ['books_stack', 3, 2, 0],
+      ['papers', 4, 2, 0],
+      ['mug', 4, 2, 0],
+      ['desk_lamp', 5, 2, 0],
+      ['beer_glass', 3, 3, 0],
+      ['papers', 4, 3, 0],
+      ['ashtray', 5, 3, 0],
+      ['books_stack', 7, 2, 0],
+      // no meio das poltronas, a mesinha com a vela
+      ['table_small', 4, 5, 0],
+      ['candles', 4, 5, 0],
+      // ao lado do sofá, a mesinha de apoio, e a planta junto da estante
+      ['table_small', 0, 0, 0],
+      ['beer_glass', 0, 0, 0],
+      ['plant', 11, 1, 0],
     ],
     wall: [
       // a pintura do Coliseu sobre o sofá, o quadro de detetive enorme, o relógio
@@ -671,6 +851,23 @@ const ROOMS: RoomSpec[] = [
       ['stool', 2, 3, 6],
       ['counter_wood', 1, 5, 2],
       ['skull', 1, 5, 2],
+      // ---- adensado (15/10): o ritual está no meio ----
+      // a mesa redonda do canto e o balcão do fundo
+      ['candles', 9, 0, 0],
+      ['books_stack', 8, 1, 0],
+      ['flasks', 9, 1, 0],
+      ['candles', 1, 6, 2],
+      // as velas derretidas, o sangue e as cinzas em volta do círculo, as pilhas de crânios e o candelabro
+      ['wax_pool', 3, 5, 0],
+      ['wax_pool', 7, 5, 0],
+      ['blood_drops', 3, 7, 0],
+      ['cinzas', 6, 8, 0],
+      ['pilha_cranios', 8, 9, 0],
+      ['candelabra', 8, 4, 0],
+      // a mesinha de apoio no fundo, perto da porta
+      ['table_small', 5, 9, 0],
+      ['books_stack', 5, 9, 0],
+      ['candles', 5, 9, 0],
     ],
     wall: [
       ['poster_sigil', 'r', 0, 4.5, 2.36],
@@ -709,6 +906,10 @@ const ROOMS: RoomSpec[] = [
       ['trash_bin', 2, 3, 4],
       ['dirt', 3, 2, 0],
       ...lamps([3, 2]),
+      // ---- adensado (15/10): o copo das escovas na pia, a planta e a água no chão ----
+      ['mug', 0, 3, 2],
+      ['plant', 5, 3, 0],
+      ['puddle', 1, 3, 0],
     ],
     wall: [
       ['mirror', 'l', 0, 2.5, 2.63],
@@ -753,6 +954,26 @@ const ROOMS: RoomSpec[] = [
       // o carrinho no corredor entre os cubículos
       ['trolley', 7, 7, 0],
       ...lamps([4, 7], [10, 7], [16, 5], [16, 9]),
+      // ---- adensado (15/10): limpo, mas de plantão ----
+      // do lado de lá de cada leito (junto do soro): o criado-mudo com o monitor, a bandeja ou a prancheta
+      ...[1, 5, 9].flatMap((x, i): FloorSeed[] => [
+        ['nightstand', x - 1, 2, 2],
+        i === 0 ? ['vitals_monitor', x - 1, 2, 2] : i === 1 ? ['med_tray', x - 1, 2, 2] : ['papers', x - 1, 2, 0],
+        ...(i === 2 ? ([['mug', x - 1, 2, 0]] as FloorSeed[]) : []),
+        ['nightstand', x - 1, 12, 2],
+        i === 0 ? ['med_tray', x - 1, 12, 2] : i === 1 ? ['vitals_monitor', x - 1, 12, 2] : ['papers', x - 1, 12, 0],
+        ...(i === 2 ? ([['mug', x - 1, 12, 0]] as FloorSeed[]) : []),
+      ]),
+      // o canto das pias: o bebedouro, o papel e o copo; o posto: a caneca
+      ['med_tray', 18, 1, 4],
+      ['mug', 19, 1, 4],
+      ['water_cooler', 12, 1, 4],
+      // a espera: um banco, a mesinha com a caneca e a planta
+      ['bench', 14, 6, 4],
+      ['table_small', 18, 6, 0],
+      ['mug', 18, 6, 0],
+      ['plant', 19, 8, 0],
+      ['trash_bin', 11, 9, 0],
     ],
     wall: [
       ['clock', 'r', 1, 19.5, 3.54],
@@ -802,6 +1023,28 @@ const ROOMS: RoomSpec[] = [
       ['ammo_box', 13, 8, 2],
       ['ammo_box', 13, 9, 4],
       ...lamps([5, 3], [10, 3], [7, 8]),
+      // ---- adensado (15/10): arsenal conferido, mas em uso ----
+      // a mesa grande: a lista de conferência, a munição separada, a luminária e o solvente da limpeza
+      ['papers', 5, 4, 0],
+      ['mug', 5, 4, 0],
+      ['ammo_box', 6, 4, 4],
+      ['ammo_box', 7, 4, 4],
+      ['desk_lamp', 8, 4, 0],
+      ['books_stack', 5, 5, 0],
+      ['papers', 6, 5, 0],
+      ['flasks', 7, 5, 0],
+      // o baú de campanha com uma caixa em cima e a bancada de armas na parede da direita
+      ['ammo_box', 0, 8, 2],
+      ['gun_table', 13, 3, 6],
+      ['desk_lamp', 13, 3, 0],
+      ['ammo_box', 13, 4, 6],
+      ['papers', 13, 5, 0],
+      // o canto dos caixotes, o barril e as manchas de óleo
+      ['crate_wood', 2, 10, 4],
+      ['crate_wood', 2, 10, 4],
+      ['barrel', 3, 10, 0],
+      ['trolley', 11, 6, 0],
+      ['oil_stain', 10, 7, 0],
     ],
     wall: [
       ['blade_rack', 'r', 1, 5.0, 2.09],
