@@ -592,11 +592,16 @@ export class Fliperama implements TelaDoBar {
         // em dupla, o PULA-PULA de quem caiu primeiro continua mostrando o outro
         if (this.espera > 0) this.espera--;
         else if (a && !this.esperandoOutro()) {
-          if (!this.partida && this.entraNoRecorde()) {
+          if (!this.partida && this.ehNovoRecorde()) {
+            // novo recorde: aí sim, as três letras
             this.estado = 'nome';
             this.letra = 0;
             sfx.arpejo([523, 659, 784, 1046, 784, 1046], 0.08);
-          } else this.voltarAoMenu();
+          } else {
+            // entrou na tabela sem ser o melhor: grava com as letras de quem joga, sem perguntar nada
+            if (!this.partida && this.entraNoRecorde()) this.gravar(false);
+            this.voltarAoMenu();
+          }
         }
         break;
       case 'nome': {
@@ -669,7 +674,7 @@ export class Fliperama implements TelaDoBar {
       const dele = p.fimOutro ?? (j instanceof Atravessa ? (j.outro?.p ?? 0) : j instanceof PulaPula ? (j.outro?.p ?? 0) : 0);
       return j.pontos >= dele;
     }
-    return this.entraNoRecorde();
+    return this.ehNovoRecorde();
   }
 
   /** O que vai para o outro celular durante a partida em dupla. */
@@ -734,6 +739,7 @@ export class Fliperama implements TelaDoBar {
     return [LENDA, ...guardados].slice(0, MAX_RECORDES);
   }
 
+  /** A pontuação fica na tabela do aparelho (as 5 melhores, fora a lenda)? */
   private entraNoRecorde() {
     const j = JOGOS[this.sel];
     const p = this.jogo?.pontos ?? 0;
@@ -741,12 +747,22 @@ export class Fliperama implements TelaDoBar {
     return j.recorde && p > 0 && (l.length < MAX_RECORDES || p > l[l.length - 1].p);
   }
 
-  private gravar() {
+  /** NOVO RECORDE (15/10, o Felipe: só aí pede o nome): passou a melhor pontuação deste aparelho, ou foi a primeira. */
+  private ehNovoRecorde() {
+    const j = JOGOS[this.sel];
+    const p = this.jogo?.pontos ?? 0;
+    const guardados = (this.recordes[j.id] ?? []).filter((r) => !ehLenda(r));
+    return j.recorde && p > 0 && (!guardados.length || p > Math.max(...guardados.map((r) => r.p)));
+  }
+
+  /** `mostrar` = abre a tabela com o destaque (novo recorde); sem ele, só guarda e segue. */
+  private gravar(mostrar = true) {
     const p = this.jogo?.pontos ?? 0;
     const l = [...this.lista(), { n: this.iniciais, p }].sort((x, y) => y.p - x.p).slice(0, MAX_RECORDES);
     this.destaque = l.findIndex((r) => r.n === this.iniciais && r.p === p);
     this.recordes = { ...lerRecordes(), [JOGOS[this.sel].id]: l.filter((r) => !ehLenda(r)) };
     gravarRecordes(this.recordes);
+    if (!mostrar) return;
     this.estado = 'tabela';
     this.espera = 40;
   }
