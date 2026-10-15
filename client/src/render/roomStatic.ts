@@ -1,6 +1,7 @@
 import { DIRS, M_POR_CASA, terrenoEm, Z_PER_M, type FloorStyle, type RoomMap, type WallSeg } from '@crona/shared';
 import { hash, shade } from './color';
 import { BATENTE_PORTA_M, VAO_PORTA_M } from './furniKit';
+import { acabarBordas, acabarPiso, acabarParedes } from './acabamentoSala';
 import { iso } from './iso';
 import { texturaParede, texturaPiso, texturaPx, type TexturaPx } from './texturas';
 
@@ -32,6 +33,9 @@ const FLOORS: Record<FloorStyle, FloorLook> = {
   cozinha_fazenda: { base: '#c9c0ad', grout: 'rgba(80,72,60,0.6)', kind: 'tile' },
   enxaimel: { base: '#7a5634', grout: 'rgba(40,26,16,0.6)', kind: 'plank' },
   ferraria: { base: '#4a4440', grout: 'rgba(20,16,14,0.6)', kind: 'stone' },
+  queimado_madeira: { base: '#4a3a30', grout: 'rgba(10,6,4,0.7)', kind: 'plank' },
+  queimado_xadrez: { base: '#8a8478', alt: '#2a2729', grout: 'rgba(0,0,0,0.4)', kind: 'checker' },
+  queimado_concreto: { base: '#5a5650', grout: 'rgba(20,18,16,0.4)', kind: 'stone' },
   xadrez: { base: '#cfcabd', alt: '#2a2622', grout: 'rgba(0,0,0,0.35)', kind: 'checker' },
   azulejo: { base: '#93aebb', grout: 'rgba(40,60,70,0.5)', kind: 'tile' },
   carpete: { base: '#3b2160', alt: '#7a5ab0', grout: 'rgba(0,0,0,0)', kind: 'carpet' },
@@ -787,6 +791,9 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
     poly(ctx, [iso(s.plane - T, s.at - T, top), iso(s.plane, s.at - T, top), iso(s.plane, s.at, top), iso(s.plane - T, s.at, top)], WALL_TOP, WALL_TOP);
   }
 
+  // a parede com história (umidade, mofo, sombra de encontro), por cima da textura e do rodapé
+  if (!aberto) acabarParedes(ctx, map, vao);
+
   // a água primeiro: as margens (a borda das casas da frente) vêm por cima
   if (linhas)
     for (let ty = 0; ty < map.height; ty++)
@@ -804,6 +811,9 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
     drawTile(ctx, map, tx, ty, th, false, minH, lk, pintor);
     drawLedges(ctx, map, tx, ty, th);
   }
+  // o chão gasto (só em cômodo fechado) e a borda da laje com corpo
+  if (!aberto) acabarPiso(ctx, map, tiles);
+  acabarBordas(ctx, map, tiles, minH, FLOOR_THICK);
 
   return { canvas, x, y, w, h };
 }

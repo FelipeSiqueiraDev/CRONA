@@ -53,6 +53,10 @@ export const FLOOR_STYLES = [
   // Santo Berço (14/10): as tábuas largas com a parede de taipa e vigas (taverna, casas) e a pedra escura da ferraria
   { id: 'enxaimel', name: 'Tábuas e enxaimel' },
   { id: 'ferraria', name: 'Pedra da ferraria' },
+  // Orfanato queimado (15/10): piso e parede chamuscados, com tijolo à mostra, fuligem e cinza (scripts/3d/estilo/pecas_px/orfanato_estilos.py)
+  { id: 'queimado_madeira', name: 'Tábuas queimadas' },
+  { id: 'queimado_xadrez', name: 'Ladrilho queimado' },
+  { id: 'queimado_concreto', name: 'Concreto queimado' },
 ] as const;
 export type FloorStyle = (typeof FLOOR_STYLES)[number]['id'];
 export const isFloorStyle = (s: unknown): s is FloorStyle => FLOOR_STYLES.some((f) => f.id === s);

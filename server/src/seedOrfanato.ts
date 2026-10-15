@@ -24,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * orfanato é refeito no lugar (e a cena que saiu da montagem é apagada).
  */
 export const ORFANATO = "Orfanato · ";
-export const ORFANATO_REV = 19;
+export const ORFANATO_REV = 20;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -154,7 +154,7 @@ const CENAS: CenaSpec[] = [
       "A enfermaria pequena do alto do prédio: uma fileira de caminhas simples de lona, onde as crianças ficavam deitadas depois dos \"tratamentos\" da sala de cirurgia lá fora, até se recuperarem. Os lençóis duros de sangue velho, o carrinho das bandagens tombado, o balde, a bandeja com os frascos. O fogo queimou metade das caminhas; nas outras, alguém do bando dorme agora.",
     layout: planBottom(13, 6, 1),
     andar: CASA,
-    style: "taco",
+    style: "queimado_madeira",
     ...QUEIMADO,
     darkness: 0.7,
     floor: [
@@ -192,7 +192,7 @@ const CENAS: CenaSpec[] = [
       "O salão grande, o refeitório onde as crianças comiam, a área aberta onde o corredor dos quartos termina (do corredor se entra direto, sem porta). As duas fileiras de mesas compridas com os bancos ainda estão lá, queimadas e quebradas, com o teto caído em cima de uma; o balcão da comida carbonizado no canto. O bando fez dali a sala comum: no fundo, uma fogueira acesa no chão de taco, colchões imundos em volta e os crânios empilhados como troféu. Na parede comprida, escritas com sangue, as frases deles. Cheira a fumaça, carne e sangue.",
     layout: planBottom(SALAO_W, 16, SALAO_W - 2),
     andar: CASA,
-    style: "taco",
+    style: "queimado_madeira",
     ...QUEIMADO,
     floor: [
       // do corredor se entra direto (a mesma área, dividida em duas cenas): a passagem aberta, sem porta desenhada
@@ -262,7 +262,7 @@ const CENAS: CenaSpec[] = [
       "A cozinha do orfanato, ao lado do salão: os armários de parede derretidos, a pia rachada e o fogão a lenha, que o bando voltou a acender. Na mesa do meio, coberta de sangue, as facas e o que estão cortando.",
     layout: planTop(9, 5, 6),
     andar: CASA,
-    style: "taco",
+    style: "queimado_madeira",
     ...QUEIMADO,
     darkness: 0.62,
     floor: [
@@ -295,7 +295,7 @@ const CENAS: CenaSpec[] = [
       "O depósito atrás do salão: barris, caixotes, sacos de mantimento rasgados. O bando guarda aqui o que pega, e nem tudo é comida: um dos sacos se mexe de vez em quando.",
     layout: plan(4, 3, 1),
     andar: CASA,
-    style: "madeira",
+    style: "queimado_madeira",
     ...QUEIMADO,
     darkness: 0.74,
     floor: [
@@ -322,7 +322,7 @@ const CENAS: CenaSpec[] = [
       "O quarto da diretora, o único que o fogo quase não pegou, e por isso o pior: a cama coberta de sangue velho, o guarda-roupa arrombado por dentro e a escrivaninha com as cartas que ela nunca mandou.",
     layout: plan(5, 4, 1),
     andar: CASA,
-    style: "taco",
+    style: "queimado_madeira",
     ...QUEIMADO,
     darkness: 0.6,
     floor: [
@@ -349,7 +349,7 @@ const CENAS: CenaSpec[] = [
     description: "As três cabines das crianças, uma do lado da outra: os vasos quebrados, as divisórias tortas e o chão que nunca secou.",
     layout: plan(4, 3, 1),
     andar: CASA,
-    style: "xadrez",
+    style: "queimado_xadrez",
     ...QUEIMADO,
     darkness: 0.7,
     floor: [
@@ -376,7 +376,7 @@ const CENAS: CenaSpec[] = [
       "O banheiro da diretoria: a banheira de ferro cheia até a borda de uma água escura que não é água, o tapete encharcado e a mesinha com as toalhas duras de sangue.",
     layout: plan(5, 3, 1),
     andar: CASA,
-    style: "xadrez",
+    style: "queimado_xadrez",
     ...QUEIMADO,
     darkness: 0.7,
     floor: [
@@ -402,7 +402,7 @@ const CENAS: CenaSpec[] = [
       "A sala de banho das crianças, com as duas banheiras de ferro em boxes de madeira. As duas estão cheias de sangue escuro; numa delas, alguém deixou uma faca e uma vela apagada na borda.",
     layout: planBottom(5, 4, 1),
     andar: CASA,
-    style: "xadrez",
+    style: "queimado_xadrez",
     ...QUEIMADO,
     darkness: 0.72,
     floor: [
@@ -431,7 +431,7 @@ const CENAS: CenaSpec[] = [
     // a porta da frente na parede do fundo da cena; o fim do corredor na beira da frente (sem parede: o salão continua dali)
     layout: planTop(ALA_COR_W, ALA_H, 2),
     andar: CASA,
-    style: "madeira",
+    style: "queimado_madeira",
     ...QUEIMADO,
     darkness: 0.72,
     floor: corredorDaAla(),
@@ -467,7 +467,7 @@ const CENAS: CenaSpec[] = [
       "O anexo de concreto do canto do terreno, que o fogo não pegou, era um centro cirúrgico, e o que se fazia aqui eram rituais. O lugar mais sangrento do orfanato: o círculo de ritual pintado no chão com a mesa de contenção em cima, as macas tombadas, os aparelhos quebrados, a mesa das ferramentas, velas derretidas e sangue em tudo, no chão, nas paredes, no ralo entupido.",
     layout: plan(8, 6, 2),
     andar: FORA,
-    style: "concreto",
+    style: "queimado_concreto",
     darkness: 0.68,
     fog: 0.15,
     ambient: "#8a4040",
@@ -569,7 +569,7 @@ function quartos(): CenaSpec[] {
         description,
         layout: plan(5, 4, 1),
         andar: CASA,
-        style: "madeira",
+        style: "queimado_madeira",
         ...QUEIMADO,
         darkness: jaula ? 0.82 : 0.76,
         floor,
