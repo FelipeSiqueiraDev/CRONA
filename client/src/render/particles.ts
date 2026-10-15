@@ -101,7 +101,9 @@ export class Particles {
     const tempo = now / 1000;
     // a luz da janela e o fogo vivo vêm antes das partículas (a poeira passa por dentro do feixe)
     for (const L of lights) if (L.feixe) this.feixe(ctx, L, tempo, escuro);
-    for (const L of lights) if (L.kind === 'fire') this.chama(ctx, L, tempo);
+    // a chama que já vai desenhada na ordem de profundidade (chamaNaOrdem) só deixa aqui o brilho: quem está na frente
+    // do fogo tapa a chama, não é atravessado por ela
+    for (const L of lights) if (L.kind === 'fire') this.chama(ctx, L, tempo, L.chamaNaOrdem ? 'brilho' : 'tudo');
     // poeira: no máximo uma por casa e meia (160 no total), vezes a quantidade escolhida
     if (this.kinds.has('dust')) {
       const want = Math.round(Math.min(160, this.tiles / 1.5) * level * this.peso.dust);
@@ -191,7 +193,7 @@ export class Particles {
    * para os lados), pintada pixel a pixel com a paleta do fogo do tabuleiro, sem suavizar, 12 quadros por segundo.
    * Fica por cima da chama desenhada, no mesmo tamanho: é ela que parece dançar. E o brilho em volta respira.
    */
-  private chama(ctx: CanvasRenderingContext2D, L: Light, t: number) {
+  chama(ctx: CanvasRenderingContext2D, L: Light, t: number, parte: 'tudo' | 'brilho' | 'chama' = 'tudo') {
     if (L.intensity <= 0.05) return;
     // o tamanho pelo fogo: a fogueira e a lareira grandes, a tocha média, a vela pequena
     const tipo = L.radius >= 200 ? FOGO_GRANDE : L.radius >= 140 ? FOGO_MEDIO : FOGO_PEQUENO;
@@ -202,7 +204,7 @@ export class Particles {
       this.fogos.set(chave, f);
     }
     const quadro = Math.floor(t * 12);
-    if (quadro !== f.quadro) {
+    if (parte !== 'brilho' && quadro !== f.quadro) {
       f.quadro = quadro;
       queimar(f);
     }
@@ -211,15 +213,21 @@ export class Particles {
     const y0 = Math.round(L.y + tipo.base - tipo.h);
     ctx.save();
     // o brilho em volta (macio: é luz, não desenho)
-    ctx.globalCompositeOperation = 'lighter';
-    const r = tipo.brilho * (0.92 + 0.08 * tremor);
-    const cx = L.x;
-    const cy = y0 + tipo.h * 0.6;
-    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    g.addColorStop(0, `rgba(255,160,70,${0.14 * tremor * L.intensity})`);
-    g.addColorStop(1, 'rgba(255,110,40,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    if (parte !== 'chama') {
+      ctx.globalCompositeOperation = 'lighter';
+      const r = tipo.brilho * (0.92 + 0.08 * tremor);
+      const cx = L.x;
+      const cy = y0 + tipo.h * 0.6;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, `rgba(255,160,70,${0.14 * tremor * L.intensity})`);
+      g.addColorStop(1, 'rgba(255,110,40,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    }
+    if (parte === 'brilho') {
+      ctx.restore();
+      return;
+    }
     // a chama, pixel a pixel
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = Math.min(1, 0.4 + L.intensity * 0.6);

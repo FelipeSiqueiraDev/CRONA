@@ -1404,7 +1404,12 @@ export class RoomInstance {
     }
     switch (m.t) {
       case 'tokenWalk':
-        if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) (u.goal = this.casaDaCama(u, m.x, m.y)), delete u.encara, delete u.aoChegar;
+        if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) {
+          delete u.aoChegar;
+          const daPorta = this.andarAteAPorta(u, { x: m.x, y: m.y });
+          if (typeof daPorta === 'string') this.err(c, daPorta);
+          else if (daPorta === undefined) (u.goal = this.casaDaCama(u, m.x, m.y)), delete u.encara;
+        }
         break;
       case 'tokenFace':
         if (isInt(m.dir)) this.faceToken(-u.client.id, m.dir);
@@ -2018,6 +2023,9 @@ export class RoomInstance {
       this.saveTokens();
       return null;
     }
+    delete u.aoChegar;
+    const daPorta = this.andarAteAPorta(u, tilesByDistance(grid, this.map.hm, p, () => true)[0]);
+    if (daPorta !== undefined) return daPorta;
     for (const t of near) {
       if (t.x === u.x && t.y === u.y) {
         u.goal = null;
@@ -2031,6 +2039,65 @@ export class RoomInstance {
       }
     }
     return 'Não há caminho até esse ponto.';
+  }
+
+  /**
+   * Clicou numa porta fechada (15/10, o Felipe): a peça vai até a casa da frente, abre e passa; trancada, não passa.
+   * Devolve undefined quando a casa não é de uma porta fechada, null quando a peça foi, ou o motivo de não dar.
+   */
+  private andarAteAPorta(u: RoomUser, alvo: { x: number; y: number } | undefined): string | null | undefined {
+    const porta = alvo ? this.portaFechadaEm(alvo.x, alvo.y) : undefined;
+    if (!porta) return undefined;
+    const def = getFurni(porta.defId)!;
+    if (def.portal && porta.state === 2) return 'A porta está trancada.';
+    const livre = (x: number, y: number) => this.occupied(x, y, u.client.id);
+    // a casa da frente: a vizinha da porta de caminho mais curto
+    let t: { x: number; y: number } | null = null;
+    let menor = Infinity;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const c = { x: porta.x + dx, y: porta.y + dy };
+      if (this.map.walkState(c.x, c.y) === 'blocked' || livre(c.x, c.y)) continue;
+      const n = c.x === u.x && c.y === u.y ? 0 : findPath(this.map, u, c, livre)?.length ?? Infinity;
+      if (n < menor) {
+        menor = n;
+        t = c;
+      }
+    }
+    if (!t || menor === Infinity) return 'Não há caminho até a porta.';
+    const frente = t;
+    const passar = () => {
+      const atual = this.map.getItem(porta.id);
+      if (!atual) return;
+      if (atual.state !== def.openState) {
+        if (def.portal && atual.state === 2) return;
+        const aberta = { ...atual, state: def.openState! };
+        this.map.updateItem(aberta);
+        this.persist();
+        this.broadcastFloor('itemUpdate', aberta);
+      }
+      // a passagem leva para outra cena sozinha; a porta comum, a peça atravessa até a casa do outro lado
+      const alem = { x: porta.x + (porta.x - frente.x), y: porta.y + (porta.y - frente.y) };
+      const livreAlem = !def.portal && this.map.walkState(alem.x, alem.y) === 'walk' && !livre(alem.x, alem.y);
+      u.goal = livreAlem ? alem : { x: porta.x, y: porta.y };
+      this.ensureTimer();
+    };
+    delete u.encara;
+    if (frente.x === u.x && frente.y === u.y) {
+      passar();
+      return null;
+    }
+    u.goal = frente;
+    u.aoChegar = passar;
+    this.ensureTimer();
+    return null;
+  }
+
+  /** A porta (mobi com estado aberto/fechado) fechada ou trancada nesta casa, se houver. */
+  private portaFechadaEm(x: number, y: number): FloorItem | undefined {
+    return this.map.itemsAt(x, y).find((it) => {
+      const def = getFurni(it.defId);
+      return def?.openState !== undefined && it.state !== def.openState;
+    });
   }
 
   /** Nomes das peças desta cena (minúsculas). */

@@ -2459,6 +2459,23 @@ export class RoomView {
       drawables.push({ box, sx0: lx - 30, sx1: rx + 30, sy0: topo - 30, sy1: base + 20, draw: () => this.fog.drawCasa(ctx, c, now) });
     }
 
+    // a chama em pixel do fogo do cenário (lareira, fogueira, tocha) entra na ordem de profundidade, na caixa dela: quem
+    // fica na frente do fogo tapa a chama (antes ela vinha por cima de tudo, na camada das partículas); o brilho fica lá
+    if (this.particles.active && this.tat.t < 0.5)
+      for (const L of lights) {
+        if (L.kind !== 'fire' || !L.mundo) continue;
+        L.chamaNaOrdem = true;
+        const [mx, my, mz] = L.mundo;
+        drawables.push({
+          box: { x0: mx - 0.3, x1: mx + 0.3, y0: my - 0.3, y1: my + 0.3, z0: mz - 0.35, z1: mz + 0.25 },
+          sx0: L.x - 40,
+          sx1: L.x + 40,
+          sy0: L.y - 60,
+          sy1: L.y + 30,
+          draw: () => this.particles.chama(ctx, L, now / 1000, 'chama'),
+        });
+      }
+
     // cursor do piso
     const ht = this.hoverTile;
     if (ht && this.mouse.inside && !place && !this.ferramenta && !map.isDoor(ht.x, ht.y)) {

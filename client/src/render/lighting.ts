@@ -15,6 +15,8 @@ export interface Light {
   kind?: 'fire' | 'electric' | 'natural' | 'emergency' | 'personal';
   /** onde a luz fica no cômodo (casas: x, y e a altura): só a luz do cenário tem, e só ela projeta a sombra das peças */
   mundo?: [number, number, number];
+  /** a chama em pixel desta luz de fogo vai desenhada na ordem de profundidade (RoomView): quem fica na frente dela a tapa */
+  chamaNaOrdem?: boolean;
   /** a janela de onde a luz entra (o feixe que cai no chão; particles.ts): a parede, o plano, o meio, a largura e a altura */
   feixe?: { wall: 'l' | 'r'; plane: number; pos: number; larg: number; z0: number; z1: number; chao: number };
 }
