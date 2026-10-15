@@ -294,7 +294,7 @@ export class Fliperama implements TelaDoBar {
     const outro = this.outro();
     switch (d.tipo) {
       case 'convite':
-        if (typeof d.jogo !== 'number' || !JOGOS[d.jogo]) return;
+        if (typeof d.jogo !== 'number' || !JOGOS[d.jogo] || 'soSozinho' in JOGOS[d.jogo]) return;
         this.convite = d.jogo;
         this.conviteNivel = (d.nivel === 0 || d.nivel === 2 ? d.nivel : 1) as Nivel;
         this.partida = null;
@@ -566,7 +566,12 @@ export class Fliperama implements TelaDoBar {
         // o dedo: toca no jogo para escolher, toca de novo para começar; num ajuste, troca o valor
         let tocouNoVazio = false;
         if (e.tocou && e.dedo) {
-          const i = linhas.findIndex((l) => Math.abs(e.dedo!.y + 1 - (l.y + 2)) <= 7);
+          let i = -1;
+          let melhor = 8;
+          linhas.forEach((l, k) => {
+            const d = Math.abs(e.dedo!.y + 1 - (l.y + 2));
+            if (d < melhor) (melhor = d), (i = k);
+          });
           tocouNoVazio = i < 0;
           if (i >= JOGOS.length) {
             this.linha = i;

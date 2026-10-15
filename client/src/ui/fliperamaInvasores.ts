@@ -213,7 +213,7 @@ export class Invasores implements Jogo {
     // chegaram na altura da nave: perde uma vida e a frota volta para cima
     const baixo = Math.max(...vivos.map((a) => this.posAlien(a).y)) + 6;
     if (baixo >= Y_BARREIRA + 6) {
-      this.perderVida();
+      if (this.imune === 0) this.perderVida();
       this.gy = 24;
       this.tirosInimigos = [];
     }
@@ -293,7 +293,10 @@ export class Invasores implements Jogo {
           this.pontos += 5;
           sfx.chip(220, 160, 0.05, 0.07);
           fx.faiscas(t.x, t.y, [COR.amarelo, COR.laranja], 4, 1.1, 0.03, 14);
-          if (c.vida <= 0) this.derrubarChefe();
+          if (c.vida <= 0) {
+            this.derrubarChefe();
+            break;
+          }
           continue;
         }
       } else {
@@ -364,7 +367,7 @@ export class Invasores implements Jogo {
     sfx.ruido(0.3, 800, 0.15, 150);
     this.duplo = 0;
     this.imune = 110;
-    if (this.vidas < 0) this.fim = true;
+    if (this.vidas <= 0) this.fim = true;
   }
 
   private derrubarChefe() {
