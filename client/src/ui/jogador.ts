@@ -150,6 +150,12 @@ export class TelaJogador {
   private retratoTimer = 0;
   /** o retrato vivo (respira e pisca): o mesmo elemento enquanto nada nele muda, para o fôlego não reiniciar a cada toque na ficha */
   private fotoViva: { chave: string; el: HTMLElement } | null = null;
+  /**
+   * O que cada parte da tela mostra da última vez (14/10, o Felipe: "quando diminuo o PV tá piscando nas abas, os
+   * ícones"): cada toque redesenhava a tela inteira e as imagens recriadas piscavam. Agora a parte só é refeita se
+   * o que ela mostra mudou; mexer no PV refaz só os vitais (e as condições, se mudarem).
+   */
+  private chaves = { perfil: '', numeros: '', nav: '', conteudo: '' };
   // o que fica escolhido em cada aba
   private filtroPoder: FiltroPoder = 'classe';
   private poderSel: string | null = null;
@@ -231,6 +237,7 @@ export class TelaJogador {
     const fs = this.fs;
     if (!fs) {
       this.perfil.replaceChildren(h('p', { class: 'jg-vazio' }, 'Carregando a ficha…'));
+      this.chaves = { perfil: '', numeros: '', nav: this.chaves.nav, conteudo: '' };
       this.vitais.replaceChildren();
       this.numeros.replaceChildren();
       this.conteudo.replaceChildren();
@@ -245,8 +252,15 @@ export class TelaJogador {
     this.renderPerfil();
     this.renderVitais();
     this.renderNumeros();
-    if (conteudo) this.renderConteudo();
+    if (conteudo && this.chaveConteudo() !== this.chaves.conteudo) this.renderConteudo();
     this.renderNav();
+  }
+
+  /** O que a aba aberta mostra: a ficha (sem os pontos atuais, que só a aba Ataques usa, pelo PE) e a aba. */
+  private chaveConteudo(): string {
+    const fs = this.fs;
+    if (!fs) return '';
+    return JSON.stringify([this.aba, { ...fs, atualizadaEm: 0, atual: this.aba === 'ataques' ? fs.atual : 0 }]);
   }
 
   private vit() {
@@ -290,6 +304,9 @@ export class TelaJogador {
       ...(auto ? (Object.entries(auto) as [string, boolean][]).filter(([, v]) => v).map(([k]) => cat.condicao(k)?.nome ?? k[0].toUpperCase() + k.slice(1)) : []),
       ...(fs.condicoes ?? []).map((k) => cat.condicao(k)?.nome ?? k),
     ];
+    const chave = JSON.stringify([fs.nome, f.classe, f.trilha, f.nex, fs.personagem, nomes, regras.armado(f.inventario), !!(look && sprites.def(look.charId!))]);
+    if (chave === this.chaves.perfil) return;
+    this.chaves.perfil = chave;
     const chips = nomes.length
       ? nomes.slice(0, 3).map((n) => h('span', { class: 'jg-chip ruim' }, n))
       : [h('span', { class: 'jg-chip ok' }, 'Normal')];
@@ -357,6 +374,9 @@ export class TelaJogador {
   private renderNumeros() {
     const c = this.calc;
     if (!c) return this.numeros.replaceChildren();
+    const chave = JSON.stringify([c.defesa, c.deslocamento, c.carga, c.limitePe]);
+    if (chave === this.chaves.numeros) return;
+    this.chaves.numeros = chave;
     const n = (icone: NomeIcone, pint: string | string[] | undefined, rotulo: string, valor: string, dica: string) =>
       h('div', { class: 'jg-num', title: dica }, h('span', { class: 'jg-num-ic' }, pintado(pint, icone)), h('b', null, valor), h('span', null, rotulo));
     this.numeros.replaceChildren(
@@ -368,6 +388,8 @@ export class TelaJogador {
   }
 
   private renderNav() {
+    if (this.chaves.nav === this.aba) return;
+    this.chaves.nav = this.aba;
     this.nav.replaceChildren(
       ...ABAS.map((a) =>
         h(
@@ -406,6 +428,7 @@ export class TelaJogador {
     };
     this.conteudo.dataset.aba = this.aba;
     this.el.dataset.aba = this.aba;
+    this.chaves.conteudo = this.chaveConteudo();
     this.conteudo.replaceChildren(...partes[this.aba]());
     if (this.focarDetalhe) {
       this.focarDetalhe = false;
