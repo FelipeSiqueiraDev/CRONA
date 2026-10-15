@@ -280,8 +280,8 @@ export class Pong implements Jogo {
     // a sua raquete: as setas, ou segue o dedo
     if (e.dedo) {
       const alvo = e.dedo.y - this.RH / 2;
-      this.eu += Math.max(-4.5, Math.min(4.5, alvo - this.eu));
-    } else this.eu += 2.8 * e.eixo.y;
+      this.eu += Math.max(-6, Math.min(6, alvo - this.eu));
+    } else this.eu += 3.8 * e.eixo.y;
     this.eu = Math.max(this.topo, Math.min(this.base - this.RH, this.eu));
     const b = this.bola;
     if (this.papel === 'convidado') {
@@ -290,7 +290,7 @@ export class Pong implements Jogo {
       return;
     }
     if (this.papel === 'dono') {
-      if (this.remoto !== null) this.eles += Math.max(-4.5, Math.min(4.5, this.remoto - this.eles));
+      if (this.remoto !== null) this.eles += Math.max(-6, Math.min(6, this.remoto - this.eles));
     } else {
       // a máquina: olha a bola de tempos em tempos, erra um pouco e fica mais esperta quando você pontua
       if (this.q % 7 === 0) this.alvoEles = b.vx < 0 ? b.y - this.RH / 2 + aleat(-7, 7) : (this.topo + this.base) / 2 - this.RH / 2;
@@ -636,15 +636,15 @@ export class PulaPula implements Jogo {
 
   /** Mais alto, mais difícil: de 0 a 1. */
   private dificuldade() {
-    const subida = (168 - this.alto) / 5000;
+    const subida = (168 - this.alto) / 6500;
     return Math.min(1, [subida * 0.6, subida, 0.15 + subida * 1.3][this.nivel]);
   }
 
   private gerar() {
     while (this.proxY > this.camY - 40) {
       const d = this.dificuldade();
-      // o pulo alcança 66 pixels; o vão maior fica em 54
-      const vao = this.al(16, 26 + d * 28);
+      // o pulo alcança 66 pixels; o vão maior fica em 48
+      const vao = this.al(16, 24 + d * 24);
       this.proxY -= vao;
       const anda = this.rnd() < 0.08 + d * 0.32;
       const w = Math.round(22 - d * 4) + [4, 0, -3][this.nivel];
@@ -659,8 +659,8 @@ export class PulaPula implements Jogo {
     // a força da alavanca dá a velocidade (o dedo, numa metade da tela, vai no máximo)
     const forca = e.dedo ? (e.dedo.x < W / 2 ? -1 : 1) : e.eixo.x;
     if (Math.abs(forca) > 0.02) {
-      const alvo = 2.1 * forca;
-      this.vx += Math.max(-0.3, Math.min(0.3, alvo - this.vx));
+      const alvo = 2.7 * forca;
+      this.vx += Math.max(-0.5, Math.min(0.5, alvo - this.vx));
       this.lado = forca < 0 ? -1 : 1;
     } else this.vx *= 0.82;
     this.x += this.vx;

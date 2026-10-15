@@ -28,7 +28,7 @@ const MAX_RECORDES = 5;
 const LENDA = { n: 'AON', p: 99999 };
 const ehLenda = (r: { n: string; p: number }) => r.n === LENDA.n && r.p === LENDA.p;
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-/** A sensibilidade da alavanca e do teclado (09/10: o Felipe achou rápido demais): o quanto da velocidade máxima. */
+/** A sensibilidade da alavanca (09/10: rápido demais; 15/10: lento demais, então o padrão é ALTA): o quanto da velocidade máxima. O teclado não usa. */
 const SENSIBILIDADES = [
   { nome: 'BAIXA', k: 0.5 },
   { nome: 'MEDIA', k: 0.72 },
@@ -42,9 +42,9 @@ const CURVA = 1.6;
 function lerAjustes(): { nivel: Nivel; sens: number } {
   try {
     const a = JSON.parse(localStorage.getItem(CHAVE_AJUSTES) ?? '{}') as { nivel?: number; sens?: number };
-    return { nivel: (a.nivel === 0 || a.nivel === 2 ? a.nivel : 1) as Nivel, sens: a.sens === 0 || a.sens === 2 ? a.sens : 1 };
+    return { nivel: (a.nivel === 0 || a.nivel === 2 ? a.nivel : 1) as Nivel, sens: a.sens === 0 || a.sens === 1 || a.sens === 2 ? a.sens : 2 };
   } catch {
-    return { nivel: 1, sens: 1 };
+    return { nivel: 1, sens: 2 };
   }
 }
 
@@ -482,7 +482,8 @@ export class Fliperama implements TelaDoBar {
       return { x: (j.x / d) * m * k, y: (j.y / d) * m * k };
     }
     const s = this.segura;
-    return { x: ((s.has('dir') ? 1 : 0) - (s.has('esq') ? 1 : 0)) * k, y: ((s.has('baixo') ? 1 : 0) - (s.has('cima') ? 1 : 0)) * k };
+    // o teclado é tudo ou nada: a sensibilidade (15/10, "tudo muito lento") vale só para a alavanca analógica
+    return { x: (s.has('dir') ? 1 : 0) - (s.has('esq') ? 1 : 0), y: (s.has('baixo') ? 1 : 0) - (s.has('cima') ? 1 : 0) };
   }
 
   /** As linhas do menu, de cima para baixo, com a altura de cada uma na tela do jogo. */
