@@ -52,5 +52,7 @@ export function posicaoInicial(nome: string, i: number): [number, number] {
   if (/igarap[eé]/i.test(nome)) return [0.635, 0.6];
   // Tiradentes (15/10): a cidadezinha histórica no sul de Minas, entre a Sede e Igarapé
   if (/tiradentes/i.test(nome)) return [0.585, 0.625];
+  // Santo Berço (15/10): a vila isolada, longe de tudo, no meio do país (o mestre arrasta se quiser)
+  if (/santo ber[cç]o/i.test(nome)) return [0.47, 0.37];
   return POSICOES_INICIAIS[i % POSICOES_INICIAIS.length];
 }

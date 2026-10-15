@@ -204,7 +204,14 @@ function postes(): FloorSeed[] {
 
 /** árvores e arbustos só onde é grama e não tem nada (a lista pode ser generosa) */
 function naGrama(t: Terreno, ocupado: Set<string>, list: FloorSeed[]): FloorSeed[] {
-  return list.filter(([, x, y]) => t.at(x, y) === "." && !ocupado.has(`${x},${y}`));
+  const ok = list.filter(([, x, y]) => t.at(x, y) === "." && !ocupado.has(`${x},${y}`));
+  // o que entra passa a ocupar a casa: duas plantas sorteadas para o mesmo lugar não se empilham (a segunda era recusada)
+  for (const [id, x, y, r] of ok) {
+    const def = getFurni(id.split("~")[0]);
+    const [sx, sy] = !def ? [1, 1] : r === 2 || r === 6 ? [def.depth, def.width] : [def.width, def.depth];
+    for (let dy = 0; dy < sy; dy++) for (let dx = 0; dx < sx; dx++) ocupado.add(`${x + dx},${y + dy}`);
+  }
+  return ok;
 }
 
 /** as casas ocupadas pelas peças de uma lista (para a vegetação não cair em cima) */
