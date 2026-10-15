@@ -1100,7 +1100,11 @@ export class Shell {
 
   setFichasMapa(lista: FichaSalva[]) {
     this.fichasMapa = lista;
-    const fs = JSON.stringify(lista.map((f) => [f.id, f.atualizadaEm]));
+    // só o que as cartas mostram da ficha (mochila, condições marcadas, tema...). Os pontos de agora (PV, PE, SAN)
+    // ficam de fora: eles já se acertam no lugar pela party, e refazer o painel a cada ponto piscava os retratos e os
+    // ícones (14/10). O INTERLÚDIO mostra os pontos, então lá eles contam.
+    const pontos = this.rpgTab === 'INTERLÚDIO';
+    const fs = JSON.stringify(lista.map((f) => [f.id, { ...f, atualizadaEm: 0, atual: pontos ? f.atual : 0 }]));
     if (fs === this.fichasMapaSig) return;
     this.fichasMapaSig = fs;
     // as cartas dos agentes vestem o elemento de cada um (o tema da ficha)
