@@ -12996,19 +12996,22 @@
     }
   },
   "escrita_sangue": {
-    "escala": 1,
-    "pixel": true,
-    "codigo": true,
+    "escala": 0.5,
+    "codex": true,
+    "inclina": {
+      "l": 0,
+      "r": 0
+    },
     "parede": {
       "r": {
-        "arquivo": "escrita_sangue/parede-r.png",
-        "ax": 137.0,
-        "ay": 119.2
+        "arquivo": "escrita_sangue/parede.png",
+        "ax": 340.0,
+        "ay": 136.0
       },
       "l": {
-        "arquivo": "escrita_sangue/parede-l.png",
-        "ax": 150.0,
-        "ay": 119.2
+        "arquivo": "escrita_sangue/parede.png",
+        "ax": 340.0,
+        "ay": 136.0
       }
     }
   },

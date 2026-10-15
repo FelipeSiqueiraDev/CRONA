@@ -6,5 +6,13 @@
  */
 export const CODEX_NO_TABULEIRO = false;
 
-/** O móvel entra na cena? Só com pixel art feita por código (e a van, da viagem). */
-export const moveisDoCodex = (chave: string, arte: { pixel?: boolean }) => CODEX_NO_TABULEIRO || !!arte.pixel || chave.startsWith('van_');
+/**
+ * As exceções que o Felipe aprovou uma a uma: arte do Códex que entra no tabuleiro mesmo com a chave desligada.
+ * - escrita_sangue (15/10): a escrita de sangue do Orfanato, a imagem que o Códex entregou em 12/10
+ *   (escrita-sangue.zip); a versão feita por código (parede-l.png e parede-r.png) continua na pasta.
+ */
+const CODEX_APROVADO = new Set(['escrita_sangue']);
+
+/** O móvel entra na cena? Só com pixel art feita por código (e a van, da viagem, e as exceções aprovadas). */
+export const moveisDoCodex = (chave: string, arte: { pixel?: boolean }) =>
+  CODEX_NO_TABULEIRO || !!arte.pixel || chave.startsWith('van_') || CODEX_APROVADO.has(chave.split(/[~!@]/)[0]);

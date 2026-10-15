@@ -510,7 +510,7 @@ export class RoomView {
     // ao ar livre não tem parede: ninguém fica atrás da porta
     this.door = info.aberto ? null : doorClipPath(this.map);
     this.fog.setMap(this.map);
-    this.particles.setRoom(this.map, info.particles);
+    this.particles.setRoom(this.map, info.particles, !!info.aberto);
     // mantém a peça ativa se ela estiver nesta cena
     this.myId = users.some((u) => u.id === myId) ? myId : 0;
     this.grupo.clear();
@@ -1488,7 +1488,12 @@ export class RoomView {
       const ao = (L.x - def.w / 2) / 32;
       const alt = it.z + (def.h - L.y) / 32;
       const mundo: [number, number, number] = it.wall === 'l' ? [it.plane + 0.2, it.pos - ao, alt] : [it.pos + ao, it.plane + 0.2, alt];
-      lights.push({ x: ox + L.x, y: oy + k * L.x + L.y, radius: L.radius, color: L.color, intensity: L.intensity * alpha, flicker: L.flicker, pulse: L.pulse, kind: L.kind, seed: it.id, mundo });
+      // a janela: o feixe de luz entrando no cômodo e caindo no chão (particles.ts desenha)
+      const feixe =
+        L.kind === 'natural'
+          ? { wall: it.wall, plane: it.plane, pos: it.pos, larg: (def.w / 32) * 0.86, z0: it.z + 0.08, z1: it.z + def.h / 32 - 0.08, chao: this.map?.floorHeight(it.wall === 'l' ? it.plane : Math.floor(it.pos), it.wall === 'l' ? Math.floor(it.pos) : it.plane) ?? 0 }
+          : undefined;
+      lights.push({ x: ox + L.x, y: oy + k * L.x + L.y, radius: L.radius, color: L.color, intensity: L.intensity * alpha, flicker: L.flicker, pulse: L.pulse, kind: L.kind, seed: it.id, mundo, feixe });
     }
     return { ox, oy, k, px, py, e };
   }
@@ -2562,10 +2567,11 @@ export class RoomView {
     if (darkness > 0.01)
       this.lighting.render(ctx, active, darkness, (x, y) => [(x * z + this.cam.x) * dpr, (y * z + this.cam.y) * dpr], scale, t, this.info.ambient);
 
-    // partículas (poeira na luz, fumaça e brasas das velas)
-    if (this.particles.active) {
+    // a vida da cena (14/10, em todas as cenas): a chama que mexe e o brilho do fogo, o feixe da janela, a poeira na
+    // luz, a fumaça e as brasas (fora da vista tática, que é a planta limpa)
+    if (this.particles.active && this.tat.t < 0.5) {
       ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
-      this.particles.draw(ctx, now, active, this.info.particleLevel ?? DEFAULT_PARTICLE_LEVEL);
+      this.particles.draw(ctx, now, active, this.info.particleLevel ?? DEFAULT_PARTICLE_LEVEL, darkness);
     }
 
     // a névoa para o mestre: o que a mesa não vê fica riscado, por cima de tudo
