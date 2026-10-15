@@ -124,7 +124,7 @@ export class Festa {
       g.globalAlpha = Math.min(1, t.vida / 20);
       g.translate(t.x, t.y);
       g.scale(escala, escala);
-      g.font = `700 ${Math.round(t.tam)}px 'Pixel Numeros', 'Pixelify Sans', monospace`;
+      g.font = `700 ${Math.round(t.tam)}px 'Pixel Numeros', 'Pixel Letras', 'Pixelify Sans', monospace`;
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.lineWidth = 4 * this.k;

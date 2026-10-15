@@ -149,7 +149,7 @@
   top: 50%;
   padding: 4px 8px;
   white-space: nowrap;
-  font: 14px/1 'Pixelify Sans', 'Ubuntu Mono', monospace;
+  font: 14px/1 'Pixel Letras', 'Pixelify Sans', 'Ubuntu Mono', monospace;
   letter-spacing: 0.04em;
   color: #ffd27a;
   background: rgba(5, 11, 20, 0.78);
@@ -589,7 +589,7 @@
   background: #050b14;
   /* as beiradas somem no painel da arte */
   box-shadow: 0 0 calc(var(--u) * 10px) calc(var(--u) * 6px) #050b14;
-  font-family: 'Pixelify Sans', 'Ubuntu Mono', monospace;
+  font-family: 'Pixel Letras', 'Pixelify Sans', 'Ubuntu Mono', monospace;
   color: #e9dccb;
 }
 .ent-painel > * {

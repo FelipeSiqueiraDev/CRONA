@@ -483,7 +483,7 @@ export class Dardos implements TelaDoBar {
   /** Os números em volta do alvo (o anel liso de fora). */
   private numeros(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, fatia: number) {
     g.fillStyle = '#f3e9d8';
-    g.font = `700 ${Math.round(r * 0.13)}px 'Pixel Numeros', 'Pixelify Sans', monospace`;
+    g.font = `700 ${Math.round(r * 0.13)}px 'Pixel Numeros', 'Pixel Letras', 'Pixelify Sans', monospace`;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     bar.dardos.SETORES.forEach((n, i) => {

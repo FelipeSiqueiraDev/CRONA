@@ -53,7 +53,7 @@ html.modo-ficha,
   --raio: calc(var(--u) * 1.6);
   --borda: calc(var(--u) * 0.55);
   --sombra-pixel: 0 calc(var(--u) * 0.55) 0 #1b0d03;
-  --f-pixel: 'Pixel Numeros', 'Pixelify Sans', 'Ubuntu Mono', monospace;
+  --f-pixel: 'Pixel Numeros', 'Pixel Letras', 'Pixelify Sans', 'Ubuntu Mono', monospace;
   --f-corpo: 'Roboto Condensed', 'Arial Narrow', sans-serif;
   --f-doc: 'Courier Prime', 'Courier New', monospace;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -2587,7 +2587,7 @@ html.modo-ficha .fj:not(.rq) .fj-chips {
     color: #f3e9d8;
   }
   html.modo-ficha .rq .fx-tit h3 {
-    font-family: 'Pixelify Sans', monospace;
+    font-family: 'Pixel Letras', 'Pixelify Sans', monospace;
     font-weight: 700;
     color: #ffd27a;
     text-shadow: 0 0.15rem 0 #1b0d03;
@@ -2610,7 +2610,7 @@ html.modo-ficha .fj:not(.rq) .fj-chips {
   html.modo-ficha .rq-carga-n,
   html.modo-ficha .rq .fj-rodape .fx-bt,
   html.modo-ficha .rq-det-acoes .fx-bt {
-    font-family: 'Pixelify Sans', monospace !important;
+    font-family: 'Pixel Letras', 'Pixelify Sans', monospace !important;
   }
   html.modo-ficha .rq-quem b,
   html.modo-ficha .rq-det-nome {

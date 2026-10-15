@@ -65,7 +65,7 @@ interface Anim {
 const PAD = 10;
 /** pixels da arte por casa: o mapa é desenhado pequeno e ampliado sem suavizar */
 const P = 4;
-const FONTE = '"Pixelify Sans", "Ubuntu Mono", monospace';
+const FONTE = '"Pixel Letras", "Pixelify Sans", "Ubuntu Mono", monospace';
 /**
  * As cores do HUD do CRONA (os tokens --r-* de retro.css e hud.css): azul-noite, borda bege,
  * texto creme e o ouro, que marca o lugar do grupo.
