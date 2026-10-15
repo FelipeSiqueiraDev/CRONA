@@ -1,0 +1,203 @@
+﻿ANÁLISE — TAVERNA DE SANTO BERÇO
+Comparação visual e receitas para desenho em código
+Data: 14/10/2026
+
+A COISA PRINCIPAL
+- O Felipe percebe a sensação de um pequeno mundo material: espessura, sombras e luz compartilhada fazem os objetos ter peso e pertencer ao mesmo espaço.
+
+LEITURA DAS TRÊS IMAGENS
+- Referência 1: o maior mérito é a organização de massas, silhuetas e detalhes. Há objetos grandes, médios e minúsculos, sobreposição, cabos ligando partes da sala e cores frias quebradas por pequenos acentos. A luz é relativamente contida; não é o mesmo espetáculo emissivo da referência 2.
+- Referência 2: o volume da base, as faces dos blocos e a iluminação colorida têm papel maior. As fontes verdes, vermelhas e amarelas afetam objetos próximos. É uma renderização voxel: seus degradês, reflexos e sombras suaves NÃO precisam ser reproduzidos literalmente em pixel art.
+- Nossa sala já tem perspectiva coerente, lareira reconhecível, bancos, textura de tábuas, lanternas e alguma espessura/sombra. O problema é a intensidade e a hierarquia desses recursos: muito bege/marrom com valores próximos, encontros pouco marcados e grandes espaços preenchidos quase só pelo mesmo padrão de piso.
+- A melhoria não é adicionar ruído indiscriminado nem trocar o desenho dos móveis. É organizar três escalas de informação e fazer a luz revelar o volume.
+
+CONVENÇÕES DAS RECEITAS
+- Ordem abaixo: maior impacto visual primeiro. Valores são pontos de partida para ajustar olhando a imagem em tamanho de jogo.
+- "px" significa pixel lógico, ANTES da ampliação. Sugestão para o alvo: desenhar em 640 x 400 e exibir em 1280 x 800 por nearest-neighbor. A imagem enviada da taverna já está ampliada 2x; não confundir seu pixel de tela com pixel lógico.
+- Cores em hexadecimal sRGB; opacidade 0–100%. mix(base, cor, a) = mistura de cores, com a entre 0 e 1.
+- Quantizar cores/luz para uma paleta final; arredondar coordenadas no desenho. Nunca suavizar diagonais ou contornos.
+- Os números por tile são sugestões de direção de arte. A referência não informa a dimensão dos tiles do motor.
+
+1) SOMBREAMENTO: APOIAR OS OBJETOS E SEPARAR OS PLANOS
+- O que as referências fazem:
+  - Marcam encaixes, bases, vãos e sobreposições. A cadeira, o sofá ou a máquina parecem pesar sobre o chão.
+  - Usam sombra diferente para contato, área escondida e sombra projetada. Isso continua funcionando sem textura.
+- O que falta na nossa:
+  - Pés de mesa/banco, barris e balcão se integram pouco ao piso. Há escuros, mas vários contatos são pouco específicos.
+  - O encontro de parede com piso e o canto das duas paredes poderiam explicar melhor a profundidade.
+- Rotina concreta — contato:
+  - Antes do objeto, desenhar uma elipse/polígono achatado no chão, alinhado à pegada isométrica.
+  - Pé pequeno: núcleo com pegada +1 ou +2 px, #151625 a 65–80%; uma borda irregular de 1–2 px a 20–30%. Caneca: expansão de apenas 1 px.
+  - Barril/caixote/saco: sombra acompanha sua base; núcleo junto à borda inferior, não uma mancha gigante uniforme.
+  - Mesa: contato forte só nos pés; sob o tampo, uma sombra maior e fraca de 15–25%. Não pintar todo o retângulo de sua caixa delimitadora a 70%.
+  - Recortar sombras na máscara de chão. Cada pé precisa de sua posição de apoio, não só do centro do sprite.
+- Rotina concreta — oclusão ambiente:
+  - Parede/chão: faixa irregular de 2–4 px, #242238 a 30–45%, mais 1 px escuro junto ao rodapé.
+  - Canto de paredes, atrás dos barris e reentrâncias da lareira: máscara local de 4–8 px a 20–35%, com núcleo mais escuro na fresta.
+  - Se máscaras se sobrepõem, usar máximo das intensidades ou limitar a opacidade resultante; evitar somar cinco manchas até virar preto.
+- Rotina concreta — sombra projetada:
+  - Escolher uma fonte dominante por objeto. Projetar a silhueta ou uma pegada simplificada para o lado oposto à fonte.
+  - Começar com 6–18 px de extensão para móveis, #242238 a 25–40%, em 2–3 patamares de cor.
+  - Objetos altos projetam sombras mais longas; luz próxima muda a direção local. Recortar nas superfícies receptoras.
+- Rotina concreta — aresta iluminada:
+  - Inserir 1 px de cor clara nas arestas superiores que recebem luz, com pequenos trechos interrompidos.
+  - Madeira: #C99B60 ou #FFD17B perto do fogo; pedra/metal distantes: #73858C.
+  - Não contornar toda a silhueta com brilho. A borda inferior e o lado oposto precisam continuar escuros.
+- Ganho: os móveis deixam de parecer apenas desenhos colocados sobre uma textura.
+
+2) LUZ: FONTES LOCAIS QUE AFETAM OS VIZINHOS
+- O que as referências fazem:
+  - Referência 1 separa superfícies com acentos verdes, cianos e violetas sobre uma base fria.
+  - Referência 2 mostra emissão forte e vazamento colorido em superfícies próximas; o objeto emissivo não é só uma forma de cor viva.
+- O que falta na nossa:
+  - A chama e as lanternas já existem, mas a sala fica relativamente bege e uniforme longe e perto delas.
+  - Parede clara e piso competem com as pequenas fontes; a distância da luz não muda suficientemente a cor/valor do material.
+- Rotina concreta:
+  - Ambiente inicial: sombra azul-violeta #242238 / #30324A. Materiais continuam reconhecíveis, só ficam menos quentes nas áreas sem luz.
+  - Fogo: núcleo #FFF0B3, amarelo #FFD17B, laranja #F19A4B, borda #D36B36.
+  - Lanternas: mesma família, com menor intensidade e raio; não é necessário acrescentar verde neon à taverna.
+  - Primeiro calcular a influência em coordenadas do mundo/superfície; a projeção isométrica transforma o alcance circular no piso em elipse. Um círculo de tela aplicado em tudo distorce distâncias e atravessa obstáculos.
+  - Exemplo visual no piso junto à lareira: elipse de raio horizontal 65–85 px e vertical aproximadamente metade disso. Lanterna: 25–40 px horizontal.
+  - Atenuação inicial: a = I * max(0, 1 - (d/r)^2)^2. Depois reduzir a 3–4 faixas, em vez de produzir centenas de tons.
+  - Nas faixas próxima/média/distante, começar com mistura quente de 35% / 18% / 7%; ajustar por material e orientação da face.
+  - Aplicar o mesmo campo ao rodapé, pedras, pernas da mesa, tampo próximo e canecas. Amarelar o chão e esquecer os móveis mantém o aspecto de adesivo.
+  - Usar máscaras separadas de piso, parede e objetos; testar visibilidade para a fonte. Balcão, barris e lareira interrompem a luz. Mesmo um teste simples de segmento no plano já melhora muito.
+  - Faces voltadas para a fonte recebem 100% do fator; laterais 40–65%; faces opostas 10–25% ou só luz ambiente.
+  - Manter os pixels quase brancos restritos aos núcleos das fontes e reflexos muito pequenos. Áreas grandes devem permanecer abaixo deles.
+  - Não usar grande halo desfocado. Se necessário, 1 faixa externa discreta de cor quente, recortada no ambiente e quantizada.
+- Cor da sombra:
+  - Evitar apenas multiplicar todo marrom por preto. Para madeira: luz #C99B60 -> meio #805738 -> sombra #45313A -> sombra profunda #242238.
+  - O deslocamento passa por marrom avermelhado até violeta frio; não é pintar cada sombra com azul saturado.
+- Ganho: foco na lareira, contraste quente/frio e leitura imediata de distância e orientação.
+
+3) BORDA, ESPESSURA E O DIORAMA
+- O que as referências fazem:
+  - A primeira apresenta uma plataforma com perímetro e face lateral legíveis; a segunda transforma isso numa base sólida, com camadas e peças que ultrapassam a borda.
+  - Topos, faces laterais e terminações das paredes têm valores distintos. O recorte parece uma construção que poderia ser segurada na mão.
+- O que falta na nossa:
+  - A base já existe, mas a face lateral fina e muito escura se perde no fundo. As paredes também têm algum topo, porém a espessura poderia ser mais consistente e visível nas pontas.
+  - A silhueta é dominada pelo grande losango liso; há pouca informação sobre como o piso se sustenta.
+- Rotina concreta — piso:
+  - Extrudar o polígono do piso 10–16 px para baixo na tela; desenhar polígonos laterais só nas arestas expostas, antes do piso.
+  - Topo do piso: cor do material. Borda superior: 1 px #A49B8A em trechos voltados à luz. Face lateral: #30324A; face mais escura: #1B1929.
+  - Inserir fiadas de pedra/vigas de sustentação com 2–3 cores; juntas de 1 px e lascas em apenas 5–10% da borda.
+  - Colocar a terminação de cada tábua/viga de forma coerente com a superfície superior. Não tratar a lateral como simples contorno preto grosso.
+- Rotina concreta — parede:
+  - Definir espessura em coordenadas do mundo e projetar topo e tampas das extremidades; começar com 3–6 px visíveis.
+  - Criar três faces: frontal, topo mais claro e tampa lateral mais escura. Topo não deve virar uma linha branca contínua.
+  - Preservar a interrupção da entrada na frente e seu limiar; não fechar a porta ao extrudar a laje.
+- Rotina concreta — isolamento:
+  - Fundo chapado #12121C ou #171824, ligeiramente diferente da face mais escura da base.
+  - Deixar margem de 15–25 px lógicos ao redor da silhueta. Uma sombra discreta destacada da base pode sugerir suspensão: 2 polígonos achatados a 15% e 8%, sem blur.
+  - O "diorama flutuando" vem primeiro da base fechada e do recorte; sombra externa é opcional.
+- Ganho: a sala inteira passa a ser um objeto tridimensional, antes de olhar qualquer detalhe.
+
+4) DENSIDADE E ESCALA: GRANDES MASSAS, CONJUNTOS MÉDIOS, MICRODETALHES
+- O que as referências fazem:
+  - Distribuem a atenção por objetos grandes, médios e pequenos. Um móvel tem coisas em cima, ao lado e por baixo.
+  - Cabos, peças empilhadas e caixas criam relações entre objetos, em vez de uma coleção de sprites isolados.
+- O que falta na nossa:
+  - As mesas estão quase vazias; o chão apresenta grandes áreas de repetição com pouca narrativa.
+  - Há mobiliário grande e riscos minúsculos, mas faltam conjuntos médios entre essas escalas.
+  - Não é necessário comprimir a planta até ela ficar como a oficina voxel: ela contém outra escala de sala.
+- Rotina concreta:
+  - Manter os móveis exatamente onde estão. Adicionar conjuntos vinculados a âncoras: "junto à lareira", "em cima da mesa", "atrás do balcão".
+  - Mesa: 2–3 canecas, 1 jarro ou tábua de pão e 1 pano pendurado; não repetir o mesmo conjunto nas duas.
+  - Lareira: 3–5 toras, 1–2 sacos, pequena cinza/mancha. Balcão: jarro, canecas e pano; barris: torneira ou pequeno derrame.
+  - Chão: um tapete gasto, duas tábuas encostadas, palha/sujeira em pontos de serviço e um pequeno objeto esquecido junto ao banco.
+  - Trocar a função visual dos fios por equivalentes da taverna: corda enrolada, tecido, feixe de lenha e utensílios pendurados. Não acrescentar tubos ou painéis de ficção científica.
+- Quantidade por tile — orçamento inicial:
+  - Reservar 60–70% dos tiles caminháveis sem adereços soltos de chão, preservando passagem e leitura para o jogo.
+  - Em 20–30%, colocar 1 conjunto pequeno que ocupe 15–35% da área do tile.
+  - Nos 5–10% de armazenamento/perímetro, permitir conjuntos mais densos e sobreposição.
+  - Acrescentar 1–3 marcas pequenas nos tiles escolhidos para desgaste; isso não significa 1–3 objetos grandes em todos os tiles.
+  - A textura de madeira pode estar em todo piso; o entulho não.
+- Escala inicial:
+  - Para um exemplo de tile projetado de 48 x 24 px: caneca 3–5 px de largura, saco 10–14 px, caixote 14–20 px; ajustar ao personagem e aos móveis reais.
+  - Manter caneca muito menor que assento e barril aproximadamente da altura do tampo; usar as relações entre objetos como critério principal.
+  - Preferir cerca de 3 detalhes pequenos para cada conjunto médio e poucos grandes acentos. Não distribuir tamanhos e cores com a mesma frequência.
+- Implementação:
+  - Usar seed estável por posição; gerar candidatos por zonas e rejeitar colisão com porta, banco e corredor.
+  - Guardar pegada, altura, superfície de apoio e ponto de contato de cada prop.
+  - Ordenar por profundidade no mundo; anexar objetos de mesa ao próprio móvel. Não usar só a coordenada vertical do topo do sprite.
+- Ganho: sensação de uso cotidiano, sem perder a planta reconhecível.
+
+5) PALETA: CONTRASTE DE MATIZ E VALOR COM POUCAS CORES ÚTEIS
+- O que as referências fazem:
+  - A primeira contrapõe cinzas azulados a acentos verdes/cianos/violetas e pequenas cores quentes.
+  - A segunda contrapõe madeira quente, estrutura fria/esverdeada e emissivos saturados. Não depende apenas de "mais cores".
+- O que falta na nossa:
+  - Madeira, reboco, pedra e chão se aproximam demais de uma mesma faixa de bege/marrom.
+  - Há muitos tons próximos, mas poucos intervalos grandes que separem material, sombra e fonte.
+- Número de cores:
+  - Os arquivos recebidos contêm 50.879 RGB distintos (ref. 1), 96.234 (ref. 2) e 28.619 (taverna). Contagem feita nos PNGs completos, incluindo fundo.
+  - Isso NÃO informa a paleta autoral: transformações, transparências, gradientes e possíveis compressões anteriores criam tons intermediários. Não copiar essas contagens como meta.
+  - Para o desenho programado: começar com 32 cores finais compartilhadas entre materiais; ampliar até 40 somente se uma função visual estiver faltando.
+  - Gerar luz/sombra em buffer é aceitável, mas remapear o resultado à paleta evita milhares de marrons quase iguais.
+- Paleta inicial de 32 cores:
+  - Fundo/sombras (6): #12121C #1B1929 #242238 #30324A #46475C #676676
+  - Madeira (6): #2D2430 #45313A #614239 #805738 #A47748 #C99B60
+  - Pedra/reboco (6): #444150 #64616A #848080 #A49B8A #C5B59A #E0CAA0
+  - Fogo/luz (4): #D36B36 #F19A4B #FFD17B #FFF0B3
+  - Pano/tapete (4): #38283F #5C3549 #8E4D50 #B8755B
+  - Musgo/sacos esverdeados (3): #283B37 #4D5B42 #859064
+  - Metal (3): #3B4A5A #73858C #B9B8A2
+- Rotina concreta:
+  - Cada material usa 3–5 níveis, compartilhando as sombras profundas e cores de luz.
+  - Separar madeira da pedra pela tendência de matiz e desenho, não por dezenas de tons adicionais.
+  - Reservar a maior saturação para fogo, lanternas e pequenos acentos. Roupa/tapete ficam mais apagados.
+  - Conferir uma versão em escala de cinza: fonte > superfície perto da fonte > planos médios > vãos/sombras. Se tudo vira um cinza parecido, aumentar a separação de valor antes de acrescentar cores.
+  - Testar a paleta sobre uma mesa e seu entorno, antes de aplicar ao mapa inteiro.
+- Ganho: materiais diferentes, foco claro e unidade visual mesmo com poucos tons.
+
+6) TEXTURAS E DESGASTE: MARCAS COM CAUSA, NÃO RUÍDO
+- O que as referências fazem:
+  - A primeira alterna painéis lisos, fios, rasgos, remendos e pequenas áreas sujas; deixa silhuetas legíveis.
+  - A segunda separa materiais por juntas, blocos, pranchas e detalhes de construção.
+- O que falta na nossa:
+  - O piso já tem tábuas e riscos; adicionar mais linhas iguais aumentaria o ruído.
+  - Paredes grandes e bastante regulares poderiam mostrar uso e variação estrutural localizada.
+- Rotina concreta — piso:
+  - Variar a cor base de 15–25% das tábuas em apenas 1 degrau da rampa; selecionar tábuas inteiras, não pixels independentes.
+  - Fazer 5–8% parecerem remendadas: largura/tonalidade diferentes, emenda e 1–2 pregos. Manter direção e perspectiva.
+  - Usar 0–2 grupos de veios por tábua, traços curtos interrompidos de 2–7 px. Não desenhar uma linha em toda borda.
+  - Juntas: 1 px escuro em segmentos; eventualmente 1 px claro só na borda que recebe luz.
+  - Nós: pequenos clusters de 2 x 3 ou 3 x 4 px em uma minoria das tábuas.
+  - Criar máscaras de uso: faixa da entrada ao balcão/lareira com menos sujeira e madeira um nível mais clara em manchas largas; cantos e áreas sob barris acumulam sujeira.
+  - Derrame: polígono de 8–16 px, #45313A a 25–40%, um contorno parcial e 2–3 pixels de reflexo quente se estiver na luz.
+- Rotina concreta — parede:
+  - Reboco: 2–3 cores em manchas largas e irregulares, contraste baixo. Poucos clusters de 2–5 px, em vez de pontilhado uniforme.
+  - Rachaduras: caminhos de 1 px, 6–18 px de comprimento, com 1 ramificação curta; concentrar perto de vigas, quinas e umidade.
+  - Base úmida/suja: máscara descontínua com 3–6 px de altura, cor #64616A ou #45313A a 15–25%.
+  - Fuligem: acima da boca da lareira, manchas crescentes de #242238 a 15–35%, limitadas à pedra e ao reboco próximo.
+  - Dois detalhes médios de parede bastam para começar: gancho com utensílios e pano/placa sem texto. Adaptar o princípio de painéis/cartazes das referências ao mundo da taverna.
+- Regras de pixel:
+  - Escadas isométricas regulares de 2:1 onde a projeção pede; clusters intencionais, sem meios pixels.
+  - Preferir formas conectadas. Pixels soltos só para brilho, lasca ou sujeira com função clara.
+  - Dithering opcional e localizado entre duas cores, nunca cobrindo toda a sala.
+  - Não aplicar overlay de grão/ruído por cima de tudo: ele destrói os planos que acabamos de separar.
+- Ganho: materialidade e história de uso; é o polimento final, não o substituto de volume e luz.
+
+ORDEM PRÁTICA PARA PROGRAMAR
+- Passo 1: desativar temporariamente texturas e props pequenos. Ajustar faces, base, contatos e oclusão até a sala funcionar com manchas grandes.
+- Passo 2: inserir ambiente frio e luzes quentes quantizadas; testar lareira, mesa próxima e barris.
+- Passo 3: fixar paleta e espessuras; restaurar o detalhe existente.
+- Passo 4: adicionar conjuntos médios e pequenos com âncoras, sem mover as peças principais.
+- Passo 5: aplicar desgaste orientado por material/uso e conferir em escala 1x e ampliada 2x.
+- Composição por frame: geometria da base/piso -> máscaras e sombras que recebem no piso -> objetos ordenados por profundidade -> iluminação nas respectivas superfícies -> destaques/emissivos. A luz deve respeitar profundidade, máscaras e oclusores; não ser um círculo final sobre toda a imagem.
+- Seeds e paleta estáveis evitam cintilação entre frames.
+- Critério de aprovação: desligar os grãos e ainda enxergar peso; reduzir a imagem e ainda enxergar lareira, mesas, balcão e entrada.
+
+SOBRE A IMAGEM-ALVO
+- É uma direção de acabamento para estudar e reproduzir em código, não uma textura a ser colocada no tabuleiro.
+- Usar a imagem 3 como planta: mesmas duas mesas/bancos, lareira à esquerda no fundo, balcão e barris à direita e entrada na borda frontal.
+- Estudar principalmente: contato dos pés com o chão, diferença de temperatura junto/longe do fogo, face exposta da laje e distribuição dos conjuntos de objetos.
+- Os valores deste documento são sugestões programáveis, não medições físicas nem alegações sobre como os artistas das referências produziram suas imagens.
+
+REGISTRO DA ENTREGA
+- alvo-taverna.png: 1280 x 800; grade lógica de 640 x 400; ampliação inteira 2x; 37 cores usadas de uma paleta fixa de 40; sem dithering.
+- Conteúdo visual criado pela ferramenta integrada de geração de imagens, usando as três referências com a imagem 3 como planta. A exportação final reduz à grade lógica e à paleta; não altera o código do jogo.
+- A paleta da imagem parte das 32 cores sugeridas e acrescenta estes 8 tons de acabamento: #171824 #342A35 #5B4847 #745C50 #997754 #B38E68 #F6BF60 #D57E38.
+- Prompt exato e script de exportação ficam somente na pasta de trabalho, junto da geração original. O ZIP contém apenas esta análise e a imagem-alvo.
+
+
