@@ -415,6 +415,8 @@ export class Atravessa implements Jogo {
   private y = 186;
   private passos = 0;
   private atropelado = 0;
+  /** depois de atropelado, uns 40 quadros sem poder ser atropelado de novo (15/10) */
+  private protegido = 0;
   private faixas: { y: number; vel: number; dir: number; carros: Carro[] }[] = [];
   /** em dupla: o outro agente (a altura e os pontos que o celular dele manda) */
   outro: { y: number; p: number; passos: number } | null = null;
@@ -465,6 +467,7 @@ export class Atravessa implements Jogo {
         if (f.dir > 0 && c.x > W + 24) c.x -= VOLTA;
         if (f.dir < 0 && c.x < -24) c.x += VOLTA;
       }
+    if (this.protegido > 0) this.protegido--;
     if (this.atropelado > 0) {
       this.atropelado--;
       this.y = Math.min(186, this.y + 1.1);
@@ -487,10 +490,11 @@ export class Atravessa implements Jogo {
     }
     // o carro: o agente ocupa x..x+7 e y-9..y
     for (const f of this.faixas) {
-      if (this.y - 8 > f.y + 12 || this.y < f.y + 4) continue;
+      if (this.protegido > 0 || this.y - 4 > f.y + 12 || this.y < f.y + 4) continue;
       for (const c of f.carros)
         if (this.x + 6 > c.x && this.x + 1 < c.x + c.w) {
           this.atropelado = 18;
+          this.protegido = 18 + 40;
           sfx.chip(320, 70, 0.3, 0.1);
           sfx.ruido(0.2, 900, 0.15, 200);
           fx.tremer(5);
@@ -678,7 +682,7 @@ export class PulaPula implements Jogo {
     }
     if (this.vy > 0)
       for (const p of this.plats) {
-        if (p.quebrada || antes > p.y || this.y < p.y || this.x + 3 < p.x || this.x - 3 > p.x + p.w) continue;
+        if (p.quebrada || antes > p.y || this.y < p.y || this.x + 5 < p.x || this.x - 5 > p.x + p.w) continue;
         if (p.tipo === 'quebra') {
           p.quebrada = true;
           sfx.chip(160, 60, 0.12);
@@ -698,7 +702,7 @@ export class PulaPula implements Jogo {
             fx.tremer(1.5);
           } else sfx.ruido(0.05, 1800, 0.05);
         }
-        const mola = p.mola && Math.abs(this.x - (p.x + p.w / 2)) < 5;
+        const mola = p.mola && Math.abs(this.x - (p.x + p.w / 2)) < 7;
         this.vy = mola ? -7.6 : -4.6;
         if (mola) sfx.chip(300, 1300, 0.22), fx.faiscas(this.x, p.y - this.camY - 3, [COR.amarelo, COR.branco], 12, 1.8, 0.02, 26), fx.tremer(2);
         else sfx.chip(260, 620, 0.08, 0.06), fx.faiscas(this.x, p.y - this.camY, COR.claro, 4, 0.7, 0.03, 12);

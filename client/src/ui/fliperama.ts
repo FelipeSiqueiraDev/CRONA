@@ -37,8 +37,8 @@ const SENSIBILIDADES = [
 const NIVEIS = ['FACIL', 'NORMAL', 'DIFICIL'];
 const CHAVE_AJUSTES = 'crona.fliperama.ajustes';
 /** a zona morta da alavanca (do raio) e a curva da força: pouca inclinação, bem pouca velocidade */
-const ZONA_MORTA = 0.18;
-const CURVA = 1.6;
+const ZONA_MORTA = 0.12;
+const CURVA = 1.2;
 function lerAjustes(): { nivel: Nivel; sens: number } {
   try {
     const a = JSON.parse(localStorage.getItem(CHAVE_AJUSTES) ?? '{}') as { nivel?: number; sens?: number };
@@ -333,6 +333,9 @@ export class Fliperama implements TelaDoBar {
     this.teclas = teclas;
     teclas.addEventListener('keydown', this.tecla as EventListener);
     teclas.addEventListener('keyup', this.tecla as EventListener);
+    // perdeu o foco (trocou de aba, clicou fora): solta tudo, senão a seta fica "apertada" e a peça anda sozinha
+    window.addEventListener('blur', this.soltarTudo);
+    document.addEventListener('visibilitychange', this.soltarTudo);
     this.ultimo = 0;
     this.raf = requestAnimationFrame(this.laco);
   }
@@ -342,6 +345,8 @@ export class Fliperama implements TelaDoBar {
     cancelAnimationFrame(this.raf);
     this.teclas?.removeEventListener('keydown', this.tecla as EventListener);
     this.teclas?.removeEventListener('keyup', this.tecla as EventListener);
+    window.removeEventListener('blur', this.soltarTudo);
+    document.removeEventListener('visibilitychange', this.soltarTudo);
     this.segura.clear();
     musica.parar();
     if (this.partida) this.enviar({ tipo: 'desistiu' });
@@ -439,6 +444,16 @@ export class Fliperama implements TelaDoBar {
     return { x: ((e.clientX - r.left) / r.width) * W, y: ((e.clientY - r.top) / r.height) * H };
   }
 
+  private soltarTudo = () => {
+    this.segura.clear();
+    this.apertou.clear();
+    this.alavanca = new Set<Botao>();
+    this.joyEixo = null;
+  };
+
+  /** quando a última repetição de tecla valeu (no menu e nas iniciais, segurar a seta rola, sem disparar rápido demais) */
+  private ultRepeticao = 0;
+
   private tecla = (e: KeyboardEvent) => {
     if (e.code === 'Escape' && e.type === 'keydown') return this.voltarAoMenu();
     const b = TECLAS[e.code];
@@ -447,6 +462,7 @@ export class Fliperama implements TelaDoBar {
     e.stopPropagation();
     if (e.type === 'keyup') return void this.segura.delete(b);
     if (!e.repeat) this.apertou.add(b);
+    else if ((this.estado === 'menu' || this.estado === 'nome') && e.timeStamp - this.ultRepeticao > 110) (this.apertou.add(b), (this.ultRepeticao = e.timeStamp));
     this.segura.add(b);
   };
 
@@ -537,8 +553,10 @@ export class Fliperama implements TelaDoBar {
         const aqui = linhas[this.linha].id;
         if (e.apertou.has('esq') || e.apertou.has('dir')) this.ajustar(aqui, e.apertou.has('esq') ? -1 : 1);
         // o dedo: toca no jogo para escolher, toca de novo para começar; num ajuste, troca o valor
+        let tocouNoVazio = false;
         if (e.tocou && e.dedo) {
           const i = linhas.findIndex((l) => Math.abs(e.dedo!.y + 1 - (l.y + 2)) <= 7);
+          tocouNoVazio = i < 0;
           if (i >= JOGOS.length) {
             this.linha = i;
             this.ajustar(linhas[i].id, e.dedo.x < W / 2 ? -1 : 1);
@@ -555,7 +573,8 @@ export class Fliperama implements TelaDoBar {
           this.ajustar(aqui, 1);
           break;
         }
-        if (a) {
+        // (um toque em espaço vazio do menu, fora das linhas, não começa o jogo)
+        if (a && !tocouNoVazio) {
           if (outro && this.dupla) {
             this.enviar({ tipo: 'convite', jogo: this.sel, nivel: this.nivel });
             this.estado = 'esperando';
@@ -703,6 +722,7 @@ export class Fliperama implements TelaDoBar {
 
   private comecar() {
     this.jogo = JOGOS[this.sel].novo(undefined, this.nivel);
+    this.dedo = null;
     this.partida = null;
     this.estado = 'jogo';
     this.quadro = 0;
@@ -853,10 +873,11 @@ export class Fliperama implements TelaDoBar {
       this.jogo!.desenhar(g, q);
       fx.desenhar(g);
       // o jeito de jogar com o dedo, no começo
-      if (this.estado === 'jogo' && q < 150 && pisca) {
+      if (this.estado === 'jogo' && q < 240 && pisca) {
         g.fillStyle = 'rgba(0,0,0,0.7)';
         g.fillRect(0, H - 22, W, 11);
         texto(g, JOGOS[this.sel].toque, W / 2, H - 19, COR.amarelo, 1, 'meio');
+        texto(g, 'SETAS OU WASD MOVEM', W / 2, H - 28, COR.claro, 1, 'meio');
       }
       if (this.estado === 'fim') {
         if (this.partida) this.caixaDupla(g, pisca);
