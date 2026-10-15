@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 36;
+export const FAZENDA_REV = 37;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -659,6 +659,254 @@ function giraSala(spec: CenaSpec): CenaSpec {
   };
 }
 
+// ------------------------------------------------------------------ decoração (15/10)
+
+/**
+ * A "densidade" que deixa as cenas vivas (15/10, análise do Códex): peças grandes, conjuntos médios e objetinhos pequenos,
+ * sem tapar a passagem. Só enfeite, com peças que já existem: nada aqui é pista, puzzle, porta nem item de missão, e tudo
+ * entra DEPOIS dos móveis (quem fica em cima de tampo precisa do tampo já posto). Cada mesa leva um conjunto diferente.
+ * Os objetos pequenos ficam sempre EM CIMA de tampo (mesa, aparador, cômoda, pia, criado-mudo); os de chão ficam nos
+ * cantos e junto das paredes, com o miolo e as portas livres. As salas que giram (`plan.r`) usam as coordenadas BRUTAS
+ * daqui, como o resto do seed. As velas ficam apagadas (estado 1): a casa está sem luz, e `abandonada` já faz o mesmo
+ * com as do casarão.
+ */
+const dec = (id: string, x: number, y: number, rot = 0, apagada = false): FloorSeed =>
+  apagada ? [id, x, y, rot, undefined, 1] : [id, x, y, rot];
+const vela = (x: number, y: number): FloorSeed => dec("candles", x, y, 0, true);
+
+const DECOR = {
+  fazenda: [
+    // a varanda do casarão: vasos de cada lado da entrada e um banco de cada lado da fonte
+    dec("vaso_flores", 18, 18),
+    dec("vaso_flores", 21, 18),
+    dec("banco_rustico", 17, 23, 2),
+    dec("banco_rustico", 23, 23, 6),
+    // o poço do quintal
+    dec("poco", 29, 14),
+    // a frente da casa de mantimentos: caixotes empilhados, barril, sacas e lenha
+    dec("crate_wood", 27, 7),
+    dec("crate_wood", 27, 7),
+    dec("barrel", 28, 7),
+    dec("sacas", 33, 7),
+    dec("lenha", 34, 7),
+    // a frente do celeiro: a lenha rachada, o toco e os barris da água
+    dec("lenha", 47, 9),
+    dec("lenha", 47, 9),
+    dec("lenha", 48, 9),
+    dec("toco_morador", 49, 9),
+    dec("barrel", 55, 9),
+    dec("barrel", 56, 9),
+    // ao lado da carroça
+    dec("sacas", 58, 5),
+    dec("sacas", 59, 5),
+    dec("feno", 61, 5),
+    // as colheitas largadas na beira das leiras
+    dec("igarape_cesto", 56, 23),
+    dec("igarape_cesto", 54, 33),
+    dec("sacas", 56, 33),
+    // a beira do lago: a rede, o cesto e as pedras
+    dec("igarape_rede_pesca", 27, 28),
+    dec("igarape_cesto", 28, 28),
+    dec("pedras", 25, 32),
+    dec("pedras", 36, 31),
+  ],
+  arredores: [
+    // a encruzilhada: o banco ao lado da placa e um toco
+    dec("banco_rustico", 14, 12, 4),
+    dec("toco_morador", 14, 13),
+    dec("toco_morador", 33, 17),
+    // a beira do rio
+    dec("pedras", 20, 11),
+    dec("pedras", 29, 17),
+    // as roças dos vizinhos: o cesto e as sacas do lado de fora da cerca
+    dec("igarape_cesto", 29, 5),
+    dec("sacas", 41, 5),
+    dec("igarape_cesto", 13, 22),
+    dec("sacas", 14, 22),
+  ],
+  // o hall: o aparador com o vaso seco e a vela, a mesinha dos recados, o cesto dos guarda-chuvas e a lama da porta
+  hall: [
+    dec("vaso_flores", 5, 5),
+    vela(5, 6),
+    dec("table_small", 1, 7),
+    dec("books_stack", 1, 7),
+    dec("igarape_cesto", 4, 10),
+    dec("dirt", 3, 10),
+  ],
+  // a mesa da família: o prato, a caneca, a jarra, o vaso seco; o aparador com a vela e o copo; a mesinha e o cesto
+  jantar: [
+    dec("food_tray", 4, 2),
+    dec("mug", 5, 2),
+    dec("jarra_canecas", 5, 3),
+    dec("vaso_flores", 4, 4),
+    dec("mug", 5, 5),
+    vela(6, 0),
+    dec("beer_glass", 7, 0),
+    dec("table_small", 1, 5),
+    dec("books_stack", 1, 5),
+    dec("igarape_cesto", 7, 6),
+  ],
+  // a cozinha: o cesto com o pão de um ano, a jarra, o prato e a vela na mesa; a lenha empilhada; os sacos e o cesto
+  cozinha: [
+    dec("cesta_pao", 4, 3),
+    dec("jarra_canecas", 6, 4),
+    dec("food_tray", 4, 4),
+    vela(5, 4),
+    dec("mug", 5, 0),
+    dec("lenha", 9, 0),
+    dec("lenha", 9, 0),
+    dec("lenha", 8, 0),
+    dec("sacas", 1, 4),
+    dec("igarape_cesto", 1, 5),
+  ],
+  banheiro: [dec("beer_glass", 5, 0), dec("trash_bin", 2, 0), dec("puddle", 2, 2)],
+  // o quarto das crianças: vela e livros nos criados-mudos, o vaso na cômoda, o cesto de brinquedo e o banquinho
+  criancas: [
+    vela(4, 0),
+    dec("books_stack", 6, 0),
+    vela(8, 3),
+    dec("vaso_flores", 8, 4),
+    dec("igarape_cesto", 7, 5),
+    dec("stool", 5, 5),
+  ],
+  // o escritório do dono: a caneca fria na mesa, os livros em cima do arquivo, a mesinha da poltrona, a lixeira
+  escritorio: [
+    dec("mug", 5, 3),
+    dec("books_stack", 9, 0),
+    dec("books_stack", 5, 0),
+    dec("table_small", 9, 4),
+    vela(9, 4),
+    dec("trash_can", 7, 2),
+    dec("floor_lamp", 8, 7),
+  ],
+  // o corredor de cima: duas mesinhas encostadas na parede, o baú de roupa de cama e o cesto
+  corredor: [
+    dec("table_small", 0, 5),
+    dec("books_stack", 0, 5),
+    dec("table_small", 0, 9),
+    vela(0, 9),
+    dec("bau_madeira", 4, 4, 6),
+    dec("igarape_cesto", 4, 9),
+  ],
+  principal: [
+    vela(6, 0),
+    vela(1, 4),
+    dec("vaso_flores", 1, 5),
+    dec("table_small", 9, 3),
+    dec("books_stack", 9, 3),
+  ],
+  banheiro2: [dec("mug", 3, 1), dec("trash_bin", 4, 3), dec("stool", 3, 5), dec("puddle", 1, 3)],
+  quarto1: [vela(5, 0), dec("mug", 8, 4), dec("bau_madeira", 3, 5, 4), dec("vaso_flores", 8, 0)],
+  quarto2: [
+    dec("vaso_flores", 5, 0),
+    vela(1, 4),
+    dec("books_stack", 1, 5),
+    dec("igarape_cesto", 7, 5),
+    dec("vaso_flores", 8, 1),
+  ],
+  quarto3: [vela(7, 0), dec("books_stack", 8, 3), dec("bau_madeira", 6, 5, 4), dec("vaso_flores", 2, 5)],
+  // o depósito: a mesa de trabalho no meio, a lenha, o feno, os caixotes empilhados e as sacas do outro lado
+  mantimentos: [
+    dec("table_work", 6, 3),
+    dec("books_stack", 6, 3),
+    vela(7, 3),
+    dec("mug", 8, 4),
+    dec("stool", 7, 5),
+    dec("lenha", 12, 0),
+    dec("lenha", 12, 0),
+    dec("lenha", 13, 0),
+    dec("toco_morador", 14, 0),
+    dec("feno", 2, 7),
+    dec("feno", 2, 7),
+    dec("feno", 3, 7),
+    dec("igarape_cesto", 13, 5),
+    dec("crate_wood", 14, 7),
+    dec("crate_wood", 14, 7),
+    dec("crate_wood", 15, 7),
+    dec("barrel", 16, 7),
+    dec("sacas", 17, 6),
+    dec("sacas", 18, 6),
+    dec("sacas", 18, 5),
+    dec("dirt", 9, 6),
+    dec("dirt", 12, 4),
+    dec("dirt", 5, 6),
+  ],
+  // o escritório do capataz: o livro-caixa e a caneca na mesa, a vela no arquivo, a lixeira, os caixotes e as sacas
+  capataz: [
+    dec("books_stack", 4, 1),
+    dec("mug", 5, 1),
+    vela(8, 0),
+    dec("trash_can", 3, 1),
+    dec("crate_wood", 8, 3),
+    dec("crate_wood", 8, 3),
+    dec("sacas", 1, 5),
+  ],
+  // a sala de utensílios: a jarra, a caneca e o prato na mesa; o engradado, o cocho, o carrinho e a sujeira
+  utensilios: [
+    dec("jarra_canecas", 3, 3),
+    dec("mug", 5, 3),
+    dec("food_tray", 4, 4),
+    vela(5, 4),
+    dec("beer_crate", 1, 5),
+    dec("tina_agua", 2, 5),
+    dec("janitor_cart", 7, 5),
+    dec("dirt", 5, 1),
+    dec("dirt", 2, 2),
+  ],
+  // o celeiro: a lenha e o toco, a mesinha de ferramentas, os sacos e caixotes do depósito, o cocho de cada baia
+  celeiro: [
+    dec("lenha", 7, 1),
+    dec("lenha", 7, 1),
+    dec("toco_morador", 7, 2),
+    dec("lenha", 8, 6),
+    dec("lenha", 8, 6),
+    dec("table_small", 6, 6),
+    dec("jarra_canecas", 6, 6),
+    dec("sacas", 6, 8),
+    dec("sacas", 7, 8),
+    dec("crate_wood", 8, 8),
+    dec("igarape_cesto", 2, 8),
+    dec("crate_wood", 8, 12),
+    dec("crate_wood", 8, 12),
+    dec("barrel", 8, 13),
+    dec("lenha", 7, 10),
+    dec("lenha", 8, 10),
+    dec("tina_agua", 22, 4),
+    dec("feno", 21, 2),
+    dec("tina_agua", 22, 8),
+    dec("sacas", 23, 6),
+    dec("tina_agua", 21, 12),
+    dec("feno", 19, 13),
+    dec("dirt", 12, 6),
+    dec("dirt", 14, 10),
+    dec("dirt", 11, 3),
+  ],
+  // o calabouço: a mesa de trabalho com o microscópio, a bandeja e a caneca, o resto de comida, o lixo e a cera
+  calabouco: [
+    dec("microscope", 4, 11),
+    dec("med_tray", 3, 12),
+    dec("mug", 5, 12),
+    dec("mug", 0, 5),
+    dec("food_tray", 0, 7),
+    dec("lixeira_lanches", 2, 9),
+    dec("wax_pool", 6, 12),
+    dec("wax_pool", 12, 12),
+    dec("dirt", 3, 3),
+    dec("dirt", 12, 2),
+  ],
+  corredorEscuro: [dec("pedras", 2, 6), dec("pedras", 0, 10)],
+  salaSangue: [dec("med_tray", 4, 2)],
+};
+
+/** Enfeites de parede da Casa de Mantimentos e do escritório do capataz (as outras salas já têm os seus). */
+const DECOR_PAREDE = {
+  mantimentos: [
+    ["blade_rack", "r", 0, 5.5, 2.3],
+    ["tool_board", "r", 0, 8.5, 2.3],
+  ] as WallSeed[],
+  capataz: [["notice_board", "r", 0, 2.5, 2.4]] as WallSeed[],
+};
+
 const CENAS_BRUTAS: CenaSpec[] = [
   // ------------------------------------------------------------ fora
   {
@@ -674,7 +922,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     darkness: 0.1,
     ambient: "#f2d9a4",
     particles: ["dust"],
-    floor: FAZENDA_FORA,
+    floor: [...FAZENDA_FORA, ...DECOR.fazenda],
     links: [
       [0, 18, "arredores"],
       [19, 18, "hall"],
@@ -702,7 +950,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
     darkness: 0.12,
     ambient: "#f2d9a4",
     particles: ["dust"],
-    floor: ARREDORES,
+    floor: [...ARREDORES, ...DECOR.arredores],
     links: [[47, 13, "fazenda"]],
     plan: { x: 0, y: 0 },
   },
@@ -738,6 +986,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["plant", 5, 1, 0],
       ["plant", 5, 10, 0],
       ...lamps([3, 5], [3, 9]),
+      ...DECOR.hall,
     ],
     wall: [
       ["quadro_fazenda", "r", 1, 5.5, 2.54],
@@ -790,6 +1039,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       // as lâmpadas apagadas (estado 1), balançando no fio com o vento da janela
       ["ceiling_lamp", 4, 2, 0, undefined, 1],
       ["ceiling_lamp", 8, 2, 0, undefined, 1],
+      ...DECOR.cozinha,
     ],
     wall: [
       ["shelf_wall", "r", 0, 8.5, 3.22],
@@ -827,6 +1077,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["plant", 7, 7, 0],
       ["plant", 1, 7, 0],
       ...lamps([2, 5], [5, 6]),
+      ...DECOR.jantar,
     ],
     wall: [
       ["quadro_fazenda~03", "l", 1, 5.5, 2.54],
@@ -851,6 +1102,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["sink", 5, 0, 4],
       ["plant", 5, 2, 0],
       ...lamps([3, 1]),
+      ...DECOR.banheiro,
     ],
     wall: [["mirror", "r", 0, 5.5, 2.72]],
     links: [[1, 1, "hall"]],
@@ -877,6 +1129,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["comoda", 8, 3, 6],
       ["crate_wood", 8, 5, 0],
       ...lamps([5, 3]),
+      ...DECOR.criancas,
     ],
     wall: [["quadro_fazenda~12", "r", 0, 2.2, 2.63]],
     // os brinquedos espalhados pelo chão: itens que os jogadores podem pegar
@@ -915,6 +1168,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["armchair", 9, 6, 6],
       ["plant", 9, 7, 0],
       ...lamps([5, 4]),
+      ...DECOR.escritorio,
     ],
     wall: [
       ["quadro_fazenda~04", "r", 0, 6.5, 2.54],
@@ -949,6 +1203,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["plant", 0, 11, 0],
       ["plant", 4, 11, 0],
       ...lamps([2, 4]),
+      ...DECOR.corredor,
     ],
     wall: [
       ["quadro_fazenda~05", "l", 0, 4.8, 2.54],
@@ -989,6 +1244,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["armchair", 9, 5, 6],
       ["plant", 9, 6, 0],
       ...lamps([5, 4]),
+      ...DECOR.principal,
     ],
     wall: [
       ["quadro_fazenda~06", "r", 0, 2.2, 2.63],
@@ -1013,6 +1269,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["sink", 3, 1, 4],
       ["plant", 4, 5, 0],
       ...lamps([2, 3]),
+      ...DECOR.banheiro2,
     ],
     wall: [["mirror", "r", 1, 3.5, 2.72]],
     links: [[2, 1, "corredor"]],
@@ -1037,6 +1294,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["desk_lamp", 8, 5, 6],
       ["chair_wood", 7, 4, 2],
       ...lamps([4, 3]),
+      ...DECOR.quarto1,
     ],
     wall: [["quadro_fazenda~07", "r", 0, 3.5, 2.63]],
     links: [[1, 4, "corredor"]],
@@ -1060,6 +1318,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["guarda_roupa", 7, 0, 4],
       ["comoda", 1, 4, 2],
       ...lamps([5, 3]),
+      ...DECOR.quarto2,
     ],
     wall: [["quadro_fazenda~08", "r", 0, 2.5, 2.63]],
     links: [[1, 3, "corredor"]],
@@ -1084,6 +1343,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["desk_lamp", 8, 4, 6],
       ["chair_wood", 7, 3, 2],
       ...lamps([5, 3]),
+      ...DECOR.quarto3,
     ],
     links: [[1, 2, "corredor"]],
     // os doze quadros do casarão: aqui, o bordado da cruz em cima da cama
@@ -1120,8 +1380,9 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ...de("crate_wood", [20, 0], [21, 0], [21, 1], [15, 3], [16, 3], [15, 4]),
       ...de("barrel", [18, 0], [21, 3], [20, 6]),
       ...lamps([5, 3], [16, 3], [10, 5]),
+      ...DECOR.mantimentos,
     ],
-    wall: [],
+    wall: [...DECOR_PAREDE.mantimentos],
     links: [
       [11, 14, "fazenda"],
       [10, 11, "utensilios"],
@@ -1150,8 +1411,9 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["rug_worn", 3, 3, 0],
       ["plant", 8, 5, 0],
       ...lamps([5, 3]),
+      ...DECOR.capataz,
     ],
-    wall: [],
+    wall: [...DECOR_PAREDE.capataz],
     links: [[1, 2, "mantimentos"]],
     plan: { x: 13, y: 9 },
   },
@@ -1177,6 +1439,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["mesa_cozinha", 3, 3, 4],
       ["barrel", 0, 5, 0],
       ...lamps([4, 2]),
+      ...DECOR.utensilios,
     ],
     wall: [["utensilios_parede", "l", 0, 5.0, 2.2]],
     links: [[7, 2, "mantimentos"]],
@@ -1232,6 +1495,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["carroca", 0, 1, 4],
       ["barrel", 8, 1, 0],
       ...lamps([12, 4], [12, 9], [4, 3], [20, 7]),
+      ...DECOR.celeiro,
     ],
     wall: [["tool_board", "r", 1, 6.0, 1.63]],
     links: [
@@ -1340,6 +1604,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["puddle", 3, 8, 0],
       ["puddle", 10, 13, 0],
       ["drain", 7, 13, 0],
+      ...DECOR.calabouco,
     ],
     wall: [
       // as telas em cima dos computadores (antes ficavam atrás dos racks), a câmera da escada e as arandelas
@@ -1389,6 +1654,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["puddle", 0, 4, 0],
       ["puddle", 2, 8, 0],
       ["skull", 2, 13, 4],
+      ...DECOR.corredorEscuro,
     ],
     wall: [
       ["sconce", "l", 0, 2.2, 2.9],
@@ -1461,6 +1727,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["corpo_lencol", 2, 4, 2],
       ["skull", 6, 4, 6],
       ["candles", 6, 0, 0],
+      ...DECOR.salaSangue,
     ],
     wall: [
       ["chains_wall", "r", 0, 2.5, 1.63],
