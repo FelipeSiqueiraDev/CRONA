@@ -446,8 +446,9 @@ export class Trilha {
     this.gVento?.gain.setTargetAtTime(this.nivelVento(), ac.currentTime, 1.2);
   }
 
+  /** a chuva por baixo da música, não por cima (o Felipe, 14/10: "tá beeeem alta"; era 0,16 e 0,11) */
   private nivelChuva() {
-    return this.clima === 'tempestade' ? 0.16 : this.clima === 'chuva' ? 0.11 : 0;
+    return this.clima === 'tempestade' ? 0.09 : this.clima === 'chuva' ? 0.06 : 0;
   }
   private nivelVento() {
     return this.clima === 'neve' || this.clima === 'neblina' || this.clima === 'tempestade' ? 0.07 : 0;
