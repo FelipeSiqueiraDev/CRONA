@@ -222,20 +222,12 @@ const shell = tableMode || fichaMode
       settings: () => settings.toggle(),
       fx: () => fx.toggle(),
       help: () => help.toggle(),
-      logout: () => {
-        if (sessaoConta) return sairDaConta();
-        net.close();
-        sessionEnded();
-      },
+      logout: () => sairDaConta(),
     });
 const params = new URLSearchParams(location.search);
 const table = tableMode ? new TableScreen(app) : null;
 const telaFicha = fichaMode
-  ? new TelaFicha(app, () => {
-      if (sessaoConta) return sairDaConta();
-      net.close();
-      sessionEnded();
-    })
+  ? new TelaFicha(app, () => sairDaConta())
   : null;
 /** os jogos do bar em que o mestre joga por um NPC (janelinha no canto) */
 const barMestre = shell ? new BarJogos(app, 'mestre') : null;
@@ -286,13 +278,21 @@ function mostrarEntrada(aviso?: string) {
   entrada.mostrar(aviso);
 }
 
-/** Sair da conta neste aparelho: a sessão deixa de valer e volta a tela de entrada. */
+/**
+ * Desconectar: a sessão da conta deixa de valer e o aparelho esquece as chaves guardadas (a do link do mestre e a
+ * da ficha), senão a recarga entrava direto de novo. Volta para a tela de entrada (o Felipe, 14/10: aparecia o
+ * aviso "Sessão encerrada" para quem tinha entrado pelo link, e não a tela de login).
+ */
 function sairDaConta() {
   if (sessaoConta) net.send({ t: 'contaSair', sessao: sessaoConta.sessao });
   esquecerSessao();
   esquecerChaveFicha();
+  forgetGmKey();
   sessaoConta = null;
-  setTimeout(() => location.replace(location.pathname), 250);
+  setTimeout(() => {
+    net.close();
+    location.replace(location.pathname);
+  }, 250);
 }
 
 const temChaveFicha = () => {
@@ -312,17 +312,6 @@ if (pedeConta && sessaoConta?.papel === 'jogador') {
 } else if (pedeConta && !sessaoConta) mostrarEntrada();
 else login();
 let loginTries = 0;
-
-/** "Encerrar sessão": desconecta e mostra um aviso para voltar. */
-function sessionEnded() {
-  document.body.append(
-    h(
-      'div',
-      { class: 'replaced' },
-      h('div', { class: 'paper' }, h('h3', { class: 'paper-title' }, 'SESSÃO ENCERRADA'), h('p', null, 'O tabuleiro fica salvo para a próxima sessão.'), h('button', { class: 'pbtn primary', onclick: () => location.reload() }, 'Voltar para a sessão')),
-    ),
-  );
-}
 
 let reconnecting = false;
 let wantRoom: number | null = null;

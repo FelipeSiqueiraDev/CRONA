@@ -422,7 +422,7 @@ export class Shell {
           icone: 'sair',
           titulo: 'Encerrar sessão',
           sair: true,
-          onclick: async () => (await askNote('ENCERRAR SESSÃO?', 'O tabuleiro fecha nesta aba. Tudo fica salvo para a próxima sessão.', 'Encerrar', true)) && act.logout(),
+          onclick: async () => (await askNote('ENCERRAR SESSÃO?', 'Volta para a tela de entrada. Tudo fica salvo para a próxima sessão.', 'Encerrar', true)) && act.logout(),
         },
       ],
     });
