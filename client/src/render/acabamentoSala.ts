@@ -139,16 +139,25 @@ export function acabarBordas(ctx: CanvasRenderingContext2D, map: RoomMap, tiles:
             continue;
           }
           if (r === 1) pinta(ctx, px, py, '255,238,210', 0.1);
-          // as fiadas: uma junta deitada a cada 8 px e juntas de pé alternadas
-          if (r % 8 === 7) pinta(ctx, px, py, '0,0,0', 0.35);
-          else if ((c + ((r >> 3) & 1) * 8) % 16 === 0) pinta(ctx, px, py, '0,0,0', 0.28);
+          // as fiadas: blocos de 16 x 8 px, cada fiada deslocada meio bloco, cada bloco com o seu tom (mais claro ou
+          // mais escuro), a junta de 1 px escura e um fio de luz no alto de cada bloco
+          const fiada = r >> 3;
+          const bloco = Math.floor((c + (fiada & 1) * 8) / 16);
+          const tom = hash(bloco, fiada, x * 3 + (f === 'x' ? 1 : 2), y);
+          const junta = r % 8 === 7 || (c + (fiada & 1) * 8) % 16 === 15;
+          if (junta) pinta(ctx, px, py, '4,3,12', 0.5);
+          else {
+            if (tom > 0.55) pinta(ctx, px, py, '255,238,210', (tom - 0.55) * 0.3);
+            else pinta(ctx, px, py, '4,3,12', (0.55 - tom) * 0.3);
+            if (r % 8 === 0) pinta(ctx, px, py, '255,238,210', 0.1);
+          }
           // o escuro frio embaixo
           const rr = r / R;
-          pinta(ctx, px, py, FRIO, 0.4 * rr * rr);
+          pinta(ctx, px, py, FRIO, 0.45 * rr * rr);
           // e o desgaste da pedra
           const q = hash(c, r, x, y);
-          if (q < 0.07) pinta(ctx, px, py, '0,0,0', 0.18);
-          else if (q > 0.97) pinta(ctx, px, py, '255,238,210', 0.06);
+          if (q < 0.06) pinta(ctx, px, py, '0,0,0', 0.2);
+          else if (q > 0.975) pinta(ctx, px, py, '255,238,210', 0.07);
         }
       }
     }

@@ -200,7 +200,7 @@ export { TICK_MS as TOKEN_STEP_MS } from './constants';
 
 // mesma geometria do desenho do tabuleiro (client/src/render/roomStatic.ts)
 const WALL_T = 0.3;
-const FLOOR_THICK = 0.35;
+const FLOOR_THICK = 0.55;
 
 /** Projeção isométrica em pixels de mundo (casa 64×32, 32 px por unidade de altura). */
 export function isoPx(x: number, y: number, z: number): [number, number] {

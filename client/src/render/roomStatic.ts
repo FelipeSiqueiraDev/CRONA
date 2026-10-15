@@ -56,8 +56,8 @@ const AGUA = '#2f5f72';
 export function floorLook(style: FloorStyle | undefined): FloorLook {
   return FLOORS[style ?? 'pedra'] ?? FLOORS.pedra;
 }
-const EDGE_VOID_X = '#1d1916';
-const EDGE_VOID_Y = '#27221e';
+const EDGE_VOID_X = '#2a2a3d';
+const EDGE_VOID_Y = '#3a3b52';
 const EDGE_STEP_X = '#342e29';
 const EDGE_STEP_Y = '#403933';
 const WALL_L = '#302a26';
@@ -65,7 +65,7 @@ const WALL_R = '#3b342f';
 const WALL_TOP = '#5a524b';
 const WALL_CAP = '#221d1a';
 const T = 0.3;
-const FLOOR_THICK = 0.35;
+const FLOOR_THICK = 0.55;
 /** altura do vão da porta: 2,1 m (Z_PER_M) */
 const DOOR_H = 2.1 * Z_PER_M;
 /**
