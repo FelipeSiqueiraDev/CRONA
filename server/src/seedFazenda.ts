@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 35;
+export const FAZENDA_REV = 36;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -953,7 +953,8 @@ const CENAS_BRUTAS: CenaSpec[] = [
     wall: [
       ["quadro_fazenda~05", "l", 0, 4.8, 2.54],
       // o rio na neblina, com a ponte, mais no fundo do corredor
-      ["quadro_fazenda~11", "l", 0, 8.5, 2.54],
+      // (em 9,0, não 8,5: ali a moldura entrava no vão da porta do quarto 2, em y = 7)
+      ["quadro_fazenda~11", "l", 0, 9.0, 2.54],
       ["clock", "r", 1, 0.8, 3.45],
     ],
     links: [

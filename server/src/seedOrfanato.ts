@@ -24,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * orfanato é refeito no lugar (e a cena que saiu da montagem é apagada).
  */
 export const ORFANATO = "Orfanato · ";
-export const ORFANATO_REV = 18;
+export const ORFANATO_REV = 19;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -240,7 +240,8 @@ const CENAS: CenaSpec[] = [
       ["fuligem_parede", "r", 0, 3.0, 0.3],
       ["window_barred", "r", 0, 6.0, 2.2],
       ["fuligem_parede", "r", 0, 9.0, 0.3],
-      ["tally_marks", "r", 0, 11.5, 2.6],
+      // os riscos ao lado da porta do refeitório (em 11,5 ficavam em cima dela)
+      ["tally_marks", "r", 0, 12.6, 2.6],
     ],
     links: [
       [SALAO_W - 2, 15, "dormitorios"],

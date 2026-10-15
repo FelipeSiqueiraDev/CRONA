@@ -58,6 +58,12 @@ export interface FurniDef {
    * cima. Quem pisa na casa fica na primeira; o mestre põe a peça na de cima ("Na cama de cima").
    */
   leitos?: number[];
+  /**
+   * Cama: a peça deita nela (14/10, o Felipe: "mando o personagem ir pra cama e nada acontece"). Toda cama (kind bed,
+   * hospital_bed, beliche) ganha `sit` e `deita` sozinha, em FURNI_LIST: anda até ela e deita no colchão, a cabeça para
+   * a cabeceira (o fundo da peça).
+   */
+  deita?: boolean;
   stackable?: boolean;
   /** decalque plano (sangue, sigilo, papéis) */
   flat?: boolean;
@@ -492,7 +498,15 @@ export const toUnits = (m: number) => Math.round(m * Z_PER_M * 100) / 100;
 /** A pilha do que alguém largou no chão (docs/REGRAS.md, Mochila). */
 export const PILHA_CHAO = 'pilha_chao';
 
-export const FURNI_LIST: FurniDef[] = FURNI_METERS.map((d) => ({ ...d, height: toUnits(d.height), ...(d.leitos ? { leitos: d.leitos.map(toUnits) } : {}) }));
+/** Os tipos de móvel em que a peça deita (a cama, o leito do hospital, o beliche). */
+const CAMAS = new Set(['bed', 'hospital_bed', 'beliche']);
+
+export const FURNI_LIST: FurniDef[] = FURNI_METERS.map((d) => ({
+  ...d,
+  height: toUnits(d.height),
+  ...(d.leitos ? { leitos: d.leitos.map(toUnits) } : {}),
+  ...(CAMAS.has(d.kind) ? { sit: true, deita: true } : {}),
+}));
 
 export const FURNI: Record<string, FurniDef> = Object.fromEntries(FURNI_LIST.map((d) => [d.id, d]));
 export const WALL_FURNI: Record<string, WallFurniDef> = Object.fromEntries(WALL_FURNI_LIST.map((d) => [d.id, d]));

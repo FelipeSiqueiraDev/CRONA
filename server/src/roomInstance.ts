@@ -654,6 +654,29 @@ export class RoomInstance {
     return false;
   }
 
+  /**
+   * Mandar para a cama (14/10, o Felipe: "mando o personagem ir pra cama e nada acontece"): a casa da cabeceira ou a
+   * encostada na parede é cercada pela própria cama e não tem caminho. Clicar em qualquer casa da cama leva para a
+   * casa dela que dá para alcançar, a de caminho mais curto. Fora da cama, a casa clicada mesmo.
+   */
+  private casaDaCama(u: RoomUser, x: number, y: number): { x: number; y: number } {
+    const it = this.map.sitItem(x, y);
+    if (!it || !getFurni(it.defId)?.deita) return { x, y };
+    const livre = (cx: number, cy: number) => this.occupied(cx, cy, u.client.id);
+    const clicada = findPath(this.map, u, { x, y }, livre);
+    if (clicada?.length) return { x, y };
+    let melhor: { x: number; y: number } | null = null;
+    let menor = Infinity;
+    for (const c of this.map.tilesFor(it.defId, it.x, it.y, it.rot)) {
+      const cam = findPath(this.map, u, c, livre);
+      if (cam?.length && cam.length < menor) {
+        menor = cam.length;
+        melhor = { x: c.x, y: c.y };
+      }
+    }
+    return melhor ?? { x, y };
+  }
+
   private settle(u: RoomUser) {
     // fora do beliche, ninguém fica "na cama de cima"
     if (u.meta?.alto && !this.map.leitoItem(u.x, u.y)) u.meta.alto = false;
@@ -1381,7 +1404,7 @@ export class RoomInstance {
     }
     switch (m.t) {
       case 'tokenWalk':
-        if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) (u.goal = { x: m.x, y: m.y }), delete u.encara, delete u.aoChegar;
+        if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) (u.goal = this.casaDaCama(u, m.x, m.y)), delete u.encara, delete u.aoChegar;
         break;
       case 'tokenFace':
         if (isInt(m.dir)) this.faceToken(-u.client.id, m.dir);

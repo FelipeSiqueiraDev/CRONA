@@ -2203,8 +2203,12 @@ export class RoomView {
       const passos = lp && p.moving ? passosFor(lp, estado, u.dir) : null;
       // folha sem pose de sentar: fica de pé no chão, junto do assento (não em cima dele)
       // (na van não: lá o agente senta no banco mesmo sem a pose de sentar, com as pernas escondidas)
-      const standBy = !!sp && u.sit === 1 && !p.moving && !framesFor(sp.lc, u.dir, 'sit') && !this.info?.viagem;
-      const seated = u.sit === 1 && !standBy;
+      // na cama: deitada no colchão, no meio da cama, a cabeça para a cabeceira (14/10)
+      const camaIt = u.sit === 1 && !p.moving ? map.sitItem(u.x, u.y) : undefined;
+      const camaDef = camaIt ? getFurni(camaIt.defId) : undefined;
+      const naCama = camaIt && camaDef?.deita ? { it: camaIt, def: camaDef } : null;
+      const standBy = !!sp && u.sit === 1 && !p.moving && !naCama && !framesFor(sp.lc, u.dir, 'sit') && !this.info?.viagem;
+      const seated = u.sit === 1 && !standBy && !naCama;
       const baseZ = standBy ? (map.floorHeight(u.x, u.y) ?? p.z) : p.z;
       const half = seated ? 0.25 : 0.3;
       const [sx, sy] = iso(cx, cy, baseZ);
@@ -2216,7 +2220,7 @@ export class RoomView {
       const wave = u.waveUntil > now;
       // ~1,75 m de altura para a ordem de desenho
       const box: WBox = { x0: cx - half, x1: cx + half, y0: cy - half, y1: cy + half, z0: baseZ, z1: baseZ + ALTURA_PESSOA };
-      const deitada = !!marcas?.deitadas.has(u.id);
+      const deitada = !!marcas?.deitadas.has(u.id) || !!naCama;
       // embaixo da mesa vazada: abaixada, escondida atrás dela (a mesa vem por cima na ordem de desenho)
       const sob = !deitada && map.sobMesa(Math.round(p.x), Math.round(p.y));
       const fy = u.sit === 2 ? sy - 8 : sy;
@@ -2387,7 +2391,24 @@ export class RoomView {
             ctx.translate(-sx, -fy);
           }
           // caída ou inconsciente: a peça deita no chão, com a cabeça para a esquerda
-          if (deitada) {
+          if (deitada && naCama) {
+            // na cama: o corpo ao longo da cama, os pés no pé e a cabeça na cabeceira (o fundo da peça: a frente é o
+            // giro), centrado no colchão
+            const fp = footprint(naCama.def, naCama.it.rot);
+            const [mx, my] = iso(naCama.it.x + fp.sx / 2, naCama.it.y + fp.sy / 2, p.z);
+            const [hx, hy] = naCama.it.rot === 4 ? [0, -1] : naCama.it.rot === 0 ? [0, 1] : naCama.it.rot === 2 ? [-1, 0] : [1, 0];
+            const vx = (hx - hy) * 2;
+            const vy = hx + hy;
+            const n = Math.hypot(vx, vy);
+            const ux = vx / n;
+            const uy = vy / n;
+            const meio = HE * 0.46;
+            ctx.save();
+            ctx.translate(mx - ux * meio, my - uy * meio - 3);
+            ctx.rotate(Math.atan2(uy, ux) + Math.PI / 2);
+            ctx.scale(0.92, 1);
+            ctx.translate(-sx, -fy);
+          } else if (deitada) {
             ctx.save();
             ctx.translate(sx + H * 0.42, fy - 4);
             ctx.rotate(-Math.PI / 2 + 0.12);
