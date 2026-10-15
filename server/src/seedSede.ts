@@ -221,10 +221,10 @@ const ROOMS: RoomSpec[] = [
       ['ashtray', 5, 3, 0],
       ['beer_glass', 6, 3, 0],
       ['jarra_canecas', 7, 3, 0],
-      ['flasks', 9, 3, 0],
+      ['mug', 9, 3, 0],
       ['computer_old', 12, 3, 0],
       // no fundo, em cima dos frigobares, do chope e do engradado
-      ['flasks', 5, 0, 4],
+      ['mug', 5, 0, 4],
       ['beer_glass', 6, 0, 4],
       ['beer_glass', 12, 0, 0],
       ['mug', 13, 0, 0],
@@ -236,7 +236,7 @@ const ROOMS: RoomSpec[] = [
       ['crate_wood', 15, 1, 4],
       // o aparador e o armarinho da direita
       ['beer_glass', 20, 8, 0],
-      ['flasks', 20, 9, 0],
+      ['mug', 20, 9, 0],
       ['candles', 20, 13, 0],
       // o canto da poltrona: a mesinha de apoio e, na parede da esquerda, a luminária de chão
       ['table_small', 2, 5, 0],
