@@ -14,7 +14,7 @@
  * sprite e só respira: o quadro de olhos fechados da folha é outra pose (o
  * corpo balança entre os quadros), e trocar por ele faria o boneco tremer.
  */
-import type { CharacterDef } from '@crona/shared';
+import type { CharacterDef, DirKey } from '@crona/shared';
 import { breathKeyframes, breathMode, type BreathMode } from '../render/portrait';
 import { framesFor, sprites } from '../render/sprites';
 import { existeArte } from './icons';
@@ -22,6 +22,8 @@ import { reduced } from './motion';
 
 /** Direções da folha na ordem das setas (frente-esquerda, frente-direita, costas...). */
 const GIRO = [4, 2, 0, 6];
+/** O giro com as poses do tabuleiro (uma imagem por direção): de frente, e dando a volta. */
+const GIRO_POSES: DirKey[] = ['s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se'];
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
 interface Fonte {
@@ -53,6 +55,9 @@ function pastaDe(def: CharacterDef | undefined): string | null {
   const m = def ? /^\/arte\/personagens\/([a-z0-9-]+)\//.exec(def.sheet) : null;
   return m ? `/arte/personagens/${m[1]}` : null;
 }
+
+/** A pintura do corpo (corpo.png) na ficha: desligada, a ficha usa o boneco do tabuleiro. */
+const CORPO_PINTADO = false;
 
 export class CorpoView {
   readonly el: HTMLElement;
@@ -108,7 +113,8 @@ export class CorpoView {
   }
 
   girar(passo: number) {
-    this.giro = (this.giro + passo + GIRO.length) % GIRO.length;
+    const n = this.def?.poses ? GIRO_POSES.length : GIRO.length;
+    this.giro = (this.giro + passo + n) % n;
     void this.carregar();
   }
 
@@ -124,20 +130,28 @@ export class CorpoView {
     const def = this.def;
     const pasta = pastaDe(def);
     let fonte: Fonte | null = null;
-    // 1) arte própria do corpo (de frente)
-    if (pasta && this.giro === 0 && (await existeArte(`${pasta}/corpo.png`))) {
+    // a pintura própria do corpo (corpo.png, do Códex, com cabeção) saiu (o Felipe, 14/10): a ficha mostra o mesmo
+    // boneco que anda no tabuleiro, ampliado sem borrar; os retratos pintados das cartas continuam
+    if (CORPO_PINTADO && pasta && this.giro === 0 && (await existeArte(`${pasta}/corpo.png`))) {
       const aberto = await imagem(`${pasta}/corpo.png`);
       if (aberto) {
         const fechado = (await existeArte(`${pasta}/corpo-olhos-fechados.png`)) ? await imagem(`${pasta}/corpo-olhos-fechados.png`) : null;
         fonte = { aberto, fechado, cintura: 0.47, pixel: false };
       }
     }
-    // 2) a folha de sprite
+    // o boneco do tabuleiro: a pose da direção (tabuleiro-32bits, a mesma arte que anda na cena)
+    const poses = def?.poses?.desarmado ?? Object.values(def?.poses ?? {})[0];
+    if (!fonte && poses) {
+      const url = poses[GIRO_POSES[this.giro % GIRO_POSES.length]] ?? poses.s ?? poses.se ?? Object.values(poses)[0];
+      const aberto = url ? await imagem(url) : null;
+      if (aberto) fonte = { aberto, fechado: null, cintura: 0.46, pixel: true };
+    }
+    // sem as poses: a folha de sprite antiga
     if (!fonte && def) {
       const lc = sprites.get(def.id)?.lc ?? (await sprites.load(def));
       const frames = lc ? framesFor(lc, GIRO[this.giro]) : null;
       const f0 = frames?.[0];
-      if (f0) fonte = { aberto: f0.canvas, fechado: null, cintura: 0.46, pixel: false };
+      if (f0) fonte = { aberto: f0.canvas, fechado: null, cintura: 0.46, pixel: true };
     }
     if (pedido !== this.pedido || !this.vivo) return;
     this.fonte = fonte;
