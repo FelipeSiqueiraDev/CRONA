@@ -56,6 +56,7 @@ import { brushize, paperize, textures, unpaint } from './paperArt';
 import { sfx } from './sfx';
 import { CombateScreen } from './combate';
 import { FichasScreen } from './fichas';
+import { iconePixel } from './iconesPixel';
 import { AbaItens } from './itens';
 import { infoItem, romano, textoRef } from './fichaRegras';
 import { doCatalogoPeloNome, listaDoCatalogo } from './catalogoItens';
@@ -1071,13 +1072,13 @@ export class Shell {
           'button',
           { class: 'rp-foto', title: here ? 'Comandar' : `Ir para ${this.sceneName(p.roomId)}`, onclick: () => this.pickCard(id) },
           portraitCanvas(p.look, 96, { dir: 2, armed: !!p.armed, hurt: vitalConditions(p.vitals).machucado }),
-          // armado sem retrato armado na arte: o sinal da arma no canto
-          p.armed && !sprites.def(p.look?.charId)?.portraits?.armado ? h('span', { class: 'rp-arma', title: 'Arma na mão' }, ic(this.app.session.session?.characters.find((c) => c.id === -id)?.arma === 'fogo' ? 'pistola' : 'espada')) : null,
         ),
         h(
           'div',
           { class: 'rp-info' },
-          h('div', { class: 'rp-nome' }, h('b', null, p.name), h('button', { class: 'rp-mais', type: 'button', title: 'Mais', 'aria-label': `Mais de ${p.name}`, onclick: () => (sfx.click(), here ? this.app.view.select({ kind: 'user', id }) : this.pickCard(id)) }, ic('reticencias'))),
+          // armado: a arma logo depois do nome, em pixel (14/10: antes era um selo por cima do retrato; depois do nome
+          // para o nome não mudar de lugar quando o agente saca ou guarda)
+          h('div', { class: 'rp-nome' }, h('b', null, p.name, p.armed ? this.armaNaMao(id) : null), h('button', { class: 'rp-mais', type: 'button', title: 'Mais', 'aria-label': `Mais de ${p.name}`, onclick: () => (sfx.click(), here ? this.app.view.select({ kind: 'user', id }) : this.pickCard(id)) }, ic('reticencias'))),
           h('div', { class: 'rp-local' }, ic('pino'), h('span', null, this.sceneName(p.roomId) || '—')),
           this.vitaisCarta(id, p),
         ),
@@ -1085,6 +1086,16 @@ export class Shell {
       paperize(card, { seed: 300 + id, tone: '#dfd0b3', burn: 0.7, torn: 0.8, stains: 0.6, pad: 12 });
       body.append(card);
     }
+  }
+
+  /** O ícone da arma na mão do agente (espada ou pistola), para ir logo depois do nome. */
+  private armaNaMao(id: number): HTMLElement {
+    const fogo = this.app.session.session?.characters.find((c) => c.id === -id)?.arma === 'fogo';
+    const el = iconePixel(fogo ? 'pistola' : 'espada', 'rp-arma');
+    el.title = fogo ? 'Arma de fogo na mão' : 'Arma na mão';
+    el.setAttribute('role', 'img');
+    el.setAttribute('aria-label', el.title);
+    return el;
   }
 
   /** Fichas do servidor: a aba ITENS mostra a mochila de cada agente por elas. */

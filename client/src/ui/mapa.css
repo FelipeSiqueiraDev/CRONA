@@ -634,23 +634,19 @@
   object-fit: cover;
   background: #1c1a18;
 }
-.rp-arma {
-  position: absolute;
-  right: 0.2rem;
-  bottom: 0.2rem;
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: 0.1rem solid #c9a45a;
-  border-radius: 50%;
-  background: #1c1a18;
-  color: #eadfc4;
-  box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.5);
+/* a arma na mão, em pixel, logo depois do nome, na linha do texto (iconesPixel.ts) */
+.rp-nome .rp-arma {
+  display: inline-block;
+  width: 1.9rem;
+  height: 1.9rem;
+  margin-left: 0.6rem;
+  vertical-align: -0.4rem;
+  filter: drop-shadow(0 0.15rem 0 rgba(0, 0, 0, 0.6));
 }
-.rp-arma .ic {
-  width: 1.2rem;
-  height: 1.2rem;
+.rp-nome .rp-arma svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .rp-nome {
   grid-area: nome;
