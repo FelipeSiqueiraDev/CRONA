@@ -197,7 +197,7 @@ export class Particles {
     if (L.intensity <= 0.05) return;
     // o tamanho pelo fogo: a fogueira e a lareira grandes, a tocha média, a vela pequena
     const tipo = L.radius >= 200 ? FOGO_GRANDE : L.radius >= 140 ? FOGO_MEDIO : FOGO_PEQUENO;
-    const chave = `${L.seed ?? 0}:${Math.round(L.x)}:${Math.round(L.y)}`;
+    const chave = `${L.seed ?? 0}:${Math.round(L.x)}:${Math.round(L.y)}:${tipo.w}`;
     let f = this.fogos.get(chave);
     if (!f || f.tipo !== tipo) {
       f = novoFogo(tipo);

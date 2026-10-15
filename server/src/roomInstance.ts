@@ -1405,10 +1405,14 @@ export class RoomInstance {
     switch (m.t) {
       case 'tokenWalk':
         if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) {
+          const antes = u.aoChegar;
           delete u.aoChegar;
           const daPorta = this.andarAteAPorta(u, { x: m.x, y: m.y });
-          if (typeof daPorta === 'string') this.err(c, daPorta);
-          else if (daPorta === undefined) (u.goal = this.casaDaCama(u, m.x, m.y)), delete u.encara;
+          if (typeof daPorta === 'string') {
+            // a porta recusou (trancada, quebrada, sem caminho): a peça segue o que fazia
+            u.aoChegar = antes;
+            this.err(c, daPorta);
+          } else if (daPorta === undefined) (u.goal = this.casaDaCama(u, m.x, m.y)), delete u.encara;
         }
         break;
       case 'tokenFace':
@@ -2049,6 +2053,7 @@ export class RoomInstance {
     const porta = alvo ? this.portaFechadaEm(alvo.x, alvo.y) : undefined;
     if (!porta) return undefined;
     const def = getFurni(porta.defId)!;
+    if (porta.quebrado && !def.portal) return 'A porta está quebrada.';
     if (def.portal && porta.state === 2) return 'A porta está trancada.';
     const livre = (x: number, y: number) => this.occupied(x, y, u.client.id);
     // a casa da frente: a vizinha da porta de caminho mais curto
@@ -2066,6 +2071,8 @@ export class RoomInstance {
     if (!t || menor === Infinity) return 'Não há caminho até a porta.';
     const frente = t;
     const passar = () => {
+      // o caminho pode ter fechado no meio (o tick também chama isto): só abre quem chegou na frente da porta
+      if (u.x !== frente.x || u.y !== frente.y) return;
       const atual = this.map.getItem(porta.id);
       if (!atual) return;
       if (atual.state !== def.openState) {
@@ -2096,7 +2103,8 @@ export class RoomInstance {
   private portaFechadaEm(x: number, y: number): FloorItem | undefined {
     return this.map.itemsAt(x, y).find((it) => {
       const def = getFurni(it.defId);
-      return def?.openState !== undefined && it.state !== def.openState;
+      // só porta (a passagem, a de cela, a de quarto, as `*door*`): a cortina do leito e a escotilha não abrem por clique
+      return def?.openState !== undefined && it.state !== def.openState && (!!def.portal || /door|porta/i.test(def.kind));
     });
   }
 

@@ -44,7 +44,7 @@ async function trabalhar() {
       if (fs.existsSync(destino) && fs.statSync(destino).mtimeMs >= fs.statSync(p).mtimeMs) continue;
       // pixel art (as ilhas do mapa, a viagem em pixel e, desde 15/10, os móveis, os bonecos e as texturas do tabuleiro): sem
       // perda, senão os blocos borram (10/10)
-      const pixel = /[\\/](mapa|pixel|mobiliario|personagens|texturas)[\\/]/i.test(p);
+      const pixel = /(^|[\\/])(mapa|pixel|mobiliario|personagens|texturas)[\\/]/i.test(path.relative(raiz, p));
       const buf = await sharp(p).webp(pixel ? { lossless: true, effort: 5 } : { quality: 88, alphaQuality: 100, effort: 4 }).toBuffer();
       const tam = fs.statSync(p).size;
       antes += tam;
@@ -61,6 +61,12 @@ async function trabalhar() {
       }
     } catch (e) {
       console.warn(`[webp] pulei ${p}: ${e.message}`);
+      // sem cópia nova, a velha não fica (senão o servidor manda a arte de antes)
+      try {
+        fs.unlinkSync(copia(p));
+      } catch {
+        /* não havia cópia */
+      }
     }
   }
 }
