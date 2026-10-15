@@ -39,6 +39,8 @@ export interface MinimapaHost {
   marcarVisita(roomId: number | null, visitada: boolean): void;
   /** o personagem é de um agente (tem ficha): só esses vão no "Levar o grupo" */
   ehAgente(charId: number | null | undefined): boolean;
+  /** o mestre nomeia (ou renomeia, ou apaga com texto vazio) uma área do terreno: x e y em casas */
+  nomearArea(cena: number, x: number, y: number, texto: string, id?: number): void;
 }
 
 type Vista = { tipo: 'terreno'; cena: number } | { tipo: 'predio'; predio: string; andar: string };
@@ -379,6 +381,7 @@ export class Minimapa {
         return;
       }
       if (e.button !== 0 || this.anim) return;
+      if (e.altKey) return this.nomearAqui(at(e));
       const a = acerta(at(e));
       if (!a) return;
       if (a.tipo === 'predio') {
@@ -476,6 +479,27 @@ export class Minimapa {
       );
     }
     this.renderCartao();
+  }
+
+  /** onde o terreno está desenhado (para o Alt + clique achar a casa) */
+  private geoTerreno: { cena: number; ox: number; oy: number; S: number } | null = null;
+
+  /** as áreas nomeadas pelo mestre neste terreno (notas da campanha, `andar` = t<cena>) */
+  private areasNomeadas(cena: number) {
+    return (this.host.campanha()?.notas ?? []).filter((n) => n.andar === `t${cena}`);
+  }
+
+  /** Alt + clique no terreno: nomeia a área (perto de um nome já posto, renomeia; vazio apaga). */
+  private nomearAqui(p: { x: number; y: number }) {
+    const g = this.geoTerreno;
+    if (!g || !this.host.mestre() || this.vista?.tipo !== 'terreno' || this.vista.cena !== g.cena) return;
+    const x = Math.round(((p.x - g.ox) / g.S) * 10) / 10;
+    const y = Math.round(((p.y - g.oy) / g.S) * 10) / 10;
+    const perto = this.areasNomeadas(g.cena).find((n) => Math.hypot(n.x - x, n.y - y) < 3);
+    const texto = window.prompt(perto ? 'Novo nome da área (vazio apaga):' : 'Nome da área:', perto?.texto ?? '');
+    if (texto === null) return;
+    if (!perto && !texto.trim()) return;
+    this.host.nomearArea(g.cena, x, y, texto.trim(), perto?.id);
   }
 
   /** Mostra a cena no minimapa (o nível dela) com o cartão aberto. */
@@ -964,6 +988,9 @@ export class Minimapa {
     // mapa pequeno: só o que se clica (os nomes do chão, a rosa e a régua ficam para o mapa maior)
     const enfeites = W >= 260;
     if (enfeites) for (const r of rotulosDoChao(s, raw)) textoSolto(ctx, r.txt, O.x + r.x * S, O.y + r.y * S);
+    // as áreas que o mestre nomeou (Alt + clique no chão), por cima dos nomes achados sozinhos
+    this.geoTerreno = { cena: s.id, ox: O.x, oy: O.y, S };
+    for (const n of this.areasNomeadas(s.id)) textoSolto(ctx, n.texto, O.x + n.x * S, O.y + n.y * S);
     // as saídas para outro terreno (a porteira para os arredores)
     for (const sd of lt?.saidas ?? []) {
       const nome = l.terrenos.find((t) => t.cena === sd.para)?.nome ?? '';
