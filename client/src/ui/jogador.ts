@@ -256,11 +256,17 @@ export class TelaJogador {
     this.renderNav();
   }
 
-  /** O que a aba aberta mostra: a ficha (sem os pontos atuais, que só a aba Ataques usa, pelo PE) e a aba. */
+  /**
+   * O que a aba aberta mostra: a ficha (sem os pontos atuais) e a aba. Dos pontos, só a aba Ataques usa o PE, e só
+   * para dizer se cada jogada pronta cabe no PE de agora: entra na chave o resultado disso, não o número (assim
+   * mexer no PV, PE ou SAN não refaz a aba, a não ser que uma jogada passe a caber ou deixe de caber).
+   */
   private chaveConteudo(): string {
     const fs = this.fs;
     if (!fs) return '';
-    return JSON.stringify([this.aba, { ...fs, atualizadaEm: 0, atual: this.aba === 'ataques' ? fs.atual : 0 }]);
+    const c = this.calc;
+    const jogadas = this.aba === 'ataques' && c ? (fs.jogadas ?? []).map((j) => regras.conferirJogada(fs.ficha, c, j, { peAtual: this.vit().pe }).erros) : 0;
+    return JSON.stringify([this.aba, { ...fs, atualizadaEm: 0, atual: 0 }, jogadas]);
   }
 
   private vit() {
