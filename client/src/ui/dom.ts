@@ -18,6 +18,42 @@ export function h<K extends keyof HTMLElementTagNameMap>(tag: K, props?: Props |
   return el;
 }
 
+/**
+ * Troca os filhos de `el` sem piscar as imagens (14/10, o Felipe: "a piscadinha"): uma <img> nova, mesmo com a
+ * figura no cache, aparece vazia por um quadro até decodificar. Aqui cada imagem nova que já estava na tela (o mesmo
+ * endereço, já carregada) é trocada pela antiga, que só ganha os atributos da nova.
+ */
+export function trocarFilhos(el: Element, ...nodes: (Node | string)[]) {
+  const velhas = new Map<string, HTMLImageElement[]>();
+  for (const img of el.querySelectorAll('img')) {
+    const src = img.getAttribute('src');
+    if (!src || !img.complete || !img.naturalWidth) continue;
+    const lista = velhas.get(src);
+    if (lista) lista.push(img);
+    else velhas.set(src, [img]);
+  }
+  const reaproveitar = (nova: HTMLImageElement): HTMLImageElement => {
+    const src = nova.getAttribute('src');
+    const velha = src ? velhas.get(src)?.shift() : undefined;
+    if (!velha) return nova;
+    for (const a of [...velha.attributes]) if (a.name !== 'src' && !nova.hasAttribute(a.name)) velha.removeAttribute(a.name);
+    for (const a of [...nova.attributes]) if (a.name !== 'src' && velha.getAttribute(a.name) !== a.value) velha.setAttribute(a.name, a.value);
+    return velha;
+  };
+  const prontos = velhas.size
+    ? nodes.map((n) => {
+        if (!(n instanceof Element)) return n;
+        if (n instanceof HTMLImageElement) return reaproveitar(n);
+        for (const nova of n.querySelectorAll('img')) {
+          const velha = reaproveitar(nova);
+          if (velha !== nova) nova.replaceWith(velha);
+        }
+        return n;
+      })
+    : nodes;
+  el.replaceChildren(...prontos);
+}
+
 export function clear(el: HTMLElement) {
   while (el.firstChild) el.removeChild(el.firstChild);
   return el;

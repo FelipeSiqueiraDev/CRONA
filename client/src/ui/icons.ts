@@ -168,17 +168,36 @@ export async function existeArte(url: string): Promise<boolean> {
  * Arte no lugar do ícone: a imagem (ex.: /arte/icones/pv.png) quando ela
  * existe; senão, o ícone de linha. A tela funciona antes da arte chegar.
  */
+/**
+ * As artes que já carregaram uma vez nesta página. A arte nova começa no ícone de linha e troca para a imagem quando
+ * ela carrega: na primeira vez é o certo, mas redesenhar um painel refazia isso em todos os ícones, e cada um piscava
+ * (ícone de linha, depois a arte). A que já carregou entra direto, decodificada na hora (14/10, "a piscadinha").
+ */
+const prontas = new Set<string>();
+
+/** Põe a arte em `box`: na hora, se já carregou antes; senão, quando carregar (até lá fica o que está na caixa). */
+function porArte(box: HTMLElement, url: string) {
+  const img = new Image();
+  img.alt = '';
+  if (prontas.has(url)) {
+    img.decoding = 'sync';
+    img.src = url;
+    box.replaceChildren(img);
+    return;
+  }
+  img.decoding = 'async';
+  img.onload = () => {
+    prontas.add(url);
+    box.replaceChildren(img);
+  };
+  img.src = url;
+}
+
 export function arte(url: string, nome: NomeIcone | string, cls = 'ic'): HTMLElement {
   const box = document.createElement('span');
   box.className = `arte-ic ${cls}`;
   box.replaceChildren(ic(nome, cls));
-  const trocar = () => {
-    const img = new Image();
-    img.alt = '';
-    img.decoding = 'async';
-    img.onload = () => box.replaceChildren(img);
-    img.src = url;
-  };
+  const trocar = () => porArte(box, url);
   if (lista) {
     if (lista.has(url)) trocar();
   } else void arteCarregada.then((l) => l.has(url) && trocar());
@@ -195,12 +214,7 @@ export function arteOu(urls: string[], reserva: Element, cls = 'ic'): HTMLElemen
   box.replaceChildren(reserva);
   const usar = (l: Set<string>) => {
     const url = urls.find((u) => l.has(u));
-    if (!url) return;
-    const img = new Image();
-    img.alt = '';
-    img.decoding = 'async';
-    img.onload = () => box.replaceChildren(img);
-    img.src = url;
+    if (url) porArte(box, url);
   };
   if (lista) usar(lista);
   else void arteCarregada.then(usar);

@@ -25,7 +25,7 @@ import { breathMode, livePortrait } from '../render/portrait';
 import { sprites } from '../render/sprites';
 import type { App } from './app';
 import { arteDoItem } from './arteItem';
-import { h, toast } from './dom';
+import { h, toast, trocarFilhos } from './dom';
 import { botao, confirmar, escolher, janela } from './fichaModal';
 import { opcoesMelhoria } from './melhorias';
 import { infoItem, NOME_ELEMENTO, textoRef } from './fichaRegras';
@@ -435,7 +435,7 @@ export class TelaJogador {
     this.conteudo.dataset.aba = this.aba;
     this.el.dataset.aba = this.aba;
     this.chaves.conteudo = this.chaveConteudo();
-    this.conteudo.replaceChildren(...partes[this.aba]());
+    trocarFilhos(this.conteudo, ...partes[this.aba]());
     if (this.focarDetalhe) {
       this.focarDetalhe = false;
       const det = this.conteudo.querySelector('.jg-det');

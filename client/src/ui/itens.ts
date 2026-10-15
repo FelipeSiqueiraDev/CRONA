@@ -12,7 +12,7 @@ import { portraitCanvas } from '../render/portrait';
 import type { App } from './app';
 import { arteDoItem } from './arteItem';
 import { abrirRequisicao } from './requisicao';
-import { h } from './dom';
+import { h, trocarFilhos } from './dom';
 import { infoItem, romano, textoRef } from './fichaRegras';
 import { arteOu, ic } from './icons';
 import { lootIcon } from './lootIcons';
@@ -92,7 +92,8 @@ export class AbaItens {
       });
     if (!ags.some((a) => a.p.id === this.agenteId)) this.agenteId = ags.find((a) => a.f)?.p.id ?? ags[0]?.p.id ?? null;
     const ag = ags.find((a) => a.p.id === this.agenteId);
-    el.replaceChildren(
+    trocarFilhos(
+      el,
       h('h3', { class: 'insp-cab it-cab' }, 'MOCHILA / ITENS'),
       h(
         'div',
