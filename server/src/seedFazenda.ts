@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 33;
+export const FAZENDA_REV = 35;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -534,7 +534,7 @@ const aoArLivre = (t: Terreno, porta: Door) => ({
 
 /**
  * A Casa de Mantimentos por dentro: a sala grande do depósito (22 × 8) e, na frente, o corredor da entrada (2 casas)
- * entre o escritório do capataz e o quarto das ferramentas, com o vão da porta na parede da frente.
+ * entre o escritório do capataz e a sala de utensílios, com o vão da porta na parede da frente.
  */
 function mantimentosPlan(): { heightmap: string; door: Door } {
   const rows: string[] = [];
@@ -1093,7 +1093,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
   {
     // As salas de dentro da Casa de Mantimentos são cenas próprias, de parede inteira (o Felipe, 14/10: "essas paredes
     // são completas, pra ir até essas salas é outra cena"). O galpão abre para a frente da tela: a porta de fora fica
-    // na parede da frente (a que não aparece), no fim do corredor entre o escritório e o quarto das ferramentas.
+    // na parede da frente (a que não aparece), no fim do corredor entre o escritório e a sala de utensílios.
     key: "mantimentos",
     name: FAZENDA + "Casa de Mantimentos",
     description:
@@ -1643,6 +1643,12 @@ export function seedFazenda(db: Database) {
  * mesmas peças (numa casa livre se a antiga sumiu), mesmo registro. Móveis e planta voltam
  * aos da montagem nova.
  */
+/** Cenas que já existiram e saíram da montagem: [nome, chave da cena que fica com as peças delas]. */
+const SAIRAM: [string, string][] = [
+  // 14/10: o quarto das ferramentas não existe (o Felipe); a sala do outro lado do corredor é a de utensílios
+  ["Quarto das Ferramentas", "mantimentos"],
+];
+
 export function rebuildFazenda(db: Database): boolean {
   if ((db.fazendaRev ?? 0) >= FAZENDA_REV) return false;
   const existing = db.rooms.filter((r) => r.name.startsWith(FAZENDA));
@@ -1669,6 +1675,17 @@ export function rebuildFazenda(db: Database): boolean {
     built.set(spec.key, room);
   }
   ligar(built);
+  // as cenas que saíram da montagem (só as desta lista: a van e as cenas que o mestre criou ficam): as peças que
+  // estavam nelas vão para a cena que ficou no lugar, e a cena é apagada
+  for (const [nome, para] of SAIRAM) {
+    const velha = db.rooms.find((r) => r.name === FAZENDA + nome);
+    const destino = built.get(para);
+    if (!velha || !destino || velha === destino) continue;
+    for (const t of velha.tokens ?? []) (destino.tokens ??= []).push({ ...t, x: destino.door.x, y: destino.door.y });
+    for (const r of db.rooms) for (const it of r.items) if (it.link === velha.id) it.link = destino.id;
+    db.rooms.splice(db.rooms.indexOf(velha), 1);
+    for (const c of Object.values(db.campaigns ?? {})) delete c.layout[velha.id];
+  }
   for (const room of built.values()) {
     const map = new RoomMap(room.heightmap, room.door, room.items);
     const taken = new Set<string>();
