@@ -1243,7 +1243,8 @@ export const SEDE_BUILDERS: Record<string, Builder> = {
           }
         }),
       ],
-      lightIf(on, { u: 1, v: 1, z: 0.6, radius: 230, color: WARM, intensity: 1, flicker: 0.22, kind: 'fire' }),
+      // o fogo nasce em cima das lenhas (0,2 m), no meio da roda: mais alto, a chama animada flutuava atrás das pedras
+      lightIf(on, { u: 1, v: 1, z: 0.2, radius: 230, color: WARM, intensity: 1, flicker: 0.22, kind: 'fire' }),
     );
   },
 

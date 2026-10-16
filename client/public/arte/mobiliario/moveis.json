@@ -6809,7 +6809,8 @@
         }
       }
     },
-    "vooKv": 48.0
+    "vooKv": 48.0,
+    "folgaFogo": 0.02
   },
   "desk_lamp": {
     "escala": 1,
@@ -8279,7 +8280,8 @@
         }
       }
     },
-    "vooKv": 48.0
+    "vooKv": 48.0,
+    "folgaFogo": 0.02
   },
   "skull": {
     "escala": 1,
@@ -16521,7 +16523,8 @@
         }
       }
     },
-    "vooKv": 48.0
+    "vooKv": 48.0,
+    "folgaFogo": 0.05
   },
   "guarda_roupa": {
     "escala": 1,
@@ -27587,7 +27590,8 @@
         }
       }
     },
-    "vooKv": 48.0
+    "vooKv": 48.0,
+    "folgaFogo": 0.3
   },
   "gancho_carne": {
     "escala": 1,
@@ -29176,7 +29180,8 @@
         }
       }
     },
-    "vooKv": 48.0
+    "vooKv": 48.0,
+    "folgaFogo": 0.02
   },
   "cristal_vermelho": {
     "escala": 1,
@@ -30886,7 +30891,8 @@
         }
       }
     },
-    "vooKv": 48.0
+    "vooKv": 48.0,
+    "folgaFogo": 0.25
   },
   "bigorna": {
     "escala": 1,
@@ -31930,7 +31936,8 @@
         }
       }
     },
-    "vooKv": 48.0
+    "vooKv": 48.0,
+    "folgaFogo": 0.12
   },
   "cama_palha": {
     "escala": 1,
@@ -35729,7 +35736,8 @@
         }
       }
     },
-    "vooKv": 48.0
+    "vooKv": 48.0,
+    "folgaFogo": 0.02
   },
   "banco_praca": {
     "escala": 1,

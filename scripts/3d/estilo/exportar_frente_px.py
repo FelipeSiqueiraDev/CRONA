@@ -21,6 +21,10 @@ import exportar_px as EX
 from exportar_px import ITENS
 
 FOGO_PADRAO = ['poste_ferro', 'poste_cristal', 'lareira', 'fogueira', 'forja', 'fogao_lenha', 'candles', 'candelabra']
+# quanto mais perto da câmera que a chama (metros) um pixel tem de estar para tapá-la (`folgaFogo` no moveis.json): na
+# lanterna, a grade fininha na frente da chama tapa logo; na fogueira e na forja, a chama queima no meio das lenhas e
+# só o anel de pedras da frente a tapa
+FOLGA = {'fogueira': 0.3, 'forja': 0.25, 'lareira': 0.12, 'fogao_lenha': 0.05}
 
 
 def gravar_prof(prof, arq):
@@ -39,6 +43,7 @@ def exportar(nome, lista):
         print(nome, ': sem arte no moveis.json (rode o exportar_px.py antes)')
         return
     pasta = os.path.join(EX.DESTINO, nome)
+    ent['folgaFogo'] = FOLGA.get(nome, 0.02)
     for estado, des in [('0', desenho)] + list((estados or {}).items()):
         alvo = ent['giros'] if estado == '0' else ent.get('estados', {}).get(estado, {}).get('giros')
         if not alvo:

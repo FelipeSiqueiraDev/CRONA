@@ -162,6 +162,10 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
 - No jogo: depois da chama, `frenteDoFogo` (furniArte.ts) repõe só os pixels do móvel que estão mais perto da câmera
   que a chama (a profundidade dela sai do `mundo` da luz, `Light.movel` = o item dono). Visto no poste de cristal de
   Santo Berço e na fogueira do Orfanato.
+- **Revisto (16/10, o Felipe: "tá errado", a chama da fogueira atrás das pedras):** cada móvel tem a folga dele
+  (`folgaFogo`: 0,3 m na fogueira, para só o anel de pedras da frente tapar, e não as lenhas); a luz da fogueira desceu
+  de 0,6 para 0,2 m (`furniSede.ts`, a chama nascia acima e atrás das lenhas); e a chama de um móvel entra na ordem logo
+  depois dele (na quina da frente), senão a repintura das faces da frente do próprio móvel a cobria.
 - **Ao mudar um móvel com fogo:** `exportar_px.py` e depois `exportar_frente_px.py <móvel>`.
 - **Falta:** as tochas e arandelas de parede (itens de parede) ainda têm a chama por cima; um móvel novo com fogo entra
   na lista `FOGO_PADRAO` do script.

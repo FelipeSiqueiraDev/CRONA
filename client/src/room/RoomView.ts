@@ -2521,15 +2521,20 @@ export class RoomView {
         const dono = L.movel !== undefined ? map.getItem(L.movel) : undefined;
         const defDono = dono ? getFurni(dono.defId) : undefined;
         let profChama: number | null = null;
+        let caixa: WBox = { x0: mx - 0.3, x1: mx + 0.3, y0: my - 0.3, y1: my + 0.3, z0: mz - 0.35, z1: mz + 0.25 };
         if (dono && defDono) {
           const fp = footprint(defDono, dono.rot);
           const dx = (mx - (dono.x + fp.sx)) * M_POR_CASA;
           const dy = (my - (dono.y + fp.sy)) * M_POR_CASA;
           const dz = (mz - (dono.z ?? 0)) / Z_PER_M;
           profChama = (dx + dy) * Math.cos(Math.PI / 6) * Math.SQRT1_2 + dz * 0.5;
+          // na ordem, a chama vem logo depois do móvel dono (na quina da frente dele, depois das faces da frente que ele
+          // repinta): o que é dele e fica na frente volta por cima (frenteDoFogo); quem está na frente do móvel a tapa
+          const q = 0.03;
+          caixa = { x0: dono.x + fp.sx + q, x1: dono.x + fp.sx + 2 * q, y0: dono.y + fp.sy + q, y1: dono.y + fp.sy + 2 * q, z0: dono.z ?? 0, z1: mz };
         }
         drawables.push({
-          box: { x0: mx - 0.3, x1: mx + 0.3, y0: my - 0.3, y1: my + 0.3, z0: mz - 0.35, z1: mz + 0.25 },
+          box: caixa,
           sx0: L.x - 40,
           sx1: L.x + 40,
           sy0: L.y - 60,

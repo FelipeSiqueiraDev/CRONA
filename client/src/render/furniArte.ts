@@ -94,6 +94,8 @@ export interface MovelArte {
    * tamanho de verdade dele
    */
   cima?: VistaDeCima;
+  /** quanto mais perto da câmera que a chama (metros) um pixel tem de estar para tapá-la (exportar_frente_px.py) */
+  folgaFogo?: number;
   /** os estados que mudam o que se vê de cima (o baú aberto) */
   cimaEstados?: Record<string, VistaDeCima>;
   /**
@@ -610,7 +612,7 @@ function misturar(a: string, b: string, t: number): string {
 }
 
 /** Onde cada móvel com fogo foi desenhado no quadro (pela semente, o id do item), para frenteDoFogo. */
-const frentes = new Map<number, { img: HTMLCanvasElement; prof: string; x: number; y: number; w: number; h: number; m: DOMMatrix }>();
+const frentes = new Map<number, { img: HTMLCanvasElement; prof: string; folga: number; x: number; y: number; w: number; h: number; m: DOMMatrix }>();
 /** A profundidade de cada pixel (metros na direção da câmera, a partir da âncora; NaN fora do móvel), por arquivo. */
 const profs = new Map<string, { w: number; h: number; d: Float32Array } | 'carregando' | 'erro'>();
 /** A frente já recortada (por arquivo e pela profundidade da chama, em passos de 2,5 cm). */
@@ -650,7 +652,7 @@ export function frenteDoFogo(ctx: CanvasRenderingContext2D, seed: number, profCh
   if (!f) return;
   const pf = profundidade(f.prof);
   if (!pf || pf.w !== f.img.width || pf.h !== f.img.height) return;
-  const chave = `${f.prof}|${Math.round(profChama * 40)}`;
+  const chave = `${f.prof}|${f.folga}|${Math.round(profChama * 40)}`;
   let rec = recortes.get(chave);
   if (!rec) {
     rec = document.createElement('canvas');
@@ -659,8 +661,9 @@ export function frenteDoFogo(ctx: CanvasRenderingContext2D, seed: number, profCh
     const g = rec.getContext('2d')!;
     g.drawImage(f.img, 0, 0);
     const dados = g.getImageData(0, 0, pf.w, pf.h);
-    // só o que está na frente da chama (com 2 cm de folga: a própria chama assada não tapa a animada)
-    for (let i = 0; i < pf.d.length; i++) if (!(pf.d[i] > profChama + 0.02)) dados.data[i * 4 + 3] = 0;
+    // só o que está bem na frente da chama: a folga do móvel (a grade da lanterna tapa logo; na fogueira, só o anel de
+    // pedras da frente, e não as lenhas onde ela queima)
+    for (let i = 0; i < pf.d.length; i++) if (!(pf.d[i] > profChama + f.folga)) dados.data[i * 4 + 3] = 0;
     g.putImageData(dados, 0, 0);
     if (recortes.size > 200) recortes.clear();
     recortes.set(chave, rec);
@@ -737,7 +740,7 @@ function desenharGiro(
   }
   const r = pintar(p, imgs.normal, vista.ax, vista.ay, a.escala, centro, aj, !!a.pixel);
   // o móvel com fogo guarda onde foi desenhado: a chama animada vem depois e a frente dele volta por cima dela
-  if (vista.prof && p.seed !== undefined) frentes.set(p.seed, { img: imgs.normal, prof: vista.prof, x: r.x, y: r.y, w: r.w, h: r.h, m: p.ctx.getTransform() });
+  if (vista.prof && p.seed !== undefined) frentes.set(p.seed, { img: imgs.normal, prof: vista.prof, folga: a.folgaFogo ?? 0.02, x: r.x, y: r.y, w: r.w, h: r.h, m: p.ctx.getTransform() });
   if (a.brilho && luz && p.power > 0.1) brilhar(p, r, k, a.brilho.x, a.brilho.y, a.brilho.r, luz, 0.55 * p.power * falha);
   const tela = a.tela?.giros[g as '4'];
   if (tela && corTela && p.power > 0.1) brilhar(p, r, k, tela.x, tela.y, tela.r, corTela, (a.tela?.forca ?? 0.42) * forcaTela * p.power);
