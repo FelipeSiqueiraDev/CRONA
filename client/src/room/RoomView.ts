@@ -58,12 +58,14 @@ import { cmp, sortDrawables, type Drawable } from '../render/sort';
 import {
   bonecoDir,
   bonecoFor,
+  DESLIZA_COM_A_POSE,
   drawBoneco,
   drawPose,
   drawSombraProjetada,
   drawSprite,
   framesFor,
   passosFor,
+  PASSOS_POR_CASA,
   poseFor,
   quadroDaFolha,
   quadroDaPose,
@@ -118,6 +120,9 @@ export interface ClientUser {
   piscaEm?: number;
   piscaAte?: number;
   piscaDupla?: number;
+  /** a poeira que o passo levanta (posição na tela do mundo, que fica onde o pé pisou) e o último passo que a levantou */
+  poeira?: { x: number; y: number; t0: number }[];
+  passoPoeira?: number;
 }
 
 /**
@@ -175,6 +180,30 @@ function desenharPegada(ctx: CanvasRenderingContext2D, x: number, y: number, rx:
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(c, Math.round(x - rx), Math.round(y - ry));
   ctx.restore();
+}
+
+/** Quanto dura o sopro de poeira de um passo. */
+const POEIRA_MS = 520;
+
+/**
+ * O sopro de poeira de um passo, em pixel duro como o tabuleiro: uns grãos que se abrem pelo chão (na elipse do
+ * piso, 2:1), sobem um tico e somem. `t` vai de 0 a 1; `semente` sorteia os grãos (cada passo o seu).
+ */
+function desenharPoeira(ctx: CanvasRenderingContext2D, x: number, y: number, t: number, semente: number) {
+  const a = 0.34 * (1 - t) * (1 - t);
+  if (a < 0.01) return;
+  const abre = 3 + 9 * (1 - (1 - t) * (1 - t));
+  ctx.fillStyle = `rgba(196,182,160,${a.toFixed(3)})`;
+  let s = Math.floor(semente) % 9973;
+  const sorte = () => ((s = (s * 7919 + 13) % 9973) / 9973);
+  for (let i = 0; i < 7; i++) {
+    const ang = (i / 7) * Math.PI * 2 + sorte() * 0.8;
+    const r = abre * (0.55 + 0.45 * sorte());
+    const px = Math.round(x + Math.cos(ang) * r);
+    const py = Math.round(y + Math.sin(ang) * r * 0.5 - t * 3 * sorte());
+    const tam = sorte() < 0.4 ? 2 : 1;
+    ctx.fillRect(px, py, tam, 1);
+  }
 }
 
 /**
@@ -2237,7 +2266,8 @@ export class RoomView {
       let bq: SpriteFrame | null = null;
       let bpes: PeQuadro[] | null = null;
       // o boneco filmado em 3D (andar completo, parado respirando, sentado, dançando): vale no lugar de tudo
-      const bc = cdef ? sprites.boneco(cdef) : null;
+      // (16/10: com as poses paradas das 8 direções, a peça desliza com elas; o boneco animado fica guardado)
+      const bc = cdef && !(lp && DESLIZA_COM_A_POSE) ? sprites.boneco(cdef) : null;
       const bdir = bc ? bonecoDir(bc, estado, u.dir) : null;
       const sentadoReal = !!bdir && (u.sit === 1 || u.sit === 2) && !!bdir.sentado;
       if (bdir) {
@@ -2259,7 +2289,7 @@ export class RoomView {
         bpes = bdir[nome].clipe.pes[i] ?? null;
       }
       // o boneco animado de antes (montado da pose parada): respira, pisca e anda
-      const la = !bdir && cdef ? sprites.anim(cdef) : null;
+      const la = !bdir && !(lp && DESLIZA_COM_A_POSE) && cdef ? sprites.anim(cdef) : null;
       const bd = la ? bonecoFor(la, estado, u.dir) : null;
       if (la && bd) {
         const fechado = bd.info.olhos && piscando(u, now);
@@ -2316,12 +2346,30 @@ export class RoomView {
       // (o boneco e a pose com a âncora no meio dos pés já vêm assim)
       const afunda = !bq && (pf || sp) && !quadro?.noMeioDosPes && !deitada && !seated && u.sit !== 2 ? Math.round(H * 0.05) : 0;
       const { luz, sombras } = luzesDaPeca(luzesCena, sx, sy - HE * 0.5, cx, cy);
+      // a poeira do passo (deslizando com a pose parada): um sopro no chão a cada contato, embaixo do pé que pisou
+      // (um de cada vez), e que fica onde ele pisou enquanto a peça segue
+      if (p.moving && pf && !bq && !passos && !u.flutua && !seated && !deitada) {
+        const passo = Math.floor(casas * PASSOS_POR_CASA);
+        if (u.passoPoeira === undefined) u.passoPoeira = passo;
+        else if (passo !== u.passoPoeira) {
+          u.passoPoeira = passo;
+          const pes = quadro?.pesPontos;
+          const [dx, dy] = pes?.length ? pes[passo % pes.length] : [0, 0];
+          (u.poeira ??= []).push({ x: sx + dx * ESCALA_ARTE_PESSOA, y: sy + (afunda + dy) * ESCALA_ARTE_PESSOA, t0: now });
+        }
+      } else delete u.passoPoeira;
+      if (u.poeira) {
+        u.poeira = u.poeira.filter((d) => now - d.t0 < POEIRA_MS);
+        if (!u.poeira.length) delete u.poeira;
+      }
+      const poeira = u.poeira;
       if (!seated)
         chaoPecas.push(() => {
           if (clip) {
             ctx.save();
             ctx.clip(door!.path, 'evenodd');
           }
+          if (poeira) for (const d of poeira) desenharPoeira(ctx, d.x, d.y, (now - d.t0) / POEIRA_MS, d.t0);
           {
             // a sombra e o anel na escala da pessoa, a partir dos pés
             ctx.save();
@@ -2491,7 +2539,7 @@ export class RoomView {
             ctx.translate(-sx, -fy);
           }
           if (bq) drawBoneco(ctx, bq, sx, fy + dance, sPose === 'sit' && !sentadoReal, 1, luz);
-          else if (pf) drawPose(ctx, pf, sx, fy + afunda + dance, now, sPose, 1, passos, andando, luz);
+          else if (pf) drawPose(ctx, pf, sx, fy + afunda + dance, now, sPose, 1, passos, andando, luz, casas);
           else if (sp) drawSprite(ctx, sp.def, sp.lc, u.dir, sx, fy + afunda + dance, now, u.phase, sPose, 1, luz);
           else
             drawPixelAvatar(ctx, u.look, sx, fy, u.dir, u.headDir, {

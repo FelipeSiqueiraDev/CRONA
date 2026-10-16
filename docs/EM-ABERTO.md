@@ -152,6 +152,25 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10, noite (branch `claude/tatica-codigo`): os agentes deslizam com a pose parada
+
+- O andar animado não ficou bom por nenhum caminho que temos (PixelLab acabou; o 3D do Blender perde rosto e cabelo; o
+  andar desenhado pelo Códex treme entre os quadros; o boneco de papel em peças deu aberração). O Felipe escolheu
+  (caminho 1): **jogar já com os bonecos parados das 8 direções** (`tabuleiro-32bits/idle-desarmado-<dir>.png`, os 4
+  agentes e os 2 Existidos) e o andar fica para depois (artista pago em real, ou um mês de PixelLab). Aprovado no vídeo:
+  "tá ótimo na real".
+- `DESLIZA_COM_A_POSE` (`client/src/render/sprites.ts`): com as poses, o boneco animado (`tabuleiro-3d/anim.json`, o
+  do PixelLab e os de 64 px do Códex) e o `anim.json` antigo ficam guardados e não são usados. Para voltar a um andar
+  desenhado, é só desligar a constante.
+- Andando: a peça desliza de casa em casa virada para onde vai (o giro de quando vira parada continua); o corpo abaixa
+  1,6% da altura no contato a partir dos pés (os pés não saem do chão, a sombra fica no piso; `contatoDoPasso`, 1,3
+  passo por casa, sobe rápido e desce devagar como no MOVIMENTO.md); cada contato solta um sopro de poeira em pixel
+  embaixo do pé que pisou, um de cada vez (`desenharPoeira` em `RoomView.ts`, 520 ms).
+- **Falta conferir:** sentar e deitar com a pose parada (sem o boneco não há pose sentada: a peça fica de pé junto do
+  assento, como antes de 15/10); a mesa (tablet); o jogo de verdade (`npm run crona`) ainda não foi atualizado.
+- Testes do andar (fora do git): `F:\Dhellow\CRONA\arte\PERSONAGENS-ANIMACAO\trabalho\codex-andar\` (o andar do Códex,
+  o boneco de papel e os scripts `andar_desenhado.py` e `boneco_papel.py`); o teste 3D está na pasta do SpriteForge.
+
 ## Feito em 16/10 (branch `claude/tatica-codigo`): a mesinha (`table_small`) em pixel
 
 - O Felipe: "essa marrom do lado da sinuca e na frente da poltrona, nada a ver". A `table_small` não tinha arte e saía

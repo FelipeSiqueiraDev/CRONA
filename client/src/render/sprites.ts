@@ -805,10 +805,45 @@ export function drawPose(
   passos?: SpriteFrame[] | null,
   andando = 0,
   luz?: LuzNaPeca | null,
+  casas?: number,
 ): number {
+  // deslizando com a pose parada (16/10): o passo vai no corpo, que abaixa no contato a partir dos pés (os pés ficam
+  // no chão, a cabeça desce e sobe), em vez de a imagem inteira pular
+  if (pose === 'walk' && !passos?.length && casas !== undefined) {
+    const k = 1 - ABAIXA_NO_PASSO * contatoDoPasso(casas);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(1, k);
+    ctx.translate(-x, -y);
+    paint(ctx, f, x, y, false, alpha, luz);
+    ctx.restore();
+    return f.h;
+  }
   const { q, dy } = quadroDaPose(f, t, pose, passos, andando);
   paint(ctx, q, x, y + dy, pose === 'sit', alpha, luz);
   return q.h;
+}
+
+/**
+ * A peça desliza com a pose parada enquanto não chega um andar bem desenhado (16/10, o Felipe: "vamos de 1, devagar,
+ * de maneira boa"): o boneco animado (tabuleiro-3d, anim.json) fica guardado e as 8 direções paradas andam.
+ */
+export const DESLIZA_COM_A_POSE = true;
+
+/** Passos por casa de 0,75 m: a passada de uma pessoa de 1,80 m tem uns 0,6 m. */
+export const PASSOS_POR_CASA = 1.3;
+
+/** No contato do pé, o corpo abaixa esta fração da altura (uns 1,5 px na pessoa do tabuleiro). */
+const ABAIXA_NO_PASSO = 0.016;
+
+/**
+ * O quanto o passo está no contato (1 = o pé da frente acabou de pisar, o corpo no mais baixo; 0 = a passagem, no mais
+ * alto), pelas casas andadas. Sobe rápido depois do contato e desce devagar até o próximo (MOVIMENTO.md).
+ */
+export function contatoDoPasso(casas: number): number {
+  const u = (((casas * PASSOS_POR_CASA) % 1) + 1) % 1;
+  const v = u < 0.3 ? 1 - u / 0.3 : (u - 0.3) / 0.7;
+  return v * v * (3 - 2 * v);
 }
 
 /** O quadro da pose que vai à tela agora (andando, o do passo) e quanto ele sobe. */
