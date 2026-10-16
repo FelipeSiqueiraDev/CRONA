@@ -152,6 +152,20 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10 (branch `claude/tatica-codigo`): o fogo dentro do móvel
+
+- O Felipe: "o fogo só tá por cima do poste e não dentro dele". A chama animada (`particles.chama`) entra na ordem de
+  desenho num ponto dentro do móvel, então saía por cima dele inteiro (a grade da lanterna, as pedras da fogueira).
+- `scripts/3d/estilo/exportar_frente_px.py` grava a profundidade de cada pixel dos móveis com fogo (`prof-<giro>.png`,
+  16 bits em R e G, metros a partir da âncora; `prof` em cada vista do `moveis.json`): poste_ferro, poste_cristal,
+  lareira, fogueira, forja, fogao_lenha, candles, candelabra. O `exportar_px.py` guarda a profundidade em `ULTIMA`.
+- No jogo: depois da chama, `frenteDoFogo` (furniArte.ts) repõe só os pixels do móvel que estão mais perto da câmera
+  que a chama (a profundidade dela sai do `mundo` da luz, `Light.movel` = o item dono). Visto no poste de cristal de
+  Santo Berço e na fogueira do Orfanato.
+- **Ao mudar um móvel com fogo:** `exportar_px.py` e depois `exportar_frente_px.py <móvel>`.
+- **Falta:** as tochas e arandelas de parede (itens de parede) ainda têm a chama por cima; um móvel novo com fogo entra
+  na lista `FOGO_PADRAO` do script.
+
 ## Feito em 16/10 (branch `claude/tatica-codigo`): o Tepes pelo PixelLab
 
 - O Felipe escolheu o Tepes feito no PixelLab (API v2, `create-character-v3`, referência: a vista `desarmado-s` reduzida

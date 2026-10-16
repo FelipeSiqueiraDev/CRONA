@@ -34,7 +34,7 @@ import {
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
-import { desenharParedeComArte, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
+import { desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
 import { furniVisual } from '../render/furniFloor';
 import { drawWallFurni, wallLights } from '../render/furniWall';
 import { drawHintGlyph, drawHintIcon } from '../render/hints';
@@ -2099,7 +2099,7 @@ export class RoomView {
       for (const L of vis.lights) {
         const [lx, ly] = m.p(L.u, L.v, L.z);
         const [wx, wy] = m.xy(L.u, L.v);
-        lights.push({ x: lx, y: ly, radius: L.radius, color: L.color, intensity: L.intensity * alpha, flicker: L.flicker, kind: L.kind, seed: it.id, mundo: [wx, wy, m.oz + L.z * Z_PER_M] });
+        lights.push({ x: lx, y: ly, radius: L.radius, color: L.color, intensity: L.intensity * alpha, flicker: L.flicker, kind: L.kind, seed: it.id, movel: it.id, mundo: [wx, wy, m.oz + L.z * Z_PER_M] });
       }
       return topZ;
     };
@@ -2516,13 +2516,28 @@ export class RoomView {
         if (L.kind !== 'fire' || !L.mundo) continue;
         L.chamaNaOrdem = true;
         const [mx, my, mz] = L.mundo;
+        // a profundidade da chama a partir da quina da frente do móvel dela (na direção da câmera, em metros), para
+        // a frente do móvel (a grade da lanterna, a boca da lareira) voltar por cima da chama
+        const dono = L.movel !== undefined ? map.getItem(L.movel) : undefined;
+        const defDono = dono ? getFurni(dono.defId) : undefined;
+        let profChama: number | null = null;
+        if (dono && defDono) {
+          const fp = footprint(defDono, dono.rot);
+          const dx = (mx - (dono.x + fp.sx)) * M_POR_CASA;
+          const dy = (my - (dono.y + fp.sy)) * M_POR_CASA;
+          const dz = (mz - (dono.z ?? 0)) / Z_PER_M;
+          profChama = (dx + dy) * Math.cos(Math.PI / 6) * Math.SQRT1_2 + dz * 0.5;
+        }
         drawables.push({
           box: { x0: mx - 0.3, x1: mx + 0.3, y0: my - 0.3, y1: my + 0.3, z0: mz - 0.35, z1: mz + 0.25 },
           sx0: L.x - 40,
           sx1: L.x + 40,
           sy0: L.y - 60,
           sy1: L.y + 30,
-          draw: () => this.particles.chama(ctx, L, now / 1000, 'chama'),
+          draw: () => {
+            this.particles.chama(ctx, L, now / 1000, 'chama');
+            if (profChama !== null && L.movel !== undefined) frenteDoFogo(ctx, L.movel, profChama);
+          },
         });
       }
 

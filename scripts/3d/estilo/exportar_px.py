@@ -138,6 +138,9 @@ def _viz(a, dy, dx, fill):
     return out
 
 
+ULTIMA = {}   # o que o último desenhar() viu além da imagem (a profundidade de cada pixel)
+
+
 def desenhar(nome, rot, desenho, forca=0.0):
     """Um móvel num giro: a imagem RGBA (1 px = 1 px do tabuleiro), a âncora (a quina da frente da base) e a medida."""
     W, D, (ox, oy), _, _ = ITENS[nome]
@@ -223,6 +226,10 @@ def desenhar(nome, rot, desenho, forca=0.0):
     ys, xs = np.nonzero(img[..., 3] > 0)
     a0, a1, b0, b1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
     img = img[b0:b1, a0:a1]
+    # a profundidade de cada pixel do móvel (metros na direção da câmera, maior = mais perto), contada da quina da frente
+    # da pegada no chão (a âncora): o exportar_frente_px.py grava, e o jogo põe na frente da chama o que está na frente
+    canto = np.array([ox + fx, oy + fy, 0.0]) @ motor.VISTA
+    ULTIMA['prof'] = np.where(movel, prof - canto, np.nan)[b0:b1, a0:a1]
     qx, qy = tela(np.array([ox + fx, oy + fy, 0.0]))
     # a medida de verdade (na orientação da cena, giro 4): a caixa do que faz sombra, no ponto da cena
     pts = np.concatenate([Pw for Pw, _ in c.polis] + [np.array([C - R, C + R]) for C, R, _ in c.elips])

@@ -17,6 +17,8 @@ export interface Light {
   mundo?: [number, number, number];
   /** a chama em pixel desta luz de fogo vai desenhada na ordem de profundidade (RoomView): quem fica na frente dela a tapa */
   chamaNaOrdem?: boolean;
+  /** o móvel de chão de onde a luz sai (o id do item): a frente dele volta por cima da chama (frenteDoFogo) */
+  movel?: number;
   /** a janela de onde a luz entra (o feixe que cai no chão; particles.ts): a parede, o plano, o meio, a largura e a altura */
   feixe?: { wall: 'l' | 'r'; plane: number; pos: number; larg: number; z0: number; z1: number; chao: number };
 }

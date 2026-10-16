@@ -6664,22 +6664,26 @@
       "4": {
         "arquivo": "candelabra/giro-4.png",
         "ax": 27.0,
-        "ay": 103.0
+        "ay": 103.0,
+        "prof": "candelabra/prof-4.png"
       },
       "2": {
         "arquivo": "candelabra/giro-2.png",
         "ax": 27.0,
-        "ay": 103.0
+        "ay": 103.0,
+        "prof": "candelabra/prof-2.png"
       },
       "0": {
         "arquivo": "candelabra/giro-0.png",
         "ax": 27.0,
-        "ay": 103.0
+        "ay": 103.0,
+        "prof": "candelabra/prof-0.png"
       },
       "6": {
         "arquivo": "candelabra/giro-6.png",
         "ax": 27.0,
-        "ay": 103.0
+        "ay": 103.0,
+        "prof": "candelabra/prof-6.png"
       }
     },
     "real": [
@@ -6693,22 +6697,26 @@
           "4": {
             "arquivo": "candelabra/giro-4-1.png",
             "ax": 27.0,
-            "ay": 100.0
+            "ay": 100.0,
+            "prof": "candelabra/prof-4-1.png"
           },
           "2": {
             "arquivo": "candelabra/giro-2-1.png",
             "ax": 27.0,
-            "ay": 100.0
+            "ay": 100.0,
+            "prof": "candelabra/prof-2-1.png"
           },
           "0": {
             "arquivo": "candelabra/giro-0-1.png",
             "ax": 27.0,
-            "ay": 100.0
+            "ay": 100.0,
+            "prof": "candelabra/prof-0-1.png"
           },
           "6": {
             "arquivo": "candelabra/giro-6-1.png",
             "ax": 27.0,
-            "ay": 100.0
+            "ay": 100.0,
+            "prof": "candelabra/prof-6-1.png"
           }
         }
       }
@@ -8126,22 +8134,26 @@
       "4": {
         "arquivo": "candles/giro-4.png",
         "ax": 23.0,
-        "ay": 37.0
+        "ay": 37.0,
+        "prof": "candles/prof-4.png"
       },
       "2": {
         "arquivo": "candles/giro-2.png",
         "ax": 23.0,
-        "ay": 34.0
+        "ay": 34.0,
+        "prof": "candles/prof-2.png"
       },
       "0": {
         "arquivo": "candles/giro-0.png",
         "ax": 23.0,
-        "ay": 33.0
+        "ay": 33.0,
+        "prof": "candles/prof-0.png"
       },
       "6": {
         "arquivo": "candles/giro-6.png",
         "ax": 23.0,
-        "ay": 35.0
+        "ay": 35.0,
+        "prof": "candles/prof-6.png"
       }
     },
     "real": [
@@ -8155,22 +8167,26 @@
           "4": {
             "arquivo": "candles/giro-4-1.png",
             "ax": 23.0,
-            "ay": 34.0
+            "ay": 34.0,
+            "prof": "candles/prof-4-1.png"
           },
           "2": {
             "arquivo": "candles/giro-2-1.png",
             "ax": 23.0,
-            "ay": 31.0
+            "ay": 31.0,
+            "prof": "candles/prof-2-1.png"
           },
           "0": {
             "arquivo": "candles/giro-0-1.png",
             "ax": 23.0,
-            "ay": 29.0
+            "ay": 29.0,
+            "prof": "candles/prof-0-1.png"
           },
           "6": {
             "arquivo": "candles/giro-6-1.png",
             "ax": 23.0,
-            "ay": 32.0
+            "ay": 32.0,
+            "prof": "candles/prof-6-1.png"
           }
         }
       }
@@ -16360,22 +16376,26 @@
       "4": {
         "arquivo": "fogao_lenha/giro-4.png",
         "ax": 73.0,
-        "ay": 246.0
+        "ay": 246.0,
+        "prof": "fogao_lenha/prof-4.png"
       },
       "2": {
         "arquivo": "fogao_lenha/giro-2.png",
         "ax": 42.0,
-        "ay": 223.0
+        "ay": 223.0,
+        "prof": "fogao_lenha/prof-2.png"
       },
       "0": {
         "arquivo": "fogao_lenha/giro-0.png",
         "ax": 74.0,
-        "ay": 214.0
+        "ay": 214.0,
+        "prof": "fogao_lenha/prof-0.png"
       },
       "6": {
         "arquivo": "fogao_lenha/giro-6.png",
         "ax": 41.0,
-        "ay": 237.0
+        "ay": 237.0,
+        "prof": "fogao_lenha/prof-6.png"
       }
     },
     "real": [
@@ -16389,22 +16409,26 @@
           "4": {
             "arquivo": "fogao_lenha/giro-4-1.png",
             "ax": 73.0,
-            "ay": 246.0
+            "ay": 246.0,
+            "prof": "fogao_lenha/prof-4-1.png"
           },
           "2": {
             "arquivo": "fogao_lenha/giro-2-1.png",
             "ax": 42.0,
-            "ay": 223.0
+            "ay": 223.0,
+            "prof": "fogao_lenha/prof-2-1.png"
           },
           "0": {
             "arquivo": "fogao_lenha/giro-0-1.png",
             "ax": 74.0,
-            "ay": 214.0
+            "ay": 214.0,
+            "prof": "fogao_lenha/prof-0-1.png"
           },
           "6": {
             "arquivo": "fogao_lenha/giro-6-1.png",
             "ax": 41.0,
-            "ay": 237.0
+            "ay": 237.0,
+            "prof": "fogao_lenha/prof-6-1.png"
           }
         }
       }
@@ -27418,22 +27442,26 @@
       "4": {
         "arquivo": "fogueira/giro-4.png",
         "ax": 61.0,
-        "ay": 59.0
+        "ay": 59.0,
+        "prof": "fogueira/prof-4.png"
       },
       "2": {
         "arquivo": "fogueira/giro-2.png",
         "ax": 61.0,
-        "ay": 59.0
+        "ay": 59.0,
+        "prof": "fogueira/prof-2.png"
       },
       "0": {
         "arquivo": "fogueira/giro-0.png",
         "ax": 61.0,
-        "ay": 59.0
+        "ay": 59.0,
+        "prof": "fogueira/prof-0.png"
       },
       "6": {
         "arquivo": "fogueira/giro-6.png",
         "ax": 61.0,
-        "ay": 59.0
+        "ay": 59.0,
+        "prof": "fogueira/prof-6.png"
       }
     },
     "real": [
@@ -27447,22 +27475,26 @@
           "4": {
             "arquivo": "fogueira/giro-4-1.png",
             "ax": 61.0,
-            "ay": 59.0
+            "ay": 59.0,
+            "prof": "fogueira/prof-4-1.png"
           },
           "2": {
             "arquivo": "fogueira/giro-2-1.png",
             "ax": 61.0,
-            "ay": 59.0
+            "ay": 59.0,
+            "prof": "fogueira/prof-2-1.png"
           },
           "0": {
             "arquivo": "fogueira/giro-0-1.png",
             "ax": 61.0,
-            "ay": 59.0
+            "ay": 59.0,
+            "prof": "fogueira/prof-0-1.png"
           },
           "6": {
             "arquivo": "fogueira/giro-6-1.png",
             "ax": 61.0,
-            "ay": 59.0
+            "ay": 59.0,
+            "prof": "fogueira/prof-6-1.png"
           }
         }
       }
@@ -28999,22 +29031,26 @@
       "4": {
         "arquivo": "poste_cristal/giro-4.png",
         "ax": 20.0,
-        "ay": 152.0
+        "ay": 152.0,
+        "prof": "poste_cristal/prof-4.png"
       },
       "2": {
         "arquivo": "poste_cristal/giro-2.png",
         "ax": 20.0,
-        "ay": 152.0
+        "ay": 152.0,
+        "prof": "poste_cristal/prof-2.png"
       },
       "0": {
         "arquivo": "poste_cristal/giro-0.png",
         "ax": 20.0,
-        "ay": 152.0
+        "ay": 152.0,
+        "prof": "poste_cristal/prof-0.png"
       },
       "6": {
         "arquivo": "poste_cristal/giro-6.png",
         "ax": 20.0,
-        "ay": 152.0
+        "ay": 152.0,
+        "prof": "poste_cristal/prof-6.png"
       }
     },
     "real": [
@@ -29028,22 +29064,26 @@
           "4": {
             "arquivo": "poste_cristal/giro-4-1.png",
             "ax": 20.0,
-            "ay": 152.0
+            "ay": 152.0,
+            "prof": "poste_cristal/prof-4-1.png"
           },
           "2": {
             "arquivo": "poste_cristal/giro-2-1.png",
             "ax": 20.0,
-            "ay": 152.0
+            "ay": 152.0,
+            "prof": "poste_cristal/prof-2-1.png"
           },
           "0": {
             "arquivo": "poste_cristal/giro-0-1.png",
             "ax": 20.0,
-            "ay": 152.0
+            "ay": 152.0,
+            "prof": "poste_cristal/prof-0-1.png"
           },
           "6": {
             "arquivo": "poste_cristal/giro-6-1.png",
             "ax": 20.0,
-            "ay": 152.0
+            "ay": 152.0,
+            "prof": "poste_cristal/prof-6-1.png"
           }
         }
       }
@@ -30701,22 +30741,26 @@
       "4": {
         "arquivo": "forja/giro-4.png",
         "ax": 84.0,
-        "ay": 140.0
+        "ay": 140.0,
+        "prof": "forja/prof-4.png"
       },
       "2": {
         "arquivo": "forja/giro-2.png",
         "ax": 53.0,
-        "ay": 151.0
+        "ay": 151.0,
+        "prof": "forja/prof-2.png"
       },
       "0": {
         "arquivo": "forja/giro-0.png",
         "ax": 102.0,
-        "ay": 130.0
+        "ay": 130.0,
+        "prof": "forja/prof-0.png"
       },
       "6": {
         "arquivo": "forja/giro-6.png",
         "ax": 70.0,
-        "ay": 119.0
+        "ay": 119.0,
+        "prof": "forja/prof-6.png"
       }
     },
     "real": [
@@ -30730,22 +30774,26 @@
           "4": {
             "arquivo": "forja/giro-4-1.png",
             "ax": 84.0,
-            "ay": 140.0
+            "ay": 140.0,
+            "prof": "forja/prof-4-1.png"
           },
           "2": {
             "arquivo": "forja/giro-2-1.png",
             "ax": 53.0,
-            "ay": 151.0
+            "ay": 151.0,
+            "prof": "forja/prof-2-1.png"
           },
           "0": {
             "arquivo": "forja/giro-0-1.png",
             "ax": 102.0,
-            "ay": 130.0
+            "ay": 130.0,
+            "prof": "forja/prof-0-1.png"
           },
           "6": {
             "arquivo": "forja/giro-6-1.png",
             "ax": 70.0,
-            "ay": 119.0
+            "ay": 119.0,
+            "prof": "forja/prof-6-1.png"
           }
         }
       }
@@ -31737,22 +31785,26 @@
       "4": {
         "arquivo": "lareira/giro-4.png",
         "ax": 104.0,
-        "ay": 163.0
+        "ay": 163.0,
+        "prof": "lareira/prof-4.png"
       },
       "2": {
         "arquivo": "lareira/giro-2.png",
         "ax": 41.0,
-        "ay": 163.0
+        "ay": 163.0,
+        "prof": "lareira/prof-2.png"
       },
       "0": {
         "arquivo": "lareira/giro-0.png",
         "ax": 104.0,
-        "ay": 158.0
+        "ay": 158.0,
+        "prof": "lareira/prof-0.png"
       },
       "6": {
         "arquivo": "lareira/giro-6.png",
         "ax": 40.0,
-        "ay": 158.0
+        "ay": 158.0,
+        "prof": "lareira/prof-6.png"
       }
     },
     "real": [
@@ -31766,22 +31818,26 @@
           "4": {
             "arquivo": "lareira/giro-4-1.png",
             "ax": 104.0,
-            "ay": 163.0
+            "ay": 163.0,
+            "prof": "lareira/prof-4-1.png"
           },
           "2": {
             "arquivo": "lareira/giro-2-1.png",
             "ax": 41.0,
-            "ay": 163.0
+            "ay": 163.0,
+            "prof": "lareira/prof-2-1.png"
           },
           "0": {
             "arquivo": "lareira/giro-0-1.png",
             "ax": 104.0,
-            "ay": 158.0
+            "ay": 158.0,
+            "prof": "lareira/prof-0-1.png"
           },
           "6": {
             "arquivo": "lareira/giro-6-1.png",
             "ax": 40.0,
-            "ay": 158.0
+            "ay": 158.0,
+            "prof": "lareira/prof-6-1.png"
           }
         }
       }
@@ -35528,22 +35584,26 @@
       "4": {
         "arquivo": "poste_ferro/giro-4.png",
         "ax": 19.0,
-        "ay": 198.0
+        "ay": 198.0,
+        "prof": "poste_ferro/prof-4.png"
       },
       "2": {
         "arquivo": "poste_ferro/giro-2.png",
         "ax": 19.0,
-        "ay": 198.0
+        "ay": 198.0,
+        "prof": "poste_ferro/prof-2.png"
       },
       "0": {
         "arquivo": "poste_ferro/giro-0.png",
         "ax": 19.0,
-        "ay": 198.0
+        "ay": 198.0,
+        "prof": "poste_ferro/prof-0.png"
       },
       "6": {
         "arquivo": "poste_ferro/giro-6.png",
         "ax": 19.0,
-        "ay": 198.0
+        "ay": 198.0,
+        "prof": "poste_ferro/prof-6.png"
       }
     },
     "real": [
@@ -35557,22 +35617,26 @@
           "4": {
             "arquivo": "poste_ferro/giro-4-1.png",
             "ax": 19.0,
-            "ay": 198.0
+            "ay": 198.0,
+            "prof": "poste_ferro/prof-4-1.png"
           },
           "2": {
             "arquivo": "poste_ferro/giro-2-1.png",
             "ax": 19.0,
-            "ay": 198.0
+            "ay": 198.0,
+            "prof": "poste_ferro/prof-2-1.png"
           },
           "0": {
             "arquivo": "poste_ferro/giro-0-1.png",
             "ax": 19.0,
-            "ay": 198.0
+            "ay": 198.0,
+            "prof": "poste_ferro/prof-0-1.png"
           },
           "6": {
             "arquivo": "poste_ferro/giro-6-1.png",
             "ax": 19.0,
-            "ay": 198.0
+            "ay": 198.0,
+            "prof": "poste_ferro/prof-6-1.png"
           }
         }
       }

@@ -28,6 +28,11 @@ export interface VistaArte {
   lado?: 'esquerda' | 'direita';
   /** a âncora é a quina da frente da base (caixas) ou o centro da base (planta, cadeira) */
   ancora?: 'quina' | 'centro';
+  /**
+   * a profundidade de cada pixel (scripts/3d/estilo/exportar_frente_px.py), nos móveis com fogo: o que fica na frente da
+   * chama animada é reposto por cima dela (frenteDoFogo)
+   */
+  prof?: string;
 }
 
 export interface MovelArte {
@@ -604,6 +609,69 @@ function misturar(a: string, b: string, t: number): string {
   return '#' + ((canal(16) << 16) | (canal(8) << 8) | canal(0)).toString(16).padStart(6, '0');
 }
 
+/** Onde cada móvel com fogo foi desenhado no quadro (pela semente, o id do item), para frenteDoFogo. */
+const frentes = new Map<number, { img: HTMLCanvasElement; prof: string; x: number; y: number; w: number; h: number; m: DOMMatrix }>();
+/** A profundidade de cada pixel (metros na direção da câmera, a partir da âncora; NaN fora do móvel), por arquivo. */
+const profs = new Map<string, { w: number; h: number; d: Float32Array } | 'carregando' | 'erro'>();
+/** A frente já recortada (por arquivo e pela profundidade da chama, em passos de 2,5 cm). */
+const recortes = new Map<string, HTMLCanvasElement>();
+
+function profundidade(arquivo: string): { w: number; h: number; d: Float32Array } | null {
+  const c = profs.get(arquivo);
+  if (c && c !== 'carregando' && c !== 'erro') return c;
+  if (!c) {
+    profs.set(arquivo, 'carregando');
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement('canvas');
+      cv.width = img.naturalWidth;
+      cv.height = img.naturalHeight;
+      const g = cv.getContext('2d', { willReadFrequently: true })!;
+      g.drawImage(img, 0, 0);
+      const px = g.getImageData(0, 0, cv.width, cv.height).data;
+      const d = new Float32Array(cv.width * cv.height);
+      // 16 bits em R (alto) e G (baixo): (metros + 8) * 4000; alfa 0 = sem móvel
+      for (let i = 0; i < d.length; i++) d[i] = px[i * 4 + 3] ? (px[i * 4] * 256 + px[i * 4 + 1]) / 4000 - 8 : NaN;
+      profs.set(arquivo, { w: cv.width, h: cv.height, d });
+    };
+    img.onerror = () => profs.set(arquivo, 'erro');
+    img.src = `/arte/mobiliario/${arquivo}`;
+  }
+  return null;
+}
+
+/**
+ * Depois da chama animada do móvel (o item `seed`): repõe por cima dela os pixels do móvel que estão mais perto da câmera
+ * que a chama (`profChama`, em metros a partir da âncora, como o exportar_frente_px.py conta). Assim o fogo fica
+ * DENTRO da lanterna, da lareira, da fogueira, e não por cima da grade e das lenhas da frente.
+ */
+export function frenteDoFogo(ctx: CanvasRenderingContext2D, seed: number, profChama: number) {
+  const f = frentes.get(seed);
+  if (!f) return;
+  const pf = profundidade(f.prof);
+  if (!pf || pf.w !== f.img.width || pf.h !== f.img.height) return;
+  const chave = `${f.prof}|${Math.round(profChama * 40)}`;
+  let rec = recortes.get(chave);
+  if (!rec) {
+    rec = document.createElement('canvas');
+    rec.width = pf.w;
+    rec.height = pf.h;
+    const g = rec.getContext('2d')!;
+    g.drawImage(f.img, 0, 0);
+    const dados = g.getImageData(0, 0, pf.w, pf.h);
+    // só o que está na frente da chama (com 2 cm de folga: a própria chama assada não tapa a animada)
+    for (let i = 0; i < pf.d.length; i++) if (!(pf.d[i] > profChama + 0.02)) dados.data[i * 4 + 3] = 0;
+    g.putImageData(dados, 0, 0);
+    if (recortes.size > 200) recortes.clear();
+    recortes.set(chave, rec);
+  }
+  ctx.save();
+  ctx.setTransform(f.m);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(rec, f.x, f.y, f.w, f.h);
+  ctx.restore();
+}
+
 /** As chamas do desenho, mexendo: uma chama animada por cima de cada chama parada (cada uma no seu tempo). */
 function acenderChamas(ctx: CanvasRenderingContext2D, chamas: [number, number, number][] | undefined, x0: number, y0: number, k: number, seed: number) {
   if (!chamas?.length) return;
@@ -668,6 +736,8 @@ function desenharGiro(
     p.ctx.translate(-px, -r0.y);
   }
   const r = pintar(p, imgs.normal, vista.ax, vista.ay, a.escala, centro, aj, !!a.pixel);
+  // o móvel com fogo guarda onde foi desenhado: a chama animada vem depois e a frente dele volta por cima dela
+  if (vista.prof && p.seed !== undefined) frentes.set(p.seed, { img: imgs.normal, prof: vista.prof, x: r.x, y: r.y, w: r.w, h: r.h, m: p.ctx.getTransform() });
   if (a.brilho && luz && p.power > 0.1) brilhar(p, r, k, a.brilho.x, a.brilho.y, a.brilho.r, luz, 0.55 * p.power * falha);
   const tela = a.tela?.giros[g as '4'];
   if (tela && corTela && p.power > 0.1) brilhar(p, r, k, tela.x, tela.y, tela.r, corTela, (a.tela?.forca ?? 0.42) * forcaTela * p.power);
