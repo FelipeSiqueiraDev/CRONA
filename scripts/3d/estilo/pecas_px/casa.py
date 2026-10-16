@@ -771,6 +771,42 @@ def table_round():
     peg(cx - 0.5, cx + 0.5, cy - 0.5, cy + 0.5)
 
 
+def table_small():
+    """
+    A mesinha (1 casa, 0,74 m; 16/10, o Felipe: "essa marrom do lado da sinuca e na frente da poltrona, nada a ver" era a
+    caixa de reserva, sem desenho): o tampo quadrado de tábuas de nogueira com o friso claro na beira, a saia de madeira
+    embaixo do tampo e as quatro pernas quadradas que afinam um pouco. Embaixo fica vazio (vao 'vazada').
+    """
+    cx, cy = 0.375, 0.375
+    a = 0.31                      # meia largura do tampo (0,62 m)
+    h = 0.74
+    tp = 0.045
+    T = tab2(NOG_TAB, 0.2, '#3e1c0e', seed=81, comp=0.62, org=cy - a)
+
+    def topo(L, n, P):
+        out = T(L, n, P)
+        d = np.minimum(np.minimum(P[:, 0] - (cx - a), (cx + a) - P[:, 0]), np.minimum(P[:, 1] - (cy - a), (cy + a) - P[:, 1]))
+        out = np.where((d < 0.035)[:, None], hx('#7a3c22'), out)
+        out = np.where(((d >= 0.035) & (d < 0.035 + PH))[:, None], hx('#4a2412'), out)
+        out = np.where((d < PH * 1.2)[:, None], hx('#9a5a34'), out)
+        return out
+    caixa((cx - a, cx + a, cy - a, cy + a, h - tp, h), {'cima': emissivo(topo), '*': mad2('#5e2e18', seed=82, passo=0.04)})
+    # a saia: as quatro tábuas embaixo do tampo, um pouco para dentro
+    s_ = a - 0.05
+    SA = {'*': mad2('#4a2412', seed=83, passo=0.04), 'cima': None}
+    caixa((cx - s_, cx + s_, cy - s_, cy - s_ + 0.025, h - tp - 0.09, h - tp), SA)
+    caixa((cx - s_, cx + s_, cy + s_ - 0.025, cy + s_, h - tp - 0.09, h - tp), SA)
+    caixa((cx - s_, cx - s_ + 0.025, cy - s_, cy + s_, h - tp - 0.09, h - tp), SA)
+    caixa((cx + s_ - 0.025, cx + s_, cy - s_, cy + s_, h - tp - 0.09, h - tp), SA)
+    # as pernas
+    PE = {'cima': mad2('#7e4026', seed=84), '*': mad2('#5e2e18', seed=85, passo=0.04)}
+    for (sx, sy) in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
+        x = cx + sx * (s_ - 0.02)
+        y = cy + sy * (s_ - 0.02)
+        caixa((x - 0.025, x + 0.025, y - 0.025, y + 0.025, 0.0, h - tp), PE)
+    peg(cx - a, cx + a, cy - a, cy + a)
+
+
 def stool():
     """A banqueta alta (aumento 1,2; o assento a 0,66 m): o assento redondo de tábuas, as quatro pernas e o apoio dos pés."""
     cx, cy = 0.375, 0.375
@@ -1700,5 +1736,6 @@ ITENS = {
     # a lâmpada do teto fica a do jogo (a cúpula preta da cozinha, que balança): esta saiu pequena demais
     # 'ceiling_lamp': (1, 1, (0.0, 0.0), lambda: ceiling_lamp(True), {'1': lambda: ceiling_lamp(False)}),
     'table_round': (2, 2, (0.0, 0.0), table_round, {}),
+    'table_small': (1, 1, (0.0, 0.0), table_small, {}),
     'stool': (1, 1, (0.0, 0.0), stool, {}),
 }

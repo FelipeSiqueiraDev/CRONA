@@ -152,6 +152,14 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10 (branch `claude/tatica-codigo`): a mesinha (`table_small`) em pixel
+
+- O Felipe: "essa marrom do lado da sinuca e na frente da poltrona, nada a ver". A `table_small` não tinha arte e saía
+  como a caixa de reserva (no Bar, no Hall do Casarão e em mais 14 lugares). Agora `casa.table_small`: o tampo
+  quadrado de nogueira com o friso, a saia e as quatro pernas, vazada embaixo (0,74 m). Exportada nos giros, na
+  vista de cima e no voo.
+- As mesas amarelas do Bar estavam boas (o Felipe); a mudança delas (abaixo) ficou.
+
 ## Feito em 16/10 (branch `claude/tatica-codigo`): o Bar da Sede rearrumado (`SEDE_REV` 54)
 
 - O Felipe: "esses itens de química no bar, essas mesas fora de posição". Os frascos tinham saído do seed em 15/10

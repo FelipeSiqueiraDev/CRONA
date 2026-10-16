@@ -6131,43 +6131,115 @@
     "vooKv": 48.0
   },
   "table_small": {
-    "escala": 0.5,
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
     "giros": {
       "4": {
         "arquivo": "table_small/giro-4.png",
-        "ax": 50.0,
-        "ay": 105.3
-      },
-      "6": {
-        "arquivo": "table_small/giro-6.png",
-        "ax": 29.5,
-        "ay": 105.3
-      },
-      "0": {
-        "arquivo": "table_small/giro-0.png",
-        "ax": 42.0,
-        "ay": 105.3
+        "ax": 37.0,
+        "ay": 68.0
       },
       "2": {
         "arquivo": "table_small/giro-2.png",
-        "ax": 27.0,
-        "ay": 105.3
+        "ax": 37.0,
+        "ay": 68.0
+      },
+      "0": {
+        "arquivo": "table_small/giro-0.png",
+        "ax": 37.0,
+        "ay": 68.0
+      },
+      "6": {
+        "arquivo": "table_small/giro-6.png",
+        "ax": 37.0,
+        "ay": 68.0
       }
     },
     "real": [
-      0.55,
-      0.55,
-      0.55
+      0.62,
+      0.62,
+      0.74
     ],
     "cima": {
       "arquivo": "table_small/cima.png",
       "caixa": [
-        17,
-        17,
-        111,
-        111
+        16,
+        16,
+        42,
+        42
       ]
-    }
+    },
+    "voo": {
+      "25": {
+        "4": {
+          "arquivo": "table_small/voo-25-giro-4.png",
+          "ax": 27.0,
+          "ay": 39.7
+        },
+        "2": {
+          "arquivo": "table_small/voo-25-giro-2.png",
+          "ax": 27.0,
+          "ay": 39.7
+        },
+        "0": {
+          "arquivo": "table_small/voo-25-giro-0.png",
+          "ax": 27.0,
+          "ay": 39.7
+        },
+        "6": {
+          "arquivo": "table_small/voo-25-giro-6.png",
+          "ax": 27.0,
+          "ay": 39.7
+        }
+      },
+      "50": {
+        "4": {
+          "arquivo": "table_small/voo-50-giro-4.png",
+          "ax": 24.7,
+          "ay": 34.4
+        },
+        "2": {
+          "arquivo": "table_small/voo-50-giro-2.png",
+          "ax": 24.7,
+          "ay": 34.4
+        },
+        "0": {
+          "arquivo": "table_small/voo-50-giro-0.png",
+          "ax": 24.7,
+          "ay": 34.4
+        },
+        "6": {
+          "arquivo": "table_small/voo-50-giro-6.png",
+          "ax": 24.7,
+          "ay": 34.4
+        }
+      },
+      "75": {
+        "4": {
+          "arquivo": "table_small/voo-75-giro-4.png",
+          "ax": 21.1,
+          "ay": 26.4
+        },
+        "2": {
+          "arquivo": "table_small/voo-75-giro-2.png",
+          "ax": 21.1,
+          "ay": 26.4
+        },
+        "0": {
+          "arquivo": "table_small/voo-75-giro-0.png",
+          "ax": 21.1,
+          "ay": 26.4
+        },
+        "6": {
+          "arquivo": "table_small/voo-75-giro-6.png",
+          "ax": 21.1,
+          "ay": 26.4
+        }
+      }
+    },
+    "vooKv": 48.0
   },
   "floor_lamp": {
     "escala": 1,
