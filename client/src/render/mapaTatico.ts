@@ -415,6 +415,13 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
       continue;
     }
     blocos.push({ prof: prof(it.x + fp.sx / 2, it.y + fp.sy / 2), z: it.z ?? 0, desenhar: () => desenharMovel(ctx, v, it, def) });
+    // a escada que encosta na porta da sala: continua pela casa da porta até o vão (de cima, ela não acaba antes)
+    if (/stairs_up|escada_desce/.test(`${def.id} ${def.kind}`)) {
+      const d = fp.sy > fp.sx ? fp.sy : fp.sx;
+      const atras = it.rot === 4 ? [it.x, it.y - 1] : it.rot === 0 ? [it.x, it.y + d] : it.rot === 2 ? [it.x - 1, it.y] : [it.x + d, it.y];
+      if (atras[0] === map.door.x && atras[1] === map.door.y)
+        blocos.push({ prof: prof(atras[0] + 0.5, atras[1] + 0.5), z: 0, desenhar: () => v.t >= 1 - 1e-6 && desenharEscadaAtePorta(ctx, v, it, def) });
+    }
   }
   for (const p of paredes(map)) blocos.push({ prof: prof((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2) - (p.fundo ? 100 : 0), z: 0, desenhar: () => desenharParede(ctx, v, p, piso) });
   // no caminho da câmera: cada trecho de parede do isométrico (com a arte e os itens de parede) por cima da parede
@@ -867,6 +874,35 @@ function desenharDeCima(ctx: CanvasRenderingContext2D, arte: { img: CanvasImageS
     const [x0, y0, x1, y1] = arte.caixa;
     ctx.drawImage(arte.img, x0, y0, x1 - x0, y1 - y0, -tw / 2, tr.encosta ? -def.depth / 2 : -th / 2, tw, th);
   } else ctx.drawImage(arte.img, -def.width / 2, -def.depth / 2, def.width, def.depth);
+  ctx.restore();
+}
+
+/**
+ * A casa da porta atrás da escada: os degraus do fundo da vista de cima dela continuam por essa casa (a escada vai até o
+ * vão) e escurecem para o fundo, como quem sobe (ou desce) para o outro andar.
+ */
+function desenharEscadaAtePorta(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorItem, def: FurniDef) {
+  const arte = imagemDeCima(def.id, it.state);
+  if (!arte?.caixa) return;
+  const fp = footprint(def, it.rot);
+  const tr = tamanhoReal(def.id);
+  const tw = tr ? Math.min(def.width, tr.real[0] / M_POR_CASA) : def.width;
+  const th = tr ? Math.min(def.depth, tr.real[1] / M_POR_CASA) : def.depth;
+  const [x0, y0, x1, y1] = arte.caixa;
+  // uma casa de degraus, tirada do fundo da imagem (o fundo da escada fica em cima, frente para baixo)
+  const linhas = (y1 - y0) / th;
+  ctx.save();
+  ctx.setTransform(matrizNaAltura(v, 0.02));
+  ctx.translate(it.x + fp.sx / 2, it.y + fp.sy / 2);
+  ctx.rotate(it.rot === 0 ? Math.PI : it.rot === 2 ? -Math.PI / 2 : it.rot === 6 ? Math.PI / 2 : 0);
+  ctx.imageSmoothingEnabled = !arte.pixel;
+  const topo = -th / 2;
+  ctx.drawImage(arte.img, x0, y0, x1 - x0, linhas, -tw / 2, topo - 1, tw, 1);
+  const g = ctx.createLinearGradient(0, topo, 0, topo - 1);
+  g.addColorStop(0, 'rgba(6, 5, 4, 0.15)');
+  g.addColorStop(1, 'rgba(6, 5, 4, 0.8)');
+  ctx.fillStyle = g;
+  ctx.fillRect(-tw / 2, topo - 1, tw, 1);
   ctx.restore();
 }
 
