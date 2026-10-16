@@ -152,6 +152,17 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10 (branch `claude/tatica-codigo`): o Tepes pelo PixelLab
+
+- O Felipe escolheu o Tepes feito no PixelLab (API v2, `create-character-v3`, referência: a vista `desarmado-s` reduzida
+  a 64×64) no lugar do Tepes do Códex de 15/10. As 8 direções e o script `pl.mjs` estão em
+  `F:\Dhellow\CRONA\arte\PERSONAGENS-ANIMACAO\pixellab\` (quadros prontos em `tepes/quadros/`), montados com
+  `scripts/dev/personagem_pixel.py <pasta> tepes --escala 1.8`.
+- **Falta:** a animação de andar e a de parado (hoje ele anda deslizando com a pose parada). No PixelLab,
+  `POST /characters/animations` custa 1 geração por direção (8 no total); a conta está no plano de teste com 8
+  gerações. O Tepes animado do Códex continua no git (`bc414989`).
+- **Ao chamar a API pelo Git Bash:** `MSYS_NO_PATHCONV=1` (o `/caminho` vira caminho do Windows e dá 404).
+
 ## Feito em 16/10 (branch `claude/tatica-codigo`): quartos de hospedagem com a condição do descanso
 
 - O Felipe: "pelo menos 4 quartos em todo lugar que for hotel ou pousada" (os agentes pagam mais pelo quarto deles), e
