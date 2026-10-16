@@ -2,7 +2,7 @@
 Liga os quadros de um personagem em pixel art (o piloto e os pacotes do Códex: personagem-<id>.zip) ao tabuleiro.
 
 Entrada: uma pasta com <id>-<dir>-idle.png, <id>-<dir>-andar-1..N.png e <id>-<dir>-parado-1..M.png
-(<dir> = n, ne, e, se, s, sw, w, nw), todos do mesmo tamanho (64 x 64, os pés na última linha).
+(<dir> = n, ne, e, se, s, sw, w, nw), todos do mesmo tamanho (64 x 64 ou maior, quadrado, os pés na última linha).
 Saída: client/public/arte/personagens/<id>/tabuleiro-3d/ com as tiras (parado-desarmado-<dir>.png, andar-desarmado-<dir>.png)
 e o anim.json (o formato do boneco do tabuleiro, versão 2: o servidor e o cliente já leem). As direções que faltam caem
 na vizinha mais próxima (sheetDirFor).
@@ -33,8 +33,10 @@ def pes_do_quadro(im, escala):
     """Onde cada pé toca o chão neste quadro: [dx, dy, altura no ar], em pixels da tela (zoom 1), a partir da âncora."""
     a = np.array(im)[..., 3] > 0
     h, w = a.shape
-    base = 63
-    faixa = a[h - 14 :, :]
+    base = h - 1
+    meio = (w - 1) / 2
+    # a faixa dos pés: as 14 últimas linhas num quadro de 64 (proporcional nos maiores)
+    faixa = a[h - round(14 * h / 64) :, :]
     cols = np.where(faixa.any(axis=0))[0]
     if not len(cols):
         return [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
@@ -46,7 +48,7 @@ def pes_do_quadro(im, escala):
         d = cols[i] - cols[i - 1]
         if d > vazio and d > 1:
             vazio, corte = d, i
-    grupos = [cols[:corte], cols[corte:]] if corte else [[c for c in cols if c <= 31], [c for c in cols if c > 31]]
+    grupos = [cols[:corte], cols[corte:]] if corte else [[c for c in cols if c <= meio], [c for c in cols if c > meio]]
     out = []
     for g in grupos:
         if not g:
@@ -54,7 +56,7 @@ def pes_do_quadro(im, escala):
         sub = a[:, g[0] : g[-1] + 1]
         ys = np.where(sub.any(axis=1))[0]
         fundo = ys.max() if len(ys) else base
-        out.append([round(((g[0] + g[-1]) / 2 - 31.5) * escala, 1), 0.0, round(max(0, base - fundo) * escala, 1)])
+        out.append([round(((g[0] + g[-1]) / 2 - meio) * escala, 1), 0.0, round(max(0, base - fundo) * escala, 1)])
     while len(out) < 2:
         out.append(list(out[0]) if out else [0.0, 0.0, 0.0])
     return sorted(out[:2])
@@ -104,8 +106,8 @@ def main():
                 'quadros': len(q_parado),
                 'w': w,
                 'h': h,
-                'ax': 32,
-                'ay': 63,
+                'ax': w // 2,
+                'ay': h - 1,
                 'laco': True,
                 'ms': 520,
                 'pes': [pes_do_quadro(q, escala) for q in q_parado],
@@ -115,8 +117,8 @@ def main():
                 'quadros': len(q_andar),
                 'w': w,
                 'h': h,
-                'ax': 32,
-                'ay': 63,
+                'ax': w // 2,
+                'ay': h - 1,
                 'laco': True,
                 'casasPorCiclo': casas,
                 'fase': 0.0,

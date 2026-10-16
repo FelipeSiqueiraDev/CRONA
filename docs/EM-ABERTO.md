@@ -158,6 +158,10 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   a 64×64) no lugar do Tepes do Códex de 15/10. As 8 direções e o script `pl.mjs` estão em
   `F:\Dhellow\CRONA\arte\PERSONAGENS-ANIMACAO\pixellab\` (quadros prontos em `tepes/quadros/`), montados com
   `scripts/dev/personagem_pixel.py <pasta> tepes --escala 1.8`.
+- **Em 128 (16/10, o Felipe: "muito pequeno, sem detalhe, ele não tem olho"):** refeito no PixelLab em 128×128 (a
+  mesma referência em 128; 2 gerações), no jogo com `--escala 0.9` (o mesmo tamanho na tela, o dobro de detalhe).
+  `personagem_pixel.py` agora aceita quadro de qualquer tamanho (a âncora e os pés pelo tamanho). Quadros em
+  `arte/PERSONAGENS-ANIMACAO/pixellab/tepes-128/`. Restam 6 gerações na conta.
 - **Falta:** a animação de andar e a de parado (hoje ele anda deslizando com a pose parada). No PixelLab,
   `POST /characters/animations` custa 1 geração por direção (8 no total); a conta está no plano de teste com 8
   gerações. O Tepes animado do Códex continua no git (`bc414989`).
