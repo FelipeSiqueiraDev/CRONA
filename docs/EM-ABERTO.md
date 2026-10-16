@@ -158,7 +158,8 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   como a caixa de reserva (no Bar, no Hall do Casarão e em mais 14 lugares). Agora `casa.table_small`: o tampo
   quadrado de nogueira com o friso, a saia e as quatro pernas, vazada embaixo (0,74 m). Exportada nos giros, na
   vista de cima e no voo.
-- As mesas amarelas do Bar estavam boas (o Felipe); a mudança delas (abaixo) ficou.
+- As mesas amarelas do Bar estavam boas (o Felipe: era a mesinha marrom): voltaram para a posição de antes
+  (`SEDE_REV` 55); a arrumação de 54 (abaixo) foi desfeita, só os frascos continuam fora.
 
 ## Feito em 16/10 (branch `claude/tatica-codigo`): o Bar da Sede rearrumado (`SEDE_REV` 54)
 
