@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 53;
+export const SEDE_REV = 54;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -182,15 +182,21 @@ const ROOMS: RoomSpec[] = [
       ['arcade', 1, 8, 2],
       ['plant', 1, 13, 0],
       ['chair_stack', 1, 14, 2],
-      // as mesas amarelas, com copos e cinzeiros que ninguém tirou
-      ...table(5, 6, 'olns'),
-      ['beer_glass', 5, 6, 0],
-      ...table(10, 7, 'olns'),
-      ['ashtray', 10, 7, 0],
-      ...table(5, 10, 'olns'),
-      ['beer_glass', 5, 10, 0],
-      ...table(8, 13, 'ol'),
-      ['ashtray', 8, 13, 0],
+      // as mesas amarelas, com copos e cinzeiros que ninguém tirou (16/10, o Felipe: "essas mesas fora de posição"):
+      // o corredor da frente dos banquinhos (y 5) e o da porta (y 11, que entra pela esquerda) ficam livres; duas mesas
+      // lado a lado entre o balcão e a sinuca, uma no canto de baixo à esquerda e a do sofá, na frente dele
+      ...table(4, 7, 'olns'),
+      ['beer_glass', 4, 7, 0],
+      ...table(8, 7, 'olns'),
+      ['ashtray', 8, 7, 0],
+      ...table(5, 13, 'oln'),
+      ['beer_glass', 5, 13, 0],
+      ['table_bar', 13, 13, 0],
+      ['table_bar', 14, 13, 0],
+      ['chair_bar', 13, 12, 4],
+      ['chair_bar', 14, 12, 4],
+      ['ashtray', 13, 13, 0],
+      ['beer_glass', 14, 13, 0],
       // a sinuca, perto do meio, e os tapetes vermelhos
       ['pool_table', 14, 7, 4],
       ['rug_ornate', 10, 10, 0],

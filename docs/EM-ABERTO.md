@@ -152,6 +152,15 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10 (branch `claude/tatica-codigo`): o Bar da Sede rearrumado (`SEDE_REV` 54)
+
+- O Felipe: "esses itens de química no bar, essas mesas fora de posição". Os frascos tinham saído do seed em 15/10
+  (`4389304`) sem subir o `SEDE_REV`; o banco de verdade já estava sem eles, a cópia de teste não. Com o 54, a cópia
+  também ficou certa.
+- As mesas: a porta entra pela esquerda na fileira 11 e a mesa (5,10) ficava no caminho. Agora os corredores da porta
+  (y 11) e da frente dos banquinhos (y 5) ficam livres; duas mesas lado a lado entre o balcão e a sinuca (4,7) e (8,7),
+  uma no canto de baixo à esquerda (5,13) e a do sofá de canto na frente dele (13–14,13), com duas cadeiras.
+
 ## Feito em 16/10 (branch `claude/tatica-codigo`): os itens em cima dos móveis sem "cair"
 
 - O Felipe: "não pode parecer que eles estão prestes a cair; não necessariamente centralizado, mas sem bordas caindo".
