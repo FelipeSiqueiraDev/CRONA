@@ -234,8 +234,8 @@
 .el-retrato {
   max-height: 12.4rem;
   max-width: 100%;
-  border-radius: 0.6rem;
-  object-fit: cover;
+  object-fit: contain;
+  filter: drop-shadow(0 0.4rem 0.8rem rgba(0, 0, 0, 0.6));
 }
 .el-pixel {
   width: 7.2rem;

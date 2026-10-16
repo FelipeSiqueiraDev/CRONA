@@ -112,10 +112,18 @@ export function abrirElenco(app: App) {
   // ---------- a arte de cada um ----------
   const charDaArte = (arte?: string): CharacterDef | undefined => (arte ? app.state.characters.find((ch) => ch.sheet.includes(`/personagens/${arte}/`)) : undefined);
   /** A figura do card: a pose de frente (as 8 direções) ou o retrato; sem arte, o boneco de pixel; sem nada, o selo do elemento. */
-  const figura = (o: { arte?: string; look?: Npc['look']; elemento?: string; nome: string }) => {
+  const figura = (o: { arte?: string; look?: Npc['look']; elemento?: string; nome: string; livroId?: string }) => {
     const ch = charDaArte(o.arte);
     const pose = ch?.poses?.desarmado?.s ?? ch?.poses?.desarmado?.sw;
     const retrato = ch?.portraits?.desarmado?.open;
+    const selo = () => h('span', { class: `el-selo el-${o.elemento ?? 'mundanas'}` }, o.nome.replace(/^(O|A) /, '').slice(0, 1));
+    // a ameaça: o retrato vem antes (o da arte dela, ou o pintado pelo Códex em arte/ameacas/<id>.png); sem nenhum, o selo
+    if (o.livroId || (retrato && !o.look)) {
+      if (retrato) return h('img', { class: 'el-retrato', src: retrato, alt: o.nome, decoding: 'async', loading: 'lazy' });
+      const img = h('img', { class: 'el-retrato', src: `/arte/ameacas/${o.livroId}.png`, alt: o.nome, decoding: 'async', loading: 'lazy' }) as HTMLImageElement;
+      img.addEventListener('error', () => img.replaceWith(pose ? h('img', { class: 'el-pose', src: pose, alt: o.nome }) : selo()), { once: true });
+      return img;
+    }
     if (pose) return h('img', { class: 'el-pose', src: pose, alt: o.nome, decoding: 'async', loading: 'lazy' });
     if (retrato) return h('img', { class: 'el-retrato', src: retrato, alt: o.nome, decoding: 'async', loading: 'lazy' });
     if (o.look) {
@@ -125,7 +133,7 @@ export function abrirElenco(app: App) {
       drawPixelAvatar(g, { ...o.look, charId: null }, 36, 92, 2, 2, { pose: 'stand', frame: 0, wave: false, dance: false, blink: false });
       return cv;
     }
-    return h('span', { class: `el-selo el-${o.elemento ?? 'mundanas'}` }, o.nome.replace(/^(O|A) /, '').slice(0, 1));
+    return selo();
   };
 
   // ---------- as ameaças: do livro, na ordem dele, com as versões juntas ----------
@@ -234,7 +242,7 @@ export function abrirElenco(app: App) {
           { class: `el-familia${f.length > 1 ? ' versoes' : ''}` },
           ...f.flatMap((e, i) => [
             i > 0 ? h('span', { class: 'el-seta', 'aria-hidden': 'true' }, '›') : null,
-            card({ chave: e.chave, nome: i > 0 ? e.nome.slice(f[0].nome.length).trim() || e.nome : e.nome, linha: linhaAmeaca(e), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` }),
+            card({ chave: e.chave, nome: i > 0 ? e.nome.slice(f[0].nome.length).trim() || e.nome : e.nome, linha: linhaAmeaca(e), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` }),
           ]),
         ),
       ),
@@ -287,7 +295,7 @@ export function abrirElenco(app: App) {
     if (c && aparencia !== 'variadas' && !c.aparencias.some((a) => a.id === aparencia)) aparencia = 'variadas';
     const dado = (rot: string, val: string) => h('span', { class: 'el-d-dado' }, h('small', null, rot), h('b', null, val));
     const nos: (Node | null)[] = [
-      h('div', { class: 'el-d-figura' }, figura({ arte: c?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome })),
+      h('div', { class: 'el-d-figura' }, figura({ arte: c?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId })),
       h('h4', null, e.nome),
       h('div', { class: 'el-d-elementos' }, ...elementos.map((x) => h('span', { class: `el-tag el-${x}` }, combate.NOME_ELEMENTO[x as keyof typeof combate.NOME_ELEMENTO] ?? x)), h('span', { class: 'el-tag' }, e.tipo)),
       h('div', { class: 'el-d-dados' }, dado('VD', String(e.vd ?? '—')), dado('PV', String(c?.pv ?? livro?.pv ?? '—')), dado('Defesa', String(f?.defesa ?? livro?.defesa ?? '—')), e.pagina ? dado('Livro', `p. ${e.pagina}`) : null),
