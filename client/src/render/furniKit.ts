@@ -5,7 +5,7 @@ import type { LBox, LFace, Painter } from './painter';
 /** Peças comuns para desenhar mobis de chão (usadas por furniFloor e furniSede). */
 
 /** fire = vela/tocha (resiste ao apagão), electric = cai no apagão e pisca, natural = janela/lua, emergency = só no apagão fica forte */
-export type LightKind = 'fire' | 'electric' | 'natural' | 'emergency';
+export type LightKind = 'fire' | 'electric' | 'natural' | 'emergency' | 'cristal';
 
 export interface LightDef {
   u: number;

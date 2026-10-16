@@ -24,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Doutor a sudoeste; as estradas saem pela borda para a fazenda (norte), o bosque (sul) e as minas (oeste).
  */
 export const SANTO_BERCO = "Santo Berço · ";
-export const SANTO_BERCO_REV = 11;
+export const SANTO_BERCO_REV = 12;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -1222,7 +1222,7 @@ const CENAS: Cena[] = [
     ],
     wall: [
       ["lampiao_cristal", "r", 0, 5.0, 2.6],
-      ["tocha_parede", "r", 0, 9.5, 2.4],
+      ["lampiao_cristal", "r", 0, 9.5, 2.4],
       ["lampiao_cristal", "l", 0, 2.0, 2.6],
       ["teia", "l", 0, 7.5, 3.4],
     ],
@@ -1369,8 +1369,8 @@ const CENAS: Cena[] = [
       ...de("pedras", [0, 10], [13, 0], [13, 10]),
     ],
     wall: [
-      ["tocha_parede", "r", 0, 4.8, 2.4],
-      ["tocha_parede", "r", 0, 8.2, 2.4],
+      ["lampiao_cristal", "r", 0, 4.8, 2.4],
+      ["lampiao_cristal", "r", 0, 8.2, 2.4],
       ["lodo_parede", "l", 0, 3.0, 0.3],
       ["lodo_parede", "r", 0, 11.5, 0.3],
     ],
@@ -1419,7 +1419,7 @@ const CENAS: Cena[] = [
       ["sigil_scratch", "r", 0, 4.8, 2.0, hint("A espiral", "O Símbolo Espiral, riscado fundo na pedra. Quem tem a marca no corpo entra de verdade no Labirinto.")],
       ["tally_marks", "l", 0, 7.0, 2.0],
       ["lampiao_cristal", "l", 0, 3.0, 2.6],
-      ["tocha_parede", "r", 0, 8.6, 2.4],
+      ["lampiao_cristal", "r", 0, 8.6, 2.4],
     ],
     links: [
       [6, 8, "mina_preta"],
@@ -1557,6 +1557,8 @@ export function seedSantoBerco(db: Database) {
     const room = montar(db, spec);
     estilo(room, spec);
     neblina(room, spec);
+    // em Santo Berço não há fogo (16/10, o Felipe): a luz quente é a dos cristais vermelhos
+    room.luzDeCristal = true;
     built.set(spec.key, room);
   }
   ligar(built);
@@ -1595,6 +1597,8 @@ function rebuildSantoBerco(db: Database): boolean {
     }
     estilo(room, spec);
     neblina(room, spec);
+    // em Santo Berço não há fogo (16/10, o Felipe): a luz quente é a dos cristais vermelhos
+    room.luzDeCristal = true;
     built.set(spec.key, room);
   }
   ligar(built);

@@ -15,7 +15,7 @@ export const VILA_BUILDERS: Record<string, Builder> = {
     const poste = def.width === 1 && h > 2;
     return V(
       [B([0.3, 0.7, 0.3, 0.7, 0, h], base)],
-      lightIf(state === 0, { u: 0.5, v: 0.5, z: h * 0.85, radius: poste ? 200 : 110, color: brilho, intensity: poste ? 0.95 : 0.7, flicker: 0.04, kind: poste ? 'fire' : 'natural' }),
+      lightIf(state === 0, { u: 0.5, v: 0.5, z: h * 0.85, radius: poste ? 200 : 110, color: brilho, intensity: poste ? 0.95 : 0.7, flicker: 0.04, kind: 'cristal' }),
     );
   },
 

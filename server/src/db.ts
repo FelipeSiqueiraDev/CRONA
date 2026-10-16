@@ -43,6 +43,8 @@ export interface RoomData {
   tatico?: boolean;
   /** o quarto (de hotel, de pousada): a condição do descanso de quem dorme aqui no interlúdio (LR p. 92) */
   descanso?: regras.LugarDescanso;
+  /** Santo Berço: não há fogo; o que seria fogo é a luz dos cristais vermelhos */
+  luzDeCristal?: boolean;
   /** a névoa revelada aos poucos: as casas que a mesa vê (sem ela, a mesa vê tudo) */
   nevoa?: NevoaCena;
   /** mapa improvisado: a imagem enviada pelo mestre, no chão inteiro da cena */

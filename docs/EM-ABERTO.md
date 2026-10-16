@@ -152,6 +152,17 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10 (branch `claude/tatica-codigo`): Santo Berço sem fogo
+
+- O Felipe: "em Santo Berço não tem fogo; o fogo são os cristais vermelhos" (como já diz o `SANTO-BERCO.md`).
+- `RoomData`/`RoomInfo.luzDeCristal` (posto pelo seed em todas as cenas de Santo Berço, `SANTO_BERCO_REV` 12): lá, toda
+  luz de fogo vira `kind: 'cristal'` (`RoomView.semFogo`): brilho vermelho, sem a chama animada, sem fumaça e sem brasa.
+- O poste de cristal é luz de cristal em qualquer lugar (`furniVila.ts`); as 4 tochas de parede viraram lampiões de
+  cristal.
+- **Falta (arte por código):** a lareira (10), a forja, o fogão da fazendeira e as velas (21) de Santo Berço ainda são
+  desenhados com lenha e chama; pedem uma versão de cristal (as pedras vermelhas no lugar da lenha) em
+  `pecas_px/santo_berco_dentro.py`, e o seed de Santo Berço passa a usá-las.
+
 ## Feito em 16/10 (branch `claude/tatica-codigo`): o fogo dentro do móvel
 
 - O Felipe: "o fogo só tá por cima do poste e não dentro dele". A chama animada (`particles.chama`) entra na ordem de

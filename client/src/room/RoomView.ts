@@ -1464,6 +1464,15 @@ export class RoomView {
     return null;
   }
 
+  /**
+   * Em Santo Berço não há fogo (16/10, o Felipe: "o fogo são os cristais vermelhos"): a luz de fogo vira o brilho do
+   * cristal vermelho, sem a chama animada, a fumaça e as brasas, quase sem tremer. Fora de lá, nada muda.
+   */
+  private semFogo(L: { kind?: string; color: string; flicker?: number }): { kind?: 'cristal'; color?: string; flicker?: number } {
+    if (!this.info?.luzDeCristal || L.kind !== 'fire') return {};
+    return { kind: 'cristal', color: '#ff4a32', flicker: Math.min(L.flicker ?? 0, 0.04) };
+  }
+
   private drawWallItem(it: { id: number; wall: 'l' | 'r'; plane: number; pos: number; z: number; state: number; escala?: number; vazio?: boolean; modelo?: string }, def: WallFurniDef, t: number, lights: Light[], alpha: number, outline: string | null) {
     const ctx = this.ctx;
     const { ox, oy, k } = this.wallXform(it.wall, it.plane, it.pos, it.z, def);
@@ -1498,7 +1507,7 @@ export class RoomView {
         L.kind === 'natural'
           ? { wall: it.wall, plane: it.plane, pos: it.pos, larg: (def.w / 32) * 0.86, z0: it.z + 0.08, z1: it.z + def.h / 32 - 0.08, chao: this.map?.floorHeight(it.wall === 'l' ? it.plane : Math.floor(it.pos), it.wall === 'l' ? Math.floor(it.pos) : it.plane) ?? 0 }
           : undefined;
-      lights.push({ x: ox + L.x, y: oy + k * L.x + L.y, radius: L.radius, color: L.color, intensity: L.intensity * alpha, flicker: L.flicker, pulse: L.pulse, kind: L.kind, seed: it.id, mundo, feixe });
+      lights.push({ x: ox + L.x, y: oy + k * L.x + L.y, radius: L.radius, color: L.color, intensity: L.intensity * alpha, flicker: L.flicker, pulse: L.pulse, kind: L.kind, seed: it.id, mundo, feixe, ...this.semFogo(L) });
     }
     return { ox, oy, k, px, py, e };
   }
@@ -2099,7 +2108,7 @@ export class RoomView {
       for (const L of vis.lights) {
         const [lx, ly] = m.p(L.u, L.v, L.z);
         const [wx, wy] = m.xy(L.u, L.v);
-        lights.push({ x: lx, y: ly, radius: L.radius, color: L.color, intensity: L.intensity * alpha, flicker: L.flicker, kind: L.kind, seed: it.id, movel: it.id, mundo: [wx, wy, m.oz + L.z * Z_PER_M] });
+        lights.push({ x: lx, y: ly, radius: L.radius, color: L.color, intensity: L.intensity * alpha, flicker: L.flicker, kind: L.kind, seed: it.id, movel: it.id, mundo: [wx, wy, m.oz + L.z * Z_PER_M], ...this.semFogo(L) });
       }
       return topZ;
     };

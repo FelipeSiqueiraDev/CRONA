@@ -12,7 +12,8 @@ export interface Light {
   pulse?: number;
   seed?: number;
   /** usado pelo clima do quarto (apagão/piscando) */
-  kind?: 'fire' | 'electric' | 'natural' | 'emergency' | 'personal';
+  /** cristal: o brilho dos cristais de Santo Berço (sem chama, sem fumaça, sem brasa; respira devagar) */
+  kind?: 'fire' | 'electric' | 'natural' | 'emergency' | 'personal' | 'cristal';
   /** onde a luz fica no cômodo (casas: x, y e a altura): só a luz do cenário tem, e só ela projeta a sombra das peças */
   mundo?: [number, number, number];
   /** a chama em pixel desta luz de fogo vai desenhada na ordem de profundidade (RoomView): quem fica na frente dela a tapa */

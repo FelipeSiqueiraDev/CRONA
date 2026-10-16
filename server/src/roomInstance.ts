@@ -544,6 +544,7 @@ export class RoomInstance {
       particleLevel: this.data.particleLevel,
       tatico: this.data.tatico,
       descanso: this.data.descanso,
+      luzDeCristal: this.data.luzDeCristal,
       nevoa: this.nevoaAtual() ?? undefined,
       mapa: this.data.mapa,
       viagem: this.data.viagem,

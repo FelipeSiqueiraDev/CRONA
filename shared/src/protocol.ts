@@ -319,6 +319,8 @@ export interface RoomInfo {
   tatico?: boolean;
   /** o quarto (de hotel, de pousada): a condição do descanso de quem dorme aqui no interlúdio (LR p. 92) */
   descanso?: LugarDescanso;
+  /** Santo Berço: não há fogo; o que seria fogo (lareira, forja, vela, lampião) é a luz dos cristais vermelhos */
+  luzDeCristal?: boolean;
   /** a névoa revelada aos poucos (docs/FERRAMENTAS-DA-MESA.md): sem ela, a mesa vê a cena inteira */
   nevoa?: NevoaCena;
   /** mapa improvisado: a imagem que o mestre subiu, deitada no chão inteiro da cena */
