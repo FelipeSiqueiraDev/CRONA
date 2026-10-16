@@ -763,15 +763,22 @@ export class RoomView {
   private ajustesQuadro = -1;
 
   /** O tampo desenhado de uma mesa (centro e meia medida, em casas): menor que as casas dela ou, com `aumento`, maior. */
-  private tampo(s: FloorItem) {
+  /** O tampo de cima do móvel (onde as coisas pousam). paraCadeira: só as mesas de antes (sem o balcão alto e sem a peça encostada). */
+  private tampo(s: FloorItem, paraCadeira = false) {
     const def = getFurni(s.defId);
-    if (!def || !def.stackable || def.sit || def.walkable || def.height < 0.85 || def.height > 1.75) return null;
+    // do criado-mudo ao balcão do bar (1,1 m) e às estantes baixas (até 2,2 m; 16/10: o balcão ficava de fora)
+    if (!def || !def.stackable || def.sit || def.walkable || def.height < 0.85 || def.height > 2.2 * Z_PER_M) return null;
     const tr = tamanhoReal(s.defId);
-    if (!tr || tr.encosta) return null;
+    if (!tr || (paraCadeira && (tr.encosta || def.height > 1.75))) return null;
     const fp = footprint(def, s.rot);
     const larguraEmX = s.rot === 0 || s.rot === 4;
     const hx = (larguraEmX ? tr.real[0] : tr.real[1]) / M_POR_CASA / 2;
     const hy = (larguraEmX ? tr.real[1] : tr.real[0]) / M_POR_CASA / 2;
+    if (tr.encosta) {
+      // a arte encostada no fundo da casa (o frigobar, o aparador, as bancadas): o tampo fica lá, e não no meio
+      const fundo = s.rot === 4 ? [0, -1] : s.rot === 0 ? [0, 1] : s.rot === 2 ? [-1, 0] : [1, 0];
+      return { cx: s.x + fp.sx / 2 + fundo[0] * (fp.sx / 2 - hx), cy: s.y + fp.sy / 2 + fundo[1] * (fp.sy / 2 - hy), hx, hy, topo: s.z + def.height };
+    }
     const [ex, ey] = this.map ? this.encostoNaParede(this.map, s) : [0, 0];
     return { cx: s.x + fp.sx / 2 + ex, cy: s.y + fp.sy / 2 + ey, hx, hy, topo: s.z + def.height };
   }
@@ -847,8 +854,12 @@ export class RoomView {
           const ihy = Math.min(t.hy, (tr ? (it.rot === 0 || it.rot === 4 ? tr.real[1] : tr.real[0]) : 0.4) / M_POR_CASA / 2);
           const cx = it.x + fp.sx / 2;
           const cy = it.y + fp.sy / 2;
-          const nx = Math.max(t.cx - t.hx + ihx, Math.min(t.cx + t.hx - ihx, cx));
-          const ny = Math.max(t.cy - t.hy + ihy, Math.min(t.cy + t.hy - ihy, cy));
+          // com folga até a borda do tampo (16/10, o Felipe: "não pode parecer que estão prestes a cair"): o contorno e
+          // a sombrinha do desenho passam um pouco da medida; se não couber com a folga, vai para o meio do tampo
+          const F = 0.07;
+          const dentro = (c: number, tc: number, th: number, ih: number) => (th - ih - F > 0 ? Math.max(tc - th + ih + F, Math.min(tc + th - ih - F, c)) : tc);
+          const nx = dentro(cx, t.cx, t.hx, ihx);
+          const ny = dentro(cy, t.cy, t.hy, ihy);
           r = [nx - cx, ny - cy];
         } else if (apoio) r = this.ajusteDoMovel(map, apoio, fundo + 1);
       } else if (!def.sit || def.leitos) {
@@ -857,8 +868,8 @@ export class RoomView {
       } else if (def.sit && !def.leitos && def.width === 1 && def.depth === 1) {
         // a cadeira: a mesa na casa da frente dela (para onde quem senta olha)
         const [fx, fy] = it.rot === 4 ? [0, 1] : it.rot === 0 ? [0, -1] : it.rot === 2 ? [1, 0] : [-1, 0];
-        const mesa = map.itemsAt(it.x + fx, it.y + fy).find((s) => this.tampo(s));
-        const t = mesa ? this.tampo(mesa) : null;
+        const mesa = map.itemsAt(it.x + fx, it.y + fy).find((s) => this.tampo(s, true));
+        const t = mesa ? this.tampo(mesa, true) : null;
         if (t) {
           const meia = (tr ? tr.real[1] : 0.5) / M_POR_CASA / 2;
           const encaixa = 0.25; // quanto o assento entra embaixo do tampo (~0,19 m)

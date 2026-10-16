@@ -152,6 +152,16 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10 (branch `claude/tatica-codigo`): os itens em cima dos móveis sem "cair"
+
+- O Felipe: "não pode parecer que eles estão prestes a cair; não necessariamente centralizado, mas sem bordas caindo".
+- `RoomView.ajusteDoMovel`: o item em cima de um móvel fica com 7 cm de folga até a borda do tampo (o contorno e a
+  sombrinha do desenho passam da medida); se não couber, vai para o meio do tampo.
+- `RoomView.tampo`: vale também para o balcão alto (até 2,2 m; o do bar tem 1,1) e para a peça encostada pela arte (o
+  frigobar, o aparador, as bancadas: o tampo fica no fundo da casa, onde ela é desenhada). Para puxar a cadeira até a
+  mesa, as regras de antes (`paraCadeira`). Dos 406 itens em cima de móveis do seed, sobram sem ajuste só as pilhas
+  (caixa em cima de caixa) e o que está em cima de chão pisável.
+
 ## Feito em 16/10 (branch `claude/tatica-codigo`): Santo Berço sem fogo
 
 - O Felipe: "em Santo Berço não tem fogo; o fogo são os cristais vermelhos" (como já diz o `SANTO-BERCO.md`).
