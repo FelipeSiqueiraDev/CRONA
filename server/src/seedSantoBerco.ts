@@ -24,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Doutor a sudoeste; as estradas saem pela borda para a fazenda (norte), o bosque (sul) e as minas (oeste).
  */
 export const SANTO_BERCO = "Santo Berço · ";
-export const SANTO_BERCO_REV = 10;
+export const SANTO_BERCO_REV = 11;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -806,8 +806,9 @@ const CENAS: Cena[] = [
     key: "hotel2",
     name: SANTO_BERCO + "Corredor do Hotel",
     description:
-      "O corredor do andar de cima: o tapete comprido, os lampiões entre as portas dos três quartos, a cômoda com as velas e a escada que desce para o hall. De noite, passa gente pelo corredor que não está hospedada em lugar nenhum.",
-    layout: planBottom(22, 4, 20),
+      "O corredor do andar de cima: o tapete comprido, os lampiões entre as portas dos quatro quartos, a cômoda com as velas e a escada que desce para o hall. De noite, passa gente pelo corredor que não está hospedada em lugar nenhum.",
+    // 16/10: o quarto 4 no fim (o Felipe: pelo menos 4 quartos em todo hotel)
+    layout: planBottom(28, 4, 20),
     andar: HOTEL2,
     style: "enxaimel",
     ...DENTRO,
@@ -816,6 +817,7 @@ const CENAS: Cena[] = [
       ["portal", 3, 0, 4],
       ["portal", 10, 0, 4],
       ["portal", 17, 0, 4],
+      ["portal", 24, 0, 4],
       ["escada_desce", 20, 1, 4],
       ["rug_worn", 5, 1, 2],
       ["rug_worn", 12, 1, 2, oculta("Música do nada", "A música que vem do fim do corredor: um alaúde, baixinho. Quando alguém chega perto, para.")],
@@ -827,12 +829,14 @@ const CENAS: Cena[] = [
       ["lampiao_cristal", "r", 0, 1.5, 2.6],
       ["lampiao_cristal", "r", 0, 6.5, 2.6],
       ["lampiao_cristal", "r", 0, 13.5, 2.6],
+      ["lampiao_cristal", "r", 0, 22.0, 2.6],
       ["window_barred", "l", 0, 2.9, 2.2],
     ],
     links: [
       [3, 0, "quarto_hotel1"],
       [10, 0, "quarto_hotel2"],
       [17, 0, "quarto_hotel3"],
+      [24, 0, "quarto_hotel4"],
       [20, 1, "hotel"],
     ],
     plan: { x: 0, y: 6 },
@@ -840,11 +844,12 @@ const CENAS: Cena[] = [
   {
     key: "quarto_hotel1",
     name: SANTO_BERCO + "Quarto 1 do Hotel",
-    description: "Um quarto do hotel: a cama de palha com a manta de lã, o criado-mudo com a vela, a cômoda, a lareira acesa e a janela gradeada para a vila.",
+    description: "Um quarto do hotel, o mais simples: a cama de palha com a manta de lã, o criado-mudo com a vela, a cômoda, a lareira acesa e a janela gradeada para a vila. Descanso normal.",
     layout: planBottom(7, 6, 3),
     andar: HOTEL2,
     style: "enxaimel",
     ...DENTRO,
+    descanso: "normal",
     floor: [
       ["portal", 3, 5, 0],
       ["cama_palha", 0, 0, 4],
@@ -867,11 +872,12 @@ const CENAS: Cena[] = [
   {
     key: "quarto_hotel2",
     name: SANTO_BERCO + "Quarto 2 do Hotel",
-    description: "Um quarto do hotel, à luz de vela: a cama de casal, o guarda-roupa, a cômoda com o castiçal, a cadeira e a janela.",
+    description: "Um quarto do hotel, à luz de vela: a cama de casal, o guarda-roupa, a cômoda com o castiçal, a cadeira e a janela. Descanso confortável.",
     layout: planBottom(7, 6, 3),
     andar: HOTEL2,
     style: "enxaimel",
     ...DENTRO,
+    descanso: "confortavel",
     darkness: 0.58,
     floor: [
       ["portal", 3, 5, 0],
@@ -895,11 +901,12 @@ const CENAS: Cena[] = [
   {
     key: "quarto_hotel3",
     name: SANTO_BERCO + "Quarto 3 do Hotel",
-    description: "O último quarto do corredor: a cama arrumada demais, a cômoda, o espelho, a lareira. A chave dele nunca está no quadro.",
+    description: "O terceiro quarto: a cama arrumada demais, a cômoda, o espelho, a lareira. A chave dele nunca está no quadro. Descanso confortável.",
     layout: planBottom(7, 6, 3),
     andar: HOTEL2,
     style: "enxaimel",
     ...DENTRO,
+    descanso: "confortavel",
     darkness: 0.6,
     floor: [
       ["portal", 3, 5, 0],
@@ -917,6 +924,35 @@ const CENAS: Cena[] = [
     ],
     links: [[3, 5, "hotel2"]],
     plan: { x: 14, y: 0 },
+  },
+  {
+    key: "quarto_hotel4",
+    name: SANTO_BERCO + "Quarto 4 do Hotel",
+    description:
+      "O quarto do fim do corredor, o maior: a cama de casal com o dossel de lã, a lareira de pedra, a poltrona, o baú, o tapete grosso e a janela gradeada. O Hoteleiro o oferece primeiro, sorrindo. Descanso confortável.",
+    layout: planBottom(7, 6, 3),
+    andar: HOTEL2,
+    style: "enxaimel",
+    ...DENTRO,
+    darkness: 0.54,
+    descanso: "confortavel",
+    floor: [
+      ["portal", 3, 5, 0],
+      ["cama_casal", 4, 0, 4, oculta("A cama do fim", "Os lençóis cheiram a lavado, mas embaixo do travesseiro há um dente de leite. Toda noite, um a mais.")],
+      ["nightstand", 6, 0, 4],
+      ["candles", 6, 0, 0],
+      ["lareira", 0, 2, 2],
+      ["armchair", 1, 4, 2],
+      ["bau_madeira", 6, 4, 6],
+      ["rug_worn", 3, 2, 0],
+      ["lenha", 0, 5, 0],
+    ],
+    wall: [
+      ["window_barred", "r", 0, 2.4, 2.2],
+      ["lampiao_cristal", "l", 0, 1.0, 2.6],
+    ],
+    links: [[3, 5, "hotel2"]],
+    plan: { x: 21, y: 0 },
   },
   // ------------------------------------------------------------ a Casa do Doutor (o casarão olha para o fundo)
   {

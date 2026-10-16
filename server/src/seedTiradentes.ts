@@ -21,7 +21,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * (giro 4) tem a de dentro na parede da frente (planBottom); virado para o fundo (giro 0), na do fundo (planTop).
  */
 export const TIRADENTES = "Tiradentes · ";
-export const TIRADENTES_REV = 1;
+export const TIRADENTES_REV = 2;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -316,7 +316,7 @@ const CENAS: CenaSpec[] = [
     key: "pousada",
     name: TIRADENTES + "Pousada",
     description:
-      "A recepção da pousada: o assoalho encerado, o balcão de madeira com o livro de hóspedes e as chaves penduradas atrás, as poltronas e a mesa redonda com o vaso, o relógio na parede. A escada sobe para os quartos; a porta da esquerda dá na sala do café.",
+      "A recepção da pousada: o assoalho encerado, o balcão de madeira com o livro de hóspedes e as chaves penduradas atrás, as poltronas e a mesa redonda com o vaso, o relógio na parede. A escada sobe para o corredor dos quatro quartos (dois bons, um simples e o dos fundos, o mais barato); a porta da esquerda dá na sala do café.",
     layout: planBottom(10, 7, 5),
     andar: POUSADA,
     style: "taco",
@@ -350,7 +350,7 @@ const CENAS: CenaSpec[] = [
     links: [
       [5, 6, "cidade"],
       [0, 3, "cafe"],
-      [1, 0, "quarto"],
+      [1, 0, "corredor"],
     ],
     plan: { x: 8, y: 0 },
   },
@@ -392,18 +392,57 @@ const CENAS: CenaSpec[] = [
     links: [[7, 3, "pousada"]],
     plan: { x: 0, y: 0 },
   },
+  // o andar de cima (16/10, o Felipe: "pelo menos 4 quartos em todo hotel ou pousada"; os agentes pagam mais pelo
+  // quarto deles): o corredor com a escada no meio e dois quartos de cada lado. Cada quarto tem a condição do descanso
+  // do interlúdio (LR p. 92): dois bons (confortável), um simples (normal) e o dos fundos (precária)
   {
-    key: "quarto",
-    name: TIRADENTES + "Quarto da Pousada",
+    key: "corredor",
+    name: TIRADENTES + "Corredor da Pousada",
     description:
-      "O quarto da pousada, no andar de cima: a cama de casal com a colcha de retalhos, os criados-mudos, o guarda-roupa, a cômoda com o oratório na parede, o tapete e a janela de cortina para a Rua Direita.",
-    // a escada desce pela frente do quarto (o vão da porta é o patamar)
-    layout: planBottom(8, 6, 4),
+      "O corredor do andar de cima: o assoalho que range, a passadeira, a cômoda com o vaso, os quadros de santo e as quatro portas numeradas. A escada desce para a recepção.",
+    layout: planBottom(16, 4, 8),
     andar: POUSADA2,
     style: "taco",
     ...DENTRO,
     floor: [
-      ["escada_desce", 4, 4, 0],
+      ["escada_desce", 8, 1, 4],
+      ["portal", 4, 0, 4],
+      ["portal", 12, 0, 4],
+      ["portal", 4, 3, 0],
+      ["portal", 12, 3, 0],
+      ["rug_worn", 5, 1, 2],
+      ["rug_worn", 9, 1, 2],
+      ["comoda", 0, 1, 2],
+      ["vaso_flores", 0, 1, 0],
+      ["plant", 15, 0, 0],
+      ...lampadas([6, 2], [11, 2]),
+    ],
+    wall: [
+      ["quadro_fazenda~05", "r", 0, 2.2, 2.6],
+      ["quadro_fazenda~10", "r", 0, 14.0, 2.6],
+      ["clock", "l", 0, 2.0, 3.4],
+    ],
+    links: [
+      [8, 1, "pousada"],
+      [4, 0, "quarto"],
+      [12, 0, "quarto2"],
+      [4, 3, "quarto3"],
+      [12, 3, "quarto4"],
+    ],
+    plan: { x: 0, y: 6 },
+  },
+  {
+    key: "quarto",
+    name: TIRADENTES + "Quarto da Pousada",
+    description:
+      "O quarto 1, o melhor da pousada, de frente para a Rua Direita: a cama de casal com a colcha de retalhos, os criados-mudos, o guarda-roupa, a cômoda com o oratório na parede, a poltrona e o tapete. Descanso confortável.",
+    layout: planBottom(8, 6, 4),
+    andar: POUSADA2,
+    style: "taco",
+    ...DENTRO,
+    descanso: "confortavel",
+    floor: [
+      ["portal", 4, 5, 0],
       ["cama_casal", 1, 0, 4],
       ["nightstand", 0, 0, 4],
       ["nightstand", 3, 0, 4],
@@ -421,8 +460,90 @@ const CENAS: CenaSpec[] = [
       ["oratorio", "l", 0, 3.9, 2.1],
       ["quadro_fazenda~11", "l", 0, 1.3, 2.6],
     ],
-    links: [[4, 4, "pousada"]],
+    links: [[4, 5, "corredor"]],
+    plan: { x: 0, y: 0 },
+  },
+  {
+    key: "quarto2",
+    name: TIRADENTES + "Quarto 2 da Pousada",
+    description:
+      "O quarto 2, também dos bons: a cama de casal arrumada, a escrivaninha com o tinteiro e a cadeira, o guarda-roupa, a poltrona perto da janela e o vaso de flores do dia. Descanso confortável.",
+    layout: planBottom(8, 6, 4),
+    andar: POUSADA2,
+    style: "taco",
+    ...DENTRO,
+    descanso: "confortavel",
+    floor: [
+      ["portal", 4, 5, 0],
+      ["guarda_roupa", 0, 0, 4],
+      ["nightstand", 3, 0, 4],
+      ["cama_casal", 4, 0, 4],
+      ["nightstand", 6, 0, 4],
+      ["candles", 6, 0, 0],
+      ["desk_wood", 0, 3, 2],
+      ["chair_wood", 1, 3, 6],
+      ["vaso_flores", 0, 3, 0],
+      ["papers", 0, 4, 0],
+      ["rug_worn", 5, 3, 0],
+      ["armchair", 7, 3, 6],
+      ...lampadas([4, 3]),
+    ],
+    wall: [
+      ["janela_cozinha", "r", 0, 2.3, 1.6],
+      ["quadro_fazenda~03", "l", 0, 1.5, 2.6],
+    ],
+    links: [[4, 5, "corredor"]],
     plan: { x: 8, y: 0 },
+  },
+  {
+    key: "quarto3",
+    name: TIRADENTES + "Quarto 3 da Pousada",
+    description:
+      "O quarto 3, o simples: duas camas de solteiro com o criado-mudo no meio, a cômoda e a cadeira. Limpo e sem luxo. Descanso normal.",
+    layout: planTop(8, 6, 4),
+    andar: POUSADA2,
+    style: "taco",
+    ...DENTRO,
+    descanso: "normal",
+    floor: [
+      ["portal", 4, 1, 4],
+      ["cama_solteiro", 0, 3, 2],
+      ["nightstand", 0, 4, 2],
+      ["cama_solteiro", 0, 5, 2, oculta("A cama do 3", "No livro de hóspedes, quem dorme no quarto 3 assina sempre com a mesma letra, com nomes diferentes. Embaixo do colchão, um caderno com a mesma letra: datas, e ao lado de cada uma, \"ainda não\".")],
+      ["candles", 0, 4, 0],
+      ["comoda", 7, 2, 6],
+      ["chair_wood", 6, 6, 0],
+      ["rug_worn", 3, 3, 0],
+      ...lampadas([4, 4]),
+    ],
+    wall: [["quadro_fazenda~07", "r", 1, 6.0, 2.6]],
+    links: [[4, 1, "corredor"]],
+    plan: { x: 0, y: 10 },
+  },
+  {
+    key: "quarto4",
+    name: TIRADENTES + "Quarto 4 da Pousada",
+    description:
+      "O quarto 4, o dos fundos e o mais barato: a cama de solteiro de colchão fino, a cadeira bamba, os caixotes no lugar da cômoda, a vela, a mancha de mofo no canto e a goteira quando chove. Descanso precário.",
+    layout: planTop(8, 6, 4),
+    andar: POUSADA2,
+    style: "taco",
+    ...DENTRO,
+    darkness: 0.58,
+    descanso: "precario",
+    floor: [
+      ["portal", 4, 1, 4],
+      ["cama_solteiro", 5, 5, 6],
+      ["crate_wood", 0, 6, 0],
+      ["crate_wood", 1, 6, 0],
+      ["candles", 0, 6, 0],
+      ["chair_wood", 0, 2, 2],
+      ["dirt", 2, 4, 0],
+      ["dirt", 6, 2, 0],
+    ],
+    wall: [],
+    links: [[4, 1, "corredor"]],
+    plan: { x: 8, y: 10 },
   },
   // ------------------------------------------------------------ a Venda e o Boteco
   {

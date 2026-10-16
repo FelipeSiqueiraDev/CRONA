@@ -9,6 +9,7 @@ import type { CampaignState, LootKind } from './rpg';
 import type { PapelConta, Role, Session, SessionAction, Token } from './session';
 import type { Documento } from './documentos';
 import type { FichaSalva } from './fichas';
+import type { LugarDescanso } from './regras/interludio';
 import type { AcaoNevoa, MarcaMesa, NevoaCena } from './mesa';
 import type { TipoItemCatalogo } from './regras/ficha';
 import type { VitalKey } from './vitals';
@@ -316,6 +317,8 @@ export interface RoomInfo {
   particleLevel?: number;
   /** vista tática: a câmera do tabuleiro em cima, como um mapa de batalha (o mestre liga; a mesa acompanha) */
   tatico?: boolean;
+  /** o quarto (de hotel, de pousada): a condição do descanso de quem dorme aqui no interlúdio (LR p. 92) */
+  descanso?: LugarDescanso;
   /** a névoa revelada aos poucos (docs/FERRAMENTAS-DA-MESA.md): sem ela, a mesa vê a cena inteira */
   nevoa?: NevoaCena;
   /** mapa improvisado: a imagem que o mestre subiu, deitada no chão inteiro da cena */
@@ -344,6 +347,8 @@ export interface SceneInfo {
   estilo?: FloorStyle;
   /** a Viagem (a van): fora da planta */
   viagem?: boolean;
+  /** o quarto (de hotel, de pousada): a condição do descanso de quem dorme nele (LR p. 92) */
+  descanso?: LugarDescanso;
   /** ao ar livre: a planta desenha o terreno (grama, estrada, água) no lugar da pedra */
   aberto?: boolean;
   terreno?: string;

@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 37;
+export const FAZENDA_REV = 38;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -516,6 +516,8 @@ export interface CenaSpec {
   particles?: ParticleKind[];
   floor: FloorSeed[];
   wall?: WallSeed[];
+  /** o quarto (de hotel, de pousada): a condição do descanso de quem dorme nele (LR p. 92) */
+  descanso?: RoomData["descanso"];
   /** passagens: [x, y, chave da cena de destino] */
   links: [number, number, string][];
   /** na planta do andar: onde fica o canto de cima à esquerda do cômodo (sem o vão da porta) e o giro */
@@ -725,11 +727,12 @@ const DECOR = {
     dec("sacas", 14, 22),
   ],
   // o hall: o aparador com o vaso seco e a vela, a mesinha dos recados, o cesto dos guarda-chuvas e a lama da porta
+  // (16/10, o Felipe: "encostado na parede como é de costume") o aparador e a mesinha junto da parede, não no meio
   hall: [
-    dec("vaso_flores", 5, 5),
-    vela(5, 6),
-    dec("table_small", 1, 7),
-    dec("books_stack", 1, 7),
+    dec("vaso_flores", 6, 5),
+    vela(6, 6),
+    dec("table_small", 0, 7),
+    dec("books_stack", 0, 7),
     dec("igarape_cesto", 4, 10),
     dec("dirt", 3, 10),
   ],
@@ -979,9 +982,10 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["portal", 2, 11, 0],
       ["portal", 3, 11, 0],
       ["rug_worn", 2, 5, 0],
-      ["bench", 1, 4, 2],
-      ["sideboard", 5, 5, 6],
-      ["armchair", 1, 10, 2],
+      // encostados nas paredes, entre as portas (16/10)
+      ["bench", 0, 4, 2],
+      ["sideboard", 6, 5, 6],
+      ["armchair", 0, 10, 2],
       ["plant", 1, 1, 0],
       ["plant", 5, 1, 0],
       ["plant", 5, 10, 0],
@@ -1819,6 +1823,8 @@ export function estilo(room: RoomData, spec: CenaSpec) {
   else delete room.aberto;
   if (spec.terreno) room.terreno = spec.terreno;
   else delete room.terreno;
+  if (spec.descanso) room.descanso = spec.descanso;
+  else delete room.descanso;
 }
 
 /** Liga as passagens de cada cena (porta, escada, entrada, porteira). */

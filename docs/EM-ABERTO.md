@@ -152,6 +152,25 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10 (branch `claude/tatica-codigo`): quartos de hospedagem com a condição do descanso
+
+- O Felipe: "pelo menos 4 quartos em todo lugar que for hotel ou pousada" (os agentes pagam mais pelo quarto deles), e
+  quartos variados (bons, médios, ruins) para pesar na escolha.
+- `RoomData.descanso` / `RoomInfo.descanso` / `SceneInfo.descanso` (a condição do LR p. 92: precária, normal,
+  confortável, luxuosa), posta pelo seed (`CenaSpec.descanso`, `estilo`).
+- **Interlúdio:** cada agente usa a condição do quarto onde a peça dele está (`NoInterludio.lugar`,
+  `Hotel.descansoDaFicha`); sem quarto, a do grupo, que o mestre escolhe. A aba mostra "No quarto: condição ..." no
+  cartão do agente; o cartão da sala tem o selo "CONDIÇÃO ...".
+- **Tiradentes (`TIRADENTES_REV` 2):** o Corredor da Pousada (a escada no meio, dois quartos de cada lado); o Quarto da
+  Pousada (o 1) perdeu a escada e ganhou porta; Quarto 2 (confortável), 3 (normal, com o caderno do "ainda não") e 4
+  (precária, o dos fundos).
+- **Santo Berço (`SANTO_BERCO_REV` 11):** o corredor do hotel com 28 casas e o Quarto 4 (confortável, o dente de leite);
+  o Quarto 1 é o normal; 2, 3 e 4 confortáveis.
+- **Hall do Casarão (`FAZENDA_REV` 38):** banco, mesinha, aparador e poltrona encostados nas paredes, entre as portas
+  (o Felipe: "encostado na parede como é de costume").
+- **Falta / ideia:** o preço de cada quarto (o livro não tem tabela de hospedagem; o mestre combina); a arte de pixel da
+  `table_small` (ainda caixa).
+
 ## Feito em 16/10 (branch `claude/tatica-codigo`): a vista tática toda por código
 
 - O Felipe aprovou o visual da vista tática do Bar e pediu "tática pra tudo nesse estilo, por código". Até aqui, as

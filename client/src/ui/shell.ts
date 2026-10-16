@@ -1051,7 +1051,7 @@ export class Shell {
       return;
     }
     if (this.rpgTab === 'INTERLÚDIO') {
-      this.abaInterludio.render(body, party, this.fichasMapa, this.gm, () => this.renderRpg(true));
+      this.abaInterludio.render(body, party, this.fichasMapa, this.gm, () => this.renderRpg(true), this.campaign?.scenes ?? []);
       return;
     }
     if (!party.length) {
@@ -2253,7 +2253,14 @@ export class Shell {
         { class: 'sala-txt' },
         h('h3', { class: 'marca' }, nome),
         h('p', null, r?.description || 'Clique num objeto do cenário para ver descrição, interações e itens.'),
-        h('div', { class: 'sala-chips' }, h('span', null, ic('pino'), (cena?.floor ?? 'Andar único').toUpperCase()), h('span', null, ic('camadas'), r?.area ? r.area.toUpperCase() : `${this.campaign?.scenes.length ?? 1} CÔMODOS`)),
+        h(
+          'div',
+          { class: 'sala-chips' },
+          h('span', null, ic('pino'), (cena?.floor ?? 'Andar único').toUpperCase()),
+          h('span', null, ic('camadas'), r?.area ? r.area.toUpperCase() : `${this.campaign?.scenes.length ?? 1} CÔMODOS`),
+          // o quarto (de hotel, de pousada): a condição do descanso de quem dorme aqui (LR p. 92)
+          r?.descanso ? h('span', { title: 'Condição do descanso no interlúdio (LR p. 92)' }, ic('estrela'), `CONDIÇÃO ${regras.LUGARES_DESCANSO.find((l) => l.id === r.descanso)?.nome.toUpperCase()}`) : null,
+        ),
         // o mapa improvisado (a imagem que o mestre subiu) se apaga daqui; quem estiver nele volta
         r?.mapa && this.gm
           ? h('button', { class: 'sala-apagar', type: 'button', onclick: () => void this.apagarMapa(r.id, nome) }, ic('lixo'), h('span', null, 'Apagar este mapa'))

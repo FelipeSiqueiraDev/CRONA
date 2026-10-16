@@ -48,6 +48,8 @@ export interface NoInterludio {
   max: { pv: number; pe: number; san: number };
   bonus: { exercicio: number; leitura: number };
   escolha: EscolhaInterludio;
+  /** onde este personagem descansa, se não for o lugar do grupo (o quarto dele no hotel, na pousada) */
+  lugar?: LugarDescanso;
 }
 
 export interface ResultadoInterludio {
@@ -80,9 +82,10 @@ export function errosDaEscolha(e: EscolhaInterludio): string[] {
 
 /** O interlúdio de todos de uma vez (o relaxar depende de quantos relaxam juntos). */
 export function resolverInterludio(lugar: LugarDescanso, grupo: NoInterludio[]): ResultadoInterludio[] {
-  const vezes = LUGARES_DESCANSO.find((l) => l.id === lugar)?.vezes ?? 1;
   const relaxam = grupo.filter((p) => p.escolha.acoes.includes('relaxar')).length;
   return grupo.map((p) => {
+    // cada um no lugar dele: o quarto que pegou (o bom, o médio, o ruim) ou, sem quarto, o lugar do grupo
+    const vezes = LUGARES_DESCANSO.find((l) => l.id === (p.lugar ?? lugar))?.vezes ?? 1;
     const e = p.escolha;
     const erros = errosDaEscolha(e);
     const notas: string[] = [];

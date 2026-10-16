@@ -147,6 +147,9 @@ describe('interlúdio (LR p. 92–93)', () => {
     assert.equal(c.bonus.exercicio, 1);
     assert.deepEqual(regras.errosDaEscolha({ acoes: ['dormir', 'dormir'] }).length, 1);
     assert.equal(regras.resolverInterludio('precario', [no(1, ['dormir'])])[0].pv, 2, 'precária: metade');
+    // cada um no quarto dele (o hotel, a pousada): o quarto vale no lugar da condição do grupo
+    const [bom, ruim, sem] = regras.resolverInterludio('normal', [{ ...no(1, ['dormir']), lugar: 'confortavel' }, { ...no(2, ['dormir']), lugar: 'precario' }, no(3, ['dormir'])]);
+    assert.deepEqual([bom.pv, ruim.pv, sem.pv], [8, 2, 4], 'quarto bom ×2, quarto ruim ×0,5, sem quarto o do grupo');
   });
 
   test('o servidor aplica na ficha, guarda os bônus e gasta', () => {

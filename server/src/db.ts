@@ -1,4 +1,4 @@
-import type { Criatura, PecaCriatura } from '@crona/shared';
+import type { Criatura, PecaCriatura, regras } from '@crona/shared';
 import type { ViagemInfo, IconeLugar, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
@@ -41,6 +41,8 @@ export interface RoomData {
   montagem?: string;
   /** vista tática ligada (a câmera do tabuleiro em cima) */
   tatico?: boolean;
+  /** o quarto (de hotel, de pousada): a condição do descanso de quem dorme aqui no interlúdio (LR p. 92) */
+  descanso?: regras.LugarDescanso;
   /** a névoa revelada aos poucos: as casas que a mesa vê (sem ela, a mesa vê tudo) */
   nevoa?: NevoaCena;
   /** mapa improvisado: a imagem enviada pelo mestre, no chão inteiro da cena */

@@ -42,7 +42,7 @@ describe("Santo Berço", () => {
   test("o lugar existe: a vila e todos os interiores, numa campanha com o nome do lugar", () => {
     const todas = [
       "Vila", "Torre do Porteiro", "Alto da Torre", "Taverna", "Ferraria", "Quarto do Ferreiro",
-      "Hotel", "Corredor do Hotel", "Quarto 1 do Hotel", "Quarto 2 do Hotel", "Quarto 3 do Hotel",
+      "Hotel", "Corredor do Hotel", "Quarto 1 do Hotel", "Quarto 2 do Hotel", "Quarto 3 do Hotel", "Quarto 4 do Hotel",
       "Casa do Doutor", "Consultório do Doutor", "Quarto do Doutor",
       "Fazenda", "Celeiro da Fazendeira", "Celeiro Velho", "Casa da Fazendeira", "Bosque da Provação",
       "Boca das Minas", "Galeria Verde", "Galeria Vermelha", "Galeria Azul", "Câmara dos Cristais Pretos",

@@ -1,4 +1,4 @@
-import { regras, type FichaSalva, type PartyMember } from '@crona/shared';
+import { regras, type FichaSalva, type PartyMember, type SceneInfo } from '@crona/shared';
 import type { App } from './app';
 import { portraitCanvas } from '../render/portrait';
 import { h } from './dom';
@@ -29,7 +29,7 @@ export class AbaInterludio {
     this.app = app;
   }
 
-  render(body: HTMLElement, party: PartyMember[], fichas: FichaSalva[], gm: boolean, redesenhar: () => void) {
+  render(body: HTMLElement, party: PartyMember[], fichas: FichaSalva[], gm: boolean, redesenhar: () => void, cenas: SceneInfo[] = []) {
     // os agentes desta campanha que têm ficha
     const agentes = party
       .map((p) => ({ p, f: fichas.find((f) => f.personagem !== undefined && f.personagem === p.look?.charId) }))
@@ -50,6 +50,8 @@ export class AbaInterludio {
         max: { pv: c.pv, pe: c.pe, san: c.san },
         bonus: { exercicio: f.bonus?.exercicio ?? 0, leitura: f.bonus?.leitura ?? 0 },
         escolha: this.escolhas.get(f.id) ?? { acoes: [] },
+        // no quarto (do hotel, da pousada): a condição dele, como o servidor faz
+        lugar: cenas.find((s) => s.id === agentes.find((x) => x.f === f)?.p.roomId)?.descanso,
       };
     });
     const previa = new Map(regras.resolverInterludio(this.lugar, nos).map((r) => [r.id, r]));
@@ -118,6 +120,8 @@ export class AbaInterludio {
           h('span', { class: 'il-foto' }, portraitCanvas(p.look, 44, { dir: 2 })),
           h('b', null, f.nome || p.name),
           h('span', { class: 'il-vit' }, `PV ${n.atual.pv}/${n.max.pv} · PE ${n.atual.pe}/${n.max.pe} · SAN ${n.atual.san}/${n.max.san}`),
+          // dormindo num quarto (hotel, pousada): a condição do quarto vale no lugar da do grupo
+          n.lugar ? h('span', { class: 'il-quarto', title: 'Está num quarto: descansa na condição dele, não na do grupo.' }, `No quarto: condição ${regras.LUGARES_DESCANSO.find((l) => l.id === n.lugar)?.nome.toLowerCase()}`) : null,
         ),
         acoes,
         prato,

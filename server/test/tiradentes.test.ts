@@ -11,7 +11,7 @@ describe("Tiradentes", () => {
   const porNome = (n: string) => salas.find((r) => r.name === TIRADENTES + n)!;
 
   test("o lugar existe: a cidade e os interiores, numa campanha com o nome do lugar", () => {
-    for (const n of ["Cidade", "Igreja Matriz", "Sacristia", "Pousada", "Sala do Café", "Quarto da Pousada", "Venda", "Boteco", "Casa"]) assert.ok(porNome(n), `falta ${n}`);
+    for (const n of ["Cidade", "Igreja Matriz", "Sacristia", "Pousada", "Sala do Café", "Corredor da Pousada", "Quarto da Pousada", "Quarto 2 da Pousada", "Quarto 3 da Pousada", "Quarto 4 da Pousada", "Venda", "Boteco", "Casa"]) assert.ok(porNome(n), `falta ${n}`);
     const camp = db.campaigns?.[String(Math.min(...salas.map((r) => r.id)))];
     assert.equal(camp?.title, "Tiradentes");
     assert.equal(salas[0].name, TIRADENTES + "Cidade", "a entrada do lugar é a cidade");
@@ -70,4 +70,15 @@ describe("Tiradentes", () => {
     assert.equal(casa.items.find((i) => i.defId === "fogao_lenha")?.state, 1);
     for (const r of salas) for (const it of r.items) if (it.defId === "ceiling_lamp" || it.defId === "poste_ferro") assert.equal(it.state, 0, `${r.name}: ${it.defId} apagado`);
   });
+});
+
+describe("hospedagem: pelo menos 4 quartos, cada um com a condição do descanso", () => {
+  const db = seedDb();
+  upgradeDb(db);
+  for (const [lugar, prefixo] of [["a Pousada de Tiradentes", TIRADENTES], ["o Hotel de Santo Berço", "Santo Berço · "]] as const)
+    test(lugar, () => {
+      const quartos = db.rooms.filter((r) => r.name.startsWith(prefixo) && /Quarto/.test(r.name) && (r.floor ?? "").includes("2º") && r.descanso);
+      assert.ok(quartos.length >= 4, `${lugar}: ${quartos.length} quartos`);
+      assert.ok(new Set(quartos.map((q) => q.descanso)).size >= 2, `${lugar}: os quartos variam (bom, médio, ruim)`);
+    });
 });

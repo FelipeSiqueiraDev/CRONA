@@ -907,6 +907,7 @@ export class Hotel implements HotelApi {
           max: { pv: calc.pv, pe: calc.pe, san: calc.san },
           bonus: { exercicio: f.bonus?.exercicio ?? 0, leitura: f.bonus?.leitura ?? 0 },
           escolha,
+          lugar: this.descansoDaFicha(f),
         },
       });
     }
@@ -922,12 +923,23 @@ export class Hotel implements HotelApi {
       if (f.personagem) this.fichaParaPecas(f);
       const nomes = n.escolha.acoes.map((a) => regras.ACOES_INTERLUDIO.find((x) => x.id === a)!.nome.toLowerCase());
       const ganhos = [r.pv && `+${r.pv} PV`, r.pe && `+${r.pe} PE`, r.san && `+${r.san} SAN`].filter(Boolean).join(', ');
-      const texto = `Interlúdio (${lugar.nome.toLowerCase()}): ${f.nome} — ${nomes.join(' e ')}${ganhos ? `: ${ganhos}` : ''}${r.notas.length ? ` (${r.notas.join('; ')})` : ''}.`;
+      const dele = regras.LUGARES_DESCANSO.find((l) => l.id === (n.lugar ?? lugar.id)) ?? lugar;
+      const texto = `Interlúdio (${n.lugar ? `no quarto, ${dele.nome.toLowerCase()}` : dele.nome.toLowerCase()}): ${f.nome} — ${nomes.join(' e ')}${ganhos ? `: ${ganhos}` : ''}${r.notas.length ? ` (${r.notas.join('; ')})` : ''}.`;
       if (sala) this.log(sala, 'scene', texto);
     }
     this.save();
     this.enviarFichas();
     this.touch();
+  }
+
+  /**
+   * O quarto onde a peça da ficha está, se a sala é um quarto com a condição do descanso (o hotel, a pousada: o quarto
+   * bom, o médio, o ruim). Sem peça num quarto, o interlúdio usa o lugar que o mestre escolheu para o grupo.
+   */
+  private descansoDaFicha(f: FichaSalva): regras.LugarDescanso | undefined {
+    if (!f.personagem) return undefined;
+    for (const r of this.rooms.values()) if (r.data.descanso && r.temPersonagem(f.personagem)) return r.data.descanso;
+    return undefined;
   }
 
   /** Gasta um +1d6 guardado (delta −1) ou zera os da ficha (fim da missão). */
@@ -1164,6 +1176,7 @@ export class Hotel implements HotelApi {
       users: r.userPositions(),
       ...(r.data.floorStyle ? { estilo: r.data.floorStyle } : {}),
       ...(r.data.viagem ? { viagem: true } : {}),
+      ...(r.data.descanso ? { descanso: r.data.descanso } : {}),
       ...(r.data.aberto ? { aberto: true, terreno: r.data.terreno, marcos: r.marcos(), simbolos: r.simbolos() } : {}),
     }));
     this.ensureLayout(camp, scenes);

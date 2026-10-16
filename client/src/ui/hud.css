@@ -2706,6 +2706,12 @@ html:not(.modo-ficha) .il-vit {
   font: 600 1.05rem / 1.2 var(--r-pixel) !important;
   color: var(--r-texto-3) !important;
 }
+/* o quarto do agente (hotel, pousada): a condição do descanso dele */
+html:not(.modo-ficha) .il-quarto {
+  font: 700 1rem / 1.2 var(--r-pixel);
+  color: #f0c060;
+  white-space: nowrap;
+}
 html:not(.modo-ficha) .il-ganho {
   font: 700 1.15rem / 1.2 var(--r-pixel) !important;
   color: #8fe0a0 !important;
