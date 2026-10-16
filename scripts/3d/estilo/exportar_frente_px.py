@@ -20,11 +20,12 @@ from PIL import Image
 import exportar_px as EX
 from exportar_px import ITENS
 
-FOGO_PADRAO = ['poste_ferro', 'poste_cristal', 'lareira', 'fogueira', 'forja', 'fogao_lenha', 'candles', 'candelabra']
+FOGO_PADRAO = ['poste_ferro', 'poste_cristal', 'lareira', 'fogueira', 'forja', 'fogao_lenha', 'candles', 'candelabra',
+               'lareira_cristal', 'forja_cristal', 'fogao_cristal', 'velas_cristal']
 # quanto mais perto da câmera que a chama (metros) um pixel tem de estar para tapá-la (`folgaFogo` no moveis.json): na
 # lanterna, a grade fininha na frente da chama tapa logo; na fogueira e na forja, a chama queima no meio das lenhas e
 # só o anel de pedras da frente a tapa
-FOLGA = {'fogueira': 0.3, 'forja': 0.25, 'lareira': 0.12, 'fogao_lenha': 0.05}
+FOLGA = {'fogueira': 0.3, 'forja': 0.25, 'lareira': 0.12, 'fogao_lenha': 0.05, 'lareira_cristal': 0.12, 'forja_cristal': 0.25, 'fogao_cristal': 0.05}
 
 
 def gravar_prof(prof, arq):

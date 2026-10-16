@@ -304,7 +304,7 @@ BOCAS = ((2.62, 0.43), (2.12, 0.45))                                    # as boc
 FURO = 0.095                                                            # o buraco da boca aberta
 
 
-def fogao(aceso=True):
+def fogao(aceso=True, lenha=True):
     x0, x1, yb, zc, zt = FOG['x0'], FOG['x1'], FOG['yb'], FOG['zc'], FOG['zt']
     m, bw, zp, bt, yf = FORN['m'], FORN['bw'], FORN['zp'], FORN['bt'], FORN['yf']
     # ---- o corpo de alvenaria: azulejinho creme, a barra vermelha embaixo ----
@@ -455,9 +455,11 @@ def fogao(aceso=True):
     fp([(nx0, 0.32, nz0), (nx0, yb, nz0), (nx0, yb, nz1), (nx0, 0.32, nz1)], (1, 0, 0), liso('#3a2a1e'), on)
     # três toras grandes embaixo e uma em cima, encaixada (as pontas claras com os anéis e a casca escura)
     r = 0.078
-    for k, xx in enumerate((nx0 + 0.095, nx0 + 0.265, nx0 + 0.435)):
+    # lenha=False: o nicho vazio (Santo Berço guarda ali os cristais de reserva; quem desenha é o santo_berco_cristal)
+    for k, xx in enumerate((nx0 + 0.095, nx0 + 0.265, nx0 + 0.435) if lenha else ()):
         tora_y(xx, nz0 + r, r, 0.36, yb - 0.015 - 0.02 * (k % 2), casca=('#5e3c22', '#6a4428', '#553620')[k], miolo=('#e8c48c', '#dcb47a', '#e4be84')[k], lados=12)
-    tora_y(nx0 + 0.18, nz0 + r + 1.62 * r, r * 0.92, 0.36, yb - 0.035, casca='#6a4428', miolo='#eccb94', lados=12)
+    if lenha:
+        tora_y(nx0 + 0.18, nz0 + r + 1.62 * r, r * 0.92, 0.36, yb - 0.035, casca='#6a4428', miolo='#eccb94', lados=12)
 
     # ---- o varão de latão na frente da chapa, com o pano de prato xadrez ----
     for xx in (x0 + 0.05, x1 - 0.07):

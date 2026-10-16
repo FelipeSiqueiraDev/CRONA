@@ -39995,5 +39995,622 @@
         "ay": 44.7
       }
     }
+  },
+  "lareira_cristal": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "lareira_cristal/giro-4.png",
+        "ax": 104.0,
+        "ay": 163.0,
+        "prof": "lareira_cristal/prof-4.png"
+      },
+      "2": {
+        "arquivo": "lareira_cristal/giro-2.png",
+        "ax": 41.0,
+        "ay": 163.0,
+        "prof": "lareira_cristal/prof-2.png"
+      },
+      "0": {
+        "arquivo": "lareira_cristal/giro-0.png",
+        "ax": 104.0,
+        "ay": 158.0,
+        "prof": "lareira_cristal/prof-0.png"
+      },
+      "6": {
+        "arquivo": "lareira_cristal/giro-6.png",
+        "ax": 40.0,
+        "ay": 158.0,
+        "prof": "lareira_cristal/prof-6.png"
+      }
+    },
+    "real": [
+      2.17,
+      0.73,
+      2.0
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "lareira_cristal/giro-4-1.png",
+            "ax": 104.0,
+            "ay": 163.0,
+            "prof": "lareira_cristal/prof-4-1.png"
+          },
+          "2": {
+            "arquivo": "lareira_cristal/giro-2-1.png",
+            "ax": 41.0,
+            "ay": 163.0,
+            "prof": "lareira_cristal/prof-2-1.png"
+          },
+          "0": {
+            "arquivo": "lareira_cristal/giro-0-1.png",
+            "ax": 104.0,
+            "ay": 158.0,
+            "prof": "lareira_cristal/prof-0-1.png"
+          },
+          "6": {
+            "arquivo": "lareira_cristal/giro-6-1.png",
+            "ax": 40.0,
+            "ay": 158.0,
+            "prof": "lareira_cristal/prof-6-1.png"
+          }
+        }
+      }
+    },
+    "cima": {
+      "arquivo": "lareira_cristal/cima.png",
+      "caixa": [
+        15,
+        13,
+        107,
+        44
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "lareira_cristal/cima-1.png",
+        "caixa": [
+          15,
+          13,
+          107,
+          44
+        ]
+      }
+    },
+    "voo": {
+      "25": {
+        "4": {
+          "arquivo": "lareira_cristal/voo-25-giro-4.png",
+          "ax": 59.9,
+          "ay": 94.8
+        },
+        "2": {
+          "arquivo": "lareira_cristal/voo-25-giro-2.png",
+          "ax": 51.0,
+          "ay": 99.8
+        },
+        "0": {
+          "arquivo": "lareira_cristal/voo-25-giro-0.png",
+          "ax": 60.9,
+          "ay": 88.8
+        },
+        "6": {
+          "arquivo": "lareira_cristal/voo-25-giro-6.png",
+          "ax": 50.0,
+          "ay": 94.8
+        }
+      },
+      "50": {
+        "4": {
+          "arquivo": "lareira_cristal/voo-50-giro-4.png",
+          "ax": 60.0,
+          "ay": 76.3
+        },
+        "2": {
+          "arquivo": "lareira_cristal/voo-50-giro-2.png",
+          "ax": 42.0,
+          "ay": 88.2
+        },
+        "0": {
+          "arquivo": "lareira_cristal/voo-50-giro-0.png",
+          "ax": 60.0,
+          "ay": 67.3
+        },
+        "6": {
+          "arquivo": "lareira_cristal/voo-50-giro-6.png",
+          "ax": 41.0,
+          "ay": 84.2
+        }
+      },
+      "75": {
+        "4": {
+          "arquivo": "lareira_cristal/voo-75-giro-4.png",
+          "ax": 58.5,
+          "ay": 50.2
+        },
+        "2": {
+          "arquivo": "lareira_cristal/voo-75-giro-2.png",
+          "ax": 32.1,
+          "ay": 68.5
+        },
+        "0": {
+          "arquivo": "lareira_cristal/voo-75-giro-0.png",
+          "ax": 58.5,
+          "ay": 40.2
+        },
+        "6": {
+          "arquivo": "lareira_cristal/voo-75-giro-6.png",
+          "ax": 31.1,
+          "ay": 66.5
+        }
+      }
+    },
+    "vooKv": 48.0,
+    "folgaFogo": 0.12
+  },
+  "forja_cristal": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "forja_cristal/giro-4.png",
+        "ax": 84.0,
+        "ay": 140.0,
+        "prof": "forja_cristal/prof-4.png"
+      },
+      "2": {
+        "arquivo": "forja_cristal/giro-2.png",
+        "ax": 53.0,
+        "ay": 151.0,
+        "prof": "forja_cristal/prof-2.png"
+      },
+      "0": {
+        "arquivo": "forja_cristal/giro-0.png",
+        "ax": 102.0,
+        "ay": 130.0,
+        "prof": "forja_cristal/prof-0.png"
+      },
+      "6": {
+        "arquivo": "forja_cristal/giro-6.png",
+        "ax": 70.0,
+        "ay": 119.0,
+        "prof": "forja_cristal/prof-6.png"
+      }
+    },
+    "real": [
+      2.26,
+      1.36,
+      1.4
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "forja_cristal/giro-4-1.png",
+            "ax": 84.0,
+            "ay": 140.0,
+            "prof": "forja_cristal/prof-4-1.png"
+          },
+          "2": {
+            "arquivo": "forja_cristal/giro-2-1.png",
+            "ax": 53.0,
+            "ay": 151.0,
+            "prof": "forja_cristal/prof-2-1.png"
+          },
+          "0": {
+            "arquivo": "forja_cristal/giro-0-1.png",
+            "ax": 102.0,
+            "ay": 130.0,
+            "prof": "forja_cristal/prof-0-1.png"
+          },
+          "6": {
+            "arquivo": "forja_cristal/giro-6-1.png",
+            "ax": 70.0,
+            "ay": 119.0,
+            "prof": "forja_cristal/prof-6-1.png"
+          }
+        }
+      }
+    },
+    "cima": {
+      "arquivo": "forja_cristal/cima.png",
+      "caixa": [
+        12,
+        16,
+        109,
+        74
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "forja_cristal/cima-1.png",
+        "caixa": [
+          12,
+          16,
+          109,
+          74
+        ]
+      }
+    },
+    "voo": {
+      "25": {
+        "4": {
+          "arquivo": "forja_cristal/voo-25-giro-4.png",
+          "ax": 57.9,
+          "ay": 77.4
+        },
+        "2": {
+          "arquivo": "forja_cristal/voo-25-giro-2.png",
+          "ax": 48.9,
+          "ay": 90.9
+        },
+        "0": {
+          "arquivo": "forja_cristal/voo-25-giro-0.png",
+          "ax": 69.9,
+          "ay": 67.4
+        },
+        "6": {
+          "arquivo": "forja_cristal/voo-25-giro-6.png",
+          "ax": 63.9,
+          "ay": 62.9
+        }
+      },
+      "50": {
+        "4": {
+          "arquivo": "forja_cristal/voo-50-giro-4.png",
+          "ax": 58.1,
+          "ay": 68.7
+        },
+        "2": {
+          "arquivo": "forja_cristal/voo-50-giro-2.png",
+          "ax": 46.6,
+          "ay": 87.1
+        },
+        "0": {
+          "arquivo": "forja_cristal/voo-50-giro-0.png",
+          "ax": 67.1,
+          "ay": 62.7
+        },
+        "6": {
+          "arquivo": "forja_cristal/voo-50-giro-6.png",
+          "ax": 56.6,
+          "ay": 66.1
+        }
+      },
+      "75": {
+        "4": {
+          "arquivo": "forja_cristal/voo-75-giro-4.png",
+          "ax": 56.9,
+          "ay": 53.3
+        },
+        "2": {
+          "arquivo": "forja_cristal/voo-75-giro-2.png",
+          "ax": 41.8,
+          "ay": 73.9
+        },
+        "0": {
+          "arquivo": "forja_cristal/voo-75-giro-0.png",
+          "ax": 62.9,
+          "ay": 51.3
+        },
+        "6": {
+          "arquivo": "forja_cristal/voo-75-giro-6.png",
+          "ax": 46.8,
+          "ay": 63.9
+        }
+      }
+    },
+    "vooKv": 48.0,
+    "folgaFogo": 0.25
+  },
+  "fogao_cristal": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "fogao_cristal/giro-4.png",
+        "ax": 73.0,
+        "ay": 246.0,
+        "prof": "fogao_cristal/prof-4.png"
+      },
+      "2": {
+        "arquivo": "fogao_cristal/giro-2.png",
+        "ax": 42.0,
+        "ay": 223.0,
+        "prof": "fogao_cristal/prof-2.png"
+      },
+      "0": {
+        "arquivo": "fogao_cristal/giro-0.png",
+        "ax": 74.0,
+        "ay": 214.0,
+        "prof": "fogao_cristal/prof-0.png"
+      },
+      "6": {
+        "arquivo": "fogao_cristal/giro-6.png",
+        "ax": 41.0,
+        "ay": 237.0,
+        "prof": "fogao_cristal/prof-6.png"
+      }
+    },
+    "real": [
+      1.5,
+      0.942,
+      1.104
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "fogao_cristal/giro-4-1.png",
+            "ax": 73.0,
+            "ay": 246.0,
+            "prof": "fogao_cristal/prof-4-1.png"
+          },
+          "2": {
+            "arquivo": "fogao_cristal/giro-2-1.png",
+            "ax": 42.0,
+            "ay": 223.0,
+            "prof": "fogao_cristal/prof-2-1.png"
+          },
+          "0": {
+            "arquivo": "fogao_cristal/giro-0-1.png",
+            "ax": 74.0,
+            "ay": 214.0,
+            "prof": "fogao_cristal/prof-0-1.png"
+          },
+          "6": {
+            "arquivo": "fogao_cristal/giro-6-1.png",
+            "ax": 41.0,
+            "ay": 237.0,
+            "prof": "fogao_cristal/prof-6-1.png"
+          }
+        }
+      }
+    },
+    "cima": {
+      "arquivo": "fogao_cristal/cima.png",
+      "caixa": [
+        13,
+        13,
+        77,
+        53
+      ]
+    },
+    "voo": {
+      "25": {
+        "4": {
+          "arquivo": "fogao_cristal/voo-25-giro-4.png",
+          "ax": 45.8,
+          "ay": 150.0
+        },
+        "2": {
+          "arquivo": "fogao_cristal/voo-25-giro-2.png",
+          "ax": 41.8,
+          "ay": 123.5
+        },
+        "0": {
+          "arquivo": "fogao_cristal/voo-25-giro-0.png",
+          "ax": 46.8,
+          "ay": 119.0
+        },
+        "6": {
+          "arquivo": "fogao_cristal/voo-25-giro-6.png",
+          "ax": 40.8,
+          "ay": 145.5
+        }
+      },
+      "50": {
+        "4": {
+          "arquivo": "fogao_cristal/voo-50-giro-4.png",
+          "ax": 44.9,
+          "ay": 114.2
+        },
+        "2": {
+          "arquivo": "fogao_cristal/voo-50-giro-2.png",
+          "ax": 36.4,
+          "ay": 79.6
+        },
+        "0": {
+          "arquivo": "fogao_cristal/voo-50-giro-0.png",
+          "ax": 45.9,
+          "ay": 80.2
+        },
+        "6": {
+          "arquivo": "fogao_cristal/voo-50-giro-6.png",
+          "ax": 36.4,
+          "ay": 114.6
+        }
+      },
+      "75": {
+        "4": {
+          "arquivo": "fogao_cristal/voo-75-giro-4.png",
+          "ax": 42.4,
+          "ay": 67.4
+        },
+        "2": {
+          "arquivo": "fogao_cristal/voo-75-giro-2.png",
+          "ax": 28.2,
+          "ay": 48.1
+        },
+        "0": {
+          "arquivo": "fogao_cristal/voo-75-giro-0.png",
+          "ax": 42.4,
+          "ay": 38.4
+        },
+        "6": {
+          "arquivo": "fogao_cristal/voo-75-giro-6.png",
+          "ax": 32.2,
+          "ay": 73.1
+        }
+      }
+    },
+    "vooKv": 48.0,
+    "folgaFogo": 0.05
+  },
+  "velas_cristal": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "velas_cristal/giro-4.png",
+        "ax": 22.0,
+        "ay": 27.0,
+        "prof": "velas_cristal/prof-4.png"
+      },
+      "2": {
+        "arquivo": "velas_cristal/giro-2.png",
+        "ax": 22.0,
+        "ay": 25.0,
+        "prof": "velas_cristal/prof-2.png"
+      },
+      "0": {
+        "arquivo": "velas_cristal/giro-0.png",
+        "ax": 22.0,
+        "ay": 24.0,
+        "prof": "velas_cristal/prof-0.png"
+      },
+      "6": {
+        "arquivo": "velas_cristal/giro-6.png",
+        "ax": 22.0,
+        "ay": 26.0,
+        "prof": "velas_cristal/prof-6.png"
+      }
+    },
+    "real": [
+      0.27,
+      0.268,
+      0.022
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "velas_cristal/giro-4-1.png",
+            "ax": 22.0,
+            "ay": 27.0,
+            "prof": "velas_cristal/prof-4-1.png"
+          },
+          "2": {
+            "arquivo": "velas_cristal/giro-2-1.png",
+            "ax": 22.0,
+            "ay": 25.0,
+            "prof": "velas_cristal/prof-2-1.png"
+          },
+          "0": {
+            "arquivo": "velas_cristal/giro-0-1.png",
+            "ax": 22.0,
+            "ay": 24.0,
+            "prof": "velas_cristal/prof-0-1.png"
+          },
+          "6": {
+            "arquivo": "velas_cristal/giro-6-1.png",
+            "ax": 22.0,
+            "ay": 26.0,
+            "prof": "velas_cristal/prof-6-1.png"
+          }
+        }
+      }
+    },
+    "cima": {
+      "arquivo": "velas_cristal/cima.png",
+      "caixa": [
+        23,
+        23,
+        35,
+        35
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "velas_cristal/cima-1.png",
+        "caixa": [
+          23,
+          23,
+          35,
+          35
+        ]
+      }
+    },
+    "voo": {
+      "25": {
+        "4": {
+          "arquivo": "velas_cristal/voo-25-giro-4.png",
+          "ax": 17.0,
+          "ay": 8.7
+        },
+        "2": {
+          "arquivo": "velas_cristal/voo-25-giro-2.png",
+          "ax": 17.0,
+          "ay": 8.7
+        },
+        "0": {
+          "arquivo": "velas_cristal/voo-25-giro-0.png",
+          "ax": 17.0,
+          "ay": 8.7
+        },
+        "6": {
+          "arquivo": "velas_cristal/voo-25-giro-6.png",
+          "ax": 17.0,
+          "ay": 8.7
+        }
+      },
+      "50": {
+        "4": {
+          "arquivo": "velas_cristal/voo-50-giro-4.png",
+          "ax": 14.7,
+          "ay": 10.4
+        },
+        "2": {
+          "arquivo": "velas_cristal/voo-50-giro-2.png",
+          "ax": 14.7,
+          "ay": 10.4
+        },
+        "0": {
+          "arquivo": "velas_cristal/voo-50-giro-0.png",
+          "ax": 14.7,
+          "ay": 10.4
+        },
+        "6": {
+          "arquivo": "velas_cristal/voo-50-giro-6.png",
+          "ax": 14.7,
+          "ay": 10.4
+        }
+      },
+      "75": {
+        "4": {
+          "arquivo": "velas_cristal/voo-75-giro-4.png",
+          "ax": 12.1,
+          "ay": 10.4
+        },
+        "2": {
+          "arquivo": "velas_cristal/voo-75-giro-2.png",
+          "ax": 12.1,
+          "ay": 10.4
+        },
+        "0": {
+          "arquivo": "velas_cristal/voo-75-giro-0.png",
+          "ax": 12.1,
+          "ay": 10.4
+        },
+        "6": {
+          "arquivo": "velas_cristal/voo-75-giro-6.png",
+          "ax": 12.1,
+          "ay": 10.4
+        }
+      }
+    },
+    "vooKv": 48.0,
+    "folgaFogo": 0.02
   }
 }

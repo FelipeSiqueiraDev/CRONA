@@ -159,9 +159,13 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   luz de fogo vira `kind: 'cristal'` (`RoomView.semFogo`): brilho vermelho, sem a chama animada, sem fumaça e sem brasa.
 - O poste de cristal é luz de cristal em qualquer lugar (`furniVila.ts`); as 4 tochas de parede viraram lampiões de
   cristal.
-- **Falta (arte por código):** a lareira (10), a forja, o fogão da fazendeira e as velas (21) de Santo Berço ainda são
-  desenhados com lenha e chama; pedem uma versão de cristal (as pedras vermelhas no lugar da lenha) em
-  `pecas_px/santo_berco_dentro.py`, e o seed de Santo Berço passa a usá-las.
+- **As peças de cristal (16/10):** `pecas_px/santo_berco_cristal.py` (lareira_cristal, forja_cristal, fogao_cristal,
+  velas_cristal; no catálogo, categoria vila): os cristais vermelhos sobre pedras escuras no lugar da lenha e da brasa
+  (`medieval.monte_cristais`; `lareira`/`forja` com `cristais=True`, `cozinha.fogao(lenha=False)`). O seed de Santo
+  Berço usa só elas (`SANTO_BERCO_REV` 14). Exportadas: giros, vista de cima, voo e profundidade.
+- **As lareiras (16/10, o Felipe: encostadas na parede e nada colado na frente):** `server/test/lareiras.test.ts`
+  confere em todas as cenas que toda lareira (pelo tipo) tem o fundo na parede e a fileira da frente livre. Corrigidos
+  o Quarto 1 do Hotel (a lenha colada) e o Quarto 4 (a poltrona colada; agora a uma casa, virada para a lareira).
 
 ## Feito em 16/10 (branch `claude/tatica-codigo`): o fogo dentro do móvel
 

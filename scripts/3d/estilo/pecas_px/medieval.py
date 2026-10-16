@@ -268,6 +268,29 @@ def cristal(cx_, cy_, z0, h, r, aceso=True, lados=6, fase=0.3):
     return o
 
 
+def monte_cristais(cx_, cy_, z0, rx, ry, n=5, aceso=True, seed=0, alto=0.22):
+    """
+    Santo Berço não tem fogo (16/10, o Felipe): onde iria a lenha ou o carvão em brasa, um monte de cristais vermelhos
+    sobre pedras escuras. n cristais de alturas diferentes, o maior no meio, os outros em volta inclinados para fora
+    (pela ordem e pela semente); as pedras embaixo, sem brasa.
+    """
+    for k in range(7):
+        a = 2 * math.pi * k / 7 + seed
+        rr = 0.55 + 0.35 * ruido(k, seed + 5.0)
+        s = 0.035 + 0.025 * ruido(k, seed + 6.0)
+        OC.bloco((cx_ + rx * rr * math.cos(a), cy_ + ry * rr * math.sin(a), z0 + s * 0.35), (s * 1.3, s, s * 0.7),
+                 OC.carvao('#3a3634', brasa=0.0, seed=int(seed * 10) + k, celula=(4, 3)), yaw=41 * k, pitch=6 * (k % 3))
+    for k in range(n):
+        if k == 0:
+            x, y, h = cx_, cy_, alto
+        else:
+            a = 2 * math.pi * (k - 1) / max(1, n - 1) + 0.6 + seed
+            rr = 0.45 + 0.3 * ruido(k, seed + 1.0)
+            x, y = cx_ + rx * rr * math.cos(a), cy_ + ry * rr * math.sin(a)
+            h = alto * (0.45 + 0.35 * ruido(k, seed + 2.0))
+        cristal(x, y, z0, h, h * 0.26, aceso=aceso, fase=0.3 + 0.17 * k)
+
+
 def chama(cx_, cy_, s, z0, larg, alto, cor, frente=0.0, torto=0.0, o=None):
     """A língua de fogo de frente para a câmera (a do ocultismo: a fogueira do bando)."""
     return OC.chama_corpo(cx_, cy_, s, z0, larg, alto, cor, frente, torto, o)
@@ -362,7 +385,7 @@ def jarra(x, y, z, h=0.26, r=0.075):
 # =====================================================================================================================
 # a ferraria: a forja, a bigorna, o suporte de armas, a armadura, a tina
 # =====================================================================================================================
-def forja(acesa=True):
+def forja(acesa=True, cristais=False):
     """
     A forja (3 x 2 casas, 1,4 m): o fogão de pedra aparelhada com a borda de lajes e a cova do carvão, a parede de
     trás com a boca da chaminé (a fuligem por cima), o fole de couro do lado esquerdo no cavalete com o bico de ferro
@@ -380,7 +403,7 @@ def forja(acesa=True):
         dy = np.maximum(np.maximum(PY0 - P[:, 1], P[:, 1] - PY1), 0)
         d = np.hypot(dx, dy)
         return np.clip(1.0 - d / 0.2, 0, 1) * np.clip(1.25 - (P[:, 2] - ZB) / 0.5, 0, 1)
-    T = _brilho_fogo(perto, 0.42) if acesa else None
+    T = (_brilho_fogo(perto, 0.42, '#d8402a') if cristais else _brilho_fogo(perto, 0.42)) if acesa else None
     PD = cantaria(PEDRA, 6, 11, seed=11)
     # o corpo de pedra (com o rodapé um pouco mais largo)
     cx((X0 - 0.03, X1 + 0.03, Y0 - 0.03, Y1 + 0.03, 0.0, 0.08), {'*': cantaria(PEDRA_E, 4, 9, seed=12), 'cima': lajes(PEDRA_E, seed=13)})
@@ -390,15 +413,19 @@ def forja(acesa=True):
     for b in ((X0 - 0.03, X1 + 0.03, PY1, Y1 + 0.03), (X0 - 0.03, X1 + 0.03, Y0 - 0.03, PY0),
               (X0 - 0.03, PX0, PY0, PY1), (PX1, X1 + 0.03, PY0, PY1)):
         cx(b + (ZB, ZR), BD)
-    # a cova: o carvão (com as brasas, se acesa) e os pedaços soltos
-    if acesa:
+    # a cova: o carvão (com as brasas, se acesa) e os pedaços soltos; em Santo Berço, as pedras e os cristais
+    if cristais:
+        cx((PX0, PX1, PY0, PY1, ZB - 0.02, ZB + 0.01), {'cima': OC.carvao('#2e2a28', brasa=0.0, seed=21, celula=(5, 3)), '*': liso('#2e2a28')})
+        monte_cristais(cxp, cyp, ZB + 0.01, 0.34, 0.2, n=5, aceso=acesa, seed=2.0, alto=0.26)
+    elif acesa:
         CV = OC.carvao('#4a2e20', brasa=0.55, seed=21, celula=(5, 3))
         o = luz_obj()
     else:
         CV = OC.carvao('#6a6660', brasa=0.0, seed=21, celula=(5, 3))
         o = novo()
-    cx((PX0, PX1, PY0, PY1, ZB - 0.02, ZB + 0.03), {'cima': CV, '*': CV}, o=o)
-    for k in range(9):
+    if not cristais:
+        cx((PX0, PX1, PY0, PY1, ZB - 0.02, ZB + 0.03), {'cima': CV, '*': CV}, o=o)
+    for k in range(0 if cristais else 9):
         a = 2 * math.pi * k / 9 + 0.4
         rr = 0.12 + 0.16 * ruido(k, 3.0)
         xk, yk = cxp + rr * math.cos(a) * 1.5, cyp + rr * math.sin(a)
@@ -408,8 +435,9 @@ def forja(acesa=True):
         CVk = OC.carvao('#3a2a22' if acesa else '#76726a', brasa=0.5 if acesa else 0.0, seed=30 + k, celula=(4, 3))
         OC.bloco((xk, yk, ZB + 0.04), (s, s * 1.2, s * 0.7), CVk, yaw=37 * k, pitch=8 * (k % 3), o=(luz_obj() if acesa else None))
     # o cristal vermelho no meio do carvão
-    cristal(cxp + 0.02, cyp, ZB + 0.02, 0.22, 0.055, aceso=acesa)
-    if acesa:
+    if not cristais:
+        cristal(cxp + 0.02, cyp, ZB + 0.02, 0.22, 0.055, aceso=acesa)
+    if acesa and not cristais:
         for (dx, s, al) in ((-0.2, 0.09, 0.1), (0.17, 0.08, 0.12), (0.0, 0.07, 0.08)):
             o1 = luz_obj()
             chama(cxp + dx, cyp + 0.12, 0.0, ZB + 0.02, s, al, '#f08a2a', 0.0, 0.01, o1)
@@ -908,7 +936,7 @@ def barril_madeira():
 # =====================================================================================================================
 # a lareira
 # =====================================================================================================================
-def lareira(acesa=True):
+def lareira(acesa=True, cristais=False):
     """
     A lareira de pedra (3 x 1 casas, encostada na parede de trás, 2,0 m): o chão de lajes saindo para a frente, os
     dois batentes de pedra aparelhada, a fornalha escura com a fuligem, a verga de pedra e a viga do console de
@@ -924,7 +952,7 @@ def lareira(acesa=True):
     def perto(P):
         d = np.hypot((P[:, 0] - cxf) / 0.7, (P[:, 1] - 0.36) / 0.8)
         return np.clip(1.15 - d, 0, 1) * np.clip(1.2 - P[:, 2] / 0.7, 0, 1)
-    T = _brilho_fogo(perto, 0.5) if acesa else None
+    T = (_brilho_fogo(perto, 0.5, '#d8402a') if cristais else _brilho_fogo(perto, 0.5)) if acesa else None
 
     def fuligem(L, n, P, out):
         k = np.clip((P[:, 2] - 0.15) / 0.8, 0, 1)
@@ -960,10 +988,14 @@ def lareira(acesa=True):
     for xx in (cxf - 0.28, cxf + 0.28):
         cx((xx - 0.02, xx + 0.02, 0.18, 0.5, 0.05, 0.09), ferro('#2a2624', '#4a4440'))
         cx((xx - 0.02, xx + 0.02, 0.46, 0.5, 0.05, 0.22), ferro('#2a2624', '#4a4440'))
-    tora(cxf - 0.04, 0.3, 0.13, 0.7, 0.05, 0, acesa, seed=1)
-    tora(cxf + 0.03, 0.4, 0.13, 0.66, 0.048, 4, acesa, seed=2)
-    tora(cxf, 0.34, 0.21, 0.55, 0.045, -6, acesa, seed=3)
-    if not acesa:
+    if cristais:
+        # Santo Berço: no lugar da lenha, os cristais vermelhos entre os cães de ferro
+        monte_cristais(cxf, 0.32, 0.05, 0.22, 0.12, n=5, aceso=acesa, seed=1.0, alto=0.24)
+    else:
+        tora(cxf - 0.04, 0.3, 0.13, 0.7, 0.05, 0, acesa, seed=1)
+        tora(cxf + 0.03, 0.4, 0.13, 0.66, 0.048, 4, acesa, seed=2)
+        tora(cxf, 0.34, 0.21, 0.55, 0.045, -6, acesa, seed=3)
+    if not acesa and not cristais:
         ms = [OC.Mancha(cxf, 0.34, 0.3, seed=7, amp=0.12, ex=1.4, ey=0.7)]
         OC.manchas_decal(ms, OC.mat_mancha(ms, ['#6a645e', '#8a847c', '#9e978e'], beira=1.5, miolo=3), z=0.056)
     # a cremalheira: a barra presa no fundo, o gancho, a corrente e o caldeirão
@@ -985,7 +1017,7 @@ def lareira(acesa=True):
     _disco(cxf, yc, zc1, 0.16, emissivo(boca), o, lados=18)
     ob = novo()
     _fita([(-0.15, zc1), (-0.12, zc1 + 0.1), (0.0, zc1 + 0.15), (0.12, zc1 + 0.1), (0.15, zc1)], cxf, yc, liso('#3a3634'), ob, 0.014)
-    if acesa:
+    if acesa and not cristais:
         fogo(cxf, 0.36, larg=0.5, alto=0.5, z0=0.1, frente=0.05)
     peg(0.04, 2.21, 0.0, 0.73)
 

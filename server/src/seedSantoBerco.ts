@@ -24,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Doutor a sudoeste; as estradas saem pela borda para a fazenda (norte), o bosque (sul) e as minas (oeste).
  */
 export const SANTO_BERCO = "Santo Berço · ";
-export const SANTO_BERCO_REV = 12;
+export const SANTO_BERCO_REV = 14;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -309,7 +309,7 @@ function casaPadrao(key: string, nome: string, description: string): Cena {
     ...DENTRO,
     floor: [
       fundo ? ["portal", 4, 1, 4] : ["portal", 4, 6, 0],
-      ["lareira", 0, Y(1), 2],
+      ["lareira_cristal", 0, Y(1), 2],
       ["prateleira", 2, Y(0), 4],
       ["cama_palha", 7, Y(0), 4],
       ["nightstand", 6, Y(0), 4],
@@ -323,7 +323,7 @@ function casaPadrao(key: string, nome: string, description: string): Cena {
       // em cima da mesa: a jarra com as canecas, o pão e a vela; a lenha do lado da lareira; o caixote no canto
       ["jarra_canecas", 4, Y(3), 0],
       ["cesta_pao", 3, Y(4), 0],
-      ["candles", 5, Y(4), 0],
+      ["velas_cristal", 5, Y(4), 0],
       ["lenha", 0, Y(4), 0],
       ["crate_wood", 8, Y(6), 0],
     ],
@@ -587,7 +587,7 @@ const CENAS: Cena[] = [
       ["books_stack", 0, 2, 0, hint("Livro do Porteiro", "A lista de quem entrou na vila. Os nomes de fora têm, do lado, \"Ajudante do Porteiro\" escrito depois.")],
       ["bau_madeira", 0, 6, 2],
       ["barril_madeira", 6, 1, 0],
-      ["candles", 1, 5, 0],
+      ["velas_cristal", 1, 5, 0],
     ],
     wall: [
       ["lampiao_cristal", "r", 0, 1.5, 2.6],
@@ -646,7 +646,7 @@ const CENAS: Cena[] = [
       ["stool", 9, 4, 0],
       ["stool", 11, 4, 0],
       // a lareira na parede da esquerda
-      ["lareira", 0, 3, 2],
+      ["lareira_cristal", 0, 3, 2],
       // as mesas compridas com os bancos (o tapete gasto embaixo da primeira) e o que está em cima delas
       ["rug_worn", 2, 5, 2],
       ["mesa_rustica", 2, 5, 4],
@@ -658,10 +658,10 @@ const CENAS: Cena[] = [
       ["bau_madeira", 13, 9, 0],
       ["jarra_canecas", 3, 5, 0],
       ["cesta_pao", 2, 6, 0],
-      ["candles", 4, 6, 0],
+      ["velas_cristal", 4, 6, 0],
       ["jarra_canecas", 10, 6, 0],
       ["cesta_pao", 9, 7, 0],
-      ["candles", 11, 7, 0],
+      ["velas_cristal", 11, 7, 0],
       // a lenha dos dois lados da lareira, os caixotes e as sacas no canto
       ["lenha", 0, 2, 0],
       ["lenha", 0, 6, 0],
@@ -696,7 +696,7 @@ const CENAS: Cena[] = [
     floor: [
       ["portal", 5, 7, 0],
       ["portal", 0, 1, 2],
-      ["forja", 7, 1, 4, hint("A forja", "Não tem carvão de verdade: no meio das brasas, um cristal vermelho mantém o ferro em brasa sem nunca apagar.")],
+      ["forja_cristal", 7, 1, 4, hint("A forja", "Não tem carvão de verdade: no meio das brasas, um cristal vermelho mantém o ferro em brasa sem nunca apagar.")],
       ["bigorna", 7, 4, 0],
       ["tina_agua", 9, 4, 0],
       ["rack_medieval", 10, 5, 6],
@@ -736,7 +736,7 @@ const CENAS: Cena[] = [
       ["cama_palha", 0, 0, 2],
       ["bau_madeira", 0, 3, 2],
       ["nightstand", 0, 4, 2],
-      ["candles", 0, 5, 0],
+      ["velas_cristal", 0, 5, 0],
       ["jarra_canecas", 0, 4, 0],
       ["rug_worn", 2, 2, 0],
       ["escotilha", 4, 5, 0, oculta("A escotilha", "Ferro grosso, sem argola nem fechadura deste lado. Por baixo dela, um barulho de vento — ou de respiração. Dá no Bunker dos Guardiões e só abre por baixo."), 2],
@@ -763,10 +763,10 @@ const CENAS: Cena[] = [
       ["stairs_up", 10, 1, 4],
       // o balcão ao longo da parede da esquerda, o Hoteleiro atrás dele
       ["balcao_hotel", 1, 2, 2, hint("Livro dos Hóspedes", "Os nomes de quem passou pelo hotel, em letras de todas as épocas. Nenhum tem a data de saída.")],
-      ["candles", 1, 5, 0],
+      ["velas_cristal", 1, 5, 0],
       ["stool", 0, 3, 2],
       // a lareira do fundo com as poltronas viradas para ela
-      ["lareira", 7, 1, 4],
+      ["lareira_cristal", 7, 1, 4],
       ["armchair", 7, 3, 0],
       ["armchair", 9, 3, 0],
       ["rug_worn", 5, 2, 0, oculta("O tapete", "À noite, o hall fica cheio de passos sem ninguém, e do corredor de cima vem uma música baixinha, de um instrumento que ninguém da vila toca.")],
@@ -774,7 +774,7 @@ const CENAS: Cena[] = [
       ["mesa_rustica", 4, 6, 4],
       ["banco_rustico", 4, 5, 4],
       ["banco_rustico", 5, 8, 0],
-      ["candles", 5, 6, 0],
+      ["velas_cristal", 5, 6, 0],
       ["jarra_canecas", 6, 6, 0],
       ["cesta_pao", 4, 7, 0],
       ["lenha", 11, 1, 0],
@@ -822,7 +822,7 @@ const CENAS: Cena[] = [
       ["rug_worn", 5, 1, 2],
       ["rug_worn", 12, 1, 2, oculta("Música do nada", "A música que vem do fim do corredor: um alaúde, baixinho. Quando alguém chega perto, para.")],
       ["comoda", 0, 1, 2],
-      ["candles", 0, 1, 0],
+      ["velas_cristal", 0, 1, 0],
       ["bau_madeira", 21, 3, 6],
     ],
     wall: [
@@ -854,11 +854,12 @@ const CENAS: Cena[] = [
       ["portal", 3, 5, 0],
       ["cama_palha", 0, 0, 4],
       ["nightstand", 2, 0, 4],
-      ["candles", 2, 0, 0],
+      ["velas_cristal", 2, 0, 0],
       ["comoda", 5, 0, 4],
       ["jarra_canecas", 6, 0, 0],
-      ["lareira", 0, 3, 2],
-      ["lenha", 1, 5, 0],
+      ["lareira_cristal", 0, 3, 2],
+      // a lenha (de enfeite) a uma casa da lareira, nunca colada na frente dela (16/10)
+      ["lenha", 2, 5, 0],
       ["rug_worn", 2, 2, 0],
       ["bau_madeira", 6, 4, 6],
     ],
@@ -883,10 +884,10 @@ const CENAS: Cena[] = [
       ["portal", 3, 5, 0],
       ["cama_casal", 0, 0, 4],
       ["nightstand", 2, 0, 4],
-      ["candles", 2, 0, 0],
+      ["velas_cristal", 2, 0, 0],
       ["guarda_roupa", 5, 0, 4],
       ["comoda", 0, 4, 2],
-      ["candles", 0, 4, 0],
+      ["velas_cristal", 0, 4, 0],
       ["jarra_canecas", 0, 5, 0],
       ["chair_wood", 6, 3, 6],
       ["rug_worn", 3, 2, 0],
@@ -912,10 +913,10 @@ const CENAS: Cena[] = [
       ["portal", 3, 5, 0],
       ["comoda", 0, 0, 4],
       ["nightstand", 4, 0, 4],
-      ["candles", 4, 0, 0],
+      ["velas_cristal", 4, 0, 0],
       ["lenha", 0, 5, 0],
       ["cama_palha", 5, 0, 4, oculta("A cama", "Arrumada como se ninguém tivesse dormido nela, mas o travesseiro está quente. Alguém dorme aqui toda noite e nunca vem buscar a chave.")],
-      ["lareira", 0, 2, 2],
+      ["lareira_cristal", 0, 2, 2],
       ["rug_worn", 2, 2, 0],
     ],
     wall: [
@@ -940,9 +941,10 @@ const CENAS: Cena[] = [
       ["portal", 3, 5, 0],
       ["cama_casal", 4, 0, 4, oculta("A cama do fim", "Os lençóis cheiram a lavado, mas embaixo do travesseiro há um dente de leite. Toda noite, um a mais.")],
       ["nightstand", 6, 0, 4],
-      ["candles", 6, 0, 0],
-      ["lareira", 0, 2, 2],
-      ["armchair", 1, 4, 2],
+      ["velas_cristal", 6, 0, 0],
+      ["lareira_cristal", 0, 2, 2],
+      // a poltrona virada para a lareira, a uma casa dela (colada na frente não; 16/10)
+      ["armchair", 2, 3, 6],
       ["bau_madeira", 6, 4, 6],
       ["rug_worn", 3, 2, 0],
       ["lenha", 0, 5, 0],
@@ -968,7 +970,7 @@ const CENAS: Cena[] = [
       ["portal", 5, 1, 4],
       ["portal", 0, 4, 2],
       ["stairs_up", 9, 1, 4],
-      ["lareira", 1, 1, 4],
+      ["lareira_cristal", 1, 1, 4],
       ["armchair", 1, 3, 0],
       ["armchair", 3, 3, 0],
       ["bookshelf", 7, 1, 4, hint("Os livros do Doutor", "Livros de anatomia de épocas que não combinam: um de pergaminho, outro impresso, um com fotografias. Nas margens, a mesma letra anotou todos.")],
@@ -976,7 +978,7 @@ const CENAS: Cena[] = [
       ["banco_rustico", 5, 4, 4],
       ["banco_rustico", 6, 7, 0],
       ["books_stack", 5, 5, 0],
-      ["candles", 7, 6, 0],
+      ["velas_cristal", 7, 6, 0],
       ["jarra_canecas", 6, 5, 0],
       ["cesta_pao", 5, 6, 0],
       ["lenha", 0, 1, 0],
@@ -1017,7 +1019,7 @@ const CENAS: Cena[] = [
       ["stool", 3, 3, 4],
       ["frascos_boticario", 2, 4, 0],
       ["books_stack", 3, 4, 0],
-      ["candles", 7, 0, 0],
+      ["velas_cristal", 7, 0, 0],
       ["bau_madeira", 0, 6, 2],
     ],
     wall: [
@@ -1041,7 +1043,7 @@ const CENAS: Cena[] = [
       ["escada_desce", 7, 2, 4],
       ["cama_casal", 0, 0, 4],
       ["nightstand", 2, 0, 4],
-      ["candles", 2, 0, 0],
+      ["velas_cristal", 2, 0, 0],
       ["guarda_roupa", 4, 0, 4],
       ["comoda", 0, 4, 2],
       ["jarra_canecas", 0, 5, 0],
@@ -1149,7 +1151,7 @@ const CENAS: Cena[] = [
     ...DENTRO,
     floor: [
       ["portal", 4, 6, 0],
-      ["fogao_lenha", 0, 0, 4],
+      ["fogao_cristal", 0, 0, 4],
       ["prateleira", 2, 0, 4],
       ["nightstand", 6, 0, 4],
       ["cama_palha", 7, 0, 4],
@@ -1159,7 +1161,7 @@ const CENAS: Cena[] = [
       ["banco_rustico", 4, 5, 0],
       ["cesta_pao", 3, 3, 0],
       ["jarra_canecas", 4, 4, 0],
-      ["candles", 5, 3, 0],
+      ["velas_cristal", 5, 3, 0],
       ["lenha", 0, 1, 0],
       ["cristal_azul", 0, 3, 0, hint("A geladeira", "O cristal azul num caixote forrado de palha: o leite, a manteiga e a carne ficam aqui, gelados como neve.")],
       ...de("sacas", [0, 5], [0, 6]),
@@ -1404,7 +1406,7 @@ const CENAS: Cena[] = [
       ["banco_rustico", 5, 5, 0],
       ["papers", 4, 3, 0, oculta("Os papéis", "Mapas da vila de épocas diferentes: a vila cresce, some e volta, sempre em volta do Labirinto.")],
       ["books_stack", 6, 4, 0],
-      ["candles", 5, 3, 0],
+      ["velas_cristal", 5, 3, 0],
       ["jarra_canecas", 6, 3, 0],
       ["cesta_pao", 5, 4, 0],
       ["bookshelf", 2, 0, 4],
