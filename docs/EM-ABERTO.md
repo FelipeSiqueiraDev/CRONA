@@ -162,7 +162,11 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   mesma referência em 128; 2 gerações), no jogo com `--escala 0.9` (o mesmo tamanho na tela, o dobro de detalhe).
   `personagem_pixel.py` agora aceita quadro de qualquer tamanho (a âncora e os pés pelo tamanho). Quadros em
   `arte/PERSONAGENS-ANIMACAO/pixellab/tepes-128/`. Restam 6 gerações na conta.
-- **Falta:** a animação de andar e a de parado (hoje ele anda deslizando com a pose parada). No PixelLab,
+- **O andar (16/10):** `walking` do PixelLab em 128 (2 gerações por direção, uma direção por pedido no plano de teste):
+  sul, leste e norte; o oeste espelha o leste; as diagonais andam com o da frente (SE, SW) ou de costas (NE, NW),
+  paradas ficam com a pose delas. Montagem: `pixellab/montar.py` (os quadros de cada direção descem juntos).
+  **Falta:** o andar das 4 diagonais (8 gerações) e uma respiração no parado.
+- **Antes (64px):** a animação de andar e a de parado faltavam (ele andava deslizando com a pose parada). No PixelLab,
   `POST /characters/animations` custa 1 geração por direção (8 no total); a conta está no plano de teste com 8
   gerações. O Tepes animado do Códex continua no git (`bc414989`).
 - **Ao chamar a API pelo Git Bash:** `MSYS_NO_PATHCONV=1` (o `/caminho` vira caminho do Windows e dá 404).
