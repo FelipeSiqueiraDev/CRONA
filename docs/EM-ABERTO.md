@@ -152,6 +152,23 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10 (branch `claude/tatica-codigo`): a vista tática toda por código
+
+- O Felipe aprovou o visual da vista tática do Bar e pediu "tática pra tudo nesse estilo, por código". Até aqui, as
+  vistas de cima eram do Códex (03/10 a 09/10) e ficavam presas aos móveis de pixel: o `exportar_px.py` guarda a `cima`
+  antiga, e a regra de 15/10 (nada do Códex no tabuleiro) filtra o móvel, não a vista de cima dele.
+- O motor ganhou a câmera de cima (`motor.camera('cima')`, em `scripts/3d/codigo/motor.py`): reta de cima, 32 px por casa,
+  a face em pé some. Na câmera de sempre (`'iso'`) nada muda; o isométrico sai idêntico, pixel a pixel.
+- `scripts/3d/estilo/exportar_cima_px.py`: desenha cada móvel do `exportar_px.py` (os mesmos desenhos de `pecas_px/`) de cima,
+  frente para baixo, com a luz pela altura, a sombra de uma peça na outra, o contorno e a borda escura. Escreve
+  `<móvel>/cima.png` (e `cima-<estado>.png`) e troca `cima`/`cimaEstados` no `moveis.json`. Os 306 móveis de chão já saíram
+  (os 71 de parede não entram na tática). `--folha saida.png` faz as folhas para conferir de olho.
+- No jogo: a vista de cima de pixel sai sem suavizar (`desenharDeCima`, `mapaTatico.ts`).
+- **Ao mexer num móvel:** rodar o `exportar_px.py` e depois o `exportar_cima_px.py` com o mesmo nome (ou `--grupo`).
+- **Fracos de cima:** a planta (as folhas são lâminas em pé: vira um pontinho) e a cortina do leito (só o trilho). Ideia:
+  um desenho próprio de cima para quem tem folha (a copa vista de cima) no módulo da peça.
+- As cópias em WebP (`arte-leve/`, fora do git) precisam do `node scripts/jogo.mjs atualizar` no computador do jogo.
+
 ## Feito em 14/10 (branch `claude/existidos`): Existidos, rituais e o Códex sem tabuleiro
 
 - **O Códex não desenha mais nada do tabuleiro** (decisão do Felipe, 14/10): móveis, chão, paredes, cenários, prédios,
@@ -834,7 +851,7 @@ Os zips que entraram ficam em `_entregas-originais/`, na pasta da arte.
 
 ## Decisões que são do Felipe
 
-- Aprovar o estilo da vista de cima do Bar, que libera as outras salas.
+- ~~Aprovar o estilo da vista de cima do Bar.~~ **Aprovado em 16/10** (o Felipe: "tá bem bonito"): a vista tática feita por código, sem arte do Códex, fica como está.
 - Ícones pintados no COMBATE e no inventário rápido do MAPA.
 - O que vem primeiro: as modificações na requisição ou a FICHAS bonita.
 - Fechar o PR `#2` do Códex (`codex/arte-tepes-32bits`), que ficou sobrando.

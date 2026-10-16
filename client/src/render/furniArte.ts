@@ -351,11 +351,11 @@ export function imagemDoChao(defId: string): HTMLCanvasElement | null {
 }
 
 /** O móvel visto de cima (mapa tático), no estado dele, e onde ele está na imagem; null sem arte ou enquanto ela carrega. */
-export function imagemDeCima(defId: string, estado = 0): { img: HTMLCanvasElement; caixa: [number, number, number, number] | null } | null {
+export function imagemDeCima(defId: string, estado = 0): { img: HTMLCanvasElement; caixa: [number, number, number, number] | null; pixel: boolean } | null {
   const a = lista?.[defId];
   const vista = a?.cimaEstados?.[String(estado)] ?? a?.cima;
   const img = vista ? pronta(vista.arquivo)?.normal : null;
-  return img ? { img, caixa: vista?.caixa ?? null } : null;
+  return img ? { img, caixa: vista?.caixa ?? null, pixel: !!a?.pixel } : null;
 }
 
 /**

@@ -701,13 +701,14 @@ function detalheDeCima(ctx: CanvasRenderingContext2D, r: { x: number; y: number;
  * girada pelo giro dele. O recorte do móvel na imagem vai para o tamanho de verdade dele (no
  * meio da pegada, ou encostado no fundo); sem a medida, a imagem cobre a pegada inteira.
  */
-function desenharDeCima(ctx: CanvasRenderingContext2D, arte: { img: CanvasImageSource; caixa: [number, number, number, number] | null }, it: FloorItem, def: FurniDef) {
+function desenharDeCima(ctx: CanvasRenderingContext2D, arte: { img: CanvasImageSource; caixa: [number, number, number, number] | null; pixel?: boolean }, it: FloorItem, def: FurniDef) {
   const fp = footprint(def, it.rot);
   const tr = tamanhoReal(def.id);
   ctx.save();
   ctx.translate(it.x + fp.sx / 2, it.y + fp.sy / 2);
   ctx.rotate(it.rot === 0 ? Math.PI : it.rot === 2 ? -Math.PI / 2 : it.rot === 6 ? Math.PI / 2 : 0);
-  ctx.imageSmoothingEnabled = true;
+  // a vista de cima feita pelo motor de pixel (exportar_cima_px.py) sai sem suavizar, como no isométrico
+  ctx.imageSmoothingEnabled = !arte.pixel;
   ctx.imageSmoothingQuality = 'high';
   if (tr && arte.caixa) {
     // na imagem: a largura (ao longo da frente) em x, o fundo em y, e o fundo do móvel em cima

@@ -57,15 +57,6 @@
         }
       }
     },
-    "cima": {
-      "arquivo": "console/cima.png",
-      "caixa": [
-        0,
-        4,
-        256,
-        123
-      ]
-    },
     "tela": {
       "cores": [
         "#4fe39a",
@@ -76,6 +67,15 @@
       "modo": "tv",
       "forca": 0.24,
       "giros": {}
+    },
+    "cima": {
+      "arquivo": "console/cima.png",
+      "caixa": [
+        14,
+        16,
+        76,
+        44
+      ]
     }
   },
   "cabinet_file": {
@@ -136,16 +136,27 @@
         }
       }
     },
+    "encosta": true,
     "cima": {
       "arquivo": "cabinet_file/cima.png",
       "caixa": [
-        21,
-        8,
-        106,
-        119
+        18,
+        16,
+        40,
+        44
       ]
     },
-    "encosta": true
+    "cimaEstados": {
+      "1": {
+        "arquivo": "cabinet_file/cima-1.png",
+        "caixa": [
+          18,
+          16,
+          40,
+          58
+        ]
+      }
+    }
   },
   "chair_office": {
     "escala": 1,
@@ -182,10 +193,10 @@
     "cima": {
       "arquivo": "chair_office/cima.png",
       "caixa": [
-        11,
-        11,
-        117,
-        117
+        15,
+        16,
+        42,
+        43
       ]
     }
   },
@@ -246,6 +257,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "crate_wood/cima.png",
+      "caixa": [
+        15,
+        16,
+        43,
+        42
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "crate_wood/cima-1.png",
+        "caixa": [
+          15,
+          11,
+          43,
+          42
+        ]
+      }
     }
   },
   "hospital_bed": {
@@ -283,10 +314,10 @@
     "cima": {
       "arquivo": "hospital_bed/cima.png",
       "caixa": [
-        0,
-        18,
-        128,
-        366
+        16,
+        15,
+        42,
+        109
       ]
     }
   },
@@ -322,16 +353,16 @@
       0.445,
       2.198
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "bookshelf/cima.png",
       "caixa": [
-        0,
-        34,
-        256,
-        94
+        13,
+        14,
+        77,
+        33
       ]
-    },
-    "encosta": true
+    }
   },
   "desk_wood": {
     "escala": 1,
@@ -368,10 +399,10 @@
     "cima": {
       "arquivo": "desk_wood/cima.png",
       "caixa": [
-        0,
         7,
-        256,
-        120
+        10,
+        83,
+        48
       ]
     }
   },
@@ -410,10 +441,10 @@
     "cima": {
       "arquivo": "chair_bar/cima.png",
       "caixa": [
-        11,
-        11,
-        116,
-        116
+        18,
+        17,
+        40,
+        40
       ]
     }
   },
@@ -452,10 +483,10 @@
     "cima": {
       "arquivo": "pool_table/cima.png",
       "caixa": [
-        0,
-        20,
-        256,
-        491
+        15,
+        16,
+        75,
+        138
       ]
     }
   },
@@ -533,10 +564,10 @@
     "cima": {
       "arquivo": "plant/cima.png",
       "caixa": [
-        17,
-        17,
-        111,
-        111
+        20,
+        20,
+        37,
+        37
       ]
     }
   },
@@ -575,10 +606,10 @@
     "cima": {
       "arquivo": "table_bar/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        14,
+        14,
+        44,
+        44
       ]
     }
   },
@@ -617,10 +648,10 @@
     "cima": {
       "arquivo": "bar_counter/cima.png",
       "caixa": [
-        0,
-        7,
-        256,
-        120
+        13,
+        14,
+        77,
+        45
       ]
     }
   },
@@ -659,10 +690,10 @@
     "cima": {
       "arquivo": "stool_bar/cima.png",
       "caixa": [
-        24,
-        24,
-        103,
-        103
+        20,
+        20,
+        38,
+        38
       ]
     }
   },
@@ -698,16 +729,16 @@
       0.49,
       2.002
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "bar_shelf/cima.png",
       "caixa": [
-        0,
-        26,
-        256,
-        101
+        13,
+        15,
+        77,
+        36
       ]
-    },
-    "encosta": true
+    }
   },
   "beer_fridge": {
     "escala": 1,
@@ -741,16 +772,16 @@
       0.655,
       2.002
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "beer_fridge/cima.png",
       "caixa": [
-        2,
-        5,
-        126,
-        122
+        16,
+        16,
+        43,
+        44
       ]
-    },
-    "encosta": true
+    }
   },
   "arcade": {
     "escala": 1,
@@ -810,15 +841,6 @@
         }
       }
     },
-    "cima": {
-      "arquivo": "arcade/cima.png",
-      "caixa": [
-        5,
-        2,
-        122,
-        126
-      ]
-    },
     "encosta": true,
     "tela": {
       "cores": [
@@ -832,6 +854,15 @@
       ],
       "ms": 1100,
       "giros": {}
+    },
+    "cima": {
+      "arquivo": "arcade/cima.png",
+      "caixa": [
+        16,
+        16,
+        42,
+        43
+      ]
     }
   },
   "fridge_drinks": {
@@ -866,15 +897,6 @@
       0.655,
       2.002
     ],
-    "cima": {
-      "arquivo": "fridge_drinks/cima.png",
-      "caixa": [
-        5,
-        5,
-        122,
-        122
-      ]
-    },
     "encosta": true,
     "estados": {
       "1": {
@@ -900,6 +922,26 @@
             "ay": 135
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "fridge_drinks/cima.png",
+      "caixa": [
+        16,
+        16,
+        42,
+        44
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "fridge_drinks/cima-1.png",
+        "caixa": [
+          14,
+          16,
+          42,
+          58
+        ]
       }
     }
   },
@@ -935,15 +977,6 @@
       0.575,
       0.9
     ],
-    "cima": {
-      "arquivo": "minibar/cima.png",
-      "caixa": [
-        15,
-        12,
-        113,
-        116
-      ]
-    },
     "encosta": true,
     "estados": {
       "1": {
@@ -969,6 +1002,26 @@
             "ay": 83
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "minibar/cima.png",
+      "caixa": [
+        16,
+        16,
+        42,
+        41
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "minibar/cima-1.png",
+        "caixa": [
+          15,
+          16,
+          42,
+          58
+        ]
       }
     }
   },
@@ -1007,10 +1060,10 @@
     "cima": {
       "arquivo": "beer_crate/cima.png",
       "caixa": [
-        26,
-        33,
-        101,
-        95
+        18,
+        21,
+        40,
+        37
       ]
     }
   },
@@ -1049,10 +1102,10 @@
     "cima": {
       "arquivo": "chair_stack/cima.png",
       "caixa": [
-        11,
-        11,
-        116,
-        116
+        18,
+        16,
+        40,
+        42
       ]
     }
   },
@@ -1088,15 +1141,6 @@
       0.56,
       1.17
     ],
-    "cima": {
-      "arquivo": "sideboard/cima.png",
-      "caixa": [
-        0,
-        17,
-        256,
-        111
-      ]
-    },
     "encosta": true,
     "estados": {
       "1": {
@@ -1122,6 +1166,26 @@
             "ay": 94
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "sideboard/cima.png",
+      "caixa": [
+        14,
+        16,
+        76,
+        40
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "sideboard/cima-1.png",
+        "caixa": [
+          13,
+          16,
+          79,
+          57
+        ]
       }
     }
   },
@@ -1157,15 +1221,6 @@
       0.556,
       0.998
     ],
-    "cima": {
-      "arquivo": "bar_cabinet/cima.png",
-      "caixa": [
-        5,
-        21,
-        122,
-        106
-      ]
-    },
     "encosta": true,
     "estados": {
       "1": {
@@ -1191,6 +1246,26 @@
             "ay": 80
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "bar_cabinet/cima.png",
+      "caixa": [
+        15,
+        16,
+        43,
+        40
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "bar_cabinet/cima-1.png",
+        "caixa": [
+          2,
+          16,
+          56,
+          41
+        ]
       }
     }
   },
@@ -1229,10 +1304,10 @@
     "cima": {
       "arquivo": "armchair_red/cima.png",
       "caixa": [
-        2,
-        2,
-        126,
-        126
+        14,
+        14,
+        44,
+        44
       ]
     }
   },
@@ -1271,10 +1346,10 @@
     "cima": {
       "arquivo": "sofa_booth/cima.png",
       "caixa": [
-        0,
-        0,
-        256,
-        128
+        14,
+        15,
+        76,
+        44
       ]
     }
   },
@@ -1313,10 +1388,10 @@
     "cima": {
       "arquivo": "keg/cima.png",
       "caixa": [
-        24,
-        24,
-        103,
-        103
+        20,
+        20,
+        38,
+        38
       ]
     }
   },
@@ -1351,7 +1426,16 @@
       0.09,
       0.09,
       0.147
-    ]
+    ],
+    "cima": {
+      "arquivo": "beer_glass/cima.png",
+      "caixa": [
+        27,
+        27,
+        31,
+        31
+      ]
+    }
   },
   "ashtray": {
     "escala": 1,
@@ -1384,7 +1468,16 @@
       0.16,
       0.148,
       0.061
-    ]
+    ],
+    "cima": {
+      "arquivo": "ashtray/cima.png",
+      "caixa": [
+        26,
+        26,
+        33,
+        32
+      ]
+    }
   },
   "ceiling_lamp": {
     "escala": 1,
@@ -1455,6 +1548,15 @@
     "pendulo": {
       "graus": 1.6,
       "ms": 4600
+    },
+    "cima": {
+      "arquivo": "ceiling_lamp/cima.png",
+      "caixa": [
+        21,
+        21,
+        37,
+        37
+      ]
     }
   },
   "rug_worn": {
@@ -1488,7 +1590,16 @@
       1.38,
       2.05,
       0.017
-    ]
+    ],
+    "cima": {
+      "arquivo": "rug_worn/cima.png",
+      "caixa": [
+        16,
+        15,
+        74,
+        107
+      ]
+    }
   },
   "clock": {
     "escala": 1,
@@ -1609,7 +1720,16 @@
       2.11,
       2.8,
       0.017
-    ]
+    ],
+    "cima": {
+      "arquivo": "rug_ornate/cima.png",
+      "caixa": [
+        16,
+        15,
+        106,
+        139
+      ]
+    }
   },
   "divider": {
     "escala": 0.5,
@@ -1682,15 +1802,6 @@
       0.56,
       1.898
     ],
-    "cima": {
-      "arquivo": "medical_cabinet/cima.png",
-      "caixa": [
-        0,
-        25,
-        256,
-        102
-      ]
-    },
     "encosta": true,
     "estados": {
       "1": {
@@ -1716,6 +1827,26 @@
             "ay": 154
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "medical_cabinet/cima.png",
+      "caixa": [
+        14,
+        16,
+        76,
+        39
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "medical_cabinet/cima-1.png",
+        "caixa": [
+          14,
+          16,
+          76,
+          58
+        ]
       }
     }
   },
@@ -1754,10 +1885,10 @@
     "cima": {
       "arquivo": "iv_stand/cima.png",
       "caixa": [
-        21,
-        21,
-        106,
-        106
+        18,
+        18,
+        40,
+        40
       ]
     }
   },
@@ -1793,16 +1924,16 @@
       0.55,
       1.04
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "sink/cima.png",
       "caixa": [
         16,
-        24,
-        112,
-        103
+        15,
+        42,
+        38
       ]
-    },
-    "encosta": true
+    }
   },
   "lab_bench": {
     "escala": 0.5,
@@ -1878,10 +2009,10 @@
     "cima": {
       "arquivo": "trolley/cima.png",
       "caixa": [
-        4,
-        25,
-        123,
-        102
+        17,
+        19,
+        41,
+        40
       ]
     }
   },
@@ -1920,10 +2051,10 @@
     "cima": {
       "arquivo": "desk_metal/cima.png",
       "caixa": [
-        0,
-        8,
-        256,
-        119
+        7,
+        10,
+        83,
+        48
       ]
     }
   },
@@ -1985,15 +2116,6 @@
         }
       }
     },
-    "cima": {
-      "arquivo": "vitals_monitor/cima.png",
-      "caixa": [
-        33,
-        43,
-        94,
-        84
-      ]
-    },
     "tela": {
       "cores": [
         "#4fe39a"
@@ -2002,6 +2124,15 @@
       "modo": "pulso",
       "forca": 0.5,
       "giros": {}
+    },
+    "cima": {
+      "arquivo": "vitals_monitor/cima.png",
+      "caixa": [
+        21,
+        26,
+        37,
+        35
+      ]
     }
   },
   "med_tray": {
@@ -2039,10 +2170,10 @@
     "cima": {
       "arquivo": "med_tray/cima.png",
       "caixa": [
-        28,
-        38,
-        100,
-        89
+        19,
+        22,
+        39,
+        36
       ]
     }
   },
@@ -2177,7 +2308,27 @@
       "graus": 0.5,
       "ms": 6400
     },
-    "falha": true
+    "falha": true,
+    "cima": {
+      "arquivo": "fluorescent/cima.png",
+      "caixa": [
+        23,
+        14,
+        35,
+        44
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "fluorescent/cima-1.png",
+        "caixa": [
+          23,
+          14,
+          35,
+          44
+        ]
+      }
+    }
   },
   "emergency_light": {
     "escala": 1,
@@ -2238,16 +2389,16 @@
       0.66,
       0.827
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "toilet/cima.png",
       "caixa": [
-        30,
-        4,
-        98,
-        123
+        19,
+        14,
+        39,
+        42
       ]
-    },
-    "encosta": true
+    }
   },
   "stall_panel": {
     "escala": 1,
@@ -2284,10 +2435,10 @@
     "cima": {
       "arquivo": "stall_panel/cima.png",
       "caixa": [
-        4,
-        59,
-        123,
-        69
+        13,
+        27,
+        45,
+        31
       ]
     }
   },
@@ -2326,10 +2477,10 @@
     "cima": {
       "arquivo": "trash_bin/cima.png",
       "caixa": [
-        38,
-        38,
-        89,
-        89
+        22,
+        22,
+        36,
+        38
       ]
     }
   },
@@ -2402,10 +2553,10 @@
     "cima": {
       "arquivo": "table_work/cima.png",
       "caixa": [
-        0,
-        47,
-        384,
-        209
+        3,
+        7,
+        119,
+        83
       ]
     }
   },
@@ -2444,10 +2595,10 @@
     "cima": {
       "arquivo": "stairs_up/cima.png",
       "caixa": [
-        11,
-        0,
-        117,
-        256
+        15,
+        13,
+        44,
+        77
       ]
     }
   },
@@ -2486,10 +2637,10 @@
     "cima": {
       "arquivo": "table_round/cima.png",
       "caixa": [
-        0,
-        0,
-        256,
-        256
+        7,
+        7,
+        83,
+        83
       ]
     }
   },
@@ -2606,10 +2757,10 @@
     "cima": {
       "arquivo": "table_chess/cima.png",
       "caixa": [
-        13,
-        13,
-        115,
-        115
+        14,
+        14,
+        44,
+        44
       ]
     }
   },
@@ -2648,10 +2799,10 @@
     "cima": {
       "arquivo": "armchair/cima.png",
       "caixa": [
-        7,
-        7,
-        120,
-        120
+        14,
+        14,
+        44,
+        44
       ]
     }
   },
@@ -2729,10 +2880,10 @@
     "cima": {
       "arquivo": "bench/cima.png",
       "caixa": [
-        17,
-        30,
-        239,
-        98
+        15,
+        16,
+        75,
+        41
       ]
     }
   },
@@ -2836,11 +2987,22 @@
     "cima": {
       "arquivo": "floor_lamp/cima.png",
       "caixa": [
-        25,
-        25,
-        102,
-        102
+        18,
+        18,
+        40,
+        40
       ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "floor_lamp/cima-1.png",
+        "caixa": [
+          18,
+          18,
+          40,
+          40
+        ]
+      }
     }
   },
   "board_investigation": {
@@ -2952,7 +3114,16 @@
       2.12,
       2.12,
       0.017
-    ]
+    ],
+    "cima": {
+      "arquivo": "compass_floor/cima.png",
+      "caixa": [
+        16,
+        16,
+        106,
+        106
+      ]
+    }
   },
   "locker": {
     "escala": 1,
@@ -3012,16 +3183,27 @@
         }
       }
     },
+    "encosta": true,
     "cima": {
       "arquivo": "locker/cima.png",
       "caixa": [
-        21,
-        21,
-        106,
-        106
+        18,
+        17,
+        40,
+        40
       ]
     },
-    "encosta": true
+    "cimaEstados": {
+      "1": {
+        "arquivo": "locker/cima-1.png",
+        "caixa": [
+          17,
+          17,
+          40,
+          58
+        ]
+      }
+    }
   },
   "candelabra": {
     "escala": 1,
@@ -3084,11 +3266,22 @@
     "cima": {
       "arquivo": "candelabra/cima.png",
       "caixa": [
-        25,
-        25,
-        102,
-        102
+        18,
+        18,
+        40,
+        40
       ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "candelabra/cima-1.png",
+        "caixa": [
+          18,
+          18,
+          40,
+          40
+        ]
+      }
     }
   },
   "desk_lamp": {
@@ -3152,11 +3345,22 @@
     "cima": {
       "arquivo": "desk_lamp/cima.png",
       "caixa": [
+        23,
+        23,
         35,
-        47,
-        93,
-        81
+        35
       ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "desk_lamp/cima-1.png",
+        "caixa": [
+          23,
+          23,
+          35,
+          35
+        ]
+      }
     }
   },
   "books_stack": {
@@ -3194,10 +3398,10 @@
     "cima": {
       "arquivo": "books_stack/cima.png",
       "caixa": [
+        20,
+        18,
         38,
-        45,
-        89,
-        83
+        41
       ]
     }
   },
@@ -3247,7 +3451,16 @@
       0.553,
       0.67,
       0.011
-    ]
+    ],
+    "cima": {
+      "arquivo": "papers/cima.png",
+      "caixa": [
+        17,
+        16,
+        40,
+        44
+      ]
+    }
   },
   "flasks": {
     "escala": 1,
@@ -3284,10 +3497,10 @@
     "cima": {
       "arquivo": "flasks/cima.png",
       "caixa": [
+        17,
         25,
-        38,
-        102,
-        89
+        40,
+        43
       ]
     }
   },
@@ -3388,15 +3601,6 @@
         }
       }
     },
-    "cima": {
-      "arquivo": "monitor/cima.png",
-      "caixa": [
-        21,
-        30,
-        106,
-        98
-      ]
-    },
     "tela": {
       "cores": [
         "#5ad0e0",
@@ -3407,6 +3611,15 @@
       "modo": "tv",
       "forca": 0.22,
       "giros": {}
+    },
+    "cima": {
+      "arquivo": "monitor/cima.png",
+      "caixa": [
+        18,
+        28,
+        40,
+        33
+      ]
     }
   },
   "monitor_green": {
@@ -3503,10 +3716,10 @@
     "cima": {
       "arquivo": "stool_lab/cima.png",
       "caixa": [
-        25,
-        25,
-        102,
-        102
+        18,
+        18,
+        40,
+        40
       ]
     }
   },
@@ -3562,10 +3775,10 @@
     "cima": {
       "arquivo": "counter_wood/cima.png",
       "caixa": [
-        0,
         13,
-        256,
-        115
+        15,
+        77,
+        44
       ]
     }
   },
@@ -3604,10 +3817,10 @@
     "cima": {
       "arquivo": "table_tools/cima.png",
       "caixa": [
-        0,
-        2,
-        256,
-        125
+        7,
+        10,
+        83,
+        48
       ]
     }
   },
@@ -3646,10 +3859,10 @@
     "cima": {
       "arquivo": "chair_wood/cima.png",
       "caixa": [
-        25,
-        25,
-        102,
-        102
+        18,
+        18,
+        40,
+        40
       ]
     }
   },
@@ -3688,10 +3901,10 @@
     "cima": {
       "arquivo": "stool/cima.png",
       "caixa": [
-        34,
-        34,
-        94,
-        94
+        20,
+        20,
+        38,
+        38
       ]
     }
   },
@@ -3756,11 +3969,22 @@
     "cima": {
       "arquivo": "candles/cima.png",
       "caixa": [
-        30,
-        38,
-        98,
-        89
+        22,
+        22,
+        36,
+        36
       ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "candles/cima-1.png",
+        "caixa": [
+          22,
+          22,
+          36,
+          36
+        ]
+      }
     }
   },
   "skull": {
@@ -3798,10 +4022,10 @@
     "cima": {
       "arquivo": "skull/cima.png",
       "caixa": [
-        48,
-        45,
-        79,
-        83
+        22,
+        20,
+        35,
+        36
       ]
     }
   },
@@ -3853,7 +4077,16 @@
       2.099,
       2.1,
       0.005
-    ]
+    ],
+    "cima": {
+      "arquivo": "sigil_floor/cima.png",
+      "caixa": [
+        16,
+        16,
+        106,
+        106
+      ]
+    }
   },
   "blood_drops": {
     "escala": 1,
@@ -3886,7 +4119,16 @@
       0.772,
       0.632,
       0.004
-    ]
+    ],
+    "cima": {
+      "arquivo": "blood_drops/cima.png",
+      "caixa": [
+        14,
+        18,
+        47,
+        45
+      ]
+    }
   },
   "blood_pool": {
     "escala": 1,
@@ -3919,7 +4161,16 @@
       0.642,
       0.649,
       0.004
-    ]
+    ],
+    "cima": {
+      "arquivo": "blood_pool/cima.png",
+      "caixa": [
+        16,
+        17,
+        44,
+        44
+      ]
+    }
   },
   "server_rack": {
     "escala": 1,
@@ -3953,16 +4204,16 @@
       0.65,
       2.002
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "server_rack/cima.png",
       "caixa": [
-        13,
-        7,
-        115,
-        120
+        17,
+        15,
+        41,
+        43
       ]
-    },
-    "encosta": true
+    }
   },
   "printer_dot": {
     "escala": 1,
@@ -3999,10 +4250,10 @@
     "cima": {
       "arquivo": "printer_dot/cima.png",
       "caixa": [
-        13,
-        21,
-        115,
-        106
+        18,
+        16,
+        40,
+        45
       ]
     }
   },
@@ -4041,10 +4292,10 @@
     "cima": {
       "arquivo": "whiteboard/cima.png",
       "caixa": [
-        55,
-        13,
-        328,
-        115
+        15,
+        16,
+        107,
+        42
       ]
     }
   },
@@ -4080,16 +4331,16 @@
       0.48,
       1.102
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "media_shelf/cima.png",
       "caixa": [
-        51,
-        30,
-        205,
-        98
+        15,
+        18,
+        75,
+        39
       ]
-    },
-    "encosta": true
+    }
   },
   "water_cooler": {
     "escala": 1,
@@ -4126,10 +4377,10 @@
     "cima": {
       "arquivo": "water_cooler/cima.png",
       "caixa": [
-        34,
-        34,
-        94,
-        94
+        22,
+        22,
+        38,
+        39
       ]
     }
   },
@@ -4168,10 +4419,10 @@
     "cima": {
       "arquivo": "parts_boxes/cima.png",
       "caixa": [
-        13,
-        21,
-        115,
-        106
+        16,
+        17,
+        41,
+        44
       ]
     }
   },
@@ -4210,10 +4461,10 @@
     "cima": {
       "arquivo": "ups/cima.png",
       "caixa": [
-        25,
-        34,
-        102,
-        94
+        16,
+        16,
+        42,
+        43
       ]
     }
   },
@@ -4318,7 +4569,16 @@
       2.331,
       0.5,
       0.044
-    ]
+    ],
+    "cima": {
+      "arquivo": "cables_floor/cima.png",
+      "caixa": [
+        11,
+        20,
+        111,
+        42
+      ]
+    }
   },
   "weapon_rack": {
     "escala": 1,
@@ -4352,16 +4612,16 @@
       0.59,
       2.002
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "weapon_rack/cima.png",
       "caixa": [
-        0,
-        21,
-        256,
-        106
+        14,
+        17,
+        76,
+        42
       ]
-    },
-    "encosta": true
+    }
   },
   "locker_ammo": {
     "escala": 1,
@@ -4421,16 +4681,27 @@
         }
       }
     },
+    "encosta": true,
     "cima": {
       "arquivo": "locker_ammo/cima.png",
       "caixa": [
-        13,
-        21,
-        115,
-        106
+        16,
+        16,
+        42,
+        43
       ]
     },
-    "encosta": true
+    "cimaEstados": {
+      "1": {
+        "arquivo": "locker_ammo/cima-1.png",
+        "caixa": [
+          16,
+          16,
+          42,
+          42
+        ]
+      }
+    }
   },
   "chest_army": {
     "escala": 1,
@@ -4493,11 +4764,22 @@
     "cima": {
       "arquivo": "chest_army/cima.png",
       "caixa": [
-        8,
-        25,
-        119,
-        102
+        15,
+        19,
+        43,
+        40
       ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "chest_army/cima-1.png",
+        "caixa": [
+          15,
+          14,
+          43,
+          40
+        ]
+      }
     }
   },
   "ammo_box": {
@@ -4532,15 +4814,6 @@
       0.556,
       0.322
     ],
-    "cima": {
-      "arquivo": "ammo_box/cima.png",
-      "caixa": [
-        21,
-        38,
-        106,
-        89
-      ]
-    },
     "estados": {
       "1": {
         "giros": {
@@ -4565,6 +4838,26 @@
             "ay": 58
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "ammo_box/cima.png",
+      "caixa": [
+        17,
+        17,
+        42,
+        41
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "ammo_box/cima-1.png",
+        "caixa": [
+          17,
+          16,
+          41,
+          40
+        ]
       }
     }
   },
@@ -4603,10 +4896,10 @@
     "cima": {
       "arquivo": "stool_metal/cima.png",
       "caixa": [
-        30,
-        30,
-        98,
-        98
+        20,
+        20,
+        38,
+        38
       ]
     }
   },
@@ -4692,7 +4985,16 @@
       0.632,
       0.531,
       0.004
-    ]
+    ],
+    "cima": {
+      "arquivo": "oil_stain/cima.png",
+      "caixa": [
+        16,
+        18,
+        43,
+        41
+      ]
+    }
   },
   "locker_row": {
     "escala": 1,
@@ -4726,15 +5028,6 @@
       0.585,
       1.898
     ],
-    "cima": {
-      "arquivo": "locker_row/cima.png",
-      "caixa": [
-        0,
-        25,
-        256,
-        102
-      ]
-    },
     "encosta": true,
     "estados": {
       "1": {
@@ -4760,6 +5053,26 @@
             "ay": 151
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "locker_row/cima.png",
+      "caixa": [
+        14,
+        16,
+        76,
+        41
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "locker_row/cima-1.png",
+        "caixa": [
+          14,
+          16,
+          76,
+          58
+        ]
       }
     }
   },
@@ -4798,10 +5111,10 @@
     "cima": {
       "arquivo": "janitor_cart/cima.png",
       "caixa": [
-        25,
-        4,
-        102,
-        123
+        17,
+        16,
+        41,
+        41
       ]
     }
   },
@@ -4840,10 +5153,10 @@
     "cima": {
       "arquivo": "wet_sign/cima.png",
       "caixa": [
-        38,
-        38,
-        89,
-        89
+        23,
+        23,
+        35,
+        35
       ]
     }
   },
@@ -4882,10 +5195,10 @@
     "cima": {
       "arquivo": "trash_can/cima.png",
       "caixa": [
-        34,
-        34,
-        94,
-        94
+        19,
+        19,
+        39,
+        39
       ]
     }
   },
@@ -4988,7 +5301,16 @@
       0.51,
       0.47,
       0.019
-    ]
+    ],
+    "cima": {
+      "arquivo": "vent/cima.png",
+      "caixa": [
+        18,
+        19,
+        40,
+        39
+      ]
+    }
   },
   "puddle": {
     "escala": 1,
@@ -5021,7 +5343,16 @@
       0.718,
       0.57,
       0.004
-    ]
+    ],
+    "cima": {
+      "arquivo": "puddle/cima.png",
+      "caixa": [
+        13,
+        18,
+        43,
+        43
+      ]
+    }
   },
   "cell_bars": {
     "escala": 0.5,
@@ -5150,7 +5481,16 @@
       0.59,
       2.15,
       0.82
-    ]
+    ],
+    "cima": {
+      "arquivo": "bed/cima.png",
+      "caixa": [
+        16,
+        15,
+        42,
+        107
+      ]
+    }
   },
   "toilet_steel": {
     "escala": 1,
@@ -5192,7 +5532,16 @@
       0,
       1.0
     ],
-    "encosta": true
+    "encosta": true,
+    "cima": {
+      "arquivo": "toilet_steel/cima.png",
+      "caixa": [
+        18,
+        14,
+        40,
+        41
+      ]
+    }
   },
   "cell_wall": {
     "escala": 0.5,
@@ -5255,7 +5604,16 @@
       0.55,
       0.489,
       0.11
-    ]
+    ],
+    "cima": {
+      "arquivo": "food_tray/cima.png",
+      "caixa": [
+        18,
+        21,
+        42,
+        42
+      ]
+    }
   },
   "tally_marks": {
     "escala": 1,
@@ -5332,7 +5690,16 @@
       0.661,
       0.634,
       0.006
-    ]
+    ],
+    "cima": {
+      "arquivo": "drain/cima.png",
+      "caixa": [
+        16,
+        17,
+        44,
+        44
+      ]
+    }
   },
   "altar": {
     "escala": 1,
@@ -5369,10 +5736,10 @@
     "cima": {
       "arquivo": "altar/cima.png",
       "caixa": [
-        51,
-        21,
-        205,
-        106
+        15,
+        15,
+        75,
+        43
       ]
     }
   },
@@ -5411,10 +5778,10 @@
     "cima": {
       "arquivo": "rubble/cima.png",
       "caixa": [
-        25,
-        25,
-        230,
-        230
+        18,
+        20,
+        71,
+        75
       ]
     }
   },
@@ -5453,10 +5820,10 @@
     "cima": {
       "arquivo": "pedestal/cima.png",
       "caixa": [
-        34,
-        34,
-        94,
-        94
+        18,
+        18,
+        40,
+        40
       ]
     }
   },
@@ -5542,7 +5909,16 @@
       2.16,
       2.16,
       0.006
-    ]
+    ],
+    "cima": {
+      "arquivo": "sigil_gold/cima.png",
+      "caixa": [
+        15,
+        15,
+        107,
+        107
+      ]
+    }
   },
   "wax_pool": {
     "escala": 1,
@@ -5575,7 +5951,16 @@
       0.681,
       0.617,
       0.12
-    ]
+    ],
+    "cima": {
+      "arquivo": "wax_pool/cima.png",
+      "caixa": [
+        16,
+        17,
+        45,
+        43
+      ]
+    }
   },
   "stairs_down": {
     "escala": 1,
@@ -5612,10 +5997,10 @@
     "cima": {
       "arquivo": "stairs_down/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        15,
+        14,
+        43,
+        44
       ]
     }
   },
@@ -5680,7 +6065,36 @@
       0,
       2.17
     ],
-    "encosta": true
+    "encosta": true,
+    "cima": {
+      "arquivo": "portal/cima.png",
+      "caixa": [
+        12,
+        10,
+        46,
+        40
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "portal/cima-1.png",
+        "caixa": [
+          12,
+          10,
+          46,
+          15
+        ]
+      },
+      "2": {
+        "arquivo": "portal/cima-2.png",
+        "caixa": [
+          12,
+          10,
+          46,
+          17
+        ]
+      }
+    }
   },
   "portal@metal": {
     "escala": 1,
@@ -5743,7 +6157,36 @@
       0,
       2.17
     ],
-    "encosta": true
+    "encosta": true,
+    "cima": {
+      "arquivo": "portal@metal/cima.png",
+      "caixa": [
+        12,
+        10,
+        46,
+        40
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "portal@metal/cima-1.png",
+        "caixa": [
+          12,
+          10,
+          46,
+          15
+        ]
+      },
+      "2": {
+        "arquivo": "portal@metal/cima-2.png",
+        "caixa": [
+          12,
+          10,
+          46,
+          17
+        ]
+      }
+    }
   },
   "gun_table~b": {
     "escala": 0.5,
@@ -6807,16 +7250,16 @@
       0.53,
       2.603
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "shelf_verissimo/cima.png",
       "caixa": [
-        0,
-        25,
-        768,
-        102
+        13,
+        14,
+        205,
+        36
       ]
-    },
-    "encosta": true
+    }
   },
   "desk_verissimo": {
     "escala": 1,
@@ -6853,10 +7296,10 @@
     "cima": {
       "arquivo": "desk_verissimo/cima.png",
       "caixa": [
-        4,
-        34,
-        379,
-        222
+        3,
+        7,
+        119,
+        83
       ]
     }
   },
@@ -6895,10 +7338,10 @@
     "cima": {
       "arquivo": "chair_verissimo/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        16,
+        15,
+        42,
+        43
       ]
     }
   },
@@ -6937,10 +7380,10 @@
     "cima": {
       "arquivo": "sofa_verissimo/cima.png",
       "caixa": [
-        13,
-        55,
-        371,
-        200
+        14,
+        15,
+        108,
+        44
       ]
     }
   },
@@ -6979,10 +7422,10 @@
     "cima": {
       "arquivo": "armchair_verissimo/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        14,
+        15,
+        44,
+        44
       ]
     }
   },
@@ -7021,10 +7464,10 @@
     "cima": {
       "arquivo": "armor_display/cima.png",
       "caixa": [
-        4,
-        13,
-        123,
-        115
+        14,
+        17,
+        44,
+        42
       ]
     }
   },
@@ -7060,16 +7503,16 @@
       0.58,
       2.002
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "vitrine_paranormal/cima.png",
       "caixa": [
-        0,
-        21,
-        256,
-        106
+        13,
+        16,
+        77,
+        41
       ]
-    },
-    "encosta": true
+    }
   },
   "pedestal_relic": {
     "escala": 1,
@@ -7106,10 +7549,10 @@
     "cima": {
       "arquivo": "pedestal_relic/cima.png",
       "caixa": [
-        21,
-        21,
-        106,
-        106
+        19,
+        19,
+        39,
+        39
       ]
     }
   },
@@ -7178,7 +7621,16 @@
       2.88,
       2.13,
       0.017
-    ]
+    ],
+    "cima": {
+      "arquivo": "rug_aubusson/cima.png",
+      "caixa": [
+        16,
+        16,
+        138,
+        106
+      ]
+    }
   },
   "desk_u": {
     "escala": 1,
@@ -7215,10 +7667,10 @@
     "cima": {
       "arquivo": "desk_u/cima.png",
       "caixa": [
-        0,
-        0,
-        768,
-        512
+        15,
+        15,
+        203,
+        143
       ]
     }
   },
@@ -7283,11 +7735,22 @@
     "cima": {
       "arquivo": "bed_curtain/cima.png",
       "caixa": [
-        0,
-        0,
-        384,
-        384
+        14,
+        14,
+        108,
+        138
       ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "bed_curtain/cima-1.png",
+        "caixa": [
+          14,
+          14,
+          108,
+          138
+        ]
+      }
     }
   },
   "van_seat": {
@@ -7382,15 +7845,6 @@
       0.585,
       2.02
     ],
-    "cima": {
-      "arquivo": "armario_cozinha/cima.png",
-      "caixa": [
-        0,
-        21,
-        256,
-        106
-      ]
-    },
     "estados": {
       "1": {
         "giros": {
@@ -7415,6 +7869,26 @@
             "ay": 153
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "armario_cozinha/cima.png",
+      "caixa": [
+        12,
+        13,
+        78,
+        38
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "armario_cozinha/cima-1.png",
+        "caixa": [
+          7,
+          13,
+          81,
+          58
+        ]
       }
     }
   },
@@ -7453,10 +7927,10 @@
     "cima": {
       "arquivo": "banheira/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        256
+        15,
+        16,
+        43,
+        74
       ]
     }
   },
@@ -7495,10 +7969,10 @@
     "cima": {
       "arquivo": "cama_casal/cima.png",
       "caixa": [
-        0,
-        0,
-        256,
-        384
+        14,
+        13,
+        76,
+        108
       ]
     }
   },
@@ -7537,10 +8011,10 @@
     "cima": {
       "arquivo": "cama_solteiro/cima.png",
       "caixa": [
-        1,
-        48,
-        126,
-        336
+        14,
+        13,
+        44,
+        108
       ]
     }
   },
@@ -7654,15 +8128,6 @@
       0.586,
       0.901
     ],
-    "cima": {
-      "arquivo": "comoda/cima.png",
-      "caixa": [
-        0,
-        22,
-        255,
-        106
-      ]
-    },
     "estados": {
       "1": {
         "giros": {
@@ -7687,6 +8152,26 @@
             "ay": 92
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "comoda/cima.png",
+      "caixa": [
+        14,
+        16,
+        76,
+        41
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "comoda/cima-1.png",
+        "caixa": [
+          14,
+          16,
+          76,
+          52
+        ]
       }
     }
   },
@@ -7722,15 +8207,6 @@
       0.516,
       0.6
     ],
-    "cima": {
-      "arquivo": "nightstand/cima.png",
-      "caixa": [
-        21,
-        30,
-        106,
-        98
-      ]
-    },
     "estados": {
       "1": {
         "giros": {
@@ -7755,6 +8231,26 @@
             "ay": 61
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "nightstand/cima.png",
+      "caixa": [
+        17,
+        15,
+        41,
+        37
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "nightstand/cima-1.png",
+        "caixa": [
+          12,
+          15,
+          41,
+          58
+        ]
       }
     }
   },
@@ -7793,10 +8289,10 @@
     "cima": {
       "arquivo": "iwall_low/cima.png",
       "caixa": [
-        0,
-        54,
-        128,
-        74
+        13,
+        12,
+        45,
+        19
       ]
     }
   },
@@ -7835,10 +8331,10 @@
     "cima": {
       "arquivo": "escada_desce/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        256
+        13,
+        14,
+        45,
+        76
       ]
     }
   },
@@ -7903,11 +8399,22 @@
     "cima": {
       "arquivo": "fogao_lenha/cima.png",
       "caixa": [
-        0,
-        0,
-        256,
-        128
+        13,
+        13,
+        77,
+        53
       ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "fogao_lenha/cima-1.png",
+        "caixa": [
+          13,
+          13,
+          77,
+          53
+        ]
+      }
     }
   },
   "guarda_roupa": {
@@ -7942,15 +8449,6 @@
       0.665,
       2.002
     ],
-    "cima": {
-      "arquivo": "guarda_roupa/cima.png",
-      "caixa": [
-        0,
-        13,
-        256,
-        115
-      ]
-    },
     "estados": {
       "1": {
         "giros": {
@@ -7975,6 +8473,26 @@
             "ay": 159
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "guarda_roupa/cima.png",
+      "caixa": [
+        13,
+        14,
+        77,
+        43
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "guarda_roupa/cima-1.png",
+        "caixa": [
+          12,
+          14,
+          81,
+          58
+        ]
       }
     }
   },
@@ -8013,10 +8531,10 @@
     "cima": {
       "arquivo": "mesa_cozinha/cima.png",
       "caixa": [
-        0,
-        0,
-        384,
-        256
+        3,
+        7,
+        119,
+        83
       ]
     }
   },
@@ -8056,9 +8574,9 @@
       "arquivo": "mesa_jantar/cima.png",
       "caixa": [
         0,
-        0,
-        512,
-        256
+        7,
+        154,
+        83
       ]
     }
   },
@@ -8097,10 +8615,10 @@
     "cima": {
       "arquivo": "pia_cozinha/cima.png",
       "caixa": [
-        0,
         13,
-        256,
-        115
+        13,
+        77,
+        39
       ]
     }
   },
@@ -8139,10 +8657,10 @@
     "cima": {
       "arquivo": "prateleira/cima.png",
       "caixa": [
-        0,
-        25,
-        256,
-        102
+        15,
+        15,
+        75,
+        39
       ]
     }
   },
@@ -8181,10 +8699,10 @@
     "cima": {
       "arquivo": "baia/cima.png",
       "caixa": [
-        0,
-        54,
-        128,
-        74
+        10,
+        26,
+        42,
+        32
       ]
     }
   },
@@ -8223,10 +8741,10 @@
     "cima": {
       "arquivo": "arvore/cima.png",
       "caixa": [
-        21,
-        22,
-        618,
-        613
+        0,
+        0,
+        58,
+        58
       ]
     }
   },
@@ -8265,10 +8783,10 @@
     "cima": {
       "arquivo": "arvore~b/cima.png",
       "caixa": [
-        25,
-        25,
-        613,
-        614
+        0,
+        0,
+        58,
+        58
       ]
     }
   },
@@ -8307,10 +8825,10 @@
     "cima": {
       "arquivo": "arvore~c/cima.png",
       "caixa": [
-        2,
-        11,
-        507,
-        511
+        0,
+        0,
+        58,
+        58
       ]
     }
   },
@@ -8349,10 +8867,10 @@
     "cima": {
       "arquivo": "arbusto/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        127
+        10,
+        10,
+        48,
+        47
       ]
     }
   },
@@ -8391,10 +8909,10 @@
     "cima": {
       "arquivo": "arbusto~b/cima.png",
       "caixa": [
-        0,
-        0,
-        127,
-        127
+        10,
+        10,
+        45,
+        47
       ]
     }
   },
@@ -8433,10 +8951,10 @@
     "cima": {
       "arquivo": "milharal/cima.png",
       "caixa": [
-        0,
-        0,
-        127,
-        127
+        13,
+        18,
+        45,
+        40
       ]
     }
   },
@@ -8475,10 +8993,10 @@
     "cima": {
       "arquivo": "horta/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        13,
+        19,
+        45,
+        39
       ]
     }
   },
@@ -8517,10 +9035,10 @@
     "cima": {
       "arquivo": "sacas/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        15,
+        15,
+        43,
+        44
       ]
     }
   },
@@ -8559,10 +9077,10 @@
     "cima": {
       "arquivo": "feno/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        13,
+        12,
+        43,
+        47
       ]
     }
   },
@@ -8601,10 +9119,10 @@
     "cima": {
       "arquivo": "cerca/cima.png",
       "caixa": [
-        0,
-        54,
-        128,
-        74
+        10,
+        26,
+        42,
+        32
       ]
     }
   },
@@ -8643,10 +9161,10 @@
     "cima": {
       "arquivo": "carroca/cima.png",
       "caixa": [
-        0,
-        0,
-        256,
-        384
+        16,
+        18,
+        74,
+        107
       ]
     }
   },
@@ -8686,9 +9204,9 @@
       "arquivo": "casarao/cima.png",
       "caixa": [
         0,
-        0,
-        1792,
-        1152
+        1,
+        474,
+        314
       ]
     }
   },
@@ -8754,9 +9272,9 @@
       "arquivo": "celeiro/cima.png",
       "caixa": [
         0,
-        0,
-        1536,
-        1024
+        2,
+        410,
+        282
       ]
     }
   },
@@ -8795,10 +9313,10 @@
     "cima": {
       "arquivo": "galpao/cima.png",
       "caixa": [
+        2,
         0,
-        0,
-        1024,
-        768
+        282,
+        210
       ]
     }
   },
@@ -8837,10 +9355,10 @@
     "cima": {
       "arquivo": "fonte/cima.png",
       "caixa": [
-        0,
-        0,
-        384,
-        384
+        15,
+        15,
+        107,
+        107
       ]
     }
   },
@@ -8879,10 +9397,10 @@
     "cima": {
       "arquivo": "placa/cima.png",
       "caixa": [
-        4,
-        51,
-        123,
-        77
+        14,
+        28,
+        46,
+        34
       ]
     }
   },
@@ -9038,10 +9556,10 @@
     "cima": {
       "arquivo": "arbusto~c/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        10,
+        12,
+        47,
+        48
       ]
     }
   },
@@ -9119,10 +9637,10 @@
     "cima": {
       "arquivo": "beliche/cima.png",
       "caixa": [
-        0,
-        47,
-        128,
-        337
+        15,
+        14,
+        43,
+        108
       ]
     }
   },
@@ -9391,7 +9909,16 @@
       3.7,
       3.7,
       0.83
-    ]
+    ],
+    "cima": {
+      "arquivo": "estrado_altar/cima.png",
+      "caixa": [
+        14,
+        14,
+        172,
+        172
+      ]
+    }
   },
   "pedra_sacrificio": {
     "escala": 1,
@@ -9424,7 +9951,16 @@
       2.559,
       1.639,
       0.998
-    ]
+    ],
+    "cima": {
+      "arquivo": "pedra_sacrificio/cima.png",
+      "caixa": [
+        8,
+        10,
+        116,
+        80
+      ]
+    }
   },
   "corpo_lencol": {
     "escala": 1,
@@ -9457,7 +9993,16 @@
       0.63,
       2.145,
       0.28
-    ]
+    ],
+    "cima": {
+      "arquivo": "corpo_lencol/cima.png",
+      "caixa": [
+        16,
+        15,
+        42,
+        107
+      ]
+    }
   },
   "corpo_saco": {
     "escala": 1,
@@ -9490,7 +10035,16 @@
       0.65,
       2.06,
       0.316
-    ]
+    ],
+    "cima": {
+      "arquivo": "corpo_saco/cima.png",
+      "caixa": [
+        15,
+        16,
+        43,
+        103
+      ]
+    }
   },
   "tanque_corpo": {
     "escala": 0.5,
@@ -9644,10 +10198,10 @@
     "cima": {
       "arquivo": "mesa_contencao/cima.png",
       "caixa": [
-        51,
-        21,
-        205,
-        362
+        6,
+        3,
+        84,
+        119
       ]
     }
   },
@@ -9686,10 +10240,10 @@
     "cima": {
       "arquivo": "pilha_cranios/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        18,
+        20,
+        41,
+        41
       ]
     }
   },
@@ -9725,16 +10279,16 @@
       0.12,
       3.0
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "escada_vertical/cima.png",
       "caixa": [
-        17,
-        54,
-        111,
-        74
+        19,
+        13,
+        39,
+        18
       ]
-    },
-    "encosta": true
+    }
   },
   "alcapao": {
     "escala": 1,
@@ -9771,10 +10325,10 @@
     "cima": {
       "arquivo": "alcapao/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        16,
+        14,
+        42,
+        42
       ]
     }
   },
@@ -9854,15 +10408,6 @@
       0.585,
       1.9
     ],
-    "cima": {
-      "arquivo": "armario_cozinha!vazio/cima.png",
-      "caixa": [
-        0,
-        21,
-        256,
-        106
-      ]
-    },
     "estados": {
       "1": {
         "giros": {
@@ -9887,6 +10432,26 @@
             "ay": 153
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "armario_cozinha!vazio/cima.png",
+      "caixa": [
+        12,
+        13,
+        78,
+        38
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "armario_cozinha!vazio/cima-1.png",
+        "caixa": [
+          7,
+          13,
+          81,
+          58
+        ]
       }
     }
   },
@@ -9922,15 +10487,6 @@
       0.586,
       0.9
     ],
-    "cima": {
-      "arquivo": "comoda!vazio/cima.png",
-      "caixa": [
-        0,
-        21,
-        256,
-        106
-      ]
-    },
     "estados": {
       "1": {
         "giros": {
@@ -9955,6 +10511,26 @@
             "ay": 92
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "comoda!vazio/cima.png",
+      "caixa": [
+        14,
+        16,
+        76,
+        41
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "comoda!vazio/cima-1.png",
+        "caixa": [
+          14,
+          16,
+          76,
+          52
+        ]
       }
     }
   },
@@ -9990,15 +10566,6 @@
       0.516,
       0.6
     ],
-    "cima": {
-      "arquivo": "nightstand!vazio/cima.png",
-      "caixa": [
-        21,
-        30,
-        106,
-        98
-      ]
-    },
     "estados": {
       "1": {
         "giros": {
@@ -10023,6 +10590,26 @@
             "ay": 61
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "nightstand!vazio/cima.png",
+      "caixa": [
+        17,
+        15,
+        41,
+        37
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "nightstand!vazio/cima-1.png",
+        "caixa": [
+          12,
+          15,
+          41,
+          58
+        ]
       }
     }
   },
@@ -10061,10 +10648,10 @@
     "cima": {
       "arquivo": "mesa_cozinha!vazio/cima.png",
       "caixa": [
-        0,
-        0,
-        384,
-        256
+        3,
+        7,
+        119,
+        83
       ]
     }
   },
@@ -10103,10 +10690,10 @@
     "cima": {
       "arquivo": "mesa_jantar!vazio/cima.png",
       "caixa": [
-        1,
         0,
-        512,
-        255
+        7,
+        154,
+        83
       ]
     }
   },
@@ -10145,10 +10732,10 @@
     "cima": {
       "arquivo": "prateleira!vazio/cima.png",
       "caixa": [
-        0,
-        25,
-        256,
-        102
+        15,
+        15,
+        75,
+        39
       ]
     }
   },
@@ -10187,10 +10774,10 @@
     "cima": {
       "arquivo": "cadeira_gamer/cima.png",
       "caixa": [
-        8,
-        8,
-        119,
-        119
+        14,
+        15,
+        43,
+        45
       ]
     }
   },
@@ -10265,16 +10852,16 @@
       1.43,
       2.002
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "rack_moderno/cima.png",
       "caixa": [
-        13,
+        16,
+        15,
         42,
-        115,
-        213
+        75
       ]
-    },
-    "encosta": true
+    }
   },
   "rack_moderno!vazio": {
     "escala": 1,
@@ -10308,16 +10895,16 @@
       1.43,
       2.002
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "rack_moderno!vazio/cima.png",
       "caixa": [
-        12,
+        16,
+        15,
         42,
-        116,
-        215
+        75
       ]
-    },
-    "encosta": true
+    }
   },
   "lixeira_lanches": {
     "escala": 1,
@@ -10354,10 +10941,10 @@
     "cima": {
       "arquivo": "lixeira_lanches/cima.png",
       "caixa": [
-        30,
-        30,
-        98,
-        98
+        18,
+        18,
+        42,
+        42
       ]
     }
   },
@@ -10393,16 +10980,16 @@
       0.64,
       1.8
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "torre_crt/cima.png",
       "caixa": [
-        0,
-        5,
-        255,
-        123
+        15,
+        16,
+        75,
+        43
       ]
-    },
-    "encosta": true
+    }
   },
   "torre_crt!vazio": {
     "escala": 1,
@@ -10436,16 +11023,16 @@
       0.64,
       0.3
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "torre_crt!vazio/cima.png",
       "caixa": [
-        0,
-        4,
-        256,
-        123
+        15,
+        16,
+        75,
+        43
       ]
-    },
-    "encosta": true
+    }
   },
   "bancada_eletronica": {
     "escala": 1,
@@ -10479,16 +11066,16 @@
       0.705,
       1.649
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "bancada_eletronica/cima.png",
       "caixa": [
-        0,
-        4,
-        256,
-        123
+        14,
+        16,
+        76,
+        45
       ]
-    },
-    "encosta": true
+    }
   },
   "bancada_eletronica!vazio": {
     "escala": 1,
@@ -10522,16 +11109,16 @@
       0.67,
       1.649
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "bancada_eletronica!vazio/cima.png",
       "caixa": [
-        0,
-        4,
-        256,
-        123
+        14,
+        16,
+        76,
+        44
       ]
-    },
-    "encosta": true
+    }
   },
   "mesa_holografica": {
     "escala": 1,
@@ -10594,20 +11181,20 @@
     "cima": {
       "arquivo": "mesa_holografica/cima.png",
       "caixa": [
-        8,
-        8,
-        247,
-        247
+        16,
+        16,
+        74,
+        74
       ]
     },
     "cimaEstados": {
       "1": {
         "arquivo": "mesa_holografica/cima-1.png",
         "caixa": [
-          8,
-          8,
-          247,
-          247
+          16,
+          16,
+          74,
+          74
         ]
       }
     }
@@ -10673,11 +11260,22 @@
     "cima": {
       "arquivo": "mesa_holografica!vazio/cima.png",
       "caixa": [
-        8,
-        8,
-        247,
-        247
+        16,
+        16,
+        74,
+        74
       ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "mesa_holografica!vazio/cima-1.png",
+        "caixa": [
+          16,
+          16,
+          74,
+          74
+        ]
+      }
     }
   },
   "frigobar_energetico": {
@@ -10716,9 +11314,9 @@
       "arquivo": "frigobar_energetico/cima.png",
       "caixa": [
         17,
-        17,
-        111,
-        111
+        16,
+        41,
+        43
       ]
     }
   },
@@ -10757,10 +11355,10 @@
     "cima": {
       "arquivo": "posto_enfermagem/cima.png",
       "caixa": [
-        0,
-        0,
-        896,
-        384
+        14,
+        15,
+        236,
+        108
       ]
     }
   },
@@ -10799,10 +11397,10 @@
     "cima": {
       "arquivo": "posto_enfermagem!vazio/cima.png",
       "caixa": [
-        0,
-        0,
-        896,
-        384
+        14,
+        15,
+        236,
+        108
       ]
     }
   },
@@ -10923,16 +11521,16 @@
       0.675,
       1.569
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "bancada_lab_parede/cima.png",
       "caixa": [
-        0,
-        8,
-        512,
-        119
+        13,
+        15,
+        141,
+        44
       ]
-    },
-    "encosta": true
+    }
   },
   "bancada_lab_curta": {
     "escala": 1,
@@ -10966,16 +11564,16 @@
       0.675,
       1.23
     ],
+    "encosta": true,
     "cima": {
       "arquivo": "bancada_lab_curta/cima.png",
       "caixa": [
-        0,
-        8,
-        256,
-        119
+        13,
+        15,
+        77,
+        44
       ]
-    },
-    "encosta": true
+    }
   },
   "bancada_lab_ilha": {
     "escala": 1,
@@ -11012,10 +11610,10 @@
     "cima": {
       "arquivo": "bancada_lab_ilha/cima.png",
       "caixa": [
-        0,
-        0,
-        512,
-        128
+        13,
+        14,
+        141,
+        44
       ]
     }
   },
@@ -11054,10 +11652,10 @@
     "cima": {
       "arquivo": "mesa_vidro_lab/cima.png",
       "caixa": [
-        59,
-        0,
-        196,
-        384
+        10,
+        3,
+        48,
+        119
       ]
     }
   },
@@ -11096,10 +11694,10 @@
     "cima": {
       "arquivo": "impressora_3d/cima.png",
       "caixa": [
-        13,
-        13,
-        115,
-        115
+        17,
+        17,
+        41,
+        42
       ]
     }
   },
@@ -11139,9 +11737,9 @@
       "arquivo": "mesa_arsenal/cima.png",
       "caixa": [
         0,
-        17,
-        512,
-        239
+        7,
+        154,
+        83
       ]
     }
   },
@@ -11180,10 +11778,10 @@
     "cima": {
       "arquivo": "poltrona_preta/cima.png",
       "caixa": [
-        0,
-        0,
-        128,
-        128
+        14,
+        14,
+        44,
+        44
       ]
     }
   },
@@ -11614,7 +12212,16 @@
       0.6,
       0.6,
       1.04
-    ]
+    ],
+    "cima": {
+      "arquivo": "barrel/cima.png",
+      "caixa": [
+        16,
+        16,
+        41,
+        41
+      ]
+    }
   },
   "armario_cozinha_l": {
     "escala": 1,
@@ -11672,6 +12279,26 @@
             "ay": 180
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "armario_cozinha_l/cima.png",
+      "caixa": [
+        13,
+        13,
+        78,
+        110
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "armario_cozinha_l/cima-1.png",
+        "caixa": [
+          13,
+          13,
+          80,
+          110
+        ]
       }
     }
   },
@@ -11964,7 +12591,16 @@
       0.75,
       0.75,
       2.4
-    ]
+    ],
+    "cima": {
+      "arquivo": "iwall/cima.png",
+      "caixa": [
+        13,
+        13,
+        45,
+        45
+      ]
+    }
   },
   "iwall_door": {
     "escala": 1,
@@ -11997,7 +12633,16 @@
       0.75,
       0.774,
       2.4
-    ]
+    ],
+    "cima": {
+      "arquivo": "iwall_door/cima.png",
+      "caixa": [
+        13,
+        12,
+        45,
+        46
+      ]
+    }
   },
   "iwall_window": {
     "escala": 1,
@@ -12030,7 +12675,16 @@
       0.75,
       0.79,
       2.4
-    ]
+    ],
+    "cima": {
+      "arquivo": "iwall_window/cima.png",
+      "caixa": [
+        13,
+        12,
+        45,
+        46
+      ]
+    }
   },
   "cell_front": {
     "escala": 1,
@@ -12063,7 +12717,16 @@
       0.75,
       0.75,
       2.198
-    ]
+    ],
+    "cima": {
+      "arquivo": "cell_front/cima.png",
+      "caixa": [
+        13,
+        13,
+        45,
+        45
+      ]
+    }
   },
   "cell_door_steel": {
     "escala": 1,
@@ -12122,6 +12785,15 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "cell_door_steel/cima.png",
+      "caixa": [
+        13,
+        13,
+        45,
+        45
+      ]
     }
   },
   "entrada": {
@@ -12155,7 +12827,16 @@
       0.69,
       0.63,
       0.04
-    ]
+    ],
+    "cima": {
+      "arquivo": "entrada/cima.png",
+      "caixa": [
+        14,
+        16,
+        44,
+        42
+      ]
+    }
   },
   "entrada_larga": {
     "escala": 1,
@@ -12188,7 +12869,16 @@
       1.44,
       0.63,
       0.04
-    ]
+    ],
+    "cima": {
+      "arquivo": "entrada_larga/cima.png",
+      "caixa": [
+        14,
+        16,
+        76,
+        42
+      ]
+    }
   },
   "horta~b": {
     "escala": 1,
@@ -12221,7 +12911,16 @@
       0.758,
       0.47,
       0.664
-    ]
+    ],
+    "cima": {
+      "arquivo": "horta~b/cima.png",
+      "caixa": [
+        13,
+        19,
+        45,
+        39
+      ]
+    }
   },
   "pilha_chao": {
     "escala": 1,
@@ -12254,7 +12953,16 @@
       0.54,
       0.5,
       0.125
-    ]
+    ],
+    "cima": {
+      "arquivo": "pilha_chao/cima.png",
+      "caixa": [
+        18,
+        17,
+        41,
+        39
+      ]
+    }
   },
   "orfanato_predio": {
     "escala": 1,
@@ -12273,7 +12981,16 @@
       34.6,
       5.431
     ],
-    "soGiros": true
+    "soGiros": true,
+    "cima": {
+      "arquivo": "orfanato_predio/cima.png",
+      "caixa": [
+        15,
+        7,
+        523,
+        1483
+      ]
+    }
   },
   "porteira": {
     "escala": 1,
@@ -12332,6 +13049,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "porteira/cima.png",
+      "caixa": [
+        14,
+        25,
+        108,
+        33
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "porteira/cima-1.png",
+        "caixa": [
+          14,
+          25,
+          108,
+          58
+        ]
+      }
     }
   },
   "eletroencefalografo": {
@@ -12365,7 +13102,16 @@
       0.55,
       0.53,
       1.298
-    ]
+    ],
+    "cima": {
+      "arquivo": "eletroencefalografo/cima.png",
+      "caixa": [
+        17,
+        18,
+        41,
+        41
+      ]
+    }
   },
   "monitor_suporte": {
     "escala": 1,
@@ -12424,6 +13170,15 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "monitor_suporte/cima.png",
+      "caixa": [
+        19,
+        19,
+        39,
+        39
+      ]
     }
   },
   "dartboard": {
@@ -12501,7 +13256,16 @@
       0.611,
       0.59,
       0.984
-    ]
+    ],
+    "cima": {
+      "arquivo": "gravador_rolo/cima.png",
+      "caixa": [
+        16,
+        16,
+        42,
+        42
+      ]
+    }
   },
   "camera_tripe": {
     "escala": 1,
@@ -12534,7 +13298,16 @@
       0.594,
       0.611,
       1.589
-    ]
+    ],
+    "cima": {
+      "arquivo": "camera_tripe/cima.png",
+      "caixa": [
+        16,
+        16,
+        42,
+        42
+      ]
+    }
   },
   "fuligem": {
     "escala": 1,
@@ -12567,7 +13340,16 @@
       0.703,
       0.686,
       0.004
-    ]
+    ],
+    "cima": {
+      "arquivo": "fuligem/cima.png",
+      "caixa": [
+        16,
+        17,
+        46,
+        46
+      ]
+    }
   },
   "cinzas": {
     "escala": 1,
@@ -12600,7 +13382,16 @@
       0.708,
       0.598,
       0.06
-    ]
+    ],
+    "cima": {
+      "arquivo": "cinzas/cima.png",
+      "caixa": [
+        16,
+        17,
+        46,
+        42
+      ]
+    }
   },
   "dirt": {
     "escala": 1,
@@ -12633,7 +13424,16 @@
       0.752,
       0.595,
       0.004
-    ]
+    ],
+    "cima": {
+      "arquivo": "dirt/cima.png",
+      "caixa": [
+        12,
+        17,
+        44,
+        42
+      ]
+    }
   },
   "cama_queimada": {
     "escala": 1,
@@ -12666,7 +13466,16 @@
       0.735,
       2.225,
       1.09
-    ]
+    ],
+    "cima": {
+      "arquivo": "cama_queimada/cima.png",
+      "caixa": [
+        14,
+        13,
+        45,
+        108
+      ]
+    }
   },
   "catre": {
     "escala": 1,
@@ -12699,7 +13508,16 @@
       0.55,
       2.09,
       0.478
-    ]
+    ],
+    "cima": {
+      "arquivo": "catre/cima.png",
+      "caixa": [
+        17,
+        16,
+        41,
+        106
+      ]
+    }
   },
   "colchao_chao": {
     "escala": 1,
@@ -12732,7 +13550,16 @@
       0.67,
       1.4,
       0.241
-    ]
+    ],
+    "cima": {
+      "arquivo": "colchao_chao/cima.png",
+      "caixa": [
+        15,
+        15,
+        43,
+        75
+      ]
+    }
   },
   "viga_queimada": {
     "escala": 1,
@@ -12765,7 +13592,16 @@
       0.59,
       2.243,
       0.28
-    ]
+    ],
+    "cima": {
+      "arquivo": "viga_queimada/cima.png",
+      "caixa": [
+        18,
+        18,
+        44,
+        114
+      ]
+    }
   },
   "escombros": {
     "escala": 1,
@@ -12798,7 +13634,16 @@
       1.322,
       1.277,
       0.692
-    ]
+    ],
+    "cima": {
+      "arquivo": "escombros/cima.png",
+      "caixa": [
+        19,
+        21,
+        75,
+        76
+      ]
+    }
   },
   "fogueira": {
     "escala": 1,
@@ -12857,6 +13702,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "fogueira/cima.png",
+      "caixa": [
+        15,
+        17,
+        74,
+        73
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "fogueira/cima-1.png",
+        "caixa": [
+          15,
+          17,
+          74,
+          73
+        ]
+      }
     }
   },
   "gancho_carne": {
@@ -12890,7 +13755,16 @@
       0.52,
       1.34,
       1.898
-    ]
+    ],
+    "cima": {
+      "arquivo": "gancho_carne/cima.png",
+      "caixa": [
+        18,
+        16,
+        40,
+        74
+      ]
+    }
   },
   "monitor_energia": {
     "escala": 1,
@@ -12948,6 +13822,26 @@
             "ay": 105.0
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "monitor_energia/cima.png",
+      "caixa": [
+        16,
+        16,
+        48,
+        46
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "monitor_energia/cima-1.png",
+        "caixa": [
+          16,
+          16,
+          48,
+          46
+        ]
       }
     }
   },
@@ -13046,7 +13940,16 @@
       0.153,
       0.153,
       0.13
-    ]
+    ],
+    "cima": {
+      "arquivo": "mug/cima.png",
+      "caixa": [
+        25,
+        26,
+        31,
+        32
+      ]
+    }
   },
   "casa_vila": {
     "escala": 1,
@@ -13079,7 +13982,16 @@
       4.553,
       3.66,
       5.302
-    ]
+    ],
+    "cima": {
+      "arquivo": "casa_vila/cima.png",
+      "caixa": [
+        14,
+        14,
+        208,
+        170
+      ]
+    }
   },
   "taverna_predio": {
     "escala": 1,
@@ -13112,7 +14024,16 @@
       7.874,
       6.08,
       6.452
-    ]
+    ],
+    "cima": {
+      "arquivo": "taverna_predio/cima.png",
+      "caixa": [
+        2,
+        0,
+        338,
+        250
+      ]
+    }
   },
   "ferraria_predio": {
     "escala": 1,
@@ -13145,7 +14066,16 @@
       6.031,
       4.424,
       5.192
-    ]
+    ],
+    "cima": {
+      "arquivo": "ferraria_predio/cima.png",
+      "caixa": [
+        10,
+        15,
+        281,
+        204
+      ]
+    }
   },
   "hotel_predio": {
     "escala": 1,
@@ -13178,7 +14108,16 @@
       7.623,
       5.8,
       7.852
-    ]
+    ],
+    "cima": {
+      "arquivo": "hotel_predio/cima.png",
+      "caixa": [
+        13,
+        13,
+        338,
+        260
+      ]
+    }
   },
   "casa_doutor": {
     "escala": 1,
@@ -13211,7 +14150,16 @@
       7.596,
       5.73,
       7.422
-    ]
+    ],
+    "cima": {
+      "arquivo": "casa_doutor/cima.png",
+      "caixa": [
+        13,
+        13,
+        337,
+        257
+      ]
+    }
   },
   "torre_porteiro": {
     "escala": 1,
@@ -13244,7 +14192,16 @@
       2.696,
       2.88,
       9.0
-    ]
+    ],
+    "cima": {
+      "arquivo": "torre_porteiro/cima.png",
+      "caixa": [
+        20,
+        17,
+        135,
+        140
+      ]
+    }
   },
   "portao_vila": {
     "escala": 1,
@@ -13277,7 +14234,16 @@
       3.24,
       0.647,
       4.52
-    ]
+    ],
+    "cima": {
+      "arquivo": "portao_vila/cima.png",
+      "caixa": [
+        8,
+        15,
+        146,
+        43
+      ]
+    }
   },
   "estatua_guardiao": {
     "escala": 1,
@@ -13310,7 +14276,16 @@
       1.32,
       1.32,
       3.24
-    ]
+    ],
+    "cima": {
+      "arquivo": "estatua_guardiao/cima.png",
+      "caixa": [
+        17,
+        17,
+        73,
+        73
+      ]
+    }
   },
   "estatua_guardiao~b": {
     "escala": 1,
@@ -13343,7 +14318,16 @@
       1.32,
       1.32,
       3.24
-    ]
+    ],
+    "cima": {
+      "arquivo": "estatua_guardiao~b/cima.png",
+      "caixa": [
+        17,
+        17,
+        73,
+        73
+      ]
+    }
   },
   "poste_cristal": {
     "escala": 1,
@@ -13401,6 +14385,26 @@
             "ay": 152.0
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "poste_cristal/cima.png",
+      "caixa": [
+        22,
+        22,
+        36,
+        36
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "poste_cristal/cima-1.png",
+        "caixa": [
+          22,
+          22,
+          36,
+          37
+        ]
       }
     }
   },
@@ -13461,6 +14465,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "cristal_vermelho/cima.png",
+      "caixa": [
+        10,
+        2,
+        50,
+        43
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "cristal_vermelho/cima-1.png",
+        "caixa": [
+          16,
+          18,
+          43,
+          42
+        ]
+      }
     }
   },
   "cristal_verde": {
@@ -13519,6 +14543,26 @@
             "ay": 57.0
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "cristal_verde/cima.png",
+      "caixa": [
+        10,
+        2,
+        50,
+        43
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "cristal_verde/cima-1.png",
+        "caixa": [
+          16,
+          18,
+          43,
+          42
+        ]
       }
     }
   },
@@ -13579,6 +14623,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "cristal_azul/cima.png",
+      "caixa": [
+        10,
+        2,
+        50,
+        43
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "cristal_azul/cima-1.png",
+        "caixa": [
+          16,
+          18,
+          43,
+          42
+        ]
+      }
     }
   },
   "cristal_preto": {
@@ -13612,7 +14676,16 @@
       0.697,
       0.603,
       0.934
-    ]
+    ],
+    "cima": {
+      "arquivo": "cristal_preto/cima.png",
+      "caixa": [
+        15,
+        1,
+        44,
+        43
+      ]
+    }
   },
   "lodo_preto": {
     "escala": 1,
@@ -13645,7 +14718,16 @@
       1.318,
       1.108,
       0.004
-    ]
+    ],
+    "cima": {
+      "arquivo": "lodo_preto/cima.png",
+      "caixa": [
+        19,
+        20,
+        75,
+        67
+      ]
+    }
   },
   "sebe": {
     "escala": 1,
@@ -13678,7 +14760,16 @@
       0.819,
       0.821,
       2.38
-    ]
+    ],
+    "cima": {
+      "arquivo": "sebe/cima.png",
+      "caixa": [
+        12,
+        12,
+        47,
+        47
+      ]
+    }
   },
   "arvore_retorcida": {
     "escala": 1,
@@ -13711,7 +14802,16 @@
       2.678,
       1.453,
       4.893
-    ]
+    ],
+    "cima": {
+      "arquivo": "arvore_retorcida/cima.png",
+      "caixa": [
+        0,
+        0,
+        58,
+        58
+      ]
+    }
   },
   "arvore_retorcida~b": {
     "escala": 1,
@@ -13744,7 +14844,16 @@
       2.676,
       1.465,
       4.956
-    ]
+    ],
+    "cima": {
+      "arquivo": "arvore_retorcida~b/cima.png",
+      "caixa": [
+        0,
+        0,
+        58,
+        58
+      ]
+    }
   },
   "arvore_retorcida~c": {
     "escala": 1,
@@ -13777,7 +14886,16 @@
       2.626,
       1.371,
       4.951
-    ]
+    ],
+    "cima": {
+      "arquivo": "arvore_retorcida~c/cima.png",
+      "caixa": [
+        0,
+        1,
+        58,
+        58
+      ]
+    }
   },
   "arbusto_estranho": {
     "escala": 1,
@@ -13810,7 +14928,16 @@
       0.927,
       0.937,
       0.906
-    ]
+    ],
+    "cima": {
+      "arquivo": "arbusto_estranho/cima.png",
+      "caixa": [
+        9,
+        9,
+        48,
+        49
+      ]
+    }
   },
   "arbusto_estranho~b": {
     "escala": 1,
@@ -13843,7 +14970,16 @@
       0.941,
       0.957,
       0.878
-    ]
+    ],
+    "cima": {
+      "arquivo": "arbusto_estranho~b/cima.png",
+      "caixa": [
+        10,
+        8,
+        50,
+        48
+      ]
+    }
   },
   "poco": {
     "escala": 1,
@@ -13876,7 +15012,16 @@
       1.56,
       1.12,
       1.45
-    ]
+    ],
+    "cima": {
+      "arquivo": "poco/cima.png",
+      "caixa": [
+        13,
+        21,
+        79,
+        69
+      ]
+    }
   },
   "pedras": {
     "escala": 1,
@@ -13909,7 +15054,16 @@
       0.8,
       0.71,
       0.58
-    ]
+    ],
+    "cima": {
+      "arquivo": "pedras/cima.png",
+      "caixa": [
+        13,
+        13,
+        47,
+        44
+      ]
+    }
   },
   "forja": {
     "escala": 1,
@@ -13968,6 +15122,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "forja/cima.png",
+      "caixa": [
+        12,
+        16,
+        109,
+        74
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "forja/cima-1.png",
+        "caixa": [
+          12,
+          16,
+          109,
+          74
+        ]
+      }
     }
   },
   "bigorna": {
@@ -14001,7 +15175,16 @@
       0.699,
       0.699,
       0.9
-    ]
+    ],
+    "cima": {
+      "arquivo": "bigorna/cima.png",
+      "caixa": [
+        14,
+        15,
+        44,
+        45
+      ]
+    }
   },
   "rack_medieval": {
     "escala": 1,
@@ -14034,7 +15217,16 @@
       1.46,
       0.52,
       1.9
-    ]
+    ],
+    "cima": {
+      "arquivo": "rack_medieval/cima.png",
+      "caixa": [
+        14,
+        17,
+        76,
+        39
+      ]
+    }
   },
   "armadura_medieval": {
     "escala": 1,
@@ -14067,7 +15259,16 @@
       0.53,
       0.52,
       1.88
-    ]
+    ],
+    "cima": {
+      "arquivo": "armadura_medieval/cima.png",
+      "caixa": [
+        17,
+        18,
+        40,
+        40
+      ]
+    }
   },
   "tina_agua": {
     "escala": 1,
@@ -14100,7 +15301,16 @@
       0.65,
       0.641,
       0.72
-    ]
+    ],
+    "cima": {
+      "arquivo": "tina_agua/cima.png",
+      "caixa": [
+        15,
+        15,
+        43,
+        43
+      ]
+    }
   },
   "mesa_rustica": {
     "escala": 1,
@@ -14133,7 +15343,16 @@
       2.17,
       1.38,
       0.8
-    ]
+    ],
+    "cima": {
+      "arquivo": "mesa_rustica/cima.png",
+      "caixa": [
+        15,
+        16,
+        107,
+        74
+      ]
+    }
   },
   "banco_rustico": {
     "escala": 1,
@@ -14166,7 +15385,16 @@
       1.38,
       0.389,
       0.454
-    ]
+    ],
+    "cima": {
+      "arquivo": "banco_rustico/cima.png",
+      "caixa": [
+        16,
+        21,
+        74,
+        37
+      ]
+    }
   },
   "balcao_taverna": {
     "escala": 1,
@@ -14199,7 +15427,16 @@
       3.0,
       0.723,
       1.31
-    ]
+    ],
+    "cima": {
+      "arquivo": "balcao_taverna/cima.png",
+      "caixa": [
+        13,
+        14,
+        141,
+        44
+      ]
+    }
   },
   "barril_madeira": {
     "escala": 1,
@@ -14232,7 +15469,16 @@
       0.6,
       0.68,
       1.0
-    ]
+    ],
+    "cima": {
+      "arquivo": "barril_madeira/cima.png",
+      "caixa": [
+        16,
+        16,
+        42,
+        45
+      ]
+    }
   },
   "lareira": {
     "escala": 1,
@@ -14291,6 +15537,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "lareira/cima.png",
+      "caixa": [
+        15,
+        13,
+        107,
+        44
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "lareira/cima-1.png",
+        "caixa": [
+          15,
+          13,
+          107,
+          44
+        ]
+      }
     }
   },
   "cama_palha": {
@@ -14324,7 +15590,16 @@
       1.4,
       2.19,
       0.92
-    ]
+    ],
+    "cima": {
+      "arquivo": "cama_palha/cima.png",
+      "caixa": [
+        15,
+        14,
+        75,
+        108
+      ]
+    }
   },
   "bau_madeira": {
     "escala": 1,
@@ -14382,6 +15657,26 @@
             "ay": 65
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "bau_madeira/cima.png",
+      "caixa": [
+        15,
+        19,
+        43,
+        40
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "bau_madeira/cima-1.png",
+        "caixa": [
+          15,
+          14,
+          43,
+          39
+        ]
       }
     }
   },
@@ -14466,6 +15761,35 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "escotilha/cima.png",
+      "caixa": [
+        16,
+        14,
+        42,
+        42
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "escotilha/cima-1.png",
+        "caixa": [
+          16,
+          16,
+          42,
+          42
+        ]
+      },
+      "2": {
+        "arquivo": "escotilha/cima-2.png",
+        "caixa": [
+          15,
+          16,
+          43,
+          42
+        ]
+      }
     }
   },
   "escada_espiral": {
@@ -14499,7 +15823,16 @@
       1.46,
       1.46,
       2.7
-    ]
+    ],
+    "cima": {
+      "arquivo": "escada_espiral/cima.png",
+      "caixa": [
+        14,
+        14,
+        76,
+        76
+      ]
+    }
   },
   "lampiao_cristal": {
     "escala": 1,
@@ -14610,7 +15943,16 @@
       1.46,
       0.62,
       2.0
-    ]
+    ],
+    "cima": {
+      "arquivo": "estante_utensilios/cima.png",
+      "caixa": [
+        14,
+        15,
+        76,
+        41
+      ]
+    }
   },
   "utensilios_parede": {
     "escala": 1,
@@ -14660,7 +16002,16 @@
       5.25,
       3.643,
       4.752
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_casa/cima.png",
+      "caixa": [
+        13,
+        13,
+        237,
+        168
+      ]
+    }
   },
   "igarape_casa~b": {
     "escala": 1,
@@ -14693,7 +16044,16 @@
       5.25,
       3.643,
       4.752
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_casa~b/cima.png",
+      "caixa": [
+        13,
+        13,
+        237,
+        168
+      ]
+    }
   },
   "igarape_venda": {
     "escala": 1,
@@ -14726,7 +16086,16 @@
       6.0,
       4.55,
       5.23
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_venda/cima.png",
+      "caixa": [
+        13,
+        15,
+        269,
+        209
+      ]
+    }
   },
   "igarape_capela": {
     "escala": 1,
@@ -14759,7 +16128,16 @@
       4.3,
       5.515,
       8.1
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_capela/cima.png",
+      "caixa": [
+        33,
+        19,
+        217,
+        255
+      ]
+    }
   },
   "igarape_palafita": {
     "escala": 1,
@@ -14792,7 +16170,16 @@
       3.7,
       3.93,
       4.23
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_palafita/cima.png",
+      "caixa": [
+        13,
+        0,
+        171,
+        168
+      ]
+    }
   },
   "igarape_palafita_b": {
     "escala": 1,
@@ -14825,7 +16212,16 @@
       3.7,
       3.93,
       4.23
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_palafita_b/cima.png",
+      "caixa": [
+        13,
+        0,
+        171,
+        168
+      ]
+    }
   },
   "igarape_ponte": {
     "escala": 1,
@@ -14858,7 +16254,16 @@
       4.54,
       1.52,
       1.3
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_ponte/cima.png",
+      "caixa": [
+        12,
+        13,
+        206,
+        77
+      ]
+    }
   },
   "igarape_canoa": {
     "escala": 1,
@@ -14891,7 +16296,16 @@
       0.62,
       2.76,
       0.62
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_canoa/cima.png",
+      "caixa": [
+        16,
+        18,
+        42,
+        136
+      ]
+    }
   },
   "igarape_ipe": {
     "escala": 1,
@@ -14924,7 +16338,16 @@
       3.72,
       2.663,
       5.783
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_ipe/cima.png",
+      "caixa": [
+        0,
+        0,
+        58,
+        58
+      ]
+    }
   },
   "igarape_rede": {
     "escala": 1,
@@ -14957,7 +16380,16 @@
       0.6,
       2.17,
       1.75
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_rede/cima.png",
+      "caixa": [
+        16,
+        15,
+        42,
+        107
+      ]
+    }
   },
   "igarape_banco_igreja": {
     "escala": 1,
@@ -14990,7 +16422,16 @@
       2.17,
       0.58,
       0.98
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_banco_igreja/cima.png",
+      "caixa": [
+        15,
+        16,
+        107,
+        40
+      ]
+    }
   },
   "igarape_altar": {
     "escala": 1,
@@ -15023,7 +16464,16 @@
       2.17,
       0.66,
       1.48
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_altar/cima.png",
+      "caixa": [
+        15,
+        16,
+        107,
+        45
+      ]
+    }
   },
   "igarape_santa": {
     "escala": 1,
@@ -15056,7 +16506,16 @@
       0.48,
       0.48,
       1.7
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_santa/cima.png",
+      "caixa": [
+        19,
+        19,
+        39,
+        39
+      ]
+    }
   },
   "igarape_rede_pesca": {
     "escala": 1,
@@ -15089,7 +16548,16 @@
       0.62,
       0.517,
       0.2
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_rede_pesca/cima.png",
+      "caixa": [
+        16,
+        20,
+        42,
+        42
+      ]
+    }
   },
   "igarape_cesto": {
     "escala": 1,
@@ -15122,7 +16590,16 @@
       0.5,
       0.494,
       0.395
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_cesto/cima.png",
+      "caixa": [
+        18,
+        18,
+        40,
+        40
+      ]
+    }
   },
   "igarape_varal": {
     "escala": 1,
@@ -15155,7 +16632,16 @@
       0.08,
       2.09,
       1.62
-    ]
+    ],
+    "cima": {
+      "arquivo": "igarape_varal/cima.png",
+      "caixa": [
+        27,
+        16,
+        31,
+        106
+      ]
+    }
   },
   "casa_colonial": {
     "escala": 1,
@@ -15188,7 +16674,16 @@
       5.35,
       3.807,
       4.63
-    ]
+    ],
+    "cima": {
+      "arquivo": "casa_colonial/cima.png",
+      "caixa": [
+        11,
+        10,
+        239,
+        173
+      ]
+    }
   },
   "casa_colonial~b": {
     "escala": 1,
@@ -15221,7 +16716,16 @@
       5.35,
       3.788,
       4.63
-    ]
+    ],
+    "cima": {
+      "arquivo": "casa_colonial~b/cima.png",
+      "caixa": [
+        11,
+        10,
+        239,
+        172
+      ]
+    }
   },
   "casa_colonial~c": {
     "escala": 1,
@@ -15254,7 +16758,16 @@
       5.35,
       3.83,
       4.63
-    ]
+    ],
+    "cima": {
+      "arquivo": "casa_colonial~c/cima.png",
+      "caixa": [
+        11,
+        10,
+        239,
+        174
+      ]
+    }
   },
   "casa_colonial~d": {
     "escala": 1,
@@ -15287,7 +16800,16 @@
       5.35,
       3.79,
       4.63
-    ]
+    ],
+    "cima": {
+      "arquivo": "casa_colonial~d/cima.png",
+      "caixa": [
+        11,
+        10,
+        239,
+        172
+      ]
+    }
   },
   "pousada_predio": {
     "escala": 1,
@@ -15320,7 +16842,16 @@
       6.85,
       4.438,
       7.43
-    ]
+    ],
+    "cima": {
+      "arquivo": "pousada_predio/cima.png",
+      "caixa": [
+        11,
+        10,
+        303,
+        200
+      ]
+    }
   },
   "venda_predio": {
     "escala": 1,
@@ -15353,7 +16884,16 @@
       6.85,
       3.77,
       4.83
-    ]
+    ],
+    "cima": {
+      "arquivo": "venda_predio/cima.png",
+      "caixa": [
+        11,
+        10,
+        303,
+        171
+      ]
+    }
   },
   "boteco_predio": {
     "escala": 1,
@@ -15386,7 +16926,16 @@
       5.35,
       3.73,
       4.63
-    ]
+    ],
+    "cima": {
+      "arquivo": "boteco_predio/cima.png",
+      "caixa": [
+        11,
+        10,
+        239,
+        170
+      ]
+    }
   },
   "igreja_barroca": {
     "escala": 1,
@@ -15419,7 +16968,16 @@
       9.45,
       7.23,
       9.18
-    ]
+    ],
+    "cima": {
+      "arquivo": "igreja_barroca/cima.png",
+      "caixa": [
+        19,
+        11,
+        423,
+        319
+      ]
+    }
   },
   "chafariz": {
     "escala": 1,
@@ -15452,7 +17010,16 @@
       2.014,
       2.014,
       2.09
-    ]
+    ],
+    "cima": {
+      "arquivo": "chafariz/cima.png",
+      "caixa": [
+        18,
+        18,
+        104,
+        104
+      ]
+    }
   },
   "coreto": {
     "escala": 1,
@@ -15485,7 +17052,16 @@
       2.993,
       3.177,
       4.02
-    ]
+    ],
+    "cima": {
+      "arquivo": "coreto/cima.png",
+      "caixa": [
+        13,
+        13,
+        141,
+        149
+      ]
+    }
   },
   "poste_ferro": {
     "escala": 1,
@@ -15544,6 +17120,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "poste_ferro/cima.png",
+      "caixa": [
+        22,
+        22,
+        36,
+        36
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "poste_ferro/cima-1.png",
+        "caixa": [
+          22,
+          22,
+          36,
+          36
+        ]
+      }
     }
   },
   "banco_praca": {
@@ -15577,7 +17173,16 @@
       1.34,
       0.555,
       0.9
-    ]
+    ],
+    "cima": {
+      "arquivo": "banco_praca/cima.png",
+      "caixa": [
+        16,
+        16,
+        74,
+        40
+      ]
+    }
   },
   "vaso_flores": {
     "escala": 1,
@@ -15610,7 +17215,16 @@
       0.701,
       0.647,
       0.886
-    ]
+    ],
+    "cima": {
+      "arquivo": "vaso_flores/cima.png",
+      "caixa": [
+        14,
+        17,
+        44,
+        45
+      ]
+    }
   },
   "cruzeiro": {
     "escala": 1,
@@ -15643,7 +17257,16 @@
       1.0,
       0.66,
       3.25
-    ]
+    ],
+    "cima": {
+      "arquivo": "cruzeiro/cima.png",
+      "caixa": [
+        8,
+        15,
+        50,
+        43
+      ]
+    }
   },
   "lajeado": {
     "escala": 1,
@@ -15662,7 +17285,16 @@
       1.5,
       0.012
     ],
-    "soGiros": true
+    "soGiros": true,
+    "cima": {
+      "arquivo": "lajeado/cima.png",
+      "caixa": [
+        13,
+        13,
+        77,
+        77
+      ]
+    }
   },
   "banco_igreja": {
     "escala": 1,
@@ -15695,7 +17327,16 @@
       2.21,
       0.58,
       1.02
-    ]
+    ],
+    "cima": {
+      "arquivo": "banco_igreja/cima.png",
+      "caixa": [
+        14,
+        17,
+        108,
+        42
+      ]
+    }
   },
   "altar_barroco": {
     "escala": 1,
@@ -15728,7 +17369,16 @@
       2.88,
       0.72,
       2.64
-    ]
+    ],
+    "cima": {
+      "arquivo": "altar_barroco/cima.png",
+      "caixa": [
+        16,
+        14,
+        138,
+        45
+      ]
+    }
   },
   "prateleira_venda": {
     "escala": 1,
@@ -15761,7 +17411,16 @@
       1.42,
       0.58,
       2.2
-    ]
+    ],
+    "cima": {
+      "arquivo": "prateleira_venda/cima.png",
+      "caixa": [
+        15,
+        16,
+        75,
+        40
+      ]
+    }
   },
   "oratorio": {
     "escala": 1,
@@ -15811,7 +17470,16 @@
       3.0,
       0.68,
       1.287
-    ]
+    ],
+    "cima": {
+      "arquivo": "balcao_hotel/cima.png",
+      "caixa": [
+        13,
+        14,
+        141,
+        43
+      ]
+    }
   },
   "maca_doutor": {
     "escala": 1,
@@ -15844,7 +17512,16 @@
       0.59,
       2.12,
       0.76
-    ]
+    ],
+    "cima": {
+      "arquivo": "maca_doutor/cima.png",
+      "caixa": [
+        16,
+        16,
+        42,
+        106
+      ]
+    }
   },
   "armario_boticario": {
     "escala": 1,
@@ -15902,6 +17579,26 @@
             "ay": 143.0
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "armario_boticario/cima.png",
+      "caixa": [
+        13,
+        18,
+        77,
+        40
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "armario_boticario/cima-1.png",
+        "caixa": [
+          13,
+          18,
+          77,
+          48
+        ]
       }
     }
   },
@@ -15962,6 +17659,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "armario_boticario!vazio/cima.png",
+      "caixa": [
+        13,
+        18,
+        77,
+        40
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "armario_boticario!vazio/cima-1.png",
+        "caixa": [
+          13,
+          18,
+          77,
+          48
+        ]
+      }
     }
   },
   "mesa_doutor": {
@@ -15995,7 +17712,16 @@
       1.44,
       0.61,
       0.8
-    ]
+    ],
+    "cima": {
+      "arquivo": "mesa_doutor/cima.png",
+      "caixa": [
+        14,
+        16,
+        76,
+        42
+      ]
+    }
   },
   "frascos_boticario": {
     "escala": 1,
@@ -16028,7 +17754,16 @@
       0.435,
       0.449,
       0.26
-    ]
+    ],
+    "cima": {
+      "arquivo": "frascos_boticario/cima.png",
+      "caixa": [
+        20,
+        20,
+        38,
+        39
+      ]
+    }
   },
   "olhos_escuro": {
     "escala": 1,
@@ -16061,7 +17796,16 @@
       0.46,
       0.44,
       0.3
-    ]
+    ],
+    "cima": {
+      "arquivo": "olhos_escuro/cima.png",
+      "caixa": [
+        20,
+        20,
+        39,
+        39
+      ]
+    }
   },
   "lenha": {
     "escala": 1,
@@ -16094,7 +17838,16 @@
       0.55,
       0.55,
       0.788
-    ]
+    ],
+    "cima": {
+      "arquivo": "lenha/cima.png",
+      "caixa": [
+        17,
+        17,
+        41,
+        41
+      ]
+    }
   },
   "cesta_pao": {
     "escala": 1,
@@ -16127,7 +17880,16 @@
       0.41,
       0.41,
       0.16
-    ]
+    ],
+    "cima": {
+      "arquivo": "cesta_pao/cima.png",
+      "caixa": [
+        21,
+        21,
+        37,
+        37
+      ]
+    }
   },
   "jarra_canecas": {
     "escala": 1,
@@ -16160,7 +17922,16 @@
       0.389,
       0.37,
       0.26
-    ]
+    ],
+    "cima": {
+      "arquivo": "jarra_canecas/cima.png",
+      "caixa": [
+        22,
+        23,
+        37,
+        37
+      ]
+    }
   },
   "casa_fazendeira": {
     "escala": 1,
@@ -16193,7 +17964,16 @@
       5.356,
       4.61,
       5.302
-    ]
+    ],
+    "cima": {
+      "arquivo": "casa_fazendeira/cima.png",
+      "caixa": [
+        12,
+        13,
+        240,
+        210
+      ]
+    }
   },
   "boca_mina": {
     "escala": 1,
@@ -16226,7 +18006,16 @@
       4.15,
       3.07,
       3.9
-    ]
+    ],
+    "cima": {
+      "arquivo": "boca_mina/cima.png",
+      "caixa": [
+        4,
+        11,
+        182,
+        142
+      ]
+    }
   },
   "toco_morador": {
     "escala": 1,
@@ -16259,7 +18048,16 @@
       0.641,
       0.612,
       0.452
-    ]
+    ],
+    "cima": {
+      "arquivo": "toco_morador/cima.png",
+      "caixa": [
+        16,
+        18,
+        42,
+        44
+      ]
+    }
   },
   "tumulo": {
     "escala": 1,
@@ -16292,7 +18090,16 @@
       0.49,
       1.3,
       0.62
-    ]
+    ],
+    "cima": {
+      "arquivo": "tumulo/cima.png",
+      "caixa": [
+        19,
+        18,
+        39,
+        74
+      ]
+    }
   },
   "tumulo~b": {
     "escala": 1,
@@ -16325,7 +18132,16 @@
       0.49,
       1.32,
       0.52
-    ]
+    ],
+    "cima": {
+      "arquivo": "tumulo~b/cima.png",
+      "caixa": [
+        19,
+        17,
+        39,
+        74
+      ]
+    }
   },
   "boca_caverna": {
     "escala": 1,
@@ -16358,7 +18174,16 @@
       1.235,
       1.304,
       0.129
-    ]
+    ],
+    "cima": {
+      "arquivo": "boca_caverna/cima.png",
+      "caixa": [
+        19,
+        17,
+        71,
+        73
+      ]
+    }
   },
   "boca_tunel": {
     "escala": 1,
@@ -16382,7 +18207,16 @@
       0.27,
       2.408
     ],
-    "soGiros": true
+    "soGiros": true,
+    "cima": {
+      "arquivo": "boca_tunel/cima.png",
+      "caixa": [
+        7,
+        10,
+        51,
+        22
+      ]
+    }
   },
   "boca_tunel~b": {
     "escala": 1,
@@ -16406,7 +18240,16 @@
       0.17,
       2.122
     ],
-    "soGiros": true
+    "soGiros": true,
+    "cima": {
+      "arquivo": "boca_tunel~b/cima.png",
+      "caixa": [
+        6,
+        10,
+        53,
+        17
+      ]
+    }
   },
   "trilho_mina": {
     "escala": 1,
@@ -16439,7 +18282,16 @@
       0.63,
       0.5,
       0.05
-    ]
+    ],
+    "cima": {
+      "arquivo": "trilho_mina/cima.png",
+      "caixa": [
+        16,
+        13,
+        42,
+        45
+      ]
+    }
   },
   "carrinho_mina": {
     "escala": 1,
@@ -16472,7 +18324,16 @@
       0.554,
       0.672,
       0.825
-    ]
+    ],
+    "cima": {
+      "arquivo": "carrinho_mina/cima.png",
+      "caixa": [
+        17,
+        15,
+        41,
+        44
+      ]
+    }
   },
   "escora_mina": {
     "escala": 1,
@@ -16505,7 +18366,16 @@
       0.32,
       0.47,
       2.38
-    ]
+    ],
+    "cima": {
+      "arquivo": "escora_mina/cima.png",
+      "caixa": [
+        22,
+        12,
+        36,
+        32
+      ]
+    }
   },
   "toca_toupeira": {
     "escala": 1,
@@ -16538,7 +18408,16 @@
       0.774,
       0.721,
       0.241
-    ]
+    ],
+    "cima": {
+      "arquivo": "toca_toupeira/cima.png",
+      "caixa": [
+        13,
+        13,
+        46,
+        44
+      ]
+    }
   },
   "cristal_grande_verde": {
     "escala": 1,
@@ -16596,6 +18475,26 @@
             "ay": 131.0
           }
         }
+      }
+    },
+    "cima": {
+      "arquivo": "cristal_grande_verde/cima.png",
+      "caixa": [
+        13,
+        3,
+        81,
+        75
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "cristal_grande_verde/cima-1.png",
+        "caixa": [
+          15,
+          17,
+          77,
+          74
+        ]
       }
     }
   },
@@ -16656,6 +18555,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "cristal_grande_vermelho/cima.png",
+      "caixa": [
+        13,
+        3,
+        81,
+        75
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "cristal_grande_vermelho/cima-1.png",
+        "caixa": [
+          15,
+          17,
+          77,
+          74
+        ]
+      }
     }
   },
   "cristal_grande_azul": {
@@ -16715,6 +18634,26 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "cristal_grande_azul/cima.png",
+      "caixa": [
+        13,
+        3,
+        81,
+        75
+      ]
+    },
+    "cimaEstados": {
+      "1": {
+        "arquivo": "cristal_grande_azul/cima-1.png",
+        "caixa": [
+          15,
+          17,
+          77,
+          74
+        ]
+      }
     }
   },
   "cristal_grande_preto": {
@@ -16748,7 +18687,16 @@
       1.467,
       1.326,
       1.907
-    ]
+    ],
+    "cima": {
+      "arquivo": "cristal_grande_preto/cima.png",
+      "caixa": [
+        15,
+        8,
+        77,
+        74
+      ]
+    }
   },
   "cela_branca": {
     "escala": 1,
@@ -16781,7 +18729,16 @@
       0.75,
       0.75,
       2.2
-    ]
+    ],
+    "cima": {
+      "arquivo": "cela_branca/cima.png",
+      "caixa": [
+        13,
+        13,
+        45,
+        45
+      ]
+    }
   },
   "porta_cela_branca": {
     "escala": 1,
@@ -16840,6 +18797,15 @@
           }
         }
       }
+    },
+    "cima": {
+      "arquivo": "porta_cela_branca/cima.png",
+      "caixa": [
+        13,
+        13,
+        45,
+        45
+      ]
     }
   },
   "ninho_parasita": {
@@ -16873,7 +18839,16 @@
       2.472,
       1.716,
       1.559
-    ]
+    ],
+    "cima": {
+      "arquivo": "ninho_parasita/cima.png",
+      "caixa": [
+        5,
+        8,
+        111,
+        98
+      ]
+    }
   },
   "quadro_hoteleiro": {
     "escala": 1,
@@ -17046,4 +19021,3 @@
     }
   }
 }
-

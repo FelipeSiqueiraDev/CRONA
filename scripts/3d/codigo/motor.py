@@ -37,11 +37,29 @@ KZ = 52.26 * ESC        # px por metro na vertical
 VISTA = np.array([math.cos(math.radians(30)) * math.cos(math.radians(45)),
                   math.cos(math.radians(30)) * math.sin(math.radians(45)),
                   math.sin(math.radians(30))])  # para a câmera (metros)
+VISTA_ISO = VISTA.copy()
+# a câmera de cima (mapa tático): ortográfica, x para a direita e y para baixo, KC px por metro (32 px por casa). O
+# sentido da câmera tem um fio de inclinação para a frente (+y), só para quem pergunta "onde fica a frente na tela"
+# (frente_tela) não dividir por zero; a projeção é reta de cima.
+KC = 32 / CASA * ESC
+VISTA_CIMA = np.array([0.0, 0.05, 1.0]) / np.linalg.norm([0.0, 0.05, 1.0])
+CAMERA = {'modo': 'iso'}
+
+
+def camera(modo):
+    """Troca a câmera do motor: 'iso' (o tabuleiro) ou 'cima' (o mapa tático). VISTA e MEIO mudam no lugar (quem
+    importou o nome vê a troca)."""
+    CAMERA['modo'] = modo
+    VISTA[:] = VISTA_CIMA if modo == 'cima' else VISTA_ISO
+    m = LUZ_CHAVE + VISTA
+    MEIO[:] = m / np.linalg.norm(m)
 
 
 def tela(P):
     """P em metros (X, Y, Z) -> (sx, sy) em px."""
     X, Y, Z = P[..., 0], P[..., 1], P[..., 2]
+    if CAMERA['modo'] == 'cima':
+        return np.stack([X * KC, Y * KC], axis=-1)
     return np.stack([(X - Y) * KX, (X + Y) * KY - Z * KZ], axis=-1)
 
 
@@ -160,8 +178,10 @@ class Cena:
         n = n / np.linalg.norm(n)
         if self.sombreia.get(oid, True):
             self.polis.append((Pw, n))
-        if n @ VISTA <= 1e-6:
-            if not dois_lados:
+        cima = CAMERA['modo'] == 'cima'
+        # de cima, a face em pé não aparece (só um fio, que a conta do plano não resolve)
+        if (n[2] if cima else n @ VISTA) <= (0.05 if cima else 1e-6):
+            if not dois_lados or (cima and n[2] > -0.05):
                 return
             n = -n
             n_local = tuple(-np.array(n_local, dtype=float))
@@ -190,7 +210,7 @@ class Cena:
             return
         # ponto no mundo de cada pixel: resolve a tela e o plano
         d = n @ Pw[0]
-        M = np.array([[KX, -KX, 0], [KY, KY, -KZ], n])
+        M = np.array([[KC, 0, 0], [0, KC, 0], n]) if cima else np.array([[KX, -KX, 0], [KY, KY, -KZ], n])
         Mi = np.linalg.inv(M)
         sx = px[dentro] + self.x0
         sy = py[dentro] + self.y0
@@ -331,8 +351,12 @@ class Cena:
         sx = xs.ravel() + 0.5 + self.x0
         sy = ys.ravel() + 0.5 + self.y0
         # o raio de vista de cada pixel: B + t V, B no plano z = 0
-        B = np.stack([(sx / KX + sy / KY) / 2, (sy / KY - sx / KX) / 2, np.zeros_like(sx)], axis=1)
-        V = np.array([1.0, 1.0, 2 * KY / KZ])
+        if CAMERA['modo'] == 'cima':
+            B = np.stack([sx / KC, sy / KC, np.zeros_like(sx)], axis=1)
+            V = np.array([0.0, 0.0, 1.0])
+        else:
+            B = np.stack([(sx / KX + sy / KY) / 2, (sy / KY - sx / KX) / 2, np.zeros_like(sx)], axis=1)
+            V = np.array([1.0, 1.0, 2 * KY / KZ])
         Bq, Vq = (B - C) / R, V / R
         a = Vq @ Vq
         b = 2 * Bq @ Vq
