@@ -4,6 +4,7 @@ import type { RollResult } from './dice';
 import type { FloorItem, FloorStyle, Hint, ParticleKind, WallItem } from './room';
 import type { LugarInfo } from './lugares';
 import type { Criatura } from './bestiario';
+import type { Npc } from './npcs';
 import type { ViagemInfo } from './viagem';
 import type { CampaignState, LootKind } from './rpg';
 import type { PapelConta, Role, Session, SessionAction, Token } from './session';
@@ -454,6 +455,10 @@ export type ClientMsg =
   | { t: 'criaturaApagar'; id: string }
   | { t: 'criaturaColocar'; criaturaId: string; aparencia: string; quantidade: number }
   | { t: 'pecaAparencia'; tokenId: number; aparencia: string }
+  /** os NPCs do mestre (16/10): gravar, apagar e pôr um na cena */
+  | { t: 'npcSalvar'; npc: Npc }
+  | { t: 'npcApagar'; id: string }
+  | { t: 'npcColocar'; npcId: string }
   | { t: 'roomFx'; lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; tatico?: boolean }
   /** ponto de atenção ou desenho rápido para a mesa (só o mestre; some sozinho) */
   | { t: 'marca'; marca: MarcaMesa }
@@ -580,4 +585,4 @@ export type ServerMsg =
   /** combate da campanha (a mesa recebe só a ordem, a rodada e a vez); null = sem combate */
   | { t: 'combate'; combate: Combate | null; podeDesfazer?: boolean; ameacas?: Record<string, FichaAmeaca> }
   /** o bestiário inteiro (para o mestre) */
-  | { t: 'bestiario'; criaturas: Criatura[] };
+  | { t: 'bestiario'; criaturas: Criatura[]; npcs?: Npc[] };

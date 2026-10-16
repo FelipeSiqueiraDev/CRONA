@@ -443,6 +443,7 @@ net.onMessage = (m: ServerMsg) => {
       break;
     case 'bestiario':
       app.state.bestiario = m.criaturas;
+      app.state.npcs = m.npcs ?? [];
       app.emit('bestiario');
       break;
     case 'roomList':

@@ -1,4 +1,4 @@
-import type { Criatura, PecaCriatura, regras } from '@crona/shared';
+import type { Criatura, Npc, PecaCriatura, regras } from '@crona/shared';
 import type { ViagemInfo, IconeLugar, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
@@ -148,6 +148,8 @@ export interface Database {
   nomeCampanha?: string;
   /** o bestiário (10/10): as criaturas, cada uma com uma ficha e várias aparências */
   bestiario?: Criatura[];
+  /** os NPCs do mestre (16/10): gente da história, sem ficha de combate */
+  npcs?: Npc[];
   /** as salas e campanhas de exemplo antigas já foram tiradas (seed.ts, limparSalasDeExemplo) */
   limpezaExemplos?: boolean;
   /** fichas de personagem (motor de regras) */

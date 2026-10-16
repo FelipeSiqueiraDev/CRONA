@@ -16,8 +16,8 @@ import './bestiario.css';
  * No formato de cards verticais das referências do Felipe (os cards de loja: o pregador, o nome, o quadro, a
  * plaquinha e o rodapé), o mesmo dos cards de escolha do combate (`cards.css`).
  */
-export function abrirBestiario(app: App) {
-  let sel: string | null = app.state.bestiario[0]?.id ?? null;
+export function abrirBestiario(app: App, inicial?: string) {
+  let sel: string | null = inicial ?? app.state.bestiario[0]?.id ?? null;
   let aparencia = 'variadas';
   let quantidade = 3;
   const j = janela('CRIATURAS', 'caveira', () => (app.off('bestiario', desenhar), app.off('characters', desenhar)), 92);

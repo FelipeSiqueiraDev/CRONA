@@ -1,6 +1,7 @@
 import { desencostarItensDeParede } from './paredes';
 import {
   existidoPadrao,
+  miguelAlbuquerque,
   footprint,
   getFurni,
   getLayout,
@@ -711,6 +712,13 @@ function vanNoLugar(db: Database): boolean {
   return mudou;
 }
 
+/** Os NPCs começam com o primeiro do Felipe, o Miguel Albuquerque (16/10); depois são do mestre (apagar não traz de volta). */
+function npcsIniciais(db: Database): boolean {
+  if (db.npcs) return false;
+  db.npcs = [miguelAlbuquerque()];
+  return true;
+}
+
 /** O bestiário começa com o primeiro monstro do Felipe, o Existido (10/10); depois é do mestre (apagar não traz de volta). */
 function bestiarioInicial(db: Database): boolean {
   if (db.bestiario) return false;
@@ -733,8 +741,9 @@ export function upgradeDb(db: Database): boolean {
     const van = vanNoLugar(db);
     const paredes = paredesLivres(db);
     const bestiario = bestiarioInicial(db);
+    const npcs = npcsIniciais(db);
     const mesas = mesasMaisAltas(db);
-    return sede || fazenda || orfanato || santoBerco || igarape || tiradentes || cores || temas || van || paredes || bestiario || mesas;
+    return sede || fazenda || orfanato || santoBerco || igarape || tiradentes || cores || temas || van || paredes || bestiario || npcs || mesas;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';
@@ -817,6 +826,7 @@ export function upgradeDb(db: Database): boolean {
   temasDosAgentes(db);
   paredesLivres(db);
   bestiarioInicial(db);
+  npcsIniciais(db);
   mesasMaisAltas(db);
   db.seedVersion = SEED_VERSION;
   return true;

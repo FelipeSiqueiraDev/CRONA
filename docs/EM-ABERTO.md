@@ -152,6 +152,23 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 16/10, noite (branch `claude/tatica-codigo`): o ELENCO (NPCs e ameaças) e o Miguel Albuquerque
+
+- O botão CRIATURAS do tabuleiro virou **ELENCO** (`client/src/ui/elenco.ts`, `elenco.css`), uma janela do HUD em
+  forma de pokédex: a aba **NPCs** e a aba **Ameaças**, com as 74 do livro por elemento (Sangue, Morte,
+  Conhecimento, Energia, Medo, Mundanas = animais e pessoas, e "Do mestre" para as criadas à mão), na ordem do livro e
+  com as versões juntas (Zumbi de Sangue › Bestial › Colossal; a Degolificada e as 4 versões, em Medo). Cada card tem
+  **Usar** (põe uma peça na porta da cena e fecha; com Shift, fica aberta); clicar mostra o detalhe ao lado (VD, PV,
+  Defesa, página, a aparência, quantas). A ameaça do livro entra no bestiário sozinha no primeiro Usar. O lápis abre o
+  bestiário antigo (`bestiario.ts`) para editar caras, PV e ficha. A busca acha em todas as abas.
+- **NPCs** (`shared/src/npcs.ts`, `db.npcs`): nome, "quem é", a pasta da arte; sem ficha (a peça sem ficha é NPC).
+  Mensagens `npcSalvar`, `npcApagar`, `npcColocar` (`hotel.ts`). A arte vira personagem sozinha, como a das criaturas.
+  O elenco começa com o **Miguel Albuquerque** (`npcsIniciais`; apagar não traz de volta). Teste: `server/test/npcs.test.ts`.
+- **Miguel:** desenhado pelo Códex (a imagem do Felipe + a Catarina como modelo de estilo e ângulo), cortado por
+  `F:\Dhellow\CRONArte\PERSONAGENS-ANIMACAO	rabalho\miguel\cortar_8.py`: as 8 direções em
+  `client/public/arte/personagens/miguel-albuquerque/` (`oito-direcoes.png` e `tabuleiro-32bits/`), um pouco mais alto
+  que a Catarina. Ainda sem retrato.
+
 ## Feito em 16/10, noite (branch `claude/tatica-codigo`): os agentes deslizam com a pose parada
 
 - O andar animado não ficou bom por nenhum caminho que temos (PixelLab acabou; o 3D do Blender perde rosto e cabelo; o

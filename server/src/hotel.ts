@@ -4,6 +4,7 @@ import {
   BANCOS_VAN,
   getFurni,
   lerCriatura,
+  lerNpc,
   aparenciaDaVez,
   heightmapDaVan,
   isCenarioViagem,
@@ -346,7 +347,7 @@ export class Hotel implements HotelApi {
 
   // ---------- o bestiário (10/10) ----------
   private bestiarioPara(c: Client) {
-    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [] });
+    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [], npcs: this.db.npcs ?? [] });
   }
 
   private bestiarioMudou() {
@@ -372,6 +373,14 @@ export class Hotel implements HotelApi {
         this.db.characters.push({ id: this.db.nextCharId++, name: `${cr.nome} (${ap.nome})`, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height: 104, fps: 4, sequence: [0], removeBg: false });
         mudou = true;
       }
+    // os NPCs do mestre (16/10): a arte deles vira personagem do mesmo jeito
+    for (const npc of this.db.npcs ?? []) {
+      if (!npc.arte || this.charDaArte(npc.arte) !== null) continue;
+      const sheet = folhaDaPasta(npc.arte);
+      if (!sheet) continue;
+      this.db.characters.push({ id: this.db.nextCharId++, name: npc.nome, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height: 104, fps: 4, sequence: [0], removeBg: false });
+      mudou = true;
+    }
     if (pecas)
       for (const r of this.db.rooms)
         for (const t of r.tokens ?? []) {
@@ -402,6 +411,20 @@ export class Hotel implements HotelApi {
       const i = this.db.bestiario.findIndex((x) => x.id === cr.id);
       if (i >= 0) this.db.bestiario[i] = cr;
       else this.db.bestiario.push(cr);
+      return this.bestiarioMudou();
+    }
+    if (m.t === 'npcSalvar') {
+      const npc = lerNpc(m.npc);
+      if (!npc) return c.send({ t: 'error', msg: 'NPC inválido: falta o nome.' });
+      this.db.npcs ??= [];
+      const i = this.db.npcs.findIndex((x) => x.id === npc.id);
+      if (i >= 0) this.db.npcs[i] = npc;
+      else this.db.npcs.push(npc);
+      if (this.criaturasComArte(false)) this.broadcastCharacters();
+      return this.bestiarioMudou();
+    }
+    if (m.t === 'npcApagar' && typeof m.id === 'string') {
+      this.db.npcs = (this.db.npcs ?? []).filter((x) => x.id !== m.id);
       return this.bestiarioMudou();
     }
     if (m.t === 'criaturaApagar' && typeof m.id === 'string') {
@@ -436,6 +459,16 @@ export class Hotel implements HotelApi {
       }
       room.colocarVarias(lista);
       return c.send({ t: 'notice', msg: `${n} ${n === 1 ? cr.nome : `${cr.nome}s`} em campo, todos com a mesma ficha.` });
+    }
+    if (m.t === 'npcColocar') {
+      const npc = (this.db.npcs ?? []).find((x) => x.id === m.npcId);
+      if (!npc) return c.send({ t: 'error', msg: 'NPC não encontrado.' });
+      if (room.tokenList().length + 1 > 30) return c.send({ t: 'error', msg: 'Máximo de 30 peças por cena.' });
+      // o nome dele; com outro igual na cena (dois Miguéis?), numerado
+      let nome = npc.nome;
+      for (let k = 2; this.tokenNameTaken(room.data.id, nome); k++) nome = `${npc.nome} ${k}`;
+      room.colocarVarias([{ id: this.nextItemId(), name: nome, look: { ...npc.look, charId: this.charDaArte(npc.arte) }, x: room.data.door.x, y: room.data.door.y, dir: room.data.door.dir, color: '#7f93a8' }]);
+      return c.send({ t: 'notice', msg: `${nome} entrou na cena.` });
     }
     if (m.t === 'pecaAparencia' && typeof m.tokenId === 'number' && typeof m.aparencia === 'string') {
       const pc = room.criaturasDasPecas().get(m.tokenId);
@@ -1921,6 +1954,9 @@ export class Hotel implements HotelApi {
       case 'criaturaApagar':
       case 'criaturaColocar':
       case 'pecaAparencia':
+      case 'npcSalvar':
+      case 'npcApagar':
+      case 'npcColocar':
         this.bestiarioMsg(c, m);
         return;
     }

@@ -1,4 +1,4 @@
-import { abrirBestiario } from './bestiario';
+import { abrirElenco } from './elenco';
 import { contarNevoa, NEVOA_RAIO_MAX, NEVOA_RAIO_PADRAO, type CorGiz, type FormaTraco } from '@crona/shared';
 import type { FerramentaMesa } from '../room/RoomView';
 import type { App } from './app';
@@ -85,9 +85,9 @@ export class FerramentasMesa {
         ),
         h(
           'button',
-          { class: 'bv', type: 'button', title: 'Criaturas: o bestiário (uma ficha, várias aparências) e pôr várias em campo', 'aria-label': 'Criaturas', onclick: () => (sfx.click(), abrirBestiario(app)) },
+          { class: 'bv', type: 'button', title: 'Elenco: os NPCs e as ameaças, prontos para pôr na mesa', 'aria-label': 'Elenco', onclick: () => (sfx.click(), abrirElenco(app)) },
           arteOu(['/arte/icones/mesa-criaturas.png'], ic('caveira')),
-          h('span', null, 'CRIATURAS'),
+          h('span', null, 'ELENCO'),
         ),
       ),
       this.opcoes,
