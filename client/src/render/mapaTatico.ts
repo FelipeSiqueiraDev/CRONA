@@ -515,16 +515,30 @@ function desenharNoVoo(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorIte
   const depois = i >= 0 && i < P.length - 1 ? quadro(P[i + 1]) : null;
   const fp = footprint(def, it.rot);
   const [sx, sy] = projetar(v, it.x + fp.sx / 2, it.y + fp.sy / 2, it.z ?? 0);
-  const pinta = (q: NonNullable<ReturnType<typeof imagemDoVoo>>, a: number) => {
-    const k = v.escala / (M_POR_CASA * q.kv);
+  // o chão no quadro (desenhado no ângulo do ponto p) e o chão na câmera de agora: x = cos g · X - sen g · Y,
+  // y = sen e · (sen g · X + cos g · Y). A imagem vai do ângulo dela para o de agora pelo chão, e assenta na grade
+  const chao = (g: number, se: number) => [Math.cos(g), se * Math.sin(g), -Math.sin(g), se * Math.cos(g)];
+  const agora = chao(v.giro, v.achata);
+  const pinta = (q: NonNullable<ReturnType<typeof imagemDoVoo>>, p: number, a: number) => {
+    const [a0, b0, c0, d0] = chao((Math.PI / 4) * (1 - p), Math.sin(((30 + 60 * p) * Math.PI) / 180));
+    const det = a0 * d0 - b0 * c0;
+    // o inverso do quadro (px da imagem -> metros) e a câmera de agora (metros -> px da tela)
+    const ia = d0 / det, ib = -b0 / det, ic = -c0 / det, id = a0 / det;
+    const k = v.escala / M_POR_CASA / q.kv;
+    const [A, B, C, D] = agora;
+    const m = new DOMMatrix([k * (A * ia + C * ib), k * (B * ia + D * ib), k * (A * ic + C * id), k * (B * ic + D * id), 0, 0]);
+    // o meio da pegada da imagem cai no meio da pegada na tela
+    const o = m.transformPoint(new DOMPoint(q.ax, q.ay));
+    m.e = sx - o.x;
+    m.f = sy - o.y;
+    ctx.setTransform(m);
     ctx.globalAlpha = a;
-    ctx.drawImage(q.img, sx - q.ax * k, sy - q.ay * k, q.img.width * k, q.img.height * k);
+    ctx.drawImage(q.img, 0, 0);
   };
   ctx.save();
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.imageSmoothingEnabled = false;
-  pinta(antes, 1);
-  if (depois) pinta(depois, passo(P[i], P[i + 1], s));
+  pinta(antes, P[Math.max(0, i)], 1);
+  if (depois) pinta(depois, P[i + 1], passo(P[i], P[i + 1], s));
   ctx.restore();
   // depois do último quadro, a vista de cima vai aparecendo (sem a sombra e o corpo, que o quadro já tem)
   if (i === P.length - 1) {
