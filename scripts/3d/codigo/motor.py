@@ -44,13 +44,24 @@ VISTA_ISO = VISTA.copy()
 KC = 32 / CASA * ESC
 VISTA_CIMA = np.array([0.0, 0.05, 1.0]) / np.linalg.norm([0.0, 0.05, 1.0])
 CAMERA = {'modo': 'iso'}
+# a câmera no caminho do jogo entre o isométrico e o tático (poseDaCamera em mapaTatico.ts): em s (0 a 1), a
+# inclinação vai de 30° a 90° e o giro de 45° a 0°. KV px por metro (o isométrico tem KX·√2, o tático KC).
+KV = 48.0 * ESC
+VOO = {'cg': 1.0, 'sg': 0.0, 'ce': 0.0, 'se': 1.0}
 
 
-def camera(modo):
-    """Troca a câmera do motor: 'iso' (o tabuleiro) ou 'cima' (o mapa tático). VISTA e MEIO mudam no lugar (quem
-    importou o nome vê a troca)."""
+def camera(modo, s=None):
+    """Troca a câmera do motor: 'iso' (o tabuleiro), 'cima' (o mapa tático) ou 'voo' em s (o caminho entre os dois).
+    VISTA e MEIO mudam no lugar (quem importou o nome vê a troca)."""
     CAMERA['modo'] = modo
-    VISTA[:] = VISTA_CIMA if modo == 'cima' else VISTA_ISO
+    if modo == 'voo':
+        e = math.radians(30 + 60 * s)
+        g = math.radians(45 * (1 - s))
+        VOO.update(cg=math.cos(g), sg=math.sin(g), ce=math.cos(e), se=math.sin(e))
+        d = np.array([VOO['sg'] * VOO['ce'], VOO['cg'] * VOO['ce'], VOO['se']])
+        VISTA[:] = d / np.linalg.norm(d)
+    else:
+        VISTA[:] = VISTA_CIMA if modo == 'cima' else VISTA_ISO
     m = LUZ_CHAVE + VISTA
     MEIO[:] = m / np.linalg.norm(m)
 
@@ -60,7 +71,20 @@ def tela(P):
     X, Y, Z = P[..., 0], P[..., 1], P[..., 2]
     if CAMERA['modo'] == 'cima':
         return np.stack([X * KC, Y * KC], axis=-1)
+    if CAMERA['modo'] == 'voo':
+        cg, sg, ce, se = VOO['cg'], VOO['sg'], VOO['ce'], VOO['se']
+        return np.stack([KV * (X * cg - Y * sg), KV * (se * (X * sg + Y * cg) - Z * ce)], axis=-1)
     return np.stack([(X - Y) * KX, (X + Y) * KY - Z * KZ], axis=-1)
+
+
+def matriz_tela():
+    """As duas linhas da projeção (sx, sy) = M · (X, Y, Z), sem a translação: para resolver o ponto de cada pixel."""
+    if CAMERA['modo'] == 'cima':
+        return [[KC, 0, 0], [0, KC, 0]]
+    if CAMERA['modo'] == 'voo':
+        cg, sg, ce, se = VOO['cg'], VOO['sg'], VOO['ce'], VOO['se']
+        return [[KV * cg, -KV * sg, 0], [KV * se * sg, KV * se * cg, -KV * ce]]
+    return [[KX, -KX, 0], [KY, KY, -KZ]]
 
 
 class Peca:
@@ -210,7 +234,7 @@ class Cena:
             return
         # ponto no mundo de cada pixel: resolve a tela e o plano
         d = n @ Pw[0]
-        M = np.array([[KC, 0, 0], [0, KC, 0], n]) if cima else np.array([[KX, -KX, 0], [KY, KY, -KZ], n])
+        M = np.array(matriz_tela() + [list(n)])
         Mi = np.linalg.inv(M)
         sx = px[dentro] + self.x0
         sy = py[dentro] + self.y0
@@ -354,6 +378,12 @@ class Cena:
         if CAMERA['modo'] == 'cima':
             B = np.stack([sx / KC, sy / KC, np.zeros_like(sx)], axis=1)
             V = np.array([0.0, 0.0, 1.0])
+        elif CAMERA['modo'] == 'voo':
+            # o ponto do pixel no chão (z = 0) e o raio para a câmera
+            cg, sg, se = VOO['cg'], VOO['sg'], VOO['se']
+            a, b = sx / KV, sy / (KV * se)
+            B = np.stack([cg * a + sg * b, -sg * a + cg * b, np.zeros_like(sx)], axis=1)
+            V = VISTA.copy()
         else:
             B = np.stack([(sx / KX + sy / KY) / 2, (sy / KY - sx / KX) / 2, np.zeros_like(sx)], axis=1)
             V = np.array([1.0, 1.0, 2 * KY / KZ])

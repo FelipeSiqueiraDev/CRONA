@@ -4,7 +4,7 @@ import { imagemDoMapa } from './mapaImagem';
 import { desenharItemNoChao } from './itemNoChao';
 import { contornoArea, type Casa } from '../room/combateGeo';
 import type { MarcasCombate } from './combateMarcas';
-import { imagemDeCima, imagemDoChao, tamanhoReal, chaveDaArte } from './furniArte';
+import { imagemDeCima, imagemDoChao, imagemDoVoo, PONTOS_DO_VOO, tamanhoReal, chaveDaArte } from './furniArte';
 import { VAO_PORTA_M } from './furniKit';
 import { pisoDeCima } from './pisoTatico';
 
@@ -492,6 +492,52 @@ function formaDoMovel(it: FloorItem, def: FurniDef) {
  * cima ele some) e o tampo com a forma e os detalhes, na altura do móvel.
  */
 function desenharMovel(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorItem, def: FurniDef) {
+  // no caminho da câmera: os quadros do motor de pixel (o móvel continua com a arte dele, sem virar caixa)
+  if (v.t > 0 && v.t < 1 && desenharNoVoo(ctx, v, it, def)) return;
+  desenharMovelDeCima(ctx, v, it, def);
+}
+
+/**
+ * O caminho da câmera com a arte: o ponto s (0 = isométrico, 1 = em cima, pelo giro da câmera) cai entre dois quadros
+ * desenhados (exportar_voo_px.py, em PONTOS_DO_VOO) e o jogo desenha o de antes e, por cima, o de depois aparecendo.
+ * Antes do primeiro, só ele (a foto do isométrico se desfaz por cima, no RoomView); depois do último, a vista de cima
+ * aparece por cima dele. false se o móvel não tem os quadros (ou eles ainda carregam): a maquete de antes.
+ */
+function desenharNoVoo(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorItem, def: FurniDef): boolean {
+  const s = Math.max(0, Math.min(1, 1 - v.giro / (Math.PI / 4)));
+  const chave = chaveDaArte(def.id, it.id, undefined, it.vazio, it.modelo);
+  const quadro = (p: number) => imagemDoVoo(chave, p, it.rot) ?? imagemDoVoo(def.id, p, it.rot);
+  const P = PONTOS_DO_VOO;
+  let i = P.findIndex((p) => p > s) - 1;
+  if (i === -2) i = P.length - 1;
+  const antes = quadro(P[Math.max(0, i)]);
+  if (!antes) return false;
+  const depois = i >= 0 && i < P.length - 1 ? quadro(P[i + 1]) : null;
+  const fp = footprint(def, it.rot);
+  const [sx, sy] = projetar(v, it.x + fp.sx / 2, it.y + fp.sy / 2, it.z ?? 0);
+  const pinta = (q: NonNullable<ReturnType<typeof imagemDoVoo>>, a: number) => {
+    const k = v.escala / (M_POR_CASA * q.kv);
+    ctx.globalAlpha = a;
+    ctx.drawImage(q.img, sx - q.ax * k, sy - q.ay * k, q.img.width * k, q.img.height * k);
+  };
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  pinta(antes, 1);
+  if (depois) pinta(depois, passo(P[i], P[i + 1], s));
+  ctx.restore();
+  // depois do último quadro, a vista de cima vai aparecendo (sem a sombra e o corpo, que o quadro já tem)
+  if (i === P.length - 1) {
+    ctx.save();
+    ctx.globalAlpha = passo(P[i], 1, s);
+    desenharMovelDeCima(ctx, v, it, def, true);
+    ctx.restore();
+  }
+  return true;
+}
+
+/** O móvel pela vista de cima: a sombra, o corpo erguido (a maquete) e o tampo. semCorpo: só o tampo. */
+function desenharMovelDeCima(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorItem, def: FurniDef, semCorpo = false) {
   const alto = def.height ?? 0;
   const base = it.z ?? 0;
   const tapa = alto >= TAPA;
@@ -502,7 +548,7 @@ function desenharMovel(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorIte
   // o modelo que a peça sorteou (a variação b ou c tem a vista de cima dela)
   const arte = imagemDeCima(chaveDaArte(def.id, it.id, undefined, it.vazio, it.modelo), it.state) ?? imagemDeCima(def.id, it.state);
   // a sombra no chão, para baixo e à direita, do tamanho da altura (com arte, a silhueta dela)
-  if (base <= 0.01) {
+  if (base <= 0.01 && !semCorpo) {
     const s = Math.min(0.42, 0.06 + (alto / Z_PER_M) * 0.13);
     ctx.setTransform(matrizNaAltura(v, 0).translate(s * 0.6, s));
     if (arte) {
@@ -516,7 +562,9 @@ function desenharMovel(ctx: CanvasRenderingContext2D, v: CameraVoo, it: FloorIte
   }
   // o corpo: as faces de lado (retângulo) ou o contorno erguido (forma redonda)
   const topo = base + Math.max(0.02, alto);
-  if (pts.length) corpoConvexo(ctx, v, pts, base, topo, misturar(cor, '#000000', 0.3));
+  if (semCorpo) {
+    // só o tampo: no fim do caminho, por cima do último quadro do voo
+  } else if (pts.length) corpoConvexo(ctx, v, pts, base, topo, misturar(cor, '#000000', 0.3));
   else caixa(ctx, v, r.x, r.y, r.x + r.w, r.y + r.h, base, topo, null, misturar(cor, '#000000', 0.25), misturar(cor, '#000000', 0.45));
   // o tampo: a arte vista de cima; sem ela, a forma com os detalhes
   ctx.setTransform(matrizNaAltura(v, topo));

@@ -34,7 +34,7 @@ import {
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
-import { desenharParedeComArte, tamanhoReal, visualComArte } from '../render/furniArte';
+import { desenharParedeComArte, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
 import { furniVisual } from '../render/furniFloor';
 import { drawWallFurni, wallLights } from '../render/furniWall';
 import { drawHintGlyph, drawHintIcon } from '../render/hints';
@@ -1518,7 +1518,7 @@ export class RoomView {
     }
     // a foto do isométrico, que se desfaz no começo do caminho (na ida e na volta)
     if (tat.t >= 1) tat.foto = null;
-    else if (tat.t < 0.22 && !tat.foto && this.map) {
+    else if (tat.t < 0.42 && !tat.foto && this.map) {
       this.frameIso();
       const f = document.createElement('canvas');
       f.width = this.canvas.width;
@@ -1595,9 +1595,10 @@ export class RoomView {
     });
     if (recorta) ctx.restore();
     const foto = this.tat.foto;
-    const a = 1 - passo(0, 0.2, t);
+    // até o primeiro quadro do voo (PONTOS_DO_VOO[0], no ângulo da câmera), a foto do isométrico se desfaz por cima
+    const a = 1 - passo(0, PONTOS_DO_VOO[0], 1 - v.giro / (Math.PI / 4));
     if (foto && a > 0.001) {
-      // a foto presa no chão da câmera: no começo ela cobre a maquete e se desfaz
+      // a foto presa no chão da câmera: no começo ela cobre os quadros do voo e se desfaz
       const M0inv = matrizNaAltura(cameraVoo(map, camIso, e, 0, quadro), 0).inverse();
       ctx.save();
       ctx.globalAlpha = a;

@@ -91,6 +91,13 @@ export interface MovelArte {
   cima?: VistaDeCima;
   /** os estados que mudam o que se vê de cima (o baú aberto) */
   cimaEstados?: Record<string, VistaDeCima>;
+  /**
+   * os quadros do caminho da câmera até o tático (scripts/3d/estilo/exportar_voo_px.py): o ponto do caminho em
+   * centésimos ("25", "50", "75") -> o giro -> a imagem e o meio da pegada no chão (ax, ay) nela
+   */
+  voo?: Record<string, Record<string, { arquivo: string; ax: number; ay: number }>>;
+  /** px por metro dos quadros do voo */
+  vooKv?: number;
 }
 
 export interface VistaDeCima {
@@ -348,6 +355,20 @@ export function arteDaMiniatura(defId: string): string | null {
 export function imagemDoChao(defId: string): HTMLCanvasElement | null {
   const a = lista?.[defId];
   return a?.chao ? (pronta(a.chao.arquivo)?.normal ?? null) : null;
+}
+
+/** Os pontos do caminho da câmera que têm quadro desenhado (em 0 a 1). */
+export const PONTOS_DO_VOO = [0.25, 0.5, 0.75];
+
+/**
+ * O móvel num ponto do caminho da câmera (um de PONTOS_DO_VOO), no giro dele: a imagem, o meio da pegada no chão nela
+ * e os px por metro. null sem o quadro ou enquanto ele carrega.
+ */
+export function imagemDoVoo(defId: string, ponto: number, rot: number): { img: HTMLCanvasElement; ax: number; ay: number; kv: number } | null {
+  const a = lista?.[defId];
+  const q = a?.voo?.[String(Math.round(ponto * 100))]?.[String(rot)];
+  const img = q ? pronta(q.arquivo)?.normal : null;
+  return img && q ? { img, ax: q.ax, ay: q.ay, kv: a?.vooKv ?? 48 } : null;
 }
 
 /** O móvel visto de cima (mapa tático), no estado dele, e onde ele está na imagem; null sem arte ou enquanto ela carrega. */

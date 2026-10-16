@@ -168,6 +168,16 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
 - **Fracos de cima:** a planta (as folhas são lâminas em pé: vira um pontinho) e a cortina do leito (só o trilho). Ideia:
   um desenho próprio de cima para quem tem folha (a copa vista de cima) no módulo da peça.
 - As cópias em WebP (`arte-leve/`, fora do git) precisam do `node scripts/jogo.mjs atualizar` no computador do jogo.
+- **A troca de câmera com a arte (16/10):** antes, no caminho do isométrico até o tático, o móvel virava uma caixa (a
+  cadeira um bloco cheio, a mesa redonda um quadrado com o tampo em cima). Agora o motor desenha cada móvel em 3 pontos
+  do caminho (`motor.camera('voo', s)`, s = 0,25, 0,5 e 0,75, a mesma pose do `poseDaCamera`), nos 4 giros:
+  `scripts/3d/estilo/exportar_voo_px.py` escreve `<móvel>/voo-<s>-giro-<g>.png` e `voo`/`vooKv` no `moveis.json` (306
+  móveis, uns 35 MB, ~25 min). No jogo (`desenharNoVoo`, `mapaTatico.ts`), o quadro de antes e o de depois se misturam;
+  até 0,25 a foto do isométrico se desfaz por cima (`RoomView.frameTatico`); depois de 0,75 a vista de cima aparece.
+  O móvel sem os quadros (ou enquanto eles carregam) cai na maquete de antes.
+- **Ao mexer num móvel:** `exportar_px.py`, `exportar_cima_px.py` e `exportar_voo_px.py`, com o mesmo nome.
+- **No caminho ainda sem arte:** os itens de parede (quadros, o letreiro BAR) só existem no isométrico e somem com a
+  foto; a parede continua a caixa com a textura de cima.
 
 ## Feito em 14/10 (branch `claude/existidos`): Existidos, rituais e o Códex sem tabuleiro
 
