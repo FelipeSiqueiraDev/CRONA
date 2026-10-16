@@ -165,6 +165,10 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
 - **O andar (16/10):** `walking` do PixelLab em 128 (2 gerações por direção, uma direção por pedido no plano de teste):
   sul, leste e norte; o oeste espelha o leste; as diagonais andam com o da frente (SE, SW) ou de costas (NE, NW),
   paradas ficam com a pose delas. Montagem: `pixellab/montar.py` (os quadros de cada direção descem juntos).
+  **Firmado (16/10, o Felipe: "andando duro, travadão"):** a vista de frente encolhia de 119 a 112 px e tirava os
+  pés do chão (`pixellab/firmar.py` volta cada quadro à altura do primeiro e assenta os pés), e o PixelLab tinha dado
+  só meio passo (o mesmo pé levantava); `pixellab/ciclo.py` monta o ciclo inteiro: apoio, passo direito, apoio e o
+  mesmo passo espelhado da cintura para baixo (o esquerdo).
   **Falta:** o andar das 4 diagonais (8 gerações) e uma respiração no parado.
 - **Antes (64px):** a animação de andar e a de parado faltavam (ele andava deslizando com a pose parada). No PixelLab,
   `POST /characters/animations` custa 1 geração por direção (8 no total); a conta está no plano de teste com 8
