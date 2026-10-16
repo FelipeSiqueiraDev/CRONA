@@ -43,7 +43,7 @@ import { MarcasMesa } from '../render/marcasMesa';
 import { NevoaMesa } from '../render/nevoaMesa';
 import { imagemDoMapa } from '../render/mapaImagem';
 import { desenharItemNoChao } from '../render/itemNoChao';
-import { cameraVoo, casaNoPonto, desenharMesa, enquadrar, marcasNoChao, marcasPorCima, matrizNaAltura, passo, projetar, type CameraVoo, type Enquadre, type PecaTatica } from '../render/mapaTatico';
+import { cameraVoo, casaNoPonto, desenharMesa, enquadrar, marcasNoChao, marcasPorCima, matrizNaAltura, passo, projetar, type CameraVoo, type Enquadre, type FundoIso, type PecaTatica } from '../render/mapaTatico';
 import { portraitCanvas } from '../render/portrait';
 import { hash, hexToRgb, rgba } from '../render/color';
 import { Fog } from '../render/fog';
@@ -444,7 +444,7 @@ export class RoomView {
    * batalha (o mestre liga, info.tatico; a mesa acompanha). t vai de 0 (isométrico) a 1 (em cima);
    * a foto é o isométrico, que se desfaz no começo do caminho.
    */
-  private tat: { t: number; alvo: number; antes: number; foto: HTMLCanvasElement | null; v: CameraVoo | null; e: Enquadre | null } = { t: 0, alvo: 0, antes: 0, foto: null, v: null, e: null };
+  private tat: { t: number; alvo: number; antes: number; foto: HTMLCanvasElement | null; fundo: FundoIso | null; v: CameraVoo | null; e: Enquadre | null } = { t: 0, alvo: 0, antes: 0, foto: null, fundo: null, v: null, e: null };
   /**
    * O zoom do mapa tático (só nesta tela; a mesa não acompanha): o enquadre da sala vezes k, deslocado
    * de (dx, dy) px do canvas. k = 1 é a sala inteira no quadro.
@@ -1513,9 +1513,13 @@ export class RoomView {
     if (tat.t !== tat.alvo) tat.t = tat.alvo > tat.t ? Math.min(tat.alvo, tat.t + dt / 1700) : Math.max(tat.alvo, tat.t - dt / 1700);
     if (tat.t <= 0) {
       tat.foto = null;
+      tat.fundo = null;
       this.frameIso();
       return;
     }
+    // o fundo do isométrico para o caminho (feito na saída de cada ponta, na ida e na volta)
+    if (tat.t >= 1) tat.fundo = null;
+    else if (!tat.fundo) tat.fundo = this.fundoDoVoo();
     // a foto do isométrico, que se desfaz no começo do caminho (na ida e na volta)
     if (tat.t >= 1) tat.foto = null;
     else if (tat.t < 0.42 && !tat.foto && this.map) {
@@ -1578,6 +1582,7 @@ export class RoomView {
       mostrarItem: esconde ? (it) => !this.itemOculto(it) : undefined,
       imagemChao: imagemDoMapa(info.mapa),
       terreno: info.terreno,
+      fundoIso: this.tat.fundo,
       // no começo do caminho, o escuro da sala (como no isométrico); em cima, o mapa claro
       escuro: Math.min(0.5, info.darkness * 0.7) * (1 - passo(0.15, 1, t)),
       celas: celas?.casa,
@@ -1734,6 +1739,49 @@ export class RoomView {
     return topo ? { kind: 'floor', id: topo.id, test: () => true } : null;
   }
 
+  /** O chão e as paredes do isométrico (buildStatic), refeitos só quando a sala, a escala ou o piso mudam. */
+  private camadaEstatica(map: RoomMap, info: RoomInfo, scale: number): StaticLayer {
+    const key = `${info.id}|${info.heightmap}|${map.door.x},${map.door.y}|${scale}|${info.floorStyle ?? ''}|${versaoTexturas()}|${info.aberto ? 'a' : ''}|${info.terreno ?? ''}`;
+    if (key !== this.staticKey || !this.staticLayer) {
+      this.staticLayer = buildStatic(map, scale, info.floorStyle, info.terreno, !!info.aberto);
+      this.staticKey = key;
+    }
+    return this.staticLayer;
+  }
+
+  /**
+   * O fundo do isométrico para o caminho da câmera: o chão e as paredes (a camada estática) com os itens de parede
+   * por cima, sem os móveis e sem a luz. No voo, cada plano dele (o chão, cada trecho de parede) vai para o ângulo de
+   * agora (mapaTatico, fundoIso): a sala continua com a arte dela, sem virar caixa.
+   */
+  private fundoDoVoo(): FundoIso | null {
+    const map = this.map;
+    const info = this.info;
+    if (!map || !info) return null;
+    const st = this.camadaEstatica(map, info, this.zoom * this.dpr);
+    const sc = st.canvas.width / st.w;
+    const c = document.createElement('canvas');
+    c.width = st.canvas.width;
+    c.height = st.canvas.height;
+    const g = c.getContext('2d')!;
+    g.setTransform(sc, 0, 0, sc, -st.x * sc, -st.y * sc);
+    g.imageSmoothingEnabled = false;
+    g.drawImage(st.canvas, st.x, st.y, st.w, st.h);
+    // os itens de parede, pelo mesmo desenho do isométrico, nesta tela
+    const salva = this.ctx;
+    this.ctx = g;
+    try {
+      const t = Date.now();
+      for (const it of map.allWallItems()) {
+        const def = getWallFurni(it.defId);
+        if (def) this.drawWallItem(it, def, t, [], 1, null);
+      }
+    } finally {
+      this.ctx = salva;
+    }
+    return { img: c, x: st.x, y: st.y, w: st.w, h: st.h };
+  }
+
   private frameIso() {
     this.resize();
     // cômodo grande: de tempos em tempos a câmera vai atrás das peças
@@ -1771,11 +1819,7 @@ export class RoomView {
     const scale = z * dpr;
     const canBuild = this.info.canBuild;
 
-    const key = `${this.info.id}|${this.info.heightmap}|${map.door.x},${map.door.y}|${scale}|${this.info.floorStyle ?? ''}|${versaoTexturas()}|${this.info.aberto ? 'a' : ''}|${this.info.terreno ?? ''}`;
-    if (key !== this.staticKey) {
-      this.staticLayer = buildStatic(map, scale, this.info.floorStyle, this.info.terreno, !!this.info.aberto);
-      this.staticKey = key;
-    }
+    this.camadaEstatica(map, this.info, scale);
     // a Viagem: o mundo passa por baixo e por fora; a van (e quem está nela) só balança de leve
     const viagem = this.info.viagem;
     let balanco = 0;

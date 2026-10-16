@@ -256,6 +256,52 @@ export interface OpcoesMesa {
   imagemChao?: CanvasImageSource | null;
   /** ao ar livre: o chão de cada casa (grama, estrada, lavoura, píer...), uma letra por casa; a água é casa vazia */
   terreno?: string;
+  /** no caminho da câmera: o fundo do isométrico (chão, paredes e itens de parede), que vai plano a plano para o ângulo de agora */
+  fundoIso?: FundoIso | null;
+}
+
+/** O chão e as paredes do isométrico numa imagem (RoomView.fundoDoVoo): o canto (x, y) e o tamanho, em px do isométrico. */
+export interface FundoIso {
+  img: HTMLCanvasElement;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** A transformação afim que leva os 3 pontos `de` (px da imagem) aos 3 pontos `para` (px da tela). */
+function afim(de: [number, number][], para: [number, number][]): DOMMatrix {
+  const [[x0, y0], [x1, y1], [x2, y2]] = de;
+  const [[u0, v0], [u1, v1], [u2, v2]] = para;
+  const S = new DOMMatrix([x1 - x0, y1 - y0, x2 - x0, y2 - y0, x0, y0]).inverse();
+  return new DOMMatrix([u1 - u0, v1 - v0, u2 - u0, v2 - v0, u0, v0]).multiply(S);
+}
+
+/**
+ * Um plano da sala, do fundo do isométrico para o ângulo de agora: o plano é dado por 3 pontos (casas e altura), que
+ * o isométrico põe em iso() e a câmera de agora em projetar(); a imagem vai inteira pela afim e o recorte é o
+ * contorno do plano na tela.
+ */
+function planoDoFundo(ctx: CanvasRenderingContext2D, v: CameraVoo, f: FundoIso, pts: [number, number, number][], contorno: [number, number, number][], alfa: number) {
+  if (alfa <= 0.001) return;
+  const sc = f.img.width / f.w;
+  const de = pts.map(([x, y, z]) => [((x - y) * 32 - f.x) * sc, ((x + y) * 16 - z * 32 - f.y) * sc] as [number, number]);
+  const para = pts.map(([x, y, z]) => projetar(v, x, y, z));
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.beginPath();
+  contorno.forEach(([x, y, z], i) => {
+    const [sx, sy] = projetar(v, x, y, z);
+    if (i) ctx.lineTo(sx, sy);
+    else ctx.moveTo(sx, sy);
+  });
+  ctx.closePath();
+  ctx.clip();
+  ctx.setTransform(afim(de, para));
+  ctx.imageSmoothingEnabled = false;
+  ctx.globalAlpha = alfa;
+  ctx.drawImage(f.img, 0, 0);
+  ctx.restore();
 }
 
 /** A cor do chão enquanto a textura do estilo não chegou, e a água. */
@@ -309,6 +355,33 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
     ctx.fillStyle = 'rgba(14, 11, 8, 0.32)';
     ctx.fill(pisoPath);
   }
+  // no caminho da câmera, o chão do isométrico (com a arte dele) por cima, indo para o ângulo de agora e se desfazendo no fim
+  const sVoo = Math.max(0, Math.min(1, 1 - v.giro / (Math.PI / 4)));
+  const fundo = v.t > 0 && v.t < 1 ? opcoes.fundoIso : null;
+  if (fundo) {
+    let z0 = Infinity;
+    for (let y = 0; y < map.height; y++) for (let x = 0; x < map.width; x++) z0 = Math.min(z0, map.floorHeight(x, y) ?? Infinity);
+    if (!Number.isFinite(z0)) z0 = 0;
+    const aChao = 1 - passo(0.55, 1, sVoo);
+    if (aChao > 0.001) {
+      const sc = fundo.img.width / fundo.w;
+      const pts: [number, number][] = [
+        [0, 0],
+        [1, 0],
+        [0, 1],
+      ];
+      const de = pts.map(([x, y]) => [((x - y) * 32 - fundo.x) * sc, ((x + y) * 16 - z0 * 32 - fundo.y) * sc] as [number, number]);
+      const para = pts.map(([x, y]) => projetar(v, x, y, 0));
+      ctx.save();
+      ctx.clip(pisoPath);
+      ctx.setTransform(afim(de, para));
+      ctx.imageSmoothingEnabled = false;
+      ctx.globalAlpha = aChao;
+      ctx.drawImage(fundo.img, 0, 0);
+      ctx.restore();
+      ctx.setTransform(matrizNaAltura(v, 0));
+    }
+  }
   for (const { it, def } of itens) if (def.flat) desenharTapete(ctx, it, def);
   ctx.save();
   ctx.clip(pisoPath);
@@ -344,6 +417,21 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
     blocos.push({ prof: prof(it.x + fp.sx / 2, it.y + fp.sy / 2), z: it.z ?? 0, desenhar: () => desenharMovel(ctx, v, it, def) });
   }
   for (const p of paredes(map)) blocos.push({ prof: prof((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2) - (p.fundo ? 100 : 0), z: 0, desenhar: () => desenharParede(ctx, v, p, piso) });
+  // no caminho da câmera: cada trecho de parede do isométrico (com a arte e os itens de parede) por cima da parede
+  // de caixa, no plano dele, até se desfazer perto de cima
+  const aParede = fundo ? 1 - passo(0.7, 1, sVoo) : 0;
+  if (fundo && aParede > 0.001) {
+    const topo = map.walls.top;
+    for (const sg of map.walls.segs) {
+      const P = (a: number, z: number): [number, number, number] => (sg.wall === 'l' ? [sg.plane, a, z] : [a, sg.plane, z]);
+      const [cx, cy] = P(sg.at + 0.5, 0);
+      blocos.push({
+        prof: prof(cx, cy) - 100 + 0.001,
+        z: 0,
+        desenhar: () => planoDoFundo(ctx, v, fundo, [P(sg.at, sg.base), P(sg.at + 1, sg.base), P(sg.at, topo)], [P(sg.at, sg.base), P(sg.at + 1, sg.base), P(sg.at + 1, topo), P(sg.at, topo)], aParede),
+      });
+    }
+  }
   // a ficha no tamanho de uma pessoa vista de cima, na proporção dos móveis: uma casa (0,75 m) de largura
   // (o quadrado do livro, 1,5 m, é o espaço que a peça ocupa nas regras, e não o tamanho dela)
   const raio = opcoes.ficha ?? 0.5;

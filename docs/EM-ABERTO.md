@@ -176,8 +176,14 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   até 0,25 a foto do isométrico se desfaz por cima (`RoomView.frameTatico`); depois de 0,75 a vista de cima aparece.
   O móvel sem os quadros (ou enquanto eles carregam) cai na maquete de antes.
 - **Ao mexer num móvel:** `exportar_px.py`, `exportar_cima_px.py` e `exportar_voo_px.py`, com o mesmo nome.
-- **No caminho ainda sem arte:** os itens de parede (quadros, o letreiro BAR) só existem no isométrico e somem com a
-  foto; a parede continua a caixa com a textura de cima.
+- **A sala inteira no caminho (16/10):** o quadro do móvel vai do ângulo dele para o de agora pelo chão (afim do plano
+  z = 0, `desenharNoVoo`) e assenta na grade. O fundo do isométrico (a camada estática, chão e paredes, com os itens
+  de parede por cima: `RoomView.fundoDoVoo`, feito na saída de cada ponta) vai plano a plano para o ângulo de agora
+  (`planoDoFundo` em `mapaTatico.ts`): o chão até s = 0,55-1 e cada trecho de parede (`map.walls.segs`) até 0,7-1, por
+  cima da parede de caixa. Visto no Bar, na Fazenda ao ar livre e no Hall do Casarão.
+- **Ainda vira caixa:** `table_small`, `microscope`, `computer_old` e `gun_table` (não têm arte de pixel em lugar nenhum;
+  52 de 4.427 móveis nas 119 salas, contando a van e os marcadores escondidos). O fundo do isométrico não tem a luz
+  da sala (a foto do começo tem): no voo a sala fica um pouco mais clara que no isométrico.
 
 ## Feito em 14/10 (branch `claude/existidos`): Existidos, rituais e o Códex sem tabuleiro
 
