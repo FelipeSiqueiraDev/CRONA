@@ -2377,8 +2377,10 @@ export class Shell {
     if (!u) return;
     if (!this.gm) return toast('Só o mestre gira os personagens. Abra o link do mestre (aparece no terminal do servidor).', 'error');
     const def = sprites.def(u.look.charId);
-    // folha de 4 direções: só as 4 poses; de 8 ou avatar pixel: as 8
-    const allowed = def ? distinctFacings((k) => def.dirs.some((d, i) => d === k && (def.anims?.[i] ?? 'idle') === 'idle')) : [];
+    // folha de 4 direções: só as 4 poses; de 8 ou avatar pixel: as 8. As poses do tabuleiro (a pasta tabuleiro-32bits)
+    // também contam: a Camarilla tem a folha antiga de 2 direções e as 8 poses novas (17/10)
+    const temPose = (k: string) => Object.values(def?.poses ?? {}).some((dirs) => !!(dirs as Record<string, unknown> | undefined)?.[k]);
+    const allowed = def ? distinctFacings((k) => temPose(k) || def.dirs.some((d, i) => d === k && (def.anims?.[i] ?? 'idle') === 'idle')) : [];
     // cliques seguidos contam a partir do último pedido, não do que o servidor já confirmou
     const now = performance.now();
     const goal = this.turnGoal.get(viewId);
