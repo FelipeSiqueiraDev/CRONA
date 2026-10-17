@@ -152,6 +152,22 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 17/10, tarde (branch `claude/tatica-codigo`, commit 8ba05c2a): a FICHAS mais arrumada e a ficha dos NPCs
+
+- FICHAS: o personagem com a mesma altura em todo giro e na pose do tabuleiro (armado/machucado); Identificação sem
+  texto encavalado; nenhum número colado na borda (`caberNumaLinha` com prioridade); PV, PE e SAN embaixo das caixas;
+  o modal do item com os números nomeados e os efeitos em pares; OBS dos itens virou o ícone da regra; Rituais vazia
+  com aviso; a Evolução em cartões por NEX.
+- **Aba NPCS** (só o mestre): a ficha de cada NPC do Elenco (`FichaSalva.npc`), com o nome editável (vale no
+  Elenco). O mestre muda os atributos a qualquer hora dentro dos limites; o ponto tirado vira a pendência
+  "Distribua 1 ponto" e o jogador só põe o pendente (fora isso, o jogador só muda quando evolui).
+- Retratos dos 6 NPCs antigos a partir das fotos do Felipe (`scripts/retrato_npc.py`, rembg `isnet-anime`); os 4
+  novos ficaram com os retratos da sessão de arte.
+- Contorno rosa: `scripts/contorno_rosa.py` acha e corrige a linha de contorno magenta (só pixel escuro da borda,
+  com a cor do contorno de uma pose certa). Corrigidos o Tepes armado e as poses deitadas. Regra: nunca contorno
+  rosa em lugar nenhum; conferir antes de instalar arte.
+- Falta: conferir de perto a ficha de um NPC criada do zero (a prévia estava ocupada por outra sessão).
+
 ## Feito em 17/10 (branch `claude/tatica-codigo`): as miniaturas respiram no tabuleiro
 
 O Felipe: "deixar um movimento fluido e natural das miniaturas respirando no campo", "ninguém respira pela perna, o
