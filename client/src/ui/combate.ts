@@ -2371,15 +2371,17 @@ export class CombateScreen {
       this.regCorpo.replaceChildren(h('p', { class: 'cb-vazio' }, c ? 'Nada ainda.' : 'O registro começa quando o combate abre.'));
       return;
     }
+    // o mais novo em cima, o início do combate embaixo (o Felipe, 17/10)
     const els = linhas
       .slice(-120)
+      .reverse()
       .map((l) =>
         l.tipo === 'rodada'
           ? h('div', { class: 'cb-reg-rodada' }, h('span', null, `— ${l.texto.replace(/\.$/, '')} —`))
           : h('div', { class: `cb-reg-linha t-${l.tipo}` }, h('time', null, `[${hora(l.em)}]`), h('span', null, ...comDestaque(l.texto, l.destaque))),
       );
     this.regCorpo.replaceChildren(...els);
-    this.regCorpo.scrollTop = this.regCorpo.scrollHeight;
+    this.regCorpo.scrollTop = 0;
   }
 
   // ---------------------------------------------------------------- pedidos

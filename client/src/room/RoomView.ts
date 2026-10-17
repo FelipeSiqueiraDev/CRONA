@@ -2635,7 +2635,10 @@ export class RoomView {
       }
       const privada = !p.moving && u.sit === 1 && map.itemsAt(u.x, u.y).some((s) => getFurni(s.defId)?.kind === 'toilet');
       // a pose sentada desenhada tem os pés no chão (o quadril cai na altura do assento sozinho): fica no piso
-      const baseZ = standBy || pfSentado ? (map.floorHeight(u.x, u.y) ?? p.z) : p.z;
+      // (em banco alto, o do balcão com 0,75 m ou o de laboratório com 0,70 m, o quadril da pose, feito para o assento de
+      // 0,45 m, afundava no banco: sobe o que passa disso; o Felipe, 17/10: "a Agatha tá sentada toda errada")
+      const pisoSentado = map.floorHeight(u.x, u.y) ?? p.z;
+      const baseZ = standBy ? pisoSentado : pfSentado ? pisoSentado + Math.max(0, p.z - pisoSentado - 0.45 * Z_PER_M) : p.z;
       const half = seated ? 0.25 : 0.3;
       const [sx, sy] = iso(cx, cy, baseZ);
       // H: a altura na arte; HE: na tela (a arte vem na escala antiga e o tabuleiro reduz)

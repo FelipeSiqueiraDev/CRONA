@@ -378,7 +378,18 @@ export class ResolucaoManobra {
     const corpo: (HTMLElement | null)[] = [];
     const alvo = k.alvo;
     if (!alvo) corpo.push(h('p', { class: 'cb-vazio' }, 'Escolha o alvo.'));
-    else if (k.dadosB === null || k.bonusB === null) corpo.push(h('p', { class: 'cb-vazio' }, `Digite a Luta de ${alvo.p.nome}.`));
+    else if (k.dadosB === null || k.bonusB === null)
+      // a Luta do alvo se digita aqui mesmo (antes ficava só na página anterior, escondida: a tela dizia "digite" e não tinha onde)
+      corpo.push(
+        h('p', { class: 'cb-vazio' }, `Digite a Luta de ${alvo.p.nome}.`),
+        h(
+          'div',
+          { class: 'cb-man-luta', title: 'Sem Luta na ficha: digite quantos d20 e o bônus' },
+          h('small', null, 'Luta'),
+          campoDado('d20', this.e.lutaDados, 9, (n) => ((this.e.lutaDados = n), x.mudou()), 'man:ld2'),
+          campoDado('bônus', this.e.lutaBonus, 99, (n) => ((this.e.lutaBonus = n), x.mudou()), 'man:lb2'),
+        ),
+      );
     else {
       // cada lado: o que rolar e o d20 que ficou, na mesma linha
       const lado = (nome: string, dados: number, penalidade: number, bonus: number, valor: number | null, fn: (n: number | null) => void, foco: string) =>

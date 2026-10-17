@@ -301,6 +301,22 @@ async function lerPose(p: { key: string; n: number; url: string; machucado: bool
 }
 
 /**
+ * O meio do quadril na imagem (a pose sentada, 17/10, o Felipe: "a Agatha tá sentada toda errada"): a média das colunas
+ * do corpo na faixa do quadril (45% a 72% da altura). É ali que a peça tem que ficar em cima do assento; pelos pés, as
+ * botas jogadas para a frente puxavam o corpo para o lado do banco.
+ */
+function meioDoQuadril(c: HTMLCanvasElement, b: Caixa): number {
+  const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+  const alto = b.y1 - b.y0 + 1;
+  let soma = 0;
+  let n = 0;
+  for (let y = Math.round(b.y0 + alto * 0.45); y <= Math.round(b.y0 + alto * 0.72); y++)
+    for (let x = b.x0; x <= b.x1; x++)
+      if (d[(y * c.width + x) * 4 + 3] > 96) (soma += x + 0.5), n++;
+  return n ? soma / n : (b.x0 + b.x1 + 1) / 2;
+}
+
+/**
  * Os pés na imagem: em cada coluna, o pixel mais baixo do corpo na faixa de baixo (as botas); as
  * colunas vizinhas formam um pé. Devolve até dois pés (os mais largos): [x do meio, y da sola].
  */
@@ -449,7 +465,8 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
       // com os dois pés à vista, a âncora fica no meio deles (é ali que a peça pisa); senão, embaixo do corpo
       const pp = deQuatroPatas(def) ? pontosPatas(p.canvas, p.b) : pontosPes(p.canvas, p.b);
       const meio = pp.length === 2;
-      const ax = meio ? Math.round(((pp[0][0] + pp[1][0]) / 2) * s) : (p.b.fx + 0.5) * s;
+      const sentado = p.key.startsWith('sentado-');
+      const ax = sentado ? Math.round(meioDoQuadril(p.canvas, p.b) * s) : meio ? Math.round(((pp[0][0] + pp[1][0]) / 2) * s) : (p.b.fx + 0.5) * s;
       const ay = meio ? Math.round(((pp[0][1] + pp[1][1]) / 2) * s) : (p.b.y1 + 1) * s;
       return { ax, ay, pes: meiaLarguraPes(p.canvas, p.b) * s, noMeioDosPes: meio };
     };
@@ -475,6 +492,8 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
         f.ay = (pp[0][1] + pp[1][1]) / 2;
         f.noMeioDosPes = true;
       }
+      // sentada: o quadril é que fica em cima do assento
+      if (parada && p.key.startsWith('sentado-')) f.ax = (meioDoQuadril(p.canvas, p.b) - p.b.x0) * s;
       f.pesPontos = pp.map(([x, y]): [number, number] => [x - f.ax, y - f.ay]);
       return f;
     };

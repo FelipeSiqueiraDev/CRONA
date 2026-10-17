@@ -8,26 +8,26 @@ html:not(.modo-ficha) .cb-palco > .cb-tab {
   left: 0.8rem !important;
   top: 8.8rem !important;
   width: 92rem !important;
-  height: 63.4rem !important;
+  height: 54.6rem !important;
 }
 html:not(.modo-ficha) .cb-palco > .cb-ini {
   left: 93.6rem !important;
   top: 8.8rem !important;
   width: 72.8rem !important;
-  height: 13.6rem !important;
+  height: 14.2rem !important;
 }
 html:not(.modo-ficha) .cb-palco > .cb-res {
   left: 93.6rem !important;
-  top: 23.2rem !important;
+  top: 23.8rem !important;
   width: 72.8rem !important;
-  height: 70rem !important;
+  height: 69.4rem !important;
 }
 html:not(.modo-ficha) .cb-palco > .cb-gaveta {
   position: absolute;
   left: 0.8rem;
-  top: 73rem;
+  top: 64.2rem;
   width: 92rem;
-  height: 20.2rem;
+  height: 29rem;
   display: flex;
   flex-direction: column;
   pointer-events: auto;
@@ -864,7 +864,23 @@ html:not(.modo-ficha) .cb-ini .cb-ini-linha.vez {
   padding-right: 1.4rem !important;
 }
 html:not(.modo-ficha) .cb-ini .cb-ini-linha.vez .cb-ini-txt {
+  min-width: 8.5rem;
   max-width: 14rem;
+}
+/* a carta da vez (17/10, o Felipe: "todo apertado, todo cortado"): o selo "Sua vez" entra na fila, ao lado do nome,
+   em vez de ficar em cima dele; a foto cabe na altura da carta e o texto não é cortado */
+html:not(.modo-ficha) .cb-ini .cb-ini-linha.vez .cb-suavez {
+  position: static !important;
+  flex: none;
+  align-self: center;
+  order: 9;
+  white-space: nowrap;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha.vez .cb-ini-txt {
+  overflow: visible !important;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha.vez .cb-ini-sub {
+  white-space: nowrap;
 }
 html:not(.modo-ficha) .cb-ini .cb-fotos {
   display: flex;
@@ -883,8 +899,8 @@ html:not(.modo-ficha) .cb-res .cb-foto.grande {
   rotate: none !important;
 }
 html:not(.modo-ficha) .cb-ini .cb-ini-linha.vez .cb-foto {
-  width: 6.2rem !important;
-  height: 6.2rem !important;
+  width: 5.2rem !important;
+  height: 5.2rem !important;
   border-color: var(--r-ouro-hi, #ffd27a) !important;
 }
 html:not(.modo-ficha) :is(.cb-ini, .cb-res) .cb-foto canvas {
@@ -898,4 +914,26 @@ html:not(.modo-ficha) :is(.cb-ini, .cb-res) .cb-foto canvas {
   .vez-cartao {
     animation: none;
   }
+}
+
+/* ---------------------------------------------------------------- o respiro do COMBATE (17/10)
+   O Felipe: "tudo apertado, tudo cortando". A gaveta de baixo ganhou altura (o mapa cede 9 rem: a câmera se ajusta
+   sozinha), o painel dela não precisa mais rolar para mostrar o alvo, e, quando algo rola, o trilho e o pegador são os
+   do jogo (cobre sobre azul-noite), não os cinza do navegador. */
+html:not(.modo-ficha) .cb :is(.cb-alvo-corpo, .cb-pend-corpo, .cb-reg-corpo, .cb-ini-lista, .atq-corpo, .cb-rola, .cb-man-col, .cb-res-corpo) {
+  scrollbar-width: thin;
+  scrollbar-color: #d79a52 rgba(5, 11, 20, 0.7);
+}
+html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-corpo {
+  align-content: start;
+  row-gap: 0.9rem;
+  column-gap: 1.4rem;
+}
+/* a nota do alvo sem ficha: a largura toda, e não uma palavra por linha na coluna da foto */
+html:not(.modo-ficha) .cb-gaveta .cb-alvo .cb-alvo-nota {
+  grid-column: 1 / -1 !important;
+  grid-row: 4 !important;
+  margin: 0;
+  max-width: none;
+  white-space: normal;
 }
