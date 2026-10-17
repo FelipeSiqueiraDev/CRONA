@@ -464,17 +464,63 @@ class Sfx {
     this.tone(880 + (n % 10) * 22, 880 + (n % 10) * 22, 0.07, 0.12, 'square');
   }
 
+  /** Um estalo seco (o metal ou a madeira batendo): o ruído entra na hora e some depressa, num filtro estreito. */
+  private estalo(atraso: number, freq: number, q: number, dur: number, gain: number, type: BiquadFilterType = 'bandpass') {
+    const ac = this.ctx();
+    if (!ac || !this.noise || !this.master) return;
+    const t = ac.currentTime + atraso;
+    const src = ac.createBufferSource();
+    src.buffer = this.noise;
+    const f = ac.createBiquadFilter();
+    f.type = type;
+    f.frequency.value = freq;
+    f.Q.value = q;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f).connect(g).connect(this.master);
+    src.start(t, Math.random() * 1.5);
+    src.stop(t + dur + 0.02);
+  }
+
+  /** O ferro que tine depois da batida (o trinco na chapa do batente): parciais desafinadas que somem depressa. */
+  private tinir(atraso: number, base: number, dur: number, gain: number) {
+    const ac = this.ctx();
+    if (!ac || !this.master) return;
+    const t = ac.currentTime + atraso;
+    for (const [k, gk] of [[1, 1], [2.76, 0.5], [5.4, 0.25]] as const) {
+      const o = ac.createOscillator();
+      o.frequency.value = base * k;
+      const g = ac.createGain();
+      g.gain.setValueAtTime(gain * gk, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur / Math.sqrt(k));
+      o.connect(g).connect(this.master);
+      o.start(t);
+      o.stop(t + dur + 0.02);
+    }
+  }
+
   /**
-   * A tranca (17/10): alguém forçou uma porta ou um armário trancado. A maçaneta desce e bate no batente duas vezes,
-   * o trinco chacoalha no ferro e a madeira range de leve.
+   * A tranca (17/10, o Felipe: "simular a porta tentando ser aberta e travando", sem barulho de jogo): a maçaneta gira,
+   * a folha é empurrada duas vezes e bate no batente (a madeira, grave) com o trinco preso na chapa (o ferro), o trinco
+   * chacoalha e a maçaneta volta na mola. No tempo do tremor do desenho (`render/forcar.ts`).
    */
   trancado() {
-    for (const [t, f] of [[0, 1] as const, [0.16, 0.85] as const]) {
-      this.tomEm(t, 210 * f, 120 * f, 0.07, 0.32, 'square', 900);
-      this.ruidoEm(t, 0.05, 'bandpass', 2400 * f, 1600 * f, 0.34);
-      this.ruidoEm(t + 0.03, 0.08, 'highpass', 3800, 3000, 0.12);
+    // a maçaneta desce: o clique da mola
+    this.estalo(0, 3400, 6, 0.025, 0.22);
+    this.estalo(0.035, 2600, 5, 0.02, 0.14);
+    // os dois empurrões: a madeira no batente e o trinco no ferro (o segundo, mais forte)
+    for (const [t, f] of [[0.08, 1], [0.3, 1.15]] as const) {
+      this.estalo(t, 160 * f, 1.2, 0.13, 0.55 * f, 'lowpass');
+      this.estalo(t, 950 * f, 2, 0.05, 0.28 * f);
+      this.estalo(t + 0.005, 2900 * f, 9, 0.04, 0.3);
+      this.tinir(t + 0.005, 2350 * f, 0.17, 0.035);
     }
-    this.ruidoEm(0.3, 0.12, 'lowpass', 700, 380, 0.16);
+    // o trinco chacoalhando na chapa
+    for (const [t, f, g] of [[0.43, 3300, 0.14], [0.465, 2700, 0.1], [0.5, 3100, 0.08], [0.53, 2500, 0.05]] as const) this.estalo(t, f, 10, 0.022, g);
+    // a maçaneta volta para cima
+    this.estalo(0.64, 3000, 6, 0.03, 0.16);
+    this.tinir(0.64, 2900, 0.08, 0.015);
   }
 
   /** Senha errada: zumbido grave. */
@@ -501,6 +547,52 @@ class Sfx {
       this.tone(90, 50, 0.22, 0.5);
       this.burst({ dur: 0.08, type: 'lowpass', freq: 500, gain: 0.35, attack: 0.003, release: 0.06 });
     }, ms - 60);
+  }
+
+  private agua: { src: AudioBufferSourceNode; g: GainNode; lfo: OscillatorNode } | null = null;
+  /**
+   * O chuveiro ligado (17/10): o chiado da água caindo, em loop, enquanto o cômodo tem um chuveiro aberto. O ruído passa
+   * por um passa-alta (o chiado) e um passa-baixa (sem estridência), e o volume ondula devagar (o jato batendo no corpo e
+   * no chão). `ligar` false desliga devagar.
+   */
+  chuveiro(ligar: boolean) {
+    const ac = this.ctx();
+    if (!ac || !this.noise || !this.master) return;
+    const t = ac.currentTime;
+    if (!ligar) {
+      const a = this.agua;
+      if (!a) return;
+      this.agua = null;
+      a.g.gain.cancelScheduledValues(t);
+      a.g.gain.setValueAtTime(a.g.gain.value, t);
+      a.g.gain.linearRampToValueAtTime(0, t + 0.6);
+      a.src.stop(t + 0.7);
+      a.lfo.stop(t + 0.7);
+      return;
+    }
+    if (this.agua) return;
+    const src = ac.createBufferSource();
+    src.buffer = this.noise;
+    src.loop = true;
+    const hp = ac.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 900;
+    const lp = ac.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 5200;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.11, t + 0.8);
+    // o jato ondulando
+    const lfo = ac.createOscillator();
+    lfo.frequency.value = 0.7;
+    const prof = ac.createGain();
+    prof.gain.value = 0.025;
+    lfo.connect(prof).connect(g.gain);
+    src.connect(hp).connect(lp).connect(g).connect(this.master);
+    src.start(t);
+    lfo.start(t);
+    this.agua = { src, g, lfo };
   }
 }
 

@@ -438,6 +438,10 @@ export class RoomView {
   private celas = new Celas();
   private fog = new Fog();
   private particles = new Particles();
+  /** o vapor do banho no cômodo (0 a 1): sobe com o chuveiro ligado e a porta fechada, e se desfaz devagar */
+  private vapor = 0;
+  private vaporEm = 0;
+  private aguaTocando = false;
   /** cômodo grande demais para caber: a câmera acompanha as peças */
   private follow = false;
   private followAt = 0;
@@ -931,6 +935,134 @@ export class RoomView {
     }
     this.ajustes.set(it.id, r);
     return r;
+  }
+
+  /** Os fios de água do chuveiro ligado: do chuveiro (a 1,9 m, no canto do fundo do box) até o ralo, caindo sem parar. */
+  private desenharAgua(ctx: CanvasRenderingContext2D, it: FloorItem, now: number) {
+    const topo = 1.9 * Z_PER_M;
+    ctx.save();
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 22; i++) {
+      const u = 0.32 + ((hash(it.id, i) % 1000) / 1000) * 0.36;
+      const v = 0.32 + ((hash(it.id, i + 50) % 1000) / 1000) * 0.36;
+      const vel = 1.6 + ((hash(it.id, i + 90) % 100) / 100) * 0.8;
+      const fase = (now / 1000 * vel + i * 0.37) % 1;
+      const z0 = it.z + topo * (1 - fase);
+      const z1 = Math.max(it.z, z0 - 0.35 * Z_PER_M);
+      const [x0, y0] = iso(it.x + u, it.y + v, z0);
+      const [x1, y1] = iso(it.x + u, it.y + v, z1);
+      ctx.strokeStyle = i % 3 ? 'rgba(190,225,255,0.8)' : 'rgba(255,255,255,0.95)';
+      ctx.beginPath();
+      ctx.moveTo(Math.round(x0) + 0.5, y0);
+      ctx.lineTo(Math.round(x1) + 0.5, y1);
+      ctx.stroke();
+    }
+    // os respingos no chão do box
+    const [cx, cy] = iso(it.x + 0.5, it.y + 0.5, it.z);
+    ctx.fillStyle = 'rgba(220,240,255,0.5)';
+    for (let i = 0; i < 6; i++) {
+      const a = (now / 160 + i * 1.7) % (Math.PI * 2);
+      ctx.fillRect(Math.round(cx + Math.cos(a + i) * 9), Math.round(cy + Math.sin(a * 1.3) * 3), 1, 1);
+    }
+    ctx.restore();
+  }
+
+  /** O vapor do banho por cima do cômodo (só com a porta fechada): um véu branco e rolos de vapor que sobem e andam. */
+  private desenharVapor(ctx: CanvasRenderingContext2D, map: RoomMap, now: number) {
+    const { minX: x0, minY: y0, maxX: x1, maxY: y1 } = roomBounds(map);
+    const k = this.vapor;
+    ctx.save();
+    const g = ctx.createLinearGradient(0, y0 - 60, 0, y1);
+    g.addColorStop(0, `rgba(236,240,244,${(0.72 * k).toFixed(3)})`);
+    g.addColorStop(1, `rgba(236,240,244,${(0.3 * k).toFixed(3)})`);
+    ctx.fillStyle = g;
+    ctx.fillRect(x0 - 20, y0 - 80, x1 - x0 + 40, y1 - y0 + 100);
+    for (let i = 0; i < 9; i++) {
+      const t = now / 1000;
+      const px = x0 + ((hash(i, 7) % 1000) / 1000) * (x1 - x0) + Math.sin(t * 0.3 + i) * 14;
+      const py = y1 - ((t * 9 + i * 37) % (y1 - y0 + 80));
+      const r = 26 + (hash(i, 3) % 20);
+      const rg = ctx.createRadialGradient(px, py, 0, px, py, r);
+      rg.addColorStop(0, `rgba(245,248,250,${(0.45 * k).toFixed(3)})`);
+      rg.addColorStop(1, 'rgba(245,248,250,0)');
+      ctx.fillStyle = rg;
+      ctx.fillRect(px - r, py - r, r * 2, r * 2);
+    }
+    ctx.restore();
+  }
+
+  /** O pedaço da tela onde a peça vai ser desenhada, antes dela (para o mosaico achar os pixels do corpo). */
+  private fotoDaPeca(ctx: CanvasRenderingContext2D, sx: number, sy: number, HE: number) {
+    const T = ctx.getTransform();
+    const W = ctx.canvas.width;
+    const H = ctx.canvas.height;
+    const x0 = Math.max(0, Math.floor(T.a * (sx - 34) + T.e));
+    const x1 = Math.min(W, Math.ceil(T.a * (sx + 34) + T.e));
+    const y0 = Math.max(0, Math.floor(T.d * (sy - HE - 14) + T.f));
+    const y1 = Math.min(H, Math.ceil(T.d * (sy + 8) + T.f));
+    if (x1 - x0 < 2 || y1 - y0 < 2) return null;
+    // o bloco do mosaico: 3 pixels da arte, na escala da tela
+    const bloco = Math.max(3, Math.round(3 * T.a * ESCALA_ARTE_PESSOA));
+    return { x0, y0, w: x1 - x0, h: y1 - y0, bloco, dados: ctx.getImageData(x0, y0, x1 - x0, y1 - y0) };
+  }
+
+  /**
+   * O borrado do The Sims: o que mudou na tela depois de desenhar a peça é o corpo; do peito às coxas, ele vira blocos
+   * da cor média (a cabeça e os pés ficam de fora, como no jogo).
+   */
+  private mosaicoDaPeca(ctx: CanvasRenderingContext2D, f: { x0: number; y0: number; w: number; h: number; bloco: number; dados: ImageData }) {
+    const depois = ctx.getImageData(f.x0, f.y0, f.w, f.h);
+    const a = f.dados.data;
+    const d = depois.data;
+    const corpo = new Uint8Array(f.w * f.h);
+    let topo = f.h;
+    let base = -1;
+    for (let i = 0, n = f.w * f.h; i < n; i++) {
+      const k = i * 4;
+      if (Math.abs(a[k] - d[k]) + Math.abs(a[k + 1] - d[k + 1]) + Math.abs(a[k + 2] - d[k + 2]) > 24) {
+        corpo[i] = 1;
+        const y = (i / f.w) | 0;
+        if (y < topo) topo = y;
+        if (y > base) base = y;
+      }
+    }
+    if (base < 0) return;
+    const alto = base - topo;
+    const b = f.bloco;
+    // dos ombros às coxas (o rosto e os pés de fora)
+    const y0 = topo + Math.round(alto * 0.36);
+    const y1 = topo + Math.round(alto * 0.8);
+    for (let by = y0; by < y1; by += b)
+      for (let bx = 0; bx < f.w; bx += b) {
+        let r = 0;
+        let g = 0;
+        let bl = 0;
+        let n = 0;
+        const ye = Math.min(y1, by + b);
+        const xe = Math.min(f.w, bx + b);
+        for (let y = by; y < ye; y++)
+          for (let x = bx; x < xe; x++) {
+            const i = y * f.w + x;
+            if (!corpo[i]) continue;
+            r += d[i * 4];
+            g += d[i * 4 + 1];
+            bl += d[i * 4 + 2];
+            n++;
+          }
+        // o bloco que é mais corpo que fundo vira um quadrado só, da cor média do corpo nele
+        if (n * 3 < (ye - by) * (xe - bx)) continue;
+        r = (r / n) | 0;
+        g = (g / n) | 0;
+        bl = (bl / n) | 0;
+        for (let y = by; y < ye; y++)
+          for (let x = bx; x < xe; x++) {
+            const k = (y * f.w + x) * 4;
+            d[k] = r;
+            d[k + 1] = g;
+            d[k + 2] = bl;
+          }
+      }
+    ctx.putImageData(depois, f.x0, f.y0);
   }
 
   /**
@@ -2374,6 +2506,14 @@ export class RoomView {
       const naCama = camaIt && camaDef?.deita ? { it: camaIt, def: camaDef } : null;
       const standBy = !!sp && u.sit === 1 && !p.moving && !naCama && !pfSentado && !framesFor(sp.lc, u.dir, 'sit') && !this.info?.viagem;
       const seated = u.sit === 1 && !standBy && !naCama;
+      // no banho (dentro do box) ou sentada no vaso: o corpo vai borrado em mosaico, como no The Sims (17/10, o Felipe:
+      // "quero poder usar o chuveiro e o vaso... um blurzinho tipo no The Sims")
+      const privada =
+        !p.moving &&
+        map.itemsAt(u.x, u.y).some((s) => {
+          const k = getFurni(s.defId)?.kind;
+          return k === 'box_chuveiro' || (k === 'toilet' && u.sit === 1);
+        });
       // a pose sentada desenhada tem os pés no chão (o quadril cai na altura do assento sozinho): fica no piso
       const baseZ = standBy || pfSentado ? (map.floorHeight(u.x, u.y) ?? p.z) : p.z;
       const half = seated ? 0.25 : 0.3;
@@ -2567,6 +2707,7 @@ export class RoomView {
           // numa cela fechada, a peça fica no escuro com ela
           const eCela = escuroEm(celas, cx, cy);
           if (eCela > 0.01) ctx.filter = `brightness(${(1 - 0.78 * eCela).toFixed(3)})`;
+          const antes = privada ? this.fotoDaPeca(ctx, sx, sy, HE) : null;
           // a pessoa na escala do tabuleiro, a partir dos pés (de cócoras, mais baixa)
           ctx.save();
           ctx.translate(sx, sy);
@@ -2655,6 +2796,7 @@ export class RoomView {
           if (turning) ctx.restore();
           if (wave && sp) this.drawEmote(sx, fy - H - 14, now);
           ctx.restore();
+          if (antes) this.mosaicoDaPeca(ctx, antes);
           // a coberta fora da escala da pessoa: na mesma medida da cama, para cair em cima dela
           if (naCama?.it.coberta) this.desenharCoberta(ctx, map, naCama.it, naCama.def);
           if (eCela > 0.01) ctx.filter = 'none';
@@ -2679,6 +2821,28 @@ export class RoomView {
       const [, topo] = iso(c.x, c.y, box.z1);
       const [, base] = iso(c.x + 1, c.y + 1, c.h);
       drawables.push({ box, sx0: lx - 30, sx1: rx + 30, sy0: topo - 30, sy1: base + 20, draw: () => this.fog.drawCasa(ctx, c, now) });
+    }
+
+    // o chuveiro ligado (17/10): os fios de água do chuveiro até o ralo, na ordem de profundidade dentro do box; o som da
+    // água enquanto um chuveiro do cômodo está aberto, e o vapor quando a porta do banheiro está fechada
+    const chuveiros = [...map.allItems()].filter((it) => it.state === 1 && getFurni(it.defId)?.kind === 'box_chuveiro');
+    if (chuveiros.length !== 0 !== this.aguaTocando) {
+      this.aguaTocando = chuveiros.length !== 0;
+      sfx.chuveiro(this.aguaTocando);
+    }
+    for (const it of chuveiros) {
+      // a caixa na quina da frente do box: a água vem depois do vidro e de quem está no banho (cai por cima dela)
+      const box: WBox = { x0: it.x + 0.97, x1: it.x + 1.01, y0: it.y + 0.97, y1: it.y + 1.01, z0: it.z, z1: it.z + 1.9 * Z_PER_M };
+      const [bx, by] = iso(it.x + 0.5, it.y + 0.5, it.z);
+      drawables.push({ box, sx0: bx - 24, sx1: bx + 24, sy0: by - 120, sy1: by + 10, draw: () => this.desenharAgua(ctx, it, now) });
+    }
+    {
+      const dt = Math.min(0.1, (now - (this.vaporEm || now)) / 1000);
+      this.vaporEm = now;
+      const portas = [...map.allItems()].filter((it) => getFurni(it.defId)?.kind === 'portal');
+      const fechada = portas.length > 0 && portas.every((it) => it.state !== 0);
+      const alvo = chuveiros.length && fechada ? 1 : 0;
+      this.vapor += (alvo - this.vapor) * dt * (alvo ? 0.05 : 0.12);
     }
 
     // a chama em pixel do fogo do cenário (lareira, fogueira, tocha) entra na ordem de profundidade, na caixa dela: quem
@@ -2831,6 +2995,12 @@ export class RoomView {
     if (this.particles.active && this.tat.t < 0.5) {
       ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
       this.particles.draw(ctx, now, active, this.info.particleLevel ?? DEFAULT_PARTICLE_LEVEL, darkness);
+    }
+
+    // o vapor do banho: o cômodo embaça aos poucos, mais denso em cima (o vapor sobe), com rolos que andam devagar
+    if (this.vapor > 0.01 && this.tat.t < 0.5) {
+      ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
+      this.desenharVapor(ctx, map, now);
     }
 
     // a névoa para o mestre: o que a mesa não vê fica riscado, por cima de tudo
