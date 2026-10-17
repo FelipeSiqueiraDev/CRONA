@@ -1371,4 +1371,23 @@ Ainda falta (pedido do Felipe):
 | `variacoes-e-arsenal.zip` | As variações como `"def": "<id>~b"`; o teclado em `interface/teclado-geladeira/`. |
 | `bau-militar-aberto.png` | Trocar na ficha do arsenal (estado 1 do `chest_army`). |
 | Zips da Fazenda | Fichas novas (`moveis-fazenda-*.json`); as texturas no `texturas.json` (`grama`, `estrada`, `lavoura`, `cascalho`, `terra`, a parede do celeiro); estilos novos para o píer e o calabouço; os mobis novos do calabouço. |
-| `portas-novas.zip` | As folhas no lugar das de hoje em `client/public/arte/mobiliario/folhas/porta-*.png`. Na `scripts/3d/fichas/moveis-portas.json`: `"real": [0.75, 0.08, 2.17]`, `"topo": [0.75, 0.08]`, `"caixa": [0, 0.24, 0, 1, 0, 2.17]`; `python scripts/3d/moveis.py scripts/3d/fichas/moveis-portas.json`. No `furniKit.ts`: `VAO_PORTA_M = 0.65` e `BATENTE_P
+| `portas-novas.zip` | As folhas no lugar das de hoje em `client/public/arte/mobiliario/folhas/porta-*.png`. Na `scripts/3d/fichas/moveis-portas.json`: `"real": [0.75, 0.08, 2.17]`, `"topo": [0.75, 0.08]`, `"caixa": [0, 0.24, 0, 1, 0, 2.17]`; `python scripts/3d/moveis.py scripts/3d/fichas/moveis-portas.json`. No `furniKit.ts`: `VAO_PORTA_M = 0.65` e `BATENTE_PORTA_M = 0.05`. Confira com `python scripts/3d/conferir_arte.py --so portal,portal@metal` e no tabuleiro (Laboratório: a estante encostada; Banheiro: a pia). |
+| `moveis-na-medida.zip` | As folhas no lugar das de hoje (mesmo nome) e `moveis.py` com a ficha de cada uma (a do cômodo); `conferir_arte.py --so <ids>`. Com a peça cabendo na casa, o `encaixe` não encolhe mais nada. |
+| `parede-na-medida.zip` | Idem; o `conferir_arte.py` mede as bordas (0,5 ± 0,06). |
+| Zips dos personagens | `npm run arte:poses -- <nome> --estado <estado> --hd` e `npm run arte:boneco`. Cada personagem novo precisa das marcações em `scripts/bonecos/<nome>.json`. |
+
+Os zips que entraram ficam em `_entregas-originais/`, na pasta da arte.
+
+## Decisões que são do Felipe
+
+- ~~Aprovar o estilo da vista de cima do Bar.~~ **Aprovado em 16/10** (o Felipe: "tá bem bonito"): a vista tática feita por código, sem arte do Códex, fica como está.
+- Ícones pintados no COMBATE e no inventário rápido do MAPA.
+- O que vem primeiro: as modificações na requisição ou a FICHAS bonita.
+- Fechar o PR `#2` do Códex (`codex/arte-tepes-32bits`), que ficou sobrando.
+- Ligar a Sede aos arredores da Fazenda.
+
+## Problemas conhecidos
+
+- **`scripts/3d/eixos.py`:** marca o aparador e o armarinho do Bar como "TROCADO". Os dois não são caixa, então a conta não vale; no tabuleiro estão certos.
+- **Corredor Escuro:** é bem escuro de propósito. O mestre clareia no ☀ Clima da cena se o tablet não mostrar.
+- **Passagem secreta no teste do servidor:** o teste "toda passagem tem caminho" pula a passagem escondida enquanto ela está coberta (o alçapão embaixo do feno).
