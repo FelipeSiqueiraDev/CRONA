@@ -17,6 +17,11 @@ export interface Npc {
   nota?: string;
   /** o grupo no Elenco (17/10, a sub-aba que abre e fecha: "Ordo Realitas", "Santa Amália"...); sem ele, `grupoDoNpc` */
   grupo?: string;
+  /**
+   * A altura, em metros, de quem não tem 1,80 m (17/10: a Camarilla, a cachorra do Tepes, ~0,8 m até o alto da cabeça):
+   * o boneco do tabuleiro sai nessa escala. Sem ela, a altura de uma pessoa.
+   */
+  altura?: number;
 }
 
 /**
@@ -40,6 +45,7 @@ const GRUPO_PADRAO: Record<string, string> = {
   'npc-ruivo': 'Novos (sem nome)',
   'npc-cabelo-rosa': 'Novos (sem nome)',
   'npc-jaleco': 'Novos (sem nome)',
+  camarilla: 'Ordo Realitas',
 };
 /** O grupo do NPC no Elenco: o que o mestre escreveu, o padrão dos que vieram com o jogo, ou "Do mestre". */
 export const grupoDoNpc = (n: Npc): string => n.grupo || GRUPO_PADRAO[n.id] || GRUPO_SEM;
@@ -91,6 +97,8 @@ export function npcsPorLeva(): Npc[][] {
       { id: 'npc-cabelo-rosa', nome: 'Cabelo Rosa', arte: 'npc-cabelo-rosa', nota: 'nome em aberto', look: { ...lookBase, skin: '#c8926a', hair: '#e0a0c0', top: '#1a1a1a', pants: '#1e1c1c', shoes: '#141210' } },
       { id: 'npc-jaleco', nome: 'Jaleco', arte: 'npc-jaleco', nota: 'nome em aberto', look: { ...lookBase, skin: '#e8c8b0', hair: '#141214', top: '#e8e4dc', pants: '#1a1816', shoes: '#141210' } },
     ],
+    // 17/10: a Camarilla, a cachorra caramelo do Tepes (anda no tabuleiro como peça; em pé e sentada)
+    [{ id: 'camarilla', nome: 'Camarilla', arte: 'camarilla', nota: 'a cachorra do Tepes', altura: 0.8, look: { ...lookBase, skin: '#c8924a', hair: '#c8924a', top: '#c8924a', pants: '#c8924a', shoes: '#8a5a2a' } }],
   ];
 }
 
@@ -132,5 +140,6 @@ export function lerNpc(raw: unknown): Npc | null {
   const arte = slug(o.arte);
   const nota = texto(o.nota, 120);
   const grupo = texto(o.grupo, 40);
-  return { id, nome, look: sanitizeLook(o.look), ...(arte ? { arte } : {}), ...(nota ? { nota } : {}), ...(grupo ? { grupo } : {}) };
+  const altura = typeof o.altura === 'number' && o.altura >= 0.2 && o.altura <= 3 ? Math.round(o.altura * 100) / 100 : undefined;
+  return { id, nome, look: sanitizeLook(o.look), ...(arte ? { arte } : {}), ...(nota ? { nota } : {}), ...(grupo ? { grupo } : {}), ...(altura ? { altura } : {}) };
 }

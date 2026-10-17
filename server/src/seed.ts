@@ -727,6 +727,13 @@ function npcsIniciais(db: Database): boolean {
   const feitas = db.npcsRev ?? (db.npcs ? 1 : 0);
   // os sobrenomes que o Felipe deu depois (17/10), nos bancos que ainda têm o nome antigo
   let renomeados = renomearNpcs(db.npcs ?? []);
+  // o companheiro do Tepes é a Camarilla (17/10): o "Cão de guarda" sem imagem ganha o nome e a foto dela
+  for (const f of db.fichas ?? [])
+    if (/tepes/i.test(f.nome) && f.companheiro && /^c[aã]o de guarda$/i.test(f.companheiro.nome) && !f.companheiro.imagem) {
+      f.companheiro.nome = 'Camarilla';
+      f.companheiro.imagem = 'camarilla-rosto.jpg';
+      renomeados = true;
+    }
   // os grupos do Elenco (17/10): os padrão entram uma vez; a "Sede da Ordem" guardada vira "Ordo Realitas"
   if (!db.npcGrupos) ((db.npcGrupos = [...GRUPOS_NPC_PADRAO]), (renomeados = true));
   const sede = db.npcGrupos.indexOf('Sede da Ordem');

@@ -40,7 +40,7 @@ describe("npcs", () => {
     db.npcs = db.npcs!.filter((n) => n.id === "miguel-albuquerque");
     delete db.npcsRev;
     upgradeDb(db);
-    assert.deepEqual(db.npcs.map((n) => n.id).sort(), ["agata", "geraldo-ribeiro", "herman-arantes", "ivete", "miguel-albuquerque", "npc-cabelo-rosa", "npc-camisa-rosa", "npc-jaleco", "npc-ruivo", "samuel"]);
+    assert.deepEqual(db.npcs.map((n) => n.id).sort(), ["agata", "camarilla", "geraldo-ribeiro", "herman-arantes", "ivete", "miguel-albuquerque", "npc-cabelo-rosa", "npc-camisa-rosa", "npc-jaleco", "npc-ruivo", "samuel"]);
   });
 
   test("os sobrenomes de 17/10 entram no banco que tem o nome antigo; o que o mestre mudou fica", () => {
@@ -74,6 +74,22 @@ describe("npcs", () => {
     const ordem = gruposDoElenco(["Panacea", "Ordo Realitas"], [...db.npcs!, { id: "x", nome: "X", look: db.npcs![0].look }]);
     assert.deepEqual(ordem.slice(0, 2), ["Panacea", "Ordo Realitas"]);
     assert.equal(ordem.at(-1), "Do mestre");
+  });
+
+  test("a Camarilla: no elenco com a altura de cachorro, e no companheiro do Tepes com o nome e a foto", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    const c = db.npcs!.find((n) => n.id === "camarilla");
+    assert.ok(c, "falta a Camarilla");
+    assert.equal(c.altura, 0.8);
+    assert.equal(lerNpc({ ...c })?.altura, 0.8, "a altura passa pela conferência");
+    const tepes = (db.fichas ?? []).find((f) => /tepes/i.test(f.nome));
+    if (tepes) {
+      tepes.companheiro = { nome: "Cão de guarda", tipo: "Cão adestrado" };
+      upgradeDb(db);
+      assert.equal(tepes.companheiro.nome, "Camarilla");
+      assert.equal(tepes.companheiro.imagem, "camarilla-rosto.jpg");
+    }
   });
 
   test("apagar não traz de volta", () => {
