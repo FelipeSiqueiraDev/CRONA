@@ -80,15 +80,18 @@ export function findPoses(sheet: string, dir = ART_DIR): CharacterDef['poses'] {
   return Object.keys(out).length ? out : undefined;
 }
 
-/** As poses agachadas (17/10), na mesma pasta das poses: idle-desarmado-agachado-<dir>.png e idle-armado-agachado-<dir>.png. */
-export function findAgachado(sheet: string, dir = ART_DIR): CharacterDef['agachado'] {
+/**
+ * As poses agachadas e sentadas (17/10), na mesma pasta das poses: idle-<desarmado|armado>-<agachado|sentado>-<dir>.png
+ * (o sentado só nas 4 diagonais).
+ */
+export function findAgachado(sheet: string, dir = ART_DIR, pose: 'agachado' | 'sentado' = 'agachado'): CharacterDef['agachado'] {
   const find = finder(sheet, dir, POSES_DIR);
   if (!find) return undefined;
   const out: NonNullable<CharacterDef['agachado']> = {};
   for (const estado of ['desarmado', 'armado'] as const) {
     const dirs: Partial<Record<DirKey, string>> = {};
     for (const k of DIR_KEYS) {
-      const url = find(`idle-${estado}-agachado-${k}`);
+      const url = find(`idle-${estado}-${pose}-${k}`);
       if (url) dirs[k] = url;
     }
     if (Object.keys(dirs).length) out[estado] = dirs;
@@ -278,9 +281,12 @@ export function refreshPortraits(list: CharacterDef[], dir = ART_DIR): boolean {
     const boneco = findBoneco(def.sheet, dir);
     const deitado = findDeitado(def.sheet, dir);
     const agachado = findAgachado(def.sheet, dir);
-    if (JSON.stringify([portraits, poses, passos, anim, boneco, deitado, agachado]) === JSON.stringify([def.portraits, def.poses, def.passos, def.anim, def.boneco, def.deitado, def.agachado])) continue;
+    const sentado = findAgachado(def.sheet, dir, 'sentado');
+    if (JSON.stringify([portraits, poses, passos, anim, boneco, deitado, agachado, sentado]) === JSON.stringify([def.portraits, def.poses, def.passos, def.anim, def.boneco, def.deitado, def.agachado, def.sentado])) continue;
     if (agachado) def.agachado = agachado;
     else delete def.agachado;
+    if (sentado) def.sentado = sentado;
+    else delete def.sentado;
     if (deitado) def.deitado = deitado;
     else delete def.deitado;
     if (portraits) def.portraits = portraits;

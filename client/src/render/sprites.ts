@@ -372,6 +372,8 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
   // as agachadas (17/10) entram na mesma escala das de pé (a altura sai só das desarmadas de pé): "agachado-<estado>:<dir>"
   for (const [estado, dirs] of Object.entries(def.agachado ?? {}))
     for (const [dir, url] of Object.entries(dirs ?? {})) if (url) pedidos.push({ key: `agachado-${estado}:${dir}`, n: -1, url, machucado: false });
+  for (const [estado, dirs] of Object.entries(def.sentado ?? {}))
+    for (const [dir, url] of Object.entries(dirs ?? {})) if (url) pedidos.push({ key: `sentado-${estado}:${dir}`, n: -1, url, machucado: false });
   const lidas = await Promise.allSettled(pedidos.map(lerPose));
   const todas: PoseLida[] = [];
   for (const r of lidas) {
@@ -664,7 +666,7 @@ class SpriteStore {
   /** Poses do tabuleiro do personagem; null enquanto carregam (ou se ele não tem). */
   poses(def: CharacterDef): LoadedPoses | null {
     if (!def.poses) return null;
-    const key = JSON.stringify([def.poses, def.passos ?? null, def.agachado ?? null, def.height]);
+    const key = JSON.stringify([def.poses, def.passos ?? null, def.agachado ?? null, def.sentado ?? null, def.height]);
     const c = this.poseCache.get(key);
     if (c && c !== 'loading' && c !== 'error') return c;
     if (!c) {
@@ -798,8 +800,8 @@ export function poseFor(lp: LoadedPoses, estado: PortraitState, dir: number): Sp
  * A pose agachada (17/10) para a direção: a armada se a peça está armada e houver, senão a desarmada; null = o
  * personagem não tem a pose agachada (o tabuleiro achata a de pé, como antes).
  */
-export function agachadoFor(lp: LoadedPoses, armado: boolean, dir: number): SpriteFrame | null {
-  for (const e of armado ? ['agachado-armado', 'agachado-desarmado'] : ['agachado-desarmado']) {
+export function agachadoFor(lp: LoadedPoses, armado: boolean, dir: number, pose: 'agachado' | 'sentado' = 'agachado'): SpriteFrame | null {
+  for (const e of armado ? [`${pose}-armado`, `${pose}-desarmado`] : [`${pose}-desarmado`]) {
     const k = sheetDirFor(dir, (d) => !!lp.frames[`${e}:${d}`]);
     if (k) return lp.frames[`${e}:${k}`];
   }

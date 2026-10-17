@@ -152,6 +152,11 @@ export interface CharacterDef {
    */
   agachado?: Partial<Record<'desarmado' | 'armado', Partial<Record<DirKey, string>>>>;
   /**
+   * Sentado (17/10): a pose sentada só nas 4 diagonais (as direções das cadeiras), sem a cadeira, em
+   * tabuleiro-32bits/idle-<desarmado|armado>-sentado-<direção>.png. O tabuleiro usa quando a peça está sentada.
+   */
+  sentado?: Partial<Record<'desarmado' | 'armado', Partial<Record<DirKey, string>>>>;
+  /**
    * O boneco animado do tabuleiro (parado respirando e andando, nas 8 direções),
    * gerado por scripts/boneco.py e achado pelo servidor em tabuleiro-32bits/anim.json.
    * Quando tem, vale no lugar de `poses` e `passos`.

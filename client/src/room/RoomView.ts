@@ -2300,7 +2300,10 @@ export class RoomView {
       const estado = this.estadoDe?.(u.id) ?? 'desarmado';
       // agachada (17/10): a pose de cócoras desenhada, quando o personagem tem; sem ela, a de pé achatada (mais abaixo)
       const pfAgachado = u.agachado && lp ? agachadoFor(lp, estado.startsWith('armado'), u.dir) : null;
-      const pf = pfAgachado ?? (lp ? poseFor(lp, estado, u.dir) : null);
+      // sentada numa cadeira (17/10): a pose sentada desenhada (as 4 diagonais), quando tem; na cama, não (lá ela deita)
+      const itSentado = u.sit === 1 && !p.moving && !pfAgachado && lp ? map.sitItem(u.x, u.y) : undefined;
+      const pfSentado = itSentado && !getFurni(itSentado.defId)?.deita ? agachadoFor(lp!, estado.startsWith('armado'), u.dir, 'sentado') : null;
+      const pf = pfAgachado ?? pfSentado ?? (lp ? poseFor(lp, estado, u.dir) : null);
       // o relógio do passo: começa quando a peça sai andando e segue de casa em casa até parar
       if (p.moving) u.andandoDesde ??= now;
       else delete u.andandoDesde;
@@ -2367,9 +2370,10 @@ export class RoomView {
       const camaIt = u.sit === 1 && !p.moving ? map.sitItem(u.x, u.y) : undefined;
       const camaDef = camaIt ? getFurni(camaIt.defId) : undefined;
       const naCama = camaIt && camaDef?.deita ? { it: camaIt, def: camaDef } : null;
-      const standBy = !!sp && u.sit === 1 && !p.moving && !naCama && !framesFor(sp.lc, u.dir, 'sit') && !this.info?.viagem;
+      const standBy = !!sp && u.sit === 1 && !p.moving && !naCama && !pfSentado && !framesFor(sp.lc, u.dir, 'sit') && !this.info?.viagem;
       const seated = u.sit === 1 && !standBy && !naCama;
-      const baseZ = standBy ? (map.floorHeight(u.x, u.y) ?? p.z) : p.z;
+      // a pose sentada desenhada tem os pés no chão (o quadril cai na altura do assento sozinho): fica no piso
+      const baseZ = standBy || pfSentado ? (map.floorHeight(u.x, u.y) ?? p.z) : p.z;
       const half = seated ? 0.25 : 0.3;
       const [sx, sy] = iso(cx, cy, baseZ);
       // H: a altura na arte; HE: na tela (a arte vem na escala antiga e o tabuleiro reduz)
@@ -2392,7 +2396,8 @@ export class RoomView {
       const fy = u.sit === 2 ? sy - 8 : sy;
       const door = this.door;
       const clip = !!door && (door.seg.wall === 'l' ? cx < door.seg.plane : cy < door.seg.plane);
-      const sPose = pose === 'sit' ? 'sit' : pose;
+      // a pose sentada desenhada vai inteira (sem o corte das pernas da pose de pé)
+      const sPose = pose === 'sit' ? (pfSentado ? 'stand' : 'sit') : pose;
       const andando = now - (u.andandoDesde ?? now);
       // o quadro que vai à tela agora (andando, o do passo): a sombra projetada é a silhueta dele
       const quadro: SpriteFrame | null = bq

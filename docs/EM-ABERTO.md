@@ -304,6 +304,13 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   e manda em `CharacterDef.agachado`; `processPoses` carrega na mesma escala da pose de pé, e o `RoomView` usa a pose
   agachada (`agachadoFor`: a armada quando a peça está armada e houver, senão a desarmada) sem o achatamento de 72%,
   que continua para quem não tem a pose. Agachado não respira nem anda com passos. Visto na prévia com o Miguel.
+- **A pose SENTADO (o Felipe, 17/10: "só as 4 direções que os móveis podem ficar"):** o código já está pronto
+  (`CharacterDef.sentado`, `findAgachado(..., 'sentado')`, `agachadoFor(..., 'sentado')` no `RoomView`, que desenha a peça
+  sentada no piso da casa da cadeira, inteira, sem o corte das pernas; na cama não). A arte está na fila do Códex
+  (`trabalho/agachado/depois_da_cota_sentado.sh`, depois do agachado armado): os 4 agentes e o Miguel, as 4 diagonais
+  (`pedir_sentado.py`, guia `guia-sentado-4-direcoes.png`). Ao chegar: `normalizar_agachado.py <id> <folha> --sentado`,
+  conferir (altura, contorno rosa), `--instalar`, e ver no tabuleiro se o quadril bate no assento (talvez um ajuste de
+  altura por cadeira). Os NPCs de história não sentam (a regra do ARTE.md).
   **Para o futuro (o Felipe, 17/10):** variar a postura de cada personagem (nem todo mundo agacha, cai ou dorme do mesmo
   jeito), junto com as animações. Por ora, todos na mesma postura.
 - **Santa Amália no mapa-múndi e na chegada:** a ilha `arte/mapa/lugar-santa-amalia-hd.png` (praça com coreto,
