@@ -166,6 +166,12 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   braço entre as direções; agora tatuagem, braçadeira e relógio ficam no braço esquerdo em todas). Defeitos pequenos que
   ficaram: as mãos em punho (como no Miguel; pedi relaxadas e o gerador manteve), as botas do Jaleco saíram marrons no
   deitado (de pé são pretas). Teste: `server/test/npcs.test.ts` confere a leva, as 8 direções, o retrato e o deitado.
+  **Altura (o Felipe: "muito cuidado para não sair com altura errada"):** medida em todas as direções, os 4 ficam entre
+  0,97 e 1,01 da altura do Miguel (470 a 488 px), a mesma faixa dos NPCs aprovados (Ágata 468, Samuel 482). A largura da
+  cabeça não compara personagens diferentes (o cabelo entra na medida); ela vale dentro do mesmo personagem (agachado).
+  **Contorno rosa:** a limpeza de 17/10 (`scripts/contorno_rosa.py --limpar`) tinha passado na Cabelo Rosa (o cabelo é
+  rosa de verdade) antes do commit dela; reinstalada das fontes. O que o script ainda aponta nos 4 é rosa de verdade
+  (o cabelo dela, a camisa dele), não franja. Conferido no Elenco da prévia (17/10).
 - **A pose AGACHADO** (`tabuleiro-32bits/idle-desarmado-agachado-<dir>.png`, formato no `docs/ARTE.md`): o Códex
   desenha as 8 direções a partir das poses de pé do jogo e de um guia de pose (`agachado/guia-agachado-8-direcoes.png`,
   o boneco 3D antigo agachado); `agachado/normalizar_agachado.py` corta e deixa a cabeça do tamanho da pose de pé (a
