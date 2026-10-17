@@ -223,7 +223,11 @@ liberou os arquivos da FICHAS para esta.) O bloco novo fica no fim do `fichas.cs
   (`npcGrupos`), mesmo vazios: Ordo Realitas (no lugar da antiga "Sede da Ordem": Miguel, Agatha, Ivete, Samuel), Lotus
   Branca, Panacea (Arantes), Tiradentes, Igarapé (Geraldo), Santo Berço, Santa Amália e Fazenda Olhos de Águia; depois os
   usados que não estão guardados (Novos (sem nome), os 4 de 17/10) e "Do mestre". O grupo vazio aparece fechado e mais
-  apagado. Ainda não dá para renomear, reordenar ou apagar grupo.
+  apagado. **Excluir grupo (17/10):** só os criados pelo mestre (os que o jogo traz não): a lixeira ao lado do número da
+  sub-aba, com a confirmação; os NPCs dele voltam para o grupo de antes (ou "Do mestre"), nenhum é apagado (mensagem
+  `npcGrupoApagar`). Ainda não dá para renomear nem reordenar grupo.
+  **A moldura das cartas:** a dourada (foco e escolhida) fica sempre carregada por cima e só aparece; antes a imagem da
+  moldura era trocada, e na primeira vez a carta ficava sem moldura, só o brilho maior que a foto (o "vãozinho").
 - **A foto de cada NPC** (as imagens do Felipe que deram origem a eles) em `arte/personagens/<id>/foto.jpg`, os 10: é
   ela que aparece no card do Elenco, no lugar do bonequinho (o Felipe: "ao invés dos bonequinhos ali pra fazer escolha, a
   foto deles"); o detalhe ao lado continua com a pose do tabuleiro. NPC sem foto mostra a pose.

@@ -6,6 +6,7 @@ import {
   lerCriatura,
   lerNpc,
   lerGrupoNpc,
+  GRUPOS_NPC_PADRAO,
   aparenciaDaVez,
   heightmapDaVan,
   isCenarioViagem,
@@ -430,6 +431,13 @@ export class Hotel implements HotelApi {
       this.db.npcGrupos ??= [];
       if (this.db.npcGrupos.some((g) => g.toLowerCase() === nome.toLowerCase())) return this.bestiarioPara(c);
       this.db.npcGrupos.push(nome);
+      return this.bestiarioMudou();
+    }
+    if (m.t === 'npcGrupoApagar' && typeof m.nome === 'string') {
+      // só os criados pelo mestre: os que o jogo traz ficam
+      if (GRUPOS_NPC_PADRAO.includes(m.nome)) return c.send({ t: 'error', msg: 'Esse grupo vem com o jogo e não se exclui.' });
+      this.db.npcGrupos = (this.db.npcGrupos ?? []).filter((g) => g !== m.nome);
+      for (const n of this.db.npcs ?? []) if (n.grupo === m.nome) delete n.grupo;
       return this.bestiarioMudou();
     }
     if (m.t === 'npcApagar' && typeof m.id === 'string') {
@@ -1982,6 +1990,7 @@ export class Hotel implements HotelApi {
       case 'npcSalvar':
       case 'npcApagar':
       case 'npcGrupoCriar':
+      case 'npcGrupoApagar':
       case 'npcColocar':
         this.bestiarioMsg(c, m);
         return;

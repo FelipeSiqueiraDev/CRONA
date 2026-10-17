@@ -480,6 +480,8 @@ export type ClientMsg =
   | { t: 'npcApagar'; id: string }
   /** o mestre cria um grupo de NPC no Elenco (17/10), guardado mesmo vazio */
   | { t: 'npcGrupoCriar'; nome: string }
+  /** o mestre exclui um grupo que ele criou (17/10); os NPCs dele voltam para o grupo de antes (ou "Do mestre") */
+  | { t: 'npcGrupoApagar'; nome: string }
   | { t: 'npcColocar'; npcId: string }
   | { t: 'roomFx'; lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; tatico?: boolean }
   /** ponto de atenção ou desenho rápido para a mesa (só o mestre; some sozinho) */

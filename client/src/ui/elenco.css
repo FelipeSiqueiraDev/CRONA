@@ -316,6 +316,32 @@
   font-size: 1.2rem;
   text-align: center;
 }
+/* a lixeira do grupo criado pelo mestre: à esquerda do número, por cima do cabeçalho */
+.el-secao-apagar {
+  position: absolute;
+  top: 0.75rem;
+  right: 6.2rem;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  padding: 0;
+  border: 0.12rem solid rgba(161, 136, 115, 0.35);
+  border-radius: 0.5rem;
+  background: rgba(8, 15, 28, 0.85);
+  color: var(--r-texto-3, #a3978a);
+  cursor: pointer;
+}
+.el-secao-apagar .ic {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.el-secao-apagar:hover {
+  border-color: #c0392b;
+  color: #ff8a7a;
+  background: rgba(120, 20, 14, 0.35);
+}
 .el-secao-seta {
   width: 1.4rem;
   color: var(--r-ouro, #e9a944);
@@ -371,10 +397,25 @@
   transform: translateY(-0.4rem);
   filter: drop-shadow(0 0.9rem 1.2rem rgba(0, 0, 0, 0.7)) drop-shadow(0 0 0.8rem rgba(233, 169, 68, 0.25));
 }
-.el-card:hover .el-carta::after,
-.el-card:focus-visible .el-carta::after,
-.el-card.escolhido .el-carta::after {
-  border-image-source: var(--ui-cartas-carta-agente-foco-fonte);
+/* a moldura de foco (dourada) fica sempre carregada por cima e só aparece ao passar o mouse e na escolhida: trocar a
+   imagem da moldura deixava a carta sem moldura até ela carregar (17/10, o Felipe: "a borda maior que o quadrado") */
+.el-carta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 1.12rem 1.12rem 3.72rem;
+  border-image: var(--ui-cartas-carta-agente-foco-fonte) 24 24 80 24 / 1.12rem 1.12rem 3.72rem stretch;
+  opacity: 0;
+  transition: opacity 0.16s;
+}
+.el-card:hover .el-carta::before,
+.el-card:focus-visible .el-carta::before,
+.el-card.escolhido .el-carta::before {
+  opacity: 1;
 }
 .el-card.escolhido .el-carta {
   filter: drop-shadow(0 0 1.2rem rgba(233, 169, 68, 0.55)) drop-shadow(0 0.6rem 0.9rem rgba(0, 0, 0, 0.6));
@@ -952,4 +993,9 @@
   .el-detalhe {
     max-height: 40vh;
   }
+}
+
+/* as janelas de confirmação (fichaModal: "Excluir grupo") abertas com o Elenco aberto ficam por cima dele */
+body:has(.el-fundo) .fj-fundo {
+  z-index: 970;
 }

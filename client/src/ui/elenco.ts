@@ -1,4 +1,5 @@
-import { combate, criaturaDoLivro, GRUPO_SEM, grupoDoNpc, gruposDoElenco, type CharacterDef, type Criatura, type Npc } from '@crona/shared';
+import { combate, criaturaDoLivro, GRUPO_SEM, GRUPOS_NPC_PADRAO, grupoDoNpc, gruposDoElenco, type CharacterDef, type Criatura, type Npc } from '@crona/shared';
+import { confirmar } from './fichaModal';
 import { drawPixelAvatar } from '../render/avatarPixel';
 import type { App } from './app';
 import { abrirBestiario } from './bestiario';
@@ -273,7 +274,7 @@ export function abrirElenco(app: App) {
   };
 
   /** Uma sub-aba que abre e fecha: o cabeçalho (seta, cor, nome, quantos) e, aberta, a grade dela. */
-  const secao = (o: { nome: string; n: number; cls?: string; icone: NomeIcone; aberta: boolean; alternar: () => void; filhos: Node[] }) =>
+  const secao = (o: { nome: string; n: number; cls?: string; icone: NomeIcone; aberta: boolean; alternar: () => void; filhos: Node[]; apagar?: () => void }) =>
     h(
       'section',
       { class: `el-secao ${o.cls ?? ''}${o.aberta ? ' aberta' : ''}` },
@@ -285,8 +286,18 @@ export function abrirElenco(app: App) {
         o.nome,
         h('small', null, String(o.n)),
       ),
+      // o grupo criado pelo mestre tem a lixeira ao lado do número (o cabeçalho é um botão: ela fica por cima, à parte)
+      o.apagar ? h('button', { class: 'el-secao-apagar', type: 'button', title: 'Excluir o grupo', 'aria-label': `Excluir o grupo ${o.nome}`, onclick: o.apagar }, ic('lixo')) : null,
       o.aberta ? h('div', { class: 'el-secao-grade' }, ...o.filhos) : null,
     );
+  /** Exclui um grupo criado pelo mestre, depois de perguntar (os NPCs dele voltam para o grupo de antes). */
+  const apagarGrupo = (g: string, n: number) => () =>
+    void confirmar(
+      'Excluir grupo',
+      n ? `Excluir o grupo "${g}"? ${n === 1 ? 'O NPC dele volta' : `Os ${n} NPCs dele voltam`} para o grupo de antes (ou "Do mestre"); nenhum NPC é apagado.` : `Excluir o grupo "${g}"? Ele está vazio.`,
+      'Excluir',
+      true,
+    ).then((sim) => sim && (app.net.send({ t: 'npcGrupoApagar', nome: g }), sfx.click()));
   const alterna = (conj: Set<string>, k: string) => () => void (conj.has(k) ? conj.delete(k) : conj.add(k));
   /** O menor VD de uma família (as versões vêm depois da primeira); sem VD, no fim. */
   const vdDa = (f: Entrada[]) => Math.min(...f.map((e) => e.vd ?? 999));
@@ -321,6 +332,7 @@ export function abrirElenco(app: App) {
             nome: g,
             n: ns.length,
             icone: iconeDoGrupo(g),
+            apagar: app.state.npcGrupos.includes(g) && !GRUPOS_NPC_PADRAO.includes(g) ? apagarGrupo(g, ns.length) : undefined,
             cls: `el-mestre${ns.length ? '' : ' vazia'}`,
             aberta: !!busca || (ns.length ? !npcsFechados.has(g) : vaziosAbertos.has(g)),
             alternar: alterna(ns.length ? npcsFechados : vaziosAbertos, g),
