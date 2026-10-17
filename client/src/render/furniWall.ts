@@ -684,8 +684,9 @@ export function wallLights(def: WallFurniDef, state: number): WallLight[] {
     case 'sconce':
       return on ? [{ x: 8, y: 6, radius: 120, color: '#ffb45a', intensity: 0.9, flicker: 0.12, kind: 'fire' }] : [];
     case 'lampiao_cristal':
-      // Santo Berço: o cristal vermelho dentro do lampião (sem chama: a luz quase não treme)
-      return on ? [{ x: def.w / 2, y: def.h * 0.5, radius: 160, color: def.colors[1], intensity: 0.9, flicker: 0.04, kind: 'fire' }] : [];
+      // Santo Berço: o cristal vermelho dentro do lampião. É luz de cristal, não de fogo (17/10, o Felipe: "proibido ter
+      // fogo em Santo Berço"): com `fire` o tabuleiro desenhava a chama tremendo nele
+      return on ? [{ x: def.w / 2, y: def.h * 0.5, radius: 160, color: def.colors[1], intensity: 0.9, flicker: 0.04, kind: 'cristal' }] : [];
     case 'emergency':
       return on ? [{ x: def.w / 2, y: def.h / 2 + 4, radius: 170, color: '#ff2a1a', intensity: 0.8, pulse: 260, kind: 'emergency' }] : [];
     case 'neon':

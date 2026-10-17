@@ -155,4 +155,17 @@ describe("Santo Berço", () => {
     for (const t of bosque.items.filter((i) => i.defId === "tumulo"))
       assert.ok(bosque.items.some((a) => a.defId === "arvore_retorcida" && a.x === t.x && a.y === t.y - 1), `túmulo em ${t.x},${t.y} sem a árvore`);
   });
+
+  test("sem fogo nenhum (17/10, o Felipe: proibido ter fogo; a luz é dos cristais vermelhos)", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    const fogo = /vela|candle|sconce|torch|tocha|lareira|fogueira|forja|fogao|lampiao|lamparina|braseiro|poste_ferro|lantern|lanterna/;
+    const salas = db.rooms.filter((r) => r.name.startsWith("Santo Berço"));
+    assert.ok(salas.length > 0, "há salas de Santo Berço");
+    const achados: string[] = [];
+    for (const r of salas)
+      for (const it of [...r.items, ...(r.wallItems ?? [])])
+        if (fogo.test(it.defId) && !it.defId.endsWith("_cristal")) achados.push(`${r.name}: ${it.defId}`);
+    assert.deepEqual(achados, [], "peça com fogo em Santo Berço");
+  });
 });

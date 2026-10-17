@@ -24,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Doutor a sudoeste; as estradas saem pela borda para a fazenda (norte), o bosque (sul) e as minas (oeste).
  */
 export const SANTO_BERCO = "Santo Berço · ";
-export const SANTO_BERCO_REV = 14;
+export const SANTO_BERCO_REV = 15;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -894,7 +894,7 @@ const CENAS: Cena[] = [
     ],
     wall: [
       ["window_barred", "r", 0, 3.6, 2.2],
-      ["sconce", "l", 0, 3.5, 2.6],
+      ["lampiao_cristal", "l", 0, 3.5, 2.6],
     ],
     links: [[3, 5, "hotel2"]],
     plan: { x: 7, y: 0 },

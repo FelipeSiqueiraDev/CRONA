@@ -377,7 +377,10 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
   }
   const poses = todas.filter((p) => p.n < 0);
   if (!poses.length) throw new Error('Nenhuma pose carregou');
-  const inteiras = poses.filter((p) => !p.machucado);
+  // o tamanho do personagem sai das poses desarmadas de pé (17/10): a armada (em prontidão, mais baixa) e a machucada
+  // (curvada) entram na mesma escala, sem mudar o tamanho dele perto dos outros
+  const desarmadas = poses.filter((p) => p.key.startsWith('desarmado:'));
+  const inteiras = desarmadas.length ? desarmadas : poses.filter((p) => !p.machucado);
   const altura = mediana((inteiras.length ? inteiras : poses).map((p) => p.b.y1 - p.b.y0 + 1));
   const frames: Record<string, SpriteFrame> = {};
   const passos: Record<string, SpriteFrame[]> = {};
