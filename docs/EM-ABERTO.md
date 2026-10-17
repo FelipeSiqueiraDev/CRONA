@@ -169,8 +169,8 @@ peito sobe e desce, acabou", "não estraga os bonecos".
   fraco. Com a arma na mão, mais firme (um pouco mais curto e raso). Cada peça tem a sua volta de fôlegos e começa num
   ponto dela; trocando de estado, emenda em 0,9 s (`client/src/render/folego.ts`). Movimento reduzido: parado.
 - `view.respiracaoDe` (no `main.ts`) dá o modo de cada peça; a mesa usa o mesmo tabuleiro.
-- **Falta:** o Felipe aprovar a versão 2 no jogo (os vídeos foram de uma bancada na página, porque a aba da prévia caiu
-  com "tabuleiro aberto em outra aba"). O boneco animado (`tabuleiro-3d`) e a folha antiga não usam isso.
+- **Aprovado pelo Felipe** (versão 2, 17/10: "ficou boa a respiração, pode deixar assim"). O boneco animado
+  (`tabuleiro-3d`) e a folha antiga não usam isso.
 
 ## Feito em 17/10, tarde (branch `claude/tatica-codigo`): arte pelo Códex da conta nova (NPCs novos, agachado, Santa Amália)
 
