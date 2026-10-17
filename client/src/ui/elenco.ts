@@ -82,6 +82,8 @@ export function abrirElenco(app: App) {
   const vaziosAbertos = new Set<string>();
   /** o que já foi escrito no "Novo NPC" (o servidor manda o elenco de novo a cada mudança e a tela se refaz) */
   const rascunho = { nome: '', nota: '', grupo: undefined as string | undefined, arte: '' };
+  /** o campo do "Novo grupo" (no alto, na aba dos NPCs) está aberto */
+  let criandoGrupo = false;
   const ameacasAbertas = new Set(mem.ameacasAbertas ?? ['sangue']);
   let arquivos: Set<string> | null = null;
   let sel: string | null = null;
@@ -205,7 +207,7 @@ export function abrirElenco(app: App) {
    * inteira da carta é o botão Usar. Sem linha embaixo (a nota fica no detalhe). `duasLinhas` põe o nome em cima e o
    * sobrenome embaixo (os NPCs).
    */
-  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean }) => {
+  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean; unico?: boolean }) => {
     const [primeiro, ...resto] = o.nome.split(' ');
     const nome = o.duasLinhas ? [h('span', null, primeiro), h('span', null, resto.join(' ') || ' ')] : [o.nome];
     return h(
@@ -220,9 +222,37 @@ export function abrirElenco(app: App) {
         'span',
         { class: 'el-carta' },
         h('span', { class: 'el-quadro' }, o.figura),
+        o.unico ? h('span', { class: 'el-unico', title: 'Portador de relíquia: só existe um' }, 'Único') : null,
         h('b', { class: `el-nome${o.duasLinhas ? ' duas' : ''}` }, ...nome),
         h('button', { class: 'el-placa', type: 'button', title: o.linha ? `${o.linha} · pôr na mesa (Shift: sem fechar a janela)` : 'Pôr na mesa (Shift: sem fechar a janela)', onclick: o.usar }, h('span', null, 'Usar')),
       ),
+    );
+  };
+
+  /** Um botão do alto (Novo grupo, Novo NPC, Nova ameaça): o botão de borda do HUD, com o + de ouro. */
+  const botaoTopo = (rotulo: string, faz: () => void, ativo = false, titulo?: string) =>
+    h('button', { class: `el-topo-bt${ativo ? ' ativo' : ''}`, type: 'button', title: titulo ?? rotulo, onclick: () => (sfx.click(), faz()) }, h('b', null, '+'), rotulo);
+  /** O "Novo grupo": o botão e, aberto, o campo do nome logo embaixo (Enter cria; Esc fecha). */
+  const novoGrupo = () => {
+    const campo = h('input', { class: 'el-sel-campo', maxlength: '40', placeholder: 'Nome do grupo' }) as HTMLInputElement;
+    const criar = () => {
+      const g = campo.value.replace(/\s+/g, ' ').trim();
+      if (!g) return campo.focus();
+      app.net.send({ t: 'npcGrupoCriar', nome: g });
+      criandoGrupo = false;
+      sfx.click();
+      desenhar();
+    };
+    campo.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') criar();
+      if (e.key === 'Escape') (e.stopPropagation(), (criandoGrupo = false), desenhar());
+    });
+    if (criandoGrupo) setTimeout(() => campo.focus());
+    return h(
+      'div',
+      { class: 'el-topo-grupo' },
+      botaoTopo('Novo grupo', () => ((criandoGrupo = !criandoGrupo), desenhar()), criandoGrupo),
+      criandoGrupo ? h('div', { class: 'el-topo-pop' }, campo, h('button', { class: 'el-sel-ok', type: 'button', title: 'Criar o grupo', onclick: criar }, '✓')) : null,
     );
   };
 
@@ -257,8 +287,10 @@ export function abrirElenco(app: App) {
         ['npcs', `NPCs`, npcs.length],
         ['ameacas', 'Ameaças', todas.length],
       ] as const).map(([id, nome, n]) =>
-        h('button', { class: `el-aba${aba === id ? ' ativa' : ''}`, type: 'button', role: 'tab', 'aria-selected': String(aba === id), onclick: () => ((aba = id), (sel = null), sfx.click(), desenhar()) }, nome, h('small', null, String(n))),
+        h('button', { class: `el-aba${aba === id ? ' ativa' : ''}`, type: 'button', role: 'tab', 'aria-selected': String(aba === id), onclick: () => ((aba = id), (sel = null), (criandoGrupo = false), sfx.click(), desenhar()) }, nome, h('small', null, String(n))),
       ),
+      // os botões de criar, no alto à direita, em cima do detalhe (17/10, o Felipe: "poderiam ficar ali")
+      h('div', { class: 'el-topo-acoes' }, ...(aba === 'npcs' ? [novoGrupo(), botaoTopo('Novo NPC', () => ((sel = 'novo-npc'), (criandoGrupo = false), desenhar()), sel === 'novo-npc')] : [botaoTopo('Nova ameaça', () => (fechar(), abrirBestiario(app)), false, 'Abre o bestiário: uma ameaça nova a partir do livro, com as caras e a ficha')])),
     );
     if (aba === 'npcs') {
       chips.replaceChildren();
@@ -278,7 +310,6 @@ export function abrirElenco(app: App) {
             filhos: !ns.length ? [h('p', { class: 'el-vazio' }, 'Nenhum NPC neste grupo ainda.')] : ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), duasLinhas: true, figura: fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
           }),
         ),
-        h('div', { class: 'el-secao-grade' }, h('article', { class: `el-card el-novo${sel === 'novo-npc' ? ' escolhido' : ''}`, tabindex: '0', onclick: () => ((sel = 'novo-npc'), sfx.click(), desenhar()) }, h('span', { class: 'el-carta' }, h('span', { class: 'el-quadro' }, ic('mais')), h('b', { class: 'el-nome duas' }, h('span', null, 'Novo'), h('span', null, 'NPC')), h('span', { class: 'el-placa', 'aria-hidden': 'true' }, h('span', null, 'Criar'))))),
       );
       const n = npcs.find((x) => `npc:${x.id}` === sel);
       detalhe.replaceChildren(...(sel === 'novo-npc' ? detalheNovoNpc() : n ? detalheNpc(n) : [h('p', { class: 'el-vazio' }, 'Escolha um NPC para ver; "Usar" põe ele na porta da cena.')]));
@@ -296,7 +327,7 @@ export function abrirElenco(app: App) {
     for (const lista of porGrupo.values()) lista.sort((a, b) => vdDa(a) - vdDa(b));
     // as versões seguem a primeira, cada uma num card igual aos outros (17/10, o Felipe: sem setas, nada assimétrico)
     const cardAmeaca = (e: Entrada) =>
-      card({ chave: e.chave, nome: e.nome, linha: linhaAmeaca(e), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` });
+      card({ chave: e.chave, nome: e.nome, linha: linhaAmeaca(e), unico: combate.ehPortadorDeReliquia(e.livroId), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` });
     grade.replaceChildren(
       ...GRUPOS.filter((g) => porGrupo.has(g.id)).map((g) =>
         secao({ nome: g.nome, n: porGrupo.get(g.id)!.flat().length, cls: `el-${g.id}`, aberta: !!busca || ameacasAbertas.has(g.id), alternar: alterna(ameacasAbertas, g.id), filhos: porGrupo.get(g.id)!.flat().map(cardAmeaca) }),
@@ -419,6 +450,7 @@ export function abrirElenco(app: App) {
     const livro = e.livroId ? combate.AMEACAS_LIVRO.find((a) => a.id === e.livroId) : undefined;
     const elementos = [e.elemento, ...(e.outros ?? [])].filter(Boolean) as string[];
     if (c && aparencia !== 'variadas' && !c.aparencias.some((a) => a.id === aparencia)) aparencia = 'variadas';
+    if (combate.ehPortadorDeReliquia(e.livroId)) quantidade = 1;
     const dado = (rot: string, val: string) => h('span', { class: 'el-d-dado' }, h('small', null, rot), h('b', null, val));
     const nos: (Node | null)[] = [
       h('div', { class: 'el-d-figura' }, figura({ arte: c?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId })),
@@ -433,7 +465,9 @@ export function abrirElenco(app: App) {
             ...[{ id: 'variadas', nome: 'Variadas' }, ...c.aparencias].map((a) => h('button', { class: `el-cara${aparencia === a.id ? ' ativa' : ''}`, type: 'button', onclick: () => ((aparencia = a.id), desenhar()) }, a.nome)),
           )
         : null,
-      h(
+      combate.ehPortadorDeReliquia(e.livroId)
+        ? h('small', { class: 'el-d-info el-d-unico' }, 'Portador de relíquia: só existe um. Entra um só, e não entra outro enquanto ele estiver em alguma cena desta campanha.')
+        : h(
         'div',
         { class: 'el-d-qtd' },
         h('small', null, 'Quantas'),

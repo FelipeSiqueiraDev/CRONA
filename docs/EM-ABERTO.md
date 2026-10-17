@@ -212,6 +212,21 @@ peito sobe e desce, acabou", "não estraga os bonecos".
   passar o mouse e na escolhida), a rolagem pintada do kit, as sub-abas com a linha de ouro. Os NPCs com o nome em cima e o
   sobrenome embaixo. As ameaças sem setas nem caixa tracejada: cada versão é um card igual, em seguida da primeira, numa
   grade de colunas iguais.
+- **Os botões de criar no alto (o Felipe, 17/10):** à direita das abas, em cima do detalhe: "Novo grupo" (o campo do nome
+  desce embaixo) e "Novo NPC" na aba dos NPCs; "Nova ameaça" na das ameaças (abre o bestiário, que cria a partir do
+  livro). A carta "Novo NPC" saiu da lista.
+- **Portadores de relíquia, únicos (o Felipe: "só existe um deles"):** o Diabo, o Deus da Morte, a Magistrada (a antiga
+  "Máscara do Desespero", renomeada a pedido dele; o id continua `mascara-do-desespero`) e o Anfitrião com as 5
+  variações (`PORTADORES_RELIQUIA` em `shared/src/combate/ameacasLivro.ts`). No Elenco, o selo "Único" e o detalhe sem
+  "Quantas"; no servidor, entra um só e o segundo igual é recusado enquanto houver um em alguma cena da MESMA CAMPANHA
+  (e não só da cena: ele é um ser só na história; em outra campanha, outra história, pode aparecer). As variações do
+  Anfitrião contam cada uma por si (todas juntas, uma de cada). Teste: `server/test/reliquias.test.ts`.
+- **A arte deles no tabuleiro: na fila do Códex** (a cota volta às 18:47 de 17/10; `trabalho/monstros-tabuleiro/
+  depois_da_cota.sh` começa às 18:55 sozinho): as 8 direções em pé dos 9 portadores, no estilo do Miguel, com a
+  identidade do retrato do bestiário (a Bíblia não descreve a aparência deles), e os 2 Existidos refeitos nesse estilo (os
+  de hoje estão no traço antigo, realista e comprido). A criatura do livro já aponta para `arte/personagens/<id do
+  livro>/` (`criaturaDoLivro`, e as já criadas no banco), então a arte entra sozinha quando instalada; o retrato é o do
+  bestiário. Falta, quando chegar: conferir (altura contra o Miguel, `scripts/contorno_rosa.py`), instalar e mostrar.
 - **Várias abas na prévia (o Felipe: "pra eu ver e você também e mexer junto"):** fora do jogo de verdade (o servidor sem
   `--prod`, a prévia do `npm run dev`), o mestre pode ter várias abas abertas ao mesmo tempo; no jogo (8080, `--prod`)
   a aba nova continua derrubando a velha (`hotel.ts`, no `hello`).

@@ -445,7 +445,14 @@ export class Hotel implements HotelApi {
     if (m.t === 'criaturaColocar') {
       const cr = this.db.bestiario.find((x) => x.id === m.criaturaId);
       if (!cr) return c.send({ t: 'error', msg: 'Criatura não encontrada.' });
-      const n = typeof m.quantidade === 'number' && Number.isInteger(m.quantidade) ? Math.max(1, Math.min(20, m.quantidade)) : 1;
+      // o portador de relíquia é único na campanha (17/10): um só, e nenhum se já houver um em alguma cena dela
+      const unico = cmb.ehPortadorDeReliquia(cr.ficha.livro);
+      if (unico) {
+        const livroDe = (id: string) => this.db.bestiario?.find((x) => x.id === id)?.ficha.livro;
+        const emCampo = this.sceneGroup(room.data.id).some((id) => [...(this.rooms.get(id)?.criaturasDasPecas().values() ?? [])].some((p) => livroDe(p.id) === cr.ficha.livro));
+        if (emCampo) return c.send({ t: 'error', msg: `${cr.nome} é único (portador de relíquia) e já está em campo nesta campanha.` });
+      }
+      const n = unico ? 1 : typeof m.quantidade === 'number' && Number.isInteger(m.quantidade) ? Math.max(1, Math.min(20, m.quantidade)) : 1;
       if (room.tokenList().length + n > 30) return c.send({ t: 'error', msg: 'Máximo de 30 peças por cena.' });
       const escolha = typeof m.aparencia === 'string' ? m.aparencia : 'variadas';
       const lista: TokenData[] = [];
@@ -455,7 +462,8 @@ export class Hotel implements HotelApi {
         const ap = aparenciaDaVez(cr, escolha, i);
         lista.push({
           id: this.nextItemId(),
-          name: `${cr.nome} ${k}`,
+          // o único entra com o nome dele, sem número ("O Diabo", e não "O Diabo 1")
+          name: unico && !this.tokenNameTaken(room.data.id, cr.nome) ? cr.nome : `${cr.nome} ${k}`,
           look: { ...ap.look, charId: this.charDaArte(ap.arte) },
           x: room.data.door.x,
           y: room.data.door.y,

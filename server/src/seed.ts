@@ -729,6 +729,11 @@ function npcsIniciais(db: Database): boolean {
   if (!db.npcGrupos) ((db.npcGrupos = [...GRUPOS_NPC_PADRAO]), (renomeados = true));
   const sede = db.npcGrupos.indexOf('Sede da Ordem');
   if (sede >= 0) ((db.npcGrupos[sede] = 'Ordo Realitas'), (db.npcGrupos = [...new Set(db.npcGrupos)]), (renomeados = true));
+  // a "Máscara do Desespero" é a Magistrada (17/10): a criatura do bestiário que ainda tem o nome antigo troca
+  for (const cr of db.bestiario ?? []) if (cr.ficha.livro === 'mascara-do-desespero' && cr.nome === 'Máscara do Desespero') ((cr.nome = 'Magistrada'), (renomeados = true));
+  // a criatura do livro aponta para a pasta da arte dela (arte/personagens/<id do livro>/), como as novas
+  for (const cr of db.bestiario ?? [])
+    for (const ap of cr.aparencias) if (cr.ficha.livro && ap.id === 'padrao' && !ap.arte) ((ap.arte = cr.ficha.livro), (renomeados = true));
   if (feitas >= levas.length) return renomeados;
   const lista = (db.npcs ??= []);
   for (const n of levas.slice(feitas).flat()) if (!lista.some((x) => x.id === n.id)) lista.push(n);
