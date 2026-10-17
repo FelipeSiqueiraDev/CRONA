@@ -30,7 +30,10 @@ import { RoomView } from './room/RoomView';
 import { App } from './ui/app';
 import { CatalogWin, InventoryWin } from './ui/catalog';
 import { CharactersWin } from './ui/characters';
-import { closeTopWindow, fecharJanelas, h, toast } from './ui/dom';
+import { closeTopWindow, fecharJanelas, h, manterRolagem, toast } from './ui/dom';
+
+// a rolagem dos painéis não volta para o topo quando eles são refeitos (ui/dom.ts)
+manterRolagem();
 import { FxWin } from './ui/fx';
 import { HelpWin } from './ui/help';
 import { HintViewer } from './ui/infostand';

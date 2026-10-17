@@ -55,8 +55,58 @@ export function trocarFilhos(el: Element, ...nodes: (Node | string)[]) {
 }
 
 export function clear(el: HTMLElement) {
-  while (el.firstChild) el.removeChild(el.firstChild);
+  // pelo replaceChildren: a rolagem do painel fica onde estava (manterRolagem)
+  el.replaceChildren();
   return el;
+}
+
+/**
+ * A rolagem não volta para o topo quando um painel é refeito (17/10, o Felipe: "quando eu tô selecionando uma opção no
+ * interlúdio ele tá subindo a tela toda... na hora de selecionar aparência das criaturas também volta lá em cima; vamos
+ * evitar isso em todos os lugares"). As telas refazem o conteúdo inteiro (clear + append, ou replaceChildren) a cada
+ * mudança, e o navegador zera a rolagem. Aqui, o que estava rolado dentro do painel refeito (ele mesmo ou uma lista de
+ * dentro, achada de novo pela classe e pela ordem) volta para onde estava. Chamado uma vez, ao abrir o cliente.
+ */
+export function manterRolagem() {
+  const roladas = new Set<HTMLElement>();
+  document.addEventListener(
+    'scroll',
+    (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLElement)) return;
+      if (t.scrollTop > 0) roladas.add(t);
+      else roladas.delete(t);
+    },
+    true,
+  );
+  const mesmos = (raiz: HTMLElement, chave: string) => [...raiz.querySelectorAll<HTMLElement>('*')].filter((x) => (x.className || x.tagName) === chave);
+  const original = Element.prototype.replaceChildren;
+  Element.prototype.replaceChildren = function (this: Element, ...nodes: (Node | string)[]) {
+    const raiz = this as HTMLElement;
+    const guardadas: [string, number, number][] = [];
+    for (const el of roladas) {
+      if (!el.isConnected) {
+        roladas.delete(el);
+        continue;
+      }
+      if (el === raiz) guardadas.push(['', 0, el.scrollTop]);
+      else if (raiz.contains(el)) {
+        const chave = el.className || el.tagName;
+        guardadas.push([chave, mesmos(raiz, chave).indexOf(el), el.scrollTop]);
+      }
+    }
+    original.apply(this, nodes);
+    if (!guardadas.length) return;
+    const devolver = () => {
+      for (const [chave, n, topo] of guardadas) {
+        const el = chave ? mesmos(raiz, chave)[n] : raiz;
+        if (el && el.scrollTop === 0 && el.scrollHeight > el.clientHeight) el.scrollTop = topo;
+      }
+    };
+    // logo depois (o conteúdo novo entra no mesmo passo) e no quadro seguinte (o que entra depois de esperar algo)
+    queueMicrotask(devolver);
+    requestAnimationFrame(devolver);
+  };
 }
 
 const PATHS: Record<string, string> = {
