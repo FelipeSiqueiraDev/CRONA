@@ -26,7 +26,7 @@ export function miguelAlbuquerque(): Npc {
 
 /**
  * Os NPCs que o elenco já traz, por leva (16/10): o Miguel; a gente da base (Ágata, Ivete, Samuel); o Geraldo e o
- * Arantes. A nota é só para o mestre lembrar (o elenco não aparece na mesa).
+ * Arantes; e os quatro de 17/10, ainda sem nome. A nota é só para o mestre lembrar (o elenco não aparece na mesa).
  */
 export function npcsPorLeva(): Npc[][] {
   return [
@@ -39,6 +39,13 @@ export function npcsPorLeva(): Npc[][] {
     [
       { id: 'geraldo-ribeiro', nome: 'Geraldo Ribeiro', arte: 'geraldo-ribeiro', nota: 'o pai da Cora', look: { ...lookBase, skin: '#d2a07a', hair: '#3a2a1e', top: '#b8a68a', pants: '#3a2c22' } },
       { id: 'herman-arantes', nome: 'Herman Arantes', arte: 'herman-arantes', nota: 'o médico da Panacea', look: { ...lookBase, skin: '#d8b090', hair: '#9a9894', top: '#e8e4dc', pants: '#3a4658', shoes: '#e8e4dc' } },
+    ],
+    // 17/10: quatro NPCs novos, ainda sem nome (o Felipe dá depois; o nome se edita no Elenco)
+    [
+      { id: 'npc-camisa-rosa', nome: 'Camisa Rosa', arte: 'npc-camisa-rosa', nota: 'nome em aberto', look: { ...lookBase, skin: '#6a4430', hair: '#1e1612', top: '#e89aa8', pants: '#c8b08a', shoes: '#8a6a4a' } },
+      { id: 'npc-ruivo', nome: 'Ruivo', arte: 'npc-ruivo', nota: 'nome em aberto', look: { ...lookBase, skin: '#e0b090', hair: '#d0702a', top: '#1e1c1a', pants: '#3a3a3e', shoes: '#6a4a2e' } },
+      { id: 'npc-cabelo-rosa', nome: 'Cabelo Rosa', arte: 'npc-cabelo-rosa', nota: 'nome em aberto', look: { ...lookBase, skin: '#c8926a', hair: '#e0a0c0', top: '#1a1a1a', pants: '#1e1c1c', shoes: '#141210' } },
+      { id: 'npc-jaleco', nome: 'Jaleco', arte: 'npc-jaleco', nota: 'nome em aberto', look: { ...lookBase, skin: '#e8c8b0', hair: '#141214', top: '#e8e4dc', pants: '#1a1816', shoes: '#141210' } },
     ],
   ];
 }
