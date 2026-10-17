@@ -393,19 +393,14 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   altura por cadeira). **Revisto (o Felipe, 17/10):** o sentado de todos os NPCs também, além dos Marcados (os
   personagens dos jogadores: o Felipe passou a chamá-los assim).
 - **A fila reordenada para a sessão de 18/10** (`trabalho/fila_sessao.sh`, no lugar da `fila_unica.sh`; revista às
-  15:55 pela ordem do Felipe: "Eu preciso dos Existidos, eu preciso dos NPC's da Ordem"): 1) os dois Existidos, refeitos
-  pelo retrato do Elenco; 2) o Geraldo agachado e o sentado da Agatha, do Samuel, do Miguel, da Ivete, da Rebecca
-  (npc-jaleco) e do Geraldo; 3) depois, o resto (o agachado armado e o sentado dos Marcados; Pedro, Rosa e Joaquin; o
+  15:55 pela ordem do Felipe: "Eu preciso dos Existidos, eu preciso dos NPC's da Ordem"): 1) o Geraldo agachado e o sentado da Agatha, do Samuel, do Miguel, da Ivete, da Rebecca
+  (npc-jaleco) e do Geraldo; 2) depois, o resto (o agachado armado e o sentado dos Marcados; Pedro, Rosa e Joaquin; o
   armado do Miguel; o Herman; os portadores de relíquia). A cota de imagem da conta nova acabou às 15:52 (9 imagens) e
   volta por volta das 18:47; a fila tenta de novo a cada 5 min. A **Marcela Geleerd** (a médica da ala médica) também
   foi pedida, mas não existe no Elenco: falta a referência de aparência.
-  Entrou: o **Existido masculino** refeito pelo retrato da lista (careca, escrita miúda na pele com linhas douradas,
-  olhos brancos, calça verde rasgada, flutuando), no lugar do dourado escuro de cabelo; 1,80 m, a altura da Catarina.
-  E a **Existida**, a versão feminina dele (a mesma pele, os mesmos olhos e trapos, o cabelo ralo e comprido).
-  **Reprovados pelo Felipe** ("num tá nada parecido com a imagem de referência"): saíram parrudos, bege dourados, de
-  cara de criança. A v2 está pedida no começo da fila (`pedir_monstro.py` com a descrição refeita: esqueléticos,
-  pescoço comprido, curvados, rosto encovado, pele cinza-esverdeada fosca com escrita miúda preta, sem dourado); a v1
-  fica no jogo até a v2 ser conferida lado a lado com `arte/ameacas/existido.png`.
+  **Os Existidos ficam como estavam** (os dourados e alaranjados do commit bc414989, restaurados): o Felipe gostava
+  deles e o pedido de refazer foi um mal-entendido. A v1 e a v2 feitas aqui pelo retrato da lista saíram da fila e do
+  jogo (as imagens ficam em `trabalho/monstros-tabuleiro/existido-*`, fora do jogo).
 - **A fila única da arte** (`trabalho/fila_unica.sh`, a partir das 18:48, um pedido por vez, tentando de novo a cada 5
   min se ainda der o limite de imagem): Camarilla em pé e sentada; Pedro (npc-camisa-rosa, pistola grossa) e Rosa
   (npc-cabelo-rosa, uma submetralhadora em cada mão) armados em pé; os agachados que faltam; o sentado dos Marcados e de
