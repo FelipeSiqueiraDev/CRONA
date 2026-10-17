@@ -152,6 +152,27 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 17/10 (branch `claude/tatica-codigo`): armados, machucados, deitados, retratos e Santo Berço sem fogo
+
+- **Armados** (`idle-armado-<dir>.png`) dos 4 agentes e do Miguel, com a arma padrão de cada um (a arte não muda com a
+  arma da ficha): Catarina com a katana em guarda (lâmina para cima), Cora com o fuzil de caça, Tepes com a corrente
+  comprida pendurada e o escudo redondo de madeira, Alosi com o livro aberto, Miguel com a luva de boxe com espinhos
+  amaldiçoada de Conhecimento. **Machucados** (`idle-desarmado-machucado-<dir>.png`) dos 4 agentes.
+- **Tamanho e cor idênticos ao desarmado:** `F:\Dhellow\CRONArte\PERSONAGENS-ANIMACAO	rabalhormado
+ormalizar.py`
+  (a cabeça igual à da pose desarmada; a cor por histograma). O tabuleiro mede o personagem só pelas poses desarmadas
+  (`processPoses` em `sprites.ts`): a armada e a machucada não mudam mais o tamanho dele.
+- **Deitados** (`deitado-dormindo.png`, `deitado-caido.png`) dos 10 personagens: o tabuleiro usa no lugar de girar a
+  pose de pé (`CharacterDef.deitado`, `findDeitado`); na cama a peça ocupa a cama, em cima do colchão, a cabeça na
+  cabeceira (de cabeça para baixo nos leitos da frente). O caído foi refeito seguindo a diagonal do piso.
+- **Retratos das 74 ameaças** em `client/public/arte/ameacas/<id>.png` (o Códex pinta a partir de descrições escritas
+  das páginas do livro, no estilo do Existido); os cultistas refeitos como vilões. Aparecem no Elenco.
+- **Santo Berço sem fogo:** o lampião é luz de cristal (`kind: 'cristal'`), a arandela do Quarto 2 do Hotel virou
+  lampião (`SANTO_BERCO_REV` 15) e `santoBerco.test.ts` proíbe peça de fogo lá.
+- NPCs Ágata, Ivete, Samuel, Geraldo e Arantes refeitos no estilo do Miguel; falta uma 3ª versão que acerte expressão,
+  cabelo, idade e altura de cada um (esperando o Felipe).
+- O pacote de estudo para o SpriteForge: `F:\Dhellow\CRONArte\PERSONAGENS-ANIMACAO\estudo-para-spriteforge\`.
+
 ## Feito em 16/10, noite (branch `claude/tatica-codigo`): o ELENCO (NPCs e ameaças) e o Miguel Albuquerque
 
 - O botão CRIATURAS do tabuleiro virou **ELENCO** (`client/src/ui/elenco.ts`, `elenco.css`), uma janela do HUD em
