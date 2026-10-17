@@ -172,6 +172,17 @@ peito sobe e desce, acabou", "não estraga os bonecos".
 - **Aprovado pelo Felipe** (versão 2, 17/10: "ficou boa a respiração, pode deixar assim"). O boneco animado
   (`tabuleiro-3d`) e a folha antiga não usam isso.
 
+## Feito em 17/10, tarde (branch `claude/tatica-codigo`): o Elenco em sub-abas e as fotos dos NPCs
+
+- **Sub-abas que abrem e fecham** (pedido do Felipe): os NPCs por grupo e as ameaças por elemento (no lugar das
+  pílulas), cada elemento da ameaça de VD mais baixo para a mais alta (a família vai pelo menor VD dela). O que fica
+  aberto é lembrado no navegador; na busca, tudo o que bate fica aberto.
+- **Grupo do NPC** (`Npc.grupo`, `grupoDoNpc` em `shared/src/npcs.ts`): o mestre muda no detalhe (campo Grupo, com os
+  grupos que já existem sugeridos) e ao criar. Os que vieram com o jogo: Sede da Ordem (Miguel, Ágata, Ivete, Samuel), Da
+  história (Geraldo, Arantes) e Novos (sem nome) (os 4 de 17/10); criado sem grupo vai para "Do mestre".
+- **A foto de cada NPC** (as imagens do Felipe que deram origem a eles) em `arte/personagens/<id>/foto.jpg`, os 10; o
+  detalhe mostra a foto grande e a pose do tabuleiro no canto.
+
 ## Feito em 17/10, tarde (branch `claude/tatica-codigo`): arte pelo Códex da conta nova (NPCs novos, agachado, Santa Amália)
 
 O Códex voltou pela conta nova do ChatGPT; tudo pelo `scripts/dev/codex.mjs`, cada imagem conferida antes de entrar. Os

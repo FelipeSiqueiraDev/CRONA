@@ -15,7 +15,25 @@ export interface Npc {
   arte?: string;
   /** uma linha para o mestre lembrar quem é ("o irmão da Catarina", "o dono do bar") */
   nota?: string;
+  /** o grupo no Elenco (17/10, a sub-aba que abre e fecha: "Sede da Ordem", "Santa Amália"...); sem ele, `grupoDoNpc` */
+  grupo?: string;
 }
+
+/** Os grupos dos NPCs que o elenco já traz, para os bancos de antes do campo `grupo`. */
+const GRUPO_PADRAO: Record<string, string> = {
+  'miguel-albuquerque': 'Sede da Ordem',
+  agata: 'Sede da Ordem',
+  ivete: 'Sede da Ordem',
+  samuel: 'Sede da Ordem',
+  'geraldo-ribeiro': 'Da história',
+  'herman-arantes': 'Da história',
+  'npc-camisa-rosa': 'Novos (sem nome)',
+  'npc-ruivo': 'Novos (sem nome)',
+  'npc-cabelo-rosa': 'Novos (sem nome)',
+  'npc-jaleco': 'Novos (sem nome)',
+};
+/** O grupo do NPC no Elenco: o que o mestre escreveu, o padrão dos que vieram com o jogo, ou "Do mestre". */
+export const grupoDoNpc = (n: Npc): string => n.grupo || GRUPO_PADRAO[n.id] || 'Do mestre';
 
 const lookBase: AvatarLook = { skin: '#e8c4a8', hair: '#8a2a1e', hairStyle: 1, top: '#1e1a18', pants: '#1a1816', shoes: '#141210', outfit: 0, extra: 0, charId: null };
 
@@ -63,5 +81,6 @@ export function lerNpc(raw: unknown): Npc | null {
   if (!id) return null;
   const arte = slug(o.arte);
   const nota = texto(o.nota, 120);
-  return { id, nome, look: sanitizeLook(o.look), ...(arte ? { arte } : {}), ...(nota ? { nota } : {}) };
+  const grupo = texto(o.grupo, 40);
+  return { id, nome, look: sanitizeLook(o.look), ...(arte ? { arte } : {}), ...(nota ? { nota } : {}), ...(grupo ? { grupo } : {}) };
 }

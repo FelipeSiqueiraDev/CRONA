@@ -1,9 +1,9 @@
-import { combate, criaturaDoLivro, type CharacterDef, type Criatura, type Npc } from '@crona/shared';
+import { combate, criaturaDoLivro, grupoDoNpc, type CharacterDef, type Criatura, type Npc } from '@crona/shared';
 import { drawPixelAvatar } from '../render/avatarPixel';
 import type { App } from './app';
 import { abrirBestiario } from './bestiario';
 import { h } from './dom';
-import { ic } from './icons';
+import { arteCarregada, ic } from './icons';
 import { sfx } from './sfx';
 import './elenco.css';
 
@@ -16,6 +16,9 @@ import './elenco.css';
  *   versões juntas (Zumbi de Sangue › Bestial › Colossal). "Usar" põe uma peça na porta da cena; a criatura entra no
  *   bestiário sozinha na primeira vez (a ficha do livro), e as do mestre (aparências, PV) continuam valendo.
  * - Clicar no card mostra o detalhe ao lado (quantas, qual aparência, a ficha); "Usar" fecha a janela (com Shift, fica).
+ * - Sub-abas que abrem e fecham (17/10, o Felipe): os NPCs por grupo (`grupoDoNpc`, o mestre muda no detalhe) e as
+ *   ameaças por elemento, da de VD mais baixo para a mais alta. O que fica aberto é lembrado no navegador.
+ * - O detalhe do NPC mostra a imagem do Felipe que deu origem a ele (`arte/personagens/<arte>/foto.jpg`) ao lado da pose.
  */
 
 type Aba = 'npcs' | 'ameacas';
@@ -44,14 +47,20 @@ interface Entrada {
 }
 
 const LEMBRA = 'crona.elenco';
-function lembrado(): { aba?: Aba; grupo?: Grupo } {
+/** O que o navegador lembra: a aba, os grupos de NPC fechados (abrem por padrão) e os elementos abertos (fecham). */
+interface Lembrado {
+  aba?: Aba;
+  npcsFechados?: string[];
+  ameacasAbertas?: string[];
+}
+function lembrado(): Lembrado {
   try {
     return JSON.parse(localStorage.getItem(LEMBRA) ?? '{}');
   } catch {
     return {};
   }
 }
-function lembrar(v: { aba: Aba; grupo: Grupo }) {
+function lembrar(v: Lembrado) {
   try {
     localStorage.setItem(LEMBRA, JSON.stringify(v));
   } catch {
@@ -64,7 +73,9 @@ const semAcento = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLo
 export function abrirElenco(app: App) {
   const mem = lembrado();
   let aba: Aba = mem.aba ?? 'npcs';
-  let grupo: Grupo = mem.grupo ?? 'sangue';
+  const npcsFechados = new Set(mem.npcsFechados ?? []);
+  const ameacasAbertas = new Set(mem.ameacasAbertas ?? ['sangue']);
+  let arquivos: Set<string> | null = null;
   let sel: string | null = null;
   let busca = '';
   let quantidade = 1;
@@ -195,11 +206,30 @@ export function abrirElenco(app: App) {
       h('button', { class: 'el-usar', type: 'button', title: 'Pôr na mesa (Shift: sem fechar a janela)', onclick: o.usar }, 'Usar'),
     );
 
+  /** Uma sub-aba que abre e fecha: o cabeçalho (seta, cor, nome, quantos) e, aberta, a grade dela. */
+  const secao = (o: { nome: string; n: number; cls?: string; aberta: boolean; alternar: () => void; filhos: Node[] }) =>
+    h(
+      'section',
+      { class: `el-secao ${o.cls ?? ''}${o.aberta ? ' aberta' : ''}` },
+      h(
+        'button',
+        { class: 'el-secao-cab', type: 'button', 'aria-expanded': String(o.aberta), onclick: () => (o.alternar(), sfx.click(), desenhar()) },
+        h('span', { class: 'el-secao-seta', 'aria-hidden': 'true' }, o.aberta ? '▾' : '▸'),
+        h('i', null),
+        o.nome,
+        h('small', null, String(o.n)),
+      ),
+      o.aberta ? h('div', { class: 'el-secao-grade' }, ...o.filhos) : null,
+    );
+  const alterna = (conj: Set<string>, k: string) => () => void (conj.has(k) ? conj.delete(k) : conj.add(k));
+  /** O menor VD de uma família (as versões vêm depois da primeira); sem VD, no fim. */
+  const vdDa = (f: Entrada[]) => Math.min(...f.map((e) => e.vd ?? 999));
+
   const linhaAmeaca = (e: Entrada) => [e.vd !== undefined ? `VD ${e.vd}` : null, e.criatura && e.criatura.aparencias.length > 1 ? `${e.criatura.aparencias.length} caras` : null, e.tipo !== 'Criatura' ? e.tipo : null].filter(Boolean).join(' · ');
 
   // ---------- desenho ----------
   const desenhar = () => {
-    lembrar({ aba, grupo });
+    lembrar({ aba, npcsFechados: [...npcsFechados], ameacasAbertas: [...ameacasAbertas] });
     const npcs = app.state.npcs;
     const todas = entradas();
     abas.replaceChildren(
@@ -212,51 +242,66 @@ export function abrirElenco(app: App) {
     );
     if (aba === 'npcs') {
       chips.replaceChildren();
-      const lista = npcs.filter((n) => !busca || semAcento(n.nome).includes(busca) || semAcento(n.nota ?? '').includes(busca));
+      const lista = npcs.filter((n) => !busca || semAcento(n.nome).includes(busca) || semAcento(n.nota ?? '').includes(busca) || semAcento(grupoDoNpc(n)).includes(busca));
+      // os grupos na ordem em que aparecem no elenco; na busca, todos abertos
+      const grupos = new Map<string, Npc[]>();
+      for (const n of lista) grupos.set(grupoDoNpc(n), [...(grupos.get(grupoDoNpc(n)) ?? []), n]);
       grade.replaceChildren(
-        ...lista.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), figura: figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
-        h('article', { class: `el-card el-novo${sel === 'novo-npc' ? ' escolhido' : ''}`, tabindex: '0', onclick: () => ((sel = 'novo-npc'), sfx.click(), desenhar()) }, h('span', { class: 'el-quadro' }, ic('mais')), h('b', { class: 'el-nome' }, 'Novo NPC'), h('small', { class: 'el-linha' }, 'nome e quem é')),
+        ...[...grupos].map(([g, ns]) =>
+          secao({
+            nome: g,
+            n: ns.length,
+            cls: 'el-mestre',
+            aberta: !!busca || !npcsFechados.has(g),
+            alternar: alterna(npcsFechados, g),
+            filhos: ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), figura: figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
+          }),
+        ),
+        h('div', { class: 'el-secao-grade' }, h('article', { class: `el-card el-novo${sel === 'novo-npc' ? ' escolhido' : ''}`, tabindex: '0', onclick: () => ((sel = 'novo-npc'), sfx.click(), desenhar()) }, h('span', { class: 'el-quadro' }, ic('mais')), h('b', { class: 'el-nome' }, 'Novo NPC'), h('small', { class: 'el-linha' }, 'nome e quem é'))),
       );
       const n = npcs.find((x) => `npc:${x.id}` === sel);
       detalhe.replaceChildren(...(sel === 'novo-npc' ? detalheNovoNpc() : n ? detalheNpc(n) : [h('p', { class: 'el-vazio' }, 'Escolha um NPC para ver; "Usar" põe ele na porta da cena.')]));
       return;
     }
     // ameaças: as famílias (a primeira e as versões) ficam juntas no grupo da primeira (a Degolificada é de Medo, e as
-    // versões dela, de cada elemento, vêm com ela); a busca passa por todos
-    const fams = familias(todas);
+    // versões dela, de cada elemento, vêm com ela), da de VD mais baixo para a mais alta; a busca passa por todos e abre
+    chips.replaceChildren();
+    const fams = familias(todas).filter((f) => !busca || f.some((e) => semAcento(e.nome).includes(busca)));
     const porGrupo = new Map<Grupo, Entrada[][]>();
     for (const f of fams) {
       const g = grupoDe(f[0]);
       porGrupo.set(g, [...(porGrupo.get(g) ?? []), f]);
     }
-    chips.replaceChildren(
-      ...GRUPOS.filter((g) => porGrupo.has(g.id)).map((g) =>
-        h('button', { class: `el-chip el-${g.id}${!busca && grupo === g.id ? ' ativa' : ''}`, type: 'button', onclick: () => ((grupo = g.id), (busca = ''), (campoBusca.value = ''), (sel = null), sfx.click(), desenhar()) }, h('i', null), g.nome, h('small', null, String(porGrupo.get(g.id)!.flat().length))),
-      ),
-    );
-    const visiveis = busca ? fams.filter((f) => f.some((e) => semAcento(e.nome).includes(busca))) : (porGrupo.get(grupo) ?? []);
+    for (const lista of porGrupo.values()) lista.sort((a, b) => vdDa(a) - vdDa(b));
+    const familiaNo = (f: Entrada[]) =>
+      h(
+        'div',
+        { class: `el-familia${f.length > 1 ? ' versoes' : ''}` },
+        ...f.flatMap((e, i) => [
+          i > 0 ? h('span', { class: 'el-seta', 'aria-hidden': 'true' }, '›') : null,
+          card({ chave: e.chave, nome: i > 0 ? e.nome.slice(f[0].nome.length).trim() || e.nome : e.nome, linha: linhaAmeaca(e), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` }),
+        ]),
+      );
     grade.replaceChildren(
-      ...visiveis.map((f) =>
-        h(
-          'div',
-          { class: `el-familia${f.length > 1 ? ' versoes' : ''}` },
-          ...f.flatMap((e, i) => [
-            i > 0 ? h('span', { class: 'el-seta', 'aria-hidden': 'true' }, '›') : null,
-            card({ chave: e.chave, nome: i > 0 ? e.nome.slice(f[0].nome.length).trim() || e.nome : e.nome, linha: linhaAmeaca(e), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` }),
-          ]),
-        ),
+      ...GRUPOS.filter((g) => porGrupo.has(g.id)).map((g) =>
+        secao({ nome: g.nome, n: porGrupo.get(g.id)!.flat().length, cls: `el-${g.id}`, aberta: !!busca || ameacasAbertas.has(g.id), alternar: alterna(ameacasAbertas, g.id), filhos: porGrupo.get(g.id)!.map(familiaNo) }),
       ),
     );
-    if (!visiveis.length) grade.append(h('p', { class: 'el-vazio' }, 'Nada com esse nome.'));
+    if (!fams.length) grade.append(h('p', { class: 'el-vazio' }, 'Nada com esse nome.'));
     const e = todas.find((x) => x.chave === sel);
     detalhe.replaceChildren(...(e ? detalheAmeaca(e) : [h('p', { class: 'el-vazio' }, 'Escolha uma ameaça para ver a ficha, as caras e quantas pôr; "Usar" põe uma na porta da cena.')]));
   };
 
   // ---------- o detalhe ao lado ----------
+  /** A imagem do Felipe que deu origem ao NPC (arte/personagens/<arte>/foto.jpg), se existir. */
+  const fotoDe = (arte?: string) => (arte && arquivos ? ['jpg', 'webp', 'png'].map((x) => `/arte/personagens/${arte}/foto.${x}`).find((u) => arquivos!.has(u)) : undefined);
+  /** Os grupos que já existem, para o campo sugerir. */
+  const listaGrupos = () => h('datalist', { id: 'el-grupos' }, ...[...new Set(app.state.npcs.map(grupoDoNpc))].map((g) => h('option', { value: g })));
   const detalheNpc = (n: Npc): Node[] => [
-    h('div', { class: 'el-d-figura' }, figura({ ...n })),
+    h('div', { class: `el-d-figura${fotoDe(n.arte) ? ' com-foto' : ''}` }, fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: `${n.nome}: a imagem de referência`, decoding: 'async' }) : null, figura({ ...n })),
     h('h4', null, n.nome),
     h('label', { class: 'el-d-campo' }, h('small', null, 'Quem é'), h('input', { value: n.nota ?? '', maxlength: '120', placeholder: 'o irmão da Catarina, o dono do bar…', onchange: (ev: Event) => app.net.send({ t: 'npcSalvar', npc: { ...n, nota: (ev.target as HTMLInputElement).value } }) })),
+    h('label', { class: 'el-d-campo' }, h('small', null, 'Grupo'), h('input', { value: grupoDoNpc(n), maxlength: '40', list: 'el-grupos', placeholder: 'Sede da Ordem, Santa Amália…', onchange: (ev: Event) => app.net.send({ t: 'npcSalvar', npc: { ...n, grupo: (ev.target as HTMLInputElement).value.trim() || undefined } }) }), listaGrupos()),
     h('small', { class: 'el-d-info' }, charDaArte(n.arte) ? 'Arte nas 8 direções (anda deslizando, como os agentes).' : n.arte ? 'A arte ainda não chegou: entra como boneco de pixel.' : 'Sem arte: entra como boneco de pixel.'),
     h('div', { class: 'el-d-acoes' }, h('button', { class: 'el-usar grande', type: 'button', onclick: (ev: Event) => usar(ev, () => colocarNpc(n)) }, 'Usar'), h('button', { class: 'el-apagar', type: 'button', title: 'Tirar do elenco (as peças já em campo ficam)', onclick: () => confirm(`Tirar ${n.nome} do elenco? As peças em campo ficam.`) && (app.net.send({ t: 'npcApagar', id: n.id }), (sel = null)) }, ic('lixo'))),
   ];
@@ -264,6 +309,7 @@ export function abrirElenco(app: App) {
   const detalheNovoNpc = (): Node[] => {
     const nome = h('input', { maxlength: '40', placeholder: 'Nome do NPC' }) as HTMLInputElement;
     const nota = h('input', { maxlength: '120', placeholder: 'Quem é (opcional)' }) as HTMLInputElement;
+    const grupoNovo = h('input', { maxlength: '40', list: 'el-grupos', placeholder: 'Do mestre' }) as HTMLInputElement;
     // a arte: uma pasta de personagem que ninguém do elenco usa (as que o Claude prepara pelo Códex)
     const usadas = new Set([...app.state.npcs.map((x) => x.arte), ...app.state.bestiario.flatMap((c) => c.aparencias.map((a) => a.arte))].filter(Boolean));
     const pastas = app.state.characters
@@ -272,7 +318,7 @@ export function abrirElenco(app: App) {
     const arte = h('select', null, h('option', { value: '' }, 'Sem arte (boneco de pixel)'), ...pastas.map((p) => h('option', { value: p }, p))) as HTMLSelectElement;
     const criar = () => {
       if (!nome.value.trim()) return nome.focus();
-      app.net.send({ t: 'npcSalvar', npc: { id: '', nome: nome.value.trim(), nota: nota.value.trim() || undefined, arte: arte.value || undefined, look: { skin: '#e0b896', hair: '#3a2a1c', hairStyle: 0, top: '#3a3a42', pants: '#26262c', shoes: '#18161a', outfit: 0, extra: 0, charId: null } } });
+      app.net.send({ t: 'npcSalvar', npc: { id: '', nome: nome.value.trim(), nota: nota.value.trim() || undefined, grupo: grupoNovo.value.trim() || undefined, arte: arte.value || undefined, look: { skin: '#e0b896', hair: '#3a2a1c', hairStyle: 0, top: '#3a3a42', pants: '#26262c', shoes: '#18161a', outfit: 0, extra: 0, charId: null } } });
       sel = null;
       sfx.click();
     };
@@ -281,6 +327,7 @@ export function abrirElenco(app: App) {
       h('h4', null, 'Novo NPC'),
       h('label', { class: 'el-d-campo' }, h('small', null, 'Nome'), nome),
       h('label', { class: 'el-d-campo' }, h('small', null, 'Quem é'), nota),
+      h('label', { class: 'el-d-campo' }, h('small', null, 'Grupo'), grupoNovo, listaGrupos()),
       h('label', { class: 'el-d-campo' }, h('small', null, 'Arte'), arte),
       h('small', { class: 'el-d-info' }, 'A arte das 8 direções vem pelo Códex: mande a imagem do personagem para o Claude, e ela aparece aqui.'),
       h('div', { class: 'el-d-acoes' }, h('button', { class: 'el-usar grande', type: 'button', onclick: criar }, 'Criar')),
@@ -330,5 +377,6 @@ export function abrirElenco(app: App) {
   app.on('characters', desenhar);
   app.net.send({ t: 'bestiario' });
   desenhar();
+  void arteCarregada.then((lista) => ((arquivos = lista), desenhar()));
   campoBusca.focus();
 }

@@ -138,11 +138,64 @@
 }
 .el-grade {
   display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  overflow-y: auto;
+  padding: 0.2rem 0.6rem 1rem 0.2rem;
+}
+
+/* as sub-abas que abrem e fecham (17/10): os grupos de NPC e os elementos das ameaças */
+.el-secao {
+  border: 0.14rem solid rgba(161, 136, 115, 0.22);
+  border-radius: 1rem;
+  background: rgba(10, 20, 36, 0.45);
+}
+.el-secao.aberta {
+  border-color: color-mix(in srgb, var(--el-cor, #e9a944) 45%, rgba(161, 136, 115, 0.3));
+}
+.el-secao-cab {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  height: 3.8rem;
+  padding: 0 1.2rem;
+  border: 0;
+  border-radius: 1rem;
+  background: transparent;
+  color: var(--r-texto, #efe6d1);
+  font: 600 1.5rem var(--r-pixel, monospace);
+  text-align: left;
+  cursor: pointer;
+}
+.el-secao-cab:hover {
+  background: color-mix(in srgb, var(--el-cor, #e9a944) 14%, transparent);
+}
+.el-secao-cab i {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--el-cor, #888);
+  box-shadow: 0 0 0.6rem var(--el-cor, #888);
+}
+.el-secao-cab small {
+  margin-left: auto;
+  opacity: 0.6;
+  font-weight: 500;
+}
+.el-secao-seta {
+  width: 1.4rem;
+  color: var(--r-ouro, #e9a944);
+}
+.el-secao-grade {
+  display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
   gap: 1rem;
-  overflow-y: auto;
-  padding: 0.2rem 0.6rem 1rem 0.2rem;
+  padding: 0.4rem 1rem 1rem;
+}
+.el-grade > .el-secao-grade {
+  padding: 0;
 }
 .el-familia {
   display: flex;
@@ -317,6 +370,26 @@
 .el-d-figura .el-pose,
 .el-d-figura .el-retrato {
   max-height: 21rem;
+}
+/* com a imagem de referência do Felipe: a foto grande e a pose do tabuleiro pequena no canto */
+.el-d-figura.com-foto {
+  position: relative;
+  height: 30rem;
+  overflow: hidden;
+}
+.el-d-figura .el-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  border-radius: 0.7rem;
+}
+.el-d-figura.com-foto > :not(.el-foto) {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  max-height: 12rem;
+  filter: drop-shadow(0 0 0.6rem rgba(0, 0, 0, 0.8));
 }
 .el-d-figura .el-selo {
   width: 11rem;
