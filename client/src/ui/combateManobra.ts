@@ -542,11 +542,22 @@ export class ResolucaoManobra {
       ic('ok'),
       h('span', null, 'Confirmar ação'),
     );
+    // o resultado em destaque (17/10, o Felipe: "melhorar essa tela"; "oia que trem feio"): o carimbo de quem venceu e
+    // o placar em cima, o efeito no meio e os botões no rodapé
+    const placar =
+      alvo && op && op.vencedor !== 'empate'
+        ? h(
+            'div',
+            { class: 'cb-efe-placar' },
+            h('span', { class: `cb-carimbo ${k.venceu ? 'acerto' : 'erro'}`, role: 'status' }, h('span', null, k.venceu ? `VENCEU POR ${op.diferenca}` : 'RESISTIU')),
+            h('small', null, `${x.ator.nome} ${op.totalA} contra ${op.totalB} de ${alvo.p.nome}`),
+          )
+        : null;
     return h(
       'section',
-      { class: 'cb-dano' },
+      { class: 'cb-dano cb-efeito' },
       h('div', { class: 'cb-dano-cab' }, h('h4', null, h('span', null, '4.'), ' EFEITO'), instrucao),
-      h('div', { class: 'cb-dano-corpo' }, ...partes),
+      h('div', { class: 'cb-dano-corpo' }, placar, ...partes),
       h('div', { class: 'cb-dano-botoes' }, desfazer, confirmar),
     );
   }

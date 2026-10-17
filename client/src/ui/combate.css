@@ -2698,3 +2698,65 @@ button.cb-barra {
   font-size: 1.1rem;
   opacity: 0.85;
 }
+
+/* o passo do efeito da manobra (17/10): o resultado em coluna (o placar, o efeito, as opções) e os botões no rodapé */
+.cb-dano.cb-efeito {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.4rem;
+  padding: 1.4rem 1.6rem 1.4rem;
+}
+.cb-dano.cb-efeito .cb-dano-cab {
+  max-width: none;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.cb-dano.cb-efeito .cb-dano-corpo {
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.6rem;
+  text-align: center;
+}
+.cb-dano.cb-efeito .cb-dano-conta {
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 46rem;
+  font-size: 1.5rem;
+  line-height: 1.45;
+}
+.cb-dano.cb-efeito .cb-dano-conta b {
+  font-size: 1.9rem;
+  line-height: 1.35;
+}
+.cb-efe-placar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+.cb-efe-placar .cb-carimbo {
+  position: static;
+  padding: 0.3rem 1.2rem 0.4rem;
+  border-width: 0.3rem;
+  font-size: 2.2rem;
+}
+.cb-efe-placar small {
+  font-size: 1.3rem;
+  opacity: 0.85;
+}
+.cb-dano.cb-efeito .cb-man-check {
+  padding: 0.7rem 1.2rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.45);
+  border-radius: 0.6rem;
+  background: rgba(6, 12, 22, 0.6);
+}
+.cb-dano.cb-efeito .cb-dano-botoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 0.12rem solid rgba(161, 136, 115, 0.25);
+}
