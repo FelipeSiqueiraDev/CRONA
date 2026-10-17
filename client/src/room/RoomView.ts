@@ -1558,8 +1558,20 @@ export class RoomView {
   }
 
   private pickAt(wx: number, wy: number): Hit | null {
-    for (let i = this.hits.length - 1; i >= 0; i--) if (this.hits[i].test(wx, wy)) return this.hits[i];
-    return null;
+    // o prédio e a árvore que ficam transparentes com gente atrás (xray) não roubam o clique de quem está atrás deles
+    // (17/10, o Felipe: "por que eu não consigo selecionar ela clicando nela?", a Camarilla atrás de uma casa)
+    let atras: Hit | null = null;
+    for (let i = this.hits.length - 1; i >= 0; i--) {
+      const h = this.hits[i];
+      if (!h.test(wx, wy)) continue;
+      if (h.kind === 'user') return h;
+      if (!atras) {
+        atras = h;
+        const it = h.kind === 'floor' ? this.map?.getItem(h.id) : undefined;
+        if (!(it && getFurni(it.defId)?.xray)) return h;
+      }
+    }
+    return atras;
   }
 
   /**
