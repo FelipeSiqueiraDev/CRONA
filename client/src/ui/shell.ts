@@ -340,6 +340,8 @@ export class Shell {
   private docs: Documento[] = [];
   private rpgTabsEl!: HTMLElement;
   private rpgBody!: HTMLElement;
+  /** a aba da direita da última vez que o painel foi refeito (a rolagem só volta na mesma aba) */
+  private rpgRolagemDe = '';
   private rpgSig = '';
   /** os números (PV, PE, SAN) da última passada: só eles mudando se acertam no lugar, sem refazer as cartas */
   private rpgVit = '';
@@ -1049,7 +1051,12 @@ export class Shell {
         ),
       );
     }
+    // a rolagem fica onde estava ao refazer a mesma aba (17/10, o Felipe: "quando eu tô selecionando uma opção no
+    // interlúdio ele tá subindo a tela toda"): a do painel e a das listas de dentro, pela classe de cada uma
+    const rolagem = this.rpgRolagemDe === this.rpgTab ? guardarRolagem(this.rpgBody) : [];
+    this.rpgRolagemDe = this.rpgTab;
     const body = clear(this.rpgBody);
+    queueMicrotask(() => devolverRolagem(body, rolagem));
     if (this.rpgTab === 'ITENS') {
       this.abaItens.render(body, party, this.fichasMapa, this.gm);
       return;
@@ -2691,4 +2698,26 @@ function selo(): HTMLElement {
   const el = h('span', { class: 'insp-selo', 'aria-hidden': 'true' });
   el.innerHTML = `<svg viewBox="0 0 100 100"><defs><path id="selo-arco" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs><circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="50" cy="50" r="29" fill="none" stroke="currentColor" stroke-width="1"/><text font-size="8.6" letter-spacing="1.6" fill="currentColor" font-family="Courier Prime, monospace" font-weight="700"><textPath href="#selo-arco">ORDO REALITAS · SEDE DA ORDEM ·</textPath></text></svg><i></i>`;
   return el;
+}
+
+/** A rolagem do painel e das listas de dentro dele (pela classe e pela ordem), para devolver depois de refazer. */
+function guardarRolagem(raiz: HTMLElement): [string, number, number][] {
+  const out: [string, number, number][] = [['', 0, raiz.scrollTop]];
+  raiz.querySelectorAll<HTMLElement>('*').forEach((el) => {
+    if (el.scrollTop <= 0) return;
+    const chave = el.className || el.tagName;
+    out.push([chave, [...raiz.querySelectorAll<HTMLElement>('*')].filter((x) => (x.className || x.tagName) === chave).indexOf(el), el.scrollTop]);
+  });
+  return out;
+}
+
+function devolverRolagem(raiz: HTMLElement, rolagem: [string, number, number][]) {
+  for (const [chave, n, topo] of rolagem) {
+    if (!chave) {
+      raiz.scrollTop = topo;
+      continue;
+    }
+    const el = [...raiz.querySelectorAll<HTMLElement>('*')].filter((x) => (x.className || x.tagName) === chave)[n];
+    if (el) el.scrollTop = topo;
+  }
 }
