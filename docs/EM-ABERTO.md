@@ -399,6 +399,8 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   armado do Miguel; o Herman; os portadores de relíquia). A cota de imagem da conta nova acabou às 15:52 (9 imagens) e
   volta por volta das 18:47; a fila tenta de novo a cada 5 min. A **Marcela Geleerd** (a médica da ala médica) também
   foi pedida, mas não existe no Elenco: falta a referência de aparência.
+  Entrou: o **Existido masculino** refeito pelo retrato da lista (careca, escrita miúda na pele com linhas douradas,
+  olhos brancos, calça verde rasgada, flutuando), no lugar do dourado escuro de cabelo; 1,80 m, a altura da Catarina.
 - **A fila única da arte** (`trabalho/fila_unica.sh`, a partir das 18:48, um pedido por vez, tentando de novo a cada 5
   min se ainda der o limite de imagem): Camarilla em pé e sentada; Pedro (npc-camisa-rosa, pistola grossa) e Rosa
   (npc-cabelo-rosa, uma submetralhadora em cada mão) armados em pé; os agachados que faltam; o sentado dos Marcados e de
