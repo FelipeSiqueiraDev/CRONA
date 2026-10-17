@@ -380,7 +380,9 @@ export class Hotel implements HotelApi {
       if (!npc.arte || this.charDaArte(npc.arte) !== null) continue;
       const sheet = folhaDaPasta(npc.arte);
       if (!sheet) continue;
-      this.db.characters.push({ id: this.db.nextCharId++, name: npc.nome, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height: 104, fps: 4, sequence: [0], removeBg: false });
+      // quem não tem 1,80 m (a Camarilla) sai na escala da altura dele
+      const height = npc.altura ? Math.round((104 * npc.altura) / 1.8) : 104;
+      this.db.characters.push({ id: this.db.nextCharId++, name: npc.nome, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height, fps: 4, sequence: [0], removeBg: false });
       mudou = true;
     }
     if (pecas)
