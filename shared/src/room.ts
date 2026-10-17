@@ -141,6 +141,12 @@ export interface FloorItem {
    * personagem quando ele se deita nela"); o mestre liga e desliga com Ctrl + clique na cama
    */
   coberta?: boolean;
+  /**
+   * Trancado (17/10, o Felipe: "pra eu trancar ou destrancar uma coisa, seja armário, porta, calabouço, eu aperto
+   * Ctrl + clique; nada visual indica isso, eles vão descobrir quando tentarem abrir"): não abre, e quem tenta ouve o
+   * barulho da tranca. Separado do aberto e fechado (`state`).
+   */
+  trancado?: boolean;
 }
 
 /** A altura que o móvel tapa de verdade: o quebrado, só a metade. */

@@ -42,7 +42,7 @@ describe("Igarapé", () => {
     for (const r of salas)
       for (const it of r.items.filter((i) => getFurni(i.defId)?.portal)) {
         // a porta trancada de apartamento sem cena (a receita do prédio, predioApartamentos.ts) não leva a lugar nenhum
-        if (it.link === undefined && it.state === 2 && it.defId === "portal") continue;
+        if (it.link === undefined && it.trancado && it.defId === "portal") continue;
         assert.ok(it.link !== undefined && ids.has(it.link), `${r.name}: passagem ${it.defId} em ${it.x},${it.y} sem destino`);
         const volta = salas.find((s) => s.id === it.link)!;
         assert.ok(volta.items.some((i) => i.link === r.id), `${volta.name} não volta para ${r.name}`);

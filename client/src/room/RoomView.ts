@@ -360,6 +360,8 @@ export interface RoomEvents {
   grupoMudou?(n: number): void;
   /** Ctrl + clique na cama: a coberta por cima de quem está deitado, liga e desliga */
   cobrir?(id: number): void;
+  /** Ctrl + clique do mestre num móvel que abre e fecha: tranca ou destranca (sem nada à vista) */
+  trancar?(id: number): void;
 }
 
 interface Hit {
@@ -1470,6 +1472,11 @@ export class RoomView {
         // Ctrl + clique na cama (o mestre): a coberta por cima de quem deita nela
         if (ctrl && def.deita && this.info?.isOwner && this.events.cobrir) {
           this.events.cobrir(it.id);
+          return;
+        }
+        // Ctrl + clique (o mestre) no que abre e fecha (a porta, o armário, a escotilha): tranca ou destranca
+        if (ctrl && (def.states ?? 0) > 1 && this.info?.isOwner && this.events.trancar) {
+          this.events.trancar(it.id);
           return;
         }
         if (dbl) this.events.use(it.id);

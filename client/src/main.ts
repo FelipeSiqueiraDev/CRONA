@@ -49,6 +49,7 @@ import { forgetGmKey, readGmKey, tableName, tableRequested } from './session/acc
 import { montarTemas } from './ui/temaUi';
 import { NEVOA_NA_TELA } from './ui/ferramentasMesa';
 import { ligarMarcaOuro } from './ui/marcaOuro';
+import { sfx } from './ui/sfx';
 
 const LAST_ROOM = 'crona.lastRoom';
 const HOME_SEEN = 'crona.homeSeen';
@@ -188,6 +189,7 @@ const view = new RoomView(canvas, {
     net.send({ t: 'use', id });
   },
   cobrir: (id) => net.send({ t: 'cobrir', id }),
+  trancar: (id) => net.send({ t: 'trancar', id }),
   select: () => app.emit('selection'),
   openHint: (kind, id) => hintViewer.open(kind, id),
   aviso: (texto) => toast(texto),
@@ -529,6 +531,9 @@ net.onMessage = (m: ServerMsg) => {
     case 'itemUpdate':
       view.updateItem(m.item);
       app.emit('items');
+      break;
+    case 'trancado':
+      sfx.trancado();
       break;
     case 'itemRemove':
       view.removeItem(m.id);

@@ -415,6 +415,8 @@ export type ClientMsg =
   | { t: 'use'; id: number }
   /** a coberta da cama por cima de quem está deitado (Ctrl + clique na cama): liga e desliga */
   | { t: 'cobrir'; id: number }
+  /** trancar ou destrancar um móvel ou porta (Ctrl + clique, só o mestre) */
+  | { t: 'trancar'; id: number }
   /**
    * os jogos do bar (só o mestre): a peça vai até o fliperama, o alvo de dardos ou a sinuca e o jogo
    * abre no celular de quem joga com ela (peça sem ficha = um NPC: o mestre joga na tela dele); de
@@ -571,6 +573,8 @@ export type ServerMsg =
   | { t: 'action'; id: number; action: 'wave' }
   | { t: 'itemAdd'; item: FloorItem }
   | { t: 'itemUpdate'; item: FloorItem }
+  /** alguém tentou abrir uma coisa trancada: todas as telas tocam o barulho da tranca */
+  | { t: 'trancado'; x: number; y: number }
   | { t: 'itemRemove'; id: number }
   | { t: 'wallAdd'; item: WallItem }
   | { t: 'wallUpdate'; item: WallItem }

@@ -60,6 +60,8 @@ export function buildRoom(
       continue;
     }
     const it: FloorItem = { id: db.nextItemId++, defId, x, y, z: res.z, rot, state: state ?? 0 };
+    // a passagem "trancada" de antes (o estado 2, com o cadeado desenhado): agora fechada e trancada, sem nada à vista
+    if (it.state === 2 && getFurni(defId)?.portal) Object.assign(it, { state: 1, trancado: true });
     if (modelo) it.modelo = modelo;
     if (h) it.hint = h;
     map.addItem(it);
@@ -748,7 +750,21 @@ function bestiarioInicial(db: Database): boolean {
   return true;
 }
 
+/** A passagem no estado 2 (trancada, com o cadeado) vira fechada e trancada (17/10). Devolve se mudou alguma. */
+function trancasSemCadeado(db: Database): boolean {
+  let mudou = false;
+  for (const r of db.rooms)
+    for (const it of r.items)
+      if (it.state === 2 && getFurni(it.defId)?.portal) {
+        it.state = 1;
+        it.trancado = true;
+        mudou = true;
+      }
+  return mudou;
+}
+
 export function upgradeDb(db: Database): boolean {
+  const trancas = trancasSemCadeado(db);
   const v = db.seedVersion ?? 1;
   // a Sede e a fazenda mudam de montagem sem esperar versão nova do banco
   if (v >= SEED_VERSION) {
@@ -766,7 +782,7 @@ export function upgradeDb(db: Database): boolean {
     const bestiario = bestiarioInicial(db);
     const npcs = npcsIniciais(db);
     const mesas = mesasMaisAltas(db);
-    return sede || fazenda || orfanato || santoBerco || igarape || tiradentes || santaAmalia || cores || temas || van || paredes || bestiario || npcs || mesas;
+    return trancas || sede || fazenda || orfanato || santoBerco || igarape || tiradentes || santaAmalia || cores || temas || van || paredes || bestiario || npcs || mesas;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';

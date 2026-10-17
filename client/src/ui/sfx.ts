@@ -464,6 +464,19 @@ class Sfx {
     this.tone(880 + (n % 10) * 22, 880 + (n % 10) * 22, 0.07, 0.12, 'square');
   }
 
+  /**
+   * A tranca (17/10): alguém forçou uma porta ou um armário trancado. A maçaneta desce e bate no batente duas vezes,
+   * o trinco chacoalha no ferro e a madeira range de leve.
+   */
+  trancado() {
+    for (const [t, f] of [[0, 1] as const, [0.16, 0.85] as const]) {
+      this.tomEm(t, 210 * f, 120 * f, 0.07, 0.32, 'square', 900);
+      this.ruidoEm(t, 0.05, 'bandpass', 2400 * f, 1600 * f, 0.34);
+      this.ruidoEm(t + 0.03, 0.08, 'highpass', 3800, 3000, 0.12);
+    }
+    this.ruidoEm(0.3, 0.12, 'lowpass', 700, 380, 0.16);
+  }
+
   /** Senha errada: zumbido grave. */
   denied() {
     this.tone(150, 140, 0.32, 0.22, 'sawtooth');

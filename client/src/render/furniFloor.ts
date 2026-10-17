@@ -1388,19 +1388,11 @@ const builders: Record<string, Builder> = {
     const vao: LBox = [0, 0.02, A0, A1, 0, H];
     const folha: LBox = [0.05, 0.1, A0, A1, 0.01, H];
     const soleira: LBox = [0, 0.16, A0 - bt, A1 + bt, 0, 0.03];
-    const fechada = state === 1 || state === 2;
-    const trancada = state === 2;
+    // fechada (o estado 1); trancada não aparece (17/10, o Felipe: "nada visual indica isso")
+    const fechada = state === 1;
     const corFolha = shade(wood, 0.32);
     // na beira da frente do cômodo a parede não aparece: a porta vira soleira, batente baixo e o contorno do vão
     const baixa = (p: Painter) => p.m.rot === 0 || p.m.rot === 6;
-    const cadeado = (p: Painter, u: number) => {
-      // a tranca de ferro atravessando a porta e o cadeado no meio
-      p.poly([[u, A0 - 0.06, 1.0], [u, A1 + 0.06, 1.0], [u, A1 + 0.06, 1.08], [u, A0 - 0.06, 1.08]], '#2b2c30', OUTLINE);
-      const m = (A0 + A1) / 2;
-      p.poly([[u + 0.01, m - 0.07, 0.86], [u + 0.01, m + 0.07, 0.86], [u + 0.01, m + 0.07, 1.0], [u + 0.01, m - 0.07, 1.0]], '#8a6e36', OUTLINE);
-      p.line([u + 0.01, m - 0.04, 1.0], [u + 0.01, m - 0.04, 1.06], '#c9b27a', 1.5);
-      p.line([u + 0.01, m + 0.04, 1.0], [u + 0.01, m + 0.04, 1.06], '#c9b27a', 1.5);
-    };
     return V([
       // o chão escurece na frente do vão aberto
       N([0.05, 0.95, 0.05, 0.95, 0, 0], (p) => {
@@ -1430,7 +1422,6 @@ const builders: Record<string, Builder> = {
         if (baixa(p)) {
           // a folha fechada, só o contorno, para não tapar a sala
           p.poly([[0.08, A0, 0.03], [0.08, A1, 0.03], [0.08, A1, H], [0.08, A0, H]], 'rgba(150,110,80,0.26)', 'rgba(225,185,140,0.55)');
-          if (trancada) cadeado(p, 0.1);
           return;
         }
         p.box(folha, corFolha, { edge: 0.15 });
@@ -1445,7 +1436,6 @@ const builders: Record<string, Builder> = {
         });
         // maçaneta
         p.line([0.12, A1 - 0.16, 1.0], [0.12, A1 - 0.28, 1.0], '#c9a85a', 2.5);
-        if (trancada) cadeado(p, 0.12);
       })),
       naParede(N(soleira, (p) => {
         if (baixa(p)) p.box(soleira, shade(wood, 0.1), { edge: 0.25 });

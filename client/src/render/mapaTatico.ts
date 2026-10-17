@@ -1127,9 +1127,9 @@ function desenharPortaNaParede(ctx: CanvasRenderingContext2D, v: CameraVoo, map:
     ctx.fillStyle = '#16120e';
     ctx.fillRect(vao.x, vao.y, vao.w, vao.h);
     ctx.setTransform(matrizNaAltura(v, 0));
-    const fechada = porta.state === 1 || porta.state === 2;
+    const fechada = porta.state === 1;
     if (fechada) {
-      ctx.fillStyle = porta.state === 2 ? '#a3221a' : '#7a5636';
+      ctx.fillStyle = '#7a5636';
       if (dy !== 0) ctx.fillRect(vao.x, vao.y + t * 0.35, vao.w, t * 0.3);
       else ctx.fillRect(vao.x + t * 0.35, vao.y, t * 0.3, vao.h);
       continue;

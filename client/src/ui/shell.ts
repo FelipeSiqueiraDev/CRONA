@@ -1502,6 +1502,8 @@ export class Shell {
     const hint = item.hint && (item.hint.visible || this.gm) ? item.hint : undefined;
     const trancado = kind === 'floor' && !!(item as FloorItem).lock;
     if (trancado && this.gm) pane.append(this.keypad(item as FloorItem));
+    // a tranca do Ctrl + clique: o tabuleiro não mostra; só o mestre vê aqui, para lembrar
+    if (kind === 'floor' && (item as FloorItem).trancado && this.gm) pane.append(h('p', { class: 'obj-nota' }, 'Trancado. Ctrl + clique no tabuleiro destranca.'));
     if (hint && !hint.visible) pane.append(h('p', { class: 'desc-hidden' }, '● pista oculta para os jogadores'));
     const usos = h('div', { class: 'obj-bts' });
     const states = fdef?.states ?? wdef?.states ?? 0;
@@ -2319,7 +2321,7 @@ export class Shell {
         ok: abrir,
         dica: porta
           ? fdef?.portal
-            ? (['Fechar a porta', 'Trancar a porta', 'Destrancar e abrir'][(it as FloorItem).state] ?? 'Abrir ou fechar')
+            ? (['Fechar a porta', 'Abrir a porta'][(it as FloorItem).state] ?? 'Abrir ou fechar')
             : 'Abrir ou fechar'
           : lock?.semSenha
             ? lock.open

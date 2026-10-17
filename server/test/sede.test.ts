@@ -191,7 +191,7 @@ describe('passagem secreta (geladeira)', () => {
     assert.equal(t.token.dir, 2);
   });
 
-  test('porta: clique duplo fecha, tranca e abre; fechada ou trancada ninguém passa', () => {
+  test('porta: clique duplo abre e fecha; Ctrl + clique tranca (fecha, não abre, e não aparece no desenho)', () => {
     const salao = room('Salão Principal');
     gm.send({ t: 'join', roomId: salao.data.id });
     const porta = salao.map.allItems().find((i) => i.defId === 'portal' && i.x === 16 && i.y === 0)!;
@@ -200,10 +200,20 @@ describe('passagem secreta (geladeira)', () => {
     assert.equal(salao.map.getItem(porta.id)!.state, 1, 'fechada');
     assert.equal(salao.map.walkState(16, 0), 'blocked');
     gm.send({ t: 'use', id: porta.id });
-    assert.equal(salao.map.getItem(porta.id)!.state, 2, 'trancada');
+    assert.equal(salao.map.getItem(porta.id)!.state, 0, 'aberta de novo (só dois estados)');
+    // trancar com a porta aberta: ela fecha e tranca
+    gm.send({ t: 'trancar', id: porta.id });
+    assert.equal(salao.map.getItem(porta.id)!.state, 1, 'trancar fecha a porta');
+    assert.equal(salao.map.getItem(porta.id)!.trancado, true, 'trancada');
     assert.equal(salao.map.walkState(16, 0), 'blocked');
+    // trancada, o clique duplo não abre (só faz o barulho)
     gm.send({ t: 'use', id: porta.id });
-    assert.equal(salao.map.getItem(porta.id)!.state, 0, 'aberta de novo');
+    assert.equal(salao.map.getItem(porta.id)!.state, 1, 'trancada não abre');
+    // destrancar: continua fechada, e aí abre
+    gm.send({ t: 'trancar', id: porta.id });
+    assert.equal(salao.map.getItem(porta.id)!.trancado, undefined, 'destrancada');
+    gm.send({ t: 'use', id: porta.id });
+    assert.equal(salao.map.getItem(porta.id)!.state, 0, 'aberta');
     assert.equal(salao.map.walkState(16, 0), 'walk');
   });
 

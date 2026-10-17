@@ -129,7 +129,7 @@ describe("Santo Berço", () => {
     const bunker = porNome("Bunker dos Guardiões");
     const esc = quarto.items.find((i) => i.defId === "escotilha")!;
     assert.equal(esc.link, bunker.id);
-    assert.equal(esc.state, 2, "a escotilha começa trancada (só abre por baixo)");
+    assert.ok(esc.state === 1 && esc.trancado, "a escotilha começa fechada e trancada (só abre por baixo)");
     assert.equal(bunker.items.find((i) => i.defId === "escada_vertical")?.link, quarto.id);
     assert.ok(bunker.items.some((i) => i.link === porNome("Câmara dos Cristais Pretos").id));
   });

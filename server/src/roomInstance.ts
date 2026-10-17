@@ -864,6 +864,9 @@ export class RoomInstance {
       case 'cobrir':
         if (isInt(m.id)) this.cobrir(u, m.id);
         break;
+      case 'trancar':
+        if (isInt(m.id)) this.trancar(u, m.id);
+        break;
       case 'unlock':
         if (isInt(m.id)) this.unlock(c, m.id, m.code);
         break;
@@ -1176,9 +1179,35 @@ export class RoomInstance {
     this.broadcastFloor('itemUpdate', it);
   }
 
+  /**
+   * Trancar e destrancar (Ctrl + clique, só o mestre): qualquer móvel que abre e fecha (a porta, o armário, a escotilha
+   * do calabouço). A porta aberta fecha ao trancar. Nada muda no desenho: quem tenta abrir ouve a tranca.
+   */
+  private trancar(u: RoomUser, id: number) {
+    if (!this.isOwner(u.client)) return;
+    const floor = this.map.getItem(id);
+    const def = floor ? getFurni(floor.defId) : undefined;
+    if (!floor || !def?.states || def.states < 2) return;
+    const it: FloorItem = { ...floor, trancado: !floor.trancado || undefined };
+    if (!it.trancado) delete it.trancado;
+    else if (def.openState !== undefined && it.state === def.openState) {
+      if (this.usersOn(this.map.tilesFor(floor.defId, floor.x, floor.y, floor.rot))) return this.err(u.client, 'Tem alguém na porta.');
+      it.state = (def.openState + 1) % def.states;
+    }
+    this.map.updateItem(it);
+    this.persist();
+    this.broadcastFloor('itemUpdate', it);
+  }
+
+  /** Alguém tentou abrir uma coisa trancada: o barulho da tranca em todas as telas (o mestre, a mesa, os jogadores). */
+  private somTrancado(it: FloorItem) {
+    this.broadcast({ t: 'trancado', x: it.x, y: it.y });
+  }
+
   private use(u: RoomUser, id: number) {
     const floor = this.map.getItem(id);
     if (floor?.lock?.semSenha) return this.empurrar(u.client, floor);
+    if (floor?.trancado) return this.somTrancado(floor);
     if (floor) {
       const def = getFurni(floor.defId);
       if (!def?.states || def.states < 2) return;
@@ -2071,7 +2100,10 @@ export class RoomInstance {
     if (!porta) return undefined;
     const def = getFurni(porta.defId)!;
     if (porta.quebrado && !def.portal) return 'A porta está quebrada.';
-    if (def.portal && porta.state === 2) return 'A porta está trancada.';
+    if (porta.trancado) {
+      this.somTrancado(porta);
+      return 'A porta está trancada.';
+    }
     const livre = (x: number, y: number) => this.occupied(x, y, u.client.id);
     // a casa da frente: a vizinha da porta de caminho mais curto
     let t: { x: number; y: number } | null = null;
@@ -2093,7 +2125,7 @@ export class RoomInstance {
       const atual = this.map.getItem(porta.id);
       if (!atual) return;
       if (atual.state !== def.openState) {
-        if (def.portal && atual.state === 2) return;
+        if (atual.trancado) return this.somTrancado(atual);
         const aberta = { ...atual, state: def.openState! };
         this.map.updateItem(aberta);
         this.persist();
