@@ -134,6 +134,8 @@ export interface Database {
   temasAgentes?: boolean;
   /** o que estava em cima das mesas já subiu com elas (12/10, as mesas maiores) */
   mesasAltas?: boolean;
+  /** e desceu com elas quando a altura voltou a ser a de verdade (17/10; seed.ts, mesasMaisAltas) */
+  mesasReais?: boolean;
   /** versão da montagem da Fazenda Olhos de Águia (seedFazenda) */
   fazendaRev?: number;
   /** versão da montagem do Orfanato Filhos do Dragão (seedOrfanato) */

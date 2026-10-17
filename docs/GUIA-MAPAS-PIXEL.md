@@ -99,7 +99,7 @@ Siga a cozinha (`agente_cozinha/cozinha.py`) como modelo. É o caminho completo.
    - a porta;
    - cada móvel: `[def, casa x, casa y, giro, estado]`;
    - os itens de parede.
-2. **Leia cada móvel no `shared/src/furni.ts`:** largura e fundo em casas, altura em metros e `aumento`. A mesa e as cadeiras crescem 1,2 vezes, e a arte já vem nesse tamanho.
+2. **Leia cada móvel no `shared/src/furni.ts`:** largura e fundo em casas, altura em metros e `aumento`. A mesa e as cadeiras crescem 1,2 vezes **só na largura e no fundo**; a altura é a de verdade (mesa 0,76 m, assento 0,45 m, banqueta de balcão 0,75 m, mesa de laboratório 0,90 m; 17/10, o Felipe: "Mesa alta né menino?!"). A arte já vem nesse tamanho.
 3. **Monte a cena de estudo** (`cozinha.py`):
    - `sala()` faz o chão, as duas paredes de trás, o rodapé, a viga e os pilares;
    - `montar_moveis()` chama uma função por móvel;
@@ -124,7 +124,7 @@ Siga a cozinha (`agente_cozinha/cozinha.py`) como modelo. É o caminho completo.
    `python3 scripts/3d/estilo/exportar_px.py <def> --destino /tmp/exp`
    - Ele desenha o móvel sozinho, girado em volta da pegada, nos 4 giros.
    - O fundo é transparente. A sombra fica dentro da imagem, num chão invisível. A chaminé some em transparência.
-   - Ele grava `<def>/giro-N.png` e a linha do `moveis.json`: `escala` 1, `pixel` true, `exato` true, `real` (a medida já com o `aumento`), `giros` e `estados`.
+   - Ele grava `<def>/giro-N.png` e a linha do `moveis.json`: `escala` 1, `pixel` true, `exato` true, `real` (a medida já com o `aumento` na largura e no fundo), `giros` e `estados`.
    - **Confira os 4 giros lado a lado.** Peça aberta por trás aparece aqui.
    - Sem `--destino`, ele grava direto em `client/public/arte/mobiliario/`, a arte do jogo.
 2. **O chão e a parede:** `python3 scripts/3d/estilo/texturas_px.py <nome>` gera, em `client/public/arte/texturas/px/<nome>/`:
@@ -162,7 +162,7 @@ Os números são os do código (13/10); se mudarem, vale o código. Cada regra c
 - **Giros:** 0, 2, 4, 6 dizem para onde aponta a frente: −y, +x, +y, −x. Nos giros 2 e 6, largura e fundo trocam.
   - Um móvel pode limitar os giros (`rotations`).
   - O jogo mostra a frente nos giros 2 e 4 e as costas nos giros 0 e 6.
-- **`height`** em metros no catálogo. O jogo converte para unidades; o `aumento` já vem incluído.
+- **`height`** em metros no catálogo. O jogo converte para unidades. É a altura de verdade: o `aumento` não entra nela.
 - **`walkable`:** pisa-se em cima (tapete, estrado). Sem ele, sem `sit` e sem porta aberta, a casa bloqueia.
 - **`sit`:** a casa vira assento.
   - A peça sobe à altura do móvel e fica virada para a frente dele.
@@ -179,7 +179,7 @@ Os números são os do código (13/10); se mudarem, vale o código. Cada regra c
   - Em todas: a cadeira encaixa embaixo ("Já tem algo embaixo da mesa." se já houver).
   - `'vazada'` (só pernas): a peça também passa por baixo, abaixada, com um custo maior no caminho.
   - `'fundo'`: ninguém atravessa.
-- **`aumento`:** a arte cresce por igual em volta do meio. As mesas e as cadeiras usam 1,2. A pegada e a ordem de desenho continuam as das casas.
+- **`aumento`:** a arte cresce na largura e no fundo, em volta do meio (a altura fica a de verdade). As mesas e as cadeiras usam 1,2. A pegada e a ordem de desenho continuam as das casas.
 - **Portas:**
   - `states` e `openState` dizem em que estado dá para passar. O clique duplo do mestre troca o estado.
   - O `portal` tem os estados aberta (0), fechada (1) e trancada (2).
@@ -196,7 +196,7 @@ Os números são os do código (13/10); se mudarem, vale o código. Cada regra c
 ### 7.3 O que o desenho precisa respeitar
 - **A âncora da arte:** a quina da frente da base, a de baixo na tela (ou o centro da base, com `ancora: 'centro'`).
   - A arte em pixel (`pixel`) vai no tamanho final, sem esticar.
-  - O `real` é a medida de verdade, já com o aumento.
+  - O `real` é a medida de verdade, já com o aumento na largura e no fundo.
 - **Encostar na parede:** se o móvel é menor que as casas dele e as costas dão para a parede, o jogo desloca o **desenho** até ela (no canto, também para o lado). A casa continua a mesma.
   - Não vale para cadeira, coisa pisável, portal, mesa vazada e item fora do chão.
 - **O tampo:** um móvel stackable de 0,52 a 1,07 m de altura (a mesa, o balcão) tem tampo.
@@ -256,7 +256,7 @@ renomeados ao juntar (por exemplo, `_LUZ` virou `_LUZ2`).
 - [ ] **A sombra do móvel cai fora da imagem** ou some com a luz do jogo, que soma por cima. Ela precisa ter força.
 - [ ] **A mesa com travessa embaixo** (a cadeira não encaixa) ou o **tampo fora da altura do `height`** (o que vai em cima flutua).
 - [ ] **O desenho saindo muito da pegada** (cruza errado com o vizinho na ordem de desenho).
-- [ ] **A medida errada.** Confira com o `furni.ts` e o seed. O tamanho do móvel é o do catálogo, e a arte já vem com o `aumento`.
+- [ ] **A medida errada.** Confira com o `furni.ts` e o seed. O tamanho do móvel é o do catálogo, e a arte já vem com o `aumento` (só na largura e no fundo: a mesa de 0,94 m sumia com a Catarina atrás).
 
 ## 10. O que falta (13/10)
 

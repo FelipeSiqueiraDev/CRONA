@@ -5,7 +5,7 @@ elegante), da Prisão, do Laboratório e do Calabouço/Escritório da fazenda (o
 art 1:1 no estilo da cozinha da fazenda (agente_cozinha/cozinha.py) e da casa (pecas_px/casa.py).
 
 Cada peça é desenhada no giro 4 (a frente para +y), com a pegada começando em (0, 0), no tamanho final do catálogo
-(def.height / 1,633 em metros; o `aumento` já entra). O exportador (exportar_px.py) gira e faz o acabamento.
+(def.height em metros; o `aumento` entra só na largura e no fundo, a altura é a de verdade). O exportador (exportar_px.py) gira e faz o acabamento.
 
 Decisões (o que o catálogo deixava em aberto):
   - chair_office, chair_verissimo, armchair_verissimo, sofa_verissimo: o `height` é a altura do ASSENTO.
@@ -448,11 +448,11 @@ def braco_cadeira(xb, cy_, zs, zt, cor=PLAST):
 
 def chair_office():
     """
-    A cadeira de escritório (o assento a 0,6 m): a base de cinco pés com as rodinhas, a coluna a gás cromada, o
+    A cadeira de escritório (o assento a 0,47 m): a base de cinco pés com as rodinhas, a coluna a gás cromada, o
     mecanismo, o assento estofado de tecido azul-grafite, o encosto na haste e os braços em T.
     """
     cx_, cy_ = 0.375, 0.39
-    zs = 0.98 / UN
+    zs = 0.47
     base_estrela(cx_, cy_, 0.31)
     coluna_gas(cx_, cy_, 0.13, zs - 0.12)
     cx((cx_ - 0.11, cx_ + 0.11, cy_ - 0.1, cy_ + 0.1, zs - 0.13, zs - 0.09), metal('#2e2d33', (0, 0, 0, 0, zs - 0.13, zs - 0.09)))
@@ -476,12 +476,12 @@ def chair_office():
 
 def cadeira_gamer():
     """
-    A cadeira gamer (o encosto a 1,56 m): a base de cinco pés, o assento com as abas, o encosto alto de corrida com as
+    A cadeira gamer (o encosto a 1,32 m): a base de cinco pés, o assento com as abas, o encosto alto de corrida com as
     asas roxas, as fendas do cinto, a almofada de pescoço e os braços em T.
     """
     cx_, cy_ = 0.375, 0.4
-    zs = 0.56
-    H = 2.55 / UN
+    zs = 0.5
+    H = 1.32
     base_estrela(cx_, cy_, 0.33)
     coluna_gas(cx_, cy_, 0.13, zs - 0.13)
     cx((cx_ - 0.12, cx_ + 0.12, cy_ - 0.12, cy_ + 0.1, zs - 0.15, zs - 0.1), metal('#2e2d33', (0, 0, 0, 0, zs - 0.15, zs - 0.1)))
@@ -670,12 +670,12 @@ def _lapis(x, y, z, ang, cor='#e0b030'):
 
 def table_work():
     """
-    A mesa de trabalho (3 x 2 casas, aumento 1,2: 2,7 x 1,8 m; 0,94 m): o tampo grosso de compensado claro com a borda
+    A mesa de trabalho (3 x 2 casas, aumento 1,2: 2,7 x 1,8 m; o tampo a 0,76 m): o tampo grosso de compensado claro com a borda
     de fórmica, as quatro pernas de tubo de aço (nada embaixo: vazada), as folhas, o lápis e a caneca.
     """
     w, d = 2.25 * 1.2, 1.5 * 1.2
     x, y = 1.125 - w / 2, 0.75 - d / 2
-    h = 1.54 / UN
+    h = 0.76
     tp = 0.05
     TAB = tab2(["#c8a272", "#c29c6c", "#cca878"], 0.6, "#8a6440", eixo=0, seed=11, comp=1.35, org=y, veio=False)
     VEIO = mad2('#c8a272', eixo=0, seed=12, passo=0.07, claro=1.05, escuro=0.95)
@@ -712,13 +712,13 @@ def _gaveteiro(x0, x1, y0, y1, z0, z1, cor, n, alca_cor='#1e2022'):
 
 def desk_metal():
     """
-    A mesa metálica de repartição (2 x 1 casas, aumento 1,2: 1,8 x 0,9 m; 0,96 m): o tampo de fórmica verde-cinza com o
+    A mesa metálica de repartição (2 x 1 casas, aumento 1,2: 1,8 x 0,9 m; o tampo a 0,76 m): o tampo de fórmica verde-cinza com o
     friso de alumínio, o gaveteiro de três gavetas à direita, a lateral fechada à esquerda e o painel de trás (o vão
     'fundo'); a pilha de papéis e o porta-lápis.
     """
     w, d = 1.5 * 1.2, 0.75 * 1.2
     x, y = 0.75 - w / 2, 0.375 - d / 2
-    h = 1.57 / UN
+    h = 0.76
     tp = 0.04
     COR = '#5e6a62'
 
@@ -785,13 +785,13 @@ def _pasta(x, y, z, ang, cor='#c8a46a', seed=0, alto=0.03):
 
 def desk_verissimo():
     """
-    A mesa do Veríssimo (3 x 2 casas, aumento 1,2: 2,7 x 1,8 m; 0,96 m): a mesa de pedestais de jacarandá entalhado
+    A mesa do Veríssimo (3 x 2 casas, aumento 1,2: 2,7 x 1,8 m; o tampo a 0,76 m): a mesa de pedestais de jacarandá entalhado
     (as gavetas dos dois lados, o vão do meio), o painel de trás almofadado (o vão 'fundo'), o tampo com o forro de
     couro verde, os livros, as pastas de casos, a luminária verde, o tinteiro e a pena.
     """
     w, d = 2.25 * 1.2, 1.5 * 1.2
     x, y = 1.125 - w / 2, 0.75 - d / 2
-    h = 1.57 / UN
+    h = 0.76
     tp = 0.06
     zb = 0.1
     pw = 0.72

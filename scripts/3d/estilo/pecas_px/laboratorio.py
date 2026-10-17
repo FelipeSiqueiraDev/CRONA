@@ -4,7 +4,7 @@ uso, limpas mas velhas), da enfermaria e da sala de cirurgia do Orfanato e dos a
 pixel art 1:1 no estilo da cozinha da fazenda (agente_cozinha/cozinha.py).
 
 Cada peça é desenhada no giro 4 (a frente para +y), com a pegada começando em (0, 0), no tamanho final do catálogo
-(def.height / 1,633 em metros; o `aumento` já entra). O exportador (exportar_px.py) gira e faz o acabamento.
+(def.height em metros; o `aumento` entra só na largura e no fundo, a altura é a de verdade). O exportador (exportar_px.py) gira e faz o acabamento.
 
 Decisões (o que o catálogo deixava em aberto):
   - stool_lab, stool_metal, toilet_steel: o `height` é a altura do ASSENTO.
@@ -580,13 +580,13 @@ def impressora_3d():
 
 def mesa_vidro_lab():
     """
-    A mesa de vidro do laboratório (1 x 3 casas, aumento 1,2: 0,9 x 2,7 m; 1,08 m): o tampo de vidro verde-claro com
+    A mesa de vidro do laboratório (1 x 3 casas, aumento 1,2: 0,9 x 2,7 m; o tampo a 0,90 m): o tampo de vidro verde-claro com
     a borda, o quadro e as pernas de aço, o painel de trás (o vão é 'fundo'); duas fileiras de tubos de ensaio, os
     frascos coloridos e o bico de Bunsen.
     """
     w, d = 0.75 * 1.2, 2.25 * 1.2
     x, y = 0.375 - w / 2, 1.125 - d / 2
-    h = 1.76 / UN
+    h = 0.90
     tv = 0.025
     # o quadro de aço logo embaixo do vidro e as pernas
     m = 0.04
@@ -623,11 +623,11 @@ def mesa_vidro_lab():
 
 def stool_lab():
     """
-    A banqueta de laboratório (aumento 1,2; o assento a 0,74 m): o assento de vinil preto estofado, a coluna a gás
+    A banqueta de laboratório (aumento 1,2 na largura; o assento a 0,70 m): o assento de vinil preto estofado, a coluna a gás
     cromada, o anel dos pés e a base de quatro braços com rodízios.
     """
     cx, cy = 0.375, 0.375
-    h = 1.21 / UN
+    h = 0.70
     r = 0.18 * 1.2
     estrela(cx, cy, 0.26, 0.05, 0.08, cor='#2e3032')
     o = novo()
@@ -1247,13 +1247,13 @@ def trash_bin():
 
 def mesa_contencao():
     """
-    A mesa de contenção (2 x 3 casas, aumento 1,2: 1,8 x 2,7 m; 1,08 m): o tampo de inox com a beira levantada e o
+    A mesa de contenção (2 x 3 casas, aumento 1,2: 1,8 x 2,7 m; o tampo a 0,90 m): o tampo de inox com a beira levantada e o
     ralo no pé, as quatro pernas quadradas (nada embaixo: passa-se por baixo), as correias de couro de través com as
     fivelas, as algemas de couro dos pulsos e dos tornozelos; a ferrugem e as manchas velhas.
     """
     w, d = 1.5 * 1.2, 2.25 * 1.2
     x, y = 0.75 - w / 2, 1.125 - d / 2
-    h = 1.76 / UN
+    h = 0.90
     tp = 0.06
     m = 0.1
     for (a, b) in ((x + m, y + m), (x + w - m - 0.06, y + m), (x + m, y + d - m - 0.06), (x + w - m - 0.06, y + d - m - 0.06)):
@@ -1779,13 +1779,13 @@ def weapon_rack():
 
 def mesa_arsenal():
     """
-    A mesa grande do arsenal (4 x 2 casas, aumento 1,2: 3,6 x 1,8 m; 1,1 m): o tampo grosso de tábuas escuras com a
+    A mesa grande do arsenal (4 x 2 casas, aumento 1,2: 3,6 x 1,8 m; o tampo a 0,90 m): o tampo grosso de tábuas escuras com a
     cinta de aço, as pernas de cantoneira verde-oliva, o painel de trás (o vão é 'fundo'); em cima a lona com o
     fuzil desmontado, a espingarda, as pistolas, os carregadores, a faca, a lata de munição, o pano e a almotolia.
     """
     w, d = 3.0 * 1.2, 1.5 * 1.2
     x, y = 1.5 - w / 2, 0.75 - d / 2
-    h = 1.8 / UN
+    h = 0.90
     tp = 0.07
     caixa((x, x + w, y, y + d, h - tp, h), {'cima': tab2(['#6e4a30', '#684428', '#74503a', '#644026'], 0.22, '#2e1e12', eixo=0, seed=201, comp=1.1, org=y),
                                             '*': chapa('#4a4e34', riscas='h', seed=202)})
@@ -1832,9 +1832,9 @@ def mesa_arsenal():
 
 
 def stool_metal():
-    """A banqueta giratória de aço (aumento 1,2; o assento a 0,72 m): o assento de chapa com o parafuso, o fuso, as quatro pernas e o anel dos pés."""
+    """A banqueta giratória de aço (aumento 1,2 na largura; o assento a 0,70 m): o assento de chapa com o parafuso, o fuso, as quatro pernas e o anel dos pés."""
     cx, cy = 0.375, 0.375
-    h = 1.18 / UN
+    h = 0.70
     r = 0.17 * 1.2
     a = 0.14
     PE = '#3a3e40'

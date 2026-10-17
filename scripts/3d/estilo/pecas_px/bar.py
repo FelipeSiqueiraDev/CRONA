@@ -4,12 +4,12 @@ fliperama) e os da sala do subsolo (as poltronas pretas, a mesa de xadrez, a lum
 art 1:1 no estilo da cozinha da fazenda (agente_cozinha/cozinha.py) e do grupo da casa (casa.py).
 
 Cada peça é desenhada no giro 4 (a frente para +y), com a pegada começando em (0, 0), no tamanho final do catálogo
-(def.height / 1,633 em metros; o `aumento` já entra). O exportador (exportar_px.py) gira e faz o acabamento.
+(def.height em metros; o `aumento` entra só na largura e no fundo, a altura é a de verdade). O exportador (exportar_px.py) gira e faz o acabamento.
 
 Decisões (o que o catálogo deixava em aberto):
   - armchair_red, sofa_booth: o `height` é a altura do ASSENTO; o encosto passa dele (como a poltrona da casa).
   - poltrona_preta: o `height` (0,95 m) é o alto do encosto; o assento fica a 0,45 m.
-  - chair_bar, stool_bar: o `height` é o assento (já com o aumento 1,2).
+  - chair_bar, stool_bar: o `height` é o assento (na altura de verdade; o aumento 1,2 só na largura).
   - table_bar, table_chess, bar_counter, counter_wood, pool_table, bar_cabinet, minibar, keg, beer_crate: o tampo
     (ou o topo) na altura do `height` (o que vai em cima não flutua).
   - beer_glass, ashtray: desenhados no chão da casa (z = 0); o jogo empilha em cima do tampo.
@@ -607,13 +607,12 @@ def _amarelo(b=None, quina=1.15):
     return _pau(AMARELO, AMARELO_T, quina=quina, b=b)
 
 
-def cadeira_plastico(x, y, z=0.0, k=1.2, pernas=True, alto_perna=None):
+def cadeira_plastico(x, y, z=0.0, k=1.2, pernas=True, alto_perna=None, hs=0.45):
     """
-    A cadeira de plástico amarela do boteco (aumento 1,2; o assento a 0,55 m): o assento com a borda, as quatro
+    A cadeira de plástico amarela do boteco (aumento 1,2 na largura; o assento a 0,45 m): o assento com a borda, as quatro
     pernas, o encosto de duas ripas com o vão entre elas. As costas para -y. z: onde ela começa (a pilha).
     """
     s = 0.44 * k
-    hs = 0.9 / UN
     p = 3 * PH
     zs = z + hs
     if pernas:
@@ -645,24 +644,24 @@ def chair_stack():
     x, y = 0.375 - s / 2, 0.375 - s / 2 + 0.03
     passo = 0.09
     for i in range(5):
-        cadeira_plastico(x, y - 0.012 * i, z=i * passo, pernas=True, alto_perna=None if i == 0 else 0.9 / UN - 0.02)
+        cadeira_plastico(x, y - 0.012 * i, z=i * passo, pernas=True, alto_perna=None if i == 0 else 0.9 / UN - 0.02, hs=0.9 / UN)
     peg(x, x + s, y - 0.06, y + s)
 
 
 def stool_bar():
     """
-    A banqueta de balcão (aumento 1,2; o assento a 0,90 m): as quatro pernas de nogueira, o aro de apoio dos pés,
+    A banqueta de balcão (aumento 1,2 na largura; o assento a 0,75 m, para o balcão de 1,1 m): as quatro pernas de nogueira, o aro de apoio dos pés,
     a saia, o assento redondo estofado de couro vermelho com a costura.
     """
     cx, cy = 0.375, 0.375
     k = 1.2
-    h = 1.47 / UN
+    h = 0.75
     r = 0.17 * k
     a = 0.11 * k
     zs = h - 0.08
     for (sx, sy) in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
         _barra((cx + sx * a - PH * 1.5, cx + sx * a + PH * 1.5, cy + sy * a - PH * 1.5, cy + sy * a + PH * 1.5, 0.0, zs), '#4a2412', '#6e3a20', quina=False)
-    for zr in (0.3,):
+    for zr in (0.26,):
         for bb in ((cx - a, cx + a, cy + a - PH, cy + a + PH), (cx + a - PH, cx + a + PH, cy - a, cy + a),
                    (cx - a, cx + a, cy - a - PH, cy - a + PH), (cx - a - PH, cx - a + PH, cy - a, cy + a)):
             _barra((bb[0], bb[1], bb[2], bb[3], zr, zr + 2 * PZ), LATAO, LATAO_L, quina=False)
@@ -690,12 +689,12 @@ def stool_bar():
 
 def table_bar():
     """
-    A mesa de bar redonda e alta (aumento 1,2; o tampo a 0,90 m): o tampo amarelo esmaltado com a beira de alumínio e
+    A mesa de bar redonda (aumento 1,2 na largura; o tampo a 0,75 m, a das cadeiras de plástico): o tampo amarelo esmaltado com a beira de alumínio e
     o friso vermelho, a coluna de ferro e os quatro pés baixos. Nada embaixo do tampo: a cadeira encaixa.
     """
     cx, cy = 0.375, 0.375
     r = 0.3 * 1.2
-    h = 1.47 / UN
+    h = 0.75
     tp = 0.035
 
     def topo(L, n, P):
@@ -728,12 +727,12 @@ def table_bar():
 
 def table_chess():
     """
-    A mesa de xadrez (aumento 1,2; o tampo a 0,86 m): o tampo de nogueira com o tabuleiro de marchetaria (8 x 8 casas
+    A mesa de xadrez (aumento 1,2 na largura; o tampo a 0,74 m): o tampo de nogueira com o tabuleiro de marchetaria (8 x 8 casas
     de 3 px, a moldura clara), a saia fininha, as quatro pernas torneadas, e as peças no meio do jogo.
     """
     w = 0.6 * 1.2
     x, y = 0.375 - w / 2, 0.375 - w / 2
-    h = 1.4 / UN
+    h = 0.74
     tp = 0.05
     q = 3 * PH
     bx0 = 0.375 - 4 * q

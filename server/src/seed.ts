@@ -874,32 +874,54 @@ export function upgradeDb(db: Database): boolean {
 }
 
 /**
- * As mesas cresceram (12/10, `aumento` no catálogo): o que estava em cima de uma delas, na altura
- * antiga do tampo, sobe junto (e o que estava em cima disso também). Uma vez só (`db.mesasAltas`);
- * o que já está na altura nova não é tocado.
+ * A altura do tampo (ou do assento) de 12/10 a 17/10, em metros: o `aumento` crescia a peça também
+ * na altura. Desde 17/10 a `height` do catálogo é a de verdade (a mesa 0,76 m, o assento 0,45 m).
+ */
+const ALTURA_AUMENTADA: Record<string, number> = {
+  desk_wood: 0.96, desk_metal: 0.96, chair_office: 0.6, table_meeting: 0.96, table_small: 0.74, chair_wood: 0.55,
+  stool: 0.66, stool_lab: 0.74, mesa_vidro_lab: 1.08, mesa_arsenal: 1.1, mesa_contencao: 1.08, table_tools: 0.96,
+  stool_bar: 0.9, table_bar: 0.9, chair_bar: 0.55, table_round: 0.91, table_chess: 0.86, chair_red: 0.55,
+  desk_verissimo: 0.96, gun_table: 1.08, stool_metal: 0.72, cadeira_gamer: 1.56, table_work: 0.94, mesa_jantar: 0.94,
+  mesa_cozinha: 0.94,
+};
+
+/**
+ * O que está em cima das mesas acompanha o tampo, uma vez cada:
+ * - 12/10 (`db.mesasAltas`): as mesas cresceram (`aumento`); o que estava na altura antiga do tampo
+ *   sobe junto (e o que estava em cima disso também).
+ * - 17/10 (`db.mesasReais`): a altura voltou a ser a de verdade (o Felipe: "Mesa alta né menino?!
+ *   Catarina quase sumiu atrás dela"); o que estava no tampo aumentado, ou em cima do que estava
+ *   lá, desce junto.
+ * O que já está na altura nova não é tocado.
  */
 export function mesasMaisAltas(db: Database): boolean {
-  if (db.mesasAltas) return false;
+  if (db.mesasAltas && db.mesasReais) return false;
+  const jaAltas = !!db.mesasAltas;
   for (const r of db.rooms) {
-    const subiu = new Set<number>();
+    const mexeu = new Set<number>();
     for (const mesa of [...r.items].sort((a, b) => a.z - b.z)) {
       const def = getFurni(mesa.defId);
       if (!def?.aumento || def.aumento === 1) continue;
-      const antiga = def.height / def.aumento;
-      const delta = def.height - antiga;
+      const alta = ALTURA_AUMENTADA[mesa.defId] !== undefined ? ALTURA_AUMENTADA[mesa.defId] * Z_PER_M : def.height;
+      // o tampo em que as coisas estão: o aumentado (12/10 a 17/10) ou, num banco de antes, o de antes do aumento
+      const de = jaAltas ? alta : alta / def.aumento;
+      const delta = def.height - de;
+      if (Math.abs(delta) < 0.005) continue;
       const fp = footprint(def, mesa.rot);
       const dentro = (it: FloorItem) => it.x >= mesa.x && it.y >= mesa.y && it.x < mesa.x + fp.sx && it.y < mesa.y + fp.sy;
       for (const it of r.items) {
-        if (it === mesa || subiu.has(it.id) || !dentro(it)) continue;
-        // só o que ficou afundado: do tampo antigo até abaixo do novo (o que já está no novo fica)
-        if (it.z < mesa.z + antiga - 0.03 || it.z >= mesa.z + def.height - 0.03) continue;
+        if (it === mesa || mexeu.has(it.id) || !dentro(it)) continue;
+        // no tampo aumentado ou em cima do que está nele (o que já está no tampo novo, mais baixo, fica); no banco
+        // de antes, só o que está bem no tampo antigo (o que a montagem nova já pôs no tampo de agora fica)
+        if (jaAltas ? it.z < mesa.z + de - 0.03 : Math.abs(it.z - (mesa.z + de)) > 0.02) continue;
         it.z = Math.round((it.z + delta) * 1000) / 1000;
-        subiu.add(it.id);
+        mexeu.add(it.id);
       }
     }
   }
   db.mesasAltas = true;
-  // a marca nova precisa ser gravada, mesmo sem nada para subir
+  db.mesasReais = true;
+  // a marca nova precisa ser gravada, mesmo sem nada para mexer
   return true;
 }
 

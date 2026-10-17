@@ -1505,13 +1505,13 @@ def books_stack():
 
 def table_tools():
     """
-    A mesa das ferramentas (2 x 1, aumento 1,2: 1,8 x 0,9 m; 0,96 m; o vão é 'fundo'): o tampo rústico de tábuas
+    A mesa das ferramentas (2 x 1, aumento 1,2: 1,8 x 0,9 m; o tampo a 0,78 m; o vão é 'fundo'): o tampo rústico de tábuas
     grossas e manchadas, as pernas quadradas, a tábua de trás; em cima a faca cerimonial, os gizes, a tigela de
     bronze, a corda enrolada, as velas e o pano manchado.
     """
     w, d = 1.5 * 1.2, 0.75 * 1.2
     x, y = 0.75 - w / 2, 0.375 - d / 2
-    h = 1.57 / UN
+    h = 0.78
     tp = 0.07
     TAB = ['#6a4a30', '#644428', '#704e34', '#5e4026']
 

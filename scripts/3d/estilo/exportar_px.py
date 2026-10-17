@@ -8,7 +8,8 @@ cada face, o brilho da quina, o contorno de 1 px), com a sombra macia num chão 
 da imagem) e o que passa da viga (a chaminé) sumindo em transparência.
 
 No moveis.json: `escala` 1, `pixel` (o jogo desenha sem suavizar, no pixel inteiro, sem esticar) e `real` (a medida
-de verdade, já com o `aumento` do catálogo: a arte vem no tamanho final).
+de verdade, já com o `aumento` do catálogo na largura e no fundo: a arte vem no tamanho final; a altura é sempre a
+de verdade, desde 17/10).
 
 Uso: python exportar_px.py [móvel ...] [--grupo modulo] [--destino pasta] [--folha saida.png]
      (sem nome: todos os de ITENS, inclusive os dos módulos de pecas_px/)
@@ -33,8 +34,10 @@ DESTINO = os.path.join(REPO, 'client', 'public', 'arte', 'mobiliario')
 
 
 def _cadeira():
+    # o aumento (1,2) só na largura e no fundo; o assento e o encosto na altura de verdade (17/10, o Felipe: "Mesa
+    # alta né menino?!")
     s = 0.44 * 1.2
-    CZ.cadeira(0.375 - s / 2, 0.375 - s / 2, '-y')
+    CZ.cadeira(0.375 - s / 2, 0.375 - s / 2, '-y', hs=0.45, he=0.92)
 
 
 # def do catálogo: (largura e fundo em casas, a quina da pegada na cena (m), o desenho, os estados {estado: desenho})
@@ -44,11 +47,11 @@ ITENS = {
     'armario_cozinha_l': (2, 3, (0.0, 0.0), lambda: CZ.armario_l(), {'1': lambda: CZ.armario_l(aberto=True)}),
     'fogao_lenha': (2, 1, (1.5, 0.0), lambda: CZ.fogao(aceso=False), {'1': lambda: CZ.fogao(aceso=True)}),
     'pia_cozinha': (2, 1, (3.0, 0.0), lambda: CZ.pia(), {}),
-    'mesa_cozinha': (3, 2, (3.0, 2.25), lambda: CZ.mesa(2.775, 2.1, 2.7, 1.8, 0.94), {}),
+    'mesa_cozinha': (3, 2, (3.0, 2.25), lambda: CZ.mesa(2.775, 2.1, 2.7, 1.8, 0.76), {}),
     # as gêmeas vazias (o jogo troca quando os jogadores pegam o que estava em cima/dentro): o mesmo móvel e a mesma
     # âncora, sem os objetos soltos. A mesa da cozinha já é só a mesa: a vazia é ela mesma.
     'armario_cozinha!vazio': (2, 1, (0.0, 0.0), lambda: CZ.armario(0.0, '+y', enfeite=0, vazio=True), {'1': lambda: CZ.armario(0.0, '+y', enfeite=0, vazio=True, aberto=True)}),
-    'mesa_cozinha!vazio': (3, 2, (3.0, 2.25), lambda: CZ.mesa(2.775, 2.1, 2.7, 1.8, 0.94), {}),
+    'mesa_cozinha!vazio': (3, 2, (3.0, 2.25), lambda: CZ.mesa(2.775, 2.1, 2.7, 1.8, 0.76), {}),
     'chair_wood': (1, 1, (0.0, 0.0), _cadeira, {}),
     'crate_wood': (1, 1, (0.0, 3.0), lambda: CZ.caixotes(0.05, 3.06), {'1': lambda: CZ.caixote_aberto(0.05, 3.06)}),
     'barrel': (1, 1, (0.0, 3.75), lambda: CZ.barril(0.37, 4.12), {}),

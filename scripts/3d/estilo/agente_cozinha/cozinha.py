@@ -1360,11 +1360,16 @@ def mesa(x, y, w, d, h, tampo=0.1, perna=0.12, tabua=0.25):
 CAD_LADO, CAD_TOPO, CAD_ESC = '#743c22', '#c07c44', '#542a16'
 
 
-def cadeira(x, y, costas, k=None):
+def cadeira(x, y, costas, k=None, hs=None, he=None):
+    """
+    A cadeira rústica da sala (sala4), crescida pelo aumento do jogo (1,2): o encosto de três travessas, o assento de tábuas.
+    hs e he: a altura do assento e a do alto do encosto (m). Sem elas, crescem junto com o aumento (as cenas de estudo);
+    o jogo passa as de verdade (0,45 e 0,92 m, 17/10: só a largura e o fundo crescem).
+    """
     k = float(os.environ.get('AUMENTO', '1.2')) if k is None else k
-    """A cadeira rústica da sala (sala4), crescida pelo aumento do jogo (1,2): o encosto de três travessas, o assento de tábuas."""
     s = 0.44 * k
-    hs = 0.47 * k
+    hs = 0.47 * k if hs is None else hs
+    he = 1.03 * k if he is None else he
 
     def B(u0, u1, v0, v1, z0, z1):
         if costas == '-y':
@@ -1379,8 +1384,8 @@ def cadeira(x, y, costas, k=None):
     fr = 2 * PH
     o = c.novo_obj(3)
     for u0 in (0.015, s - 0.015 - p):
-        _barra(B(u0, u0 + p, 0.015, 0.015 + p, 0, 1.03 * k), CAD_LADO, CAD_TOPO, o, quina=False)
-    zt = 1.0 * k
+        _barra(B(u0, u0 + p, 0.015, 0.015 + p, 0, he), CAD_LADO, CAD_TOPO, o, quina=False)
+    zt = he - 0.03 * k
     for (h_, gap) in ((6, 0), (3, 3), (3, 3)):
         z1 = zt - gap * PZ
         z0 = z1 - h_ * PZ

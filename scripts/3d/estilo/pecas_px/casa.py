@@ -3,7 +3,7 @@ GRUPO A, "a casa": os móveis de casa (quarto, sala, jantar, escritório, banhei
 no estilo da cozinha da fazenda (agente_cozinha/cozinha.py). A versão "normal, bem cuidada" (o queimado é outro grupo).
 
 Cada peça é desenhada no giro 4 (a frente para +y), com a pegada começando em (0, 0), no tamanho final do catálogo
-(def.height / 1,633 em metros; o `aumento` já entra). O exportador (exportar_px.py) gira e faz o acabamento.
+(def.height em metros; o `aumento` entra só na largura e no fundo, a altura é a de verdade). O exportador (exportar_px.py) gira e faz o acabamento.
 
 Decisões (o que o catálogo deixava em aberto):
   - armchair, bench, toilet, stool: o `height` é a altura do ASSENTO (é onde a peça senta); o encosto passa dele.
@@ -670,12 +670,12 @@ def mesa_tampo_pernas(x, y, w, d, h, tampo=0.07, saia=0.11, perna=0.055, cores=N
 
 def mesa_jantar(vazio=False):
     """
-    A mesa de jantar (4 x 2 casas, aumento 1,2: 3,6 x 1,8 m; 0,94 m): o tampo, as pernas torneadas, o caminho e a fruteira.
+    A mesa de jantar (4 x 2 casas, aumento 1,2: 3,6 x 1,8 m; o tampo a 0,76 m): o tampo, as pernas torneadas, o caminho e a fruteira.
     vazio: a gêmea esvaziada (mesa_jantar!vazio), só a mesa, sem o caminho e a fruteira.
     """
     w, d = 3.0 * 1.2, 1.5 * 1.2
     x, y = 1.5 - w / 2, 0.75 - d / 2
-    h = 1.54 / UN
+    h = 0.76
     mesa_tampo_pernas(x, y, w, d, h, seed=51)
     if vazio:
         return
@@ -685,12 +685,12 @@ def mesa_jantar(vazio=False):
 
 def desk_wood():
     """
-    A escrivaninha (2 x 1 casas, aumento 1,2: 1,8 x 0,9 m; 0,96 m): o tampo com o forro de couro verde, as três
+    A escrivaninha (2 x 1 casas, aumento 1,2: 1,8 x 0,9 m; o tampo a 0,76 m): o tampo com o forro de couro verde, as três
     gavetas na saia, as pernas quadradas, o painel de trás (o vão é 'fundo'); o tinteiro, a pena e os papéis.
     """
     w, d = 1.5 * 1.2, 0.75 * 1.2
     x, y = 0.75 - w / 2, 0.375 - d / 2
-    h = 1.57 / UN
+    h = 0.76
     tp = 0.05
     caixa((x, x + w, y, y + d, h - tp, h), {'cima': tab2(NOG_TAB, 0.22, '#3e1c0e', seed=61, comp=0.9, org=y),
                                             '*': _pau(NOG, '#7e4026', quina=1.22, b=(0, 0, 0, 0, h - tp, h))})
@@ -738,10 +738,10 @@ def desk_wood():
 
 
 def table_round():
-    """A mesa redonda (2 x 2 casas, aumento 1,2: 1,8 m de diâmetro; 0,91 m): o tampo de tábuas com o friso, a coluna torneada e os quatro pés."""
+    """A mesa redonda (2 x 2 casas, aumento 1,2: 1,8 m de diâmetro; o tampo a 0,76 m): o tampo de tábuas com o friso, a coluna torneada e os quatro pés."""
     cx, cy = 0.75, 0.75
     r = 0.9
-    h = 1.49 / UN
+    h = 0.76
     tp = 0.06
     T = tab2(NOG_TAB, 0.22, '#3e1c0e', seed=71, comp=0.9, org=cy - r)
 
@@ -759,7 +759,8 @@ def table_round():
     # a coluna torneada
     o = novo()
     zc = h - tp - 0.08
-    _poligono_rodado(cx, cy, [(0.12, 0.11), (0.2, 0.13), (0.26, 0.09), (0.4, 0.075), (0.5, 0.1), (0.56, 0.08), (zc - 0.08, 0.075),
+    f = zc / 0.772                # o perfil foi desenhado para a coluna de 0,77 m (o tampo de antes, 0,91 m)
+    _poligono_rodado(cx, cy, [(0.12 * f, 0.11), (0.2 * f, 0.13), (0.26 * f, 0.09), (0.4 * f, 0.075), (0.5 * f, 0.1), (0.56 * f, 0.08), (zc - 0.08, 0.075),
                               (zc - 0.03, 0.11), (zc, 0.12)], vol(cx, cy, '#5e2e18'), o, lados=18)
     # os quatro pés em cruz (as patas baixas)
     PE = {'cima': mad2('#7e4026', seed=72), '*': mad2('#5e2e18', seed=73, passo=0.04)}
@@ -773,13 +774,13 @@ def table_round():
 
 def table_small():
     """
-    A mesinha (1 casa, 0,74 m; 16/10, o Felipe: "essa marrom do lado da sinuca e na frente da poltrona, nada a ver" era a
+    A mesinha (1 casa, 0,70 m; 16/10, o Felipe: "essa marrom do lado da sinuca e na frente da poltrona, nada a ver" era a
     caixa de reserva, sem desenho): o tampo quadrado de tábuas de nogueira com o friso claro na beira, a saia de madeira
     embaixo do tampo e as quatro pernas quadradas que afinam um pouco. Embaixo fica vazio (vao 'vazada').
     """
     cx, cy = 0.375, 0.375
     a = 0.31                      # meia largura do tampo (0,62 m)
-    h = 0.74
+    h = 0.70
     tp = 0.045
     T = tab2(NOG_TAB, 0.2, '#3e1c0e', seed=81, comp=0.62, org=cy - a)
 
@@ -808,10 +809,10 @@ def table_small():
 
 
 def stool():
-    """A banqueta alta (aumento 1,2; o assento a 0,66 m): o assento redondo de tábuas, as quatro pernas e o apoio dos pés."""
+    """A banqueta (aumento 1,2 na largura; o assento a 0,45 m): o assento redondo de tábuas, as quatro pernas e o apoio dos pés."""
     cx, cy = 0.375, 0.375
     k = 1.2
-    h = 1.08 / UN
+    h = 0.45
     r = 0.17 * k
     o = novo()
 
@@ -825,7 +826,7 @@ def stool():
     a = 0.1 * k
     for (sx, sy) in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
         _barra((cx + sx * a - PH, cx + sx * a + PH, cy + sy * a - PH, cy + sy * a + PH, 0.0, h - 0.045), '#5e2e18', '#7e4026', quina=False)
-    zr = 0.24
+    zr = 0.15
     for bb in ((cx - a, cx + a, cy + a - PH, cy + a + PH), (cx + a - PH, cx + a + PH, cy - a, cy + a),
                (cx - a, cx + a, cy - a - PH, cy - a + PH), (cx - a - PH, cx - a + PH, cy - a, cy + a)):
         _barra((bb[0], bb[1], bb[2], bb[3], zr, zr + 2 * PZ), '#6a3820', '#8a4a2a', quina=False)

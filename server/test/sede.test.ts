@@ -426,8 +426,8 @@ describe('proporção dos móveis', () => {
     restackRoom(r);
     const desk = getFurni('desk_wood')!;
     assert.equal(r.items[1].z, desk.height);
-    // a escrivaninha cresceu (12/10, `aumento`): 0,8 m × 1,2
-    assert.ok(Math.abs(desk.height - 0.8 * (desk.aumento ?? 1) * Z_PER_M) < 0.01);
+    // a escrivaninha na altura de verdade (17/10): o `aumento` cresce só a largura e o fundo
+    assert.ok(Math.abs(desk.height - 0.76 * Z_PER_M) < 0.01);
     assert.equal(r.items[2].z, 0);
   });
 });
