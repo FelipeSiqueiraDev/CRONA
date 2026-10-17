@@ -19,7 +19,7 @@ import { corredorDe, predioDeApartamentos } from "./predioApartamentos";
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 8;
+export const IGARAPE_REV = 10;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -195,7 +195,9 @@ function casaMineira(key: string, lado: "frente" | "fundo"): CenaSpec {
     floor: [
       fundo ? ["portal", 4, 1, 4] : ["portal", 4, 6, 0],
       ["fogao_lenha", 0, Y(0), 4, undefined, 1],
-      ["armario_cozinha", 2, Y(0), 4],
+      // o louceiro longe da chapa (17/10): o fogão a lenha tem 94 cm de fundo e a chapa passava por cima dele. Com a porta
+      // na frente, uma casa depois do fogão; com a porta no fundo (na casa 4), na parede da esquerda
+      fundo ? ["armario_cozinha", 0, Y(1), 2] : ["armario_cozinha", 3, Y(0), 4],
       ["comoda", 5, Y(0), 4],
       ["cama_casal", 7, Y(0), 4],
       ["mesa_cozinha", 1, Y(2), 4],

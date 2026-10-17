@@ -21,7 +21,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * (giro 4) tem a de dentro na parede da frente (planBottom); virado para o fundo (giro 0), na do fundo (planTop).
  */
 export const TIRADENTES = "Tiradentes · ";
-export const TIRADENTES_REV = 3;
+export const TIRADENTES_REV = 5;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -186,7 +186,9 @@ function casaPadrao(key: string, lado: "frente" | "fundo", description: string, 
       fundo ? ["portal", 4, 1, 4] : ["portal", 4, 6, 0],
       // a parede do fundo: o fogão a lenha (aceso), o louceiro, a cômoda, o criado-mudo e a cama
       ["fogao_lenha", 0, Y(0), 4, undefined, 1],
-      ["armario_cozinha", 2, Y(0), 4],
+      // o louceiro longe da chapa (17/10): o fogão a lenha tem 94 cm de fundo e a chapa passava por cima dele. Com a porta
+      // na frente, uma casa depois do fogão; com a porta no fundo (na casa 4), na parede da esquerda
+      fundo ? ["armario_cozinha", 0, Y(1), 2] : ["armario_cozinha", 3, Y(0), 4],
       ["comoda", 5, Y(0), 4],
       ["candles", 5, Y(0), 0],
       ["books_stack", 6, Y(0), 0],
