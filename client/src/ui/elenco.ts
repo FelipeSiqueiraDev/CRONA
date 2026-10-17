@@ -31,7 +31,7 @@ type Grupo = 'sangue' | 'morte' | 'conhecimento' | 'energia' | 'medo' | 'mundana
 // símbolo oficial do elemento
 const GRUPOS: { id: Grupo; nome: string; icone: NomeIcone }[] = [
   { id: 'sangue', nome: 'Sangue', icone: 'gota' },
-  { id: 'morte', nome: 'Morte', icone: 'ampulheta' },
+  { id: 'morte', nome: 'Morte', icone: 'espiral' },
   { id: 'conhecimento', nome: 'Conhecimento', icone: 'olho' },
   { id: 'energia', nome: 'Energia', icone: 'raio' },
   { id: 'medo', nome: 'Medo', icone: 'fantasma' },
