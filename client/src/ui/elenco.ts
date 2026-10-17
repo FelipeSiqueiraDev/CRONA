@@ -1,5 +1,7 @@
 import { combate, criaturaDoLivro, GRUPO_SEM, GRUPOS_NPC_PADRAO, grupoDoNpc, gruposDoElenco, type CharacterDef, type Criatura, type Npc } from '@crona/shared';
+import { fundoDoElemento } from './elencoFundo';
 import { confirmar } from './fichaModal';
+import { caberNumaLinha } from './jogador';
 import { drawPixelAvatar } from '../render/avatarPixel';
 import type { App } from './app';
 import { abrirBestiario } from './bestiario';
@@ -473,46 +475,144 @@ export function abrirElenco(app: App) {
     ];
   };
 
+  /** O fundo vivo do retrato fica o mesmo enquanto a ameaça escolhida é a mesma (a tela se refaz a cada clique). */
+  let fundoGuardado: { chave: string; el: HTMLCanvasElement } | null = null;
+  const fundoDe = (e: Entrada) => {
+    if (fundoGuardado?.chave !== e.chave) fundoGuardado = { chave: e.chave, el: fundoDoElemento(e.livroId || e.elemento ? e.elemento : 'mestre') };
+    return fundoGuardado.el;
+  };
+  const dadoTeste = (t?: combate.TesteAmeaca) => (t ? `${t.dados}d20${t.bonus ? (t.bonus > 0 ? `+${t.bonus}` : `${t.bonus}`) : ''}` : '—');
+  const nomeDano = (t: string) => (combate.NOME_TIPO_DANO as Record<string, string>)[t] ?? (t === 'todos' ? 'todo dano' : t);
+  const NOME_ACAO: Record<string, string> = { padrao: 'Padrão', movimento: 'Movimento', completa: 'Completa', livre: 'Livre', reacao: 'Reação' };
+
+  /**
+   * O detalhe da ameaça (17/10, o Felipe: "espação em branco ... muito mal distribuído; vamos fazer um trem bonito igual
+   * na aba de ficha"): o retrato sempre à vista em cima, com o fundo vivo do elemento e a página do livro num cantinho;
+   * no meio, rolando, a ficha que interessa ao mestre (números, testes, ataques, ações, defesas, habilidades); embaixo,
+   * fixos, Quantas e Usar.
+   */
   const detalheAmeaca = (e: Entrada): Node[] => {
     const c = e.criatura;
     const f = c?.ficha;
     const livro = e.livroId ? combate.AMEACAS_LIVRO.find((a) => a.id === e.livroId) : undefined;
+    const fx = livro ?? f;
     const elementos = [e.elemento, ...(e.outros ?? [])].filter(Boolean) as string[];
+    const unico = combate.ehPortadorDeReliquia(e.livroId);
     if (c && aparencia !== 'variadas' && !c.aparencias.some((a) => a.id === aparencia)) aparencia = 'variadas';
-    if (combate.ehPortadorDeReliquia(e.livroId)) quantidade = 1;
-    const dado = (rot: string, val: string) => h('span', { class: 'el-d-dado' }, h('small', null, rot), h('b', null, val));
-    const nos: (Node | null)[] = [
-      h('div', { class: 'el-d-figura' }, figura({ arte: c?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId })),
-      h('h4', null, e.nome),
-      h('div', { class: 'el-d-elementos' }, ...elementos.map((x) => h('span', { class: `el-tag el-${x}` }, combate.NOME_ELEMENTO[x as keyof typeof combate.NOME_ELEMENTO] ?? x)), h('span', { class: 'el-tag' }, e.tipo)),
-      h('div', { class: 'el-d-dados' }, dado('VD', String(e.vd ?? '—')), dado('PV', String(c?.pv ?? livro?.pv ?? '—')), dado('Defesa', String(f?.defesa ?? livro?.defesa ?? '—')), e.pagina ? dado('Livro', `p. ${e.pagina}`) : null),
+    if (unico) quantidade = 1;
+    const bloco = (titulo: string, ...filhos: (Node | null)[]) => {
+      const fs = filhos.filter((x): x is Node => !!x);
+      return fs.length ? h('section', { class: 'el-dam-bloco' }, h('h5', null, titulo), ...fs) : null;
+    };
+    const num = (rot: string, val: string) => h('span', { class: 'el-dam-num' }, h('small', null, rot), caberNumaLinha(h('b', null, val)));
+    const teste = (rot: string, t?: combate.TesteAmeaca) => (t ? h('span', { class: 'el-dam-teste' }, h('small', null, rot), h('b', null, dadoTeste(t))) : null);
+    const tamanho = livro?.tamanho ?? f?.tamanho;
+    // os números grandes
+    const numeros = h(
+      'div',
+      { class: 'el-dam-nums' },
+      num('VD', String(e.vd ?? '—')),
+      num('PV', String(c?.pv ?? livro?.pv ?? '—')),
+      num('Defesa', String(fx?.defesa ?? '—')),
+      num('Desloc.', livro?.deslocamento ? `${livro.deslocamento} m` : '—'),
+    );
+    const testes = fx
+      ? bloco('Testes', h('div', { class: 'el-dam-testes' }, teste('Fortitude', fx.fortitude), teste('Reflexos', fx.reflexos), teste('Vontade', fx.vontade), teste('Percepção', livro?.percepcao), teste('Iniciativa', livro?.iniciativa)))
+      : null;
+    const ataques = fx?.ataques.length
+      ? bloco(
+          'Ataques',
+          ...fx.ataques.map((a) =>
+            h(
+              'div',
+              { class: 'el-dam-ataque' },
+              h('b', null, a.nome, a.vezes && a.vezes > 1 ? h('em', null, ` ×${a.vezes}`) : null),
+              h('span', null, `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${dadoTeste(a)}`),
+              h('span', null, `${a.dano} ${nomeDano(a.tipo)}${a.extra ? ` + ${a.extra.dano} ${nomeDano(a.extra.tipo)}` : ''}`),
+              h('small', null, `crítico ${a.margem}/×${a.multiplicador}${a.alcance ? ` · alcance ${a.alcance}` : ' · corpo a corpo'}`),
+            ),
+          ),
+        )
+      : null;
+    const acoes = livro?.acoes.length
+      ? bloco(
+          'Ações',
+          ...livro.acoes.map((a) =>
+            h(
+              'div',
+              { class: 'el-dam-acao' },
+              h('span', { class: `el-dam-tipo t-${a.acao}` }, NOME_ACAO[a.acao] ?? a.acao),
+              h('b', null, a.nome),
+              h('small', null, [a.teste ? dadoTeste(a.teste) : '', a.dt ? `DT ${a.dt}` : '', a.dano ? `${a.dano}${a.tipoDano ? ` ${nomeDano(a.tipoDano)}` : ''}` : '', a.resistencia ?? ''].filter(Boolean).join(' · ')),
+            ),
+          ),
+        )
+      : null;
+    const linhaDef = (rot: string, txt: string) => (txt ? h('div', { class: 'el-dam-def' }, h('small', null, rot), h('span', null, txt)) : null);
+    const rd = fx ? Object.entries(fx.rd ?? {}).map(([k, v]) => `${nomeDano(k)} ${v}`).join(', ') : '';
+    const defesas = fx
+      ? bloco(
+          'Defesas',
+          linhaDef('Resistência', rd),
+          linhaDef('Imune', [...fx.imunidades.map(nomeDano), ...(livro?.imunidadesOutras ?? [])].join(', ') + (livro?.enigma ? ' (até o enigma de medo)' : '')),
+          linhaDef('Vulnerável', fx.vulnerabilidades.map(nomeDano).join(', ')),
+          linhaDef('Sentidos', livro?.sentidos.join(', ') ?? ''),
+          fx.presenca ? linhaDef('Presença', `DT ${fx.presenca.dt} · ${fx.presenca.dano} mental · imune com NEX ${fx.presenca.nex}%`) : null,
+        )
+      : null;
+    const passivas = livro?.passivas.length ? bloco('Habilidades', h('div', { class: 'el-dam-chips' }, ...livro.passivas.map((n) => h('span', null, n)))) : null;
+    const caras =
       c && c.aparencias.length > 1
-        ? h(
-            'div',
-            { class: 'el-d-caras' },
-            h('small', null, 'Aparência'),
-            ...[{ id: 'variadas', nome: 'Variadas' }, ...c.aparencias].map((a) => h('button', { class: `el-cara${aparencia === a.id ? ' ativa' : ''}`, type: 'button', onclick: () => ((aparencia = a.id), desenhar()) }, a.nome)),
-          )
-        : null,
-      combate.ehPortadorDeReliquia(e.livroId)
-        ? h('small', { class: 'el-d-info el-d-unico' }, 'Portador de relíquia: só existe um. Entra um só, e não entra outro enquanto ele estiver em alguma cena desta campanha.')
-        : h(
-        'div',
-        { class: 'el-d-qtd' },
-        h('small', null, 'Quantas'),
-        h('button', { type: 'button', 'aria-label': 'Menos', onclick: () => ((quantidade = Math.max(1, quantidade - 1)), desenhar()) }, '−'),
-        h('b', null, String(quantidade)),
-        h('button', { type: 'button', 'aria-label': 'Mais', onclick: () => ((quantidade = Math.min(20, quantidade + 1)), desenhar()) }, '+'),
-      ),
+        ? bloco('Aparência', h('div', { class: 'el-dam-chips caras' }, ...[{ id: 'variadas', nome: 'Variadas' }, ...c.aparencias].map((a) => h('button', { class: `el-cara${aparencia === a.id ? ' ativa' : ''}`, type: 'button', onclick: () => ((aparencia = a.id), desenhar()) }, a.nome))))
+        : null;
+    const nome = caberNumaLinha(h('h4', null, e.nome), 0.7);
+    return [
       h(
         'div',
-        { class: 'el-d-acoes' },
-        h('button', { class: 'el-usar grande', type: 'button', onclick: (ev: Event) => usar(ev, () => colocarAmeaca(e, quantidade, aparencia)) }, quantidade > 1 ? `Usar ${quantidade}` : 'Usar'),
-        c ? h('button', { class: 'el-editar', type: 'button', title: 'Editar as caras, os PV e a ficha (o bestiário)', onclick: () => (fechar(), abrirBestiario(app, c.id)) }, ic('lapis')) : null,
+        { class: `el-dam el-de-${e.elemento ?? 'mundanas'}` },
+        h(
+          'div',
+          { class: 'el-dam-topo' },
+          h(
+            'div',
+            { class: 'el-dam-figura' },
+            fundoDe(e),
+            figura({ arte: c?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }),
+            e.pagina ? h('span', { class: 'el-dam-pagina', title: 'Página do livro de regras' }, `LR p. ${e.pagina}`) : null,
+            unico ? h('span', { class: 'el-unico', title: 'Portador de relíquia: só existe um' }, 'Único') : null,
+          ),
+          nome,
+          h(
+            'div',
+            { class: 'el-d-elementos' },
+            ...elementos.map((x) => h('span', { class: `el-tag el-${x}` }, combate.NOME_ELEMENTO[x as keyof typeof combate.NOME_ELEMENTO] ?? x)),
+            h('span', { class: 'el-tag' }, e.tipo),
+            tamanho ? h('span', { class: 'el-tag' }, combate.NOME_TAMANHO[tamanho]) : null,
+          ),
+        ),
+        h('div', { class: 'el-dam-rolar' }, numeros, ...[testes, ataques, acoes, defesas, passivas, caras].filter((x): x is HTMLElement => !!x)),
+        h(
+          'div',
+          { class: 'el-dam-pe' },
+          unico
+            ? h('small', { class: 'el-d-unico' }, 'Portador de relíquia: só existe um na campanha.')
+            : h(
+                'div',
+                { class: 'el-d-qtd' },
+                h('small', null, 'Quantas'),
+                h('button', { type: 'button', 'aria-label': 'Menos', onclick: () => ((quantidade = Math.max(1, quantidade - 1)), desenhar()) }, '−'),
+                h('b', null, String(quantidade)),
+                h('button', { type: 'button', 'aria-label': 'Mais', onclick: () => ((quantidade = Math.min(20, quantidade + 1)), desenhar()) }, '+'),
+              ),
+          h(
+            'div',
+            { class: 'el-d-acoes' },
+            h('button', { class: 'el-usar grande', type: 'button', title: 'Põe na porta da cena; cada peça com os próprios PV (Shift: sem fechar a janela)', onclick: (ev: Event) => usar(ev, () => colocarAmeaca(e, quantidade, aparencia)) }, quantidade > 1 ? `Usar ${quantidade}` : 'Usar'),
+            c ? h('button', { class: 'el-editar', type: 'button', title: 'Editar as caras, os PV e a ficha (o bestiário)', onclick: () => (fechar(), abrirBestiario(app, c.id)) }, ic('lapis')) : null,
+          ),
+        ),
       ),
-      h('small', { class: 'el-d-info' }, c ? 'Cada peça tem os próprios PV; os ataques saem da mesma ficha.' : 'Ainda não foi usada: na primeira vez, entra com a ficha do livro.'),
     ];
-    return nos.filter((x): x is Node => !!x);
   };
 
   app.on('bestiario', desenhar);

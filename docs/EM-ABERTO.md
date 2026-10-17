@@ -241,6 +241,15 @@ liberou os arquivos da FICHAS para esta.) O bloco novo fica no fim do `fichas.cs
   passar o mouse e na escolhida), a rolagem pintada do kit, as sub-abas com a linha de ouro. Os NPCs com o nome em cima e o
   sobrenome embaixo. As ameaças sem setas nem caixa tracejada: cada versão é um card igual, em seguida da primeira, numa
   grade de colunas iguais.
+- **O detalhe da ameaça refeito (o Felipe: "espação em branco ... muito mal distribuído"):** o retrato sempre à vista em
+  cima, com o fundo vivo do elemento (`client/src/ui/elencoFundo.ts`, um canvas por código: Sangue escorrendo, Morte com
+  espirais se desenhando, Conhecimento com sigilos inventados passando, Energia com raios e plasma colorido, Medo com
+  névoa e estática, mundanas com poeira; parado com "menos movimento"); a página do livro num cantinho do retrato
+  ("LR p. 217"); no meio, rolando, a ficha: VD, PV, Defesa e Deslocamento, os testes (Fortitude, Reflexos, Vontade em
+  cima; Percepção e Iniciativa embaixo), os ataques, as ações, as defesas (RD, imunidades, vulnerabilidades, sentidos,
+  presença perturbadora), as habilidades e as caras; embaixo, fixos, Quantas e Usar. A frase "Ainda não foi usada..."
+  saiu (o Felipe achou que o bicho estava sem ficha): a ficha do livro aparece inteira, e a explicação do Usar foi
+  para a dica dele.
 - **Ícones nas sub-abas (o Felipe, 17/10):** cada elemento das ameaças e cada grupo de NPC com um ícone de linha do jogo
   num losango da cor do grupo (nunca o símbolo oficial do elemento): Sangue a gota, Morte a espiral, Conhecimento o
   olho, Energia o raio, Medo o fantasma, Mundanas a pata, Do mestre a pena (Morte: a espiral, pedido do Felipe); Ordo Realitas o escudo, Lotus Branca a lua,
