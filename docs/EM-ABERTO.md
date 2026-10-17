@@ -152,6 +152,31 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 17/10 (branch `claude/tatica-codigo`): Santa Amália e, no Igarapé, a lanchonete, a casa dos Ribeiro e a ponte
+
+- **Santa Amália** (`server/src/seedSantaAmalia.ts`, `SANTA_AMALIA_REV` 4; arte em `scripts/3d/estilo/pecas_px/santa_amalia.py`):
+  a cidade (68×56: a avenida, a rua de cima, as duas laterais, a praça com o coreto, a prefeitura no alto, a estrada
+  de terra da van no leste e o caminho da casa dos Valença para a mata) e três prédios da história, pelas plantas do
+  Felipe: a **Casa dos Valença** (sala, cozinha, área de serviço, banheiro, quarto do casal e o quarto da filha com os
+  desenhos de espiral e o lodo), o **Posto de Saúde** (recepção, consultório, procedimentos, triagem, farmácia,
+  banheiro e administração) e o **Cartório** (atendimento, sala do oficial, arquivo, depósito, banheiro e copa), mais
+  seis casas comuns. A prefeitura ainda não tem interior.
+- **O tamanho de fora é o de dentro** (pedido do Felipe): os prédios ficaram mais fundos (casa 8×7, Valença 12×10,
+  posto 16×12, cartório 14×11, prefeitura 15×12) e os cômodos cabem na pegada de fora. A porta de dentro fica do
+  mesmo lado da de fora.
+- As pistas escondidas da Bíblia (a ficha do Arantes com a rubrica, o índice de 2003, a matrícula 1.847 e a
+  averbação AV-2, os diários do Augusto) estão nos móveis, só para o mestre. Nada de spoiler na tela dos jogadores.
+- **Igarapé** (`IGARAPE_REV` 2): a lanchonete **Big Dog Hot Dogs - Lanches e Açaí** perto da praça e a **Casa dos
+  Ribeiro** (a casa da Cora, abandonada, com as cartas do Geraldo e a foto rasgada) no lugar de uma das casas.
+- **A ponte do Igarapé** mais alta, com quatro degraus em cada cabeceira, muretas e o parapeito só por cima do vão.
+  A altura agora é por casa (`FurniDef.alturas`, `alturaNaCasa` em `shared/src/furni.ts`): 0,3 m na ponta, 0,6 m no
+  meio, e a peça sobe e desce em vez de flutuar. Conferida na prévia com peças em cima, no degrau e atrás.
+- Testes: `santaAmalia.test.ts` (portas de ida e volta, tudo alcançável a pé, sem fogo dentro) e a ponte no
+  `igarape.test.ts`.
+- **Falta:** as artes de chegada `chegada-santa-amalia-1/-2` e a ilha no mapa-múndi (Códex, a cota acabou em 17/10;
+  até lá entra a ilustração genérica); o interior da prefeitura; levar ao jogo de verdade (`npm run crona`, com
+  backup antes); os prédios fundos também em Tiradentes e nas outras cidades.
+
 ## Feito em 17/10 (branch `claude/tatica-codigo`): armados, machucados, deitados, retratos e Santo Berço sem fogo
 
 - **Armados** (`idle-armado-<dir>.png`) dos 4 agentes e do Miguel, com a arma padrão de cada um (a arte não muda com a
