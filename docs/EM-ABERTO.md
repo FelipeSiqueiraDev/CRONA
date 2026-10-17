@@ -223,8 +223,10 @@ peito sobe e desce, acabou", "não estraga os bonecos".
   Anfitrião contam cada uma por si (todas juntas, uma de cada). Teste: `server/test/reliquias.test.ts`.
 - **A arte deles no tabuleiro: na fila do Códex** (a cota volta às 18:47 de 17/10; `trabalho/monstros-tabuleiro/
   depois_da_cota.sh` começa às 18:55 sozinho): as 8 direções em pé dos 9 portadores, no estilo do Miguel, com a
-  identidade do retrato do bestiário (a Bíblia não descreve a aparência deles), e os 2 Existidos refeitos nesse estilo (os
-  de hoje estão no traço antigo, realista e comprido). A criatura do livro já aponta para `arte/personagens/<id do
+  identidade do retrato da lista do Elenco (`arte/ameacas/<id>.png`; o Felipe: "a aparência que tá ali na lista, e não a
+  do livro original"; a Bíblia não descreve a aparência deles), e os 2 Existidos refeitos nesse estilo a partir do
+  retrato da lista (`existido.png`: careca, pele coberta de escrita, olhos brancos, calça verde rasgada; os bonecos de
+  hoje estão no traço antigo, realista, dourado e comprido). A criatura do livro já aponta para `arte/personagens/<id do
   livro>/` (`criaturaDoLivro`, e as já criadas no banco), então a arte entra sozinha quando instalada; o retrato é o do
   bestiário. Falta, quando chegar: conferir (altura contra o Miguel, `scripts/contorno_rosa.py`), instalar e mostrar.
 - **Várias abas na prévia (o Felipe: "pra eu ver e você também e mexer junto"):** fora do jogo de verdade (o servidor sem
