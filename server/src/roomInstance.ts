@@ -1291,6 +1291,7 @@ export class RoomInstance {
     const c = u.client;
     if (!this.canBuild(c)) return this.err(c, 'Sem permissão.');
     let mudou = false;
+    let fogao = false;
     for (const x of itens.slice(0, 500)) {
       const p = x as { id?: unknown; state?: unknown };
       if (!isInt(p?.id) || !isInt(p?.state) || p.state < 0) continue;
@@ -1303,6 +1304,7 @@ export class RoomInstance {
         this.map.updateItem(it);
         this.broadcastFloor('itemUpdate', it);
         mudou = true;
+        if (def.kind === 'fogao') fogao = true;
         continue;
       }
       const wall = this.map.getWallItem(p.id);
@@ -1314,6 +1316,8 @@ export class RoomInstance {
       mudou = true;
     }
     if (mudou) this.persist();
+    // o fogão a lenha apagou ou acendeu junto: a chaminé da casa, lá fora, para ou fumega (como no clique duplo)
+    if (fogao) this.hotel.chamines(this.data.id);
   }
 
   /**

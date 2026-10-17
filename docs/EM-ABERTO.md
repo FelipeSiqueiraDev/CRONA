@@ -197,10 +197,10 @@ trepidar, igual na vida real... dar vida!!!".
 - **A vela soprada** (`client/src/render/sopro.ts` e `soproMovel.ts`): o fogo que apaga continua desenhado aceso por
   0,65 s, e nesse tempo as chamas desenhadas encolhem até o pavio (`painter.flame`, a arandela), a luz cai e, no fim,
   sobe um fio de fumaça fino, enrolando (`particles.ts`). A lâmpada elétrica apaga na hora.
-- **Falta:** as duas linhas no `RoomView.ts` que desenham o estado soprado (`estadoDoMovel` no `addFurni` e
-  `estadoDaParede` no `drawWallItem`), combinadas com a sessão que está no RoomView; sem elas, a vela apaga de uma vez
-  (a luz que treme e os botões já valem). E o `luzes` ainda não avisa a chaminé da casa (o `chamines` do fogão a lenha,
-  que a outra sessão pôs no clique duplo). Conferido numa bancada sem conexão, não no jogo com o Felipe.
+- O `RoomView.ts` desenha o estado soprado (`estadoDoMovel` no `addFurni`, `estadoDaParede` no `drawWallItem`; commit
+  f55d9a20). O `luzes` avisa a chaminé quando apaga ou acende o fogão a lenha, como o clique duplo.
+- **Falta:** o Felipe ver no jogo (foi conferido numa bancada sem conexão). A quarta chama que flutua acima das velas
+  (`candles`: a chama em pixel no ponto da luz) é de antes e ficou para depois.
 
 ## Feito em 17/10 (branch `claude/tatica-codigo`): as miniaturas respiram no tabuleiro
 
