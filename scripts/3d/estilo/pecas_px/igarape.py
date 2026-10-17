@@ -25,7 +25,9 @@ import base_estilo as BE
 import fazenda_fora as FF
 import vila_predios as VP
 import vila_natureza as VN
-from base_estilo import hx, liso, mad2, _tom, PZ, PH
+import tiradentes as TD
+import santa_amalia as SA
+from base_estilo import hx, liso, mad2, _tom, PZ, PH, coords
 from motor import emissivo, ruido, suave, MUNDO as M
 
 CASA = 0.75
@@ -60,7 +62,8 @@ _bx = FF._bx
 
 # os prédios altos (a capela com a torre sineira) passam do alto que o exportador reserva: o mesmo jeito do
 # vila_predios (a conta da caixa da imagem usa o alto do prédio)
-VP.ALTO_CANVAS.update({'igarape_capela': 9.0, 'igarape_venda': 6.0, 'igarape_ipe': 6.8})
+VP.ALTO_CANVAS.update({'igarape_capela': 9.0, 'igarape_venda': 6.0, 'igarape_ipe': 6.8,
+                       'igarape_predio': 10.0, 'igarape_predio~b': 10.0})
 
 
 # =====================================================================================================================
@@ -793,6 +796,172 @@ def _varal():
 
 
 # =====================================================================================================================
+# o prediozinho (8 x 6 casas, 9,5 m): o predinho residencial de três andares (térreo + 2) de reboco desbotado, a porta
+# no meio da casa floor(8/2) com o degrau, as janelas azuis nas quatro faces, as portas-janelas da frente com as
+# varandinhas de ferro no 1º e no 2º andar, o friso em cada andar, o telhado de barro de quatro águas com o beiral, a
+# caixa de luz e o número na porta; embaixo, a mancha de umidade que sobe do chão (a cidade é de beira de rio)
+# =====================================================================================================================
+PREDIO_A = '#e4d49c'       # o amarelo-claro desbotado
+PREDIO_B = '#aacfc0'       # o verde-água desbotado
+
+# os algarismos do número da porta (3 x 5 px)
+DIGITOS = {
+    '1': ('.#.', '##.', '.#.', '.#.', '###'),
+    '2': ('##.', '..#', '.#.', '#..', '###'),
+    '3': ('##.', '..#', '.#.', '..#', '##.'),
+    '4': ('#.#', '#.#', '###', '..#', '..#'),
+    '7': ('###', '..#', '.#.', '.#.', '.#.'),
+}
+
+
+def mat_umido(cor, seed=0):
+    """
+    O reboco pintado e desbotado do prédio (as manchas grandes e a sujeira do chão do kit da fazenda) com a umidade
+    que sobe do chão: a faixa mais escura e esverdeada de borda ondulada até perto de um metro, a linha do salitre
+    (1 px mais escuro) na borda e um segundo degrau mais fraco por cima, em manchas.
+    """
+    base = FF.mat_reboco(cor, seed=seed, sujeira=0.55)
+
+    def f(L, n, P):
+        out = base(L, n, P)
+        a, _ = coords(P, np.asarray(n, float))
+        z = P[:, 2]
+        h1 = 0.78 + 0.32 * suave(a, 0, 0.55, 70 + seed) + 0.1 * suave(a, 0, 0.17, 71 + seed)
+        h2 = h1 + 0.18 + 0.3 * suave(a, 0, 0.4, 72 + seed)
+        mancha2 = (z < h2) & (suave(a, z, 0.3, 73 + seed) > 0.42)
+        out = np.where(mancha2[:, None], out * np.array([0.95, 0.96, 0.94]), out)
+        um = z < h1
+        out = np.where(um[:, None], out * np.array([0.84, 0.88, 0.84]), out)
+        linha = (z < h1) & (z >= h1 - PZ * 1.2)
+        out = np.where(linha[:, None], out * 0.9, out)
+        return out
+    return emissivo(f)
+
+
+def _numero(x, y, z, txt, fundo='#f0ece0', tinta=AZUL):
+    """A plaquinha de esmalte do número, presa na fachada +y (y = a parede): o fundo claro, a borda e os algarismos."""
+    larg = (len(txt) * 4 + 3) * PH
+    alto = 9 * PZ
+    x0, z1 = x - larg / 2, z + alto
+    linhas = ['.' * (len(txt) * 4 + 3)] * 2 + [''.join('..' + ''.join(DIGITOS[d][k] + '.' for d in txt))[:len(txt) * 4 + 3]
+                                               for k in range(5)] + ['.' * (len(txt) * 4 + 3)] * 2
+    grade = np.array([[c_ == '#' for c_ in ln.ljust(len(txt) * 4 + 3, '.')] for ln in linhas])
+
+    def m(L, n, P):
+        u = np.clip(np.floor((P[:, 0] - x0) / PH).astype(int), 0, grade.shape[1] - 1)
+        v = np.clip(np.floor((z1 - P[:, 2]) / PZ).astype(int), 0, grade.shape[0] - 1)
+        out = np.tile(hx(fundo), (len(P), 1))
+        borda = (u == 0) | (u == grade.shape[1] - 1) | (v == 0) | (v == grade.shape[0] - 1)
+        out = np.where((grade[v, u] | borda)[:, None], hx(tinta), out)
+        return out
+    o = obj()
+    CZ.c.caixa((x0, x0 + larg, y, y + 0.025, z, z1), {'frente': emissivo(m), '*': liso(tinta)}, M, o)
+
+
+def _vaso_alto(x, y, z, cor='#d84a6a', r=0.1):
+    """O vasinho de flor no piso da varanda (sem pegada: fica no alto)."""
+    CZ.c.cilindro(x, y, r * 0.8, z, z + r * 1.6, BE.vol(x, y, '#a85a34'), M, obj(), lados=12, r1=r)
+    om = obj()
+    rng = np.random.default_rng(int(x * 100 + z * 10))
+    m = FF.mat_folha((x, y, z + r * 2.4), (r * 2, r * 2, r * 1.6), FF.FOLHA_PAL, q=0.05, seed=int(x * 7) % 13, flores=(cor, '#f6e27a'))
+    FF._cachos(om, x, y, z + r * 2.2, r * 1.2, r * 0.9, 7, r * 0.35, r * 0.55, rng, m)
+
+
+def _pano_grade(x0, x1, y, zc, cor, alto=0.32):
+    """O pano (a toalha, o tapetinho) estendido por cima da grade da varanda, caindo para fora."""
+    o = obj()
+    fp([(x0, y, zc + 0.02), (x1, y, zc + 0.02), (x1, y, zc - alto), (x0, y, zc - alto)], (0, 1, 0), liso(cor), o, dois_lados=True)
+    fp([(x0, y + 0.003, zc - alto + 0.05), (x1, y + 0.003, zc - alto + 0.05), (x1, y + 0.003, zc - alto), (x0, y + 0.003, zc - alto)],
+       (0, 1, 0), liso(_hex(_tom(hx(cor), 0.8))), obj(contorno=False), dois_lados=True)
+
+
+def _varal_varanda(x0, x1, y, z, panos):
+    """O varalzinho da varanda: os dois paus presos nos cantos da grade, a corda e as roupas penduradas."""
+    for xx in (x0, x1):
+        caixa((xx - 0.02, xx + 0.02, y - 0.02, y + 0.02, z - 0.45, z + 0.06), liso('#5a4a3a'))
+    oc = obj(contorno=False)
+    FF._viga(oc, (x0, y, z), (x1, y, z), 0.012, liso('#d8c8a0'))
+    xx = x0 + 0.07
+    for i, (cor, larg) in enumerate(panos):
+        alto = 0.34 + 0.08 * (i % 2)
+        fp([(xx, y, z), (xx + larg, y, z), (xx + larg, y, z - alto), (xx, y, z - alto)], (0, 1, 0), liso(cor), obj(), dois_lados=True)
+        xx += larg + 0.04
+
+
+def _predio(cor=PREDIO_A, moldura=AZUL, batente=AZUL_J, folhas=AZUL_FOLHA, porta=AZUL_PORTA, numero='12', variante='a', seed=0):
+    W, D = 8 * CASA, 6 * CASA
+    X0, X1, Y0, Y1 = 0.3, W - 0.3, 0.35, D - 0.6
+    B = (X0, X1, Y0, Y1)
+    XP = VP._porta_x(8)
+    ZF1, ZF2, ZE, ZR = 2.9, 5.6, 8.3, 9.4
+    YM = (Y0 + Y1) / 2
+    PAR = mat_umido(cor, seed=seed)
+    caixa((X0, X1, Y0, Y1, 0, ZE), PAR)
+    _barrado(B, 0.38, cor=moldura)
+    # os eixos das janelas da frente e de trás (a porta no do meio, na frente)
+    xa, xb = X0 + 0.85, X1 - 0.8
+    xs = (xa, XP, xb)
+    acesa = (lambda k: k % 2 == 0) if variante == 'a' else (lambda k: k % 3 == 1)
+    J, jw, jh = 1.0, 0.62, 1.0
+    vaos0 = {
+        '+y': [('p', XP, 1.0, 2.15, 1, False), ('j', xa, J, jw, jh, acesa(0), True), ('j', xb, J, jw, jh, acesa(1), True)],
+        '-y': [('j', x, J, jw, jh, acesa(k + 1), True) for k, x in enumerate(xs)],
+        '+x': [('j', YM, J, jw, jh, acesa(2), True)],
+        '-x': [('j', YM, J, jw, jh, acesa(3), True)],
+    }
+    # nos andares de cima: as portas-janelas da frente (para as varandinhas) e as janelas comuns nas outras faces
+    def vaos_cima(zf, n):
+        zj = zf + 0.85
+        return {
+            # (na b, a porta-janela da cortina, a da esquerda do 1º andar, fica apagada)
+            '+y': [('j', x, zf + 0.3, jw, 1.72, acesa(k + n) and not (variante == 'b' and n == 1 and k == 0), True)
+                   for k, x in enumerate(xs)],
+            '-y': [('j', x, zj, jw, jh, acesa(k + n + 1), True) for k, x in enumerate(xs)],
+            '+x': [('j', YM, zj, jw, jh, acesa(n + 2), True)],
+            '-x': [('j', YM, zj, jw, jh, acesa(n), True)],
+        }
+    with _colonial(moldura=batente, folhas=folhas, porta=porta):
+        VP._andar(B, 0.0, ZF1, vaos0, cor=moldura, seed=seed + 3, soleira=False, escoras=False)
+        VP._andar(B, ZF1, ZF2, vaos_cima(ZF1, 1), cor=moldura, seed=seed + 13, soleira=False, escoras=False)
+        VP._andar(B, ZF2, ZE - 0.16, vaos_cima(ZF2, 2), cor=moldura, seed=seed + 23, soleira=False, escoras=False)
+    # o friso de cada andar: a faixa clara saliente logo acima da cinta pintada (marca o piso de dentro)
+    fr = {'*': liso('#ece6d6'), 'cima': liso('#f6f2e8')}
+    for zf in (ZF1, ZF2):
+        TD._faixa(B, zf, zf + 0.09, fr, e=0.06)
+    # as varandinhas de ferro na frente do 1º e do 2º andar
+    for zf in (ZF1, ZF2):
+        for x in xs:
+            TD._sacada(B, '+y', x, zf + 0.24, 0.95, fundo=0.32)
+    # a cortina numa das portas-janelas (variante b): o pano por trás do vidro, a janela apagada
+    if variante == 'b':
+        x = xa
+        z0 = ZF1 + 0.3
+        CZ.c.caixa((x - jw / 2, x + jw / 2, Y1 + 0.004, Y1 + 0.01, z0, z0 + 1.72),
+                   SA.mat_cortina('#e8dcc0', 0, x - jw / 2, x + jw / 2, z0, z0 + 1.72), M, obj(contorno=False))
+    # a porta: o degrau, o número em cima da porta e a caixa de luz entre a janela e a porta
+    VP._degraus('+y', Y1, XP, 1.3, 0.16, n=1, prof=0.22, seed=seed)
+    _numero(XP, Y1 + 0.005, 2.36, numero)
+    SA.caixa_luz('+y', Y1, (xa + XP) / 2 + 0.05, 1.25)
+    # o telhado de barro de quatro águas, a cumeeira ao longo da fachada
+    SA.telhado4(B, ZE, ZR, BEI=0.4, eixo='x', seed=seed + 5, cores=TELHA, junta=TELHA_J, cumeeira=CUMEEIRA, testeira='#e8e2d4')
+    # a vida das varandas e da calçada
+    zs1, zs2 = ZF1 + 0.24, ZF2 + 0.24
+    yv = Y1 + 0.32
+    if variante == 'a':
+        _vaso_alto(xa - 0.25, Y1 + 0.17, zs1, cor='#d84a6a')
+        _vaso_alto(xb + 0.25, Y1 + 0.17, zs2, cor='#f0f0f0')
+        _pano_grade(XP - 0.3, XP + 0.12, yv + 0.01, zs2 + 0.92, '#c8402e')
+        _vaso_flor(X0 + 0.25, Y1 + 0.24)
+    else:
+        _varal_varanda(xb - 0.42, xb + 0.42, Y1 + 0.2, zs2 + 1.4,
+                       [('#e8e0cc', 0.2), ('#2e6aa6', 0.18), ('#e8b838', 0.22)])
+        _vaso_alto(XP + 0.28, Y1 + 0.17, zs1, cor='#e8b030')
+        _pano_grade(xa - 0.25, xa + 0.2, yv + 0.01, zs1 + 0.92, '#e8e0cc')
+        _vaso_flor(X1 - 0.25, Y1 + 0.24, cor='#f0f0f0')
+    pegada(X0, X1, Y0, Y1)
+
+
+# =====================================================================================================================
 # os itens
 # =====================================================================================================================
 ITENS = {
@@ -813,4 +982,7 @@ ITENS = {
     'igarape_rede_pesca': (1, 1, (0.0, 0.0), _rede_pesca, {}),
     'igarape_cesto': (1, 1, (0.0, 0.0), _cesto, {}),
     'igarape_varal': (1, 3, (0.0, 0.0), _varal, {}),
+    'igarape_predio': (8, 6, (0.0, 0.0), lambda: _predio(), {}),
+    'igarape_predio~b': (8, 6, (0.0, 0.0), lambda: _predio(cor=PREDIO_B, moldura='#e8e2d4', batente=AZUL_J, numero='37',
+                                                          variante='b', seed=40), {}),
 }

@@ -1486,6 +1486,87 @@ def _desenho_lanche(u, v, out):
     return np.where(colher[:, None], hx('#e04a3a'), out)
 
 
+
+# =====================================================================================================================
+# as letras de placa pintada (17/10, o Felipe: "na Big Dog eu quero o texto na fachada"): duas fontes de pixel, a grande
+# (5 x 7) e a pequena (3 x 5, com uma fileira em cima para o acento e uma embaixo para a cedilha). Cada letra é uma
+# lista de fileiras de cima para baixo; "1" é tinta.
+# =====================================================================================================================
+LETRA_GRANDE = {
+    'B': ['11110', '10001', '10001', '11110', '10001', '10001', '11110'],
+    'I': ['11111', '00100', '00100', '00100', '00100', '00100', '11111'],
+    'G': ['01111', '10000', '10000', '10011', '10001', '10001', '01111'],
+    'D': ['11110', '10001', '10001', '10001', '10001', '10001', '11110'],
+    'O': ['01110', '10001', '10001', '10001', '10001', '10001', '01110'],
+    ' ': ['000', '000', '000', '000', '000', '000', '000'],
+}
+LETRA_PEQUENA = {
+    'H': ['000', '101', '101', '111', '101', '101', '000'],
+    'O': ['000', '111', '101', '101', '101', '111', '000'],
+    'T': ['000', '111', '010', '010', '010', '010', '000'],
+    'D': ['000', '110', '101', '101', '101', '110', '000'],
+    'G': ['000', '111', '100', '101', '101', '111', '000'],
+    'S': ['000', '111', '100', '111', '001', '111', '000'],
+    'L': ['000', '100', '100', '100', '100', '111', '000'],
+    'A': ['000', '010', '101', '111', '101', '101', '000'],
+    'N': ['000', '101', '111', '111', '101', '101', '000'],
+    'C': ['000', '111', '100', '100', '100', '111', '000'],
+    'E': ['000', '111', '100', '110', '100', '111', '000'],
+    'Ç': ['000', '111', '100', '100', '100', '111', '010'],
+    'Í': ['001', '111', '010', '010', '010', '111', '000'],
+    '·': ['0', '0', '0', '1', '0', '0', '0'],
+    ' ': ['00', '00', '00', '00', '00', '00', '00'],
+}
+
+
+def _linha_de_texto(texto, fonte, escala=1, espaco=1):
+    """O texto numa matriz de 0 e 1 (fileiras de cima para baixo), com `espaco` px entre as letras."""
+    cols = []
+    for i, ch in enumerate(texto):
+        g = np.array([[int(c) for c in fila] for fila in fonte[ch]], dtype=np.uint8)
+        g = np.kron(g, np.ones((escala, escala), dtype=np.uint8))
+        if i:
+            cols.append(np.zeros((g.shape[0], espaco * escala), dtype=np.uint8))
+        cols.append(g)
+    return np.hstack(cols)
+
+
+def _letreiro_big_dog(largura_px, altura_px):
+    """O letreiro da Big Dog em pixels (0 = fundo, 1 = o BIG DOG, 2 = a sombra dele, 3 = a linha de baixo)."""
+    m = np.zeros((altura_px, largura_px), dtype=np.uint8)
+    grande = _linha_de_texto('BIG DOG', LETRA_GRANDE, escala=2, espaco=1)
+    pequena = _linha_de_texto('HOT DOGS · LANCHES E AÇAÍ', LETRA_PEQUENA)
+    yg = 3
+    xg = (largura_px - grande.shape[1]) // 2
+    # a sombra de 1 px para baixo e para a direita, depois a letra por cima
+    m[yg + 1:yg + 1 + grande.shape[0], xg + 1:xg + 1 + grande.shape[1]][grande == 1] = 2
+    m[yg:yg + grande.shape[0], xg:xg + grande.shape[1]][grande == 1] = 1
+    yp = yg + grande.shape[0] + 5
+    xp = (largura_px - pequena.shape[1]) // 2
+    m[yp:yp + pequena.shape[0], xp:xp + pequena.shape[1]][pequena == 1] = 3
+    return m
+
+
+def _desenho_letreiro(x0, x1, z0, z1):
+    """A placa inteira da fachada: o texto no meio, o cachorro-quente na ponta da esquerda e o açaí na da direita."""
+    larg = int(round((x1 - x0) / PH))
+    alt = int(round((z1 - z0) / PZ))
+    letreiro = _letreiro_big_dog(larg, alt)
+    cores = np.array([[0, 0, 0], hx('#c43a2a'), hx('#6a1a14'), hx('#5a2a6a')], dtype=float)
+
+    def desenho(u, v, out):
+        # as duas pontas: os desenhos de antes, cada um esticado na sua ponta
+        esq = u < 0.17
+        dir_ = u > 0.83
+        out = np.where(esq[:, None], _desenho_lanche(0.04 + u / 0.17 * 0.52, v, out.copy()), out)
+        out = np.where(dir_[:, None], _desenho_lanche(0.6 + (u - 0.83) / 0.17 * 0.3, v, out.copy()), out)
+        col = np.clip((u * larg).astype(int), 0, larg - 1)
+        fil = np.clip(((1 - v) * alt).astype(int), 0, alt - 1)
+        k = letreiro[fil, col]
+        return np.where((k > 0)[:, None], cores[k], out)
+    return desenho
+
+
 def _toldo(x0, x1, y_parede, y_frente, z_alto, z_baixo):
     """O toldo de lona listrado (vermelho e branco) inclinado, com a franja recortada na frente."""
     c = CZ.c
@@ -1580,7 +1661,9 @@ def _lanchonete():
     for y in (YA, YB):
         janela_alu(B, '-x', y, 1.1, 0.8, 1.0, grade='#2c2c30', vidro='escuro')
     # a placa na platibanda, o toldo e a calçada com as duas mesas
-    _placa(Y1 + 0.005, XP - 1.15, XP + 1.15, 3.0, 3.8, _desenho_lanche, '#f6f2e6', '#c43a2a', e=0.05)
+    # o letreiro da fachada, de ponta a ponta da platibanda: BIG DOG grande e, embaixo, HOT DOGS · LANCHES E AÇAÍ
+    LX0, LX1, LZ0, LZ1 = X0 + 0.15, X1 - 0.15, 3.02, 3.9
+    _placa(Y1 + 0.005, LX0, LX1, LZ0, LZ1, _desenho_letreiro(LX0, LX1, LZ0, LZ1), '#f6f2e6', '#c43a2a', e=0.05)
     _toldo(X0 + 0.3, X1 - 0.3, Y1, Y1 + 0.85, 2.82, 2.42)
     calcada(X0 - 0.15, X1 + 0.15, Y1, D - 0.04)
     _mesa_plastico(X0 + 0.7, Y1 + 0.52, cadeiras=((-1, 0), (1, 0)))

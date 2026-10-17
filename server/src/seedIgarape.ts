@@ -18,7 +18,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 4;
+export const IGARAPE_REV = 6;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -100,7 +100,8 @@ const PREDIOS: [string, number, number, 0 | 4, string][] = [
   ["igarape_palafita", 25, 30, 4, "palafita"],
   ["igarape_palafita_b", 32, 29, 0, "palafita2"],
   // a casa dos Ribeiro, onde a Cora cresceu (17/10)
-  ["igarape_casa", 38, 7, 4, "casa_ribeiro"],
+  // o prediozinho amarelo do lado de lá do rio: no segundo andar, o apartamento dos Ribeiro (a casa da Cora)
+  ["igarape_predio", 38, 6, 4, "casa_ribeiro"],
   ["igarape_casa~b", 49, 8, 4, "casa6"],
   ["igarape_casa", 42, 25, 0, "casa7"],
   // a lanchonete do largo (17/10), de frente para a estrada
@@ -145,6 +146,8 @@ function cidadePiso(): FloorSeed[] {
   f.push(["igarape_rede_pesca", 30, 36, 0, hint("Rede de pesca", "Ainda pinga. No meio da malha, preso, um peixe de olho branco que ninguém daqui sabe dizer qual é.")]);
   f.push(["igarape_cesto", 23, 34, 0], ["igarape_varal", 23, 30, 4], ["igarape_rede_pesca", 35, 28, 2], ["igarape_cesto", 35, 27, 0], ["igarape_varal", 37, 30, 4]);
   f.push(["igarape_rede_pesca", 36, 23, 0], ["barrel", 28, 27, 0]);
+  // o outro prediozinho, o verde, perto da estrada que chega do leste (sem cena de dentro por enquanto)
+  f.push(["igarape_predio~b", 50, 24, 0, hint("Prédio", "O prediozinho verde da beira da estrada, de três andares, com as roupas secando numa varanda. A porta de baixo está sempre encostada.")]);
   const ocup = ocupadas(f);
   // as árvores e os arbustos na grama que sobrou (a lista pode ser generosa: só entra onde é grama livre)
   const arvores: [number, number][] = [
@@ -452,7 +455,7 @@ const CENAS: CenaSpec[] = [
     key: "casa_ribeiro",
     name: IGARAPE + "Casa dos Ribeiro",
     description:
-      "A casa onde a Cora cresceu, fechada desde que a Sara sumiu: o chão de tábua coberto de poeira, os móveis no mesmo lugar de sempre, a mesa da cozinha com as cadeiras de palhinha, a cama de casal com a colcha de crochê, a cômoda, o guarda-roupa. As teias nos cantos do teto e o cheiro de casa fechada. Na parede, o lugar mais claro onde ficava o retrato da família.",
+      "O apartamento onde a Cora cresceu, no segundo andar do prediozinho amarelo, fechado desde que a Sara sumiu: o chão de tábua coberto de poeira, os móveis no mesmo lugar de sempre, a mesa da cozinha com as cadeiras de palhinha, a cama de casal com a colcha de crochê, a cômoda, o guarda-roupa. As teias nos cantos do teto e o cheiro de casa fechada. Na parede, o lugar mais claro onde ficava o retrato da família.",
     layout: planBottom(9, 7, 4),
     andar: "Casa dos Ribeiro",
     style: "taco",
@@ -462,8 +465,10 @@ const CENAS: CenaSpec[] = [
     particles: ["dust"],
     floor: [
       ["portal", 4, 6, 0],
-      ["fogao_lenha", 0, 0, 4],
+      // apartamento: a pia e o fogão a gás no lugar do fogão de lenha das casas térreas
+      ["pia_cozinha", 0, 0, 4],
       ["armario_cozinha", 2, 0, 4],
+      ["fogao_gas", 4, 0, 4],
       ["comoda", 5, 0, 4, oculta("As cartas", "Na gaveta de baixo da cômoda, embaixo das toalhas, as três cartas do Geraldo para a Sara, sem data: uma amarga, outra pedindo perdão e que ela cuide da Cora, a última falando do Exército e de um tal Fritz, no café de sempre.")],
       ["cama_casal", 7, 0, 4],
       ["mesa_cozinha", 1, 2, 4],

@@ -43614,5 +43614,227 @@
         "ay": 37.6
       }
     }
+  },
+  "igarape_predio": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_predio/giro-4.png",
+        "ax": 253.0,
+        "ay": 653.0
+      },
+      "2": {
+        "arquivo": "igarape_predio/giro-2.png",
+        "ax": 200.0,
+        "ay": 653.0
+      },
+      "0": {
+        "arquivo": "igarape_predio/giro-0.png",
+        "ax": 264.0,
+        "ay": 648.0
+      },
+      "6": {
+        "arquivo": "igarape_predio/giro-6.png",
+        "ax": 189.0,
+        "ay": 648.0
+      }
+    },
+    "real": [
+      6.309,
+      4.459,
+      9.49
+    ],
+    "cima": {
+      "arquivo": "igarape_predio/cima.png",
+      "caixa": [
+        6,
+        9,
+        276,
+        199
+      ]
+    },
+    "voo": {
+      "25": {
+        "4": {
+          "arquivo": "igarape_predio/voo-25-giro-4.png",
+          "ax": 179.7,
+          "ay": 336.1
+        },
+        "2": {
+          "arquivo": "igarape_predio/voo-25-giro-2.png",
+          "ax": 175.8,
+          "ay": 343.1
+        },
+        "0": {
+          "arquivo": "igarape_predio/voo-25-giro-0.png",
+          "ax": 186.7,
+          "ay": 336.1
+        },
+        "6": {
+          "arquivo": "igarape_predio/voo-25-giro-6.png",
+          "ax": 165.8,
+          "ay": 343.1
+        }
+      },
+      "50": {
+        "4": {
+          "arquivo": "igarape_predio/voo-50-giro-4.png",
+          "ax": 176.7,
+          "ay": 313.1
+        },
+        "2": {
+          "arquivo": "igarape_predio/voo-50-giro-2.png",
+          "ax": 160.7,
+          "ay": 330.0
+        },
+        "0": {
+          "arquivo": "igarape_predio/voo-50-giro-0.png",
+          "ax": 181.7,
+          "ay": 313.1
+        },
+        "6": {
+          "arquivo": "igarape_predio/voo-50-giro-6.png",
+          "ax": 149.7,
+          "ay": 330.0
+        }
+      },
+      "75": {
+        "4": {
+          "arquivo": "igarape_predio/voo-75-giro-4.png",
+          "ax": 167.2,
+          "ay": 235.5
+        },
+        "2": {
+          "arquivo": "igarape_predio/voo-75-giro-2.png",
+          "ax": 139.8,
+          "ay": 264.8
+        },
+        "0": {
+          "arquivo": "igarape_predio/voo-75-giro-0.png",
+          "ax": 170.2,
+          "ay": 224.5
+        },
+        "6": {
+          "arquivo": "igarape_predio/voo-75-giro-6.png",
+          "ax": 127.8,
+          "ay": 262.8
+        }
+      }
+    },
+    "vooKv": 48.0
+  },
+  "igarape_predio~b": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_predio~b/giro-4.png",
+        "ax": 253.0,
+        "ay": 653.0
+      },
+      "2": {
+        "arquivo": "igarape_predio~b/giro-2.png",
+        "ax": 200.0,
+        "ay": 653.0
+      },
+      "0": {
+        "arquivo": "igarape_predio~b/giro-0.png",
+        "ax": 264.0,
+        "ay": 648.0
+      },
+      "6": {
+        "arquivo": "igarape_predio~b/giro-6.png",
+        "ax": 189.0,
+        "ay": 648.0
+      }
+    },
+    "real": [
+      6.309,
+      4.459,
+      9.49
+    ],
+    "cima": {
+      "arquivo": "igarape_predio~b/cima.png",
+      "caixa": [
+        6,
+        9,
+        276,
+        199
+      ]
+    },
+    "voo": {
+      "25": {
+        "4": {
+          "arquivo": "igarape_predio~b/voo-25-giro-4.png",
+          "ax": 179.7,
+          "ay": 336.1
+        },
+        "2": {
+          "arquivo": "igarape_predio~b/voo-25-giro-2.png",
+          "ax": 175.8,
+          "ay": 343.1
+        },
+        "0": {
+          "arquivo": "igarape_predio~b/voo-25-giro-0.png",
+          "ax": 186.7,
+          "ay": 336.1
+        },
+        "6": {
+          "arquivo": "igarape_predio~b/voo-25-giro-6.png",
+          "ax": 165.8,
+          "ay": 343.1
+        }
+      },
+      "50": {
+        "4": {
+          "arquivo": "igarape_predio~b/voo-50-giro-4.png",
+          "ax": 176.7,
+          "ay": 313.1
+        },
+        "2": {
+          "arquivo": "igarape_predio~b/voo-50-giro-2.png",
+          "ax": 160.7,
+          "ay": 330.0
+        },
+        "0": {
+          "arquivo": "igarape_predio~b/voo-50-giro-0.png",
+          "ax": 181.7,
+          "ay": 313.1
+        },
+        "6": {
+          "arquivo": "igarape_predio~b/voo-50-giro-6.png",
+          "ax": 149.7,
+          "ay": 330.0
+        }
+      },
+      "75": {
+        "4": {
+          "arquivo": "igarape_predio~b/voo-75-giro-4.png",
+          "ax": 167.2,
+          "ay": 235.5
+        },
+        "2": {
+          "arquivo": "igarape_predio~b/voo-75-giro-2.png",
+          "ax": 139.8,
+          "ay": 264.8
+        },
+        "0": {
+          "arquivo": "igarape_predio~b/voo-75-giro-0.png",
+          "ax": 170.2,
+          "ay": 224.5
+        },
+        "6": {
+          "arquivo": "igarape_predio~b/voo-75-giro-6.png",
+          "ax": 127.8,
+          "ay": 262.8
+        }
+      }
+    },
+    "vooKv": 48.0
   }
 }

@@ -27,7 +27,9 @@ describe("Igarapé", () => {
     assert.equal(conta("igarape_venda"), 1);
     assert.equal(conta("igarape_ponte"), 1);
     assert.equal(conta("igarape_palafita") + conta("igarape_palafita_b"), 2, "as duas palafitas (com a coluna por cima da água)");
-    assert.equal(conta("igarape_casa"), 7);
+    assert.equal(conta("igarape_casa"), 6);
+    // os dois prediozinhos de três andares (o Felipe, 17/10): o amarelo, com o apartamento dos Ribeiro, e o verde
+    assert.equal(conta("igarape_predio"), 2, "os dois prediozinhos");
     assert.ok(conta("igarape_ipe") >= 1, "o ipê amarelo");
     assert.ok(conta("igarape_canoa") >= 2, "as canoas");
     // cada prédio tem a entrada encostada (o seed não deixou nenhuma de fora)
