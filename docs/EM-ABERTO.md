@@ -202,6 +202,15 @@ peito sobe e desce, acabou", "não estraga os bonecos".
   O card usa o recorte do rosto (`rosto.jpg`, os olhos no meio, o rosto do mesmo tamanho em todos), feito por
   `trabalho/npcs-17-10/rosto_card.py` (o ponto entre os olhos e o zoom de cada foto, à mão). NPC novo com foto: pôr a
   linha dele no script e rodar.
+- **O visual (o Felipe: "tá feia, fundo liso, nem parece que é o CRONA"; "odeio assimetria"):** a moldura pintada do
+  tabuleiro em volta da janela, o fundo azul-noite com grão, vinheta e brilho de ouro, os cards na carta pintada dos
+  agentes (a figura na janela, o nome na plaquinha de couro, a carta de foco ao passar o mouse e na escolhida), o Usar
+  no botão de ouro do HUD, a rolagem pintada do kit, as sub-abas com a linha de ouro. Os NPCs com o nome em cima e o
+  sobrenome embaixo. As ameaças sem setas nem caixa tracejada: cada versão é um card igual, em seguida da primeira, numa
+  grade de colunas iguais.
+- **Os monstros do tabuleiro (o Felipe, 17/10):** quando forem feitos, a referência de cada criatura é o retrato dela no
+  bestiário (`arte/ameacas/<id>.png`), respeitando o tamanho (o do livro) e as particularidades de cada uma, para
+  encaixar no tabuleiro.
 - **Os sobrenomes (o Felipe, 17/10):** Agatha Volkomenn (ocultista da Ordo Realitas), Ivete Beicur (responsável pelo
   arsenal da Ordem) e Samuel Norte (hacker e pesquisador da Ordem). O banco que ainda tem o nome antigo troca sozinho ao
   subir o servidor (`renomearNpcs`); o que o mestre já mudou à mão fica. O jogo de verdade troca quando subir o código novo.

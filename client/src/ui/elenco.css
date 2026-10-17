@@ -1,11 +1,25 @@
-/* A janela ELENCO (16/10): NPCs e ameaças, como uma pokédex, no visual do HUD (a moldura azul do tabuleiro). */
+/* A janela ELENCO (16/10): NPCs e ameaças, como uma pokédex, no visual do HUD (a moldura azul do tabuleiro).
+   17/10 (o Felipe: "tá feia, fundo liso, nem parece que é o CRONA"): a moldura pintada do tabuleiro em volta, o fundo
+   azul-noite com grão, vinheta e o brilho de ouro em cima, as cartas pintadas dos agentes nos cards e a rolagem do kit. */
 .el-fundo {
   z-index: 960;
 }
 .el-janela {
-  width: min(118rem, 96vw);
-  height: min(80rem, 90vh);
+  width: min(122rem, 96vw);
+  height: min(82rem, 92vh);
   max-height: none;
+  padding: 1rem 1.4rem 1.2rem;
+  border: 2.4rem solid transparent;
+  border-radius: 0;
+  border-image: var(--ui-tabuleiro-moldura-tabuleiro-fonte) 80 / 2.4rem stretch;
+  background:
+    radial-gradient(ellipse 60% 22% at 50% 0%, rgba(233, 169, 68, 0.12), transparent 75%),
+    radial-gradient(ellipse 110% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.8 0 0 0 0 0.75 0 0 0 0 0.6 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(45deg, rgba(120, 160, 220, 0.025) 0 0.1rem, transparent 0.1rem 1.6rem),
+    linear-gradient(180deg, #0c1729, #050a13);
+  background-clip: padding-box;
+  box-shadow: 0 2.4rem 6rem rgba(0, 0, 0, 0.75);
   --el-sangue: #b3261e;
   --el-morte: #4a4550;
   --el-conhecimento: #d1a33a;
@@ -139,105 +153,202 @@
 .el-grade {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1rem;
   overflow-y: auto;
-  padding: 0.2rem 0.6rem 1rem 0.2rem;
+  padding: 0.2rem 1rem 1.4rem 0.2rem;
+}
+
+/* a rolagem pintada do kit (o trilho escuro e o pegador de bronze), a mesma das listas da FICHAS */
+.el-janela ::-webkit-scrollbar {
+  width: 1.4rem;
+}
+.el-janela ::-webkit-scrollbar-track {
+  border: 0.5rem solid transparent;
+  border-image: var(--ui-kit-rolagem-trilho) 10 fill / 0.5rem stretch;
+}
+.el-janela ::-webkit-scrollbar-thumb {
+  min-height: 5rem;
+  border: 0.5rem solid transparent;
+  border-image: var(--ui-kit-rolagem-pegador) 10 fill / 0.5rem stretch;
+}
+.el-janela ::-webkit-scrollbar-button {
+  display: none;
 }
 
 /* as sub-abas que abrem e fecham (17/10): os grupos de NPC e os elementos das ameaças */
 .el-secao {
-  border: 0.14rem solid rgba(161, 136, 115, 0.22);
-  border-radius: 1rem;
-  background: rgba(10, 20, 36, 0.45);
+  position: relative;
+  border: 0.14rem solid rgba(161, 136, 115, 0.28);
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--el-cor, #5c7fa8) 10%, transparent), transparent 6rem),
+    rgba(6, 13, 24, 0.72);
+  box-shadow: inset 0 0 0 0.3rem rgba(5, 11, 20, 0.6);
 }
 .el-secao.aberta {
-  border-color: color-mix(in srgb, var(--el-cor, #e9a944) 45%, rgba(161, 136, 115, 0.3));
+  border-color: color-mix(in srgb, var(--el-cor, #e9a944) 40%, rgba(161, 136, 115, 0.4));
 }
 .el-secao-cab {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1rem;
   width: 100%;
-  height: 3.8rem;
-  padding: 0 1.2rem;
+  height: 4.4rem;
+  padding: 0 1.4rem;
   border: 0;
-  border-radius: 1rem;
+  border-radius: 0.9rem;
   background: transparent;
-  color: var(--r-texto, #efe6d1);
-  font: 600 1.5rem var(--r-pixel, monospace);
+  color: var(--r-ouro-hi, #ffd27a);
+  font: 600 1.6rem var(--r-pixel, monospace);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-align: left;
   cursor: pointer;
 }
+.el-secao.aberta .el-secao-cab {
+  border-radius: 0.9rem 0.9rem 0 0;
+  border-bottom: 0.14rem solid transparent;
+  border-image: var(--h-linha-ouro, linear-gradient(90deg, #c97f2c, transparent)) 1;
+}
 .el-secao-cab:hover {
-  background: color-mix(in srgb, var(--el-cor, #e9a944) 14%, transparent);
+  background: color-mix(in srgb, var(--el-cor, #e9a944) 12%, transparent);
 }
 .el-secao-cab i {
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 50%;
+  width: 1.2rem;
+  height: 1.2rem;
+  transform: rotate(45deg);
   background: var(--el-cor, #888);
-  box-shadow: 0 0 0.6rem var(--el-cor, #888);
+  box-shadow: 0 0 0.8rem var(--el-cor, #888);
 }
 .el-secao-cab small {
   margin-left: auto;
-  opacity: 0.6;
-  font-weight: 500;
+  min-width: 3rem;
+  padding: 0.2rem 0.8rem;
+  border: 0.12rem solid rgba(161, 136, 115, 0.35);
+  border-radius: 1rem;
+  color: var(--r-texto-2, #cdbfa9);
+  font-size: 1.2rem;
+  text-align: center;
 }
 .el-secao-seta {
   width: 1.4rem;
   color: var(--r-ouro, #e9a944);
+  transition: transform 0.15s;
 }
+/* a grade de cada sub-aba: colunas iguais, os cards no meio de cada uma (nada torto) */
 .el-secao-grade {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 1rem;
-  padding: 0.4rem 1rem 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.6rem, 1fr));
+  justify-items: center;
+  gap: 1.6rem 0.6rem;
+  padding: 1.6rem 1rem 1.6rem;
 }
 .el-grade > .el-secao-grade {
-  padding: 0;
+  padding: 0.4rem 1rem;
 }
-.el-familia {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.el-familia.versoes {
-  padding: 0.5rem;
-  border: 0.14rem dashed rgba(161, 136, 115, 0.3);
-  border-radius: 1rem;
-  background: rgba(10, 20, 36, 0.4);
-}
-.el-seta {
-  color: var(--r-ouro, #e9a944);
-  font: 700 2.2rem var(--r-pixel, monospace);
-  opacity: 0.7;
-}
+
+/* o card: a carta pintada dos agentes (a das cartas do MAPA), a figura na janela, o nome na plaquinha de couro */
 .el-card {
-  position: relative;
-  display: grid;
-  grid-template-rows: 13rem auto auto auto;
-  justify-items: center;
-  width: 13.6rem;
-  padding: 0.8rem 0.8rem 1rem;
-  border: 0.16rem solid rgba(161, 136, 115, 0.32);
-  border-radius: 0.9rem;
-  background: linear-gradient(180deg, rgba(22, 38, 66, 0.92), rgba(8, 15, 28, 0.95));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 14rem;
+  outline: none;
   color: var(--r-texto, #efe6d1);
   text-align: center;
   cursor: pointer;
-  transition:
-    transform 0.12s,
-    border-color 0.12s;
 }
-.el-card[class*='el-de-']::before {
+.el-carta {
+  position: relative;
+  display: block;
+  width: 14rem;
+  height: 18.6rem;
+  filter: drop-shadow(0 0.6rem 0.9rem rgba(0, 0, 0, 0.6));
+  transition:
+    transform 0.16s var(--h-ease, ease-out),
+    filter 0.16s;
+}
+.el-carta::after {
   content: '';
   position: absolute;
-  inset: 0.5rem 0.5rem auto;
-  height: 0.3rem;
-  border-radius: 0.3rem;
-  background: var(--el-cor);
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 1.12rem 1.12rem 3.72rem;
+  border-image: var(--ui-cartas-carta-agente-normal-fonte) 24 24 80 24 / 1.12rem 1.12rem 3.72rem stretch;
+}
+.el-card:hover .el-carta,
+.el-card:focus-visible .el-carta {
+  transform: translateY(-0.4rem);
+  filter: drop-shadow(0 0.9rem 1.2rem rgba(0, 0, 0, 0.7)) drop-shadow(0 0 0.8rem rgba(233, 169, 68, 0.25));
+}
+.el-card:hover .el-carta::after,
+.el-card:focus-visible .el-carta::after,
+.el-card.escolhido .el-carta::after {
+  border-image-source: var(--ui-cartas-carta-agente-foco-fonte);
+}
+.el-card.escolhido .el-carta {
+  filter: drop-shadow(0 0 1.2rem rgba(233, 169, 68, 0.55)) drop-shadow(0 0.6rem 0.9rem rgba(0, 0, 0, 0.6));
+}
+.el-novo .el-carta::after {
+  border-image-source: var(--ui-cartas-carta-novo-agente-fonte);
+}
+
+/* a janela da carta: a figura em cima de um fundo escuro, com a cor do elemento subindo de baixo */
+.el-quadro {
+  position: absolute;
+  inset: 1rem 1rem 3.4rem;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 100%, color-mix(in srgb, var(--el-cor, #5c7fa8) 38%, transparent), transparent 70%),
+    linear-gradient(180deg, #1a2234, #0b1019);
+}
+.el-quadro .ic {
+  width: 4.4rem;
+  height: 4.4rem;
+  color: var(--r-ouro, #e9a944);
   opacity: 0.85;
+}
+/* a imagem do Felipe no card do NPC (17/10): o rosto recortado (rosto.jpg já vem com os olhos no meio) */
+.el-quadro .el-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 45%;
+}
+.el-quadro .el-pose {
+  max-height: 92%;
+  max-width: 92%;
+  object-fit: contain;
+}
+.el-quadro .el-retrato {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 22%;
+}
+.el-pixel {
+  width: 7.2rem;
+  height: 9.6rem;
+  image-rendering: pixelated;
+}
+.el-selo {
+  display: grid;
+  place-items: center;
+  width: 7.6rem;
+  height: 7.6rem;
+  border: 0.3rem solid var(--el-cor, #888);
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--el-cor, #888) 35%, transparent), rgba(5, 11, 20, 0.9) 70%);
+  color: var(--el-cor, #888);
+  font: 700 3.4rem var(--r-pixel, monospace);
+  text-shadow: 0 0 1rem var(--el-cor, #888);
 }
 .el-de-sangue {
   --el-cor: var(--el-sangue);
@@ -257,98 +368,69 @@
 .el-de-mundanas {
   --el-cor: var(--el-mundanas);
 }
-.el-card:hover,
-.el-card:focus-visible {
-  transform: translateY(-0.2rem);
-  border-color: rgba(233, 169, 68, 0.7);
-  outline: none;
-}
-.el-card.escolhido {
-  border-color: var(--r-ouro, #e9a944);
-  box-shadow: 0 0 0 0.2rem rgba(233, 169, 68, 0.35);
-}
-.el-quadro {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 13rem;
-  overflow: hidden;
-}
-.el-quadro .ic {
-  width: 4rem;
-  height: 4rem;
-  color: var(--r-ouro, #e9a944);
-}
-/* a imagem do Felipe no card do NPC (17/10): o rosto recortado (rosto.jpg já vem com os olhos no meio) */
-.el-quadro .el-foto {
-  align-self: stretch;
-  width: 100%;
-  height: 13rem;
-  object-fit: cover;
-  object-position: 50% 45%;
-  border-radius: 0.6rem;
-}
-.el-pose {
-  max-height: 12.4rem;
-  max-width: 100%;
-  object-fit: contain;
-}
-.el-retrato {
-  max-height: 12.4rem;
-  max-width: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 0.4rem 0.8rem rgba(0, 0, 0, 0.6));
-}
-.el-pixel {
-  width: 7.2rem;
-  height: 9.6rem;
-  image-rendering: pixelated;
-}
-.el-selo {
-  display: grid;
-  place-items: center;
-  width: 7.6rem;
-  height: 7.6rem;
-  border: 0.3rem solid var(--el-cor, #888);
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--el-cor, #888) 35%, transparent), rgba(5, 11, 20, 0.9) 70%);
-  color: var(--el-cor, #888);
-  font: 700 3.4rem var(--r-pixel, monospace);
-  text-shadow: 0 0 1rem var(--el-cor, #888);
-}
+
+/* o nome na plaquinha de couro da carta: sempre duas linhas de altura, no meio dela */
 .el-nome {
-  margin-top: 0.4rem;
-  font: 600 1.35rem/1.15 var(--r-pixel, monospace);
+  position: absolute;
+  left: 1.3rem;
+  right: 1.3rem;
+  bottom: 0.55rem;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 2.75rem;
+  overflow: hidden;
+  color: #f3e6c8;
+  font: 600 1.15rem/1.15 var(--r-pixel, monospace);
+  text-shadow: 0 0.1rem 0 #000;
+}
+.el-nome.duas span:last-child {
+  color: #cdbfa9;
+  font-weight: 500;
+}
+.el-card.escolhido .el-nome {
+  color: var(--r-ouro-hi, #ffd27a);
 }
 .el-linha {
-  margin: 0.2rem 0 0.6rem;
+  display: -webkit-box;
+  height: 2.6rem;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   color: var(--r-texto-2, #cdbfa9);
-  font: 500 1.1rem var(--r-pixel, monospace);
+  font: 500 1.1rem/1.2 var(--r-pixel, monospace);
   opacity: 0.8;
 }
+
+/* o Usar: o botão de ouro do HUD */
 .el-usar {
   height: 2.8rem;
-  padding: 0 1.6rem;
-  border: 0.14rem solid var(--r-ouro, #e9a944);
+  padding: 0 1.8rem;
+  border: 0;
   border-radius: 0.5rem;
-  background: rgba(233, 169, 68, 0.14);
-  color: var(--r-ouro-hi, #ffd27a);
-  font: 600 1.3rem var(--r-pixel, monospace);
-  letter-spacing: 0.06em;
+  background: var(--h-ouro, linear-gradient(#f6cf6a, #c97f2c));
+  box-shadow: var(--h-ouro-sombra, 0 0.3rem 0.8rem rgba(0, 0, 0, 0.45));
+  color: #2a1606;
+  font: 700 1.25rem var(--r-pixel, monospace);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
+  transition:
+    filter 0.12s,
+    transform 0.12s;
 }
 .el-usar:hover {
-  background: rgba(233, 169, 68, 0.32);
+  filter: brightness(1.12);
+  transform: translateY(-0.1rem);
+}
+.el-usar:active {
+  transform: translateY(0.1rem);
 }
 .el-usar.grande {
   height: 4.2rem;
   flex: 1;
   font-size: 1.6rem;
-}
-.el-novo .el-quadro {
-  border: 0.16rem dashed rgba(161, 136, 115, 0.35);
-  border-radius: 0.6rem;
 }
 .el-vazio {
   margin: 2rem auto;
@@ -358,16 +440,21 @@
   text-align: center;
 }
 
-/* o detalhe */
+/* o detalhe: o painel do HUD (a borda bege com a linha de dentro), um pouco mais claro que a grade */
 .el-detalhe {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   overflow-y: auto;
-  padding: 1.2rem;
-  border: 0.14rem solid rgba(161, 136, 115, 0.3);
+  padding: 1.4rem;
+  border: 0.18rem solid rgba(161, 136, 115, 0.55);
   border-radius: 0.9rem;
-  background: rgba(8, 16, 30, 0.85);
+  background:
+    radial-gradient(ellipse 90% 40% at 50% 0%, rgba(92, 127, 168, 0.18), transparent 75%),
+    linear-gradient(180deg, rgba(14, 26, 46, 0.95), rgba(6, 12, 22, 0.95));
+  box-shadow:
+    inset 0 0 0 0.3rem rgba(5, 11, 20, 0.9),
+    inset 0 0 0 0.42rem rgba(161, 136, 115, 0.3);
 }
 .el-d-figura {
   display: grid;

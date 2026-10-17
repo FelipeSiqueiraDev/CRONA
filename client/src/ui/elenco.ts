@@ -12,8 +12,8 @@ import './elenco.css';
  * sequência, tipo uma pokedex, e aí eu só clico em usar e boa"): quem o mestre puxa para a mesa, rápido.
  *
  * - NPCs: a gente da história (shared/src/npcs.ts), com a arte das 8 direções; "Usar" põe um na cena.
- * - Ameaças: as 74 do livro (LR p. 182–289), por elemento (e as mundanas: animais e pessoas), na ordem do livro, com as
- *   versões juntas (Zumbi de Sangue › Bestial › Colossal). "Usar" põe uma peça na porta da cena; a criatura entra no
+ * - Ameaças: as 74 do livro (LR p. 182–289), por elemento (e as mundanas: animais e pessoas), com as versões em
+ *   seguida da primeira (Zumbi de Sangue, Zumbi de Sangue Bestial, Zumbi de Sangue Colossal). "Usar" põe uma peça na porta da cena; a criatura entra no
  *   bestiário sozinha na primeira vez (a ficha do livro), e as do mestre (aparências, PV) continuam valendo.
  * - Clicar no card mostra o detalhe ao lado (quantas, qual aparência, a ficha); "Usar" fecha a janela (com Shift, fica).
  * - Sub-abas que abrem e fecham (17/10, o Felipe): os NPCs por grupo (`grupoDoNpc`, o mestre muda no detalhe) e as
@@ -193,8 +193,15 @@ export function abrirElenco(app: App) {
     if (!(ev as MouseEvent).shiftKey) fechar();
   };
 
-  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string }) =>
-    h(
+  /**
+   * O card (17/10, o Felipe: "nem parece que é o CRONA"): a carta pintada dos agentes (a moldura das cartas do MAPA), a
+   * figura na janela dela e o nome na plaquinha de couro; embaixo, a linha e o Usar. `duasLinhas` põe o nome em cima e
+   * o sobrenome embaixo (os NPCs, como o Miguel e a Agatha).
+   */
+  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean }) => {
+    const [primeiro, ...resto] = o.nome.split(' ');
+    const nome = o.duasLinhas ? [h('span', null, primeiro), h('span', null, resto.join(' ') || ' ')] : [o.nome];
+    return h(
       'article',
       {
         class: `el-card${sel === o.chave ? ' escolhido' : ''} ${o.cls ?? ''}`,
@@ -202,11 +209,11 @@ export function abrirElenco(app: App) {
         onclick: () => ((sel = o.chave), (aparencia = 'variadas'), (quantidade = 1), sfx.click(), desenhar()),
         onkeydown: (e: KeyboardEvent) => e.key === 'Enter' && ((sel = o.chave), desenhar()),
       },
-      h('span', { class: 'el-quadro' }, o.figura),
-      h('b', { class: 'el-nome' }, o.nome),
+      h('span', { class: 'el-carta' }, h('span', { class: 'el-quadro' }, o.figura), h('b', { class: `el-nome${o.duasLinhas ? ' duas' : ''}` }, ...nome)),
       h('small', { class: 'el-linha' }, o.linha),
       h('button', { class: 'el-usar', type: 'button', title: 'Pôr na mesa (Shift: sem fechar a janela)', onclick: o.usar }, 'Usar'),
     );
+  };
 
   /** Uma sub-aba que abre e fecha: o cabeçalho (seta, cor, nome, quantos) e, aberta, a grade dela. */
   const secao = (o: { nome: string; n: number; cls?: string; aberta: boolean; alternar: () => void; filhos: Node[] }) =>
@@ -256,10 +263,10 @@ export function abrirElenco(app: App) {
             cls: 'el-mestre',
             aberta: !!busca || !npcsFechados.has(g),
             alternar: alterna(npcsFechados, g),
-            filhos: ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), figura: fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
+            filhos: ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), duasLinhas: true, figura: fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
           }),
         ),
-        h('div', { class: 'el-secao-grade' }, h('article', { class: `el-card el-novo${sel === 'novo-npc' ? ' escolhido' : ''}`, tabindex: '0', onclick: () => ((sel = 'novo-npc'), sfx.click(), desenhar()) }, h('span', { class: 'el-quadro' }, ic('mais')), h('b', { class: 'el-nome' }, 'Novo NPC'), h('small', { class: 'el-linha' }, 'nome e quem é'))),
+        h('div', { class: 'el-secao-grade' }, h('article', { class: `el-card el-novo${sel === 'novo-npc' ? ' escolhido' : ''}`, tabindex: '0', onclick: () => ((sel = 'novo-npc'), sfx.click(), desenhar()) }, h('span', { class: 'el-carta' }, h('span', { class: 'el-quadro' }, ic('mais')), h('b', { class: 'el-nome duas' }, h('span', null, 'Novo'), h('span', null, 'NPC'))), h('small', { class: 'el-linha' }, 'nome e quem é'))),
       );
       const n = npcs.find((x) => `npc:${x.id}` === sel);
       detalhe.replaceChildren(...(sel === 'novo-npc' ? detalheNovoNpc() : n ? detalheNpc(n) : [h('p', { class: 'el-vazio' }, 'Escolha um NPC para ver; "Usar" põe ele na porta da cena.')]));
@@ -275,18 +282,12 @@ export function abrirElenco(app: App) {
       porGrupo.set(g, [...(porGrupo.get(g) ?? []), f]);
     }
     for (const lista of porGrupo.values()) lista.sort((a, b) => vdDa(a) - vdDa(b));
-    const familiaNo = (f: Entrada[]) =>
-      h(
-        'div',
-        { class: `el-familia${f.length > 1 ? ' versoes' : ''}` },
-        ...f.flatMap((e, i) => [
-          i > 0 ? h('span', { class: 'el-seta', 'aria-hidden': 'true' }, '›') : null,
-          card({ chave: e.chave, nome: i > 0 ? e.nome.slice(f[0].nome.length).trim() || e.nome : e.nome, linha: linhaAmeaca(e), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` }),
-        ]),
-      );
+    // as versões seguem a primeira, cada uma num card igual aos outros (17/10, o Felipe: sem setas, nada assimétrico)
+    const cardAmeaca = (e: Entrada) =>
+      card({ chave: e.chave, nome: e.nome, linha: linhaAmeaca(e), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` });
     grade.replaceChildren(
       ...GRUPOS.filter((g) => porGrupo.has(g.id)).map((g) =>
-        secao({ nome: g.nome, n: porGrupo.get(g.id)!.flat().length, cls: `el-${g.id}`, aberta: !!busca || ameacasAbertas.has(g.id), alternar: alterna(ameacasAbertas, g.id), filhos: porGrupo.get(g.id)!.map(familiaNo) }),
+        secao({ nome: g.nome, n: porGrupo.get(g.id)!.flat().length, cls: `el-${g.id}`, aberta: !!busca || ameacasAbertas.has(g.id), alternar: alterna(ameacasAbertas, g.id), filhos: porGrupo.get(g.id)!.flat().map(cardAmeaca) }),
       ),
     );
     if (!fams.length) grade.append(h('p', { class: 'el-vazio' }, 'Nada com esse nome.'));
