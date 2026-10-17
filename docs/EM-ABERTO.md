@@ -1032,7 +1032,9 @@ Ainda falta (pedido do Felipe):
 
 **Pedidos do Felipe (17/10) para quando a cota do Códex voltar:**
 - A pose **agachado** de todos os personagens (agentes, NPCs e ameaças), no formato das poses do tabuleiro.
-- Os **NPCs novos** que o Felipe vai mandar (no estilo do Miguel).
+- Os **4 NPCs novos** (17/10), no estilo do Miguel, com as referências em `F:\Dhellow\CRONA\campanha\npcs-novos-17-10\`
+  (`npc-a-camisa-rosa.jpg`, `npc-b-ruivo-barba.jpg`, `npc-c-cabelo-rosa.jpg`, `npc-d-jaleco.jpg`). O Felipe: "faça eles
+  sem mão no bolso". Os nomes ele dá depois (a ficha dos NPCs, com o nome editável, está sendo feita no FICHAS).
 
 
 **A fila vive na pasta da arte: `00-COMECE-AQUI.txt`** (em `F:\Dhellow\CRONA\arte\TEXTURAS MAPA\BASE - Ordo Realitas`), com os lotes na ordem e a mensagem pronta para colar no Códex. Reorganizada em 07/10: na raiz ficam só os pedidos que ainda faltam; o que já entrou no jogo foi para `_entregas-originais` e `_arquivo`; as vistas de cima que esperam a peça isométrica ficam em `_aguardando-importar`.
