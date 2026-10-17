@@ -941,8 +941,9 @@ export class RoomView {
     painter.m.set(it.rot, def.width, def.depth, it.x + ax, it.y + ay, it.z);
     painter.state = it.state;
     painter.seed = it.id;
-    // o travesseiro ocupa ~0,55 m da cabeceira (a cabeceira é o fundo da peça, u = 0); o colchão está na altura do móvel
-    const travesseiro = Math.min(def.depth * 0.4, 0.55 / M_POR_CASA);
+    // a coberta começa abaixo do queixo (~0,8 m da cabeceira: o travesseiro e o rosto de fora; a cabeceira é o fundo da
+    // peça, u = 0); o colchão está na altura do móvel
+    const travesseiro = Math.min(def.depth * 0.45, 0.8 / M_POR_CASA);
     const colchao = def.height / Z_PER_M;
     const b: [number, number, number, number, number, number] = [travesseiro, def.depth, 0, def.width, 0, colchao + 0.16];
     const sil = boxSilhouette(painter.m.box(b));
@@ -2634,10 +2635,11 @@ export class RoomView {
               blink: (now + u.phase * 997) % 4300 < 140,
             });
           if (deitada && !imgDeitado) ctx.restore();
-          if (naCama?.it.coberta) this.desenharCoberta(ctx, map, naCama.it, naCama.def);
           if (turning) ctx.restore();
           if (wave && sp) this.drawEmote(sx, fy - H - 14, now);
           ctx.restore();
+          // a coberta fora da escala da pessoa: na mesma medida da cama, para cair em cima dela
+          if (naCama?.it.coberta) this.desenharCoberta(ctx, map, naCama.it, naCama.def);
           if (eCela > 0.01) ctx.filter = 'none';
           if (clip) ctx.restore();
         },
