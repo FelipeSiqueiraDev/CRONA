@@ -2531,10 +2531,11 @@ export class RoomView {
               const fp = footprint(naCama.def, naCama.it.rot);
               [mx, my] = iso(naCama.it.x + fp.sx / 2, naCama.it.y + fp.sy / 2, p.z);
               my -= 3;
-              // a cabeça sempre para cima (de ponta-cabeça a imagem fica estranha), na cabeceira do desenho da cama: na
-              // cama ao longo de y (giro 0 e 4) a diagonal é a outra, e a imagem espelha
-              ex = naCama.it.rot === 0 || naCama.it.rot === 4 ? -1 : 1;
-              ey = 1;
+              // a cabeça vai para a cabeceira (o fundo da cama), mesmo quando ela fica do lado da câmera (o Felipe, 17/10):
+              // visto de cima, quem deita com a cabeça para o nosso lado aparece de cabeça para baixo
+              const [hx, hy] = naCama.it.rot === 4 ? [0, -1] : naCama.it.rot === 0 ? [0, 1] : naCama.it.rot === 2 ? [-1, 0] : [1, 0];
+              ex = hx - hy < 0 ? 1 : -1;
+              ey = hx + hy < 0 ? 1 : -1;
             }
             // o corpo deitado no comprimento da pessoa em pé (1,80 m ao longo da diagonal do piso = a altura na tela)
             const w = H * 1.02;
