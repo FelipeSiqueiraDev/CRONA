@@ -275,8 +275,10 @@ liberou os arquivos da FICHAS para esta.) O bloco novo fica no fim do `fichas.cs
 - **A Camarilla (o Felipe, 17/10):** a foto dela (`arte/companheiros/camarilla.jpg` e o recorte do rosto
   `camarilla-rosto.jpg`) na aba Companheiro do Tepes: o companheiro "Cão de guarda" sem imagem virou "Camarilla" com a
   foto (no `upgradeDb`, só se ainda tiver o nome antigo). E ela no Elenco (Ordo Realitas) como peça, com `Npc.altura`
-  0,8 m (o boneco sai na escala de um cachorro de porte médio: `height` = 104 × 0,8 / 1,8). A arte (8 em pé e 8
-  sentada) está na fila; a sentada entra como a pose agachada dela (o botão Agachar a senta).
+  0,8 m (o boneco sai na escala de um cachorro de porte médio: `height` = 104 × 0,8 / 1,8). **A arte entrou (17/10,
+  Códex):** as 8 em pé (`oito-direcoes.png` e `tabuleiro-32bits/idle-desarmado-<dir>.png`) e as 8 sentada, instaladas
+  como a pose agachada dela (`idle-desarmado-agachado-<dir>.png`: o botão Agachar a senta), na mesma escala da em pé
+  (a cabeça bate). A sentada veio com um brilho laranja em volta, de alfa baixo; saiu cortando o alfa em 240.
 - **O detalhe da ameaça refeito (o Felipe: "espação em branco ... muito mal distribuído"):** o retrato sempre à vista em
   cima, com o fundo vivo do elemento (`client/src/ui/elencoFundo.ts`, um canvas por código: Sangue escorrendo, Morte com
   espirais se desenhando, Conhecimento com sigilos inventados passando, Energia com raios e plasma colorido, Medo com
@@ -364,8 +366,9 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
 - **A fila única da arte** (`trabalho/fila_unica.sh`, a partir das 18:48, um pedido por vez, tentando de novo a cada 5
   min se ainda der o limite de imagem): Camarilla em pé e sentada; Pedro (npc-camisa-rosa, pistola grossa) e Rosa
   (npc-cabelo-rosa, uma submetralhadora em cada mão) armados em pé; os agachados que faltam; o sentado dos Marcados e de
-  todos os NPCs; o agachado armado (agentes, Miguel, Pedro, Rosa); os portadores de relíquia; os Existidos. O Joaquin
-  (deve ser o npc-ruivo) espera a decisão do Felipe.
+  todos os NPCs; o agachado armado (agentes, Miguel, Pedro, Rosa, Joaquin); os portadores de relíquia; os Existidos.
+  O Joaquin é o npc-ruivo (machado de uma mão e escudo de choque), também na fila. A Camarilla já entrou (em pé e
+  sentada).
   **Para o futuro (o Felipe, 17/10):** variar a postura de cada personagem (nem todo mundo agacha, cai ou dorme do mesmo
   jeito), junto com as animações. Por ora, todos na mesma postura.
 - **Santa Amália no mapa-múndi e na chegada:** a ilha `arte/mapa/lugar-santa-amalia-hd.png` (praça com coreto,
