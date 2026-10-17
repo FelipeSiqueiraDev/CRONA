@@ -20,7 +20,7 @@ import { corredorDe, predioDeApartamentos } from "./predioApartamentos";
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 14;
+export const IGARAPE_REV = 15;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -487,7 +487,7 @@ const CENAS: CenaSpec[] = [
     descricaoRecepcao:
       "A portaria do prediozinho verde da beira da estrada: o balcão vazio, o banco, os escaninhos com as cartas acumuladas e a escada. A porta de baixo vive encostada.",
     descricaoCorredor:
-      "O corredor do primeiro andar: o tapete, as portas dos apartamentos 100 a 103, todas trancadas, e a janela com grade para a estrada. Atrás de uma delas, um rádio ligado baixinho.",
+      "O corredor do primeiro andar: o tapete, as portas dos apartamentos 100 a 103 e a janela com grade para a estrada. Atrás de uma delas, um rádio ligado baixinho.",
     clima: DENTRO,
   }),
 ];

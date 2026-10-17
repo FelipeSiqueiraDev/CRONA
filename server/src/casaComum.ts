@@ -26,6 +26,10 @@ interface Casa {
   style: CenaSpec["style"];
   /** a luz de dentro da cidade */
   clima: Pick<CenaSpec, "darkness" | "ambient" | "particles">;
+  /** o nome da cena ("Apartamento 101"); sem ele, "Casa" */
+  nome?: string;
+  /** a cena para onde a porta de fora leva (o corredor do prédio); sem ela, a rua ("cidade") */
+  fora?: string;
 }
 
 /** Planta retangular com a porta na parede da esquerda, na fileira doorY. */
@@ -48,7 +52,7 @@ function comBanheiro(o: Casa, casa: Omit<CenaSpec, "key" | "name" | "description
   return [
     {
       key: o.key,
-      name: o.prefixo + "Casa",
+      name: o.prefixo + (o.nome ?? "Casa"),
       description: o.description,
       andar: "Casa",
       style: o.style,
@@ -61,7 +65,7 @@ function comBanheiro(o: Casa, casa: Omit<CenaSpec, "key" | "name" | "description
     // encostado na da esquerda, e o meio livre
     {
       key: banho,
-      name: o.prefixo + "Banheiro",
+      name: o.prefixo + (o.nome ? `${o.nome} · Banheiro` : "Banheiro"),
       description: "O banheiro da casa: o box com o chuveiro elétrico, a pia com o espelho e o vaso. Azulejo branco até o teto.",
       layout: planLeft(3, 3, 1),
       andar: "Casa",
@@ -114,7 +118,7 @@ export function casaDeCidade(o: Casa & { janela: string }): [CenaSpec, CenaSpec]
       ["clock", "r", y0, 1.2, 2.6],
       ["quadro_fazenda~03", "r", y0, 6.6, 2.5],
     ],
-    links: [[4, fundo ? 1 : 6, "cidade"]],
+    links: [[4, fundo ? 1 : 6, o.fora ?? "cidade"]],
   });
 }
 
@@ -159,6 +163,6 @@ export function casaMineira(o: Casa & { paredes: (y0: number, Y: (y: number) => 
       ...lampadas([2, Y(1)], [6, Y(4)]),
     ],
     wall: o.paredes(y0, Y),
-    links: [[4, fundo ? 1 : 6, "cidade"]],
+    links: [[4, fundo ? 1 : 6, o.fora ?? "cidade"]],
   });
 }

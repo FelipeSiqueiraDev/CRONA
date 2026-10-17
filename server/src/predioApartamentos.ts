@@ -1,3 +1,4 @@
+import { casaDeCidade } from "./casaComum";
 import { type Hint } from "@crona/shared";
 import { type FloorSeed, type WallSeed } from "./seed";
 import { planBottom, planTop } from "./seedSede";
@@ -105,13 +106,29 @@ export function predioDeApartamentos(o: PredioOpcoes): CenaSpec[] {
   ];
   const wall: WallSeed[] = [["window_barred", "l", 0, 1.0, 1.4]];
   const links: [number, number, string][] = [[ESCADA_X, 0, o.chave]];
+  const apartamentos: CenaSpec[] = [];
   for (let i = 0; i < n; i++) {
     const num = numeroDoApartamento(o.andar, i);
     const x = PORTAS_X[i];
-    const cena = o.casas?.[num];
-    // com cena: a porta aberta, como a dos quartos do hotel; sem cena: trancada (o mestre abre com o clique duplo)
-    floor.push(["portal", x, 0, 4, undefined, cena ? 0 : 2]);
-    if (cena) links.push([x, 0, cena]);
+    // o apartamento que tem cena própria (o dos Ribeiro) ou o comum, feito pela receita das casas de cidade (17/10, o
+    // Felipe: "e cadê os apartamentos?"): a sala com a cozinha, o quarto e o banheirinho
+    const cena = o.casas?.[num] ?? `${o.chave}_ap${num}`;
+    if (!o.casas?.[num])
+      apartamentos.push(
+        ...casaDeCidade({
+          key: cena,
+          prefixo: o.prefixo,
+          nome: `Apartamento ${num}`,
+          lado: "frente",
+          description: DESCRICOES[(num + o.andar) % DESCRICOES.length].replace("{n}", String(num)),
+          style: "taco",
+          clima: o.clima,
+          janela: "janela_vidro",
+          fora: corredorDe(o),
+        }),
+      );
+    floor.push(["portal", x, 0, 4]);
+    links.push([x, 0, cena]);
     // a plaquinha em cima da porta, no meio (do lado, a moldura da porta cobria um pedaço dela)
     wall.push([`placa_numero~${num}`, "r", 0, x + 0.5, 3.75]);
   }
@@ -128,5 +145,13 @@ export function predioDeApartamentos(o: PredioOpcoes): CenaSpec[] {
     links,
     plan: { x: 0, y: 0 },
   };
-  return [recepcao, corredor];
+  return [recepcao, corredor, ...apartamentos];
 }
+
+/** As descrições dos apartamentos comuns ({n}: o número), uma por porta. */
+const DESCRICOES = [
+  "O apartamento {n}: a sala e a cozinha juntas, a TV ligada baixinho, a mesa com a toalha de plástico, o quarto no fundo e o banheirinho do lado.",
+  "O apartamento {n}: a cozinha arrumada, a geladeira com os ímãs e o calendário da farmácia, o sofá de frente para a TV e a cama feita.",
+  "O apartamento {n}: o cheiro de café, a louça secando na pia, o rádio em cima da geladeira e a cama de casal com a colcha de crochê.",
+  "O apartamento {n}: as cortinas fechadas, a TV desligada, a mesa com as contas empilhadas e o quarto com a porta encostada.",
+];
