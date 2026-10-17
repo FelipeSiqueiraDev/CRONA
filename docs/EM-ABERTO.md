@@ -204,10 +204,14 @@ peito sobe e desce, acabou", "não estraga os bonecos".
   linha dele no script e rodar.
 - **O visual (o Felipe: "tá feia, fundo liso, nem parece que é o CRONA"; "odeio assimetria"):** a moldura pintada do
   tabuleiro em volta da janela, o fundo azul-noite com grão, vinheta e brilho de ouro, os cards na carta pintada dos
-  agentes (a figura na janela com o nome por cima, num degradê preto que some para cima, e o Usar de ouro na plaquinha
-  de couro; a carta de foco ao passar o mouse e na escolhida), a rolagem pintada do kit, as sub-abas com a linha de ouro. Os NPCs com o nome em cima e o
+  agentes (a figura na janela com o nome por cima, num degradê preto que some para cima; a plaquinha de couro inteira
+  é o botão Usar, com a palavra gravada em ouro que acende com o mouse; sem linha embaixo do card; a carta de foco ao
+  passar o mouse e na escolhida), a rolagem pintada do kit, as sub-abas com a linha de ouro. Os NPCs com o nome em cima e o
   sobrenome embaixo. As ameaças sem setas nem caixa tracejada: cada versão é um card igual, em seguida da primeira, numa
   grade de colunas iguais.
+- **Várias abas na prévia (o Felipe: "pra eu ver e você também e mexer junto"):** fora do jogo de verdade (o servidor sem
+  `--prod`, a prévia do `npm run dev`), o mestre pode ter várias abas abertas ao mesmo tempo; no jogo (8080, `--prod`)
+  a aba nova continua derrubando a velha (`hotel.ts`, no `hello`).
 - **Os monstros do tabuleiro (o Felipe, 17/10):** quando forem feitos, a referência de cada criatura é o retrato dela no
   bestiário (`arte/ameacas/<id>.png`), respeitando o tamanho (o do livro) e as particularidades de cada uma, para
   encaixar no tabuleiro.

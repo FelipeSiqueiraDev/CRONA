@@ -2176,7 +2176,10 @@ export class Hotel implements HotelApi {
     // mesma pessoa abrindo em outra aba: a conexão nova assume (jogador não derruba o mestre)
     for (const o of this.clients.values())
       if (o !== c && o.key === key && o.role === 'gm' && role !== 'gm') return c.send({ t: 'error', msg: 'Esse nome já está em uso na sessão.' });
-    for (const o of this.clients.values()) if (o !== c && o.key === key) o.kick?.();
+    // fora do jogo de verdade (a prévia de desenvolvimento, sem --prod), o mestre pode ter várias abas abertas ao mesmo
+    // tempo (17/10, o Felipe: "pra eu ver e você também e mexer junto"); no jogo, a aba nova derruba a velha
+    const variasAbas = role === 'gm' && !process.argv.includes('--prod');
+    if (!variasAbas) for (const o of this.clients.values()) if (o !== c && o.key === key) o.kick?.();
     c.name = name;
     c.key = key;
     c.role = role;

@@ -195,8 +195,9 @@ export function abrirElenco(app: App) {
 
   /**
    * O card (17/10, o Felipe: "nem parece que é o CRONA"): a carta pintada dos agentes (a moldura das cartas do MAPA), a
-   * figura na janela dela com o nome por cima, num degradê preto que some para cima (para ler bem), e o Usar na
-   * plaquinha de couro; embaixo, a linha. `duasLinhas` põe o nome em cima e o sobrenome embaixo (os NPCs).
+   * figura na janela dela com o nome por cima, num degradê preto que some para cima (para ler bem); a plaquinha de couro
+   * inteira da carta é o botão Usar. Sem linha embaixo (a nota fica no detalhe). `duasLinhas` põe o nome em cima e o
+   * sobrenome embaixo (os NPCs).
    */
   const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean }) => {
     const [primeiro, ...resto] = o.nome.split(' ');
@@ -214,9 +215,8 @@ export function abrirElenco(app: App) {
         { class: 'el-carta' },
         h('span', { class: 'el-quadro' }, o.figura),
         h('b', { class: `el-nome${o.duasLinhas ? ' duas' : ''}` }, ...nome),
-        h('button', { class: 'el-usar', type: 'button', title: 'Pôr na mesa (Shift: sem fechar a janela)', onclick: o.usar }, 'Usar'),
+        h('button', { class: 'el-placa', type: 'button', title: o.linha ? `${o.linha} · pôr na mesa (Shift: sem fechar a janela)` : 'Pôr na mesa (Shift: sem fechar a janela)', onclick: o.usar }, h('span', null, 'Usar')),
       ),
-      h('small', { class: 'el-linha' }, o.linha),
     );
   };
 
@@ -271,7 +271,7 @@ export function abrirElenco(app: App) {
             filhos: ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), duasLinhas: true, figura: fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
           }),
         ),
-        h('div', { class: 'el-secao-grade' }, h('article', { class: `el-card el-novo${sel === 'novo-npc' ? ' escolhido' : ''}`, tabindex: '0', onclick: () => ((sel = 'novo-npc'), sfx.click(), desenhar()) }, h('span', { class: 'el-carta' }, h('span', { class: 'el-quadro' }, ic('mais')), h('b', { class: 'el-nome duas' }, h('span', null, 'Novo'), h('span', null, 'NPC'))), h('small', { class: 'el-linha' }, 'nome e quem é'))),
+        h('div', { class: 'el-secao-grade' }, h('article', { class: `el-card el-novo${sel === 'novo-npc' ? ' escolhido' : ''}`, tabindex: '0', onclick: () => ((sel = 'novo-npc'), sfx.click(), desenhar()) }, h('span', { class: 'el-carta' }, h('span', { class: 'el-quadro' }, ic('mais')), h('b', { class: 'el-nome duas' }, h('span', null, 'Novo'), h('span', null, 'NPC')), h('span', { class: 'el-placa', 'aria-hidden': 'true' }, h('span', null, 'Criar'))))),
       );
       const n = npcs.find((x) => `npc:${x.id}` === sel);
       detalhe.replaceChildren(...(sel === 'novo-npc' ? detalheNovoNpc() : n ? detalheNpc(n) : [h('p', { class: 'el-vazio' }, 'Escolha um NPC para ver; "Usar" põe ele na porta da cena.')]));
