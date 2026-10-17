@@ -40,6 +40,8 @@ export interface CtxManobra {
   enviar: (a: cb.AcaoCombate) => void;
   /** empurra a peça do alvo para longe de quem age */
   empurrar: (alvo: number, casas: number) => void;
+  /** o alvo longe, com a ação de movimento livre: anda até ficar colado nele (gasta o movimento) */
+  andarAteOAlvo?: { metros: number; fazer: () => void };
   mudou: () => void;
 }
 
@@ -360,6 +362,15 @@ export class ResolucaoManobra {
       longe
         ? h('small', { class: 'cb-col-pe alerta' }, `Fora do corpo a corpo (${cb.textoMetros(t!.metros!)}): a manobra pede alvo adjacente.`)
         : h('small', { class: 'cb-col-pe' }, 'Luta contra Luta, mesmo com arma de disparo (LR p. 85).'),
+      // longe e com o movimento livre: anda até o alvo (gasta o movimento) e a manobra segue (o Felipe, 17/10)
+      longe && x.andarAteOAlvo
+        ? h(
+            'button',
+            { class: 'fx-bt forte atq-andar', type: 'button', onclick: () => (sfx.click(), x.andarAteOAlvo!.fazer()) },
+            ic('bota'),
+            h('span', null, h('b', null, 'Andar e tentar'), h('small', null, `gasta a ação de movimento: anda ${cb.textoMetros(x.andarAteOAlvo.metros)} até ficar colado no alvo`)),
+          )
+        : null,
     );
   }
 
@@ -491,7 +502,7 @@ export class ResolucaoManobra {
       {
         class: 'cb-bt forte',
         type: 'button',
-        disabled: !pronto || k.semAcao,
+        disabled: !pronto || k.semAcao || (!!alvo && !!k.tab && k.tab.metros !== null && !k.tab.adjacente && k.def.id !== 'atropelar'),
         title: k.semAcao ? 'A ação padrão deste turno já foi usada' : 'Escreve no registro e aplica o efeito',
         onclick: () => {
           if (!alvo || !op || op.vencedor === 'empate' || k.bonusB === null || k.dadosB === null) return;

@@ -17,7 +17,14 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
   segue sozinha (Geraldo agachado, depois o sentado dos NPCs da Ordem e dos Marcados, o agachado armado e os
   portadores de relíquia). Cada peça é conferida (altura, cabeça, cor, contorno rosa) antes de instalar.
 - **Andar e atacar: conferido pelo Felipe em 17/10, "deu certinho".**
-- **Pedidos do Felipe ainda não feitos:** conferir no combate o passo Efeito da manobra e o alvo que não zera ao
+- **Existidos (17/10, esclarecido):** o retrato do Elenco fica como está (dourado, brilhos, olhos dourados); o
+  BONECO do tabuleiro é que vai ser refeito, no chibi dos outros personagens mas no estilo dourado dos retratos. Está
+  na fila do Códex; os de agora ficam até os novos serem aprovados.
+- **Feito em 17/10, fim do dia, sem conferir no jogo:** em combate o clique no chão não anda e clicar noutra peça não
+  passa o comando (`RoomView.emCombate`); a manobra longe do alvo tem "Andar e tentar" e não confirma de longe;
+  deitado: ferido usa a pose de caído, inteiro usa a de dormindo.
+- **Pedidos do Felipe ainda não feitos:** o registro do combate está com a ordem trocada (ele diz que o início fica
+  embaixo; no código o mais antigo está em cima e rola para o fim: ver se ele quer o mais novo em cima); conferir no combate o passo Efeito da manobra e o alvo que não zera ao
   passar o turno; Marcela Geleerd (precisa de referência dele); a Camarilla deitada.
 - Visto só na prévia (conferir no 8080): a tranca, apagar as luzes, o chuveiro, as TVs, a fumaça da chaminé.
 
@@ -405,6 +412,9 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   armado do Miguel; o Herman; os portadores de relíquia). A cota de imagem da conta nova acabou às 15:52 (9 imagens) e
   volta por volta das 18:47; a fila tenta de novo a cada 5 min. A **Marcela Geleerd** (a médica da ala médica) também
   foi pedida, mas não existe no Elenco: falta a referência de aparência.
+  Entraram: o **Geraldo agachado** (a cabeça igualada direção por direção, `normalizar_agachado.py --por-direcao`: o
+  gerador desenhou a cabeça até 10% maior em algumas direções) e a **Agatha sentada** (4 diagonais). O quadril no
+  assento ainda não foi conferido no tabuleiro.
   **Os Existidos ficam como estavam** (os dourados e alaranjados do commit bc414989, restaurados): o Felipe gostava
   deles e o pedido de refazer foi um mal-entendido. A v1 e a v2 feitas aqui pelo retrato da lista saíram da fila e do
   jogo (as imagens ficam em `trabalho/monstros-tabuleiro/existido-*`, fora do jogo).
@@ -1361,23 +1371,4 @@ Ainda falta (pedido do Felipe):
 | `variacoes-e-arsenal.zip` | As variações como `"def": "<id>~b"`; o teclado em `interface/teclado-geladeira/`. |
 | `bau-militar-aberto.png` | Trocar na ficha do arsenal (estado 1 do `chest_army`). |
 | Zips da Fazenda | Fichas novas (`moveis-fazenda-*.json`); as texturas no `texturas.json` (`grama`, `estrada`, `lavoura`, `cascalho`, `terra`, a parede do celeiro); estilos novos para o píer e o calabouço; os mobis novos do calabouço. |
-| `portas-novas.zip` | As folhas no lugar das de hoje em `client/public/arte/mobiliario/folhas/porta-*.png`. Na `scripts/3d/fichas/moveis-portas.json`: `"real": [0.75, 0.08, 2.17]`, `"topo": [0.75, 0.08]`, `"caixa": [0, 0.24, 0, 1, 0, 2.17]`; `python scripts/3d/moveis.py scripts/3d/fichas/moveis-portas.json`. No `furniKit.ts`: `VAO_PORTA_M = 0.65` e `BATENTE_PORTA_M = 0.05`. Confira com `python scripts/3d/conferir_arte.py --so portal,portal@metal` e no tabuleiro (Laboratório: a estante encostada; Banheiro: a pia). |
-| `moveis-na-medida.zip` | As folhas no lugar das de hoje (mesmo nome) e `moveis.py` com a ficha de cada uma (a do cômodo); `conferir_arte.py --so <ids>`. Com a peça cabendo na casa, o `encaixe` não encolhe mais nada. |
-| `parede-na-medida.zip` | Idem; o `conferir_arte.py` mede as bordas (0,5 ± 0,06). |
-| Zips dos personagens | `npm run arte:poses -- <nome> --estado <estado> --hd` e `npm run arte:boneco`. Cada personagem novo precisa das marcações em `scripts/bonecos/<nome>.json`. |
-
-Os zips que entraram ficam em `_entregas-originais/`, na pasta da arte.
-
-## Decisões que são do Felipe
-
-- ~~Aprovar o estilo da vista de cima do Bar.~~ **Aprovado em 16/10** (o Felipe: "tá bem bonito"): a vista tática feita por código, sem arte do Códex, fica como está.
-- Ícones pintados no COMBATE e no inventário rápido do MAPA.
-- O que vem primeiro: as modificações na requisição ou a FICHAS bonita.
-- Fechar o PR `#2` do Códex (`codex/arte-tepes-32bits`), que ficou sobrando.
-- Ligar a Sede aos arredores da Fazenda.
-
-## Problemas conhecidos
-
-- **`scripts/3d/eixos.py`:** marca o aparador e o armarinho do Bar como "TROCADO". Os dois não são caixa, então a conta não vale; no tabuleiro estão certos.
-- **Corredor Escuro:** é bem escuro de propósito. O mestre clareia no ☀ Clima da cena se o tablet não mostrar.
-- **Passagem secreta no teste do servidor:** o teste "toda passagem tem caminho" pula a passagem escondida enquanto ela está coberta (o alçapão embaixo do feno).
+| `portas-novas.zip` | As folhas no lugar das de hoje em `client/public/arte/mobiliario/folhas/porta-*.png`. Na `scripts/3d/fichas/moveis-portas.json`: `"real": [0.75, 0.08, 2.17]`, `"topo": [0.75, 0.08]`, `"caixa": [0, 0.24, 0, 1, 0, 2.17]`; `python scripts/3d/moveis.py scripts/3d/fichas/moveis-portas.json`. No `furniKit.ts`: `VAO_PORTA_M = 0.65` e `BATENTE_P

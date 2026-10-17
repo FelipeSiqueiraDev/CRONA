@@ -484,6 +484,17 @@ export class RoomView {
   aoClicarPeca: ((id: number) => boolean) | null = null;
   /** clique numa casa para uma ferramenta (medir, área): devolve true quando usou o clique */
   aoClicarCasa: ((x: number, y: number) => boolean) | null = null;
+  /**
+   * Em combate (17/10, o Felipe: "no combate não deixe eu controlar outro personagem ou que ele ande livremente pelo
+   * mapa; ele só pode agir de acordo com as regras de combate"): o clique no chão não anda e o clique numa peça só
+   * escolhe o alvo (a tela do combate decide); quem anda é o movimento do combate.
+   */
+  emCombate = false;
+
+  private andarLivre(x: number, y: number) {
+    if (this.emCombate) return;
+    this.events.walk(x, y);
+  }
   /** PV de cada peça, de 0 a 1 (o arco em volta da ficha no mapa tático) */
   pvDe: ((id: number) => number | null) | null = null;
   /**
@@ -1676,6 +1687,8 @@ export class RoomView {
 
     if (hit?.kind === 'user') {
       if (this.aoClicarPeca?.(hit.id)) return;
+      // em combate, clicar numa peça não passa o comando para ela (a tela do combate cuida de quem age)
+      if (this.emCombate) return;
       // Shift + clique: junta a peça ao grupo (ou tira); o clique no chão manda o grupo inteiro
       if (shift && !this.watchOnly) {
         if (this.myId && this.users.has(this.myId)) this.grupo.add(this.myId);
@@ -1725,7 +1738,7 @@ export class RoomView {
           if (!(def.flat && !this.info?.canBuild && !it.hint)) this.select({ kind: 'floor', id: it.id });
           else this.select(null);
           this.mark(target.x, target.y);
-          this.events.walk(target.x, target.y);
+          this.andarLivre(target.x, target.y);
         } else {
           // o prédio ao ar livre (o celeiro, o casarão): um clique no desenho dele, na porta inclusive, leva a peça
           // até a entrada encostada nele, e ela entra; o clique duplo continua escolhendo o prédio
@@ -1733,7 +1746,7 @@ export class RoomView {
           if (entrada) {
             this.select(null);
             this.mark(entrada.x, entrada.y);
-            this.events.walk(entrada.x, entrada.y);
+            this.andarLivre(entrada.x, entrada.y);
           } else this.select({ kind: 'floor', id: it.id });
         }
         return;
@@ -1742,7 +1755,7 @@ export class RoomView {
     this.select(null);
     if (tile) {
       this.mark(tile.x, tile.y);
-      this.events.walk(tile.x, tile.y);
+      this.andarLivre(tile.x, tile.y);
     }
   }
 
@@ -2836,7 +2849,10 @@ export class RoomView {
           }
           // a pose deitada desenhada (16/10): dormindo na cama, caído no chão (PV 0); sem ela, a de pé é girada
           const dt = deitada && cdef?.deitado ? sprites.deitado(cdef) : null;
-          const imgDeitado = dt ? (naCama ? (dt.dormindo ?? dt.caido) : (dt.caido ?? dt.dormindo)) : null;
+          // ferido (machucado, morrendo, caveira): a pose de caído; inteiro, a de dormindo, na cama ou no chão (o Felipe,
+          // 17/10: "se o personagem não estiver ferido ele fica na pose de dormindo, não na de morrendo")
+          const ferido = estado.endsWith('machucado') || !!marcas?.caveiras.has(u.id);
+          const imgDeitado = dt ? (naCama ? (ferido ? (dt.caido ?? dt.dormindo) : (dt.dormindo ?? dt.caido)) : ferido ? (dt.caido ?? dt.dormindo) : (dt.dormindo ?? dt.caido)) : null;
           if (imgDeitado) {
             // a cabeça da imagem vai para cima e para a esquerda; na cama, espelhada até a cabeça ir para a cabeceira
             let [mx, my] = [sx, fy - 2];

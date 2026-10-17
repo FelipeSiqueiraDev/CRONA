@@ -663,6 +663,7 @@ export class CombateScreen {
   setCombate(c: Combate | null, podeDesfazer = false, ameacas: Record<string, cb.FichaAmeaca> = {}) {
     this.combate = c;
     this.podeDesfazer = podeDesfazer;
+    if (this.app.view) this.app.view.emCombate = !!c && c.fase !== 'encerrado';
     this.ameacas = ameacas;
     if ((c?.vez ?? null) !== this.ultimaVez) {
       this.ultimaVez = c?.vez ?? null;
@@ -997,6 +998,7 @@ export class CombateScreen {
       acoes: cb.acoesDe(c, ator.id),
       enviar: (a) => this.acao(a),
       empurrar: (alvo, casas) => this.empurrar(ator.id, alvo, casas),
+      andarAteOAlvo: alvoP && !alvoP.fora ? this.andarAteOAlvo(c, ator, alvoP) : undefined,
       mudou: () => (this.sigs.delete('res'), this.renderRes(), this.atualizarMarcas()),
     };
   }
