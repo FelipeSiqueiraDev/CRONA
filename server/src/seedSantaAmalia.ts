@@ -3,6 +3,7 @@ import type { Database, RoomData } from "./db";
 import { type FloorSeed } from "./seed";
 import { planBottom, planRight, planTop } from "./seedSede";
 import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
+import { casaDeCidade } from "./casaComum";
 
 /**
  * Santa Amália (17/10), a cidade comum do interior de Minas onde a Hydra procura o Herman Arantes (a Bíblia da Campanha,
@@ -23,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * para o fundo (giro 0), planTop.
  */
 export const SANTA_AMALIA = "Santa Amália · ";
-export const SANTA_AMALIA_REV = 11;
+export const SANTA_AMALIA_REV = 12;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -170,52 +171,6 @@ function cidadePiso(): FloorSeed[] {
  * mesa com o café, o sofá com a TV, a cama de casal e o guarda-roupa. `lado`: a porta de fora virada para a frente da
  * tela (a de dentro na parede da frente) ou para o fundo (na do fundo).
  */
-function casaComum(key: string, lado: "frente" | "fundo", description: string): CenaSpec {
-  const fundo = lado === "fundo";
-  const y0 = fundo ? 1 : 0;
-  const Y = (y: number) => y + y0;
-  return {
-    key,
-    name: SANTA_AMALIA + "Casa",
-    description,
-    layout: fundo ? planTop(9, 7, 4) : planBottom(9, 7, 4),
-    andar: "Casa",
-    style: "ladrilho",
-    ...DENTRO,
-    floor: [
-      fundo ? ["portal", 4, 1, 4] : ["portal", 4, 6, 0],
-      // na parede do fundo, a cozinha (a pia, o fogão, a geladeira) e o quarto (o guarda-roupa e a cama com a
-      // cabeceira na parede); na da esquerda, a TV. Só a mesa, o sofá e a mesinha ficam soltos, com caminho livre da
-      // porta até a mesa e até a cozinha (o Felipe, 17/10: "ninguém põe TV no meio da sala")
-      ["pia_cozinha", 0, Y(0), 4],
-      ["fogao_gas", 2, Y(0), 4],
-      ["geladeira", 3, Y(0), 4],
-      ["guarda_roupa", 5, Y(0), 4],
-      ["cama_casal", 7, Y(0), 4],
-      ...(fundo ? [] : [["plant", 4, Y(0), 0] as FloorSeed]),
-      // a mesa da cozinha, com uma fileira livre entre ela e a pia
-      ["mesa_cozinha", 1, Y(2), 4],
-      ["chair_wood", 0, Y(2), 2],
-      ["chair_wood", 4, Y(3), 6],
-      ["mug", 1, Y(2), 0],
-      ["food_tray", 2, Y(3), 0],
-      // a sala: a TV na parede da esquerda, o sofá virado para ela, a mesinha no meio
-      ["rack_tv", 0, Y(5), 2],
-      ["rug_worn", 1, Y(4), 0],
-      ["mesa_centro", 2, Y(5), 0],
-      ["sofa_leather", 3, Y(5), 6],
-      ...lampadas([2, Y(2)], [5, Y(4)]),
-    ],
-    wall: [
-      ["janela_vidro", "l", 0, Y(3.6), 1.4],
-      ["clock", "r", y0, 1.2, 2.6],
-      ["quadro_fazenda~03", "r", y0, 6.6, 2.5],
-    ],
-    links: [[4, fundo ? 1 : 6, "cidade"]],
-    plan: { x: 0, y: 0 },
-  };
-}
-
 const CENAS: CenaSpec[] = [
   {
     key: "cidade",
@@ -791,12 +746,12 @@ const CENAS: CenaSpec[] = [
   },
 
   // ------------------------------------------------------------ as casas comuns
-  casaComum("casa1", "frente", "Uma casa da avenida: a cozinha e a sala juntas, a TV ligada no jornal, o cheiro de café, o quarto no fundo."),
-  casaComum("casa2", "frente", "Uma casa da avenida, perto da praça: o fogão a gás, a mesa com o café, o sofá de frente para a TV."),
-  casaComum("casa3", "frente", "A última casa antes da estrada: o fogão, a geladeira com os ímãs, a mesa da cozinha e a cama no fundo."),
-  casaComum("casa4", "fundo", "Uma casa do outro lado da avenida: a cozinha e a sala juntas, a TV e o sofá, o quarto no fundo."),
-  casaComum("casa5", "fundo", "Uma casa do outro lado da avenida: a mesa com o pão e o café, o sofá de frente para a TV."),
-  casaComum("casa6", "fundo", "A casa vizinha dos Valença: a cozinha e a sala juntas, a TV ligada alto, a cortina sempre fechada para o lado da casa deles."),
+  ...casaDeCidade({ key: "casa1", prefixo: SANTA_AMALIA, lado: "frente", description: "Uma casa da avenida: a cozinha e a sala juntas, a TV ligada no jornal, o cheiro de café, o quarto no fundo.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa2", prefixo: SANTA_AMALIA, lado: "frente", description: "Uma casa da avenida, perto da praça: o fogão a gás, a mesa com o café, o sofá de frente para a TV.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa3", prefixo: SANTA_AMALIA, lado: "frente", description: "A última casa antes da estrada: o fogão, a geladeira com os ímãs, a mesa da cozinha e a cama no fundo.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa4", prefixo: SANTA_AMALIA, lado: "fundo", description: "Uma casa do outro lado da avenida: a cozinha e a sala juntas, a TV e o sofá, o quarto no fundo.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa5", prefixo: SANTA_AMALIA, lado: "fundo", description: "Uma casa do outro lado da avenida: a mesa com o pão e o café, o sofá de frente para a TV.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa6", prefixo: SANTA_AMALIA, lado: "fundo", description: "A casa vizinha dos Valença: a cozinha e a sala juntas, a TV ligada alto, a cortina sempre fechada para o lado da casa deles.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
 ];
 
 // ------------------------------------------------------------------ montagem

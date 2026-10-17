@@ -1,8 +1,9 @@
 import { getFurni, RoomMap, type Hint } from "@crona/shared";
 import type { Database, RoomData } from "./db";
-import { type FloorSeed } from "./seed";
+import { type FloorSeed, type WallSeed } from "./seed";
 import { planBottom, planTop } from "./seedSede";
 import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
+import { casaMineira } from "./casaComum";
 import { corredorDe, predioDeApartamentos } from "./predioApartamentos";
 
 /**
@@ -19,7 +20,7 @@ import { corredorDe, predioDeApartamentos } from "./predioApartamentos";
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 10;
+export const IGARAPE_REV = 11;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -172,57 +173,16 @@ function cidadePiso(): FloorSeed[] {
 
 // ------------------------------------------------------------------ as cenas de dentro
 
-/**
- * A casa mineira padrão, sem nome (como a casinha de Santo Berço): a sala e a cozinha num cômodo só, o fogão de lenha
- * aceso, o armário, a mesa com as cadeiras, a cama de casal com a cômoda, o guarda-roupa, a lâmpada pendurada e a
- * janela de cortina. `lado`: a porta de fora está virada para a frente da tela (a de dentro na parede da frente, a que
- * não aparece) ou para o fundo (na parede do fundo).
- */
-function casaMineira(key: string, lado: "frente" | "fundo"): CenaSpec {
-  const fundo = lado === "fundo";
-  const y0 = fundo ? 1 : 0;
-  const Y = (y: number) => y + y0;
-  return {
-    key,
-    name: IGARAPE + "Casa",
-    description:
-      "Uma casa de Igarapé: o chão de tábua encerado, o fogão de lenha aceso com a chaleira, o armário de cozinha, a mesa com as cadeiras de palhinha, a cama de casal com a colcha de crochê, o santinho na cômoda. Cheira a café passado.",
-    layout: fundo ? planTop(9, 7, 4) : planBottom(9, 7, 4),
-    andar: "Casa",
-    style: "taco",
-    ...DENTRO,
-    particles: ["dust", "smoke"],
-    floor: [
-      fundo ? ["portal", 4, 1, 4] : ["portal", 4, 6, 0],
-      ["fogao_lenha", 0, Y(0), 4, undefined, 1],
-      // o louceiro longe da chapa (17/10): o fogão a lenha tem 94 cm de fundo e a chapa passava por cima dele. Com a porta
-      // na frente, uma casa depois do fogão; com a porta no fundo (na casa 4), na parede da esquerda
-      fundo ? ["armario_cozinha", 0, Y(1), 2] : ["armario_cozinha", 3, Y(0), 4],
-      ["comoda", 5, Y(0), 4],
-      ["cama_casal", 7, Y(0), 4],
-      ["mesa_cozinha", 1, Y(2), 4],
-      ["chair_wood", 1, Y(1), 4],
-      ["chair_wood", 3, Y(1), 4],
-      ["chair_wood", 2, Y(4), 0],
-      ["guarda_roupa", 0, Y(5), 2],
-      ["rug_worn", 5, Y(3), 0],
-      ["ceiling_lamp", 4, Y(3), 0],
-      // em cima: as canecas e a bandeja do café na mesa, a vela do santinho na cômoda
-      ["mug", 2, Y(2), 4],
-      ["food_tray", 1, Y(3), 0],
-      ["candles", 6, Y(0), 0],
-      ["crate_wood", 8, Y(6), 0],
-    ],
-    wall: [
-      ["janela_cozinha", "r", y0, 1.0, 1.75],
-      ["quadro_fazenda~05", "r", y0, 6.0, 2.54],
-      ["clock", "r", y0, 8.0, 2.9],
-      ["wall_shelf", "l", 0, Y(3), 2.6],
-    ],
-    links: [[4, fundo ? 1 : 6, "cidade"]],
-    plan: { x: 0, y: 0 },
-  };
-}
+/** As paredes da casa de Igarapé: a janela de cortina em cima da pia, o quadro, o relógio e a prateleira do santo. */
+const paredesDaCasa = (y0: number, Y: (y: number) => number): WallSeed[] => [
+  ["janela_cozinha", "r", y0, 1.0, 1.75],
+  ["quadro_fazenda~05", "r", y0, 6.0, 2.54],
+  ["clock", "r", y0, 8.0, 2.9],
+  ["wall_shelf", "l", 0, Y(3), 2.6],
+];
+
+const DESCRICAO_CASA =
+  "Uma casa de Igarapé: o chão de tábua encerado, a cozinha com o fogão a gás e a geladeira, a mesa com as cadeiras, a TV na sala com o sofá, a cama de casal com a colcha de crochê e o santinho na cômoda. Cheira a café passado.";
 
 const CENAS: CenaSpec[] = [
   {
@@ -400,12 +360,12 @@ const CENAS: CenaSpec[] = [
     chao: [[4, 7, "Garrafa de Cachaça", 1, "misc"]],
   },
   // ------------------------------------------------------------ as casas comuns (sem nome: a casa mineira padrão)
-  casaMineira("casa1", "frente"),
-  casaMineira("casa2", "frente"),
-  casaMineira("casa3", "fundo"),
-  casaMineira("casa4", "fundo"),
-  casaMineira("casa6", "frente"),
-  casaMineira("casa7", "fundo"),
+  ...casaMineira({ key: "casa1", prefixo: IGARAPE, lado: "frente", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa2", prefixo: IGARAPE, lado: "frente", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa3", prefixo: IGARAPE, lado: "fundo", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa4", prefixo: IGARAPE, lado: "fundo", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa6", prefixo: IGARAPE, lado: "frente", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa7", prefixo: IGARAPE, lado: "fundo", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
   // ------------------------------------------------------------ a lanchonete do largo (17/10)
   {
     key: "lanchonete",

@@ -1,8 +1,9 @@
 import { getFurni, RoomMap, type Hint } from "@crona/shared";
 import type { Database, RoomData } from "./db";
-import { type FloorSeed } from "./seed";
+import { type FloorSeed, type WallSeed } from "./seed";
 import { planBottom, planRight, planTop } from "./seedSede";
 import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
+import { casaMineira } from "./casaComum";
 
 /**
  * Tiradentes (15/10), a cidadezinha histórica de Minas Gerais da campanha "Segredos do Outro Lado": o casario
@@ -21,7 +22,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * (giro 4) tem a de dentro na parede da frente (planBottom); virado para o fundo (giro 0), na do fundo (planTop).
  */
 export const TIRADENTES = "Tiradentes · ";
-export const TIRADENTES_REV = 5;
+export const TIRADENTES_REV = 6;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -162,62 +163,13 @@ function cidadePiso(): FloorSeed[] {
 
 // ------------------------------------------------------------------ as cenas
 
-/**
- * A casa padrão mineira, sem nome (como a casinha de Santo Berço, no estilo de Minas): o fogão a lenha aceso, o
- * louceiro, a mesa da cozinha com as cadeiras e o café em cima, a cama de casal com a colcha de retalhos e o
- * criado-mudo, a cômoda com o oratório na parede em cima, o tapete gasto, a janela com cortina, o crucifixo e o
- * retrato da família, as sacas e o barril no canto. `lado`: a porta de fora virada para a frente da tela (a de dentro
- * na parede da frente, a que não aparece) ou para o fundo (na parede do fundo).
- */
-function casaPadrao(key: string, lado: "frente" | "fundo", description: string, extra: FloorSeed[] = []): CenaSpec {
-  const fundo = lado === "fundo";
-  // na planta com a porta no fundo, a sala começa na fileira 1 (a 0 é o vão da porta)
-  const y0 = fundo ? 1 : 0;
-  const Y = (y: number) => y + y0;
-  return {
-    key,
-    name: TIRADENTES + "Casa",
-    description,
-    layout: fundo ? planTop(9, 7, 4) : planBottom(9, 7, 4),
-    andar: "Casa",
-    style: "taco",
-    ...DENTRO,
-    floor: [
-      fundo ? ["portal", 4, 1, 4] : ["portal", 4, 6, 0],
-      // a parede do fundo: o fogão a lenha (aceso), o louceiro, a cômoda, o criado-mudo e a cama
-      ["fogao_lenha", 0, Y(0), 4, undefined, 1],
-      // o louceiro longe da chapa (17/10): o fogão a lenha tem 94 cm de fundo e a chapa passava por cima dele. Com a porta
-      // na frente, uma casa depois do fogão; com a porta no fundo (na casa 4), na parede da esquerda
-      fundo ? ["armario_cozinha", 0, Y(1), 2] : ["armario_cozinha", 3, Y(0), 4],
-      ["comoda", 5, Y(0), 4],
-      ["candles", 5, Y(0), 0],
-      ["books_stack", 6, Y(0), 0],
-      ["cama_casal", 7, Y(0), 4],
-      // a mesa da cozinha com as cadeiras e o café em cima
-      ["mesa_cozinha", 1, Y(3), 4],
-      ["chair_wood", 1, Y(2), 4],
-      ["chair_wood", 3, Y(2), 4],
-      ["chair_wood", 2, Y(5), 0],
-      ["food_tray", 2, Y(3), 0],
-      ["mug", 1, Y(4), 0],
-      ["mug", 3, Y(4), 0],
-      ["rug_worn", 6, Y(3), 0],
-      // o canto das sacas e do barril
-      ["sacas", 0, Y(6), 0],
-      ["barrel", 8, Y(6), 0],
-      ...lampadas([2, Y(1)], [6, Y(2)]),
-      ...extra,
-    ],
-    wall: [
-      ["oratorio", "r", y0, 6.0, 2.1],
-      ["quadro_fazenda~03", "r", y0, 7.6, 2.6],
-      ["janela_cozinha", "l", 0, Y(3.6), 1.6],
-      ["quadro_fazenda~10", "l", 0, Y(5.6), 2.5],
-    ],
-    links: [[4, fundo ? 1 : 6, "cidade"]],
-    plan: { x: 0, y: 0 },
-  };
-}
+/** As paredes da casa de Tiradentes: o oratório em cima da cômoda, o retrato da família, a janela de cortina e o crucifixo. */
+const paredesDaCasa = (y0: number, Y: (y: number) => number): WallSeed[] => [
+  ["oratorio", "r", y0, 6.0, 2.1],
+  ["quadro_fazenda~03", "r", y0, 7.6, 2.6],
+  ["janela_cozinha", "l", 0, Y(3.6), 1.6],
+  ["quadro_fazenda~10", "l", 0, Y(5.9), 2.5],
+];
 
 const CENAS: CenaSpec[] = [
   {
@@ -627,15 +579,15 @@ const CENAS: CenaSpec[] = [
     plan: { x: 0, y: 0 },
   },
   // ------------------------------------------------------------ as casas comuns (sem nome: a casa padrão mineira)
-  casaPadrao("casa1", "frente", "Uma casa da Rua Direita: o fogão a lenha aceso, a mesa com o café e o pão de queijo, a cama com a colcha de retalhos, o oratório em cima da cômoda. Cheiro de café coado."),
-  casaPadrao("casa2", "frente", "Uma casa do lado da igreja: o fogão a lenha aceso, a mesa da cozinha, a cama de casal, o oratório com a santinha e a vela."),
-  casaPadrao("casa3", "frente", "Uma casa do lado da igreja: o fogão a lenha aceso, a mesa da cozinha, a cama de casal, o oratório com a santinha e a vela."),
-  casaPadrao("casa4", "fundo", "Uma casa do casario: o fogão a lenha aceso, a mesa com as cadeiras, a cama de casal, o oratório e o retrato da família na parede."),
-  casaPadrao("casa5", "fundo", "Uma casa do casario: o fogão a lenha aceso, a mesa com as cadeiras, a cama de casal, o oratório e o retrato da família na parede."),
-  casaPadrao("casa6", "fundo", "Uma casa do casario: o fogão a lenha aceso, a mesa com as cadeiras, a cama de casal, o oratório e o retrato da família na parede."),
-  casaPadrao("casa7", "fundo", "Uma casa do casario: o fogão a lenha aceso, a mesa com as cadeiras, a cama de casal, o oratório e o retrato da família na parede."),
-  casaPadrao("casa8", "fundo", "Uma casa do casario: o fogão a lenha aceso, a mesa com as cadeiras, a cama de casal, o oratório e o retrato da família na parede."),
-  casaPadrao("casa9", "fundo", "Uma casa do casario, a última antes da estrada: o fogão a lenha aceso, a mesa com as cadeiras, a cama de casal e o oratório."),
+  ...casaMineira({ key: "casa1", prefixo: TIRADENTES, lado: "frente", description: "Uma casa da Rua Direita: o fogão a gás, a geladeira, a mesa com o café e o pão de queijo, a TV na sala, a cama com a colcha de retalhos e o oratório em cima da cômoda. Cheiro de café coado.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa2", prefixo: TIRADENTES, lado: "frente", description: "Uma casa do lado da igreja: a cozinha arrumada, a mesa com as cadeiras, a TV ligada na novela, a cama de casal e o oratório com a santinha e a vela.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa3", prefixo: TIRADENTES, lado: "frente", description: "Uma casa do lado da igreja: a cozinha com a geladeira cheia de ímãs, a mesa da cozinha, o sofá de frente para a TV, a cama de casal e o oratório com a vela.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa4", prefixo: TIRADENTES, lado: "fundo", description: "Uma casa do casario: a cozinha com o fogão a gás, a mesa com as cadeiras, a TV na sala, a cama de casal, o oratório e o retrato da família na parede.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa5", prefixo: TIRADENTES, lado: "fundo", description: "Uma casa do casario: a cozinha com o fogão a gás, a mesa com as cadeiras, a TV na sala, a cama de casal, o oratório e o retrato da família na parede.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa6", prefixo: TIRADENTES, lado: "fundo", description: "Uma casa do casario: a cozinha com o fogão a gás, a mesa com as cadeiras, a TV na sala, a cama de casal, o oratório e o retrato da família na parede.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa7", prefixo: TIRADENTES, lado: "fundo", description: "Uma casa do casario: a cozinha com o fogão a gás, a mesa com as cadeiras, a TV na sala, a cama de casal, o oratório e o retrato da família na parede.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa8", prefixo: TIRADENTES, lado: "fundo", description: "Uma casa do casario: a cozinha com o fogão a gás, a mesa com as cadeiras, a TV na sala, a cama de casal, o oratório e o retrato da família na parede.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa9", prefixo: TIRADENTES, lado: "fundo", description: "Uma casa do casario, a última antes da estrada: a cozinha com o fogão a gás, a mesa com as cadeiras, a TV na sala, a cama de casal e o oratório.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
 ];
 
 // ------------------------------------------------------------------ montagem

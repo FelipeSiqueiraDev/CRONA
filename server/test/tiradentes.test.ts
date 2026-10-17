@@ -65,9 +65,12 @@ describe("Tiradentes", () => {
     }
   });
 
-  test("as luzes começam acesas e o fogão a lenha das casas está aceso", () => {
+  // as casas são de cidade histórica, não de roça (17/10): o fogão a gás, a geladeira, a TV e o banheiro
+  test("as luzes começam acesas e a casa tem fogão a gás, geladeira, TV e banheiro", () => {
     const casa = porNome("Casa");
-    assert.equal(casa.items.find((i) => i.defId === "fogao_lenha")?.state, 1);
+    for (const id of ["fogao_gas", "geladeira", "rack_tv"]) assert.ok(casa.items.some((i) => i.defId === id), id);
+    assert.ok(!casa.items.some((i) => i.defId === "fogao_lenha"), "sem fogão a lenha");
+    assert.ok(salas.some((r) => r.name === TIRADENTES + "Banheiro"), "o banheiro");
     for (const r of salas) for (const it of r.items) if (it.defId === "ceiling_lamp" || it.defId === "poste_ferro") assert.equal(it.state, 0, `${r.name}: ${it.defId} apagado`);
   });
 });
