@@ -147,6 +147,11 @@ export interface CharacterDef {
    */
   deitado?: { dormindo?: string; caido?: string };
   /**
+   * Agachado (17/10): a pose parada de cócoras nas 8 direções, desarmada e (quando houver) armada, em
+   * tabuleiro-32bits/idle-<desarmado|armado>-agachado-<direção>.png. O tabuleiro usa no lugar de achatar a pose de pé.
+   */
+  agachado?: Partial<Record<'desarmado' | 'armado', Partial<Record<DirKey, string>>>>;
+  /**
    * O boneco animado do tabuleiro (parado respirando e andando, nas 8 direções),
    * gerado por scripts/boneco.py e achado pelo servidor em tabuleiro-32bits/anim.json.
    * Quando tem, vale no lugar de `poses` e `passos`.

@@ -369,6 +369,9 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
     for (const [dir, url] of Object.entries(dirs ?? {})) if (url) pedidos.push({ key: `${estado}:${dir}`, n: -1, url, machucado: estado.endsWith('machucado') });
   for (const [estado, dirs] of Object.entries(def.passos ?? {}))
     for (const [dir, urls] of Object.entries(dirs ?? {})) (urls ?? []).forEach((url, n) => pedidos.push({ key: `${estado}:${dir}`, n, url, machucado: estado.endsWith('machucado') }));
+  // as agachadas (17/10) entram na mesma escala das de pé (a altura sai só das desarmadas de pé): "agachado-<estado>:<dir>"
+  for (const [estado, dirs] of Object.entries(def.agachado ?? {}))
+    for (const [dir, url] of Object.entries(dirs ?? {})) if (url) pedidos.push({ key: `agachado-${estado}:${dir}`, n: -1, url, machucado: false });
   const lidas = await Promise.allSettled(pedidos.map(lerPose));
   const todas: PoseLida[] = [];
   for (const r of lidas) {
@@ -661,7 +664,7 @@ class SpriteStore {
   /** Poses do tabuleiro do personagem; null enquanto carregam (ou se ele não tem). */
   poses(def: CharacterDef): LoadedPoses | null {
     if (!def.poses) return null;
-    const key = JSON.stringify([def.poses, def.passos ?? null, def.height]);
+    const key = JSON.stringify([def.poses, def.passos ?? null, def.agachado ?? null, def.height]);
     const c = this.poseCache.get(key);
     if (c && c !== 'loading' && c !== 'error') return c;
     if (!c) {
@@ -785,6 +788,18 @@ export function poseFor(lp: LoadedPoses, estado: PortraitState, dir: number): Sp
   const armado = estado.startsWith('armado');
   const machucado = estado.endsWith('machucado');
   for (const e of [estado, portraitState(armado, false), portraitState(!armado, machucado), ...PORTRAIT_STATES]) {
+    const k = sheetDirFor(dir, (d) => !!lp.frames[`${e}:${d}`]);
+    if (k) return lp.frames[`${e}:${k}`];
+  }
+  return null;
+}
+
+/**
+ * A pose agachada (17/10) para a direção: a armada se a peça está armada e houver, senão a desarmada; null = o
+ * personagem não tem a pose agachada (o tabuleiro achata a de pé, como antes).
+ */
+export function agachadoFor(lp: LoadedPoses, armado: boolean, dir: number): SpriteFrame | null {
+  for (const e of armado ? ['agachado-armado', 'agachado-desarmado'] : ['agachado-desarmado']) {
     const k = sheetDirFor(dir, (d) => !!lp.frames[`${e}:${d}`]);
     if (k) return lp.frames[`${e}:${k}`];
   }

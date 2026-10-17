@@ -70,6 +70,7 @@ import {
   passosFor,
   PASSOS_POR_CASA,
   PESCOCO,
+  agachadoFor,
   poseFor,
   quadroDaFolha,
   quadroDaPose,
@@ -2297,7 +2298,9 @@ export class RoomView {
       const cdef = sprites.def(u.look.charId);
       const lp = cdef ? sprites.poses(cdef) : null;
       const estado = this.estadoDe?.(u.id) ?? 'desarmado';
-      const pf = lp ? poseFor(lp, estado, u.dir) : null;
+      // agachada (17/10): a pose de cócoras desenhada, quando o personagem tem; sem ela, a de pé achatada (mais abaixo)
+      const pfAgachado = u.agachado && lp ? agachadoFor(lp, estado.startsWith('armado'), u.dir) : null;
+      const pf = pfAgachado ?? (lp ? poseFor(lp, estado, u.dir) : null);
       // o relógio do passo: começa quando a peça sai andando e segue de casa em casa até parar
       if (p.moving) u.andandoDesde ??= now;
       else delete u.andandoDesde;
@@ -2357,7 +2360,7 @@ export class RoomView {
           bpes = bd.info.pesParado[i] ?? null;
         }
       }
-      const passos = lp && p.moving ? passosFor(lp, estado, u.dir) : null;
+      const passos = lp && p.moving && !pfAgachado ? passosFor(lp, estado, u.dir) : null;
       // folha sem pose de sentar: fica de pé no chão, junto do assento (não em cima dele)
       // (na van não: lá o agente senta no banco mesmo sem a pose de sentar, com as pernas escondidas)
       // na cama: deitada no colchão, no meio da cama, a cabeça para a cabeceira (14/10)
@@ -2560,7 +2563,7 @@ export class RoomView {
           // a pessoa na escala do tabuleiro, a partir dos pés (de cócoras, mais baixa)
           ctx.save();
           ctx.translate(sx, sy);
-          ctx.scale(ESCALA_ARTE_PESSOA, ESCALA_ARTE_PESSOA * (sob ? 0.62 : u.agachado ? 0.72 : 1));
+          ctx.scale(ESCALA_ARTE_PESSOA, ESCALA_ARTE_PESSOA * (sob ? 0.62 : u.agachado && !pfAgachado ? 0.72 : 1));
           ctx.translate(-sx, -sy);
           const dance = u.dance ? -Math.abs(Math.sin((now * Math.PI) / 320 + u.phase)) * 4 : 0;
           // flutuando (o Existido, 10/10): o corpo uns 20 cm acima do chão, subindo e descendo devagar; a sombra e o

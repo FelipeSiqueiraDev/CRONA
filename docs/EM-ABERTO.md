@@ -300,9 +300,10 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   acabou às 11h de 17/10 e volta às 18:47:** Ágata, Samuel, Geraldo, Arantes, Ruivo, Cabelo Rosa e Camisa Rosa. A fila retoma
   sozinha (`agachado/depois_da_cota.sh`, em segundo plano); se não rodar, `./fila.sh <ids>` e depois, para cada um,
   `python normalizar_agachado.py <id> <id>-agachado-8-direcoes-v1.png` (conferir `conf-<id>.png`) e `--instalar`.
-  **Falta ligar no código:** o tabuleiro ainda achata a pose de pé em 72% (`u.agachado` em `RoomView.ts`) e o
-  `findPoses` (`server/src/portraits.ts`) só lê os 4 estados de hoje; é preciso ler o estado `desarmado-agachado` e
-  usá-lo quando a peça está agachada (armado agachado e machucado agachado não existem: usar o desarmado-agachado).
+  **Ligado no tabuleiro (17/10):** `findAgachado` (`server/src/portraits.ts`) acha `idle-<desarmado|armado>-agachado-<dir>`
+  e manda em `CharacterDef.agachado`; `processPoses` carrega na mesma escala da pose de pé, e o `RoomView` usa a pose
+  agachada (`agachadoFor`: a armada quando a peça está armada e houver, senão a desarmada) sem o achatamento de 72%,
+  que continua para quem não tem a pose. Agachado não respira nem anda com passos. Visto na prévia com o Miguel.
   **Para o futuro (o Felipe, 17/10):** variar a postura de cada personagem (nem todo mundo agacha, cai ou dorme do mesmo
   jeito), junto com as animações. Por ora, todos na mesma postura.
 - **Santa Amália no mapa-múndi e na chegada:** a ilha `arte/mapa/lugar-santa-amalia-hd.png` (praça com coreto,

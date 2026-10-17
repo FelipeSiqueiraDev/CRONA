@@ -80,6 +80,22 @@ export function findPoses(sheet: string, dir = ART_DIR): CharacterDef['poses'] {
   return Object.keys(out).length ? out : undefined;
 }
 
+/** As poses agachadas (17/10), na mesma pasta das poses: idle-desarmado-agachado-<dir>.png e idle-armado-agachado-<dir>.png. */
+export function findAgachado(sheet: string, dir = ART_DIR): CharacterDef['agachado'] {
+  const find = finder(sheet, dir, POSES_DIR);
+  if (!find) return undefined;
+  const out: NonNullable<CharacterDef['agachado']> = {};
+  for (const estado of ['desarmado', 'armado'] as const) {
+    const dirs: Partial<Record<DirKey, string>> = {};
+    for (const k of DIR_KEYS) {
+      const url = find(`idle-${estado}-agachado-${k}`);
+      if (url) dirs[k] = url;
+    }
+    if (Object.keys(dirs).length) out[estado] = dirs;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 /** As poses deitadas (dormindo e caído), na mesma pasta das poses: deitado-dormindo.png e deitado-caido.png. */
 export function findDeitado(sheet: string, dir = ART_DIR): CharacterDef['deitado'] {
   const find = finder(sheet, dir, POSES_DIR);
@@ -261,7 +277,10 @@ export function refreshPortraits(list: CharacterDef[], dir = ART_DIR): boolean {
     const anim = findAnim(def.sheet, dir);
     const boneco = findBoneco(def.sheet, dir);
     const deitado = findDeitado(def.sheet, dir);
-    if (JSON.stringify([portraits, poses, passos, anim, boneco, deitado]) === JSON.stringify([def.portraits, def.poses, def.passos, def.anim, def.boneco, def.deitado])) continue;
+    const agachado = findAgachado(def.sheet, dir);
+    if (JSON.stringify([portraits, poses, passos, anim, boneco, deitado, agachado]) === JSON.stringify([def.portraits, def.poses, def.passos, def.anim, def.boneco, def.deitado, def.agachado])) continue;
+    if (agachado) def.agachado = agachado;
+    else delete def.agachado;
     if (deitado) def.deitado = deitado;
     else delete def.deitado;
     if (portraits) def.portraits = portraits;
