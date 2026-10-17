@@ -771,6 +771,50 @@ html:not(.modo-ficha) :is(.rp-q, .rp-mais) {
     border-color 0.15s,
     transform 0.1s;
 }
+/* o menu do "⋯" do card da peça (17/10) */
+.rp-menu {
+  position: fixed;
+  z-index: 300;
+  min-width: 19rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem;
+  border: 0.2rem solid rgba(161, 136, 115, 0.7);
+  border-radius: 0.8rem;
+  background: #0b1424;
+  box-shadow: 0 1.2rem 2.4rem rgba(0, 0, 0, 0.55);
+}
+.rp-menu-i {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.2rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--r-texto, #f3e9d8);
+  font: 600 1.3rem / 1.2 var(--r-pixel, monospace);
+  text-align: left;
+  cursor: pointer;
+}
+.rp-menu-i .ic {
+  width: 1.6rem;
+  height: 1.6rem;
+  color: var(--r-ouro, #e9a944);
+  flex: none;
+}
+.rp-menu-i:hover:not(:disabled) {
+  background: rgba(233, 169, 68, 0.14);
+}
+.rp-menu-i.perigo,
+.rp-menu-i.perigo .ic {
+  color: #ff8a73;
+}
+.rp-menu-i:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 html:not(.modo-ficha) :is(.rp-q, .rp-mais):hover {
   border-color: var(--r-ouro) !important;
 }

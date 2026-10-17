@@ -1082,7 +1082,7 @@ export class Shell {
           { class: 'rp-info' },
           // armado: a arma logo depois do nome, em pixel (14/10: antes era um selo por cima do retrato; depois do nome
           // para o nome não mudar de lugar quando o agente saca ou guarda)
-          h('div', { class: 'rp-nome' }, h('b', null, p.name, p.armed ? this.armaNaMao(id) : null), h('button', { class: 'rp-mais', type: 'button', title: 'Mais', 'aria-label': `Mais de ${p.name}`, onclick: () => (sfx.click(), here ? this.app.view.select({ kind: 'user', id }) : this.pickCard(id)) }, ic('reticencias'))),
+          h('div', { class: 'rp-nome' }, h('b', null, p.name, p.armed ? this.armaNaMao(id) : null), h('button', { class: 'rp-mais', type: 'button', title: 'Mais', 'aria-label': `Mais de ${p.name}`, onclick: (ev: Event) => (sfx.click(), this.menuDaPeca(ev.currentTarget as HTMLElement, p, here)) }, ic('reticencias'))),
           h('div', { class: 'rp-local' }, ic('pino'), h('span', null, this.sceneName(p.roomId) || '—')),
           this.vitaisCarta(id, p),
         ),
@@ -1090,6 +1090,57 @@ export class Shell {
       paperize(card, { seed: 300 + id, tone: '#dfd0b3', burn: 0.7, torn: 0.8, stains: 0.6, pad: 12 });
       body.append(card);
     }
+  }
+
+  /**
+   * O menu do "⋯" do card da peça (17/10, o Felipe: "os ⋯ ali na direita deviam me abrir um menu; quero poder excluir
+   * um personagem da cena"): comandar ou ir até ela, centralizar, a mochila, editar e tirar da cena.
+   */
+  private menuDaPeca(botao: HTMLElement, p: PartyMember, here: boolean) {
+    document.querySelector('.rp-menu')?.remove();
+    const id = p.id!;
+    const view = this.app.view;
+    const fechar = () => {
+      menu.remove();
+      document.removeEventListener('pointerdown', fora, true);
+      document.removeEventListener('keydown', esc, true);
+    };
+    const fora = (e: Event) => !menu.contains(e.target as Node) && e.target !== botao && fechar();
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && fechar();
+    const item = (rotulo: string, icone: string, fazer: () => void, perigo = false, desligado = '') =>
+      h(
+        'button',
+        { class: `rp-menu-i${perigo ? ' perigo' : ''}`, type: 'button', disabled: !!desligado, title: desligado || rotulo, onclick: () => (fechar(), sfx.click(), fazer()) },
+        ic(icone),
+        h('span', null, rotulo),
+      );
+    const ficha = this.fichasMapa.some((f) => f.personagem === p.look?.charId);
+    const menu = h(
+      'div',
+      { class: 'rp-menu', role: 'menu' },
+      here ? item('Comandar', 'pessoa', () => view.setActive(id)) : item('Ir até a cena', 'pino', () => this.pickCard(id)),
+      here ? item('Centralizar', 'mira', () => view.focusUser(id)) : null,
+      this.gm && ficha ? item('Mochila', 'mochila', () => (sfx.paper(), this.abrirItens(id))) : null,
+      this.gm && p.look ? item('Editar', 'lapis', () => this.tokenWin.open({ id, name: p.name, look: p.look!, color: p.color, capacity: p.capacity ?? 10 })) : null,
+      this.gm
+        ? item(
+            'Tirar da cena',
+            'lixo',
+            async () => (await askNote(`TIRAR ${p.name.toUpperCase()}?`, `${p.name} sai do tabuleiro. Os itens que carrega continuam registrados.`, 'Tirar do tabuleiro', true)) && this.app.net.send({ t: 'tokenRemove', tokenId: id }),
+            true,
+            here ? '' : 'Vá até a cena da peça para tirar ela de lá',
+          )
+        : null,
+    );
+    document.body.append(menu);
+    const r = botao.getBoundingClientRect();
+    const larg = menu.offsetWidth;
+    menu.style.left = `${Math.max(8, Math.min(window.innerWidth - larg - 8, r.right - larg))}px`;
+    menu.style.top = `${Math.min(window.innerHeight - menu.offsetHeight - 8, r.bottom + 6)}px`;
+    setTimeout(() => {
+      document.addEventListener('pointerdown', fora, true);
+      document.addEventListener('keydown', esc, true);
+    });
   }
 
   /** O ícone da arma na mão do agente (espada ou pistola), para ir logo depois do nome. */
