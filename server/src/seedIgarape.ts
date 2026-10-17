@@ -3,6 +3,7 @@ import type { Database, RoomData } from "./db";
 import { type FloorSeed } from "./seed";
 import { planBottom, planTop } from "./seedSede";
 import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
+import { corredorDe, predioDeApartamentos } from "./predioApartamentos";
 
 /**
  * Igarapé (15/10), o quinto lugar da campanha "Segredos do Outro Lado": a cidadezinha do interior histórico de Minas
@@ -18,7 +19,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 6;
+export const IGARAPE_REV = 8;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -100,8 +101,10 @@ const PREDIOS: [string, number, number, 0 | 4, string][] = [
   ["igarape_palafita", 25, 30, 4, "palafita"],
   ["igarape_palafita_b", 32, 29, 0, "palafita2"],
   // a casa dos Ribeiro, onde a Cora cresceu (17/10)
-  // o prediozinho amarelo do lado de lá do rio: no segundo andar, o apartamento dos Ribeiro (a casa da Cora)
-  ["igarape_predio", 38, 6, 4, "casa_ribeiro"],
+  // os prediozinhos de apartamentos (a receita em predioApartamentos.ts): o amarelo, do lado de lá do rio, com o
+  // apartamento dos Ribeiro (a casa da Cora) no segundo andar; o verde, na beira da estrada
+  ["igarape_predio", 38, 6, 4, "predio_amarelo"],
+  ["igarape_predio~b", 50, 24, 0, "predio_verde"],
   ["igarape_casa~b", 49, 8, 4, "casa6"],
   ["igarape_casa", 42, 25, 0, "casa7"],
   // a lanchonete do largo (17/10), de frente para a estrada
@@ -146,8 +149,6 @@ function cidadePiso(): FloorSeed[] {
   f.push(["igarape_rede_pesca", 30, 36, 0, hint("Rede de pesca", "Ainda pinga. No meio da malha, preso, um peixe de olho branco que ninguém daqui sabe dizer qual é.")]);
   f.push(["igarape_cesto", 23, 34, 0], ["igarape_varal", 23, 30, 4], ["igarape_rede_pesca", 35, 28, 2], ["igarape_cesto", 35, 27, 0], ["igarape_varal", 37, 30, 4]);
   f.push(["igarape_rede_pesca", 36, 23, 0], ["barrel", 28, 27, 0]);
-  // o outro prediozinho, o verde, perto da estrada que chega do leste (sem cena de dentro por enquanto)
-  f.push(["igarape_predio~b", 50, 24, 0, hint("Prédio", "O prediozinho verde da beira da estrada, de três andares, com as roupas secando numa varanda. A porta de baixo está sempre encostada.")]);
   const ocup = ocupadas(f);
   // as árvores e os arbustos na grama que sobrou (a lista pode ser generosa: só entra onde é grama livre)
   const arvores: [number, number][] = [
@@ -488,9 +489,38 @@ const CENAS: CenaSpec[] = [
       ["teia", "l", 0, 5.2, 3.0],
       ["clock", "l", 0, 2.4, 2.9],
     ],
-    links: [[4, 6, "cidade"]],
+    links: [[4, 6, corredorDe({ chave: "predio_amarelo" })]],
     plan: { x: 0, y: 0 },
   },
+  // ------------------------------------------------------------ os prediozinhos de apartamentos
+  ...predioDeApartamentos({
+    prefixo: IGARAPE,
+    chave: "predio_amarelo",
+    nome: "Prédio Amarelo",
+    andar: 2,
+    casas: { 202: "casa_ribeiro" },
+    fora: "cidade",
+    porta: "frente",
+    descricaoRecepcao:
+      "A portaria do prediozinho amarelo: o chão de ladrilho gasto, o balcão do porteiro com o caderno de visitas, o banco de madeira, os escaninhos das cartas e a escada para os apartamentos. Cheira a cera e a umidade do rio.",
+    descricaoCorredor:
+      "O corredor do segundo andar: o tapete puído, as quatro portas com as plaquinhas de esmalte azul (200, 201, 202, 203) e a janela com grade para o rio. A porta do 202, a dos Ribeiro, tem poeira acumulada na soleira.",
+    clima: DENTRO,
+    pistaBalcao: hint("O caderno do porteiro", "As visitas anotadas com a letra do seu Zé. Do 202, a última anotação é antiga: \"Sara Ribeiro — saiu cedo, não voltou\". Depois disso, ninguém subiu para lá."),
+  }),
+  ...predioDeApartamentos({
+    prefixo: IGARAPE,
+    chave: "predio_verde",
+    nome: "Prédio Verde",
+    andar: 1,
+    fora: "cidade",
+    porta: "fundo",
+    descricaoRecepcao:
+      "A portaria do prediozinho verde da beira da estrada: o balcão vazio, o banco, os escaninhos com as cartas acumuladas e a escada. A porta de baixo vive encostada.",
+    descricaoCorredor:
+      "O corredor do primeiro andar: o tapete, as portas dos apartamentos 100 a 103, todas trancadas, e a janela com grade para a estrada. Atrás de uma delas, um rádio ligado baixinho.",
+    clima: DENTRO,
+  }),
 ];
 
 // ------------------------------------------------------------------ montagem

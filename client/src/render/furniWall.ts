@@ -29,7 +29,21 @@ export interface WallLight {
   kind?: LightKind;
 }
 
-type Draw = (ctx: CanvasRenderingContext2D, d: WallFurniDef, state: number, seed: number, t: number) => void;
+type Draw = (ctx: CanvasRenderingContext2D, d: WallFurniDef, state: number, seed: number, t: number, modelo?: string) => void;
+
+/** Os algarismos de 3 x 5 px (a plaquinha do número da porta): cada um, as fileiras de cima para baixo. */
+const ALGARISMOS: Record<string, string[]> = {
+  '0': ['111', '101', '101', '101', '111'],
+  '1': ['010', '110', '010', '010', '111'],
+  '2': ['111', '001', '111', '100', '111'],
+  '3': ['111', '001', '011', '001', '111'],
+  '4': ['101', '101', '111', '001', '001'],
+  '5': ['111', '100', '111', '001', '111'],
+  '6': ['111', '100', '111', '101', '111'],
+  '7': ['111', '001', '010', '010', '010'],
+  '8': ['111', '101', '111', '101', '111'],
+  '9': ['111', '101', '111', '001', '111'],
+};
 
 function frameRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, fill: string) {
   ctx.fillStyle = OUTLINE;
@@ -667,9 +681,37 @@ const draws: Record<string, Draw> = {
 draws.janela_sol = draws.window;
 draws.teia = () => {};
 
-export function drawWallFurni(ctx: CanvasRenderingContext2D, def: WallFurniDef, state: number, seed: number, t: number) {
+/**
+ * A plaquinha do número da porta (17/10, os prédios de apartamentos: "uns números na porta, tipo 400, 402, 403"): a chapa de
+ * esmalte com a borda clara e o número em algarismos de pixel. O número vem do modelo do item (`placa_numero~402`).
+ */
+draws.placa_numero = (ctx, d, _s, _seed, _t, modelo) => {
+  const num = (modelo ?? '').replace(/[^0-9]/g, '').slice(0, 4) || '0';
+  const [chapa, letra] = d.colors;
+  ctx.fillStyle = shade(chapa, -0.45);
+  ctx.fillRect(0, 0, d.w, d.h);
+  ctx.fillStyle = letra;
+  ctx.fillRect(1, 1, d.w - 2, d.h - 2);
+  ctx.fillStyle = chapa;
+  ctx.fillRect(2, 2, d.w - 4, d.h - 4);
+  // os algarismos, 2 px por ponto, no meio da chapa
+  const px = 2;
+  const larg = num.length * 4 * px - px;
+  const x0 = Math.round((d.w - larg) / 2);
+  const y0 = Math.round((d.h - 5 * px) / 2);
+  ctx.fillStyle = letra;
+  [...num].forEach((ch, i) => {
+    (ALGARISMOS[ch] ?? []).forEach((fila, y) => {
+      [...fila].forEach((c, x) => {
+        if (c === '1') ctx.fillRect(x0 + (i * 4 + x) * px, y0 + y * px, px, px);
+      });
+    });
+  });
+};
+
+export function drawWallFurni(ctx: CanvasRenderingContext2D, def: WallFurniDef, state: number, seed: number, t: number, modelo?: string) {
   const f = draws[def.kind];
-  if (f) f(ctx, def, state, seed, t);
+  if (f) f(ctx, def, state, seed, t, modelo);
   else frameRect(ctx, 0, 0, def.w, def.h, def.colors[0] ?? '#888');
 }
 

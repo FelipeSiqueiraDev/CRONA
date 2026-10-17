@@ -34,13 +34,15 @@ describe("Igarapé", () => {
     assert.ok(conta("igarape_canoa") >= 2, "as canoas");
     // cada prédio tem a entrada encostada (o seed não deixou nenhuma de fora)
     assert.equal(conta("lanchonete_predio"), 1, "a lanchonete do largo");
-    assert.equal(conta("entrada"), 12);
+    assert.equal(conta("entrada"), 13);
   });
 
   test("toda passagem leva a outra sala de Igarapé, que tem a volta, e todas se alcançam a partir da cidade", () => {
     const ids = new Set(salas.map((r) => r.id));
     for (const r of salas)
       for (const it of r.items.filter((i) => getFurni(i.defId)?.portal)) {
+        // a porta trancada de apartamento sem cena (a receita do prédio, predioApartamentos.ts) não leva a lugar nenhum
+        if (it.link === undefined && it.state === 2 && it.defId === "portal") continue;
         assert.ok(it.link !== undefined && ids.has(it.link), `${r.name}: passagem ${it.defId} em ${it.x},${it.y} sem destino`);
         const volta = salas.find((s) => s.id === it.link)!;
         assert.ok(volta.items.some((i) => i.link === r.id), `${volta.name} não volta para ${r.name}`);
