@@ -15,6 +15,7 @@ import {
   type AvatarLook,
   type ChatKind,
   type FloorItem,
+  type FurniDef,
   type Hint,
   type PortraitState,
   type RollResult,
@@ -357,6 +358,8 @@ export interface RoomEvents {
   aviso?(texto: string): void;
   /** o grupo de peças mudou (Shift + clique): quantas andam juntas (0 = nenhum grupo) */
   grupoMudou?(n: number): void;
+  /** Ctrl + clique na cama: a coberta por cima de quem está deitado, liga e desliga */
+  cobrir?(id: number): void;
 }
 
 interface Hit {
@@ -925,6 +928,34 @@ export class RoomView {
     return r;
   }
 
+  /**
+   * A coberta da cama por cima de quem está deitado (17/10): o mesmo desenho da cama, recortado na fatia do travesseiro
+   * até o pé e da altura do colchão um pouco para cima, desenhado de novo depois da peça. A cabeça fica no travesseiro,
+   * de fora; a cabeceira, atrás, não entra no recorte.
+   */
+  private desenharCoberta(ctx: CanvasRenderingContext2D, map: RoomMap, it: FloorItem, def: FurniDef) {
+    const base = furniVisual(def, it.state, it.id);
+    const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio, it.modelo) ?? base;
+    const [ax, ay] = this.ajusteDoMovel(map, it);
+    const painter = this.painter;
+    painter.m.set(it.rot, def.width, def.depth, it.x + ax, it.y + ay, it.z);
+    painter.state = it.state;
+    painter.seed = it.id;
+    // o travesseiro ocupa ~0,55 m da cabeceira (a cabeceira é o fundo da peça, u = 0); o colchão está na altura do móvel
+    const travesseiro = Math.min(def.depth * 0.4, 0.55 / M_POR_CASA);
+    const colchao = def.height / Z_PER_M;
+    const b: [number, number, number, number, number, number] = [travesseiro, def.depth, 0, def.width, 0, colchao + 0.16];
+    const sil = boxSilhouette(painter.m.box(b));
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(sil[0][0], sil[0][1]);
+    for (let i = 1; i < sil.length; i++) ctx.lineTo(sil[i][0], sil[i][1]);
+    ctx.closePath();
+    ctx.clip();
+    for (const node of vis.nodes) node.draw(painter);
+    ctx.restore();
+  }
+
   private userPos(u: ClientUser, now: number) {
     if (u.anim) {
       const t = (now - u.anim.start) / u.anim.ms;
@@ -1172,7 +1203,7 @@ export class RoomView {
       if (d && !d.moved && e.button === 0) {
         this.mouse = { x: e.offsetX, y: e.offsetY, inside: true };
         this.updateHover();
-        this.click(e.shiftKey);
+        this.click(e.shiftKey, e.ctrlKey || e.metaKey);
       }
     });
     c.addEventListener('pointerleave', () => {
@@ -1358,7 +1389,7 @@ export class RoomView {
     this.canvas.style.cursor = this.placement ? 'crosshair' : hint || hit ? 'pointer' : 'default';
   }
 
-  private click(shift: boolean) {
+  private click(shift: boolean, ctrl = false) {
     const map = this.map;
     if (!map) return;
     // vista tática: o clique é no mapa de cima (no meio do caminho, nada)
@@ -1435,6 +1466,11 @@ export class RoomView {
       const it = map.getItem(hit.id);
       const def = it ? getFurni(it.defId) : undefined;
       if (it && def) {
+        // Ctrl + clique na cama (o mestre): a coberta por cima de quem deita nela
+        if (ctrl && def.deita && this.info?.isOwner && this.events.cobrir) {
+          this.events.cobrir(it.id);
+          return;
+        }
         if (dbl) this.events.use(it.id);
         // como a cadeira: a mesa vazada leva a peça para baixo dela (abaixada, escondida)
         if (def.walkable || def.sit || def.vao === 'vazada') {
@@ -1538,7 +1574,7 @@ export class RoomView {
     }
     const comArte = desenharParedeComArte(ctx, def.id, it.wall, it.state, px, py, it.id, it.vazio, it.modelo);
     ctx.transform(1, k, 0, 1, ox, oy);
-    if (!comArte) drawWallFurni(ctx, def, it.state, it.id, t);
+    if (!comArte) drawWallFurni(ctx, def, it.state, it.id, t, it.modelo);
     if (outline) {
       ctx.strokeStyle = outline;
       ctx.lineWidth = 1.5;
@@ -2598,6 +2634,7 @@ export class RoomView {
               blink: (now + u.phase * 997) % 4300 < 140,
             });
           if (deitada && !imgDeitado) ctx.restore();
+          if (naCama?.it.coberta) this.desenharCoberta(ctx, map, naCama.it, naCama.def);
           if (turning) ctx.restore();
           if (wave && sp) this.drawEmote(sx, fy - H - 14, now);
           ctx.restore();

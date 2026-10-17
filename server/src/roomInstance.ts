@@ -861,6 +861,9 @@ export class RoomInstance {
       case 'use':
         if (isInt(m.id)) this.use(u, m.id);
         break;
+      case 'cobrir':
+        if (isInt(m.id)) this.cobrir(u, m.id);
+        break;
       case 'unlock':
         if (isInt(m.id)) this.unlock(c, m.id, m.code);
         break;
@@ -1159,6 +1162,18 @@ export class RoomInstance {
     this.hotel.sendInventory(c);
     this.persist();
     this.resettleAll();
+  }
+
+  /** A coberta da cama (Ctrl + clique): só o mestre, só em móvel onde se deita. */
+  private cobrir(u: RoomUser, id: number) {
+    if (!this.isOwner(u.client)) return;
+    const floor = this.map.getItem(id);
+    if (!floor || !getFurni(floor.defId)?.deita) return;
+    const it = { ...floor, coberta: !floor.coberta || undefined };
+    if (!it.coberta) delete it.coberta;
+    this.map.updateItem(it);
+    this.persist();
+    this.broadcastFloor('itemUpdate', it);
   }
 
   private use(u: RoomUser, id: number) {

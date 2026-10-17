@@ -136,6 +136,11 @@ export interface FloorItem {
    * da altura (cobertura). O mestre liga e desliga no painel do objeto.
    */
   quebrado?: boolean;
+  /**
+   * a cama com a coberta por cima de quem está deitado (17/10, o Felipe: "a coberta da cama passar por cima do
+   * personagem quando ele se deita nela"); o mestre liga e desliga com Ctrl + clique na cama
+   */
+  coberta?: boolean;
 }
 
 /** A altura que o móvel tapa de verdade: o quebrado, só a metade. */
