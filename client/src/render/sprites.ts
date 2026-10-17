@@ -337,6 +337,58 @@ function pontosPes(c: HTMLCanvasElement, b: Caixa): [number, number][] {
     .map((p) => [(p.x0 + p.x1 + 1) / 2, p.y + 1]);
 }
 
+/**
+ * As patas do bicho de quatro patas (a Camarilla, 17/10: "ela não tá no quadrado do jeito que deveria"): de lado, as
+ * patas de trás ficam mais para cima na imagem que as da frente, e os "dois pés" de baixo eram só as da frente (a
+ * âncora no meio delas deixava o corpo para fora da casa). Aqui: o pixel mais baixo de cada coluna na metade de baixo
+ * do corpo, as colunas seguidas viram patas, e as patas se separam em duas fileiras pela altura (a da frente, mais
+ * baixa, e a de trás). Devolve o meio de cada fileira: [x, y da sola]; de frente (uma fileira só), os dois lados.
+ */
+function pontosPatas(c: HTMLCanvasElement, b: Caixa): [number, number][] {
+  const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+  const alto = b.y1 - b.y0;
+  const band = Math.max(4, Math.round(alto * 0.45));
+  const patas: { x0: number; x1: number; y: number }[] = [];
+  let atual: { x0: number; x1: number; y: number } | null = null;
+  let buraco = 0;
+  for (let x = b.x0; x <= b.x1; x++) {
+    let achou = -1;
+    for (let y = b.y1; y >= b.y1 - band; y--)
+      if (d[(y * c.width + x) * 4 + 3] > 96) {
+        achou = y;
+        break;
+      }
+    // só o que desce quase até o chão (as patas), não a barriga nem o rabo
+    if (achou >= 0 && achou >= b.y1 - band * 0.75) {
+      if (atual && buraco <= 1 && Math.abs(achou - atual.y) <= alto * 0.08) (atual.x1 = x), (atual.y = Math.max(atual.y, achou));
+      else patas.push((atual = { x0: x, x1: x, y: achou }));
+      buraco = 0;
+    } else {
+      buraco++;
+      if (buraco > 1) atual = null;
+    }
+  }
+  const boas = patas.filter((p) => p.x1 - p.x0 + 1 >= Math.max(2, (b.x1 - b.x0) * 0.04));
+  if (boas.length < 2) return [];
+  // as duas fileiras: separa no maior salto de altura, se ele for grande
+  const porY = [...boas].sort((a, z) => z.y - a.y);
+  let corte = -1;
+  let salto = alto * 0.05;
+  for (let i = 1; i < porY.length; i++)
+    if (porY[i - 1].y - porY[i].y > salto) ((salto = porY[i - 1].y - porY[i].y), (corte = i));
+  const meio = (g: typeof boas): [number, number] => [g.reduce((s0, p) => s0 + (p.x0 + p.x1 + 1) / 2, 0) / g.length, Math.max(...g.map((p) => p.y)) + 1];
+  if (corte < 0) {
+    // uma fileira só (de frente ou de costas): o lado de cá e o de lá
+    const porX = [...boas].sort((a, z) => a.x0 - z.x0);
+    const m = Math.ceil(porX.length / 2);
+    return [meio(porX.slice(0, m)), meio(porX.slice(m).length ? porX.slice(m) : porX.slice(0, m))];
+  }
+  return [meio(porY.slice(0, corte)), meio(porY.slice(corte))];
+}
+
+/** O personagem de quatro patas: o baixinho (a Camarilla tem 0,8 m; gente fica perto de 1,80 m). */
+const deQuatroPatas = (def: CharacterDef) => def.height < 70;
+
 /** Meia largura dos pés (a faixa de baixo do corpo), em pixels da imagem. */
 function meiaLarguraPes(c: HTMLCanvasElement, b: Caixa): number {
   const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
@@ -395,7 +447,7 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
     const ancora = new Map<string, { ax: number; ay: number; pes: number; noMeioDosPes: boolean }>();
     const ancoraDe = (p: PoseLida) => {
       // com os dois pés à vista, a âncora fica no meio deles (é ali que a peça pisa); senão, embaixo do corpo
-      const pp = pontosPes(p.canvas, p.b);
+      const pp = deQuatroPatas(def) ? pontosPatas(p.canvas, p.b) : pontosPes(p.canvas, p.b);
       const meio = pp.length === 2;
       const ax = meio ? Math.round(((pp[0][0] + pp[1][0]) / 2) * s) : (p.b.fx + 0.5) * s;
       const ay = meio ? Math.round(((pp[0][1] + pp[1][1]) / 2) * s) : (p.b.y1 + 1) * s;
@@ -405,7 +457,7 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
     // os quadros de andar usam a âncora da pose parada (o corpo não escorrega); os pés, cada um os seus
     const inteiro = (p: PoseLida): SpriteFrame => {
       const a = ancora.get(p.key) ?? ancoraDe(p);
-      const pesPontos = pontosPes(p.canvas, p.b).map(([x, y]): [number, number] => [x * s - a.ax, y * s - a.ay]);
+      const pesPontos = (deQuatroPatas(def) ? pontosPatas(p.canvas, p.b) : pontosPes(p.canvas, p.b)).map(([x, y]): [number, number] => [x * s - a.ax, y * s - a.ay]);
       return { canvas: p.canvas, w: p.canvas.width * s, h: p.canvas.height * s, ...a, pesPontos, pixel: true };
     };
     for (const p of poses) frames[p.key] = inteiro(p);
@@ -415,7 +467,7 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
     const grande = (p: PoseLida, parada: boolean): SpriteFrame => {
       const f = quadro(p.canvas, p.b, s, RES_POSE);
       f.pes = meiaLarguraPes(p.canvas, p.b) * s;
-      const pp = pontosPes(p.canvas, p.b).map(([x, y]): [number, number] => [(x - p.b.x0) * s, (y - p.b.y0) * s]);
+      const pp = (deQuatroPatas(def) ? pontosPatas(p.canvas, p.b) : pontosPes(p.canvas, p.b)).map(([x, y]): [number, number] => [(x - p.b.x0) * s, (y - p.b.y0) * s]);
       // parada e com os dois pés à vista: a âncora vai para o meio deles (é ali que a peça pisa, no meio da
       // casa); o quadro de andar fica com a de baixo do corpo (cada um é recortado sozinho)
       if (parada && pp.length === 2) {
