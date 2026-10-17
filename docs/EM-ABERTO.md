@@ -346,7 +346,13 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   (`trabalho/agachado/depois_da_cota_sentado.sh`, depois do agachado armado): os 4 agentes e o Miguel, as 4 diagonais
   (`pedir_sentado.py`, guia `guia-sentado-4-direcoes.png`). Ao chegar: `normalizar_agachado.py <id> <folha> --sentado`,
   conferir (altura, contorno rosa), `--instalar`, e ver no tabuleiro se o quadril bate no assento (talvez um ajuste de
-  altura por cadeira). Os NPCs de história não sentam (a regra do ARTE.md).
+  altura por cadeira). **Revisto (o Felipe, 17/10):** o sentado de todos os NPCs também, além dos Marcados (os
+  personagens dos jogadores: o Felipe passou a chamá-los assim).
+- **A fila única da arte** (`trabalho/fila_unica.sh`, a partir das 18:48, um pedido por vez, tentando de novo a cada 5
+  min se ainda der o limite de imagem): Camarilla em pé e sentada; Pedro (npc-camisa-rosa, pistola grossa) e Rosa
+  (npc-cabelo-rosa, uma submetralhadora em cada mão) armados em pé; os agachados que faltam; o sentado dos Marcados e de
+  todos os NPCs; o agachado armado (agentes, Miguel, Pedro, Rosa); os portadores de relíquia; os Existidos. O Joaquin
+  (deve ser o npc-ruivo) espera a decisão do Felipe.
   **Para o futuro (o Felipe, 17/10):** variar a postura de cada personagem (nem todo mundo agacha, cai ou dorme do mesmo
   jeito), junto com as animações. Por ora, todos na mesma postura.
 - **Santa Amália no mapa-múndi e na chegada:** a ilha `arte/mapa/lugar-santa-amalia-hd.png` (praça com coreto,
