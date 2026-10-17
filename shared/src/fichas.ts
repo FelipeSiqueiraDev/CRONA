@@ -44,6 +44,8 @@ export interface FichaSalva {
   campanha?: number;
   /** personagem do tabuleiro (folha de sprite e retratos) ligado à ficha */
   personagem?: number;
+  /** a ficha de um NPC do Elenco (o id dele): fica na aba NPCs da FICHAS, não na dos agentes (17/10) */
+  npc?: string;
   ficha: Ficha;
   /** em jogo: PV/PE/SAN atuais e temporários (sem valor = cheios) */
   atual?: EstadoFicha;
@@ -118,6 +120,8 @@ export function sanitizarFicha(raw: unknown): FichaSalva | null {
   if (campanha) out.campanha = campanha;
   const personagem = inteiro(o.personagem, 0, 1e9);
   if (personagem) out.personagem = personagem;
+  const npc = texto(o.npc, 60);
+  if (npc) out.npc = npc;
   if (a && typeof a === 'object') {
     out.atual = { pv: inteiro(a.pv, -999, 999) ?? 0, pe: inteiro(a.pe, 0, 999) ?? 0, san: inteiro(a.san, 0, 999) ?? 0 };
     for (const k of ['pvTemp', 'peTemp', 'sanTemp'] as const) {

@@ -1016,7 +1016,13 @@ button.fx-tab-l:hover {
 }
 .fx-equip .fx-tab-cab,
 .fx-equip .fx-tab-l {
-  grid-template-columns: 4.6rem 16.2rem 10rem 12.4rem 1fr 3.4rem;
+  /* a última coluna (OBS.) é só o ícone da regra: a observação vai na dica dele (17/10) */
+  grid-template-columns: 4.6rem minmax(0, 1fr) 10rem 12.4rem 4.4rem;
+}
+.fx-equip .fx-tab-cab > .fx-eq-obs-cab {
+  justify-content: center;
+  text-align: center;
+  padding: 0;
 }
 .fx-equip .fx-tab-cab {
   height: 2.3rem;
@@ -3653,6 +3659,22 @@ select.fx-inp {
   html:not(.modo-ficha) .fx-ident :is(.fx-id-r, .fx-id-v, .fx-id-v strong, .fx-id-v > span) {
     line-height: 1.1 !important;
   }
+  /* o rótulo com folga do valor (o Felipe, 17/10: "Origem" e "Policial" encavalados): nenhum dos dois encolhe, e o
+     valor fica um degrau menor para as três linhas caberem no painel */
+  html:not(.modo-ficha) .fx-ident .fx-id-l > * {
+    flex-shrink: 0;
+  }
+  html:not(.modo-ficha) .fx-ident .fx-id-r {
+    margin-bottom: 0.35rem;
+  }
+  html:not(.modo-ficha) .fx-ident :is(.fx-id-v, .fx-id-v strong, .fx-id-v > span) {
+    font-size: 1.4rem !important;
+  }
+  html:not(.modo-ficha) .fx-ident .fx-corpo-p {
+    row-gap: 0 !important;
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+  }
   html:not(.modo-ficha) .fx-ident .fx-id-r {
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -3895,3 +3917,311 @@ html .fx .fx-sl-grade.uma-linha > .fx-sl.sobra {
   }
 }
 
+/* a aba sem nada (o agente sem rituais): apagada; o clique mostra o aviso, que some sozinho (17/10) */
+.fx-g-aba.vazia {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.fx-aviso-vazio {
+  position: fixed;
+  z-index: 1000;
+  transform: translateX(-50%);
+  padding: 0.9rem 1.4rem;
+  border: 0.15rem solid rgba(233, 169, 68, 0.6);
+  border-radius: 0.6rem;
+  background: rgba(10, 14, 20, 0.96);
+  box-shadow: 0 0.6rem 1.6rem rgba(0, 0, 0, 0.6);
+  color: #f3e7cf;
+  font: 600 1.3rem / 1.2 var(--r-pixel, 'Pixel Letras', monospace);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: fx-aviso-entra 0.18s ease-out;
+  transition: opacity 0.35s, transform 0.35s;
+}
+.fx-aviso-vazio.sai {
+  opacity: 0;
+  transform: translate(-50%, -0.4rem);
+}
+@keyframes fx-aviso-entra {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -0.4rem);
+  }
+}
+
+/* a Evolução em cartões, um por NEX (17/10) */
+.fx-evol .fx-corpo-p {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-height: 0;
+}
+.fx-ev-res {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  background: rgba(120, 200, 140, 0.1);
+  border: 0.12rem solid rgba(120, 200, 140, 0.35);
+  font-size: 1.3rem;
+  color: #cfe9d4;
+}
+.fx-ev-res.pend {
+  background: rgba(233, 169, 68, 0.12);
+  border-color: rgba(233, 169, 68, 0.5);
+  color: #ffd27a;
+}
+.fx-ev-res.erro {
+  background: rgba(220, 70, 60, 0.12);
+  border-color: rgba(220, 70, 60, 0.5);
+  color: #ffb4a8;
+}
+.fx-evc-lista {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding-right: 0.3rem;
+}
+.fx-evc {
+  flex: none;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 0.12rem solid rgba(255, 255, 255, 0.08);
+  border-left: 0.35rem solid rgba(120, 200, 140, 0.6);
+}
+.fx-evc.pend {
+  border-left-color: #e9a944;
+  background: rgba(233, 169, 68, 0.06);
+}
+.fx-evc.erro {
+  border-left-color: #dc463c;
+}
+.fx-evc.aviso {
+  border-left-color: #c9a24a;
+}
+.fx-evc-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.fx-evc-cab b {
+  font-size: 1.5rem;
+  color: #f3e7cf;
+  letter-spacing: 0.04em;
+}
+.fx-evc-selo {
+  padding: 0.15rem 0.6rem;
+  border-radius: 1rem;
+  font-size: 1.1rem;
+  background: rgba(120, 200, 140, 0.15);
+  color: #9fdcae;
+}
+.fx-evc.pend .fx-evc-selo {
+  background: rgba(233, 169, 68, 0.2);
+  color: #ffd27a;
+}
+.fx-evc.erro .fx-evc-selo {
+  background: rgba(220, 70, 60, 0.2);
+  color: #ffb4a8;
+}
+.fx-evc-l {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  color: #d8cdb8;
+}
+.fx-evc-l > span {
+  flex: 1;
+  min-width: 0;
+}
+.fx-evc-l .ic {
+  flex: none;
+  width: 1.3rem;
+  height: 1.3rem;
+}
+.fx-evc-l.ok .ic {
+  color: #7fcf92;
+}
+.fx-evc-l.pend {
+  color: #ffd27a;
+}
+.fx-evc-l.erro {
+  color: #ffb4a8;
+}
+.fx-evc-l.aviso {
+  color: #e6cf8a;
+}
+.fx-evc-l.vazio {
+  color: #8a8172;
+}
+
+/* =====================================================================
+   O TEXTO NUNCA COLA NA BORDA (o Felipe, 17/10, "isso vale pra lá e pra
+   qualquer outro lugar, mobile ou desktop"; e sem quebra de linha feia):
+   a placa tem folga dos dois lados, o miolo pode encolher, e o número que
+   não couber diminui a letra (caberNumaLinha) em vez de quebrar ou cortar.
+   O nome da placa fica em cima, fora da moldura: a placa não corta nada.
+   ===================================================================== */
+.fx .fx-dv {
+  padding-left: max(0.8rem, 6%) !important;
+  padding-right: max(0.8rem, 6%) !important;
+}
+.fx .fx-dv-t {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+.fx .fx-dv-v,
+.fx .fx-tc > b {
+  /* sem cortar: o número que não cabe encolhe (caberNumaLinha mede a sobra), nunca perde letra */
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+}
+/* o ícone da placa um pouco menor e mais perto do número: sobra lugar para o número com folga da borda */
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+  .fx .fx-dv {
+    gap: 0.4rem !important;
+  }
+  .fx .fx-dv-ic,
+  .fx .fx-dv-ic .ic,
+  .fx .fx-dv-ic img {
+    width: 2.2rem !important;
+    height: 2.2rem !important;
+  }
+}
+/* as colunas dos números do combate nunca passam da caixa (o "4d20+5" da Catarina empurrava a última para fora): o
+   painel pode encolher, e o texto comprido (as proficiências) termina em reticências em vez de esticar a coluna */
+.fx .fx-tat-corpo {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+.fx .fx-g-comb > .fx-tat {
+  min-width: 0;
+}
+.fx .fx-tc > b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* a FICHAS do mestre no PC: o personagem do tamanho dele e o painel de baixo com espaço (o Felipe, 17/10: "tem muito
+   espaço vazio pro personagem e o menu de baixo tá todo espremido"); embaixo dos Recursos, fora do quadro, o que cada
+   um quer dizer */
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+  .fx:not(.jogador) .fx-corpo {
+    height: 55rem;
+  }
+  .fx:not(.jogador) .fx-g-vida {
+    top: 66rem;
+    height: 20.6rem;
+  }
+  .fx:not(.jogador) .fx-g-vida > .fx-rec {
+    flex: 1;
+    height: auto !important;
+  }
+}
+
+/* os Recursos do mestre: a placa com o número e, embaixo dela, fora, o nome curto (PV, PE, SAN) */
+.fx-rec-c {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.fx-rec-nome {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.fx-rec-c.pv .fx-rec-nome {
+  color: #c2463c;
+}
+.fx-rec-c.pe .fx-rec-nome {
+  color: #b9862c;
+}
+.fx-rec-c.san .fx-rec-nome {
+  color: #2f6b9a;
+}
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+  .fx:not(.jogador) .fx-rec .fx-corpo-p {
+    align-content: center;
+    padding-top: 0.8rem !important;
+  }
+  .fx:not(.jogador) .fx-rec .fx-dv {
+    height: 4.6rem;
+  }
+}
+
+/* a coluna da esquerda do mestre: AGENTES | NPCS (17/10) */
+.fx-ag-tit:has(.fx-ag-aba) {
+  display: flex;
+  gap: 0.4rem;
+  margin: 1.2rem 1rem 0 1.4rem;
+}
+.fx-ag-aba {
+  flex: 1;
+  padding: 0.6rem 0;
+  border: 0.12rem solid rgba(233, 169, 68, 0.35);
+  border-radius: 0.4rem;
+  background: rgba(0, 0, 0, 0.25);
+  color: #a99d8a;
+  font: inherit;
+  font-size: 1.7rem !important;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.fx-ag-aba.on {
+  background: rgba(233, 169, 68, 0.18);
+  border-color: rgba(233, 169, 68, 0.75);
+  color: #ffd27a;
+}
+.fx-ag.npc {
+  position: relative;
+  cursor: pointer;
+}
+.fx-ag.npc.sem-ficha .fx-ag-foto {
+  opacity: 0.55;
+}
+.fx-ag-lapis {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0.12rem solid rgba(233, 169, 68, 0.5);
+  border-radius: 0.4rem;
+  background: rgba(10, 14, 20, 0.85);
+  color: #ffd27a;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.fx-ag.npc:hover .fx-ag-lapis,
+.fx-ag-lapis:focus-visible {
+  opacity: 1;
+}
+.fx-ag-lapis .ic {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+.fx-ag-vazio {
+  margin: 1rem 0.6rem;
+  font-size: 1.2rem;
+  color: #a99d8a;
+}

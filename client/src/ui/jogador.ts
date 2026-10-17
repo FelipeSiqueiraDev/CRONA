@@ -1109,6 +1109,27 @@ function textoTesteAtaque(a: regras.Ataque): string {
   return `${r.dados}d20${a.bonus ? (a.bonus > 0 ? `+${a.bonus}` : `${a.bonus}`) : ''}${r.fica === 'menor' ? ' (pior)' : ''}`;
 }
 
+const maiuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/**
+ * Um efeito do item com nome e valor ("Defesa +5" vira Defesa: +5; "não ocupa espaço" vira Espaço: não ocupa), ou só
+ * o texto (o nome vazio). O que a janela já mostra em outro campo (vestida, guardada) e as notas da tabela saem.
+ */
+function parDoEfeito(t: string): [string, string] | null {
+  t = t.replace(/\s*\(a tabela marca[^)]*\)/, '').trim();
+  if (!t || t === '—' || t === 'vestida' || t === 'guardada') return null;
+  if (/^não ocupa espaço/i.test(t)) return ['Espaço', 'Não ocupa'];
+  let m = /^(\d+) usos$/.exec(t);
+  if (m) return ['Usos', m[1]];
+  m = /^×(\d+)$/.exec(t);
+  if (m) return ['Quantidade', m[1]];
+  m = /^RD (.+)$/.exec(t);
+  if (m) return ['Redução de dano', m[1]];
+  m = /^(.+?)\s+([+−-]\s?\d.*)$/.exec(t);
+  if (m) return [maiuscula(m[1]), m[2]];
+  return ['', maiuscula(t)];
+}
+
 /**
  * O miolo da janela do item (a arte grande, Tipo, Peso, Categoria e Onde, o efeito em destaque, o texto do livro, as
  * modificações e a página). O mesmo no celular do jogador e na aba Fichas do mestre (o Felipe, 14/10: "quando abre
@@ -1121,6 +1142,34 @@ export function corpoDoItem(it: regras.ItemFicha, calc: regras.Calculado | null)
   const resumo = it.descricao || base?.resumo || '';
   const campo = (rot: string, valor: string) => h('div', { class: 'jg-mi-campo' }, h('small', null, rot), h('b', null, valor));
   const efeito = [inf.efeito, inf.obs].filter((x) => x && x !== '—').join(' · ');
+  // a arma: os números com nome (o Felipe, 17/10: "1d8+2 · Luta 2d20+5 · 20/x2" ficava confuso)
+  const atq = it.tipo === 'arma' ? calc?.ataques.find((x) => x.item === it.id) : undefined;
+  const arma = it.tipo === 'arma' ? cat.arma(it.id) : undefined;
+  const dado = (rot: string, valor: string, dica: string) => h('div', { class: 'jg-mi-dado', title: dica }, h('small', null, rot), h('b', null, valor));
+  const dados = atq
+    ? h(
+        'div',
+        { class: 'jg-mi-dados' },
+        dado('Dano', atq.dano, 'O que se rola quando acerta.'),
+        dado(`Teste de ${atq.pericia === 'luta' ? 'Luta' : 'Pontaria'}`, textoTesteAtaque(atq), 'O teste para acertar: os d20 e o bônus.'),
+        dado('Crítico', `${atq.critico.margem}${atq.critico.margem < 20 ? '–20' : ''} · ×${atq.critico.multiplicador}`, 'Com esse número (ou mais) no d20, o dano multiplica.'),
+        ...(arma?.alcance ? [dado('Alcance', arma.alcance, 'Até onde a arma chega.')] : []),
+        ...(atq.notas.length ? [h('p', { class: 'jg-mi-notas' }, atq.notas.join(' · '))] : []),
+      )
+    : null;
+  // os outros itens: cada efeito com o nome dele ("Espaço: não ocupa", "Defesa: +5"), no lugar da linha com os pontos
+  const pares =
+    !dados && it.tipo !== 'cena'
+      ? [inf.efeito, ...inf.obs.split(' · ')].map(parDoEfeito).filter((p): p is [string, string] => !!p)
+      : [];
+  // só texto, sem nome (a corda: "10 m"): o quadradinho dourado de sempre
+  const efeitos = pares.length && pares.some(([rot]) => rot)
+    ? h(
+        'div',
+        { class: 'jg-mi-dados' },
+        ...pares.map(([rot, valor]) => (rot ? h('div', { class: 'jg-mi-dado' }, h('small', null, rot), h('b', null, valor)) : h('div', { class: 'jg-mi-dado livre' }, h('b', null, valor)))),
+      )
+    : null;
   return h(
     'div',
     { class: 'jg-mi' },
@@ -1133,7 +1182,7 @@ export function corpoDoItem(it: regras.ItemFicha, calc: regras.Calculado | null)
       campo('Categoria', it.tipo === 'cena' ? 'achado' : ['0', 'I', 'II', 'III', 'IV'][inf.categoria] ?? '—'),
       campo('Onde', lugar === 'mao' ? 'Na mão' : lugar === 'vestido' ? 'Vestido' : 'Na mochila'),
     ),
-    efeito ? h('p', { class: 'jg-mi-efeito' }, efeito) : null,
+    dados ?? efeitos ?? (pares.length ? h('p', { class: 'jg-mi-efeito' }, pares.map(([, v]) => v).join(' · ')) : efeito ? h('p', { class: 'jg-mi-efeito' }, efeito) : null),
     resumo ? h('p', { class: 'jg-mi-txt' }, resumo) : null,
     ...melhoriasDoItem(it),
     inf.ref ? h('p', { class: 'jg-det-meta' }, textoRef(inf.ref)) : null,
@@ -1144,14 +1193,15 @@ export function corpoDoItem(it: regras.ItemFicha, calc: regras.Calculado | null)
  * Uma linha que não pode quebrar ("Especialista · Infiltrador · NEX 20%", o nome com a arma; 14/10): se não couber, a
  * letra encolhe só o necessário (até `minimo`, 80%), em vez de cortar ou mandar o fim para a linha de baixo.
  */
-function caberNumaLinha<T extends HTMLElement>(el: T, minimo = 0.8): T {
+export function caberNumaLinha<T extends HTMLElement>(el: T, minimo = 0.8): T {
   const ajustar = () => {
-    el.style.fontSize = '';
+    el.style.removeProperty('font-size');
     const sobra = el.clientWidth;
     const precisa = el.scrollWidth;
     if (!sobra || precisa <= sobra) return;
     const atual = parseFloat(getComputedStyle(el).fontSize);
-    el.style.fontSize = `${Math.max(atual * minimo, (atual * sobra) / precisa - 0.1)}px`;
+    // com prioridade: a letra das placas vem de regras com !important, e sem isso o encolhimento não valia
+    el.style.setProperty('font-size', `${Math.max(atual * minimo, (atual * sobra) / precisa - 0.1)}px`, 'important');
   };
   // o observador avisa quando o elemento entra na tela e quando o espaço muda; a fonte pixel que chega depois muda a
   // largura do texto sem mudar a caixa, então mede de novo quando as fontes terminam de carregar

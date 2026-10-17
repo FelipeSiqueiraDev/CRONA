@@ -1059,6 +1059,8 @@ export class Hotel implements HotelApi {
       f.ficha.regras = antiga.ficha.regras;
       f.personagem = antiga.personagem;
       f.campanha = antiga.campanha;
+      if (antiga.npc) f.npc = antiga.npc;
+      else delete f.npc;
       // a requisição do jogador respeita a patente: nenhuma categoria acima do limite a mais que antes (LR p. 52)
       try {
         const antes = regras.calcular(antiga.ficha).itens;

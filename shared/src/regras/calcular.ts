@@ -780,6 +780,8 @@ export function textoEfeito(e: Efeito): string {
       return `Defesa ${v(e.valor)}`;
     case 'deslocamento':
       return `deslocamento ${sinal(e.valor)} m`;
+    case 'espacos':
+      return `carga ${v(e.valor)} espaços`;
     case 'pericia':
       return `${e.pericia === 'todas' ? 'testes de perícia' : e.pericia === 'escolhida' ? 'perícia escolhida' : cat.pericia(e.pericia).nome} ${v(e.valor)}${e.dados ? ` ${sinal(e.dados)}d20` : ''}`.replace(/\s+/g, ' ').trim();
     case 'resistenciaTeste':

@@ -14,7 +14,7 @@
  * sprite e só respira: o quadro de olhos fechados da folha é outra pose (o
  * corpo balança entre os quadros), e trocar por ele faria o boneco tremer.
  */
-import type { CharacterDef, DirKey } from '@crona/shared';
+import { portraitState, type CharacterDef, type DirKey, type PortraitState } from '@crona/shared';
 import { breathKeyframes, breathMode, type BreathMode } from '../render/portrait';
 import { framesFor, sprites } from '../render/sprites';
 import { existeArte } from './icons';
@@ -33,6 +33,45 @@ interface Fonte {
   cintura: number;
   /** pixel art: desenha sem suavizar */
   pixel: boolean;
+  /**
+   * A caixa comum de todas as direções (em pixels da arte), para o boneco ter o mesmo tamanho em todo giro (o Felipe,
+   * 17/10: "padronizar a altura na rotação"). Sem ela, cada pose cabia na caixa sozinha e o boneco mudava de altura.
+   */
+  quadro?: { w: number; h: number; razao: number };
+}
+
+/** A pose recortada no desenho dela (sem a margem transparente da imagem), guardada por endereço. */
+const recortes = new Map<string, Promise<HTMLCanvasElement | null>>();
+function recortada(url: string): Promise<HTMLCanvasElement | null> {
+  let p = recortes.get(url);
+  if (!p) {
+    p = imagem(url).then((im) => {
+      if (!im) return null;
+      const c = document.createElement('canvas');
+      c.width = im.naturalWidth;
+      c.height = im.naturalHeight;
+      const g = c.getContext('2d', { willReadFrequently: true })!;
+      g.drawImage(im, 0, 0);
+      const { data } = g.getImageData(0, 0, c.width, c.height);
+      let x0 = c.width, y0 = c.height, x1 = -1, y1 = -1;
+      for (let y = 0; y < c.height; y++)
+        for (let x = 0; x < c.width; x++)
+          if (data[(y * c.width + x) * 4 + 3] > 16) {
+            if (x < x0) x0 = x;
+            if (x > x1) x1 = x;
+            if (y < y0) y0 = y;
+            if (y > y1) y1 = y;
+          }
+      if (x1 < 0) return c;
+      const r = document.createElement('canvas');
+      r.width = x1 - x0 + 1;
+      r.height = y1 - y0 + 1;
+      r.getContext('2d')!.drawImage(c, x0, y0, r.width, r.height, 0, 0, r.width, r.height);
+      return r;
+    });
+    recortes.set(url, p);
+  }
+  return p;
 }
 
 const artes = new Map<string, Promise<HTMLImageElement | null>>();
@@ -68,6 +107,8 @@ export class CorpoView {
   private cvFechado: HTMLCanvasElement;
   private def: CharacterDef | undefined;
   private giro = 0;
+  /** a pose do tabuleiro: armado e machucado como lá (o Felipe, 17/10: "se estiver armado no tabuleiro, na ficha também") */
+  private estado: PortraitState = 'desarmado';
   private fonte: Fonte | null = null;
   private modo: BreathMode = 'calm';
   private anim: Animation | null = null;
@@ -112,6 +153,14 @@ export class CorpoView {
     this.respirar();
   }
 
+  /** Armado (arma na mão) e machucado (menos da metade dos PV), como a peça no tabuleiro. */
+  setEstado(armado: boolean, machucado: boolean) {
+    const e = portraitState(armado, machucado);
+    if (e === this.estado) return;
+    this.estado = e;
+    void this.carregar();
+  }
+
   girar(passo: number) {
     const n = this.def?.poses ? GIRO_POSES.length : GIRO.length;
     this.giro = (this.giro + passo + n) % n;
@@ -140,11 +189,20 @@ export class CorpoView {
       }
     }
     // o boneco do tabuleiro: a pose da direção (tabuleiro-32bits, a mesma arte que anda na cena)
-    const poses = def?.poses?.desarmado ?? Object.values(def?.poses ?? {})[0];
+    // a pose do estado, ou a mais perto dela que existir (armado sem a machucada: a armada; sem nenhuma: a desarmada)
+    const armado = this.estado.startsWith('armado');
+    const ordem: PortraitState[] = [this.estado, portraitState(armado, false), portraitState(false, this.estado.endsWith('machucado')), 'desarmado'];
+    const est = ordem.find((e) => def?.poses?.[e]);
+    const poses = (est && def?.poses?.[est]) || Object.values(def?.poses ?? {})[0];
+    // a escala sai sempre das desarmadas: o boneco não muda de tamanho ao sacar a arma
+    const base = def?.poses?.desarmado ?? poses;
     if (!fonte && poses) {
       const url = poses[GIRO_POSES[this.giro % GIRO_POSES.length]] ?? poses.s ?? poses.se ?? Object.values(poses)[0];
-      const aberto = url ? await imagem(url) : null;
-      if (aberto) fonte = { aberto, fechado: null, cintura: 0.46, pixel: true };
+      const aberto = url ? await recortada(url) : null;
+      // a mesma escala em todas as direções: a caixa que cabe a maior delas
+      const todas = (await Promise.all(Object.values(base ?? poses).map((u) => (u ? recortada(u) : null)))).filter((c): c is HTMLCanvasElement => !!c);
+      const quadro = { w: Math.max(...todas.map((c) => c.width)), h: Math.max(...todas.map((c) => c.height)), razao: Math.min(...todas.map((c) => c.height / c.width)) };
+      if (aberto) fonte = { aberto, fechado: null, cintura: 0.46, pixel: true, quadro };
     }
     // sem as poses: a folha de sprite antiga
     if (!fonte && def) {
@@ -166,8 +224,11 @@ export class CorpoView {
     const H = this.el.clientHeight;
     if (!f || W < 4 || H < 4) return;
     const dpr = Math.min(2, devicePixelRatio || 1);
-    // cabe na caixa, pés embaixo
-    const k = Math.min(W / f.aberto.width, H / f.aberto.height);
+    // cabe na caixa, pés embaixo; com as poses, a escala é a da caixa comum (o mesmo tamanho em todo giro)
+    // a altura é a mesma em todas as direções: a maior que deixa a pose mais larga caber na caixa; a largura acompanha
+    // a de cada pose
+    const alvo = f.quadro ? Math.min(H, W * f.quadro.razao) : Math.min(H, (W * f.aberto.height) / f.aberto.width);
+    const k = alvo / f.aberto.height;
     const w = Math.round(f.aberto.width * k);
     const h = Math.round(f.aberto.height * k);
     for (const cv of [this.base, this.cvAberto, this.cvFechado]) {

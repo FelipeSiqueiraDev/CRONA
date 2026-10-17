@@ -1476,8 +1476,56 @@ html.modo-ficha .fj:not(.rq) .fx-inp:focus {
 .jg-mi-txt {
   grid-column: 1 / -1;
   margin: 0;
-  font: 400 var(--t-corpo) / 1.5 var(--f-corpo);
+  /* a explicação na letra pixel da janela (o Felipe, 17/10: a outra letra destoava) */
+  font: 400 var(--t-ui) / 1.6 'Pixel Letras', 'Pixelify Sans', var(--f-corpo);
+  letter-spacing: 0.02em;
   color: var(--c-texto);
+}
+/* os números da arma com nome: dano, teste, crítico e alcance */
+.jg-mi-dados {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--u) * 20), 1fr));
+  gap: var(--s1);
+  padding: var(--s2);
+  border-radius: var(--raio);
+  background: rgba(233, 169, 68, 0.1);
+  border: calc(var(--u) * 0.35) solid rgba(233, 169, 68, 0.45);
+}
+.jg-mi-dado {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.6);
+  padding: var(--s1) var(--s2);
+  /* uma cor só (o quadradinho dourado de antes): os pares separados por um fio, sem caixa escura dentro */
+  border-left: calc(var(--u) * 0.3) solid rgba(233, 169, 68, 0.35);
+}
+.jg-mi-dado:first-child {
+  border-left: 0;
+}
+.jg-mi-dado small {
+  font: 500 var(--t-mini) / 1 var(--f-pixel);
+  color: var(--c-texto-3);
+  letter-spacing: 0.06em;
+}
+.jg-mi-dado b {
+  font: 700 var(--t-ui) / 1.1 var(--f-pixel);
+  color: var(--c-ouro-hi);
+}
+.jg-mi-dado.livre {
+  grid-column: 1 / -1;
+}
+.jg-mi-dado.livre {
+  border-left: 0;
+}
+.jg-mi-dado.livre b {
+  line-height: 1.3;
+}
+.jg-mi-notas {
+  grid-column: 1 / -1;
+  margin: 0;
+  font: 400 var(--t-mini) / 1.4 'Pixel Letras', 'Pixelify Sans', var(--f-corpo);
+  color: var(--c-texto-2, var(--c-texto));
 }
 .jg-mi .jg-det-meta {
   grid-column: 1 / -1;
