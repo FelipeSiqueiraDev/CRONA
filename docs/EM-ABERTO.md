@@ -41,6 +41,24 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - **Ideia do Felipe, ainda não feita:** o passo pelas sombras da Magistrada (ao se mover, uma sombra se abre no chão, ela entra pintada de preto e sai
   de outra sombra que o mestre escolhe).
 
+## COMEÇOU, FALTA CONTINUAR (17/10, noite): os NPCs refeitos no estilo dos monstros
+
+O Felipe viu o Alosi no estilo das peças dos monstros (contorno, sombreado e acabamento do Anfitrião e do Existido) ao lado do de hoje e mandou: **"vamos
+refazer nossos NPCs todos para esse estilo, em todas as posições e formatos"** (os Marcados e os NPCs; os monstros ficam como estão).
+
+- **Já rodando no Códex (processo independente, começou sozinho):** `trabalho/fila_estilo_npcs.sh` (log: `trabalho/fila_estilo_npcs.log`) pede, para
+  cada NPC (Miguel, Ivete, Geraldo, Camisa Rosa/Pedro, Ruivo, Agatha, Samuel, Herman, Cabelo Rosa/Rosa, Jaleco/Rebecca), as 8 direções em pé, no estilo novo.
+  Chega em `trabalho/estilo-monstro/<id>/<id>-8-direcoes-v1.png` (fundo transparente ou magenta). O Alosi (v1) está em `trabalho/alosi-estilo-monstro/`.
+  Se o Códex dá "modelo lotado", a fila espera 2 min e repete (até 12 vezes). Nada disso entrou no jogo.
+- **Quando o Felipe voltar, em ordem:** (1) olhar cada folha (cortar com `python trabalho/miguel/cortar_8.py <folha> <pasta>/saida-v1 --altura 470`,
+  que também limpa o fundo magenta; se sobrar franja rosa, `trabalho/despill_magenta.py <folha.png>`, ou `scripts/contorno_rosa.py
+  --corrigir`); (2) ele aprova ou pede ajuste (a referência é o retrato do Elenco e as poses de hoje); (3) instalar com `monstros-tabuleiro/instalar_monstro.py <id> 1`
+  (serve para qualquer id); (4) **as outras posições, de cada personagem, a partir da folha nova** (a identidade passa a ser a folha nova): agachado
+  (8 direções, `agachado/pedir_agachado.py`), sentado (4 diagonais, `agachado/pedir_sentado.py`), deitado dormindo e caído (`npcs-17-10/pedir_deitado.py`),
+  e o armado dos Marcados; o retrato do Elenco/ficha fica como está. (5) depois, os Marcados (Tepes, Catarina, Cora; o Alosi já está feito) pelo mesmo caminho;
+  a Camarilla (cachorro, escala 0,8 m) e o Existido ficam de fora por enquanto.
+- Conferir sempre: altura (470 px, a da Catarina), contorno rosa (`scripts/contorno_rosa.py`), e o quadro no tabuleiro (a pose sentada em banco alto e baixo).
+
 ## PARA A SESSÃO DE 18/10 (Sede / Fazenda): o que falta
 
 - **Atualizar o jogo de verdade (8080) de manhã**, antes da sessão: backup do banco (`npm run banco:backup`) e
