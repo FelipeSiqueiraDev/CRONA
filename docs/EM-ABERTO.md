@@ -402,6 +402,10 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   Entrou: o **Existido masculino** refeito pelo retrato da lista (careca, escrita miúda na pele com linhas douradas,
   olhos brancos, calça verde rasgada, flutuando), no lugar do dourado escuro de cabelo; 1,80 m, a altura da Catarina.
   E a **Existida**, a versão feminina dele (a mesma pele, os mesmos olhos e trapos, o cabelo ralo e comprido).
+  **Reprovados pelo Felipe** ("num tá nada parecido com a imagem de referência"): saíram parrudos, bege dourados, de
+  cara de criança. A v2 está pedida no começo da fila (`pedir_monstro.py` com a descrição refeita: esqueléticos,
+  pescoço comprido, curvados, rosto encovado, pele cinza-esverdeada fosca com escrita miúda preta, sem dourado); a v1
+  fica no jogo até a v2 ser conferida lado a lado com `arte/ameacas/existido.png`.
 - **A fila única da arte** (`trabalho/fila_unica.sh`, a partir das 18:48, um pedido por vez, tentando de novo a cada 5
   min se ainda der o limite de imagem): Camarilla em pé e sentada; Pedro (npc-camisa-rosa, pistola grossa) e Rosa
   (npc-cabelo-rosa, uma submetralhadora em cada mão) armados em pé; os agachados que faltam; o sentado dos Marcados e de
