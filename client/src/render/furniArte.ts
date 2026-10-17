@@ -56,6 +56,11 @@ export interface MovelArte {
    */
   quadros?: Partial<Record<'l' | 'r', VistaArte[]>>;
   ms?: number;
+  /**
+   * móvel de chão animado no estado 0 (a TV ligada passando o jornal, 17/10): os quadros de cada giro, no mesmo recorte
+   * da vista dele, trocados a cada `ms`
+   */
+  quadrosGiros?: Partial<Record<'0' | '2' | '4' | '6', VistaArte[]>>;
   /** item de parede redondo (o relógio): a inclinação das bordas que a arte trouxe, por parede; o jogo inclina a diferença até a da parede */
   inclina?: Record<string, number>;
   /**
@@ -337,6 +342,13 @@ export function visualComArte(def: FurniDef, base: FVisual, state = 0, seed = 0,
       const img = v && pronta(v.arquivo);
       if (!img) return null;
       prontas[g] = img;
+      // ligado e animado: o quadro da vez (cada item na sua fase); o que ainda não chegou fica no primeiro
+      const qs = !state ? a.quadrosGiros?.[g as '4'] : undefined;
+      if (qs?.length) {
+        const q = qs[Math.floor((performance.now() + seed * 977) / (a.ms ?? 160)) % qs.length];
+        const qi = pronta(q.arquivo);
+        if (qi) prontas[g] = qi;
+      }
     }
     const aceso = state === 0;
     // a tela tinge a luz que ela joga no cômodo e bate junto com ela
@@ -355,6 +367,9 @@ export function visualComArte(def: FurniDef, base: FVisual, state = 0, seed = 0,
       const respira = 1 + 0.03 * Math.sin(performance.now() / 1700 + seed);
       luzes = luzes.map((L) => ({ ...L, u: L.u + s, v: L.v + s, intensity: L.intensity * respira }));
     }
+    // as vistas dos outros estados já vão carregando: no clique duplo o móvel troca de cara na hora (sem passar pelo
+    // desenho de código enquanto a imagem chega)
+    for (const e of Object.values(salvo.estados ?? {})) for (const v of Object.values(e.giros)) if (v) pronta(v.arquivo);
     // o encaixe na casa, pelas vistas do estado 0 (os outros estados vêm na mesma escala)
     const vistas0 = Object.values(salvo.giros ?? {}).map((v) => (v ? pronta(v.arquivo) : null));
     const enc = encaixe(chave, salvo, def, vistas0.every((x) => !!x) ? (vistas0 as Imagens[]) : (Object.values(prontas) as Imagens[]));

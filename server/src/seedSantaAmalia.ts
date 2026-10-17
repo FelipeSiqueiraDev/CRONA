@@ -24,7 +24,7 @@ import { casaDeCidade } from "./casaComum";
  * para o fundo (giro 0), planTop.
  */
 export const SANTA_AMALIA = "Santa Amália · ";
-export const SANTA_AMALIA_REV = 12;
+export const SANTA_AMALIA_REV = 13;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -221,7 +221,8 @@ const CENAS: CenaSpec[] = [
       ["chair_wood", 3, 5, 0],
       ["chair_wood", 4, 4, 6],
       // a sala de estar (à direita): o sofá virado para a TV, a poltrona do lado
-      ["rack_tv", 6, 1, 4],
+      // a TV desligada (o estado 1): "o sofá verde gasto de frente para a TV desligada"
+      ["rack_tv", 6, 1, 4, undefined, 1],
       ["rug_worn", 6, 2, 0],
       ["mesa_centro", 6, 3, 0],
       ["papers", 6, 3, 0],

@@ -3660,6 +3660,16 @@
         "arquivo": "tv_wall/parede-l.png",
         "ax": 12.0,
         "ay": 18.3
+      },
+      "l-1": {
+        "arquivo": "tv_wall/parede-l-1.png",
+        "ax": 12.0,
+        "ay": 18.3
+      },
+      "r-1": {
+        "arquivo": "tv_wall/parede-r-1.png",
+        "ax": 14.0,
+        "ay": 18.3
       }
     },
     "tela": {
@@ -3671,7 +3681,94 @@
       "forca": 0.16,
       "paredes": {},
       "giros": {}
-    }
+    },
+    "quadros": {
+      "l": [
+        {
+          "arquivo": "tv_wall/parede-l.png",
+          "ax": 12.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-l-q1.png",
+          "ax": 12.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-l-q2.png",
+          "ax": 12.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-l-q3.png",
+          "ax": 12.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-l-q4.png",
+          "ax": 12.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-l-q5.png",
+          "ax": 12.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-l-q6.png",
+          "ax": 12.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-l-q7.png",
+          "ax": 12.0,
+          "ay": 18.3
+        }
+      ],
+      "r": [
+        {
+          "arquivo": "tv_wall/parede-r.png",
+          "ax": 14.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-r-q1.png",
+          "ax": 14.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-r-q2.png",
+          "ax": 14.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-r-q3.png",
+          "ax": 14.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-r-q4.png",
+          "ax": 14.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-r-q5.png",
+          "ax": 14.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-r-q6.png",
+          "ax": 14.0,
+          "ay": 18.3
+        },
+        {
+          "arquivo": "tv_wall/parede-r-q7.png",
+          "ax": 14.0,
+          "ay": 18.3
+        }
+      ]
+    },
+    "ms": 220
   },
   "fan_wall": {
     "escala": 1,
@@ -23118,8 +23215,105 @@
         "arquivo": "painel_telas/parede-l.png",
         "ax": 49.0,
         "ay": 51.4
+      },
+      "l-1": {
+        "arquivo": "painel_telas/parede-l-1.png",
+        "ax": 49.0,
+        "ay": 51.4
+      },
+      "r-1": {
+        "arquivo": "painel_telas/parede-r-1.png",
+        "ax": 50.0,
+        "ay": 51.4
       }
-    }
+    },
+    "quadros": {
+      "l": [
+        {
+          "arquivo": "painel_telas/parede-l.png",
+          "ax": 49.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-l-q1.png",
+          "ax": 49.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-l-q2.png",
+          "ax": 49.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-l-q3.png",
+          "ax": 49.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-l-q4.png",
+          "ax": 49.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-l-q5.png",
+          "ax": 49.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-l-q6.png",
+          "ax": 49.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-l-q7.png",
+          "ax": 49.0,
+          "ay": 51.4
+        }
+      ],
+      "r": [
+        {
+          "arquivo": "painel_telas/parede-r.png",
+          "ax": 50.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-r-q1.png",
+          "ax": 50.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-r-q2.png",
+          "ax": 50.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-r-q3.png",
+          "ax": 50.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-r-q4.png",
+          "ax": 50.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-r-q5.png",
+          "ax": 50.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-r-q6.png",
+          "ax": 50.0,
+          "ay": 51.4
+        },
+        {
+          "arquivo": "painel_telas/parede-r-q7.png",
+          "ax": 50.0,
+          "ay": 51.4
+        }
+      ]
+    },
+    "ms": 220
   },
   "mural_polaroids": {
     "escala": 1,
@@ -23186,8 +23380,105 @@
         "arquivo": "tela_derrota/parede-l.png",
         "ax": 28.0,
         "ay": 29.8
+      },
+      "l-1": {
+        "arquivo": "tela_derrota/parede-l-1.png",
+        "ax": 28.0,
+        "ay": 29.8
+      },
+      "r-1": {
+        "arquivo": "tela_derrota/parede-r-1.png",
+        "ax": 28.0,
+        "ay": 29.8
       }
-    }
+    },
+    "quadros": {
+      "l": [
+        {
+          "arquivo": "tela_derrota/parede-l.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-l-q1.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-l-q2.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-l-q3.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-l-q4.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-l-q5.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-l-q6.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-l-q7.png",
+          "ax": 28.0,
+          "ay": 29.8
+        }
+      ],
+      "r": [
+        {
+          "arquivo": "tela_derrota/parede-r.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-r-q1.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-r-q2.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-r-q3.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-r-q4.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-r-q5.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-r-q6.png",
+          "ax": 28.0,
+          "ay": 29.8
+        },
+        {
+          "arquivo": "tela_derrota/parede-r-q7.png",
+          "ax": 28.0,
+          "ay": 29.8
+        }
+      ]
+    },
+    "ms": 220
   },
   "bancada_lab_parede": {
     "escala": 1,
@@ -23999,8 +24290,105 @@
         "arquivo": "tv_grande/parede-l.png",
         "ax": 36.0,
         "ay": 37.6
+      },
+      "l-1": {
+        "arquivo": "tv_grande/parede-l-1.png",
+        "ax": 36.0,
+        "ay": 37.6
+      },
+      "r-1": {
+        "arquivo": "tv_grande/parede-r-1.png",
+        "ax": 36.0,
+        "ay": 37.6
       }
-    }
+    },
+    "quadros": {
+      "l": [
+        {
+          "arquivo": "tv_grande/parede-l.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-l-q1.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-l-q2.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-l-q3.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-l-q4.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-l-q5.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-l-q6.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-l-q7.png",
+          "ax": 36.0,
+          "ay": 37.6
+        }
+      ],
+      "r": [
+        {
+          "arquivo": "tv_grande/parede-r.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-r-q1.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-r-q2.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-r-q3.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-r-q4.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-r-q5.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-r-q6.png",
+          "ax": 36.0,
+          "ay": 37.6
+        },
+        {
+          "arquivo": "tv_grande/parede-r-q7.png",
+          "ax": 36.0,
+          "ay": 37.6
+        }
+      ]
+    },
+    "ms": 220
   },
   "quadro_fazenda": {
     "escala": 1,
@@ -42358,7 +42746,143 @@
         }
       }
     },
-    "vooKv": 48.0
+    "vooKv": 48.0,
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "rack_tv/giro-4-1.png",
+            "ax": 65.0,
+            "ay": 97.0
+          },
+          "2": {
+            "arquivo": "rack_tv/giro-2-1.png",
+            "ax": 33.0,
+            "ay": 97.0
+          },
+          "0": {
+            "arquivo": "rack_tv/giro-0-1.png",
+            "ax": 64.0,
+            "ay": 97.0
+          },
+          "6": {
+            "arquivo": "rack_tv/giro-6-1.png",
+            "ax": 33.0,
+            "ay": 97.0
+          }
+        }
+      }
+    },
+    "tela": {
+      "cores": [
+        "#5a8cd8",
+        "#7aa8e8",
+        "#4a7ac8",
+        "#c8d8f0"
+      ],
+      "ms": 900,
+      "modo": "tv",
+      "forca": 0.3,
+      "giros": {
+        "4": {
+          "x": 48.4,
+          "y": 26.8,
+          "r": 39.6
+        },
+        "2": {
+          "x": 48.8,
+          "y": 26.6,
+          "r": 39.6
+        }
+      }
+    },
+    "quadrosGiros": {
+      "2": [
+        {
+          "arquivo": "rack_tv/giro-2.png",
+          "ax": 33.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-2-q1.png",
+          "ax": 33.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-2-q2.png",
+          "ax": 33.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-2-q3.png",
+          "ax": 33.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-2-q4.png",
+          "ax": 33.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-2-q5.png",
+          "ax": 33.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-2-q6.png",
+          "ax": 33.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-2-q7.png",
+          "ax": 33.0,
+          "ay": 97.0
+        }
+      ],
+      "4": [
+        {
+          "arquivo": "rack_tv/giro-4.png",
+          "ax": 65.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-4-q1.png",
+          "ax": 65.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-4-q2.png",
+          "ax": 65.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-4-q3.png",
+          "ax": 65.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-4-q4.png",
+          "ax": 65.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-4-q5.png",
+          "ax": 65.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-4-q6.png",
+          "ax": 65.0,
+          "ay": 97.0
+        },
+        {
+          "arquivo": "rack_tv/giro-4-q7.png",
+          "ax": 65.0,
+          "ay": 97.0
+        }
+      ]
+    },
+    "ms": 170
   },
   "mesa_centro": {
     "escala": 1,
