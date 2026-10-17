@@ -21,6 +21,8 @@ export interface AppState {
   bestiario: Criatura[];
   /** os NPCs do mestre (vêm junto com o bestiário) */
   npcs: Npc[];
+  /** os grupos de NPC do Elenco, na ordem (17/10) */
+  npcGrupos: string[];
   room: RoomInfo | null;
   /** mestre controla; jogador só acompanha (vem do servidor no login) */
   role: Role;
@@ -29,7 +31,7 @@ export interface AppState {
 export type AppEvent = 'me' | 'inventory' | 'characters' | 'rooms' | 'lugares' | 'bestiario' | 'room' | 'selection' | 'items' | 'placement';
 
 export class App {
-  state: AppState = { me: null, inventory: [], characters: [], rooms: [], lugares: [], bestiario: [], npcs: [], room: null, role: 'player' };
+  state: AppState = { me: null, inventory: [], characters: [], rooms: [], lugares: [], bestiario: [], npcs: [], npcGrupos: [], room: null, role: 'player' };
   net: Net;
   /** sessão compartilhada (contrato novo, docs/CONTRATO.md) */
   readonly session: SessionStore;

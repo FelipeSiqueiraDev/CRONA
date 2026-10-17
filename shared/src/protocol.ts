@@ -413,6 +413,8 @@ export type ClientMsg =
   /** troca o móvel por outro do catálogo, no mesmo lugar (e no mesmo giro, se der) */
   | { t: 'swapItem'; id: number; defId: string }
   | { t: 'use'; id: number }
+  /** a coberta da cama por cima de quem está deitado (Ctrl + clique na cama): liga e desliga */
+  | { t: 'cobrir'; id: number }
   /**
    * os jogos do bar (só o mestre): a peça vai até o fliperama, o alvo de dardos ou a sinuca e o jogo
    * abre no celular de quem joga com ela (peça sem ficha = um NPC: o mestre joga na tela dele); de
@@ -463,6 +465,8 @@ export type ClientMsg =
   /** os NPCs do mestre (16/10): gravar, apagar e pôr um na cena */
   | { t: 'npcSalvar'; npc: Npc }
   | { t: 'npcApagar'; id: string }
+  /** o mestre cria um grupo de NPC no Elenco (17/10), guardado mesmo vazio */
+  | { t: 'npcGrupoCriar'; nome: string }
   | { t: 'npcColocar'; npcId: string }
   | { t: 'roomFx'; lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; tatico?: boolean }
   /** ponto de atenção ou desenho rápido para a mesa (só o mestre; some sozinho) */
@@ -590,4 +594,4 @@ export type ServerMsg =
   /** combate da campanha (a mesa recebe só a ordem, a rodada e a vez); null = sem combate */
   | { t: 'combate'; combate: Combate | null; podeDesfazer?: boolean; ameacas?: Record<string, FichaAmeaca> }
   /** o bestiário inteiro (para o mestre) */
-  | { t: 'bestiario'; criaturas: Criatura[]; npcs?: Npc[] };
+  | { t: 'bestiario'; criaturas: Criatura[]; npcs?: Npc[]; npcGrupos?: string[] };

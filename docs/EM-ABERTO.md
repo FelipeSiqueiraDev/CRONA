@@ -193,9 +193,12 @@ peito sobe e desce, acabou", "não estraga os bonecos".
 - **Sub-abas que abrem e fecham** (pedido do Felipe): os NPCs por grupo e as ameaças por elemento (no lugar das
   pílulas), cada elemento da ameaça de VD mais baixo para a mais alta (a família vai pelo menor VD dela). O que fica
   aberto é lembrado no navegador; na busca, tudo o que bate fica aberto.
-- **Grupo do NPC** (`Npc.grupo`, `grupoDoNpc` em `shared/src/npcs.ts`): o mestre muda no detalhe (campo Grupo, com os
-  grupos que já existem sugeridos) e ao criar. Os que vieram com o jogo: Sede da Ordem (Miguel, Ágata, Ivete, Samuel), Da
-  história (Geraldo, Arantes) e Novos (sem nome) (os 4 de 17/10); criado sem grupo vai para "Do mestre".
+- **Grupo do NPC** (`Npc.grupo`, `grupoDoNpc` em `shared/src/npcs.ts`): o mestre escolhe numa lista no visual do HUD
+  (no detalhe e ao criar), com "Criar novo grupo" no fim (mensagem `npcGrupoCriar`). Os grupos ficam no banco, na ordem
+  (`npcGrupos`), mesmo vazios: Ordo Realitas (no lugar da antiga "Sede da Ordem": Miguel, Agatha, Ivete, Samuel), Lotus
+  Branca, Panacea (Arantes), Tiradentes, Igarapé (Geraldo), Santo Berço, Santa Amália e Fazenda Olhos de Águia; depois os
+  usados que não estão guardados (Novos (sem nome), os 4 de 17/10) e "Do mestre". O grupo vazio aparece fechado e mais
+  apagado. Ainda não dá para renomear, reordenar ou apagar grupo.
 - **A foto de cada NPC** (as imagens do Felipe que deram origem a eles) em `arte/personagens/<id>/foto.jpg`, os 10: é
   ela que aparece no card do Elenco, no lugar do bonequinho (o Felipe: "ao invés dos bonequinhos ali pra fazer escolha, a
   foto deles"); o detalhe ao lado continua com a pose do tabuleiro. NPC sem foto mostra a pose.

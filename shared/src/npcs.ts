@@ -15,25 +15,51 @@ export interface Npc {
   arte?: string;
   /** uma linha para o mestre lembrar quem é ("o irmão da Catarina", "o dono do bar") */
   nota?: string;
-  /** o grupo no Elenco (17/10, a sub-aba que abre e fecha: "Sede da Ordem", "Santa Amália"...); sem ele, `grupoDoNpc` */
+  /** o grupo no Elenco (17/10, a sub-aba que abre e fecha: "Ordo Realitas", "Santa Amália"...); sem ele, `grupoDoNpc` */
   grupo?: string;
 }
 
+/**
+ * Os grupos do Elenco que o jogo já traz, nesta ordem (17/10, o Felipe: "um grupo da Lotus Branca, um da Panacea, e o
+ * 'Sede da Ordem' vai virar 'Ordo Realitas'. E um grupo pra cada cidade que estamos criando"). Ficam guardados no banco
+ * (`npcGrupos`) mesmo vazios; o mestre cria outros no Elenco.
+ */
+export const GRUPOS_NPC_PADRAO = ['Ordo Realitas', 'Lotus Branca', 'Panacea', 'Tiradentes', 'Igarapé', 'Santo Berço', 'Santa Amália', 'Fazenda Olhos de Águia'];
+/** O grupo de quem não tem grupo (os criados à mão sem escolher). */
+export const GRUPO_SEM = 'Do mestre';
+
 /** Os grupos dos NPCs que o elenco já traz, para os bancos de antes do campo `grupo`. */
 const GRUPO_PADRAO: Record<string, string> = {
-  'miguel-albuquerque': 'Sede da Ordem',
-  agata: 'Sede da Ordem',
-  ivete: 'Sede da Ordem',
-  samuel: 'Sede da Ordem',
-  'geraldo-ribeiro': 'Da história',
-  'herman-arantes': 'Da história',
+  'miguel-albuquerque': 'Ordo Realitas',
+  agata: 'Ordo Realitas',
+  ivete: 'Ordo Realitas',
+  samuel: 'Ordo Realitas',
+  'geraldo-ribeiro': 'Igarapé',
+  'herman-arantes': 'Panacea',
   'npc-camisa-rosa': 'Novos (sem nome)',
   'npc-ruivo': 'Novos (sem nome)',
   'npc-cabelo-rosa': 'Novos (sem nome)',
   'npc-jaleco': 'Novos (sem nome)',
 };
 /** O grupo do NPC no Elenco: o que o mestre escreveu, o padrão dos que vieram com o jogo, ou "Do mestre". */
-export const grupoDoNpc = (n: Npc): string => n.grupo || GRUPO_PADRAO[n.id] || 'Do mestre';
+export const grupoDoNpc = (n: Npc): string => n.grupo || GRUPO_PADRAO[n.id] || GRUPO_SEM;
+
+/**
+ * Os grupos na ordem do Elenco: os guardados (na ordem deles), depois os que algum NPC usa e não estão guardados, e por
+ * último "Do mestre" (se alguém estiver nele).
+ */
+export function gruposDoElenco(guardados: string[], npcs: Npc[]): string[] {
+  const out = [...guardados];
+  for (const n of npcs) {
+    const g = grupoDoNpc(n);
+    if (g !== GRUPO_SEM && !out.includes(g)) out.push(g);
+  }
+  if (npcs.some((n) => grupoDoNpc(n) === GRUPO_SEM)) out.push(GRUPO_SEM);
+  return out;
+}
+
+/** O nome de um grupo novo, conferido (até 40 letras, sem controle); vazio = inválido. */
+export const lerGrupoNpc = (v: unknown): string => (typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40) : '');
 
 const lookBase: AvatarLook = { skin: '#e8c4a8', hair: '#8a2a1e', hairStyle: 1, top: '#1e1a18', pants: '#1a1816', shoes: '#141210', outfit: 0, extra: 0, charId: null };
 
@@ -87,6 +113,8 @@ export function renomearNpcs(lista: Npc[]): boolean {
     if (n.nome === r.de) ((n.nome = novo.nome), (mudou = true));
     if (n.nota === r.notaDe) ((n.nota = novo.nota), (mudou = true));
   }
+  // a "Sede da Ordem" virou "Ordo Realitas" (17/10)
+  for (const n of lista) if (n.grupo === 'Sede da Ordem') ((n.grupo = 'Ordo Realitas'), (mudou = true));
   return mudou;
 }
 

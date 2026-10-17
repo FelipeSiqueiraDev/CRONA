@@ -84,6 +84,7 @@ Não substituem `folha.webp` nem os `retrato-*.png`. São do modelo realista, de
 
 - **Pasta:** `client/public/arte/personagens/<nome>/tabuleiro-32bits/`.
 - **Nome:** `idle-<estado>-<direção>.png`, com `<estado>` = `desarmado`, `armado`, `desarmado-machucado` ou `armado-machucado`. As quatro imagens sem direção no nome (as entregues) valem como `se`.
+- **NPC de história (17/10, o Felipe: "pra esses NPCs que só vão compor a história e participar de conversas e afins, eu quero só as 8 posições em pé e agachado, e uma deitado e outra caído"):** só `idle-desarmado-<dir>.png` (8), `idle-desarmado-agachado-<dir>.png` (8), `deitado-dormindo.png` e `deitado-caido.png` (o card do Elenco usa a foto do Felipe, `foto.jpg` e `rosto.jpg`). Nada de armado, de machucado nem de retrato pintado. Agentes e ameaças continuam com tudo.
 - **Agachado (17/10):** `idle-desarmado-agachado-<direção>.png`, a pose parada agachada (meia altura, a cabeça do mesmo tamanho e a cor da desarmada: `normalizar.py` pela cabeça). Ainda não é lida pelo jogo (o tabuleiro achata a pose de pé em 72%): falta ligar no `findPoses` e no `RoomView`.
 - **Direções** (na tela), as 4 primeiro:
 

@@ -153,6 +153,8 @@ export interface Database {
   npcs?: Npc[];
   /** até que leva de NPCs padrão o elenco já recebeu (o que o mestre apagar não volta) */
   npcsRev?: number;
+  /** os grupos de NPC do Elenco, na ordem (17/10), guardados mesmo vazios */
+  npcGrupos?: string[];
   /** as salas e campanhas de exemplo antigas já foram tiradas (seed.ts, limparSalasDeExemplo) */
   limpezaExemplos?: boolean;
   /** fichas de personagem (motor de regras) */

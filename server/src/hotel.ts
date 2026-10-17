@@ -5,6 +5,7 @@ import {
   getFurni,
   lerCriatura,
   lerNpc,
+  lerGrupoNpc,
   aparenciaDaVez,
   heightmapDaVan,
   isCenarioViagem,
@@ -347,7 +348,7 @@ export class Hotel implements HotelApi {
 
   // ---------- o bestiário (10/10) ----------
   private bestiarioPara(c: Client) {
-    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [], npcs: this.db.npcs ?? [] });
+    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [], npcs: this.db.npcs ?? [], npcGrupos: this.db.npcGrupos ?? [] });
   }
 
   private bestiarioMudou() {
@@ -421,6 +422,14 @@ export class Hotel implements HotelApi {
       if (i >= 0) this.db.npcs[i] = npc;
       else this.db.npcs.push(npc);
       if (this.criaturasComArte(false)) this.broadcastCharacters();
+      return this.bestiarioMudou();
+    }
+    if (m.t === 'npcGrupoCriar') {
+      const nome = lerGrupoNpc(m.nome);
+      if (!nome) return c.send({ t: 'error', msg: 'O grupo precisa de um nome.' });
+      this.db.npcGrupos ??= [];
+      if (this.db.npcGrupos.some((g) => g.toLowerCase() === nome.toLowerCase())) return this.bestiarioPara(c);
+      this.db.npcGrupos.push(nome);
       return this.bestiarioMudou();
     }
     if (m.t === 'npcApagar' && typeof m.id === 'string') {
@@ -1958,6 +1967,7 @@ export class Hotel implements HotelApi {
       case 'pecaAparencia':
       case 'npcSalvar':
       case 'npcApagar':
+      case 'npcGrupoCriar':
       case 'npcColocar':
         this.bestiarioMsg(c, m);
         return;

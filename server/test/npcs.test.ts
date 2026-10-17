@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { lerNpc } from "@crona/shared";
+import { GRUPOS_NPC_PADRAO, grupoDoNpc, gruposDoElenco, lerNpc } from "@crona/shared";
 import { seedDb, upgradeDb } from "../src/seed";
 import { Hotel } from "../src/hotel";
 
@@ -56,6 +56,24 @@ describe("npcs", () => {
     assert.equal(iv.nome, "Ivete da Silva");
     assert.equal(iv.nota, "responsável pelo arsenal da Ordem");
     assert.equal(db.npcs!.find((n) => n.id === "samuel")!.nome, "Samuel Norte");
+  });
+
+  test("os grupos do Elenco: os padrão guardados, a Sede da Ordem vira Ordo Realitas, a ordem guardada vale", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    assert.deepEqual(db.npcGrupos, GRUPOS_NPC_PADRAO);
+    assert.equal(grupoDoNpc(db.npcs!.find((n) => n.id === "agata")!), "Ordo Realitas");
+    assert.equal(grupoDoNpc(db.npcs!.find((n) => n.id === "herman-arantes")!), "Panacea");
+    // o banco que já tinha o grupo antigo, na mão e na lista
+    db.npcs!.find((n) => n.id === "ivete")!.grupo = "Sede da Ordem";
+    db.npcGrupos = ["Sede da Ordem", "Lotus Branca"];
+    upgradeDb(db);
+    assert.equal(db.npcs!.find((n) => n.id === "ivete")!.grupo, "Ordo Realitas");
+    assert.deepEqual(db.npcGrupos, ["Ordo Realitas", "Lotus Branca"]);
+    // a ordem: os guardados, depois os usados que não estão guardados, e "Do mestre" no fim
+    const ordem = gruposDoElenco(["Panacea", "Ordo Realitas"], [...db.npcs!, { id: "x", nome: "X", look: db.npcs![0].look }]);
+    assert.deepEqual(ordem.slice(0, 2), ["Panacea", "Ordo Realitas"]);
+    assert.equal(ordem.at(-1), "Do mestre");
   });
 
   test("apagar não traz de volta", () => {

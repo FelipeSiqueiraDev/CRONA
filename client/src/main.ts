@@ -187,6 +187,7 @@ const view = new RoomView(canvas, {
     if (it?.lock && !it.lock.open && !it.lock.semSenha && shell?.abrirTeclado(it)) return;
     net.send({ t: 'use', id });
   },
+  cobrir: (id) => net.send({ t: 'cobrir', id }),
   select: () => app.emit('selection'),
   openHint: (kind, id) => hintViewer.open(kind, id),
   aviso: (texto) => toast(texto),
@@ -450,6 +451,7 @@ net.onMessage = (m: ServerMsg) => {
     case 'bestiario':
       app.state.bestiario = m.criaturas;
       app.state.npcs = m.npcs ?? [];
+      app.state.npcGrupos = m.npcGrupos ?? [];
       app.emit('bestiario');
       break;
     case 'roomList':

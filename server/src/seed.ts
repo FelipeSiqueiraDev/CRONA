@@ -3,6 +3,7 @@ import {
   existidoPadrao,
   npcsPorLeva,
   renomearNpcs,
+  GRUPOS_NPC_PADRAO,
   footprint,
   getFurni,
   getLayout,
@@ -723,7 +724,11 @@ function npcsIniciais(db: Database): boolean {
   // o banco de antes das levas (16/10, só o Miguel) já recebeu a primeira
   const feitas = db.npcsRev ?? (db.npcs ? 1 : 0);
   // os sobrenomes que o Felipe deu depois (17/10), nos bancos que ainda têm o nome antigo
-  const renomeados = renomearNpcs(db.npcs ?? []);
+  let renomeados = renomearNpcs(db.npcs ?? []);
+  // os grupos do Elenco (17/10): os padrão entram uma vez; a "Sede da Ordem" guardada vira "Ordo Realitas"
+  if (!db.npcGrupos) ((db.npcGrupos = [...GRUPOS_NPC_PADRAO]), (renomeados = true));
+  const sede = db.npcGrupos.indexOf('Sede da Ordem');
+  if (sede >= 0) ((db.npcGrupos[sede] = 'Ordo Realitas'), (db.npcGrupos = [...new Set(db.npcGrupos)]), (renomeados = true));
   if (feitas >= levas.length) return renomeados;
   const lista = (db.npcs ??= []);
   for (const n of levas.slice(feitas).flat()) if (!lista.some((x) => x.id === n.id)) lista.push(n);
