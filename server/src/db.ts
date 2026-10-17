@@ -150,6 +150,8 @@ export interface Database {
   bestiario?: Criatura[];
   /** os NPCs do mestre (16/10): gente da história, sem ficha de combate */
   npcs?: Npc[];
+  /** até que leva de NPCs padrão o elenco já recebeu (o que o mestre apagar não volta) */
+  npcsRev?: number;
   /** as salas e campanhas de exemplo antigas já foram tiradas (seed.ts, limparSalasDeExemplo) */
   limpezaExemplos?: boolean;
   /** fichas de personagem (motor de regras) */

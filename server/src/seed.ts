@@ -1,7 +1,7 @@
 import { desencostarItensDeParede } from './paredes';
 import {
   existidoPadrao,
-  miguelAlbuquerque,
+  npcsPorLeva,
   footprint,
   getFurni,
   getLayout,
@@ -712,10 +712,18 @@ function vanNoLugar(db: Database): boolean {
   return mudou;
 }
 
-/** Os NPCs começam com o primeiro do Felipe, o Miguel Albuquerque (16/10); depois são do mestre (apagar não traz de volta). */
+/**
+ * Os NPCs padrão entram no elenco por levas (`npcsPorLeva`): o Miguel (16/10), depois a Ágata, a Ivete e o Samuel, e o
+ * Geraldo e o Arantes. Cada leva entra uma vez; o que o mestre apagar depois não volta, e o que ele editou (a nota) fica.
+ */
 function npcsIniciais(db: Database): boolean {
-  if (db.npcs) return false;
-  db.npcs = [miguelAlbuquerque()];
+  const levas = npcsPorLeva();
+  // o banco de antes das levas (16/10, só o Miguel) já recebeu a primeira
+  const feitas = db.npcsRev ?? (db.npcs ? 1 : 0);
+  if (feitas >= levas.length) return false;
+  const lista = (db.npcs ??= []);
+  for (const n of levas.slice(feitas).flat()) if (!lista.some((x) => x.id === n.id)) lista.push(n);
+  db.npcsRev = levas.length;
   return true;
 }
 

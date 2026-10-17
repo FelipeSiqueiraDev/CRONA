@@ -21,7 +21,26 @@ const lookBase: AvatarLook = { skin: '#e8c4a8', hair: '#8a2a1e', hairStyle: 1, t
 
 /** O primeiro NPC do Felipe (16/10): o Miguel Albuquerque, ruivo, de jaqueta tática preta. */
 export function miguelAlbuquerque(): Npc {
-  return { id: 'miguel-albuquerque', nome: 'Miguel Albuquerque', arte: 'miguel-albuquerque', look: { ...lookBase } };
+  return { id: 'miguel-albuquerque', nome: 'Miguel Albuquerque', arte: 'miguel-albuquerque', nota: 'coordena a rotina da base', look: { ...lookBase } };
+}
+
+/**
+ * Os NPCs que o elenco já traz, por leva (16/10): o Miguel; a gente da base (Ágata, Ivete, Samuel); o Geraldo e o
+ * Arantes. A nota é só para o mestre lembrar (o elenco não aparece na mesa).
+ */
+export function npcsPorLeva(): Npc[][] {
+  return [
+    [miguelAlbuquerque()],
+    [
+      { id: 'agata', nome: 'Ágata', arte: 'agata', nota: 'a ocultista da base', look: { ...lookBase, skin: '#c9926a', hair: '#2a1a16', top: '#7a1e1e', pants: '#2a3040' } },
+      { id: 'ivete', nome: 'Ivete', arte: 'ivete', nota: 'armas e equipamentos; o bar de cima', look: { ...lookBase, skin: '#b07a52', hair: '#d8d4cc', top: '#3a5a86', pants: '#1e1c1a' } },
+      { id: 'samuel', nome: 'Samuel', arte: 'samuel', nota: 'o C.R.i.S e a tecnologia', look: { ...lookBase, skin: '#6a4430', hair: '#3a2416', top: '#3e5a2c', pants: '#2e2620', shoes: '#e8e4dc' } },
+    ],
+    [
+      { id: 'geraldo-ribeiro', nome: 'Geraldo Ribeiro', arte: 'geraldo-ribeiro', nota: 'o pai da Cora', look: { ...lookBase, skin: '#d2a07a', hair: '#3a2a1e', top: '#b8a68a', pants: '#3a2c22' } },
+      { id: 'herman-arantes', nome: 'Herman Arantes', arte: 'herman-arantes', nota: 'o médico da Panacea', look: { ...lookBase, skin: '#d8b090', hair: '#9a9894', top: '#e8e4dc', pants: '#3a4658', shoes: '#e8e4dc' } },
+    ],
+  ];
 }
 
 const texto = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, '').trim().slice(0, max) : '');

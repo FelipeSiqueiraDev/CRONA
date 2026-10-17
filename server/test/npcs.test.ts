@@ -12,6 +12,8 @@ describe("npcs", () => {
     const m = db.npcs?.find((n) => n.id === "miguel-albuquerque");
     assert.ok(m, "falta o Miguel");
     assert.equal(m.arte, "miguel-albuquerque");
+    // e a gente da base que veio depois
+    for (const id of ["agata", "ivete", "samuel", "geraldo-ribeiro", "herman-arantes"]) assert.ok(db.npcs?.some((n) => n.id === id), `falta ${id}`);
     // a arte vira personagem sozinha (a folha das 8 direções e as poses paradas)
     new Hotel({ db, persist: false, timers: false });
     const ch = db.characters.find((c) => c.sheet === "/arte/personagens/miguel-albuquerque/oito-direcoes.png");
@@ -21,6 +23,15 @@ describe("npcs", () => {
     const antes = db.characters.length;
     new Hotel({ db, persist: false, timers: false });
     assert.equal(db.characters.length, antes);
+  });
+
+  test("o banco de antes (só o Miguel) ganha os novos, uma vez", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    db.npcs = db.npcs!.filter((n) => n.id === "miguel-albuquerque");
+    delete db.npcsRev;
+    upgradeDb(db);
+    assert.deepEqual(db.npcs.map((n) => n.id).sort(), ["agata", "geraldo-ribeiro", "herman-arantes", "ivete", "miguel-albuquerque", "samuel"]);
   });
 
   test("apagar não traz de volta", () => {
