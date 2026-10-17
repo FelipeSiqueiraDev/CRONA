@@ -25,6 +25,8 @@ export interface AppState {
   npcGrupos: string[];
   /** os NPCs que já estão em alguma cena da campanha (todo NPC é único) */
   npcsEmCampo: string[];
+  /** os portadores de relíquia (id do livro) já em campo na campanha */
+  reliquiasEmCampo: string[];
   room: RoomInfo | null;
   /** mestre controla; jogador só acompanha (vem do servidor no login) */
   role: Role;
@@ -33,7 +35,7 @@ export interface AppState {
 export type AppEvent = 'me' | 'inventory' | 'characters' | 'rooms' | 'lugares' | 'bestiario' | 'room' | 'selection' | 'items' | 'placement';
 
 export class App {
-  state: AppState = { me: null, inventory: [], characters: [], rooms: [], lugares: [], bestiario: [], npcs: [], npcGrupos: [], npcsEmCampo: [], room: null, role: 'player' };
+  state: AppState = { me: null, inventory: [], characters: [], rooms: [], lugares: [], bestiario: [], npcs: [], npcGrupos: [], npcsEmCampo: [], reliquiasEmCampo: [], room: null, role: 'player' };
   net: Net;
   /** sessão compartilhada (contrato novo, docs/CONTRATO.md) */
   readonly session: SessionStore;

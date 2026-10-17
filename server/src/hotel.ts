@@ -352,13 +352,25 @@ export class Hotel implements HotelApi {
 
   // ---------- o bestiário (10/10) ----------
   private bestiarioPara(c: Client) {
-    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [], npcs: this.db.npcs ?? [], npcGrupos: this.db.npcGrupos ?? [], npcsEmCampo: c.room ? this.npcsEmCampo(c.room.data.id) : [] });
+    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [], npcs: this.db.npcs ?? [], npcGrupos: this.db.npcGrupos ?? [], npcsEmCampo: c.room ? this.npcsEmCampo(c.room.data.id) : [], reliquiasEmCampo: c.room ? this.reliquiasEmCampo(c.room.data.id) : [] });
   }
 
   /**
    * Os NPCs que já estão em alguma cena da campanha desta sala (17/10, o Felipe: "NPC's são todos únicos"): a peça
    * com a arte dele ou com o nome dele.
    */
+  /** Os portadores de relíquia (o id do livro) que já estão em alguma cena da campanha desta sala. */
+  private reliquiasEmCampo(roomId: number): string[] {
+    const livroDe = (id: string) => this.db.bestiario?.find((x) => x.id === id)?.ficha.livro;
+    const out = new Set<string>();
+    for (const id of this.sceneGroup(roomId))
+      for (const p of this.rooms.get(id)?.criaturasDasPecas().values() ?? []) {
+        const l = livroDe(p.id);
+        if (l && cmb.ehPortadorDeReliquia(l)) out.add(l);
+      }
+    return [...out];
+  }
+
   private npcsEmCampo(roomId: number): string[] {
     const pecas = this.sceneGroup(roomId).flatMap((id) => this.rooms.get(id)?.tokenList() ?? []);
     return (this.db.npcs ?? [])
@@ -502,6 +514,7 @@ export class Hotel implements HotelApi {
         });
       }
       room.colocarVarias(lista);
+      if (unico) this.bestiarioPara(c);
       return c.send({ t: 'notice', msg: `${n} ${n === 1 ? cr.nome : `${cr.nome}s`} em campo, todos com a mesma ficha.` });
     }
     if (m.t === 'npcColocar') {

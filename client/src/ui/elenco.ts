@@ -226,7 +226,9 @@ export function abrirElenco(app: App) {
    * inteira da carta é o botão Usar. Sem linha embaixo (a nota fica no detalhe). `duasLinhas` põe o nome em cima e o
    * sobrenome embaixo (os NPCs).
    */
-  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean; unico?: boolean; emCena?: boolean }) => {
+  /** O portador de relíquia que já está em campo (17/10: como os NPCs, apagado e "Em cena", sem etiqueta). */
+  const emCampoReliquia = (e: Entrada) => !!e.livroId && combate.ehPortadorDeReliquia(e.livroId) && app.state.reliquiasEmCampo.includes(e.livroId);
+  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean; emCena?: boolean }) => {
     const [primeiro, ...resto] = o.nome.split(' ');
     const nome = o.duasLinhas ? [h('span', null, primeiro), h('span', null, resto.join(' ') || ' ')] : [o.nome];
     return h(
@@ -241,7 +243,6 @@ export function abrirElenco(app: App) {
         'span',
         { class: 'el-carta' },
         h('span', { class: 'el-quadro' }, o.figura),
-        o.unico ? h('span', { class: 'el-unico', title: 'Portador de relíquia: só existe um' }, 'Único') : null,
         h('b', { class: `el-nome${o.duasLinhas ? ' duas' : ''}` }, ...nome),
         // o NPC já em cena (todo NPC é único): a plaquinha diz "Em cena" e não põe outro
         o.emCena
@@ -361,7 +362,7 @@ export function abrirElenco(app: App) {
     for (const lista of porGrupo.values()) lista.sort((a, b) => vdDa(a) - vdDa(b));
     // as versões seguem a primeira, cada uma num card igual aos outros (17/10, o Felipe: sem setas, nada assimétrico)
     const cardAmeaca = (e: Entrada) =>
-      card({ chave: e.chave, nome: e.nome, linha: linhaAmeaca(e), unico: combate.ehPortadorDeReliquia(e.livroId), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` });
+      card({ chave: e.chave, nome: e.nome, linha: linhaAmeaca(e), emCena: emCampoReliquia(e), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` });
     grade.replaceChildren(
       ...GRUPOS.filter((g) => porGrupo.has(g.id)).map((g) =>
         secao({ nome: g.nome, n: porGrupo.get(g.id)!.flat().length, icone: g.icone, cls: `el-${g.id}`, aberta: !!busca || ameacasAbertas.has(g.id), alternar: alterna(ameacasAbertas, g.id), filhos: porGrupo.get(g.id)!.flat().map(cardAmeaca) }),
@@ -584,7 +585,6 @@ export function abrirElenco(app: App) {
             fundoDe(e),
             figura({ arte: c?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }),
             e.pagina ? h('span', { class: 'el-dam-pagina', title: 'Página do livro de regras' }, `LR p. ${e.pagina}`) : null,
-            unico ? h('span', { class: 'el-unico', title: 'Portador de relíquia: só existe um' }, 'Único') : null,
           ),
           nome,
           h(
@@ -600,7 +600,7 @@ export function abrirElenco(app: App) {
           'div',
           { class: 'el-dam-pe' },
           unico
-            ? h('small', { class: 'el-d-unico' }, 'Portador de relíquia: só existe um na campanha.')
+            ? null
             : h(
                 'div',
                 { class: 'el-d-qtd' },
@@ -612,7 +612,9 @@ export function abrirElenco(app: App) {
           h(
             'div',
             { class: 'el-d-acoes' },
-            h('button', { class: 'el-usar grande', type: 'button', title: 'Põe na porta da cena; cada peça com os próprios PV (Shift: sem fechar a janela)', onclick: (ev: Event) => usar(ev, () => colocarAmeaca(e, quantidade, aparencia)) }, quantidade > 1 ? `Usar ${quantidade}` : 'Usar'),
+            emCampoReliquia(e)
+              ? h('button', { class: 'el-usar grande', type: 'button', disabled: true, title: 'Portador de relíquia: só existe um, e já está em alguma cena desta campanha' }, 'Em cena')
+              : h('button', { class: 'el-usar grande', type: 'button', title: unico ? 'Portador de relíquia: só existe um na campanha (Shift: sem fechar a janela)' : 'Põe na porta da cena; cada peça com os próprios PV (Shift: sem fechar a janela)', onclick: (ev: Event) => usar(ev, () => colocarAmeaca(e, quantidade, aparencia)) }, quantidade > 1 ? `Usar ${quantidade}` : 'Usar'),
             c ? h('button', { class: 'el-editar', type: 'button', title: 'Editar as caras, os PV e a ficha (o bestiário)', onclick: () => (fechar(), abrirBestiario(app, c.id)) }, ic('lapis')) : null,
           ),
         ),
