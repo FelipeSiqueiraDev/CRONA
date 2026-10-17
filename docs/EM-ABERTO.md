@@ -368,7 +368,8 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   (npc-cabelo-rosa, uma submetralhadora em cada mão) armados em pé; os agachados que faltam; o sentado dos Marcados e de
   todos os NPCs; o agachado armado (agentes, Miguel, Pedro, Rosa, Joaquin); os portadores de relíquia; os Existidos.
   O Joaquin é o npc-ruivo (machado de uma mão e escudo de choque), também na fila. Já entraram: a Camarilla (em pé e
-  sentada), o Pedro armado (pistola grossa na mão direita) e a Rosa armada (uma submetralhadora em cada mão). O Códex
+  sentada), o Pedro armado (pistola grossa na mão direita), a Rosa armada (uma submetralhadora em cada mão) e o Joaquin armado
+  (machado na direita, escudo de choque no braço esquerdo). O Códex
   agora põe um brilho em volta com alfa baixo: corta-se o alfa em 240 antes do `cortar_8`. A Rosa casou pela altura
   (`normalizar.py --pela-altura`): o cabelo armado veio mais cheio e, pela cabeça, ela ficava 7% mais baixa.
   **Para o futuro (o Felipe, 17/10):** variar a postura de cada personagem (nem todo mundo agacha, cai ou dorme do mesmo
