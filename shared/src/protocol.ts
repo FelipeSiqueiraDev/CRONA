@@ -422,7 +422,8 @@ export type ClientMsg =
   | { t: 'quebrarItem'; id: number; quebrado: boolean }
   /** troca o móvel por outro do catálogo, no mesmo lugar (e no mesmo giro, se der) */
   | { t: 'swapItem'; id: number; defId: string }
-  | { t: 'use'; id: number }
+  /** `tokenId`: a peça comandada; se a coisa estiver trancada, ela vai até lá tentar abrir */
+  | { t: 'use'; id: number; tokenId?: number }
   /** a coberta da cama por cima de quem está deitado (Ctrl + clique na cama): liga e desliga */
   | { t: 'cobrir'; id: number }
   /** trancar ou destrancar um móvel ou porta (Ctrl + clique, só o mestre) */
@@ -583,8 +584,8 @@ export type ServerMsg =
   | { t: 'action'; id: number; action: 'wave' }
   | { t: 'itemAdd'; item: FloorItem }
   | { t: 'itemUpdate'; item: FloorItem }
-  /** alguém tentou abrir uma coisa trancada: todas as telas tocam o barulho da tranca */
-  | { t: 'trancado'; x: number; y: number }
+  /** alguém tentou abrir uma coisa trancada: em todas as telas ela mexe um tiquinho e trava, com a maçaneta e o trinco */
+  | { t: 'trancado'; id: number; x: number; y: number }
   | { t: 'itemRemove'; id: number }
   | { t: 'wallAdd'; item: WallItem }
   | { t: 'wallUpdate'; item: WallItem }

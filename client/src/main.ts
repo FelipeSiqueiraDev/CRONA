@@ -50,6 +50,7 @@ import { montarTemas } from './ui/temaUi';
 import { NEVOA_NA_TELA } from './ui/ferramentasMesa';
 import { ligarMarcaOuro } from './ui/marcaOuro';
 import { sfx } from './ui/sfx';
+import { forcarMovel } from './render/forcar';
 
 const LAST_ROOM = 'crona.lastRoom';
 const HOME_SEEN = 'crona.homeSeen';
@@ -186,7 +187,8 @@ const view = new RoomView(canvas, {
   use: (id) => {
     const it = view.map?.getItem(id);
     if (it?.lock && !it.lock.open && !it.lock.semSenha && shell?.abrirTeclado(it)) return;
-    net.send({ t: 'use', id });
+    // trancada: a peça comandada vai até lá tentar abrir (o servidor decide)
+    net.send({ t: 'use', id, tokenId: view.myId || undefined });
   },
   cobrir: (id) => net.send({ t: 'cobrir', id }),
   trancar: (id) => net.send({ t: 'trancar', id }),
@@ -533,6 +535,7 @@ net.onMessage = (m: ServerMsg) => {
       app.emit('items');
       break;
     case 'trancado':
+      forcarMovel(m.id);
       sfx.trancado();
       break;
     case 'itemRemove':

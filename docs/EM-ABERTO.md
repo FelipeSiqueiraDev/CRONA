@@ -318,6 +318,20 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   saiu fino) e `santa-amalia` no `CENTRO_HD` do `lugarSprites.ts`; as chegadas `chegada-santa-amalia-1.png` (dia) e
   `-2.png` (noite), refeitas uma vez (o asfalto saiu com uma estampa repetida, como filtro, e o céu da -1 em degraus).
 
+## Feito em 17/10, noite (branch `claude/tatica-codigo`): a tranca sem nada à vista
+
+- **Ctrl + clique do mestre tranca e destranca** o que abre e fecha (porta, armário, escotilha; a cama continua com a
+  coberta). `FloorItem.trancado`, separado do aberto e fechado; trancar uma porta aberta fecha. O cadeado e a tranca
+  de ferro saíram do desenho e o vermelho da vista tática também; só o painel do objeto lembra o mestre. As passagens
+  que estavam no estado 2 (trancada) viraram fechadas e trancadas (`trancasSemCadeado` no `seed.ts`).
+- **A peça vai até lá e tenta abrir** (o Felipe: "ele tem que ir abrir pra descobrir que tá fechada"): clicar na porta
+  trancada, o clique duplo e o Abrir (com a peça comandada, `use.tokenId`) levam a peça até a frente; lá ela vira para
+  a coisa e o servidor manda `trancado` com o id. Em todas as telas a coisa mexe um tiquinho duas vezes e chacoalha
+  (`client/src/render/forcar.ts`, por dentro do `N` do `furniKit.ts`) e toca a maçaneta e o trinco
+  (`sfx.trancado`: estalos de madeira e ferro, sem tom de jogo). Sem peça, só trava onde está.
+- Testes: `server/test/tranca.test.ts`, `sede.test.ts`, `santoBerco.test.ts`.
+- **Falta:** ouvir o som no jogo; a arte da porta mexe inteira (folha e batente juntos, 1 a 2 px).
+
 ## Feito em 17/10, noite (branch `claude/tatica-codigo`): móveis na parede e caminho livre em todas as cenas
 
 - **A regra do Felipe, para todas as cenas e as próximas** (no `GUIA-DO-CLAUDE.md`, em "Rodar e conferir"): é um

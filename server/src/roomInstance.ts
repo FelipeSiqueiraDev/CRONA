@@ -859,7 +859,7 @@ export class RoomInstance {
         if (isInt(m.id) && typeof m.defId === 'string') this.swapItem(u, m.id, m.defId);
         break;
       case 'use':
-        if (isInt(m.id)) this.use(u, m.id);
+        if (isInt(m.id)) this.use(u, m.id, isInt(m.tokenId) ? m.tokenId : undefined);
         break;
       case 'cobrir':
         if (isInt(m.id)) this.cobrir(u, m.id);
@@ -1199,15 +1199,29 @@ export class RoomInstance {
     this.broadcastFloor('itemUpdate', it);
   }
 
-  /** Alguém tentou abrir uma coisa trancada: o barulho da tranca em todas as telas (o mestre, a mesa, os jogadores). */
-  private somTrancado(it: FloorItem) {
-    this.broadcast({ t: 'trancado', x: it.x, y: it.y });
+  /**
+   * Alguém tentou abrir uma coisa trancada (17/10, o Felipe: "simular a porta tentando ser aberta e travando"): em todas
+   * as telas (o mestre, a mesa, os jogadores) ela mexe um tiquinho, trava, e ouve-se a maçaneta e o trinco.
+   */
+  private forcar(it: FloorItem) {
+    this.broadcast({ t: 'trancado', id: it.id, x: it.x, y: it.y });
   }
 
-  private use(u: RoomUser, id: number) {
+  /**
+   * Usar (o clique duplo, o Abrir): liga, abre e fecha. Trancada, a peça comandada (`tokenId`) vai até a coisa e tenta
+   * abrir lá; sem peça, a coisa só trava onde está.
+   */
+  private use(u: RoomUser, id: number, tokenId?: number) {
     const floor = this.map.getItem(id);
     if (floor?.lock?.semSenha) return this.empurrar(u.client, floor);
-    if (floor?.trancado) return this.somTrancado(floor);
+    if (floor?.trancado) {
+      const peca = tokenId !== undefined && this.canBuild(u.client) ? this.users.get(tokenId) : undefined;
+      if (!peca) return this.forcar(floor);
+      const daPorta = this.andarAteAPorta(peca, { x: floor.x, y: floor.y });
+      if (daPorta === undefined) this.irAoJogo(tokenId!, floor.id, () => this.forcar(floor));
+      else if (typeof daPorta === 'string') this.err(u.client, daPorta);
+      return;
+    }
     if (floor) {
       const def = getFurni(floor.defId);
       if (!def?.states || def.states < 2) return;
@@ -2092,7 +2106,8 @@ export class RoomInstance {
   }
 
   /**
-   * Clicou numa porta fechada (15/10, o Felipe): a peça vai até a casa da frente, abre e passa; trancada, não passa.
+   * Clicou numa porta fechada (15/10, o Felipe): a peça vai até a casa da frente, abre e passa; trancada, chega, tenta
+   * abrir e a porta trava (17/10).
    * Devolve undefined quando a casa não é de uma porta fechada, null quando a peça foi, ou o motivo de não dar.
    */
   private andarAteAPorta(u: RoomUser, alvo: { x: number; y: number } | undefined): string | null | undefined {
@@ -2100,10 +2115,6 @@ export class RoomInstance {
     if (!porta) return undefined;
     const def = getFurni(porta.defId)!;
     if (porta.quebrado && !def.portal) return 'A porta está quebrada.';
-    if (porta.trancado) {
-      this.somTrancado(porta);
-      return 'A porta está trancada.';
-    }
     const livre = (x: number, y: number) => this.occupied(x, y, u.client.id);
     // a casa da frente: a vizinha da porta de caminho mais curto
     let t: { x: number; y: number } | null = null;
@@ -2125,7 +2136,13 @@ export class RoomInstance {
       const atual = this.map.getItem(porta.id);
       if (!atual) return;
       if (atual.state !== def.openState) {
-        if (atual.trancado) return this.somTrancado(atual);
+        // trancada (17/10, o Felipe: "ele tem que ir abrir pra descobrir que tá fechada"): de frente para ela, tenta e trava
+        if (atual.trancado) {
+          u.dir = u.headDir = directionTo(u, atual);
+          u.dirty = true;
+          this.ensureTimer();
+          return this.forcar(atual);
+        }
         const aberta = { ...atual, state: def.openState! };
         this.map.updateItem(aberta);
         this.persist();

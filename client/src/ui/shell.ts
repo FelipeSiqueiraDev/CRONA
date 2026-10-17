@@ -2286,7 +2286,7 @@ export class Shell {
   /** Usar um objeto: liga e desliga; um jogo do bar, com um agente escolhido, leva o agente para jogar. */
   private usar(kind: string, id: number, defId: string) {
     if (this.jogador(kind, defId)) this.app.net.send({ t: 'barJogar', tokenId: this.app.view.myId, itemId: id });
-    else this.app.net.send({ t: 'use', id });
+    else this.app.net.send({ t: 'use', id, tokenId: this.app.view.myId || undefined });
   }
 
   /** AÇÕES sobre o objeto escolhido: examinar, abrir, usar e entregar. */
@@ -2333,7 +2333,8 @@ export class Shell {
         fazer: () => {
           if (!s) return;
           if (lock?.semSenha) this.app.net.send({ t: 'use', id: it!.id });
-          else if (porta && !lock) this.app.net.send({ t: 'use', id: it!.id });
+          // trancada, a peça comandada vai até a porta tentar abrir
+          else if (porta && !lock) this.app.net.send({ t: 'use', id: it!.id, tokenId: this.app.view.myId || undefined });
           else if (lock && this.abrirTeclado(it as FloorItem)) return;
           else ((this.inspTab = lock ? 'desc' : 'items'), this.renderInspector(true));
         },

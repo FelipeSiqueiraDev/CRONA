@@ -1,5 +1,6 @@
 import type { FurniDef } from '@crona/shared';
 import { rgba, shade } from './color';
+import { desenharForcando } from './forcar';
 import type { LBox, LFace, Painter } from './painter';
 
 /** Peças comuns para desenhar mobis de chão (usadas por furniFloor e furniSede). */
@@ -32,7 +33,8 @@ export interface FVisual {
 
 export type Builder = (def: FurniDef, state: number, seed: number) => FVisual;
 
-export const N = (b: LBox, draw: (p: Painter) => void): FNode => ({ b, draw });
+// cada pedaço passa pelo `desenharForcando`: a coisa trancada mexe um tiquinho quando alguém tenta abrir (17/10)
+export const N = (b: LBox, draw: (p: Painter) => void): FNode => ({ b, draw: (p) => desenharForcando(p, draw) });
 export const B = (b: LBox, color: string, o?: Parameters<Painter['box']>[2]): FNode => N(b, (p) => p.box(b, color, o));
 export const V = (nodes: FNode[], lights: LightDef[] = []): FVisual => ({ nodes, lights });
 
