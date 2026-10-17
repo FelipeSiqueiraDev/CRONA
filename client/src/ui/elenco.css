@@ -1276,3 +1276,38 @@ body:has(.el-fundo) .fj-fundo {
   font: 500 1.15rem var(--r-pixel, monospace);
   text-align: center;
 }
+
+/* a fitinha vermelha (17/10, o Felipe: "deixa marcado quais a gente já tem peça para pôr no tabuleiro e quais ainda não"):
+   no canto de cima da carta, nos que ainda não têm as 8 direções na pasta da arte */
+.el-fita {
+  position: absolute;
+  top: 1.7rem;
+  left: -0.5rem;
+  z-index: 4;
+  pointer-events: none;
+  display: block;
+  padding: 0.35rem 1.3rem 0.35rem 0.9rem;
+  background: linear-gradient(180deg, #e0463e, #b3261e);
+  color: #fff;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 0.7rem) 50%, 100% 100%, 0 100%);
+  filter: drop-shadow(0 0.2rem 0.2rem rgba(0, 0, 0, 0.55));
+}
+.el-fita span {
+  display: block;
+  font: 700 1.05rem / 1 var(--r-pixel, monospace);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 0.1rem 0 rgba(90, 8, 4, 0.7);
+  white-space: nowrap;
+}
+/* a dobra da fita: um triângulo escuro atrás da ponta de cima, como numa fita de verdade */
+.el-fita::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 0.5rem;
+  height: 0.4rem;
+  background: #6e1410;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}

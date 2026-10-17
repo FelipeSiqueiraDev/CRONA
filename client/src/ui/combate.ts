@@ -442,20 +442,25 @@ export class CombateScreen {
   /** O menu de ataque: cada arma, a investida, a manobra e o ritual. */
   private menuDeAtaque(c: Combate, ator: Participante): HTMLElement {
     const armas = this.armasDe(ator);
-    const cartao = (cls: string, arte: Node, nome: string, sub: string, fazer: (() => void) | null, motivo?: string) =>
-      h(
+    const cartao = (cls: string, arte: Node, nome: string, sub: string, fazer: (() => void) | null, _motivo?: string): HTMLElement | null =>
+      // o que não dá para usar agora sai da lista (17/10, o Felipe: "os ataques indisponíveis podiam sair da lista, assim a gente
+      // não fica com as duas colunas e não tem que dar scroll")
+      !fazer
+        ? null
+        : h(
         'button',
-        { class: `vez-cartao ${cls}${fazer ? '' : ' travado'}`, type: 'button', disabled: !fazer, title: fazer ? sub : motivo, onclick: () => fazer && (sfx.click(), fazer()) },
+        { class: `vez-cartao ${cls}`, type: 'button', title: sub, onclick: () => (sfx.click(), fazer()) },
         h('b', { class: 'card-tit' }, nome),
         h('span', { class: 'vez-cartao-ic card-quadro' }, arte),
-        h('small', { class: 'card-placa' }, fazer ? sub : (motivo ?? sub)),
-        h('span', { class: 'card-pe' }, fazer ? (cls === 'investida' ? 'Ação completa' : 'Escolher') : 'Indisponível'),
+        h('small', { class: 'card-placa' }, sub),
+        h('span', { class: 'card-pe' }, cls === 'investida' ? 'Ação completa' : 'Escolher'),
       );
     const lista: HTMLElement[] = [];
+    const poe = (el: HTMLElement | null) => el && lista.push(el);
     armas.forEach((a, i) => {
       const naMao = a.naMao !== false;
       const travada = !!a.jogada?.erros.length;
-      lista.push(
+      poe(
         cartao(
           'arma',
           a.jogada ? arteOu(['/arte/icones/combate-habilidade.png'], ic('estrela')) : a.item && a.item !== 'ataque-desarmado' ? arteDoItem({ id: a.item, tipo: 'arma', nome: a.nome }, a.pericia === 'pontaria' ? 'pistola' : 'faca', 'arte-ic') : arteOu([a.item ? '/arte/icones/for.png' : '/arte/icones/combate-atacar.png'], ic('punho')),
@@ -470,7 +475,7 @@ export class CombateScreen {
     const corpo = armas.findIndex((a) => !a.faixa && a.naMao !== false && !a.jogada);
     const ac = cb.acoesDe(c, ator.id);
     const completaLivre = !ac.padrao && !ac.movimento && !ac.completa;
-    lista.push(
+    poe(
       cartao(
         'investida',
         arteOu(['/arte/icones/sit-investida.png'], ic('correr')),
@@ -480,9 +485,9 @@ export class CombateScreen {
         corpo < 0 ? 'precisa de uma arma de corpo a corpo na mão' : 'precisa do turno inteiro (padrão e movimento livres)',
       ),
     );
-    lista.push(cartao('manobra', arteOu(['/arte/icones/combate-manobra.png'], ic('mao')), 'Manobra', 'agarrar, derrubar, desarmar, empurrar…', () => this.irPara('acao', 'manobra')));
+    poe(cartao('manobra', arteOu(['/arte/icones/combate-manobra.png'], ic('mao')), 'Manobra', 'agarrar, derrubar, desarmar, empurrar…', () => this.irPara('acao', 'manobra')));
     const rituais = this.rituaisDe(ator);
-    lista.push(cartao('ritual', arteOu(['/arte/icones/combate-ritual.png'], ic('pentagrama')), 'Ritual', rituais.length ? `${rituais.length} ritua${rituais.length > 1 ? 'is' : 'l'} conhecido${rituais.length > 1 ? 's' : ''}` : 'nenhum ritual', rituais.length ? () => this.irPara('acao', 'ritual') : null, 'nenhum ritual conhecido'));
+    poe(cartao('ritual', arteOu(['/arte/icones/combate-ritual.png'], ic('pentagrama')), 'Ritual', rituais.length ? `${rituais.length} ritua${rituais.length > 1 ? 'is' : 'l'} conhecido${rituais.length > 1 ? 's' : ''}` : 'nenhum ritual', rituais.length ? () => this.irPara('acao', 'ritual') : null, 'nenhum ritual conhecido'));
     return h('div', { class: 'vez-menu' }, h('p', { class: 'vez-pergunta' }, 'Com o quê?'), h('div', { class: 'vez-cartoes' }, ...lista));
   }
 
@@ -663,7 +668,16 @@ export class CombateScreen {
   setCombate(c: Combate | null, podeDesfazer = false, ameacas: Record<string, cb.FichaAmeaca> = {}) {
     this.combate = c;
     this.podeDesfazer = podeDesfazer;
-    if (this.app.view) this.app.view.emCombate = !!c && c.fase !== 'encerrado';
+    if (this.app.view) {
+      this.app.view.emCombate = !!c && c.fase !== 'encerrado';
+      // só quem participa do combate (e não saiu dele) fica preso às regras dele
+      this.app.view.pecaEmCombate = (viewId) => {
+        const atual = this.combate;
+        if (!atual || atual.fase === 'encerrado') return false;
+        const p = cb.participante(atual, -viewId);
+        return !!p && !p.fora;
+      };
+    }
     this.ameacas = ameacas;
     if ((c?.vez ?? null) !== this.ultimaVez) {
       this.ultimaVez = c?.vez ?? null;
@@ -1434,6 +1448,17 @@ export class CombateScreen {
           doM.map((x) => x.id),
         ),
       );
+    // pôr alguém no combate (quem chega para ajudar), sempre à vista no fim da ordem (17/10, o Felipe: "preciso de um botão
+    // para incluir ou excluir pessoas do combate, caso alguém fuja ou chegue para ajudar"); tirar é o × de cada carta
+    if (c.fase !== 'encerrado')
+      linhas.push(
+        h(
+          'button',
+          { class: 'cb-ini-linha mais', type: 'button', title: 'Pôr alguém no combate: quem chega para ajudar entra na ordem e age a partir da rodada seguinte', onclick: () => (sfx.click(), this.dialogoEntrar()) },
+          h('span', { class: 'cb-ini-mais' }, ic('mais')),
+          h('span', { class: 'cb-ini-txt' }, h('b', null, 'Pôr no combate'), h('span', { class: 'cb-ini-sub' }, h('span', null, 'quem chega'))),
+        ),
+      );
     const vez = c.fase === 'andamento' && !!c.vez;
     const botoes = h(
       'div',
@@ -1476,6 +1501,22 @@ export class CombateScreen {
         h('span', { class: 'cb-ini-sub' }, h('span', null, sub), naVez ? h('span', { class: 'cb-suavez' }, 'Sua vez') : e.mestre ? this.estadoMestre(c, ps) : this.estadoCurto(c, ps[0])),
       ),
       naVez ? h('span', { class: 'cb-seta' }, ic('direita')) : null,
+      // tirar do combate (fugiu, caiu, se rendeu): o × da carta; no turno do mestre, escolhe quem
+      c.fase === 'andamento'
+        ? h(
+            'span',
+            {
+              class: 'cb-ini-x',
+              role: 'button',
+              tabindex: '0',
+              title: e.mestre ? 'Tirar alguém do turno do mestre do combate' : `Tirar ${nome} do combate (fugiu, caiu ou se rendeu)`,
+              'aria-label': e.mestre ? 'Tirar alguém do combate' : `Tirar ${nome} do combate`,
+              onclick: (ev: Event) => (ev.stopPropagation(), sfx.click(), this.dialogoSair(e.mestre ? undefined : ps[0]?.id)),
+              onkeydown: (ev: KeyboardEvent) => ev.key === 'Enter' && (ev.stopPropagation(), this.dialogoSair(e.mestre ? undefined : ps[0]?.id)),
+            },
+            ic('fechar'),
+          )
+        : null,
     );
   }
 
@@ -2033,13 +2074,17 @@ export class CombateScreen {
   private conteudoAba(c: Combate, ator: Participante): HTMLElement {
     const alvo = this.alvoId !== null && this.alvoId !== ator.id ? cb.participante(c, this.alvoId) : undefined;
     const contra = alvo ? ` contra ${alvo.nome}` : '';
+    // o mesmo card do menu da vez (17/10, o Felipe: "por que aqui é um trem feio e não um card igual no menu? já existe, é só
+    // copiar e adaptar"): o nome, o quadro do ícone, a plaquinha com o detalhe e o rodapé com o que gasta
+    const PINTADO: Partial<Record<NomeIcone, string>> = { estrela: 'combate-habilidade', mochila: 'combate-item', bota: 'combate-movimento', reticencias: 'combate-outras' };
     const opcao = (icone: NomeIcone, nome: string, detalhe: string, qual: cb.TipoAcao, fn: () => void, pagina?: string) =>
       h(
         'button',
-        { class: 'cb-opcao', type: 'button', title: `${nome} (${NOME_QUAL[qual]})${pagina ? ` · ${pagina}` : ''}`, onclick: () => (sfx.click(), fn()) },
-        h('span', { class: 'cb-opcao-ic' }, icPintado(icone)),
-        h('span', { class: 'cb-opcao-txt' }, h('b', null, nome), h('small', null, detalhe)),
-        h('span', { class: `cb-custo ${qual}` }, NOME_QUAL[qual]),
+        { class: 'vez-cartao', type: 'button', title: `${nome} (${NOME_QUAL[qual]})${pagina ? ` · ${pagina}` : ''}`, onclick: () => (sfx.click(), fn()) },
+        h('b', { class: 'card-tit' }, nome),
+        h('span', { class: 'vez-cartao-ic card-quadro' }, arteOu(PINTADO[icone] ? [`/arte/icones/${PINTADO[icone]}.png`] : [], ic(icone))),
+        h('small', { class: 'card-placa' }, detalhe),
+        h('span', { class: 'card-pe' }, NOME_QUAL[qual]),
       );
     const declarar = (qual: cb.TipoAcao, texto: string) => this.acao({ tipo: 'declarar', qual, texto, quem: ator.id });
     const calc = this.calcDe(ator.id);
@@ -2078,12 +2123,13 @@ export class CombateScreen {
     return h(
       'div',
       { class: 'cb-aba-corpo' },
-      h('div', { class: 'cb-opcoes cb-rola' }, ...lista),
+      lista.length ? h('div', { class: 'vez-cartoes' }, ...lista) : null,
+      // o texto no fim da tela e a etiqueta do alvo colada em cima dele (17/10, o Felipe)
       h(
         'div',
         { class: 'cb-res-pe' },
-        h('p', { class: 'cb-nota' }, nota),
         h('span', { class: `cb-alvo-tag${alvo ? '' : ' vazio'}` }, ic('mira'), alvo ? `Alvo: ${alvo.nome}` : 'Sem alvo: clique numa peça'),
+        h('p', { class: 'cb-nota' }, nota),
       ),
     );
   }

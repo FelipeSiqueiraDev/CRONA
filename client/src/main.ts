@@ -11,6 +11,7 @@ import './ui/teclado.css';
 import './ui/requisicao.css';
 import './ui/entrada.css';
 import './ui/mapaMundi.css';
+import './ui/cenas.css';
 import './ui/kit.css';
 import './ui/minimapa.css';
 import './ui/jogador.css';
@@ -43,6 +44,8 @@ import { TableScreen } from './ui/table';
 import { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha, TelaFicha } from './ui/telaFicha';
 import { Entrada } from './ui/entrada';
 import { mostrarTelaViagem } from './ui/viagemTela';
+import { mostrarCena } from './ui/cenaTela';
+import { iniciarSugestaoDeCenas } from './ui/cenaSugestao';
 import { BarJogos } from './ui/barJogos';
 import { esquecerSessao, guardarSessao, lerSessao } from './session/conta';
 import { janelaAberta } from './ui/fichaModal';
@@ -59,6 +62,7 @@ const LAST_ROOM = 'crona.lastRoom';
 const HOME_SEEN = 'crona.homeSeen';
 const net = new Net();
 const app = new App(net);
+iniciarSugestaoDeCenas(app);
 // as peças do kit de interface viram variáveis de CSS, por tema
 montarTemas();
 /** chave do link do mestre (?mestre=...), para mestre em outro aparelho */
@@ -376,6 +380,8 @@ net.onMessage = (m: ServerMsg) => {
       app.state.me = { id: m.id, name: m.name, look: m.look, token: m.token };
       app.state.inventory = m.inventory;
       app.state.role = m.role;
+      // a cena de momento que já está na tela (quem entra no meio dela vê o quadro de agora) e, para o mestre, a lista
+      net.send({ t: 'cenasPedir' });
       if (fichaMode) {
         loginTries = 0;
         telaFicha?.show();
@@ -454,6 +460,13 @@ net.onMessage = (m: ServerMsg) => {
     case 'lugares':
       app.state.lugares = m.lugares;
       app.emit('lugares');
+      break;
+    case 'cenas':
+      app.state.cenas = m.cenas;
+      app.emit('cenas');
+      break;
+    case 'cenaAoVivo':
+      mostrarCena(app, m.cena);
       break;
     case 'bestiario':
       app.state.bestiario = m.criaturas;

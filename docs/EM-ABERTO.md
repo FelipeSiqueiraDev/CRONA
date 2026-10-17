@@ -12,6 +12,35 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - **Arte dos portadores de relíquia e dos Existidos (Códex, 8 direções, na altura da Catarina):** chegaram e instalados os Existidos refeitos pelo retrato da lista (cinza, escrita preta, olhos brancos; os dourados de antes ficaram em `arte\PERSONAGENS-ANIMACAO	rabalho\_backup-existidos-dourados`), o Deus da Morte e o Diabo. A fila (`trabalho/fila_monstros.sh`, log em `fila_monstros.log`) segue com a Magistrada, o Anfitrião e as faces; cada um é cortado com `cortar_8.py --altura 470` e instalado com `monstros-tabuleiro/instalar_monstro.py <id> <v>`.
 - **C.R.I.S (só leitura, o Felipe pediu):** as fichas dos Marcados no CRONA e no C.R.I.S batem em atributos, PV/PE/SAN e poderes (o +1 do NEX 20% está na progressão); mudam só alguns itens. Das fichas de NPC, o C.R.I.S só tem de verdade o Miguel; a Agatha é parcial e a Ivete e a Marcela são modelos em branco (tudo 1).
 
+## Feito em 17/10, noite (branch `claude/tatica-codigo`): cenas de momento, combate sem trava para quem não luta, arte dos monstros
+
+- **CENAS (botão CENAS na barra do tabuleiro, só o mestre):** o mestre monta uma sequência de quadros e solta na tela de todos (mestre, mesa e
+  celulares). Cada quadro tem a ilustração de fundo, as **camadas da colagem** (PNGs transparentes do mesmo tamanho, que entram por cima, cada uma
+  no seu tempo e do seu lado), a **câmera** (movimento pronto ou à mão: foco e zoom do começo e do fim, para passear por uma ilustração larga), a
+  transição (dissolver, corte, clarão, pelo preto), o tempo (a cena passa sozinha, com pausa; sem tempo, espera o mestre; o último quadro congela
+  até ele fechar), um som de efeito e a legenda (digitada), mais a **fala só do mestre** (nunca vai para a mesa). Música em loop, faixas de cinema
+  (opcional). Teclas: → ou espaço avança, ← volta, P pausa, Esc fecha ("Voltar ao tabuleiro"). **A cena pode ser ligada a uma sala** ("Ligar à sala
+  de agora"): quando o mestre entra nela, um aviso discreto oferece soltar (nunca solta sozinha). Código: `shared/src/cenas.ts`, `server/src/hotel.ts`
+  (`cenaMsg`, relógio `cenaPasso`), `client/src/ui/cenas.ts` (editor), `cenaTela.ts` (a tela), `cenaSugestao.ts`, `cenas.css`; upload de música em
+  `/api/cenas-audio`; 15 testes em `server/test/cenas.test.ts`. A referência foi o vídeo da Ceia dos Vampiros do Hexatombe (o mp3 e o mp4 estão em Downloads; não vão para o git).
+  **A cena da cela do Geraldo** está pedida ao Códex (seção 4 do `PEDIDO-UNICO-CODEX.txt`: fundo + mão chegando + mão na grade + rosto, tudo
+  1920 × 1080 no mesmo lugar). Falta: o Felipe subir a música e as imagens e montar a cena no editor.
+- **Combate:** a trava de combate (nada de andar livre nem trocar de comando) agora vale **só para quem está no combate** (`pecaEmCombate`); quem não
+  participa, ou está em outra cena, anda e se escolhe como sempre; clicar numa peça em combate a seleciona. O servidor manda ao mestre os personagens
+  dos participantes que estão em outro grupo de cenas (foto, PV e ficha na aba COMBATE não somem mais). A faixa da iniciativa: cartas baixinhas e
+  compridas com rolagem para o lado, nome em todas, × no canto para **tirar do combate** e o card **+ Pôr no combate** no fim. As etapas
+  Habilidade, Item, Movimento e Outras usam o mesmo card do menu; a Rolagem da manobra é feita de dois cartões grandes; "Com o quê?" só lista o que
+  dá para usar; a etiqueta "Alvo" fica colada em cima do texto do rodapé. (Sobra de teste: a campanha "Sede da Ordem" tem um combate aberto, rodada 1.)
+- **Elenco:** fita vermelha "sem peça" nas criaturas sem as 8 direções na pasta da arte (os NPCs já têm todos).
+- **Arte dos monstros no tabuleiro** (8 direções, altura da Catarina): no jogo, o Diabo, a Magistrada, o Anfitrião e as 5 faces, o Deus da Morte em
+  **lodo preto**, só o crânio claro, sem braçadeiras (v2), e os Existidos **dourados** no estilo dos outros bonecos (v5: marcas, olhos e boca brilhando
+  em dourado, cabelo desgrenhado). Os de antes ficam em `arte\PERSONAGENS-ANIMACAO\trabalho\_backup-existidos-dourados`. O Deus da Morte no livro é
+  Médio (LR p. 230); o Felipe acha que ele é bem maior: decidir se ganha o tamanho Grande ou só a escala do desenho.
+- **O Alosi no estilo dos monstros** foi desenhado só para comparar (`docs/alosi-antigo-e-novo.png`); não entrou no jogo. O Felipe decide se os
+  Marcados e os NPCs vão para esse estilo ou se os monstros voltam ao dos NPCs.
+- **Ideia do Felipe, ainda não feita:** o passo pelas sombras da Magistrada (ao se mover, uma sombra se abre no chão, ela entra pintada de preto e sai
+  de outra sombra que o mestre escolhe).
+
 ## PARA A SESSÃO DE 18/10 (Sede / Fazenda): o que falta
 
 - **Atualizar o jogo de verdade (8080) de manhã**, antes da sessão: backup do banco (`npm run banco:backup`) e

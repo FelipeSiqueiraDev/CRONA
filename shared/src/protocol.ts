@@ -5,6 +5,7 @@ import type { FloorItem, FloorStyle, Hint, ParticleKind, WallItem } from './room
 import type { LugarInfo } from './lugares';
 import type { Criatura } from './bestiario';
 import type { Npc } from './npcs';
+import type { CenaAoVivo, CenaMomento } from './cenas';
 import type { ViagemInfo } from './viagem';
 import type { CampaignState, LootKind } from './rpg';
 import type { PapelConta, Role, Session, SessionAction, Token } from './session';
@@ -547,9 +548,21 @@ export type ClientMsg =
   | { t: 'capacitySet'; name: string; capacity: number }
   | { t: 'floorPlan'; heightmap: string; door: Door }
   | { t: 'charUpdate'; id: number; patch: CharacterPatch }
-  | { t: 'charDelete'; id: number };
+  | { t: 'charDelete'; id: number }
+  /** as cenas de momento (17/10): pedir a lista (o mestre) e a que está na tela (todos); gravar, apagar, soltar, andar e fechar (só o mestre) */
+  | { t: 'cenasPedir' }
+  | { t: 'cenaSalvar'; cena: CenaMomento }
+  | { t: 'cenaApagar'; id: string }
+  | { t: 'cenaTocar'; id: string }
+  | { t: 'cenaQuadro'; quadro: number }
+  | { t: 'cenaPausa'; pausada: boolean }
+  | { t: 'cenaFechar' };
 
 export type ServerMsg =
+  /** a biblioteca de cenas do mestre (só o mestre recebe) */
+  | { t: 'cenas'; cenas: CenaMomento[] }
+  /** a cena que está na tela de todos agora, com o quadro de agora; null = nenhuma (a mesa e os celulares não recebem as falas do mestre) */
+  | { t: 'cenaAoVivo'; cena: CenaAoVivo | null }
   /** a tela da viagem: a pintura que aparece para todos na partida e na chegada (com o som do carro) */
   | { t: 'viagemTela'; fase: 'partida' | 'chegada'; ilustracao: string; texto: string; reserva?: string }
   | { t: 'hello'; characters: CharacterDef[] }

@@ -1,4 +1,4 @@
-import type { Criatura, Npc, PecaCriatura, regras } from '@crona/shared';
+import type { CenaMomento, Criatura, Npc, PecaCriatura, regras } from '@crona/shared';
 import type { ViagemInfo, IconeLugar, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
@@ -151,6 +151,8 @@ export interface Database {
   nomeCampanha?: string;
   /** o bestiário (10/10): as criaturas, cada uma com uma ficha e várias aparências */
   bestiario?: Criatura[];
+  /** as cenas de momento do mestre (17/10): imagens em sequência com música, que tomam a tela de todos */
+  cenasMomento?: CenaMomento[];
   /** os NPCs do mestre (16/10): gente da história, sem ficha de combate */
   npcs?: Npc[];
   /** até que leva de NPCs padrão o elenco já recebeu (o que o mestre apagar não volta) */

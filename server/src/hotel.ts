@@ -2,6 +2,10 @@ import crypto from 'node:crypto';
 import type { WebSocket } from 'ws';
 import {
   BANCOS_VAN,
+  CENA_MAX_CENAS,
+  lerCena,
+  semNotas,
+  type CenaAoVivo,
   getFurni,
   lerCriatura,
   lerNpc,
@@ -379,6 +383,86 @@ export class Hotel implements HotelApi {
         return pecas.some((t) => (ch !== null && t.look?.charId === ch) || t.name.toLowerCase() === n.nome.toLowerCase());
       })
       .map((n) => n.id);
+  }
+
+  // ---------- as cenas de momento (17/10) ----------
+  /** A cena que está na tela de todos agora (só uma por vez; não vai para o banco: reiniciar o servidor fecha). */
+  private cenaAoVivo: CenaAoVivo | null = null;
+
+  private cenaPara(o: Client) {
+    const v = this.cenaAoVivo;
+    o.send({ t: 'cenaAoVivo', cena: v ? (o.role === 'gm' ? v : semNotas(v)) : null });
+  }
+
+  private cenasPara(o: Client) {
+    if (o.role === 'gm') o.send({ t: 'cenas', cenas: this.db.cenasMomento ?? [] });
+    this.cenaPara(o);
+  }
+
+  /** O relógio da passagem sozinha: o quadro que tem `duracao` passa quando ela acaba (todos veem junto, quem manda é o servidor). */
+  private cenaTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private cenaMudou() {
+    if (this.cenaTimer) clearTimeout(this.cenaTimer);
+    this.cenaTimer = null;
+    const v = this.cenaAoVivo;
+    if (v && !v.pausada && this.timers) {
+      const d = v.quadros[v.quadro]?.duracao;
+      if (d) this.cenaTimer = setTimeout(() => this.cenaPasso(), d * 1000);
+    }
+    for (const o of this.clients.values()) if (o.name) this.cenaPara(o);
+  }
+
+  /** Passa para o próximo quadro; depois do último, fecha a cena (o que o relógio faz quando a duração acaba). */
+  cenaPasso() {
+    const v = this.cenaAoVivo;
+    if (!v) return;
+    this.cenaAoVivo = v.quadro >= v.quadros.length - 1 ? null : { ...v, quadro: v.quadro + 1 };
+    this.cenaMudou();
+  }
+
+  private cenaMsg(c: Client, m: Record<string, unknown>) {
+    if (m.t === 'cenasPedir') return this.cenasPara(c);
+    if (c.role !== 'gm') return c.send({ t: 'error', msg: 'Só o mestre mexe nas cenas.' });
+    const lista = (this.db.cenasMomento ??= []);
+    if (m.t === 'cenaSalvar') {
+      const cena = lerCena(m.cena, () => `cena-${Date.now().toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`);
+      if (!cena) return c.send({ t: 'error', msg: 'Cena inválida: precisa de um título e de pelo menos um quadro com imagem.' });
+      const i = lista.findIndex((x) => x.id === cena.id);
+      if (i >= 0) lista[i] = cena;
+      else if (lista.length >= CENA_MAX_CENAS) return c.send({ t: 'error', msg: `No máximo ${CENA_MAX_CENAS} cenas guardadas: apague alguma.` });
+      else lista.push(cena);
+      this.save();
+      for (const o of this.clients.values()) if (o.name && o.role === 'gm') this.cenasPara(o);
+      return c.send({ t: 'notice', msg: `Cena "${cena.titulo}" guardada.` });
+    }
+    if (m.t === 'cenaApagar' && typeof m.id === 'string') {
+      this.db.cenasMomento = lista.filter((x) => x.id !== m.id);
+      if (this.cenaAoVivo?.id === m.id) this.cenaAoVivo = null;
+      this.save();
+      for (const o of this.clients.values()) if (o.name && o.role === 'gm') this.cenasPara(o);
+      return this.cenaMudou();
+    }
+    if (m.t === 'cenaTocar' && typeof m.id === 'string') {
+      const cena = lista.find((x) => x.id === m.id);
+      if (!cena) return c.send({ t: 'error', msg: 'Cena não encontrada.' });
+      this.cenaAoVivo = { id: cena.id, titulo: cena.titulo, quadros: cena.quadros, ...(cena.musica ? { musica: cena.musica } : {}), ...(cena.cinema ? { cinema: true } : {}), quadro: 0 };
+      return this.cenaMudou();
+    }
+    if (m.t === 'cenaQuadro' && typeof m.quadro === 'number' && Number.isInteger(m.quadro)) {
+      if (!this.cenaAoVivo) return;
+      this.cenaAoVivo = { ...this.cenaAoVivo, quadro: Math.max(0, Math.min(this.cenaAoVivo.quadros.length - 1, m.quadro)) };
+      return this.cenaMudou();
+    }
+    if (m.t === 'cenaPausa' && typeof m.pausada === 'boolean') {
+      if (!this.cenaAoVivo) return;
+      this.cenaAoVivo = { ...this.cenaAoVivo, pausada: m.pausada };
+      return this.cenaMudou();
+    }
+    if (m.t === 'cenaFechar') {
+      this.cenaAoVivo = null;
+      return this.cenaMudou();
+    }
   }
 
   private bestiarioMudou() {
@@ -1381,25 +1465,43 @@ export class Hotel implements HotelApi {
     for (const r of rooms) for (const l of r.heldLoot()) load.set(l.holder.toLowerCase(), (load.get(l.holder.toLowerCase()) ?? 0) + l.espacos);
     const characters: Character[] = [];
     const tokens: Token[] = [];
+    const personagemDe = (r: RoomInstance, t: ReturnType<RoomInstance['tokensLive']>[number]): Character => {
+      const fc = this.fichaDoPersonagem(t.look?.charId);
+      const carga = fc ? this.calcDe(fc)?.carga : undefined;
+      return {
+        id: t.token.id,
+        name: t.name,
+        color: t.color ?? playerColorFor(t.name),
+        capacity: carga ? carga.espacos : (t.capacity ?? DEFAULT_CAPACITY),
+        load: carga ? carga.usados : round1(load.get(t.name.toLowerCase()) ?? 0),
+        look: t.look,
+        sceneId: r.data.id,
+        armed: !!t.armed,
+        ...(fc && t.armed ? { arma: this.armaNaMao(fc) } : {}),
+        hurt: !!t.hurt,
+        vitals: t.vitals,
+      };
+    };
     for (const r of rooms)
       for (const t of r.tokensLive()) {
         tokens.push(t.token);
-        const fc = this.fichaDoPersonagem(t.look?.charId);
-        const carga = fc ? this.calcDe(fc)?.carga : undefined;
-        characters.push({
-          id: t.token.id,
-          name: t.name,
-          color: t.color ?? playerColorFor(t.name),
-          capacity: carga ? carga.espacos : (t.capacity ?? DEFAULT_CAPACITY),
-          load: carga ? carga.usados : round1(load.get(t.name.toLowerCase()) ?? 0),
-          look: t.look,
-          sceneId: r.data.id,
-          armed: !!t.armed,
-          ...(fc && t.armed ? { arma: this.armaNaMao(fc) } : {}),
-          hurt: !!t.hurt,
-          vitals: t.vitals,
-        });
+        characters.push(personagemDe(r, t));
       }
+    // quem está no combate e foi para outra cena (o mestre trocou de cena no meio da luta, ou o combate abriu em outro
+    // grupo de cenas): o mestre continua vendo a foto, os PV e a ficha dele na aba COMBATE (17/10, "as fotos todas
+    // sumiram"). Só os dados dele; a peça segue na cena onde está.
+    if (role === 'gm' && camp.combate && camp.combate.fase !== 'encerrado') {
+      const falta = new Set(camp.combate.participantes.map((p) => p.id).filter((id) => !characters.some((ch) => ch.id === id)));
+      if (falta.size)
+        for (const r of this.rooms.values()) {
+          if (group.includes(r.data.id)) continue;
+          for (const t of r.tokensLive())
+            if (falta.has(t.token.id)) {
+              characters.push(personagemDe(r, t));
+              falta.delete(t.token.id);
+            }
+        }
+    }
     characters.sort((a, b) => a.id - b.id);
     const byName = new Map(characters.map((ch) => [ch.name.toLowerCase(), ch.id]));
     for (const it of items) it.holderId = it.holderName ? (byName.get(it.holderName.toLowerCase()) ?? null) : null;
@@ -2039,6 +2141,15 @@ export class Hotel implements HotelApi {
       case 'npcGrupoApagar':
       case 'npcColocar':
         this.bestiarioMsg(c, m);
+        return;
+      case 'cenasPedir':
+      case 'cenaSalvar':
+      case 'cenaApagar':
+      case 'cenaTocar':
+      case 'cenaQuadro':
+      case 'cenaPausa':
+      case 'cenaFechar':
+        this.cenaMsg(c, m);
         return;
     }
     c.room?.handle(c, m);

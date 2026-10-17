@@ -490,9 +490,30 @@ export class RoomView {
    * escolhe o alvo (a tela do combate decide); quem anda é o movimento do combate.
    */
   emCombate = false;
+  /**
+   * Quem está no combate (17/10, o Felipe: "se tiver combate rolando e eu for para outra cena, não posso mover? é só quem
+   * está no combate"): a trava vale só para a peça que participa dele; as outras, em qualquer cena, andam e se escolhem
+   * como sempre. Sem esta função, a trava vale para todas.
+   */
+  pecaEmCombate: ((viewId: number) => boolean) | null = null;
+  private travada(viewId: number): boolean {
+    return this.emCombate && (this.pecaEmCombate ? this.pecaEmCombate(viewId) : true);
+  }
 
+  private avisoCombateEm = 0;
   private andarLivre(x: number, y: number) {
-    if (this.emCombate) return;
+    // a peça comandada (ou alguma do grupo) está no combate: ela só age pelas regras
+    const comandadas = this.grupo.size ? [...this.grupo] : [this.myId];
+    if (comandadas.some((id) => this.travada(id))) {
+      // sem avisar, parecia o jogo travado (17/10, o Felipe: "por que ninguém mais se movimenta no mapa?"): era um combate
+      // aberto esquecido; o aviso diz o motivo e o que fazer (no máximo um a cada 6 s)
+      const agora = performance.now();
+      if (agora - this.avisoCombateEm > 6000) {
+        this.avisoCombateEm = agora;
+        this.events.aviso?.('Esta peça está no combate: ela só age pelas regras (aba COMBATE). Para andar solto, tire-a do combate ou encerre-o (COMBATE › ⋯).');
+      }
+      return;
+    }
     this.events.walk(x, y);
   }
   /** PV de cada peça, de 0 a 1 (o arco em volta da ficha no mapa tático) */
@@ -1687,8 +1708,12 @@ export class RoomView {
 
     if (hit?.kind === 'user') {
       if (this.aoClicarPeca?.(hit.id)) return;
-      // em combate, clicar numa peça não passa o comando para ela (a tela do combate cuida de quem age)
-      if (this.emCombate) return;
+      // em combate, clicar numa peça não passa o comando para ela (a tela do combate cuida de quem age), mas ela se
+      // escolhe: o painel mostra a ficha dela (17/10, o Felipe: "não consigo clicar em mais ninguém no tabuleiro")
+      if (this.travada(hit.id)) {
+        this.select({ kind: 'user', id: hit.id });
+        return;
+      }
       // Shift + clique: junta a peça ao grupo (ou tira); o clique no chão manda o grupo inteiro
       if (shift && !this.watchOnly) {
         if (this.myId && this.users.has(this.myId)) this.grupo.add(this.myId);
@@ -2933,7 +2958,15 @@ export class RoomView {
       hitOf.set(d, {
         kind: 'user',
         id: u.id,
-        test: (x, y) => x >= sx - 16 && x <= sx + 16 && y >= sy - HE && y <= sy + 10,
+        // a área de clique acompanha o desenho (17/10, o Felipe: "tenho que conseguir clicar nos monstros e nos NPCs igual
+        // nos Marcados"): a de 32 px de largura só pegava o meio do corpo, e o Deus da Morte, a Camarilla e quem está
+        // deitado são largos; o flutuante (o Existido) sobe com o corpo
+        test: (() => {
+          const meia = Math.max(16, Math.min(22, quadro && quadro.h ? ((quadro.w * (HE / quadro.h)) / 2) * 0.8 : 16));
+          if (deitada) return (x: number, y: number) => Math.abs(x - sx) <= Math.max(meia, HE * 0.55) && y >= sy - HE * 0.45 && y <= sy + 12;
+          const alto = HE + (u.flutua ? 16 : 0);
+          return (x: number, y: number) => Math.abs(x - sx) <= meia && y >= sy - alto && y <= sy + 10;
+        })(),
       });
       // a luz da peça desce até as pernas: ilumina o chão em volta junto com o corpo (sem parecer colado por cima)
       lights.push({ x: sx, y: sy - HE * 0.22, radius: 88, color: '#ffe2b8', intensity: u.id === this.myId ? 0.42 : 0.3, kind: 'personal' });

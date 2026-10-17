@@ -1,3 +1,4 @@
+import { abrirCenas } from './cenas';
 import { abrirElenco } from './elenco';
 import { contarNevoa, NEVOA_RAIO_MAX, NEVOA_RAIO_PADRAO, type CorGiz, type FormaTraco } from '@crona/shared';
 import type { FerramentaMesa } from '../room/RoomView';
@@ -82,6 +83,12 @@ export class FerramentasMesa {
           { class: 'bv', type: 'button', title: 'Viagem: os agentes na van, a estrada passando; fica até você decidir chegar', 'aria-label': 'Viagem', onclick: () => (sfx.click(), this.aoViagem?.()) },
           arteOu(['/arte/icones/mesa-viagem.png'], ic('van')),
           h('span', null, 'VIAGEM'),
+        ),
+        h(
+          'button',
+          { class: 'bv', type: 'button', title: 'Cenas: imagens em sequência com música, que tomam a tela de todos num momento da história', 'aria-label': 'Cenas', onclick: () => (sfx.click(), abrirCenas(app)) },
+          arteOu(['/arte/icones/mesa-cenas.png'], ic('imagem')),
+          h('span', null, 'CENAS'),
         ),
         h(
           'button',

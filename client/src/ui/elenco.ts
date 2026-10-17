@@ -151,6 +151,13 @@ export function abrirElenco(app: App) {
 
   // ---------- a arte de cada um ----------
   const charDaArte = (arte?: string): CharacterDef | undefined => (arte ? app.state.characters.find((ch) => ch.sheet.includes(`/personagens/${arte}/`)) : undefined);
+  /**
+   * Já tem peça para pôr no tabuleiro? (17/10, o Felipe: "deixa marcado quais a gente já tem peça e quais ainda não, uma
+   * fitinha vermelha nos que não tem"): as 8 direções do personagem na pasta da arte. Antes de a lista da arte chegar,
+   * ninguém leva a fita (não pisca vermelha à toa).
+   */
+  const temPeca = (arte?: string) => !!arte && !!arquivos?.has(`/arte/personagens/${arte}/tabuleiro-32bits/idle-desarmado-s.png`);
+  const semPeca = (...artes: (string | undefined)[]) => arquivos !== null && !artes.some(temPeca);
   /** A figura do card: a pose de frente (as 8 direções) ou o retrato; sem arte, o boneco de pixel; sem nada, o selo do elemento. */
   const figura = (o: { arte?: string; look?: Npc['look']; elemento?: string; nome: string; livroId?: string }) => {
     const ch = charDaArte(o.arte);
@@ -228,13 +235,13 @@ export function abrirElenco(app: App) {
    */
   /** O portador de relíquia que já está em campo (17/10: como os NPCs, apagado e "Em cena", sem etiqueta). */
   const emCampoReliquia = (e: Entrada) => !!e.livroId && combate.ehPortadorDeReliquia(e.livroId) && app.state.reliquiasEmCampo.includes(e.livroId);
-  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean; emCena?: boolean }) => {
+  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean; emCena?: boolean; semPeca?: boolean }) => {
     const [primeiro, ...resto] = o.nome.split(' ');
     const nome = o.duasLinhas ? [h('span', null, primeiro), h('span', null, resto.join(' ') || ' ')] : [o.nome];
     return h(
       'article',
       {
-        class: `el-card${sel === o.chave ? ' escolhido' : ''}${o.emCena ? ' em-cena' : ''} ${o.cls ?? ''}`,
+        class: `el-card${sel === o.chave ? ' escolhido' : ''}${o.emCena ? ' em-cena' : ''}${o.semPeca ? ' sem-peca' : ''} ${o.cls ?? ''}`,
         tabindex: '0',
         onclick: () => ((sel = o.chave), (aparencia = 'variadas'), (quantidade = 1), sfx.click(), desenhar()),
         onkeydown: (e: KeyboardEvent) => e.key === 'Enter' && ((sel = o.chave), desenhar()),
@@ -243,6 +250,7 @@ export function abrirElenco(app: App) {
         'span',
         { class: 'el-carta' },
         h('span', { class: 'el-quadro' }, o.figura),
+        o.semPeca ? h('span', { class: 'el-fita', title: 'Ainda sem peça no tabuleiro: a arte nas 8 direções não chegou (entra como boneco de pixel)' }, h('span', null, 'sem peça')) : null,
         h('b', { class: `el-nome${o.duasLinhas ? ' duas' : ''}` }, ...nome),
         // o NPC já em cena (todo NPC é único): a plaquinha diz "Em cena" e não põe outro
         o.emCena
@@ -342,7 +350,7 @@ export function abrirElenco(app: App) {
             cls: `el-mestre${ns.length ? '' : ' vazia'}`,
             aberta: !!busca || (ns.length ? !npcsFechados.has(g) : vaziosAbertos.has(g)),
             alternar: alterna(ns.length ? npcsFechados : vaziosAbertos, g),
-            filhos: !ns.length ? [h('p', { class: 'el-vazio' }, 'Nenhum NPC neste grupo ainda.')] : ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), duasLinhas: true, emCena: app.state.npcsEmCampo.includes(n.id), figura: fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
+            filhos: !ns.length ? [h('p', { class: 'el-vazio' }, 'Nenhum NPC neste grupo ainda.')] : ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), duasLinhas: true, emCena: app.state.npcsEmCampo.includes(n.id), semPeca: semPeca(n.arte), figura: fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
           }),
         ),
       );
@@ -362,7 +370,7 @@ export function abrirElenco(app: App) {
     for (const lista of porGrupo.values()) lista.sort((a, b) => vdDa(a) - vdDa(b));
     // as versões seguem a primeira, cada uma num card igual aos outros (17/10, o Felipe: sem setas, nada assimétrico)
     const cardAmeaca = (e: Entrada) =>
-      card({ chave: e.chave, nome: e.nome, linha: linhaAmeaca(e), emCena: emCampoReliquia(e), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` });
+      card({ chave: e.chave, nome: e.nome, linha: linhaAmeaca(e), emCena: emCampoReliquia(e), semPeca: semPeca(e.livroId, ...(e.criatura?.aparencias.map((a) => a.arte) ?? [])), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` });
     grade.replaceChildren(
       ...GRUPOS.filter((g) => porGrupo.has(g.id)).map((g) =>
         secao({ nome: g.nome, n: porGrupo.get(g.id)!.flat().length, icone: g.icone, cls: `el-${g.id}`, aberta: !!busca || ameacasAbertas.has(g.id), alternar: alterna(ameacasAbertas, g.id), filhos: porGrupo.get(g.id)!.flat().map(cardAmeaca) }),

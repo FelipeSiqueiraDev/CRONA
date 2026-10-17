@@ -24,6 +24,8 @@ const PORT = Number(process.env.CRONA_PORT ?? (PROD ? process.env.PORT : undefin
 const CLIENT_DIST = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
 const ARTE_FONTE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/public/arte');
 const MAX_UPLOAD = 12 * 1024 * 1024;
+/** a música de uma cena de momento (17/10): arquivos de áudio são maiores que imagens */
+const MAX_AUDIO = 40 * 1024 * 1024;
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -36,6 +38,11 @@ const MIME: Record<string, string> = {
   '.json': 'application/json',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
+  '.mp3': 'audio/mpeg',
+  '.ogg': 'audio/ogg',
+  '.wav': 'audio/wav',
+  '.m4a': 'audio/mp4',
+  '.webm': 'audio/webm',
 };
 
 await abrirBanco();
@@ -151,6 +158,52 @@ function handleUpload(req: http.IncomingMessage, res: http.ServerResponse, url: 
   });
 }
 
+/** Detecta o áudio pela assinatura do arquivo (mp3, ogg, wav, m4a, webm). */
+function audioExt(buf: Buffer): '.mp3' | '.ogg' | '.wav' | '.m4a' | '.webm' | null {
+  if (buf.length < 12) return null;
+  if (buf.subarray(0, 3).toString('ascii') === 'ID3' || (buf[0] === 0xff && (buf[1] & 0xe0) === 0xe0)) return '.mp3';
+  if (buf.subarray(0, 4).toString('ascii') === 'OggS') return '.ogg';
+  if (buf.subarray(0, 4).toString('ascii') === 'RIFF' && buf.subarray(8, 12).toString('ascii') === 'WAVE') return '.wav';
+  if (buf.subarray(4, 8).toString('ascii') === 'ftyp') return '.m4a';
+  if (buf[0] === 0x1a && buf[1] === 0x45 && buf[2] === 0xdf && buf[3] === 0xa3) return '.webm';
+  return null;
+}
+
+/** A música de uma cena de momento: só o mestre envia; devolve a url. */
+function handleUploadAudio(req: http.IncomingMessage, res: http.ServerResponse, url: URL) {
+  const client = hotel.clientByToken(url.searchParams.get('token') ?? '');
+  if (!client?.name) return sendJson(res, 401, { error: 'Entre no hotel antes de enviar.' });
+  if (client.role !== 'gm') return sendJson(res, 403, { error: 'Só o mestre envia música.' });
+  const chunks: Buffer[] = [];
+  let size = 0;
+  let aborted = false;
+  req.on('data', (c: Buffer) => {
+    size += c.length;
+    if (size > MAX_AUDIO) {
+      aborted = true;
+      sendJson(res, 413, { error: 'Áudio grande demais (máx. 40 MB).' });
+      req.destroy();
+      return;
+    }
+    chunks.push(c);
+  });
+  req.on('end', () => {
+    if (aborted) return;
+    const buf = Buffer.concat(chunks);
+    const ext = audioExt(buf);
+    if (!ext) return sendJson(res, 400, { error: 'Envie um áudio MP3, OGG, WAV, M4A ou WEBM.' });
+    try {
+      const hash = crypto.createHash('sha1').update(buf).digest('hex').slice(0, 20);
+      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+      fs.writeFileSync(path.join(UPLOAD_DIR, `${hash}${ext}`), buf);
+      sendJson(res, 200, { url: `/uploads/${hash}${ext}` });
+    } catch (e) {
+      console.error('[upload]', e);
+      sendJson(res, 500, { error: 'Falha ao salvar o áudio.' });
+    }
+  });
+}
+
 /**
  * Lista da arte que existe (client/public/arte, ou a cópia do build). A tela
  * só pede uma imagem que está na lista: sem arte, fica o desenho padrão, sem
@@ -195,6 +248,7 @@ function route(req: http.IncomingMessage, res: http.ServerResponse) {
   const url = new URL(req.url ?? '/', 'http://localhost');
   if (url.pathname === '/api/characters' && req.method === 'POST') return handleUpload(req, res, url);
   if (url.pathname === '/api/mapas' && req.method === 'POST') return handleUpload(req, res, url, true);
+  if (url.pathname === '/api/cenas-audio' && req.method === 'POST') return handleUploadAudio(req, res, url);
   if (url.pathname.startsWith('/uploads/')) {
     const file = path.join(UPLOAD_DIR, path.basename(url.pathname));
     return serveFile(res, file, true, req);
