@@ -1,6 +1,35 @@
-# Em aberto: onde paramos (10/10/2026)
+# Em aberto: onde paramos (17/10/2026)
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
+
+## PARA A SESSÃO DE 18/10 (Sede / Fazenda): o que falta
+
+- **Atualizar o jogo de verdade (8080) de manhã**, antes da sessão: backup do banco (`npm run banco:backup`) e
+  `npm run crona`. Nada de 17/10 está nele ainda (o Felipe escolheu atualizar só de manhã).
+- **Sprites, na ordem que o Felipe pediu** (fila do Códex, conta nova dhellinho…, Plus): os dois Existidos refeitos
+  pelo retrato do Elenco; as poses que faltam dos NPCs da Ordem (Agatha, Samuel, Miguel, Ivete, Rebecca, Geraldo): o
+  Samuel agachado com a cabeça do tamanho da em pé (estava ~25% maior), o Geraldo agachado e o sentado de todos; a
+  **Marcela Geleerd** (a médica da ala médica da Sede) ainda não existe no Elenco nem tem arte. Depois: o agachado
+  armado dos Marcados, Pedro, Rosa, Joaquin, Herman e os portadores de relíquia.
+- **Sem resposta ainda:** onde o nome do NPC não salva (Elenco, lápis da aba NPCs ou Identificação).
+- Visto só na prévia (conferir no 8080): a tranca, apagar as luzes, o chuveiro, as TVs, a fumaça da chaminé.
+
+## Feito em 17/10, tarde e noite (branch `claude/tatica-codigo`, sessão principal)
+
+- A coberta da cama (Ctrl + clique), sem duplicar a cama e abaixo do queixo. O fogão a lenha sem a chama solta na
+  chapa. A janela da cozinha refeita só com a janela e as cortinas (sem a pia na cena e sem pixel de parede).
+- As casas comuns (`server/src/casaComum.ts`): a de cidade (Santa Amália) e a mineira (Tiradentes, Igarapé), sem a
+  cara de roça (fogão a gás, geladeira, TV), com o oratório e os quadros, e o **banheirinho** em todas. A pousada e as
+  palafitas com fogão a gás. Os **apartamentos** dos prédios do Igarapé (cada porta do corredor leva ao seu).
+- O banho: entrar no box, o chuveiro (som, água, vapor com a porta fechada), o vidro embaçado do pescoço para baixo
+  e a peça de frente; no vaso, o mosaico do The Sims.
+- As TVs ligam e desligam (clique duplo), a do rack passa o jornal, as de parede mexem (`quadrosGiros` nos móveis de
+  chão). A chaminé só nas casas do Igarapé com fogão a lenha (casa 1 e 4, modelos `~c`/`~d`), com a pluma contínua
+  saindo de dentro do buraco quando o fogão está aceso (`fumaca` no item, o servidor marca).
+- A aba PLAYERS com os agentes sempre primeiro (− e + valem em qualquer campanha); o ⋯ do card abre um menu (tirar
+  da cena). A rolagem dos painéis não volta ao topo ao refazer (`manterRolagem`, em `ui/dom.ts`). Sem o nome em cima
+  das peças. O clique atravessa prédio e árvore transparentes. A Camarilla (o cachorro do Tepes) no meio da casa
+  (patas da frente e de trás) e girando nas 8 direções. A cadeira sem entrar demais embaixo da mesinha.
 
 ## A FILA DE AGORA (09/10, noite: o que o Felipe pediu e ainda falta)
 
