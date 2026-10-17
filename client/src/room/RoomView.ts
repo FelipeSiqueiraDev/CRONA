@@ -2324,7 +2324,13 @@ export class RoomView {
       const pose: Pose = p.moving ? 'walk' : seated || u.sit === 2 ? 'sit' : 'stand';
       const wave = u.waveUntil > now;
       // ~1,75 m de altura para a ordem de desenho
-      const box: WBox = { x0: cx - half, x1: cx + half, y0: cy - half, y1: cy + half, z0: baseZ, z1: baseZ + ALTURA_PESSOA };
+      // deitada na cama: a peça ocupa a cama inteira, em cima do colchão (se não, a cama vem por cima dela na ordem de
+      // desenho e ela some atrás da cabeceira ou embaixo do colchão)
+      const fpCama = naCama ? footprint(naCama.def, naCama.it.rot) : null;
+      const topoCama = naCama ? naCama.it.z + naCama.def.height : 0;
+      const box: WBox = naCama && fpCama
+        ? { x0: naCama.it.x, x1: naCama.it.x + fpCama.sx, y0: naCama.it.y, y1: naCama.it.y + fpCama.sy, z0: topoCama, z1: topoCama + 0.5 }
+        : { x0: cx - half, x1: cx + half, y0: cy - half, y1: cy + half, z0: baseZ, z1: baseZ + ALTURA_PESSOA };
       const deitada = !!marcas?.deitadas.has(u.id) || !!naCama;
       // embaixo da mesa vazada: abaixada, escondida atrás dela (a mesa vem por cima na ordem de desenho)
       const sob = !deitada && map.sobMesa(Math.round(p.x), Math.round(p.y));
@@ -2525,9 +2531,10 @@ export class RoomView {
               const fp = footprint(naCama.def, naCama.it.rot);
               [mx, my] = iso(naCama.it.x + fp.sx / 2, naCama.it.y + fp.sy / 2, p.z);
               my -= 3;
-              const [hx, hy] = naCama.it.rot === 4 ? [0, -1] : naCama.it.rot === 0 ? [0, 1] : naCama.it.rot === 2 ? [-1, 0] : [1, 0];
-              ex = hx - hy < 0 ? 1 : -1;
-              ey = hx + hy < 0 ? 1 : -1;
+              // a cabeça sempre para cima (de ponta-cabeça a imagem fica estranha), na cabeceira do desenho da cama: na
+              // cama ao longo de y (giro 0 e 4) a diagonal é a outra, e a imagem espelha
+              ex = naCama.it.rot === 0 || naCama.it.rot === 4 ? -1 : 1;
+              ey = 1;
             }
             // o corpo deitado no comprimento da pessoa em pé (1,80 m ao longo da diagonal do piso = a altura na tela)
             const w = H * 1.02;
