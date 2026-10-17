@@ -142,6 +142,11 @@ export interface CharacterDef {
    */
   passos?: Partial<Record<PortraitState, Partial<Record<DirKey, string[]>>>>;
   /**
+   * Deitado no chão (16/10): `dormindo` (na cama) e `caido` (PV 0, desacordado), em tabuleiro-32bits/deitado-<estado>.png,
+   * na câmera do tabuleiro, com a cabeça para cima e para a esquerda da imagem. Sem elas, a pose de pé é girada.
+   */
+  deitado?: { dormindo?: string; caido?: string };
+  /**
    * O boneco animado do tabuleiro (parado respirando e andando, nas 8 direções),
    * gerado por scripts/boneco.py e achado pelo servidor em tabuleiro-32bits/anim.json.
    * Quando tem, vale no lugar de `poses` e `passos`.

@@ -80,6 +80,15 @@ export function findPoses(sheet: string, dir = ART_DIR): CharacterDef['poses'] {
   return Object.keys(out).length ? out : undefined;
 }
 
+/** As poses deitadas (dormindo e caído), na mesma pasta das poses: deitado-dormindo.png e deitado-caido.png. */
+export function findDeitado(sheet: string, dir = ART_DIR): CharacterDef['deitado'] {
+  const find = finder(sheet, dir, POSES_DIR);
+  if (!find) return undefined;
+  const dormindo = find('deitado-dormindo');
+  const caido = find('deitado-caido');
+  return dormindo || caido ? { ...(dormindo ? { dormindo } : {}), ...(caido ? { caido } : {}) } : undefined;
+}
+
 /** Quadros de um passo por personagem: o bastante para um ciclo bem desenhado. */
 const MAX_QUADROS = 16;
 
@@ -251,7 +260,10 @@ export function refreshPortraits(list: CharacterDef[], dir = ART_DIR): boolean {
     const passos = findPassos(def.sheet, dir);
     const anim = findAnim(def.sheet, dir);
     const boneco = findBoneco(def.sheet, dir);
-    if (JSON.stringify([portraits, poses, passos, anim, boneco]) === JSON.stringify([def.portraits, def.poses, def.passos, def.anim, def.boneco])) continue;
+    const deitado = findDeitado(def.sheet, dir);
+    if (JSON.stringify([portraits, poses, passos, anim, boneco, deitado]) === JSON.stringify([def.portraits, def.poses, def.passos, def.anim, def.boneco, def.deitado])) continue;
+    if (deitado) def.deitado = deitado;
+    else delete def.deitado;
     if (portraits) def.portraits = portraits;
     else delete def.portraits;
     if (poses) def.poses = poses;

@@ -676,6 +676,29 @@ class SpriteStore {
     return null;
   }
 
+  private deitadoCache = new Map<string, HTMLImageElement | 'loading' | 'error'>();
+  /** As poses deitadas (dormindo, caído) já carregadas; a que ainda carrega fica de fora. */
+  deitado(def: CharacterDef): { dormindo?: HTMLImageElement; caido?: HTMLImageElement } | null {
+    if (!def.deitado) return null;
+    const pega = (url?: string) => {
+      if (!url) return undefined;
+      const c = this.deitadoCache.get(url);
+      if (c instanceof HTMLImageElement) return c;
+      if (!c) {
+        this.deitadoCache.set(url, 'loading');
+        const im = new Image();
+        im.decoding = 'async';
+        im.onload = () => (this.deitadoCache.set(url, im), this.onLoad?.());
+        im.onerror = () => this.deitadoCache.set(url, 'error');
+        im.src = url;
+      }
+      return undefined;
+    };
+    const dormindo = pega(def.deitado.dormindo);
+    const caido = pega(def.deitado.caido);
+    return dormindo || caido ? { dormindo, caido } : null;
+  }
+
   /** Espera carregar (para prévias na interface). */
   async load(def: CharacterDef): Promise<LoadedChar | null> {
     const key = spriteKey(def);

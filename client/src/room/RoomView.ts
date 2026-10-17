@@ -2513,8 +2513,33 @@ export class RoomView {
             ctx.scale(k, 1 + (1 - k) * 0.08);
             ctx.translate(-sx, -fy);
           }
+          // a pose deitada desenhada (16/10): dormindo na cama, caído no chão (PV 0); sem ela, a de pé é girada
+          const dt = deitada && cdef?.deitado ? sprites.deitado(cdef) : null;
+          const imgDeitado = dt ? (naCama ? (dt.dormindo ?? dt.caido) : (dt.caido ?? dt.dormindo)) : null;
+          if (imgDeitado) {
+            // a cabeça da imagem vai para cima e para a esquerda; na cama, espelhada até a cabeça ir para a cabeceira
+            let [mx, my] = [sx, fy - 2];
+            let ex = u.id % 2 ? -1 : 1;
+            let ey = 1;
+            if (naCama) {
+              const fp = footprint(naCama.def, naCama.it.rot);
+              [mx, my] = iso(naCama.it.x + fp.sx / 2, naCama.it.y + fp.sy / 2, p.z);
+              my -= 3;
+              const [hx, hy] = naCama.it.rot === 4 ? [0, -1] : naCama.it.rot === 0 ? [0, 1] : naCama.it.rot === 2 ? [-1, 0] : [1, 0];
+              ex = hx - hy < 0 ? 1 : -1;
+              ey = hx + hy < 0 ? 1 : -1;
+            }
+            // o corpo deitado no comprimento da pessoa em pé (1,80 m ao longo da diagonal do piso = a altura na tela)
+            const w = H * 1.02;
+            const h = (imgDeitado.height / imgDeitado.width) * w;
+            ctx.save();
+            ctx.translate(mx, my);
+            ctx.scale(ex, ey);
+            ctx.drawImage(imgDeitado, -w / 2, -h * 0.62, w, h);
+            ctx.restore();
+          }
           // caída ou inconsciente: a peça deita no chão, com a cabeça para a esquerda
-          if (deitada && naCama) {
+          else if (deitada && naCama) {
             // na cama: o corpo ao longo da cama, os pés no pé e a cabeça na cabeceira (o fundo da peça: a frente é o
             // giro), centrado no colchão
             const fp = footprint(naCama.def, naCama.it.rot);
@@ -2538,7 +2563,9 @@ export class RoomView {
             ctx.scale(0.92, 1);
             ctx.translate(-sx, -fy);
           }
-          if (bq) drawBoneco(ctx, bq, sx, fy + dance, sPose === 'sit' && !sentadoReal, 1, luz);
+          if (imgDeitado) {
+            /* já desenhada */
+          } else if (bq) drawBoneco(ctx, bq, sx, fy + dance, sPose === 'sit' && !sentadoReal, 1, luz);
           else if (pf) drawPose(ctx, pf, sx, fy + afunda + dance, now, sPose, 1, passos, andando, luz, casas);
           else if (sp) drawSprite(ctx, sp.def, sp.lc, u.dir, sx, fy + afunda + dance, now, u.phase, sPose, 1, luz);
           else
@@ -2549,7 +2576,7 @@ export class RoomView {
               dance: u.dance,
               blink: (now + u.phase * 997) % 4300 < 140,
             });
-          if (deitada) ctx.restore();
+          if (deitada && !imgDeitado) ctx.restore();
           if (turning) ctx.restore();
           if (wave && sp) this.drawEmote(sx, fy - H - 14, now);
           ctx.restore();
