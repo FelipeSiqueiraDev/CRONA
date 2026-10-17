@@ -152,6 +152,41 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 17/10, tarde (branch `claude/tatica-codigo`): arte pelo Códex da conta nova (NPCs novos, agachado, Santa Amália)
+
+O Códex voltou pela conta nova do ChatGPT; tudo pelo `scripts/dev/codex.mjs`, cada imagem conferida antes de entrar. Os
+scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS-ANIMACAO\trabalho\npcs-17-10\` e
+`...\trabalho\agachado\`, e em `...\TEXTURAS MAPA\BASE - Ordo Realitas\_codex-trabalho\2026-10-17-santa-amalia\`.
+
+- **Os 4 NPCs novos, ainda sem nome** (o Felipe dá depois, no Elenco): `npc-camisa-rosa` ("Camisa Rosa"), `npc-ruivo`
+  ("Ruivo"), `npc-cabelo-rosa` ("Cabelo Rosa") e `npc-jaleco` ("Jaleco"), na leva nova de `npcsPorLeva`
+  (`shared/src/npcs.ts`; o banco recebe uma vez, como as outras levas). No estilo do Miguel e da Catarina, sem mão no
+  bolso (braços soltos, mãos à vista). Cada um com as 8 direções paradas, o retrato (`retrato-desarmado.png`, no traço
+  dos retratos dos agentes) e o deitado (dormindo e caído). O Camisa Rosa foi refeito uma vez (a tatuagem trocava de
+  braço entre as direções; agora tatuagem, braçadeira e relógio ficam no braço esquerdo em todas). Defeitos pequenos que
+  ficaram: as mãos em punho (como no Miguel; pedi relaxadas e o gerador manteve), as botas do Jaleco saíram marrons no
+  deitado (de pé são pretas). Teste: `server/test/npcs.test.ts` confere a leva, as 8 direções, o retrato e o deitado.
+- **A pose AGACHADO** (`tabuleiro-32bits/idle-desarmado-agachado-<dir>.png`, formato no `docs/ARTE.md`): o Códex
+  desenha as 8 direções a partir das poses de pé do jogo e de um guia de pose (`agachado/guia-agachado-8-direcoes.png`,
+  o boneco 3D antigo agachado); `agachado/normalizar_agachado.py` corta e deixa a cabeça do tamanho da pose de pé (a
+  faixa medida é a da altura em pé, não a do agachado). A cor por histograma (a do `normalizar.py`) avermelhava o
+  rosto (a área de cada cor muda com a pose): quando o gerador satura, `--cor` casa cada tom com o tom parecido da pose
+  de pé (`casar_paleta`). O agachado tem ~70% da altura de pé.
+  **Feitos (6 de 14):** Miguel, Tepes, Catarina (com `--cor`), Cora (refeita: o rosto e o cabelo saíram diferentes),
+  Alosi (com `--cor`; as lentes saíram levemente rosadas) e o Jaleco. **Faltam 8, a cota do Códex acabou às 11h de
+  17/10 e volta às 18:47:** Ágata, Ivete, Samuel, Geraldo, Arantes, Ruivo, Cabelo Rosa e Camisa Rosa. A fila retoma
+  sozinha (`agachado/depois_da_cota.sh`, em segundo plano); se não rodar, `./fila.sh <ids>` e depois, para cada um,
+  `python normalizar_agachado.py <id> <id>-agachado-8-direcoes-v1.png` (conferir `conf-<id>.png`) e `--instalar`.
+  **Falta ligar no código:** o tabuleiro ainda achata a pose de pé em 72% (`u.agachado` em `RoomView.ts`) e o
+  `findPoses` (`server/src/portraits.ts`) só lê os 4 estados de hoje; é preciso ler o estado `desarmado-agachado` e
+  usá-lo quando a peça está agachada (armado agachado e machucado agachado não existem: usar o desarmado-agachado).
+  **Para o futuro (o Felipe, 17/10):** variar a postura de cada personagem (nem todo mundo agacha, cai ou dorme do mesmo
+  jeito), junto com as animações. Por ora, todos na mesma postura.
+- **Santa Amália no mapa-múndi e na chegada:** a ilha `arte/mapa/lugar-santa-amalia-hd.png` (praça com coreto,
+  prefeitura caiada, casas coloridas, posto branco e azul, avenida, mata atrás; refeita uma vez porque o bloco de terra
+  saiu fino) e `santa-amalia` no `CENTRO_HD` do `lugarSprites.ts`; as chegadas `chegada-santa-amalia-1.png` (dia) e
+  `-2.png` (noite), refeitas uma vez (o asfalto saiu com uma estampa repetida, como filtro, e o céu da -1 em degraus).
+
 ## Feito em 17/10, noite (branch `claude/tatica-codigo`): móveis na parede e caminho livre em todas as cenas
 
 - **A regra do Felipe, para todas as cenas e as próximas** (no `GUIA-DO-CLAUDE.md`, em "Rodar e conferir"): é um
