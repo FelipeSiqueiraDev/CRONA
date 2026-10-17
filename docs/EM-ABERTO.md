@@ -152,6 +152,26 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 17/10 (branch `claude/tatica-codigo`): as miniaturas respiram no tabuleiro
+
+O Felipe: "deixar um movimento fluido e natural das miniaturas respirando no campo", "ninguém respira pela perna, o
+peito sobe e desce, acabou", "não estraga os bonecos".
+- **Só a pose parada em pé** (`drawPose` com `respira`, em `client/src/render/sprites.ts`): andando, deitada, sentada,
+  de cócoras, embaixo da mesa e flutuando, nada muda.
+- **Três faixas da mesma imagem** (`paintRespirando`): da cintura para baixo (`CINTURA` = 0,47 da altura, o cinto) como
+  é; o tronco, da cintura ao pescoço (`PESCOCO` = 0,64), estica na altura; a cabeça sobe inteira o tanto que o pescoço
+  subiu, sem esticar (a primeira versão esticava tudo da cintura para cima e a cabeça "enchia como um balão"). As
+  linhas caem em pixel inteiro da tela: sem emenda. No fôlego fundo, a cabeça sobe 0,9 px da arte (`PEITO_SOBE`; ~1 px
+  na tela no zoom 1,5, ~2 no zoom 3). Conferido nos quadros: topo e queixo sobem o mesmo tanto, pernas com zero pixel
+  mudado, no máximo 0,3 px por quadro.
+- **O jeito de respirar sai da ficha**, os mesmos modos do retrato e do personagem grande (`breathMode`, agora também em
+  números por `breathPoints` no `portrait.ts`): machucado irregular, SAN baixa ofegante, PE baixo devagar, morrendo
+  fraco. Com a arma na mão, mais firme (um pouco mais curto e raso). Cada peça tem a sua volta de fôlegos e começa num
+  ponto dela; trocando de estado, emenda em 0,9 s (`client/src/render/folego.ts`). Movimento reduzido: parado.
+- `view.respiracaoDe` (no `main.ts`) dá o modo de cada peça; a mesa usa o mesmo tabuleiro.
+- **Falta:** o Felipe aprovar a versão 2 no jogo (os vídeos foram de uma bancada na página, porque a aba da prévia caiu
+  com "tabuleiro aberto em outra aba"). O boneco animado (`tabuleiro-3d`) e a folha antiga não usam isso.
+
 ## Feito em 17/10, tarde (branch `claude/tatica-codigo`): arte pelo Códex da conta nova (NPCs novos, agachado, Santa Amália)
 
 O Códex voltou pela conta nova do ChatGPT; tudo pelo `scripts/dev/codex.mjs`, cada imagem conferida antes de entrar. Os

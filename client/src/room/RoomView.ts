@@ -44,7 +44,8 @@ import { NevoaMesa } from '../render/nevoaMesa';
 import { imagemDoMapa } from '../render/mapaImagem';
 import { desenharItemNoChao } from '../render/itemNoChao';
 import { cameraVoo, casaNoPonto, desenharMesa, enquadrar, marcasNoChao, marcasPorCima, matrizNaAltura, passo, projetar, type CameraVoo, type Enquadre, type FundoIso, type PecaTatica } from '../render/mapaTatico';
-import { portraitCanvas } from '../render/portrait';
+import { folegoDaPeca } from '../render/folego';
+import { portraitCanvas, type BreathMode } from '../render/portrait';
 import { hash, hexToRgb, rgba } from '../render/color';
 import { Fog } from '../render/fog';
 import { Lighting, type Light } from '../render/lighting';
@@ -58,6 +59,7 @@ import { cmp, sortDrawables, type Drawable } from '../render/sort';
 import {
   bonecoDir,
   bonecoFor,
+  CINTURA,
   DESLIZA_COM_A_POSE,
   drawBoneco,
   drawPose,
@@ -66,6 +68,7 @@ import {
   framesFor,
   passosFor,
   PASSOS_POR_CASA,
+  PESCOCO,
   poseFor,
   quadroDaFolha,
   quadroDaPose,
@@ -462,6 +465,8 @@ export class RoomView {
   combate: MarcasCombate | null = null;
   /** estado de cada peça (com a arma, machucada): escolhe a pose do tabuleiro, quando o personagem tem (null = desarmado) */
   estadoDe: ((id: number) => PortraitState | null) | null = null;
+  /** como cada peça respira parada (pela ficha: machucada, SAN baixa, morrendo); null = calma */
+  respiracaoDe: ((id: number) => BreathMode | null) | null = null;
   /** clique numa peça: devolve true quando a tela usou o clique (escolher o alvo sem trocar a peça comandada) */
   aoClicarPeca: ((id: number) => boolean) | null = null;
   /** clique numa casa para uma ferramenta (medir, área): devolve true quando usou o clique */
@@ -2355,6 +2360,11 @@ export class RoomView {
       // (o boneco e a pose com a âncora no meio dos pés já vêm assim)
       const afunda = !bq && (pf || sp) && !quadro?.noMeioDosPes && !deitada && !seated && u.sit !== 2 ? Math.round(H * 0.05) : 0;
       const { luz, sombras } = luzesDaPeca(luzesCena, sx, sy - HE * 0.5, cx, cy);
+      // parada e em pé, a pose respira: o peito sobe e desce a partir da cintura, cada peça no seu tempo (17/10)
+      const respira =
+        pf && cdef && pose === 'stand' && !deitada && !sob && !u.agachado && !u.flutua
+          ? { b: folegoDaPeca(u.id, this.respiracaoDe?.(u.id) ?? 'calm', estado.startsWith('armado'), now, u.phase), cintura: cdef.height * CINTURA, pescoco: cdef.height * PESCOCO }
+          : null;
       // a poeira do passo (deslizando com a pose parada): um sopro no chão a cada contato, embaixo do pé que pisou
       // (um de cada vez), e que fica onde ele pisou enquanto a peça segue
       if (p.moving && pf && !bq && !passos && !u.flutua && !seated && !deitada) {
@@ -2577,7 +2587,7 @@ export class RoomView {
           if (imgDeitado) {
             /* já desenhada */
           } else if (bq) drawBoneco(ctx, bq, sx, fy + dance, sPose === 'sit' && !sentadoReal, 1, luz);
-          else if (pf) drawPose(ctx, pf, sx, fy + afunda + dance, now, sPose, 1, passos, andando, luz, casas);
+          else if (pf) drawPose(ctx, pf, sx, fy + afunda + dance, now, sPose, 1, passos, andando, luz, casas, respira);
           else if (sp) drawSprite(ctx, sp.def, sp.lc, u.dir, sx, fy + afunda + dance, now, u.phase, sPose, 1, luz);
           else
             drawPixelAvatar(ctx, u.look, sx, fy, u.dir, u.headDir, {

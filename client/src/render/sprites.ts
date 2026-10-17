@@ -832,7 +832,12 @@ export function drawPose(
   andando = 0,
   luz?: LuzNaPeca | null,
   casas?: number,
+  respira?: Respira | null,
 ): number {
+  if (pose === 'stand' && respira && respira.b > 0.002 && !f.pixel) {
+    paintRespirando(ctx, f, x, y, alpha, luz, respira);
+    return f.h;
+  }
   // deslizando com a pose parada (16/10): o passo vai no corpo, que abaixa no contato a partir dos pés (os pés ficam
   // no chão, a cabeça desce e sobe), em vez de a imagem inteira pular
   if (pose === 'walk' && !passos?.length && casas !== undefined) {
@@ -848,6 +853,67 @@ export function drawPose(
   const { q, dy } = quadroDaPose(f, t, pose, passos, andando);
   paint(ctx, q, x, y + dy, pose === 'sit', alpha, luz);
   return q.h;
+}
+
+/**
+ * O fôlego da peça parada: quanto o peito está cheio (`folegoDaPeca`) e as alturas da cintura e do pescoço acima dos
+ * pés (mundo).
+ */
+export interface Respira {
+  b: number;
+  cintura: number;
+  pescoco: number;
+}
+
+/** A cintura fica a esta fração da altura da pessoa, a partir dos pés (o cinto, medido nas poses de 17/10). */
+export const CINTURA = 0.47;
+/** O pescoço (logo abaixo do queixo), na mesma conta: daqui para cima é a cabeça, que só sobe, sem esticar. */
+export const PESCOCO = 0.64;
+/** No fôlego fundo, a cabeça e os ombros sobem isto (pixels da arte; ~1 px na tela no zoom de jogo). */
+const PEITO_SOBE = 0.9;
+
+/**
+ * A pose parada respirando (17/10): a mesma imagem três vezes. Da cintura para baixo, como é; o tronco, da cintura ao
+ * pescoço, estica um pouquinho na altura a partir da cintura; a cabeça sobe inteira o tanto que o pescoço subiu, sem
+ * esticar (esticada, ela "enchia como um balão", o Felipe). As linhas da cintura e do pescoço caem num pixel inteiro
+ * da tela, e nelas as faixas vizinhas mostram o mesmo ponto da imagem: não há emenda.
+ */
+function paintRespirando(ctx: CanvasRenderingContext2D, f: SpriteFrame, x: number, y: number, alpha: number, luz: LuzNaPeca | null | undefined, r: Respira) {
+  const m = ctx.getTransform();
+  if (m.b || m.c || !m.d) return paint(ctx, f, x, y, false, alpha, luz);
+  const img = comLuz(f, luz);
+  const noPixel = (v: number) => (Math.round(m.d * v + m.f) - m.f) / m.d;
+  const yc = noPixel(y - r.cintura);
+  const yp = noPixel(y - r.pescoco);
+  const tronco = yc - yp;
+  const d = Math.min(PEITO_SOBE * r.b, tronco * 0.2);
+  if (tronco <= 1 || d <= 0) return paint(ctx, f, x, y, false, alpha, luz);
+  // o tronco estica a partir da cintura de modo que, na linha do pescoço, apareça o ponto da imagem d abaixo dela:
+  // o mesmo ponto que a cabeça, subida d, mostra ali
+  const s = tronco / (tronco - d);
+  const dx = x - f.ax;
+  const dy = y - f.ay;
+  const faixa = (y0: number, y1: number, desenha: () => void) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(dx - f.w, y0, f.w * 3, y1 - y0);
+    ctx.clip();
+    desenha();
+    ctx.restore();
+  };
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  faixa(yc, dy + f.h * 2, () => ctx.drawImage(img, dx, dy, f.w, f.h));
+  faixa(yp, yc, () => {
+    ctx.translate(0, yc);
+    ctx.scale(1, s);
+    ctx.translate(0, -yc);
+    ctx.drawImage(img, dx, dy, f.w, f.h);
+  });
+  faixa(dy - f.h, yp, () => ctx.drawImage(img, dx, dy - d, f.w, f.h));
+  ctx.restore();
 }
 
 /**

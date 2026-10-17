@@ -24,6 +24,7 @@ import './ui/cards.css';
 import { anyFurniName, getFurni, getWallFurni, portraitState, vitalConditions, type ServerMsg } from '@crona/shared';
 import { Net } from './net';
 import { clearIconCache } from './render/bubbles';
+import { breathMode } from './render/portrait';
 import { sprites } from './render/sprites';
 import { RoomView } from './room/RoomView';
 import { App } from './ui/app';
@@ -195,6 +196,11 @@ app.view = view;
 view.estadoDe = (id) => {
   const ch = app.session.session?.characters.find((c) => c.id === -id);
   return ch ? portraitState(ch.armed, vitalConditions(ch.vitals).machucado) : null;
+};
+// como cada peça respira parada no tabuleiro: pelas condições da ficha, como o retrato e o personagem grande
+view.respiracaoDe = (id) => {
+  const ch = app.session.session?.characters.find((c) => c.id === -id);
+  return ch ? breathMode(vitalConditions(ch.vitals)) : null;
 };
 // os PV de cada peça (de 0 a 1), para o arco da ficha no mapa tático
 view.pvDe = (id) => {

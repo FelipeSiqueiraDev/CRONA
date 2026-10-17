@@ -259,6 +259,17 @@ const chest = (b: number) => `scale(${(1 + 0.003 * b).toFixed(5)}, ${(1 + 0.012 
  * trecho. `forma` transforma a fundura do fôlego (0..1) no `transform` CSS.
  */
 export function breathKeyframes(mode: BreathMode, forma: (b: number) => string = chest): { frames: Keyframe[]; total: number } {
+  const { pts, total } = breathPoints(mode);
+  const frames = pts.map((p) => ({ offset: p.t / total, transform: forma(p.b), easing: 'ease-in-out' }));
+  frames[frames.length - 1].offset = 1;
+  return { frames, total };
+}
+
+/**
+ * Os mesmos fôlegos em números: uma volta de ~45 s, com a fundura (0..1) em cada
+ * instante (s). Entre dois pontos, a curva é suave (quem desenha interpola).
+ */
+export function breathPoints(mode: BreathMode): { pts: { t: number; b: number }[]; total: number } {
   const st = STYLES[mode];
   const pts: { t: number; b: number }[] = [{ t: 0, b: 0 }];
   let t = 0;
@@ -277,9 +288,7 @@ export function breathKeyframes(mode: BreathMode, forma: (b: number) => string =
       pts.push({ t, b: 0 });
     }
   }
-  const frames = pts.map((p) => ({ offset: p.t / t, transform: forma(p.b), easing: 'ease-in-out' }));
-  frames[frames.length - 1].offset = 1;
-  return { frames, total: t };
+  return { pts, total: t };
 }
 
 /** Piscadas por modo: intervalo e duração (s). */
