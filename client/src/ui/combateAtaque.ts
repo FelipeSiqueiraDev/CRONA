@@ -213,7 +213,8 @@ export class ResolucaoAtaque {
 
   /** Zera a rolagem quando muda quem age, o alvo ou a rodada. */
   private sincronizar(x: CtxAtaque) {
-    const chave = `${x.combate.rodada}|${x.combate.vez}|${x.ator.id}|${x.alvo?.p.id ?? 0}`;
+    const pessoas = `${x.ator.id}|${x.alvo?.p.id ?? 0}`;
+    const chave = `${x.combate.rodada}|${x.combate.vez}|${pessoas}`;
     // a escolhida tem de estar na mão (a da mochila precisa sacar)
     const naMao = (i: number) => x.armas[i] && x.armas[i].naMao !== false;
     if (chave === this.e.chave) {
@@ -222,7 +223,11 @@ export class ResolucaoAtaque {
     }
     let arma = Math.min(this.e.arma, Math.max(0, x.armas.length - 1));
     if (!naMao(arma)) arma = Math.max(0, x.armas.findIndex((a) => a.naMao !== false));
-    this.e = { chave, arma, reacao: 'nenhuma', manual: {}, defesaManual: null, d20: null, d10: null, soma: null, somaExtra: null };
+    // o turno passou mas é o mesmo atacante contra o mesmo alvo: as escolhas ficam (a arma, a Defesa digitada, as
+    // situações marcadas à mão) e só os dados zeram (o Felipe, 17/10: "toda vez que o turno passar, reseta o alvo,
+    // fica desmarcado tudo")
+    const mesmos = this.e.chave.split('|').slice(2).join('|') === pessoas;
+    this.e = { chave, arma, reacao: 'nenhuma', manual: mesmos ? this.e.manual : {}, defesaManual: mesmos ? this.e.defesaManual : null, d20: null, d10: null, soma: null, somaExtra: null };
   }
 
   /** Arma escolhida (a tela usa para o anel de alcance). */

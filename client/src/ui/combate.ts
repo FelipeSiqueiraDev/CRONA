@@ -667,6 +667,8 @@ export class CombateScreen {
     if ((c?.vez ?? null) !== this.ultimaVez) {
       this.ultimaVez = c?.vez ?? null;
       this.atorId = null;
+      // o alvo marcado continua marcado quando o turno passa, enquanto ele ainda está em combate (17/10)
+      if (this.alvoId !== null && (!c || cb.participante(c, this.alvoId)?.fora)) this.alvoId = null;
       this.fluxo = 'menu';
       this.desligarMovimento();
       this.porNaVez();
@@ -2089,6 +2091,12 @@ export class CombateScreen {
     const contra = o.alvo && alvo ? ` contra ${alvo.nome}` : '';
     const declarar = () => this.acao({ tipo: 'declarar', qual: o.qual, texto: `${o.nome.toLowerCase()}${contra}`, quem: ator.id });
     if (o.id === 'levantar') return this.levantar(ator);
+    if (o.id === 'esconder') {
+      // esconder-se: a peça fica agachada (o Felipe, 17/10); levantar-se ou o botão Agachado do painel desfaz
+      declarar();
+      this.app.net.send({ t: 'tokenEdit', tokenId: -ator.id, agachado: true });
+      return;
+    }
     if (o.id === 'chao') {
       declarar();
       return this.acao({ tipo: 'condicao', id: ator.id, condicao: 'caido', ativa: true });
