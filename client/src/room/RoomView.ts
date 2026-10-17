@@ -37,6 +37,7 @@ import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
 import { chamineDaArte, desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
 import { furniVisual } from '../render/furniFloor';
+import { estadoDaParede, estadoDoMovel } from '../render/soproMovel';
 import { drawWallFurni, wallLights } from '../render/furniWall';
 import { drawHintGlyph, drawHintIcon } from '../render/hints';
 import { iso, unIso, Z_PX } from '../render/iso';
@@ -1802,16 +1803,18 @@ export class RoomView {
       ctx.scale(e, e);
       ctx.translate(-px, -py);
     }
-    const comArte = desenharParedeComArte(ctx, def.id, it.wall, it.state, px, py, it.id, it.vazio, it.modelo);
+    // a vela soprada (sopro.ts): logo depois de apagar, ainda desenhada acesa enquanto a chama encolhe
+    const estado = estadoDaParede(it, def);
+    const comArte = desenharParedeComArte(ctx, def.id, it.wall, estado, px, py, it.id, it.vazio, it.modelo);
     ctx.transform(1, k, 0, 1, ox, oy);
-    if (!comArte) drawWallFurni(ctx, def, it.state, it.id, t, it.modelo);
+    if (!comArte) drawWallFurni(ctx, def, estado, it.id, t, it.modelo);
     if (outline) {
       ctx.strokeStyle = outline;
       ctx.lineWidth = 1.5;
       ctx.strokeRect(-2, -2, def.w + 4, def.h + 4);
     }
     ctx.restore();
-    for (const L of wallLights(def, it.state)) {
+    for (const L of wallLights(def, estado)) {
       // no cômodo: ao longo da parede, um pouco para dentro dela, na altura da luz
       const ao = (L.x - def.w / 2) / 32;
       const alt = it.z + (def.h - L.y) / 32;
@@ -2264,8 +2267,10 @@ export class RoomView {
     const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number; vazio?: boolean; quebrado?: boolean; modelo?: string }, alpha: number, selected: boolean, ghost: boolean) => {
       const def = getFurni(it.defId);
       if (!def) return;
-      const base = furniVisual(def, it.state, it.id);
-      const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio, it.modelo) ?? base;
+      // a vela soprada (sopro.ts): logo depois de apagar, ainda desenhada acesa enquanto a chama encolhe para o pavio
+      const estado = ghost ? it.state : estadoDoMovel(it, def);
+      const base = furniVisual(def, estado, it.id);
+      const vis = visualComArte(def, base, estado, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio, it.modelo) ?? base;
       // a Operação Pede Mesa: o item escorrega para o tampo desenhado, a cadeira entra embaixo da mesa
       const [ax, ay] = ghost ? [0, 0] : this.ajusteDoMovel(map, it as FloorItem);
       const ix = it.x + ax;
@@ -2324,7 +2329,7 @@ export class RoomView {
           poly: sil,
           draw: () => {
             painter.m.set(rot, def.width, def.depth, ix, iy, it.z);
-            painter.state = it.state;
+            painter.state = estado;
             painter.seed = it.id;
             ctx.globalAlpha = nodeAlpha;
             if (it.quebrado) {
@@ -2409,7 +2414,7 @@ export class RoomView {
               }
               ctx.clip();
               painter.m.set(rot, def.width, def.depth, ix, iy, it.z);
-              painter.state = it.state;
+              painter.state = estado;
               painter.seed = it.id;
               ctx.globalAlpha = nodeAlpha;
               node.draw(painter);

@@ -20,7 +20,7 @@ import { corredorDe, predioDeApartamentos } from "./predioApartamentos";
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 13;
+export const IGARAPE_REV = 14;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -179,7 +179,8 @@ const paredesDaCasa = (y0: number, Y: (y: number) => number): WallSeed[] => [
   ["janela_cozinha", "r", y0, 1.0, 1.75],
   ["quadro_fazenda~05", "r", y0, 6.0, 2.54],
   ["clock", "r", y0, 8.0, 2.9],
-  ["wall_shelf", "l", 0, Y(3), 2.6],
+  // a prateleira com arte (a "wall_shelf" é chapada, desenhada por código, e parecia um quadro, 17/10)
+  ["shelf_wall", "l", 0, Y(3), 2.2],
 ];
 
 const DESCRICAO_LENHA =
@@ -358,7 +359,7 @@ const CENAS: CenaSpec[] = [
     ],
     wall: [
       ["painting", "r", 1, 3.0, 2.6],
-      ["wall_shelf", "l", 0, 8.0, 2.6],
+      ["shelf_wall", "l", 0, 8.0, 2.2],
       ["clock", "l", 0, 4.5, 3.0],
     ],
     links: [[5, 1, "cidade"]],
