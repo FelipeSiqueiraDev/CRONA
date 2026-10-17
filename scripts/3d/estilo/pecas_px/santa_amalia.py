@@ -1488,62 +1488,62 @@ def _desenho_lanche(u, v, out):
 
 
 # =====================================================================================================================
-# as letras de placa pintada (17/10, o Felipe: "na Big Dog eu quero o texto na fachada"): duas fontes de pixel, a grande
-# (5 x 7) e a pequena (3 x 5, com uma fileira em cima para o acento e uma embaixo para a cedilha). Cada letra é uma
-# lista de fileiras de cima para baixo; "1" é tinta.
+# as letras de placa pintada (17/10, o Felipe: "na Big Dog eu quero o texto na fachada"; a placa é "BIG DOG HOT DOGS" em
+# cima e "Lanches e Açaí" embaixo): a letra de pixel 5 x 7, a do nome esticada na altura (letra de placa, estreita e
+# alta) e a de baixo com uma fileira em cima para o acento e uma embaixo para a cedilha. Cada letra é uma lista de
+# fileiras de cima para baixo; "1" é tinta.
 # =====================================================================================================================
-LETRA_GRANDE = {
+LETRA_5X7 = {
+    'A': ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],
     'B': ['11110', '10001', '10001', '11110', '10001', '10001', '11110'],
-    'I': ['11111', '00100', '00100', '00100', '00100', '00100', '11111'],
-    'G': ['01111', '10000', '10000', '10011', '10001', '10001', '01111'],
+    'C': ['01111', '10000', '10000', '10000', '10000', '10000', '01111'],
     'D': ['11110', '10001', '10001', '10001', '10001', '10001', '11110'],
+    'E': ['11111', '10000', '10000', '11110', '10000', '10000', '11111'],
+    'G': ['01111', '10000', '10000', '10011', '10001', '10001', '01111'],
+    'H': ['10001', '10001', '10001', '11111', '10001', '10001', '10001'],
+    'I': ['11111', '00100', '00100', '00100', '00100', '00100', '11111'],
+    'L': ['10000', '10000', '10000', '10000', '10000', '10000', '11111'],
+    'N': ['10001', '11001', '10101', '10011', '10001', '10001', '10001'],
     'O': ['01110', '10001', '10001', '10001', '10001', '10001', '01110'],
+    'S': ['01111', '10000', '10000', '01110', '00001', '00001', '11110'],
+    'T': ['11111', '00100', '00100', '00100', '00100', '00100', '00100'],
     ' ': ['000', '000', '000', '000', '000', '000', '000'],
 }
-LETRA_PEQUENA = {
-    'H': ['000', '101', '101', '111', '101', '101', '000'],
-    'O': ['000', '111', '101', '101', '101', '111', '000'],
-    'T': ['000', '111', '010', '010', '010', '010', '000'],
-    'D': ['000', '110', '101', '101', '101', '110', '000'],
-    'G': ['000', '111', '100', '101', '101', '111', '000'],
-    'S': ['000', '111', '100', '111', '001', '111', '000'],
-    'L': ['000', '100', '100', '100', '100', '111', '000'],
-    'A': ['000', '010', '101', '111', '101', '101', '000'],
-    'N': ['000', '101', '111', '111', '101', '101', '000'],
-    'C': ['000', '111', '100', '100', '100', '111', '000'],
-    'E': ['000', '111', '100', '110', '100', '111', '000'],
-    'Ç': ['000', '111', '100', '100', '100', '111', '010'],
-    'Í': ['001', '111', '010', '010', '010', '111', '000'],
-    '·': ['0', '0', '0', '1', '0', '0', '0'],
-    ' ': ['00', '00', '00', '00', '00', '00', '00'],
-}
+# a de baixo: a 5 x 7 com a fileira do acento em cima e a da cedilha embaixo
+# (uma fileira de folga entre o acento e a letra, e a cedilha com o rabinho em duas fileiras: grudados, no tabuleiro o
+# Ç e o Í viravam C e I)
+LETRA_ACENTO = {k: ['0' * len(v[0])] + v + ['0' * len(v[0])] * 2 for k, v in LETRA_5X7.items()}
+LETRA_ACENTO['Ç'] = ['00000'] + LETRA_5X7['C'] + ['00100', '01100']
+LETRA_ACENTO['Í'] = ['00110', '00000', '00100', '00100', '00100', '00100', '00100', '01110', '00000', '00000']
 
 
-def _linha_de_texto(texto, fonte, escala=1, espaco=1):
-    """O texto numa matriz de 0 e 1 (fileiras de cima para baixo), com `espaco` px entre as letras."""
+def _linha_de_texto(texto, fonte, ex=1, ey=1, espaco=1):
+    """O texto numa matriz de 0 e 1 (fileiras de cima para baixo): cada px da letra vira ex x ey px, com `espaco` px
+    (vezes ex) entre as letras."""
     cols = []
     for i, ch in enumerate(texto):
         g = np.array([[int(c) for c in fila] for fila in fonte[ch]], dtype=np.uint8)
-        g = np.kron(g, np.ones((escala, escala), dtype=np.uint8))
+        g = np.kron(g, np.ones((ey, ex), dtype=np.uint8))
         if i:
-            cols.append(np.zeros((g.shape[0], espaco * escala), dtype=np.uint8))
+            cols.append(np.zeros((g.shape[0], espaco * ex), dtype=np.uint8))
         cols.append(g)
     return np.hstack(cols)
 
 
 def _letreiro_big_dog(largura_px, altura_px):
-    """O letreiro da Big Dog em pixels (0 = fundo, 1 = o BIG DOG, 2 = a sombra dele, 3 = a linha de baixo)."""
+    """O letreiro da Big Dog em pixels (0 = fundo, 1 = o nome, 2 = a sombra dele, 3 = a linha de baixo)."""
     m = np.zeros((altura_px, largura_px), dtype=np.uint8)
-    grande = _linha_de_texto('BIG DOG', LETRA_GRANDE, escala=2, espaco=1)
-    pequena = _linha_de_texto('HOT DOGS · LANCHES E AÇAÍ', LETRA_PEQUENA)
-    yg = 3
-    xg = (largura_px - grande.shape[1]) // 2
+    nome = _linha_de_texto('BIG DOG HOT DOGS', LETRA_5X7, ex=1, ey=2)
+    baixo = _linha_de_texto('LANCHES E AÇAÍ', LETRA_ACENTO)
+    yn = 3
+    xn = (largura_px - nome.shape[1]) // 2
     # a sombra de 1 px para baixo e para a direita, depois a letra por cima
-    m[yg + 1:yg + 1 + grande.shape[0], xg + 1:xg + 1 + grande.shape[1]][grande == 1] = 2
-    m[yg:yg + grande.shape[0], xg:xg + grande.shape[1]][grande == 1] = 1
-    yp = yg + grande.shape[0] + 5
-    xp = (largura_px - pequena.shape[1]) // 2
-    m[yp:yp + pequena.shape[0], xp:xp + pequena.shape[1]][pequena == 1] = 3
+    m[yn + 1:yn + 1 + nome.shape[0], xn + 1:xn + 1 + nome.shape[1]][nome == 1] = 2
+    m[yn:yn + nome.shape[0], xn:xn + nome.shape[1]][nome == 1] = 1
+    # a linha de baixo começa junto com a de cima: na fachada inclinada, centralizada ela parecia cruzar o nome
+    yb = yn + nome.shape[0] + 5
+    xb = xn
+    m[yb:yb + baixo.shape[0], xb:xb + baixo.shape[1]][baixo == 1] = 3
     return m
 
 
