@@ -392,12 +392,13 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   conferir (altura, contorno rosa), `--instalar`, e ver no tabuleiro se o quadril bate no assento (talvez um ajuste de
   altura por cadeira). **Revisto (o Felipe, 17/10):** o sentado de todos os NPCs também, além dos Marcados (os
   personagens dos jogadores: o Felipe passou a chamá-los assim).
-- **A fila reordenada para a sessão de 18/10** (`trabalho/fila_sessao.sh`, desde as 15:52, no lugar da `fila_unica.sh`):
-  o que entra na sessão da Sede e da Fazenda sai primeiro: 1) os dois Existidos, refeitos pelo retrato do Elenco; 2) o
-  agachado armado dos 4 Marcados; 3) o sentado dos Marcados e do Miguel; 4) a Ordo Realitas da Sede: Pedro, Rosa e
-  Joaquin (agachado, sentado e agachado armado) e Rebecca (npc-jaleco, sentado); 5) Geraldo e Herman; 6) o resto dos
-  sentados (Agatha, Ivete, Samuel) e o agachado armado do Miguel; 7) os portadores de relíquia. O Geraldo agachado,
-  pedido pela fila antiga, termina no meio e fica guardado.
+- **A fila reordenada para a sessão de 18/10** (`trabalho/fila_sessao.sh`, no lugar da `fila_unica.sh`; revista às
+  15:55 pela ordem do Felipe: "Eu preciso dos Existidos, eu preciso dos NPC's da Ordem"): 1) os dois Existidos, refeitos
+  pelo retrato do Elenco; 2) o Geraldo agachado e o sentado da Agatha, do Samuel, do Miguel, da Ivete, da Rebecca
+  (npc-jaleco) e do Geraldo; 3) depois, o resto (o agachado armado e o sentado dos Marcados; Pedro, Rosa e Joaquin; o
+  armado do Miguel; o Herman; os portadores de relíquia). A cota de imagem da conta nova acabou às 15:52 (9 imagens) e
+  volta por volta das 18:47; a fila tenta de novo a cada 5 min. A **Marcela Geleerd** (a médica da ala médica) também
+  foi pedida, mas não existe no Elenco: falta a referência de aparência.
 - **A fila única da arte** (`trabalho/fila_unica.sh`, a partir das 18:48, um pedido por vez, tentando de novo a cada 5
   min se ainda der o limite de imagem): Camarilla em pé e sentada; Pedro (npc-camisa-rosa, pistola grossa) e Rosa
   (npc-cabelo-rosa, uma submetralhadora em cada mão) armados em pé; os agachados que faltam; o sentado dos Marcados e de
