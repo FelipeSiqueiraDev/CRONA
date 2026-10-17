@@ -195,8 +195,8 @@ export function abrirElenco(app: App) {
 
   /**
    * O card (17/10, o Felipe: "nem parece que é o CRONA"): a carta pintada dos agentes (a moldura das cartas do MAPA), a
-   * figura na janela dela e o nome na plaquinha de couro; embaixo, a linha e o Usar. `duasLinhas` põe o nome em cima e
-   * o sobrenome embaixo (os NPCs, como o Miguel e a Agatha).
+   * figura na janela dela com o nome por cima, num degradê preto que some para cima (para ler bem), e o Usar na
+   * plaquinha de couro; embaixo, a linha. `duasLinhas` põe o nome em cima e o sobrenome embaixo (os NPCs).
    */
   const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean }) => {
     const [primeiro, ...resto] = o.nome.split(' ');
@@ -209,9 +209,14 @@ export function abrirElenco(app: App) {
         onclick: () => ((sel = o.chave), (aparencia = 'variadas'), (quantidade = 1), sfx.click(), desenhar()),
         onkeydown: (e: KeyboardEvent) => e.key === 'Enter' && ((sel = o.chave), desenhar()),
       },
-      h('span', { class: 'el-carta' }, h('span', { class: 'el-quadro' }, o.figura), h('b', { class: `el-nome${o.duasLinhas ? ' duas' : ''}` }, ...nome)),
+      h(
+        'span',
+        { class: 'el-carta' },
+        h('span', { class: 'el-quadro' }, o.figura),
+        h('b', { class: `el-nome${o.duasLinhas ? ' duas' : ''}` }, ...nome),
+        h('button', { class: 'el-usar', type: 'button', title: 'Pôr na mesa (Shift: sem fechar a janela)', onclick: o.usar }, 'Usar'),
+      ),
       h('small', { class: 'el-linha' }, o.linha),
-      h('button', { class: 'el-usar', type: 'button', title: 'Pôr na mesa (Shift: sem fechar a janela)', onclick: o.usar }, 'Usar'),
     );
   };
 

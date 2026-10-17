@@ -204,8 +204,8 @@ peito sobe e desce, acabou", "não estraga os bonecos".
   linha dele no script e rodar.
 - **O visual (o Felipe: "tá feia, fundo liso, nem parece que é o CRONA"; "odeio assimetria"):** a moldura pintada do
   tabuleiro em volta da janela, o fundo azul-noite com grão, vinheta e brilho de ouro, os cards na carta pintada dos
-  agentes (a figura na janela, o nome na plaquinha de couro, a carta de foco ao passar o mouse e na escolhida), o Usar
-  no botão de ouro do HUD, a rolagem pintada do kit, as sub-abas com a linha de ouro. Os NPCs com o nome em cima e o
+  agentes (a figura na janela com o nome por cima, num degradê preto que some para cima, e o Usar de ouro na plaquinha
+  de couro; a carta de foco ao passar o mouse e na escolhida), a rolagem pintada do kit, as sub-abas com a linha de ouro. Os NPCs com o nome em cima e o
   sobrenome embaixo. As ameaças sem setas nem caixa tracejada: cada versão é um card igual, em seguida da primeira, numa
   grade de colunas iguais.
 - **Os monstros do tabuleiro (o Felipe, 17/10):** quando forem feitos, a referência de cada criatura é o retrato dela no
