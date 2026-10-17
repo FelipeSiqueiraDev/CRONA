@@ -264,6 +264,17 @@ liberou os arquivos da FICHAS para esta.) O bloco novo fica no fim do `fichas.cs
   passar o mouse e na escolhida), a rolagem pintada do kit, as sub-abas com a linha de ouro. Os NPCs com o nome em cima e o
   sobrenome embaixo. As ameaças sem setas nem caixa tracejada: cada versão é um card igual, em seguida da primeira, numa
   grade de colunas iguais.
+- **Todo NPC é único (o Felipe, 17/10):** sem etiqueta; o NPC que já está em alguma cena da campanha (a peça com a arte
+  dele ou com o nome dele) fica com a carta apagada e "Em cena" no lugar do Usar, e o servidor recusa o segundo
+  (`npcsEmCampo` no `hotel.ts`, mandado junto do elenco; a lista se refaz ao abrir o Elenco e a cada Usar).
+- **O nome do NPC no Elenco:** o detalhe ganhou o campo Nome. O Felipe escrevia os nomes no "Quem é" (era o único campo):
+  os NPCs novos com o nome provisório e um nome próprio no "Quem é" passam a ter esse nome (Pedro Cavalcante, Rosa
+  Pimenta, Rebecca Zarkov na prévia; no `upgradeDb`).
+- **A Camarilla (o Felipe, 17/10):** a foto dela (`arte/companheiros/camarilla.jpg` e o recorte do rosto
+  `camarilla-rosto.jpg`) na aba Companheiro do Tepes: o companheiro "Cão de guarda" sem imagem virou "Camarilla" com a
+  foto (no `upgradeDb`, só se ainda tiver o nome antigo). E ela no Elenco (Ordo Realitas) como peça, com `Npc.altura`
+  0,8 m (o boneco sai na escala de um cachorro de porte médio: `height` = 104 × 0,8 / 1,8). A arte (8 em pé e 8
+  sentada) está na fila; a sentada entra como a pose agachada dela (o botão Agachar a senta).
 - **O detalhe da ameaça refeito (o Felipe: "espação em branco ... muito mal distribuído"):** o retrato sempre à vista em
   cima, com o fundo vivo do elemento (`client/src/ui/elencoFundo.ts`, um canvas por código: Sangue escorrendo, Morte com
   espirais se desenhando, Conhecimento com sigilos inventados passando, Energia com raios e plasma colorido, Medo com
