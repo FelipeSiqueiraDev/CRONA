@@ -89,6 +89,12 @@ export interface CtxAtaque {
   enviar: (a: cb.AcaoCombate) => void;
   /** saca a arma da mochila (gasta a ação de movimento) */
   sacar?: (a: ArmaOpcao) => void;
+  /**
+   * o alvo longe do corpo a corpo, com a ação de movimento livre e uma casa colada nele ao alcance do deslocamento:
+   * anda até lá (gasta o movimento) e o ataque segue (17/10, o Felipe: "tá longe, mas eu tenho ação de movimento,
+   * vou usar ela, ir até lá, e atacar")
+   */
+  andarAteOAlvo?: { metros: number; fazer: () => void };
   /** pede para desenhar de novo (mudou uma escolha) */
   mudou: () => void;
   /** o retrato de uma peça (o cartão do dano mostra quem apanha) */
@@ -842,6 +848,17 @@ export class ResolucaoAtaque {
     );
     if (fora) {
       partes.push(h('div', { class: 'atq-bloco atq-trava' }, ic('alerta'), h('div', null, h('b', null, 'Não dá para atacar daqui'), h('small', null, fora))));
+      // o corpo a corpo longe, com a ação de movimento livre: anda até ficar colado no alvo e ataca
+      const andar = !arma.faixa && x.tab && !x.tab.adjacente ? x.andarAteOAlvo : undefined;
+      if (andar)
+        partes.push(
+          h(
+            'button',
+            { class: 'fx-bt forte atq-andar', type: 'button', onclick: () => (sfx.click(), andar.fazer()) },
+            ic('bota'),
+            h('span', null, h('b', null, 'Andar e atacar'), h('small', null, `gasta a ação de movimento: anda ${cb.textoMetros(andar.metros)} até ficar colado no alvo`)),
+          ),
+        );
       return h('div', { class: 'atq' }, h('div', { class: 'atq-corpo' }, ...partes));
     }
 

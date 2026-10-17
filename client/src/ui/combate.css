@@ -2674,3 +2674,27 @@ button.cb-barra {
   font-style: italic;
   opacity: 0.85;
 }
+
+/* o "Andar e atacar" embaixo do aviso de longe demais (17/10) */
+.atq-andar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.4rem;
+  text-align: left;
+}
+.atq-andar .ic {
+  width: 2.2rem;
+  height: 2.2rem;
+  flex: none;
+}
+.atq-andar span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.atq-andar small {
+  font-size: 1.1rem;
+  opacity: 0.85;
+}

@@ -917,8 +917,45 @@ export class CombateScreen {
       acoes: cb.acoesDe(c, ator.id),
       enviar: (a) => this.acao(a),
       sacar: (arma) => arma.uid !== undefined && this.acao({ tipo: 'declarar', qual: 'movimento', texto: `sacou ${arma.nome}`, quem: ator.id, sacar: arma.uid }),
+      andarAteOAlvo: alvo ? this.andarAteOAlvo(c, ator, alvo.p) : undefined,
       mudou: () => (this.sigs.delete('res'), this.renderRes(), this.atualizarMarcas()),
       retrato: (id, t) => this.retrato(id, t),
+    };
+  }
+
+  /**
+   * Andar até o alvo para o corpo a corpo: com a ação de movimento livre, a casa colada nele mais perto de quem ataca,
+   * dentro do deslocamento. A peça anda (gasta o movimento) e, quando chega, o ataque se refaz já colado.
+   */
+  private andarAteOAlvo(c: Combate, ator: Participante, alvo: Participante): CtxAtaque['andarAteOAlvo'] {
+    const ac = cb.acoesDe(c, ator.id);
+    if (ac.movimento || ac.completa) return undefined;
+    const onde = this.casa(alvo.id);
+    const ini = this.casa(ator.id);
+    if (!onde || !ini) return undefined;
+    const metros = this.deslocamentoDe(ator);
+    // as casas vêm da busca em largura: a primeira colada no alvo é a do caminho mais curto
+    const destino = this.casasAlcancaveis(ator, metros).find((k) => Math.max(Math.abs(k.x - onde.x), Math.abs(k.y - onde.y)) === 1);
+    if (!destino) return undefined;
+    const andados = Math.max(Math.abs(destino.x - ini.x), Math.abs(destino.y - ini.y)) * cb.METROS_POR_CASA;
+    return {
+      metros: andados,
+      fazer: () => {
+        this.app.net.send({ t: 'tokenWalk', tokenId: -ator.id, x: destino.x, y: destino.y });
+        this.acao({ tipo: 'declarar', qual: 'movimento', texto: `anda até ${alvo.nome}`, quem: ator.id });
+        // quando a peça chegar, o ataque se refaz (já colado no alvo)
+        const t0 = performance.now();
+        const espera = setInterval(() => {
+          const k = this.casa(ator.id);
+          const chegou = k && k.x === destino.x && k.y === destino.y;
+          if (chegou || performance.now() - t0 > 12000) {
+            clearInterval(espera);
+            this.sigs.delete('res');
+            this.renderRes();
+            this.atualizarMarcas();
+          }
+        }, 250);
+      },
     };
   }
 
