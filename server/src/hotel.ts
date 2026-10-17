@@ -1168,6 +1168,12 @@ export class Hotel implements HotelApi {
   /** PV/PE/SAN de uma peça mudou no tabuleiro: a ficha ligada ao personagem acompanha. */
   vitalEmOutraCena(roomId: number, userId: number, m: Record<string, unknown>) {
     for (const id of this.sceneGroup(roomId)) if (id !== roomId && this.rooms.get(id)?.mudarVital(userId, m)) return;
+    // o agente em outra campanha (a aba PLAYERS mostra sempre todos os agentes, 17/10): só a peça de um agente
+    for (const r of this.rooms.values()) {
+      if (r.data.id === roomId) continue;
+      const t = r.tokenList().find((x) => x.id === userId);
+      if (t && this.ehAgente(t.look?.charId) && r.mudarVital(userId, m)) return;
+    }
   }
 
   vitaisDaPeca(personagem: number | null | undefined, v: Vitals) {

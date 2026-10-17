@@ -1005,7 +1005,11 @@ export class Shell {
   // ================= direita: controle do RPG =================
   /** Abas da direita e o conteúdo da aba aberta (PLAYERS: a ficha de cada um). */
   private renderRpg(force = false) {
-    const party = this.campaign?.party ?? [];
+    // os agentes primeiro (todos, onde estiverem: é aqui que o mestre tira e dá PV, PE e SAN, 17/10), depois as outras
+    // peças da campanha (os NPCs e as ameaças em cena)
+    const agentes = this.campaign?.agentes ?? [];
+    const deAgente = new Set(agentes.map((p) => p.id));
+    const party = [...agentes, ...(this.campaign?.party ?? []).filter((p) => !deAgente.has(p.id))];
     // a estrutura (o que obriga a refazer as cartas) fica separada dos números (PV, PE, SAN): os números se
     // acertam no lugar. Refazer tudo a cada ponto de vida piscava o painel inteiro.
     const sig = JSON.stringify([this.rpgTab, this.gm, party.map((p) => [p.id, p.name, p.color, p.roomId, p.look?.charId ?? null, !!p.armed, vitalConditions(p.vitals).machucado])]);
