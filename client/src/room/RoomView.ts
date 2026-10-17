@@ -398,6 +398,8 @@ const FIT_MIN = 0.72;
 const BG = '#07060a';
 /** a pessoa (~1,78 m) em unidades de altura: a caixa dela na ordem de desenho e no raio-x */
 const ALTURA_PESSOA = 1.78 * Z_PER_M;
+/** o nome em cima da peça (17/10: desligado; o mestre sabe quem é quem e nem sempre quer que a mesa saiba) */
+const MOSTRAR_NOMES = false;
 const AMBER = 'rgba(255,196,90,0.95)';
 /** As lupinhas de pista em cima dos móveis (desligadas em 08/10; true traz de volta). */
 const MOSTRAR_LUPAS = false;
@@ -3190,9 +3192,10 @@ export class RoomView {
     }
     this.hintTargets = hintTargets;
 
-    // nome ao passar o mouse
+    // o nome em cima da peça (ao passar o mouse e na selecionada): desligado em 17/10, a pedido do Felipe ("tira esse
+    // nomezinho de cima, nem sempre eu quero que eles saibam os nomes; eu sei quem é quem")
     const hk = this.hoverKey;
-    for (const u of this.users.values()) {
+    for (const u of MOSTRAR_NOMES ? this.users.values() : []) {
       if (hk !== `user${u.id}` && !(sel?.kind === 'user' && sel.id === u.id)) continue;
       const p = this.userPos(u, now);
       const [wx, wy] = iso(p.x + 0.5, p.y + 0.5, p.z);
