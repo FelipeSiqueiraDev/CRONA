@@ -11,8 +11,8 @@ describe("Igarapé", () => {
   const porNome = (n: string) => salas.find((r) => r.name === IGARAPE + n)!;
 
   test("o lugar existe: a cidade e os interiores, numa campanha com o nome do lugar", () => {
-    for (const n of ["Cidade", "Capela", "Casa de Palafita", "Palafita", "Venda", "Casa"]) assert.ok(porNome(n), `falta ${n}`);
-    assert.equal(salas.filter((r) => r.name === IGARAPE + "Casa").length, 7, "as casas comuns, sem nome próprio");
+    for (const n of ["Cidade", "Capela", "Casa de Palafita", "Palafita", "Venda", "Casa", "Casa dos Ribeiro", "Big Dog Hot Dogs - Lanches e Açaí"]) assert.ok(porNome(n), `falta ${n}`);
+    assert.equal(salas.filter((r) => r.name === IGARAPE + "Casa").length, 6, "as casas comuns, sem nome próprio (a 7ª é a dos Ribeiro, a casa da Cora)");
     const camp = db.campaigns?.[String(Math.min(...salas.map((r) => r.id)))];
     assert.equal(camp?.title, "Igarapé");
     assert.equal(salas[0].name, IGARAPE + "Cidade", "a entrada do lugar é a cidade");
@@ -31,7 +31,8 @@ describe("Igarapé", () => {
     assert.ok(conta("igarape_ipe") >= 1, "o ipê amarelo");
     assert.ok(conta("igarape_canoa") >= 2, "as canoas");
     // cada prédio tem a entrada encostada (o seed não deixou nenhuma de fora)
-    assert.equal(conta("entrada"), 11);
+    assert.equal(conta("lanchonete_predio"), 1, "a lanchonete do largo");
+    assert.equal(conta("entrada"), 12);
   });
 
   test("toda passagem leva a outra sala de Igarapé, que tem a volta, e todas se alcançam a partir da cidade", () => {

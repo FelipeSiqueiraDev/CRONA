@@ -27,6 +27,7 @@ import { montarOrfanato, ORFANATO } from './seedOrfanato';
 import { montarSantoBerco, SANTO_BERCO } from './seedSantoBerco';
 import { IGARAPE, montarIgarape } from './seedIgarape';
 import { montarTiradentes, TIRADENTES } from './seedTiradentes';
+import { montarSantaAmalia, SANTA_AMALIA } from './seedSantaAmalia';
 import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgentes } from './seedSede';
 
 export const SYSTEM_OWNER = 'CRONA';
@@ -662,7 +663,7 @@ export function limparSalasDeExemplo(db: Database): boolean {
   if (db.limpezaExemplos) return false;
   // só quando a Sede e a Fazenda existem (um banco novo ainda vai montá-las)
   if (!db.rooms.some((r) => r.name.startsWith(SEDE)) || !db.rooms.some((r) => r.name.startsWith(FAZENDA))) return false;
-  const ids = new Set(db.rooms.filter((r) => !r.name.startsWith(SEDE) && !r.name.startsWith(FAZENDA) && !r.name.startsWith(ORFANATO) && !r.name.startsWith(SANTO_BERCO) && !r.name.startsWith(IGARAPE) && !r.name.startsWith(TIRADENTES)).map((r) => r.id));
+  const ids = new Set(db.rooms.filter((r) => !r.name.startsWith(SEDE) && !r.name.startsWith(FAZENDA) && !r.name.startsWith(ORFANATO) && !r.name.startsWith(SANTO_BERCO) && !r.name.startsWith(IGARAPE) && !r.name.startsWith(TIRADENTES) && !r.name.startsWith(SANTA_AMALIA)).map((r) => r.id));
   if (ids.size) {
     db.rooms = db.rooms.filter((r) => !ids.has(r.id));
     if (db.campaigns) for (const k of Object.keys(db.campaigns)) if (ids.has(Number(k))) delete db.campaigns[k];
@@ -744,6 +745,7 @@ export function upgradeDb(db: Database): boolean {
     const santoBerco = montarSantoBerco(db);
     const igarape = montarIgarape(db);
     const tiradentes = montarTiradentes(db);
+    const santaAmalia = montarSantaAmalia(db);
     const cores = coresDosAgentes(db);
     const temas = temasDosAgentes(db);
     const van = vanNoLugar(db);
@@ -751,7 +753,7 @@ export function upgradeDb(db: Database): boolean {
     const bestiario = bestiarioInicial(db);
     const npcs = npcsIniciais(db);
     const mesas = mesasMaisAltas(db);
-    return sede || fazenda || orfanato || santoBerco || igarape || tiradentes || cores || temas || van || paredes || bestiario || npcs || mesas;
+    return sede || fazenda || orfanato || santoBerco || igarape || tiradentes || santaAmalia || cores || temas || van || paredes || bestiario || npcs || mesas;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';
@@ -830,6 +832,8 @@ export function upgradeDb(db: Database): boolean {
   montarIgarape(db);
   // Tiradentes (15/10)
   montarTiradentes(db);
+  // Santa Amália (17/10)
+  montarSantaAmalia(db);
   coresDosAgentes(db);
   temasDosAgentes(db);
   paredesLivres(db);

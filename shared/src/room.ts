@@ -74,6 +74,8 @@ export const TERRENOS: Record<string, FloorStyle | 'agua'> = {
   p: 'cascalho',
   d: 'terra',
   m: 'pier',
+  c: 'concreto',
+  q: 'bloco',
   a: 'agua',
 };
 

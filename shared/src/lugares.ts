@@ -54,5 +54,7 @@ export function posicaoInicial(nome: string, i: number): [number, number] {
   if (/tiradentes/i.test(nome)) return [0.585, 0.625];
   // Santo Berço (15/10): a vila isolada, longe de tudo, no meio do país (o mestre arrasta se quiser)
   if (/santo ber[cç]o/i.test(nome)) return [0.47, 0.37];
+  // Santa Amália (17/10): a cidade comum de Minas, perto de Tiradentes (a mata para Santo Berço fica além dela)
+  if (/santa am[aá]lia/i.test(nome)) return [0.6, 0.6];
   return POSICOES_INICIAIS[i % POSICOES_INICIAIS.length];
 }

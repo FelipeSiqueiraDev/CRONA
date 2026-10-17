@@ -18,9 +18,10 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 1;
+export const IGARAPE_REV = 2;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
+const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
 const de = (id: string, ...at: [number, number][]): FloorSeed[] => at.map(([x, y]) => [id, x, y, 0] as FloorSeed);
 
 /** O clima de dentro: a tarde entrando pelas janelas, a lâmpada amarela. */
@@ -98,9 +99,12 @@ const PREDIOS: [string, number, number, 0 | 4, string][] = [
   ["igarape_venda", 19, 24, 0, "venda"],
   ["igarape_palafita", 25, 30, 4, "palafita"],
   ["igarape_palafita_b", 32, 29, 0, "palafita2"],
-  ["igarape_casa", 38, 7, 4, "casa5"],
+  // a casa dos Ribeiro, onde a Cora cresceu (17/10)
+  ["igarape_casa", 38, 7, 4, "casa_ribeiro"],
   ["igarape_casa~b", 49, 8, 4, "casa6"],
   ["igarape_casa", 42, 25, 0, "casa7"],
+  // a lanchonete do largo (17/10), de frente para a estrada
+  ["lanchonete_predio", 2, 13, 4, "lanchonete"],
 ];
 const ENTRADAS = new Map(PREDIOS.map(([id, x, y, r, cena]) => [cena, porta(id.split("~")[0], x, y, r)]));
 
@@ -396,9 +400,94 @@ const CENAS: CenaSpec[] = [
   casaMineira("casa2", "frente"),
   casaMineira("casa3", "fundo"),
   casaMineira("casa4", "fundo"),
-  casaMineira("casa5", "frente"),
   casaMineira("casa6", "frente"),
   casaMineira("casa7", "fundo"),
+  // ------------------------------------------------------------ a lanchonete do largo (17/10)
+  {
+    key: "lanchonete",
+    name: IGARAPE + "Big Dog Hot Dogs - Lanches e Açaí",
+    description:
+      "A Big Dog Hot Dogs - Lanches e Açaí, a lanchonete do largo: o piso de cerâmica, o balcão de inox com a chapa e a estufa de salgados, o freezer do açaí com as coberturas, as mesas e as cadeiras de plástico vermelho, a geladeira de refrigerante, o cardápio na parede e a TV no canto passando novela. Cheiro de salsicha, de cebola na chapa e de leite condensado.",
+    layout: planBottom(9, 7, 4),
+    andar: "Lanchonete",
+    style: "ladrilho",
+    ...DENTRO,
+    darkness: 0.28,
+    ambient: "#f0dcc0",
+    floor: [
+      ["portal", 4, 6, 0],
+      // o fundo: a chapa, o freezer do açaí e a geladeira de refrigerante
+      ["chapa_lanche", 0, 0, 4],
+      ["freezer_acai", 3, 0, 4],
+      ["fridge_drinks", 6, 0, 4],
+      ["trash_can", 8, 0, 0],
+      // o balcão e as banquetas
+      ["counter_wood", 1, 2, 4],
+      ["counter_wood", 3, 2, 4],
+      ["stool_bar", 1, 3, 0],
+      ["stool_bar", 2, 3, 0],
+      ["stool_bar", 4, 3, 0],
+      ["cafeteira", 1, 2, 0],
+      ["beer_glass", 3, 2, 0],
+      // as mesas de plástico
+      ["table_bar", 6, 3, 0],
+      ["chair_bar", 6, 2, 4],
+      ["chair_bar", 7, 3, 6],
+      ["table_bar", 6, 5, 0],
+      ["chair_bar", 5, 5, 2],
+      ["chair_bar", 7, 5, 6],
+      ["food_tray", 6, 3, 0],
+      ["plant", 0, 5, 0],
+      ["ceiling_lamp", 2, 4, 0],
+      ["ceiling_lamp", 6, 4, 0],
+    ],
+    wall: [
+      ["notice_board", "r", 0, 2.2, 2.0],
+      ["tv_wall", "l", 0, 3.0, 2.7],
+      ["clock", "r", 0, 7.0, 2.9],
+    ],
+    links: [[4, 6, "cidade"]],
+    plan: { x: 0, y: 0 },
+  },
+  // ------------------------------------------------------------ a casa dos Ribeiro, onde a Cora cresceu (17/10)
+  {
+    key: "casa_ribeiro",
+    name: IGARAPE + "Casa dos Ribeiro",
+    description:
+      "A casa onde a Cora cresceu, fechada desde que a Sara sumiu: o chão de tábua coberto de poeira, os móveis no mesmo lugar de sempre, a mesa da cozinha com as cadeiras de palhinha, a cama de casal com a colcha de crochê, a cômoda, o guarda-roupa. As teias nos cantos do teto e o cheiro de casa fechada. Na parede, o lugar mais claro onde ficava o retrato da família.",
+    layout: planBottom(9, 7, 4),
+    andar: "Casa dos Ribeiro",
+    style: "taco",
+    ...DENTRO,
+    darkness: 0.5,
+    ambient: "#c8b498",
+    particles: ["dust"],
+    floor: [
+      ["portal", 4, 6, 0],
+      ["fogao_lenha", 0, 0, 4],
+      ["armario_cozinha", 2, 0, 4],
+      ["comoda", 5, 0, 4, oculta("As cartas", "Na gaveta de baixo da cômoda, embaixo das toalhas, as três cartas do Geraldo para a Sara, sem data: uma amarga, outra pedindo perdão e que ela cuide da Cora, a última falando do Exército e de um tal Fritz, no café de sempre.")],
+      ["cama_casal", 7, 0, 4],
+      ["mesa_cozinha", 1, 2, 4],
+      ["chair_wood", 1, 1, 4],
+      ["chair_wood", 3, 1, 4],
+      ["chair_wood", 1, 4, 0],
+      ["guarda_roupa", 8, 4, 6],
+      ["rug_worn", 5, 3, 0],
+      ["papers", 2, 2, 0, hint("O retrato rasgado", "O retrato da família em pedaços, juntados em cima da mesa: o Geraldo, a Sara e a Cora menina, na frente desta casa.")],
+      ["dirt", 6, 5, 0],
+      ["dirt", 3, 4, 0],
+      ["ceiling_lamp", 4, 3, 0],
+    ],
+    wall: [
+      ["janela_cozinha", "r", 0, 1.0, 1.75],
+      ["teia", "r", 0, 7.6, 3.0],
+      ["teia", "l", 0, 5.2, 3.0],
+      ["clock", "l", 0, 2.4, 2.9],
+    ],
+    links: [[4, 6, "cidade"]],
+    plan: { x: 0, y: 0 },
+  },
 ];
 
 // ------------------------------------------------------------------ montagem
