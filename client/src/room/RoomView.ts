@@ -938,9 +938,39 @@ export class RoomView {
   }
 
   /** Os fios de água do chuveiro ligado: do chuveiro (a 1,9 m, no canto do fundo do box) até o ralo, caindo sem parar. */
-  private desenharAgua(ctx: CanvasRenderingContext2D, it: FloorItem, now: number) {
+  private desenharAgua(ctx: CanvasRenderingContext2D, it: FloorItem, now: number, dentro: boolean) {
     const topo = 1.9 * Z_PER_M;
     ctx.save();
+    // alguém no banho: o vidro do box embaçado do chão até o pescoço (~1,45 m), com as gotas escorrendo nele
+    if (dentro) {
+      const pescoco = 1.45 * Z_PER_M;
+      const sil = boxSilhouette({ x0: it.x + 0.02, x1: it.x + 0.98, y0: it.y + 0.02, y1: it.y + 0.98, z0: it.z, z1: it.z + pescoco });
+      ctx.beginPath();
+      ctx.moveTo(sil[0][0], sil[0][1]);
+      for (let i = 1; i < sil.length; i++) ctx.lineTo(sil[i][0], sil[i][1]);
+      ctx.closePath();
+      const [, yTopo] = iso(it.x + 1, it.y + 1, it.z + pescoco);
+      const [, yBase] = iso(it.x + 1, it.y + 1, it.z);
+      const g = ctx.createLinearGradient(0, yTopo - 8, 0, yBase);
+      g.addColorStop(0, 'rgba(236,243,247,0.55)');
+      g.addColorStop(0.18, 'rgba(236,243,247,0.93)');
+      g.addColorStop(1, 'rgba(226,236,242,0.96)');
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.save();
+      ctx.clip();
+      // as gotas que escorrem no vidro embaçado
+      ctx.fillStyle = 'rgba(170,200,220,0.55)';
+      for (let i = 0; i < 9; i++) {
+        const u = 0.1 + ((hash(it.id, i + 200) % 1000) / 1000) * 0.85;
+        const lado = i % 2 === 0;
+        const fase = ((now / 1000) * (0.12 + (i % 4) * 0.05) + i * 0.29) % 1;
+        const z = it.z + pescoco * (1 - fase);
+        const [gx, gy] = lado ? iso(it.x + u, it.y + 0.99, z) : iso(it.x + 0.99, it.y + u, z);
+        ctx.fillRect(Math.round(gx), Math.round(gy), 1, 3);
+      }
+      ctx.restore();
+    }
     ctx.lineWidth = 1.5;
     for (let i = 0; i < 22; i++) {
       const u = 0.32 + ((hash(it.id, i) % 1000) / 1000) * 0.36;
@@ -2506,14 +2536,15 @@ export class RoomView {
       const naCama = camaIt && camaDef?.deita ? { it: camaIt, def: camaDef } : null;
       const standBy = !!sp && u.sit === 1 && !p.moving && !naCama && !pfSentado && !framesFor(sp.lc, u.dir, 'sit') && !this.info?.viagem;
       const seated = u.sit === 1 && !standBy && !naCama;
-      // no banho (dentro do box) ou sentada no vaso: o corpo vai borrado em mosaico, como no The Sims (17/10, o Felipe:
-      // "quero poder usar o chuveiro e o vaso... um blurzinho tipo no The Sims")
-      const privada =
-        !p.moving &&
-        map.itemsAt(u.x, u.y).some((s) => {
-          const k = getFurni(s.defId)?.kind;
-          return k === 'box_chuveiro' || (k === 'toilet' && u.sit === 1);
-        });
+      // sentada no vaso: o corpo vai borrado em mosaico, como no The Sims (17/10, o Felipe: "quero poder usar o chuveiro
+      // e o vaso... um blurzinho tipo no The Sims"). No box, o vidro é que embaça do pescoço para baixo (desenharAgua) e
+      // a peça fica virada de frente, com a água batendo na cabeça ("não vamos fazer a versão pelada dos personagens")
+      const noBox = !p.moving && map.itemsAt(u.x, u.y).some((s) => getFurni(s.defId)?.kind === 'box_chuveiro');
+      if (noBox) {
+        u.dir = 3;
+        u.headDir = 3;
+      }
+      const privada = !p.moving && u.sit === 1 && map.itemsAt(u.x, u.y).some((s) => getFurni(s.defId)?.kind === 'toilet');
       // a pose sentada desenhada tem os pés no chão (o quadril cai na altura do assento sozinho): fica no piso
       const baseZ = standBy || pfSentado ? (map.floorHeight(u.x, u.y) ?? p.z) : p.z;
       const half = seated ? 0.25 : 0.3;
@@ -2834,7 +2865,8 @@ export class RoomView {
       // a caixa na quina da frente do box: a água vem depois do vidro e de quem está no banho (cai por cima dela)
       const box: WBox = { x0: it.x + 0.97, x1: it.x + 1.01, y0: it.y + 0.97, y1: it.y + 1.01, z0: it.z, z1: it.z + 1.9 * Z_PER_M };
       const [bx, by] = iso(it.x + 0.5, it.y + 0.5, it.z);
-      drawables.push({ box, sx0: bx - 24, sx1: bx + 24, sy0: by - 120, sy1: by + 10, draw: () => this.desenharAgua(ctx, it, now) });
+      const dentro = [...this.users.values()].some((o) => !o.anim && o.x === it.x && o.y === it.y);
+      drawables.push({ box, sx0: bx - 24, sx1: bx + 24, sy0: by - 120, sy1: by + 10, draw: () => this.desenharAgua(ctx, it, now, dentro) });
     }
     {
       const dt = Math.min(0.1, (now - (this.vaporEm || now)) / 1000);
