@@ -237,6 +237,11 @@ liberou os arquivos da FICHAS para esta.) O bloco novo fica no fim do `fichas.cs
   passar o mouse e na escolhida), a rolagem pintada do kit, as sub-abas com a linha de ouro. Os NPCs com o nome em cima e o
   sobrenome embaixo. As ameaças sem setas nem caixa tracejada: cada versão é um card igual, em seguida da primeira, numa
   grade de colunas iguais.
+- **Ícones nas sub-abas (o Felipe, 17/10):** cada elemento das ameaças e cada grupo de NPC com um ícone de linha do jogo
+  num losango da cor do grupo (nunca o símbolo oficial do elemento): Sangue a gota, Morte a ampulheta, Conhecimento o
+  olho, Energia o raio, Medo o fantasma, Mundanas a pata, Do mestre a pena; Ordo Realitas o escudo, Lotus Branca a lua,
+  Panacea o frasco, as cidades o alfinete, a Fazenda o mapa, Novos a pessoa, grupo novo a bandeira. Peça para o Códex:
+  os ícones pintados no lugar destes, quando houver cota.
 - **Os botões de criar no alto (o Felipe, 17/10):** à direita das abas, em cima do detalhe: "Novo grupo" (o campo do nome
   desce embaixo) e "Novo NPC" na aba dos NPCs; "Nova ameaça" na das ameaças (abre o bestiário, que cria a partir do
   livro). A carta "Novo NPC" saiu da lista.

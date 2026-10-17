@@ -3,7 +3,7 @@ import { drawPixelAvatar } from '../render/avatarPixel';
 import type { App } from './app';
 import { abrirBestiario } from './bestiario';
 import { h } from './dom';
-import { arteCarregada, ic } from './icons';
+import { arteCarregada, ic, type NomeIcone } from './icons';
 import { sfx } from './sfx';
 import './elenco.css';
 
@@ -27,15 +27,31 @@ import './elenco.css';
 
 type Aba = 'npcs' | 'ameacas';
 type Grupo = 'sangue' | 'morte' | 'conhecimento' | 'energia' | 'medo' | 'mundanas' | 'mestre';
-const GRUPOS: { id: Grupo; nome: string }[] = [
-  { id: 'sangue', nome: 'Sangue' },
-  { id: 'morte', nome: 'Morte' },
-  { id: 'conhecimento', nome: 'Conhecimento' },
-  { id: 'energia', nome: 'Energia' },
-  { id: 'medo', nome: 'Medo' },
-  { id: 'mundanas', nome: 'Mundanas' },
-  { id: 'mestre', nome: 'Do mestre' },
+// o ícone de cada elemento (17/10, o Felipe: "iconezinhos nas abas de grupo"): ícones próprios do jogo, nunca o
+// símbolo oficial do elemento
+const GRUPOS: { id: Grupo; nome: string; icone: NomeIcone }[] = [
+  { id: 'sangue', nome: 'Sangue', icone: 'gota' },
+  { id: 'morte', nome: 'Morte', icone: 'ampulheta' },
+  { id: 'conhecimento', nome: 'Conhecimento', icone: 'olho' },
+  { id: 'energia', nome: 'Energia', icone: 'raio' },
+  { id: 'medo', nome: 'Medo', icone: 'fantasma' },
+  { id: 'mundanas', nome: 'Mundanas', icone: 'pata' },
+  { id: 'mestre', nome: 'Do mestre', icone: 'pena' },
 ];
+/** O ícone de cada grupo de NPC: os que o jogo traz e, para o grupo novo, a bandeira. */
+const ICONE_GRUPO_NPC: Record<string, NomeIcone> = {
+  'Ordo Realitas': 'escudoEstrela',
+  'Lotus Branca': 'lua',
+  Panacea: 'frasco',
+  Tiradentes: 'pino',
+  'Igarapé': 'pino',
+  'Santo Berço': 'pino',
+  'Santa Amália': 'pino',
+  'Fazenda Olhos de Águia': 'mapa',
+  'Novos (sem nome)': 'pessoa',
+  'Do mestre': 'pena',
+};
+const iconeDoGrupo = (g: string): NomeIcone => ICONE_GRUPO_NPC[g] ?? 'bandeira';
 
 /** Uma ameaça na lista: do livro (com ou sem criatura no bestiário) ou só do mestre. */
 interface Entrada {
@@ -257,7 +273,7 @@ export function abrirElenco(app: App) {
   };
 
   /** Uma sub-aba que abre e fecha: o cabeçalho (seta, cor, nome, quantos) e, aberta, a grade dela. */
-  const secao = (o: { nome: string; n: number; cls?: string; aberta: boolean; alternar: () => void; filhos: Node[] }) =>
+  const secao = (o: { nome: string; n: number; cls?: string; icone: NomeIcone; aberta: boolean; alternar: () => void; filhos: Node[] }) =>
     h(
       'section',
       { class: `el-secao ${o.cls ?? ''}${o.aberta ? ' aberta' : ''}` },
@@ -265,7 +281,7 @@ export function abrirElenco(app: App) {
         'button',
         { class: 'el-secao-cab', type: 'button', 'aria-expanded': String(o.aberta), onclick: () => (o.alternar(), sfx.click(), desenhar()) },
         h('span', { class: 'el-secao-seta', 'aria-hidden': 'true' }, o.aberta ? '▾' : '▸'),
-        h('i', null),
+        h('span', { class: 'el-secao-ic', 'aria-hidden': 'true' }, ic(o.icone)),
         o.nome,
         h('small', null, String(o.n)),
       ),
@@ -304,6 +320,7 @@ export function abrirElenco(app: App) {
           secao({
             nome: g,
             n: ns.length,
+            icone: iconeDoGrupo(g),
             cls: `el-mestre${ns.length ? '' : ' vazia'}`,
             aberta: !!busca || (ns.length ? !npcsFechados.has(g) : vaziosAbertos.has(g)),
             alternar: alterna(ns.length ? npcsFechados : vaziosAbertos, g),
@@ -330,7 +347,7 @@ export function abrirElenco(app: App) {
       card({ chave: e.chave, nome: e.nome, linha: linhaAmeaca(e), unico: combate.ehPortadorDeReliquia(e.livroId), figura: figura({ arte: e.criatura?.aparencias[0]?.arte, elemento: e.elemento, nome: e.nome, livroId: e.livroId }), usar: (ev) => usar(ev, () => colocarAmeaca(e, 1, 'variadas')), cls: `el-de-${e.elemento ?? 'mundanas'}` });
     grade.replaceChildren(
       ...GRUPOS.filter((g) => porGrupo.has(g.id)).map((g) =>
-        secao({ nome: g.nome, n: porGrupo.get(g.id)!.flat().length, cls: `el-${g.id}`, aberta: !!busca || ameacasAbertas.has(g.id), alternar: alterna(ameacasAbertas, g.id), filhos: porGrupo.get(g.id)!.flat().map(cardAmeaca) }),
+        secao({ nome: g.nome, n: porGrupo.get(g.id)!.flat().length, icone: g.icone, cls: `el-${g.id}`, aberta: !!busca || ameacasAbertas.has(g.id), alternar: alterna(ameacasAbertas, g.id), filhos: porGrupo.get(g.id)!.flat().map(cardAmeaca) }),
       ),
     );
     if (!fams.length) grade.append(h('p', { class: 'el-vazio' }, 'Nada com esse nome.'));

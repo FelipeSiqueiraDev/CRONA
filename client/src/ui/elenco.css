@@ -289,12 +289,22 @@
 .el-secao-cab:hover {
   background: color-mix(in srgb, var(--el-cor, #e9a944) 12%, transparent);
 }
-.el-secao-cab i {
-  width: 1.2rem;
-  height: 1.2rem;
-  transform: rotate(45deg);
-  background: var(--el-cor, #888);
-  box-shadow: 0 0 0.8rem var(--el-cor, #888);
+/* o ícone do grupo: num losango escuro com a borda e o brilho da cor do grupo */
+.el-secao-ic {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border: 0.14rem solid color-mix(in srgb, var(--el-cor, #888) 70%, transparent);
+  border-radius: 0.6rem;
+  background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--el-cor, #888) 30%, #0a1424), #060c16 80%);
+  box-shadow: 0 0 0.7rem color-mix(in srgb, var(--el-cor, #888) 45%, transparent);
+}
+.el-secao-ic .ic {
+  width: 1.8rem;
+  height: 1.8rem;
+  color: color-mix(in srgb, var(--el-cor, #888) 55%, #fff2d6);
 }
 .el-secao-cab small {
   margin-left: auto;
@@ -849,7 +859,7 @@
 .el-secao.vazia .el-secao-cab {
   color: color-mix(in srgb, var(--r-ouro-hi, #ffd27a) 55%, transparent);
 }
-.el-secao.vazia .el-secao-cab i {
+.el-secao.vazia .el-secao-ic {
   opacity: 0.45;
 }
 .el-secao.vazia .el-secao-grade {
