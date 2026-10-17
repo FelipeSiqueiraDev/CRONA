@@ -1467,7 +1467,58 @@ export class CombateScreen {
       botao('Preparar', 'escudo', () => void this.preparar(), 'escuro', 'Preparar uma ação com gatilho (LR p. 86)', !vez),
       botao('Passar turno', 'avancar', () => this.acao({ tipo: 'passar' }), 'escuro', 'Fim do turno de quem está na vez', !vez),
     );
-    this.trocar(this.iniCorpo, h('div', { class: 'cb-ini-lista cb-rola' }, ...linhas), botoes);
+    // a lista rola arrastando (sem barra, 17/10, o Felipe) e a rolagem não volta ao começo a cada mudança
+    const antes = this.iniCorpo.querySelector<HTMLElement>('.cb-ini-lista')?.scrollLeft ?? 0;
+    const lista = h('div', { class: 'cb-ini-lista cb-rola' }, ...linhas);
+    this.arrastarParaRolar(lista);
+    this.trocar(this.iniCorpo, lista, botoes);
+    lista.scrollLeft = antes;
+  }
+
+  /** Clicar e arrastar rola a lista para o lado (a roda do mouse também); o arrasto não conta como clique na carta. */
+  private arrastarParaRolar(el: HTMLElement) {
+    let x0 = 0;
+    let s0 = 0;
+    let ativo = false;
+    let moveu = false;
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || (e.target as HTMLElement).closest('.cb-ini-x')) return;
+      ativo = true;
+      moveu = false;
+      x0 = e.clientX;
+      s0 = el.scrollLeft;
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!ativo) return;
+      const dx = e.clientX - x0;
+      if (!moveu && Math.abs(dx) > 6) {
+        moveu = true;
+        el.setPointerCapture(e.pointerId);
+        el.classList.add('arrastando');
+      }
+      if (moveu) el.scrollLeft = s0 - dx;
+    });
+    const solta = () => {
+      ativo = false;
+      el.classList.remove('arrastando');
+    };
+    el.addEventListener('pointerup', solta);
+    el.addEventListener('pointercancel', solta);
+    el.addEventListener(
+      'click',
+      (e) => {
+        if (moveu) (e.stopImmediatePropagation(), e.preventDefault(), (moveu = false));
+      },
+      true,
+    );
+    el.addEventListener(
+      'wheel',
+      (e) => {
+        if (el.scrollWidth <= el.clientWidth) return;
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) (el.scrollLeft += e.deltaY, e.preventDefault());
+      },
+      { passive: false },
+    );
   }
 
   private linhaIni(c: Combate, e: Entrada): HTMLElement {
@@ -1501,6 +1552,7 @@ export class CombateScreen {
         h('span', { class: 'cb-ini-sub' }, h('span', null, sub), naVez ? h('span', { class: 'cb-suavez' }, 'Sua vez') : e.mestre ? this.estadoMestre(c, ps) : this.estadoCurto(c, ps[0])),
       ),
       naVez ? h('span', { class: 'cb-seta' }, ic('direita')) : null,
+      h('span', { class: 'cb-ini-brilho', 'aria-hidden': 'true' }),
       // tirar do combate (fugiu, caiu, se rendeu): o × da carta; no turno do mestre, escolhe quem
       c.fase === 'andamento'
         ? h(

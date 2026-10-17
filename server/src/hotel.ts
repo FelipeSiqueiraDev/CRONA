@@ -3,6 +3,7 @@ import type { WebSocket } from 'ws';
 import {
   BANCOS_VAN,
   CENA_MAX_CENAS,
+  COR_DO_ELEMENTO,
   lerCena,
   semNotas,
   type CenaAoVivo,
@@ -594,7 +595,7 @@ export class Hotel implements HotelApi {
           x: room.data.door.x,
           y: room.data.door.y,
           dir: room.data.door.dir,
-          color: '#b3261e',
+          color: COR_DO_ELEMENTO[cr.ficha.elemento ?? ''] ?? '#b3261e',
           vitals: { pv: cr.pv, pvMax: cr.pv, pe: 0, peMax: 0, san: 0, sanMax: 0 },
           criatura: { id: cr.id, aparencia: ap.id },
           ...(cr.flutua ? { flutua: true } : {}),
@@ -1447,6 +1448,12 @@ export class Hotel implements HotelApi {
     if (changed) this.save();
   }
 
+  /** A cor do elemento da criatura de uma peça (as que já estavam em campo também ganham a cor certa). */
+  private corDaCriatura(id?: string): string | undefined {
+    const cr = id ? this.db.bestiario?.find((x) => x.id === id) : undefined;
+    return cr ? COR_DO_ELEMENTO[cr.ficha.elemento ?? ''] : undefined;
+  }
+
   /** Estado da sessão para um papel (o "me" de cada pessoa entra no envio). */
   private sessionState(group: number[], role: Role): Omit<Session, 'me'> {
     const key = Math.min(...group);
@@ -1471,7 +1478,7 @@ export class Hotel implements HotelApi {
       return {
         id: t.token.id,
         name: t.name,
-        color: t.color ?? playerColorFor(t.name),
+        color: this.corDaCriatura(t.criatura?.id) ?? t.color ?? playerColorFor(t.name),
         capacity: carga ? carga.espacos : (t.capacity ?? DEFAULT_CAPACITY),
         load: carga ? carga.usados : round1(load.get(t.name.toLowerCase()) ?? 0),
         look: t.look,

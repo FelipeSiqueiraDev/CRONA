@@ -252,6 +252,7 @@ export class RoomInstance {
       armed: !!u.meta?.armed,
       hurt: !!u.meta?.hurt,
       vitals: u.meta?.vitals,
+      criatura: u.meta?.criatura,
     }));
   }
 
@@ -2064,6 +2065,7 @@ export class RoomInstance {
       armed: !!u.meta?.armed,
       hurt: !!u.meta?.hurt,
       vitals: u.meta?.vitals,
+      criatura: u.meta?.criatura,
     }));
   }
 
