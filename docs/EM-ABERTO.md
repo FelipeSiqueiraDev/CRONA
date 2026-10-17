@@ -2,6 +2,16 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 17/10, fim da tarde (branch `claude/tatica-codigo`): o jogo de verdade atualizado e a tela do COMBATE com respiro
+
+- **O jogo de verdade (8080) subiu com tudo de 17/10** (backup `crona_2026-10-17_16-25-32.dump` antes; o `SEDE_REV`/`FAZENDA_REV` refizeram as salas: ajuste à mão no jogo que não estava no seed voltou ao seed). O "nome do NPC não salva" era o 8080 ainda no código velho: no código novo salva pelo Elenco, pelo lápis da aba NPCs e pela Identificação (conferido na prévia, também depois de recarregar).
+- **COMBATE (o Felipe: "tudo apertado, tudo cortando"; o scroll de baixo tem que mudar):** a faixa da iniciativa com o selo "Sua vez" na fila, a foto dentro da carta e mais altura; a gaveta de baixo (Alvo / Efeitos / Registro) de 20 para 29 rem (o mapa cede 9 rem; a câmera se ajusta), a nota do alvo na largura toda e o scroll no padrão do jogo (cobre sobre azul-noite); os campos do bônus (+2) e da Luta sem corte. **Registro do combate: o mais novo em cima, o início embaixo.**
+- **Manobra:** quando o alvo não tem Luta na ficha, o campo para digitar fica na página da Rolagem (antes só na página anterior, escondida: a tela dizia "digite a Luta" e não tinha onde). Conferido na prévia: Luta, d20s e o passo Efeito ("fica caído"), confirmar e o registro. O alvo que continua marcado ao passar o turno está no código (`combate.ts`, `ultimaVez`), mas não deu para ver numa luta de teste com os dois participantes em outra cena.
+- **Poses deitadas conferidas:** as 14 (dormindo e caído) na mesma escala, sem defeito evidente.
+- **Sentada em banco alto (o Felipe: "a Agatha tá sentada toda errada"):** o assento acima de 0,45 m (banco do bar, de laboratório) sobe a pose, e o quadril, não os pés, é o que fica em cima do assento (`meioDoQuadril`, em `sprites.ts`). Cadeira baixa não muda.
+- **Arte dos portadores de relíquia e dos Existidos (Códex, 8 direções, na altura da Catarina):** chegaram e instalados os Existidos refeitos pelo retrato da lista (cinza, escrita preta, olhos brancos; os dourados de antes ficaram em `arte\PERSONAGENS-ANIMACAO	rabalho\_backup-existidos-dourados`), o Deus da Morte e o Diabo. A fila (`trabalho/fila_monstros.sh`, log em `fila_monstros.log`) segue com a Magistrada, o Anfitrião e as faces; cada um é cortado com `cortar_8.py --altura 470` e instalado com `monstros-tabuleiro/instalar_monstro.py <id> <v>`.
+- **C.R.I.S (só leitura, o Felipe pediu):** as fichas dos Marcados no CRONA e no C.R.I.S batem em atributos, PV/PE/SAN e poderes (o +1 do NEX 20% está na progressão); mudam só alguns itens. Das fichas de NPC, o C.R.I.S só tem de verdade o Miguel; a Agatha é parcial e a Ivete e a Marcela são modelos em branco (tudo 1).
+
 ## PARA A SESSÃO DE 18/10 (Sede / Fazenda): o que falta
 
 - **Atualizar o jogo de verdade (8080) de manhã**, antes da sessão: backup do banco (`npm run banco:backup`) e

@@ -484,6 +484,9 @@ export class Hotel implements HotelApi {
     if (m.t === 'criaturaColocar') {
       const cr = this.db.bestiario.find((x) => x.id === m.criaturaId);
       if (!cr) return c.send({ t: 'error', msg: 'Criatura não encontrada.' });
+      // a arte que o Códex entregou vira personagem antes de pôr a peça: senão a primeira entra sem a cara dela (17/10:
+      // o portador de relíquia, criado na hora, aparecia como o boneco de pixel até o servidor reiniciar)
+      if (this.criaturasComArte(false)) this.broadcastCharacters();
       // o portador de relíquia é único na campanha (17/10): um só, e nenhum se já houver um em alguma cena dela
       const unico = cmb.ehPortadorDeReliquia(cr.ficha.livro);
       if (unico) {
@@ -520,6 +523,7 @@ export class Hotel implements HotelApi {
     if (m.t === 'npcColocar') {
       const npc = (this.db.npcs ?? []).find((x) => x.id === m.npcId);
       if (!npc) return c.send({ t: 'error', msg: 'NPC não encontrado.' });
+      if (this.criaturasComArte(false)) this.broadcastCharacters();
       if (this.npcsEmCampo(room.data.id).includes(npc.id)) return c.send({ t: 'error', msg: `${npc.nome} já está em cena.` });
       if (room.tokenList().length + 1 > 30) return c.send({ t: 'error', msg: 'Máximo de 30 peças por cena.' });
       // o nome dele; com outro igual na cena (dois Miguéis?), numerado
