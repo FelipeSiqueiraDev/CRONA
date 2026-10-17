@@ -912,7 +912,9 @@ export class RoomView {
         const t = mesa ? this.tampo(mesa, true) : null;
         if (t) {
           const meia = (tr ? tr.real[1] : 0.5) / M_POR_CASA / 2;
-          const encaixa = 0.25; // quanto o assento entra embaixo do tampo (~0,19 m)
+          // quanto o assento entra embaixo do tampo (~4 cm): o bastante para parecer puxada para a mesa; mais que isso, o
+          // encosto (mais alto que o tampo) passava por cima da mesa e a cadeira parecia enfiada nela (17/10)
+          const encaixa = 0.05;
           const c = fx ? it.x + 0.5 : it.y + 0.5;
           const lado = fx ? it.y + 0.5 : it.x + 0.5;
           const [tc, th, lc, lh] = fx ? [t.cx, t.hx, t.cy, t.hy] : [t.cy, t.hy, t.cx, t.hx];
@@ -921,7 +923,7 @@ export class RoomView {
             const alvo = borda - (fx || fy) * (meia - encaixa);
             // para a mesa (o tampo menor que as casas) ou para trás (a mesa com `aumento`, que entra na casa dela):
             // o assento fica sempre um pouco embaixo da borda, nem longe nem dentro da mesa
-            const d = Math.max(-0.45, Math.min(0.7, (alvo - c) * (fx || fy)));
+            const d = Math.max(-0.45, Math.min(0.35, (alvo - c) * (fx || fy)));
             if (Math.abs(d) > 0.02) r = fx ? [d * fx, 0] : [0, d * fy];
           }
         }
