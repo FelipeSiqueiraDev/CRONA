@@ -1148,29 +1148,31 @@ html:not(.modo-ficha) .cb-ini .cb-ini-linha {
 }
 .cb-ini-brilho {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
   z-index: 1;
+  width: 40%;
   pointer-events: none;
-  border-radius: inherit;
-  background: linear-gradient(105deg, transparent 35%, rgba(255, 236, 190, 0.38) 50%, transparent 65%);
-  background-size: 260% 100%;
-  background-position: 160% 0;
-  animation: cb-ini-brilha 1.2s ease-out 0.15s 1 both;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  mix-blend-mode: screen;
+  /* o mesmo reflexo que passa nas barras de PV, PE e SAN (hud.css), cada carta no seu tempo */
+  animation: hud-reflexo 7s ease-in-out infinite;
 }
-html:not(.modo-ficha) .cb-ini .cb-ini-linha:hover .cb-ini-brilho {
-  animation: cb-ini-brilha 0.9s ease-out 1 both;
+html:not(.modo-ficha) .cb-ini .cb-ini-linha:nth-child(2) .cb-ini-brilho {
+  animation-delay: 1.4s;
 }
-@keyframes cb-ini-brilha {
-  from {
-    background-position: 160% 0;
-  }
-  to {
-    background-position: -60% 0;
-  }
+html:not(.modo-ficha) .cb-ini .cb-ini-linha:nth-child(3) .cb-ini-brilho {
+  animation-delay: 2.8s;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha:nth-child(4) .cb-ini-brilho {
+  animation-delay: 4.2s;
+}
+html:not(.modo-ficha) .cb-ini .cb-ini-linha:nth-child(n + 5) .cb-ini-brilho {
+  animation-delay: 5.6s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .cb-ini-brilho,
-  html:not(.modo-ficha) .cb-ini .cb-ini-linha:hover .cb-ini-brilho {
+  .cb-ini-brilho {
     animation: none;
   }
 }
