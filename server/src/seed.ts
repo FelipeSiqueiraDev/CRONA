@@ -2,6 +2,7 @@ import { desencostarItensDeParede } from './paredes';
 import {
   existidoPadrao,
   npcsPorLeva,
+  renomearNpcs,
   footprint,
   getFurni,
   getLayout,
@@ -721,7 +722,9 @@ function npcsIniciais(db: Database): boolean {
   const levas = npcsPorLeva();
   // o banco de antes das levas (16/10, só o Miguel) já recebeu a primeira
   const feitas = db.npcsRev ?? (db.npcs ? 1 : 0);
-  if (feitas >= levas.length) return false;
+  // os sobrenomes que o Felipe deu depois (17/10), nos bancos que ainda têm o nome antigo
+  const renomeados = renomearNpcs(db.npcs ?? []);
+  if (feitas >= levas.length) return renomeados;
   const lista = (db.npcs ??= []);
   for (const n of levas.slice(feitas).flat()) if (!lista.some((x) => x.id === n.id)) lista.push(n);
   db.npcsRev = levas.length;

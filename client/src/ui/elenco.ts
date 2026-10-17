@@ -19,7 +19,8 @@ import './elenco.css';
  * - Sub-abas que abrem e fecham (17/10, o Felipe): os NPCs por grupo (`grupoDoNpc`, o mestre muda no detalhe) e as
  *   ameaças por elemento, da de VD mais baixo para a mais alta. O que fica aberto é lembrado no navegador.
  * - O card do NPC mostra a imagem do Felipe que deu origem a ele (`arte/personagens/<arte>/foto.jpg`), no lugar da pose
- *   do tabuleiro (17/10, o Felipe: "ao invés dos bonequinhos ali pra fazer escolha, a foto deles"); sem foto, a pose.
+ *   do tabuleiro (17/10, o Felipe: "ao invés dos bonequinhos ali pra fazer escolha, a foto deles"), no recorte do rosto
+ *   (`rosto.jpg`, os olhos no meio); sem foto, a pose.
  */
 
 type Aba = 'npcs' | 'ameacas';
@@ -294,8 +295,9 @@ export function abrirElenco(app: App) {
   };
 
   // ---------- o detalhe ao lado ----------
-  /** A imagem do Felipe que deu origem ao NPC (arte/personagens/<arte>/foto.jpg), se existir. */
-  const fotoDe = (arte?: string) => (arte && arquivos ? ['jpg', 'webp', 'png'].map((x) => `/arte/personagens/${arte}/foto.${x}`).find((u) => arquivos!.has(u)) : undefined);
+  /** A imagem do Felipe que deu origem ao NPC: o rosto recortado dela (rosto.jpg, os olhos no meio) ou a foto inteira. */
+  const fotoDe = (arte?: string) =>
+    arte && arquivos ? ['rosto.jpg', 'foto.jpg', 'foto.webp', 'foto.png'].map((x) => `/arte/personagens/${arte}/${x}`).find((u) => arquivos!.has(u)) : undefined;
   /** Os grupos que já existem, para o campo sugerir. */
   const listaGrupos = () => h('datalist', { id: 'el-grupos' }, ...[...new Set(app.state.npcs.map(grupoDoNpc))].map((g) => h('option', { value: g })));
   const detalheNpc = (n: Npc): Node[] => [

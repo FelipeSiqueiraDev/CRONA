@@ -43,6 +43,21 @@ describe("npcs", () => {
     assert.deepEqual(db.npcs.map((n) => n.id).sort(), ["agata", "geraldo-ribeiro", "herman-arantes", "ivete", "miguel-albuquerque", "npc-cabelo-rosa", "npc-camisa-rosa", "npc-jaleco", "npc-ruivo", "samuel"]);
   });
 
+  test("os sobrenomes de 17/10 entram no banco que tem o nome antigo; o que o mestre mudou fica", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    const ag = db.npcs!.find((n) => n.id === "agata")!;
+    const iv = db.npcs!.find((n) => n.id === "ivete")!;
+    Object.assign(ag, { nome: "Ágata", nota: "a ocultista da base" });
+    Object.assign(iv, { nome: "Ivete da Silva", nota: "armas e equipamentos; o bar de cima" });
+    upgradeDb(db);
+    assert.equal(ag.nome, "Agatha Volkomenn");
+    assert.equal(ag.nota, "ocultista da Ordo Realitas");
+    assert.equal(iv.nome, "Ivete da Silva");
+    assert.equal(iv.nota, "responsável pelo arsenal da Ordem");
+    assert.equal(db.npcs!.find((n) => n.id === "samuel")!.nome, "Samuel Norte");
+  });
+
   test("apagar não traz de volta", () => {
     const db = seedDb();
     upgradeDb(db);

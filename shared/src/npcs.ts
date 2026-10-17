@@ -50,9 +50,9 @@ export function npcsPorLeva(): Npc[][] {
   return [
     [miguelAlbuquerque()],
     [
-      { id: 'agata', nome: 'Ágata', arte: 'agata', nota: 'a ocultista da base', look: { ...lookBase, skin: '#c9926a', hair: '#2a1a16', top: '#7a1e1e', pants: '#2a3040' } },
-      { id: 'ivete', nome: 'Ivete', arte: 'ivete', nota: 'armas e equipamentos; o bar de cima', look: { ...lookBase, skin: '#b07a52', hair: '#d8d4cc', top: '#3a5a86', pants: '#1e1c1a' } },
-      { id: 'samuel', nome: 'Samuel', arte: 'samuel', nota: 'o C.R.i.S e a tecnologia', look: { ...lookBase, skin: '#6a4430', hair: '#3a2416', top: '#3e5a2c', pants: '#2e2620', shoes: '#e8e4dc' } },
+      { id: 'agata', nome: 'Agatha Volkomenn', arte: 'agata', nota: 'ocultista da Ordo Realitas', look: { ...lookBase, skin: '#c9926a', hair: '#2a1a16', top: '#7a1e1e', pants: '#2a3040' } },
+      { id: 'ivete', nome: 'Ivete Beicur', arte: 'ivete', nota: 'responsável pelo arsenal da Ordem', look: { ...lookBase, skin: '#b07a52', hair: '#d8d4cc', top: '#3a5a86', pants: '#1e1c1a' } },
+      { id: 'samuel', nome: 'Samuel Norte', arte: 'samuel', nota: 'hacker e pesquisador da Ordem', look: { ...lookBase, skin: '#6a4430', hair: '#3a2416', top: '#3e5a2c', pants: '#2e2620', shoes: '#e8e4dc' } },
     ],
     [
       { id: 'geraldo-ribeiro', nome: 'Geraldo Ribeiro', arte: 'geraldo-ribeiro', nota: 'o pai da Cora', look: { ...lookBase, skin: '#d2a07a', hair: '#3a2a1e', top: '#b8a68a', pants: '#3a2c22' } },
@@ -66,6 +66,28 @@ export function npcsPorLeva(): Npc[][] {
       { id: 'npc-jaleco', nome: 'Jaleco', arte: 'npc-jaleco', nota: 'nome em aberto', look: { ...lookBase, skin: '#e8c8b0', hair: '#141214', top: '#e8e4dc', pants: '#1a1816', shoes: '#141210' } },
     ],
   ];
+}
+
+/**
+ * Os nomes completos que o Felipe deu depois (17/10): no banco que ainda tem o nome antigo de quando o NPC entrou (e a
+ * nota antiga), troca; o que o mestre já mudou à mão fica.
+ */
+const RENOMEADOS: { id: string; de: string; notaDe: string }[] = [
+  { id: 'agata', de: 'Ágata', notaDe: 'a ocultista da base' },
+  { id: 'ivete', de: 'Ivete', notaDe: 'armas e equipamentos; o bar de cima' },
+  { id: 'samuel', de: 'Samuel', notaDe: 'o C.R.i.S e a tecnologia' },
+];
+export function renomearNpcs(lista: Npc[]): boolean {
+  let mudou = false;
+  const padrao = npcsPorLeva().flat();
+  for (const r of RENOMEADOS) {
+    const n = lista.find((x) => x.id === r.id);
+    const novo = padrao.find((x) => x.id === r.id);
+    if (!n || !novo) continue;
+    if (n.nome === r.de) ((n.nome = novo.nome), (mudou = true));
+    if (n.nota === r.notaDe) ((n.nota = novo.nota), (mudou = true));
+  }
+  return mudou;
 }
 
 const texto = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, '').trim().slice(0, max) : '');

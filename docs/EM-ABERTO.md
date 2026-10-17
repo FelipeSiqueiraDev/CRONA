@@ -199,6 +199,12 @@ peito sobe e desce, acabou", "não estraga os bonecos".
 - **A foto de cada NPC** (as imagens do Felipe que deram origem a eles) em `arte/personagens/<id>/foto.jpg`, os 10: é
   ela que aparece no card do Elenco, no lugar do bonequinho (o Felipe: "ao invés dos bonequinhos ali pra fazer escolha, a
   foto deles"); o detalhe ao lado continua com a pose do tabuleiro. NPC sem foto mostra a pose.
+  O card usa o recorte do rosto (`rosto.jpg`, os olhos no meio, o rosto do mesmo tamanho em todos), feito por
+  `trabalho/npcs-17-10/rosto_card.py` (o ponto entre os olhos e o zoom de cada foto, à mão). NPC novo com foto: pôr a
+  linha dele no script e rodar.
+- **Os sobrenomes (o Felipe, 17/10):** Agatha Volkomenn (ocultista da Ordo Realitas), Ivete Beicur (responsável pelo
+  arsenal da Ordem) e Samuel Norte (hacker e pesquisador da Ordem). O banco que ainda tem o nome antigo troca sozinho ao
+  subir o servidor (`renomearNpcs`); o que o mestre já mudou à mão fica. O jogo de verdade troca quando subir o código novo.
 
 ## Feito em 17/10, tarde (branch `claude/tatica-codigo`): arte pelo Códex da conta nova (NPCs novos, agachado, Santa Amália)
 
