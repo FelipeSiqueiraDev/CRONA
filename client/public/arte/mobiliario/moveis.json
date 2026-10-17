@@ -24647,6 +24647,16 @@
         "arquivo": "janela_cozinha/parede-l-1.png",
         "ax": 32.0,
         "ay": 50.1
+      },
+      "r-2": {
+        "arquivo": "janela_cozinha/parede-r-2.png",
+        "ax": 45.0,
+        "ay": 50.1
+      },
+      "l-2": {
+        "arquivo": "janela_cozinha/parede-l-2.png",
+        "ax": 32.0,
+        "ay": 50.1
       }
     },
     "quadros": {
@@ -43610,6 +43620,16 @@
       },
       "l-1": {
         "arquivo": "janela_vidro/parede-l-1.png",
+        "ax": 31.0,
+        "ay": 37.6
+      },
+      "r-2": {
+        "arquivo": "janela_vidro/parede-r-2.png",
+        "ax": 33.0,
+        "ay": 37.6
+      },
+      "l-2": {
+        "arquivo": "janela_vidro/parede-l-2.png",
         "ax": 31.0,
         "ay": 37.6
       }

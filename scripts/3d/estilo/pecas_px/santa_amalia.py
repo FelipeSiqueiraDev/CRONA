@@ -1813,11 +1813,13 @@ def _desenhos_parede(xc=1.5, zc=1.5):
     PC.sombra_parede(n0, 1, 1)
 
 
-def _janela_vidro(xc=1.5, zc=1.5, aberta=True):
+def _janela_vidro(xc=1.5, zc=1.5, aberta=True, cortina=False):
     """
     A janela de alumínio de correr (56 x 50 px): o vão na parede, lá fora o céu, as copas e a grade branca; as duas
     folhas de vidro (os reflexos em diagonal) no caixilho de alumínio, a moldura e o peitoril de granito. Aberta (o
     estado 0), a folha da direita correu para trás da da esquerda: a metade da direita fica sem vidro, o vento entra.
+    Com a cortina (o estado 2, 17/10, o Felipe: "aberto, fechado, cortina fechada"), o linho franzido cobre o vão por
+    dentro, as duas folhas se encontrando no meio.
     """
     n0 = len(PC.C().objs)
     a, h = PC.mw(56) / 2 - 0.06, PC.mh(50) / 2 - 0.07
@@ -1841,6 +1843,14 @@ def _janela_vidro(xc=1.5, zc=1.5, aberta=True):
         d = (pl.u - u0) + pl.w * 0.55
         pl.pin(vidro & (d > 0) & (d < 2.2), '#e6f2f4')
         pl.pin(vidro & (d > 3.4) & (d < 4.4), '#d4e6ec')
+    if cortina:
+        # o linho por dentro: as pregas em faixas (o claro, o meio, a sombra e o fundo da prega) e o encontro das folhas
+        tons = [np.array(hx(c), float) for c in ('#f2e6ca', '#e4d2ac', '#cbb28a', '#a98d66')]
+        fase = (pl.u / 3.0) % 1.0
+        k = np.select([fase < 0.38, fase < 0.62, fase < 0.86], [0, 1, 2], 3)
+        for i, cor in enumerate(tons):
+            pl.rgb[pl.dentro & (k == i)] = cor
+        pl.pin(pl.dentro & (np.abs(pl.u - W / 2) < 0.6), '#8e7452')
     pl.grava()
     # o vão: a ombreira da esquerda e o peitoril de dentro (o reboco), e o recorte do que fica atrás da parede
     o = PC.novo()
@@ -1898,5 +1908,6 @@ ITENS = {
 ITENS_PAREDE = {
     'desenho_espiral_parede': (lambda: _desenhos_parede(1.5, 1.5), (1.5, 1.5)),
     # a janela: 0 aberta (o padrão, como a janela da cozinha), '1' fechada
-    'janela_vidro': (lambda: _janela_vidro(1.5, 1.5, True), (1.5, 1.5), {'1': lambda: _janela_vidro(1.5, 1.5, False)}),
+    'janela_vidro': (lambda: _janela_vidro(1.5, 1.5, True), (1.5, 1.5),
+                     {'1': lambda: _janela_vidro(1.5, 1.5, False), '2': lambda: _janela_vidro(1.5, 1.5, False, True)}),
 }

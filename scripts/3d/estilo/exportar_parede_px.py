@@ -42,6 +42,11 @@ def _janela_fechada(ok):
     JC.FECHADA['ok'] = ok
 
 
+def _janela_cortina(ok):
+    JC.FECHADA['ok'] = ok
+    JC.CORTINA['ok'] = ok
+
+
 # def do catálogo: (a função que constrói o item e o meio dele na parede de trás, em metros)
 ITENS = {
     'janela_cozinha': _janela_cozinha,
@@ -49,7 +54,7 @@ ITENS = {
 # animação do estado 0: quantos quadros (o loop inteiro, t de 0 a 1) e quanto tempo cada um fica (ms)
 QUADROS = {'janela_cozinha': (12, 140)}
 # os outros estados: estado -> a função que liga (True) e desliga (False) o jeito daquele estado
-ESTADOS = {'janela_cozinha': {'1': _janela_fechada}}
+ESTADOS = {'janela_cozinha': {'1': _janela_fechada, '2': _janela_cortina}}
 
 # Os itens de parede dos outros cômodos, desenhados SOZINHOS (sem a cena inteira): nos módulos de pecas_px/,
 # ITENS_PAREDE = {def: (desenho, (x, z))}. O desenho põe o item na parede de trás (o plano y = 0, saindo para +y),

@@ -60,6 +60,8 @@ LARG = 0.36                # a largura de cada folha da cortina (franzida)
 PREGAS = 3                 # as pregas de cada folha
 # a janela FECHADA (14/10, o estado 1 do jogo): as duas folhas de vidro fecham o vão de baixo e a cortina fica parada
 FECHADA = {'ok': False}
+# a cortina FECHADA (17/10, o estado 2 do jogo): a janela fechada e as duas folhas da cortina correndo até o meio do vão
+CORTINA = {'ok': False}
 SOL = np.array([2.4, 0.35, -1.0]) if os.environ.get('NOITE') != '1' else np.array([2.2, 0.5, -0.85])     # o sentido em que a luz anda (de fora para dentro e para baixo), no quadro da parede
 SOL = SOL / np.linalg.norm(SOL)
 SOL_W = _w(SOL)                         # o mesmo sentido no mundo
@@ -123,9 +125,9 @@ def _folha(lado, t):
     solta = 0.35 + 0.65 * s                          # e mais na beira solta que na ponta presa
     # onde fica a folha: de fora (passa um pouco do vão) para dentro do vão
     if lado > 0:
-        y_fora, y_dentro = YB + 0.24, YB + 0.24 - LARG
+        y_fora, y_dentro = YB + 0.24, (YM + 0.01 if CORTINA['ok'] else YB + 0.24 - LARG)
     else:
-        y_fora, y_dentro = YA - 0.24, YA - 0.24 + LARG
+        y_fora, y_dentro = YA - 0.24, (YM - 0.01 if CORTINA['ok'] else YA - 0.24 + LARG)
     para_dentro = -lado                              # o sentido do meio do vão
     # as pregas: a fazenda vai e volta da parede (fundo da prega na parede, a crista para a sala)
     gira = (0.0 if FECHADA['ok'] else 0.45) * w * solta * math.sin(2 * math.pi * (t + fase) + 0.8) + 0 * s

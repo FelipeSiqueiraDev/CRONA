@@ -547,7 +547,7 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'board_detective', name: 'Quadro de Detetive', category: 'parede', kind: 'board', w: 152, h: 82, colors: ['#8a6a44', '#b3261e'] },
   { id: 'board_investigation', name: 'Quadro de Investigação', category: 'parede', kind: 'board', w: 76, h: 50, colors: ['#6b4a2e', '#b3261e'] },
   // a janela da cozinha da fazenda (14/10): pixel art feita por código (scripts/3d/estilo/exportar_parede_px.py)
-  { id: 'janela_cozinha', name: 'Janela com Cortina', category: 'parede', kind: 'janela_sol', w: 64, h: 70, states: 2, colors: ['#9a5e36', '#bfe0f0', '#f0dfbf'], desc: 'Janela de madeira para o pasto, com a cortina de linho e o varão de ferro. Clique duplo abre e fecha (aberta, a cortina balança no vento).' },
+  { id: 'janela_cozinha', name: 'Janela com Cortina', category: 'parede', kind: 'janela_sol', w: 64, h: 70, states: 3, colors: ['#9a5e36', '#bfe0f0', '#f0dfbf'], desc: 'Janela de madeira para o pasto, com a cortina de linho e o varão de ferro. Clique duplo: aberta (a cortina balança no vento), fechada e fechada com a cortina.' },
   // a teia de aranha de canto (14/10), pixel art por código (scripts/3d/estilo/teia_px.py), tremendo de leve
   { id: 'teia', name: 'Teia de Aranha', category: 'parede', kind: 'teia', w: 36, h: 30, colors: ['#807868'], desc: 'Teia velha no canto do teto, cheia de poeira.' },
   { id: 'window_barred', name: 'Janela Gradeada', category: 'parede', kind: 'window', w: 44, h: 54, states: 2, colors: ['#1c2a3a', '#5fa8ff'] },
@@ -612,7 +612,7 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   { id: 'oratorio', name: 'Oratório', category: 'parede', kind: 'painting', w: 26, h: 40, colors: ['#2f5a8a', '#e2b24a'], desc: 'O oratório mineiro de madeira pintada, as portinholas abertas, a santinha de manto azul e a vela na mísula.' },
   // ---------- SANTA AMÁLIA (17/10) ----------
   { id: 'desenho_espiral_parede', name: 'Desenhos na Parede', category: 'parede', kind: 'painting', w: 40, h: 34, colors: ['#f0ece2', '#1a1a1a'], desc: 'As folhas presas com fita na parede, uma ao lado da outra, todas com a mesma espiral preta.' },
-  { id: 'janela_vidro', name: 'Janela de Vidro', category: 'parede', kind: 'window', w: 56, h: 50, states: 2, colors: ['#e8e4dc', '#bfe0f0'], desc: 'A janela de alumínio e vidro, com a grade branca por fora. Clique duplo abre e fecha.' },
+  { id: 'janela_vidro', name: 'Janela de Vidro', category: 'parede', kind: 'window', w: 56, h: 50, states: 3, colors: ['#e8e4dc', '#bfe0f0'], desc: 'A janela de alumínio e vidro, com a grade branca por fora. Clique duplo: aberta, fechada e fechada com a cortina.' },
 ];
 
 /** Metros → unidades de altura (duas casas). */
