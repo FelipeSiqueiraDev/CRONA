@@ -472,21 +472,35 @@ def _ponte():
         return np.where(dentro[:, None], fundo, out)
     m_arco = emissivo(face_arco)
     y0, y1 = 0.04, 1.46
-    # o corpo: as cabeceiras na margem (do chão até o tabuleiro) e o meio por cima da água (com o arco pintado)
-    caixa((0.0, A0, y0, y1, 0.0, Z_PONTE - 0.06), pedra)
-    caixa((A1, W, y0, y1, 0.0, Z_PONTE - 0.06), pedra)
+    pm = FF.mat_juntas(['#9a9282', '#a8a090', '#8e8676', '#b0a898'], _id_pe_de_moleque, '#4e483e', seed=8)
+    degrau = {'cima': pm, '*': pedra}
+    # o meio por cima da água (com o arco pintado) e o tabuleiro de pé-de-moleque
     o = obj()
     CZ.c.caixa((A0, A1, y0, y1, Z_AGUA - 0.02, Z_PONTE - 0.06), {'frente': m_arco, 'costas': m_arco, '*': pedra}, M, o)
-    # o tabuleiro de pé-de-moleque
-    pm = FF.mat_juntas(['#9a9282', '#a8a090', '#8e8676', '#b0a898'], _id_pe_de_moleque, '#4e483e', seed=8)
-    caixa((0.0, W, y0, y1, Z_PONTE - 0.06, Z_PONTE), {'cima': pm, '*': pedra})
-    # os parapeitos com o capeamento e os pilaretes das pontas
+    caixa((A0, A1, y0, y1, Z_PONTE - 0.06, Z_PONTE), degrau)
+    # as cabeceiras (17/10, o Felipe: "se ela for mais altinha, que tenha uma escadinha"): em cada margem, quatro
+    # degraus de pedra subindo da terra até o tabuleiro, ao longo da casa da ponta (o jogo põe a peça a 0,3 m nela)
+    n = 4
+    for i in range(n):
+        z = Z_PONTE * (i + 1) / (n + 1)
+        a = CASA * i / n
+        caixa((a, A0, y0, y1, 0.0, z), degrau)
+        caixa((W - A0, W - a, y0, y1, 0.0, z), degrau)
+    # as muretas baixas dos lados da escadinha, acompanhando os degraus
+    mureta = {'cima': liso('#c4bcac'), '*': pedra}
+    for (a, b) in ((y0, 0.16), (1.34, y1)):
+        for i in range(n):
+            z = Z_PONTE * (i + 1) / (n + 1) + 0.12
+            x0 = CASA * i / n
+            caixa((x0, A0, a, b, 0.0, z), mureta)
+            caixa((W - A0, W - x0, a, b, 0.0, z), mureta)
+    # os parapeitos só por cima do vão (com o capeamento) e os pilaretes no alto da escadinha
     cap = {'cima': liso('#c4bcac'), '*': liso('#aaa292')}
     for (a, b) in ((y0, 0.2), (1.3, y1)):
-        caixa((0.3, W - 0.3, a, b, Z_PONTE, Z_PONTE + 0.42), pedra)
-        caixa((0.3, W - 0.3, a - 0.025, b + 0.025, Z_PONTE + 0.42, Z_PONTE + 0.5), cap)
-        for x in (0.0, W - 0.3):
-            caixa((x, x + 0.3, a - 0.03, b + 0.03, Z_PONTE, Z_PONTE + 0.62), pedra)
+        caixa((A0, A1, a, b, Z_PONTE, Z_PONTE + 0.42), pedra)
+        caixa((A0, A1, a - 0.025, b + 0.025, Z_PONTE + 0.42, Z_PONTE + 0.5), cap)
+        for x in (A0 - 0.15, A1 - 0.15):
+            caixa((x, x + 0.3, a - 0.03, b + 0.03, 0.0, Z_PONTE + 0.62), pedra)
             caixa((x - 0.02, x + 0.32, a - 0.05, b + 0.05, Z_PONTE + 0.62, Z_PONTE + 0.7), cap)
     pegada(0.0, W, y0, y1)
 
