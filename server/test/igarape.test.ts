@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { findPath, getFurni, RoomMap } from "@crona/shared";
+import { findPath, footprint, getFurni, RoomMap } from "@crona/shared";
 import { seedDb, upgradeDb } from "../src/seed";
 import { IGARAPE, IGARAPE_RIO } from "../src/seedIgarape";
 
@@ -107,5 +107,30 @@ describe("Igarapé", () => {
       if (predio.rot === 4) assert.equal(passagem.y, map.height - 2, `${nome}: a porta de dentro devia ficar na parede da frente`);
       else assert.equal(passagem.y, 1, `${nome}: a porta de dentro devia ficar na parede do fundo`);
     }
+  });
+
+  test("a ponte: as cabeceiras mais baixas (a escadinha) e o meio mais alto, e dá para atravessar a pé", () => {
+    const cidade = porNome("Cidade");
+    const ponte = cidade.items.find((i) => i.defId === "igarape_ponte")!;
+    const map = new RoomMap(cidade.heightmap, cidade.door, cidade.items);
+    const fp = footprint(getFurni("igarape_ponte")!, ponte.rot);
+    const ao = (dx: number) => map.standHeight(ponte.x + dx, ponte.y);
+    assert.ok(ao(0) < ao(2) && ao(fp.sx - 1) < ao(3), "as cabeceiras mais baixas que o meio");
+    assert.ok(ao(0) > (map.floorHeight(ponte.x - 1, ponte.y) ?? 0), "a cabeceira é um degrau acima da terra");
+    // a pé, de uma margem à outra pela ponte
+    const ini = [ponte.x - 1, ponte.y];
+    const fim = [ponte.x + fp.sx, ponte.y];
+    const vistos = new Set([ini.join(",")]);
+    const fila = [ini];
+    while (fila.length) {
+      const [x, y] = fila.shift()!;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const k = `${x + dx},${y + dy}`;
+        if (vistos.has(k) || map.walkState(x + dx, y + dy) !== "walk" || Math.abs(map.standHeight(x + dx, y + dy) - map.standHeight(x, y)) > 1.5) continue;
+        vistos.add(k);
+        fila.push([x + dx, y + dy]);
+      }
+    }
+    assert.ok(vistos.has(fim.join(",")), "não dá para atravessar a ponte");
   });
 });

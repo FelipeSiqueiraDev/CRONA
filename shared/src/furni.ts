@@ -90,6 +90,11 @@ export interface FurniDef {
    * para a direita) e v do fundo (0) para a frente (depth - 1). Nelas se anda e se põe outra peça.
    */
   vazio?: [number, number][];
+  /**
+   * A altura de cima de cada casa (17/10, a ponte do Igarapé com a escadinha nas cabeceiras): [v][u] na peça virada
+   * para a frente (como o `vazio`), em metros no catálogo. Sem ela, todas as casas têm o `height`.
+   */
+  alturas?: number[][];
   /** os lados abertos da peça vazada (a cortina não tem o fundo; a mesa em U não tem a frente) */
   aberto?: ('fundo' | 'frente')[];
   /**
@@ -471,7 +476,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'igarape_capela', name: 'Capela', category: 'fazenda', kind: 'predio_vila', width: 6, depth: 8, height: 8.1, xray: true, rotations: ALL, colors: ['#efeae0', '#b4562e', '#2c5a92', '#b08a3a'], desc: 'A capelinha branca de Igarapé: o frontão com o óculo, a porta azul de duas folhas, a sineira com o sino e a cruz.' },
   { id: 'igarape_palafita', name: 'Casa de Palafita', category: 'fazenda', kind: 'predio_vila', width: 5, depth: 5, height: 4.2, xray: true, vazio: [[4, 0], [4, 1], [4, 2], [4, 3], [4, 4]], rotations: ALL, colors: ['#7a5a3c', '#b4562e', '#2c5a92', '#4a3424'], desc: 'A casa de tábuas em cima das estacas, com a coluna da direita por cima da água (vazia na pegada), a varanda com a rede e a escadinha.' },
   { id: 'igarape_palafita_b', name: 'Palafita', category: 'fazenda', kind: 'predio_vila', semNome: true, width: 5, depth: 5, height: 4.2, xray: true, vazio: [[4, 0], [4, 1], [4, 2], [4, 3], [4, 4]], rotations: ALL, colors: ['#7a5a3c', '#b4562e', '#2c5a92', '#4a3424'], desc: 'Outra palafita da beira do rio, sem nome no mapa.' },
-  { id: 'igarape_ponte', name: 'Ponte de Pedra', category: 'fazenda', kind: 'ponte', width: 6, depth: 2, height: 0.6, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#a8a090', '#5a5448'], desc: 'A ponte de pedra em arco por cima do rio: as cabeceiras nas duas margens (as casas das pontas) e o arco nas quatro do meio. Anda-se por cima.' },
+  { id: 'igarape_ponte', name: 'Ponte de Pedra', category: 'fazenda', kind: 'ponte', width: 6, depth: 2, height: 0.6, alturas: [[0.3, 0.6, 0.6, 0.6, 0.6, 0.3], [0.3, 0.6, 0.6, 0.6, 0.6, 0.3]], walkable: true, stackable: true, rotations: ALL, colors: ['#a8a090', '#5a5448'], desc: 'A ponte de pedra em arco por cima do rio: as cabeceiras nas duas margens (as casas das pontas) e o arco nas quatro do meio. Anda-se por cima.' },
   { id: 'igarape_canoa', name: 'Canoa', category: 'fazenda', kind: 'canoa', width: 1, depth: 4, height: 0.4, rotations: ALL, colors: ['#7e5c40', '#c0a070'], desc: 'A canoa de um pau só puxada para a beira, com o remo dentro e a corda amarrada na estaca.' },
   { id: 'igarape_ipe', name: 'Ipê Amarelo', category: 'fazenda', kind: 'arvore', width: 1, depth: 1, height: 6.2, xray: true, rotations: ALL, colors: ['#f2cc3a', '#4a3a2e'], desc: 'O ipê amarelo florido, sem uma folha, e as flores caídas no chão em volta.' },
   { id: 'igarape_rede', name: 'Rede de Dormir', category: 'casa', kind: 'bed', width: 1, depth: 3, height: 0.55, rotations: ALL, colors: ['#c8402e', '#e8b838', '#2e6aa6'], desc: 'A rede de faixas coloridas armada entre os dois esteios. Dá para deitar.' },
@@ -502,11 +507,11 @@ const FURNI_METERS: FurniDef[] = [
   // ---------- SANTA AMÁLIA (17/10) ----------
   // a cidade comum de Minas onde a Hydra procura o Arantes (server/src/seedSantaAmalia.ts); arte em pixel por código
   // (scripts/3d/estilo/pecas_px/santa_amalia.py). Os prédios têm a porta no meio da casa floor(width / 2) da frente.
-  { id: 'casa_moderna', name: 'Casa', category: 'casa', kind: 'predio_vila', semNome: true, width: 7, depth: 5, height: 4.4, xray: true, rotations: ALL, colors: ['#e8e2d4', '#b4562f', '#8a9aa6', '#5a2414'], desc: 'A casa térrea de cidade do interior: o reboco pintado e gasto, as janelas de vidro com grade, o telhado de telha cerâmica, a calçada de cimento.' },
-  { id: 'casa_valenca', name: 'Casa dos Valença', category: 'casa', kind: 'predio_vila', width: 9, depth: 6, height: 4.6, xray: true, rotations: ALL, colors: ['#e6d6b6', '#b4562f', '#6a4a30', '#5a2414'], desc: 'A casa térrea dos Valença: o reboco creme manchado, a varanda coberta com o piso de cerâmica e os vasos, as janelas de vidro com as cortinas fechadas.' },
-  { id: 'posto_saude', name: 'Posto de Saúde', category: 'casa', kind: 'predio_vila', width: 12, depth: 7, height: 4.8, xray: true, rotations: ALL, colors: ['#f2f0ea', '#2f6194', '#7fb88a', '#3a3a3a'], desc: 'O posto de saúde municipal: o prédio branco com o barrado azul, a placa com a cruz, as portas de vidro, a rampa com o corrimão e os canteiros.' },
-  { id: 'cartorio_predio', name: 'Cartório', category: 'casa', kind: 'predio_vila', width: 11, depth: 7, height: 5.0, xray: true, rotations: ALL, colors: ['#d8ccb4', '#5a5a5a', '#6a4a30', '#3a3a3a'], desc: 'O cartório de registro de imóveis: o prédio sóbrio de reboco bege, as colunas na entrada, as janelas com grade, a placa com a balança.' },
-  { id: 'prefeitura_predio', name: 'Prefeitura', category: 'casa', kind: 'predio_vila', width: 13, depth: 8, height: 8.0, xray: true, rotations: ALL, colors: ['#ece4d2', '#b4562f', '#2f6a5a', '#5a2414'], desc: 'A prefeitura: o sobrado neoclássico de dois andares, o frontão, as janelas altas, a escadaria e o mastro com a bandeira do município.' },
+  { id: 'casa_moderna', name: 'Casa', category: 'casa', kind: 'predio_vila', semNome: true, width: 8, depth: 7, height: 4.4, xray: true, rotations: ALL, colors: ['#e8e2d4', '#b4562f', '#8a9aa6', '#5a2414'], desc: 'A casa térrea de cidade do interior: o reboco pintado e gasto, as janelas de vidro com grade, o telhado de telha cerâmica, a calçada de cimento.' },
+  { id: 'casa_valenca', name: 'Casa dos Valença', category: 'casa', kind: 'predio_vila', width: 12, depth: 10, height: 4.6, xray: true, rotations: ALL, colors: ['#e6d6b6', '#b4562f', '#6a4a30', '#5a2414'], desc: 'A casa térrea dos Valença: o reboco creme manchado, a varanda coberta com o piso de cerâmica e os vasos, as janelas de vidro com as cortinas fechadas.' },
+  { id: 'posto_saude', name: 'Posto de Saúde', category: 'casa', kind: 'predio_vila', width: 16, depth: 12, height: 4.8, xray: true, rotations: ALL, colors: ['#f2f0ea', '#2f6194', '#7fb88a', '#3a3a3a'], desc: 'O posto de saúde municipal: o prédio branco com o barrado azul, a placa com a cruz, as portas de vidro, a rampa com o corrimão e os canteiros.' },
+  { id: 'cartorio_predio', name: 'Cartório', category: 'casa', kind: 'predio_vila', width: 14, depth: 11, height: 5.0, xray: true, rotations: ALL, colors: ['#d8ccb4', '#5a5a5a', '#6a4a30', '#3a3a3a'], desc: 'O cartório de registro de imóveis: o prédio sóbrio de reboco bege, as colunas na entrada, as janelas com grade, a placa com a balança.' },
+  { id: 'prefeitura_predio', name: 'Prefeitura', category: 'casa', kind: 'predio_vila', width: 15, depth: 12, height: 8.0, xray: true, rotations: ALL, colors: ['#ece4d2', '#b4562f', '#2f6a5a', '#5a2414'], desc: 'A prefeitura: o sobrado neoclássico de dois andares, o frontão, as janelas altas, a escadaria e o mastro com a bandeira do município.' },
   { id: 'geladeira', name: 'Geladeira', category: 'casa', kind: 'geladeira', width: 1, depth: 1, height: 1.75, rotations: ALL, colors: ['#ecece6', '#9a9a96'], desc: 'A geladeira branca de duas portas, com os ímãs e os bilhetes na porta.' },
   { id: 'fogao_gas', name: 'Fogão a Gás', category: 'casa', kind: 'fogao_gas', width: 1, depth: 1, height: 0.9, stackable: true, rotations: ALL, colors: ['#e8e6e0', '#2a2a2a'], desc: 'O fogão de quatro bocas, branco, com o forno e o botijão do lado.' },
   { id: 'maquina_lavar', name: 'Máquina de Lavar', category: 'casa', kind: 'maquina_lavar', width: 1, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#ecece6', '#7a9aaa'], desc: 'A máquina de lavar de abrir em cima, branca, com o painel de botões.' },
@@ -522,7 +527,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'estante_remedios', name: 'Estante da Farmácia', category: 'saude', kind: 'shelf', width: 2, depth: 1, height: 2.0, rotations: ALL, colors: ['#d8dcdf', '#4a8a5a'], desc: 'A estante de aço da farmácia do posto, cheia de caixas de remédio coloridas.' },
   { id: 'maca_exame', name: 'Maca de Exame', category: 'saude', kind: 'hospital_bed', width: 1, depth: 2, height: 0.8, rotations: ALL, colors: ['#2a2a2e', '#f0f0ec'], desc: 'A maca de consultório, de estofado preto, com o papel lençol e a escadinha de dois degraus.' },
   // Igarapé (17/10): a lanchonete do largo (arte no mesmo santa_amalia.py)
-  { id: 'lanchonete_predio', name: 'Lanchonete', category: 'casa', kind: 'predio_vila', width: 7, depth: 5, height: 4.4, xray: true, rotations: ALL, colors: ['#f4e2b0', '#c43a2a', '#5a2a6a', '#3a3a3a'], desc: 'A lanchonete do largo: a fachada amarela, o toldo listrado de vermelho, a placa com o cachorro-quente e o copo de açaí desenhados, as mesas de plástico na calçada.' },
+  { id: 'lanchonete_predio', name: 'Lanchonete', category: 'casa', kind: 'predio_vila', width: 8, depth: 7, height: 4.4, xray: true, rotations: ALL, colors: ['#f4e2b0', '#c43a2a', '#5a2a6a', '#3a3a3a'], desc: 'A lanchonete do largo: a fachada amarela, o toldo listrado de vermelho, a placa com o cachorro-quente e o copo de açaí desenhados, as mesas de plástico na calçada.' },
   { id: 'chapa_lanche', name: 'Chapa e Estufa', category: 'casa', kind: 'chapa_lanche', width: 2, depth: 1, height: 1.2, stackable: true, rotations: ALL, colors: ['#9aa0a6', '#d8a040'], desc: 'O balcão de inox com a chapa dos lanches, a panela das salsichas e a estufa de vidro com os salgados.' },
   { id: 'freezer_acai', name: 'Freezer de Açaí', category: 'casa', kind: 'freezer_acai', width: 2, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#ecece6', '#5a2a6a'], desc: 'O freezer horizontal com a tampa de vidro: as cubas de açaí e os potes de granola, leite em pó e banana.' },
   { id: 'cafeteira', name: 'Garrafa de Café', category: 'decoracao', kind: 'mug', width: 1, depth: 1, height: 0.35, stackable: true, rotations: ALL, colors: ['#3a3a3e', '#c0c0c0'], desc: 'A garrafa térmica de café, os copinhos e o açucareiro.' },
@@ -615,6 +620,7 @@ export const FURNI_LIST: FurniDef[] = FURNI_METERS.map((d) => ({
   ...d,
   height: toUnits(d.height),
   ...(d.leitos ? { leitos: d.leitos.map(toUnits) } : {}),
+  ...(d.alturas ? { alturas: d.alturas.map((l) => l.map(toUnits)) } : {}),
   ...(CAMAS.has(d.kind) ? { sit: true, deita: true } : {}),
 }));
 
@@ -657,6 +663,20 @@ export function ocupa(def: Pick<FurniDef, 'width' | 'depth' | 'vazio'>, rot: num
   else if (rot === 2) [u, v] = [W - 1 - dy, dx];
   else [u, v] = [dy, D - 1 - dx];
   return !def.vazio.some(([a, b]) => a === u && b === v);
+}
+
+/** A altura de cima da peça na casa (dx, dy) da pegada, no giro dado (em unidades): a do `alturas`, ou o `height`. */
+export function alturaNaCasa(def: Pick<FurniDef, 'width' | 'depth' | 'height' | 'alturas'>, rot: number, dx: number, dy: number): number {
+  if (!def.alturas?.length) return def.height;
+  const W = def.width;
+  const D = def.depth;
+  let u: number;
+  let v: number;
+  if (rot === 4) [u, v] = [dx, dy];
+  else if (rot === 0) [u, v] = [W - 1 - dx, D - 1 - dy];
+  else if (rot === 2) [u, v] = [W - 1 - dy, dx];
+  else [u, v] = [dy, D - 1 - dx];
+  return def.alturas[v]?.[u] ?? def.height;
 }
 
 export function nextRotation(def: FurniDef, rot: number): number {

@@ -1,5 +1,5 @@
 import { STACK_LIMIT, WALL_PX_PER_TILE, Z_PX } from './constants';
-import { footprint, getFurni, getWallFurni, ocupa, type FurniDef } from './furni';
+import { alturaNaCasa, footprint, getFurni, getWallFurni, ocupa, type FurniDef } from './furni';
 import { parseHeightmap, type Heightmap } from './heightmap';
 import { computeWalls, type Door, type WallInfo } from './walls';
 import type { ItemAction, Loot } from './rpg';
@@ -330,7 +330,7 @@ export class RoomMap {
       const def = getFurni(it.defId);
       if (!def) continue;
       if (mesa && (it === mesa.it || it.z >= topoMesa)) continue;
-      const t = it.z + def.height;
+      const t = it.z + alturaNaCasa(def, it.rot, x - it.x, y - it.y);
       if (def.sit && !it.quebrado) seat = def.leitos?.length ? it.z + def.leitos[alto ? def.leitos.length - 1 : 0] : t;
       if (t > top) top = t;
     }
