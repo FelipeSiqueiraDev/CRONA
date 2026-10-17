@@ -926,10 +926,13 @@ export class RoomView {
       const k = Math.min(1, Math.max(0, t));
       const [fx, fy] = this.vis(u.anim.fx, u.anim.fy);
       const [tx, ty] = this.vis(u.anim.tx, u.anim.ty);
+      // a altura muda perto da borda entre as casas, onde fica o degrau: em linha reta de um meio de casa ao outro, a
+      // peça subia antes de chegar à escadinha da ponte e parecia voar (17/10)
+      const s = Math.min(1, Math.max(0, (k - 0.3) / 0.4));
       return {
         x: fx + (tx - fx) * k,
         y: fy + (ty - fy) * k,
-        z: u.anim.fz + (u.anim.tz - u.anim.fz) * k,
+        z: u.anim.fz + (u.anim.tz - u.anim.fz) * s * s * (3 - 2 * s),
         moving: t < 1.1,
       };
     }

@@ -14,12 +14,11 @@ const db = seedDb();
 upgradeDb(db);
 const cenas = db.rooms.filter((r) => r.name.startsWith(FAZENDA));
 
-/** Os bolsos que já eram fechados antes da decoração (atrás da cama, do beliche e da mesa): casas "x,y" no desenho final. */
-const BOLSOS: Record<string, string[]> = {
-  "Quarto das Crianças": ["0,0", "0,1", "0,2"],
-  "Quarto 3": ["8,0"],
-  "Escritório do Capataz": ["5,0"],
-};
+/**
+ * Os bolsos fechados (casas "x,y" no desenho final): nenhum desde 17/10, quando os três que sobravam (atrás do beliche,
+ * da cama e da mesa) foram abertos pela regra do caminho livre (moveisNaParede.test.ts).
+ */
+const BOLSOS: Record<string, string[]> = {};
 /** Ao ar livre, as roças dos vizinhos são cercadas e ninguém entra nelas pela estrada. */
 const ROCAS_FECHADAS = new Set(["Arredores"]);
 

@@ -18,7 +18,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 2;
+export const IGARAPE_REV = 4;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -197,11 +197,9 @@ function casaMineira(key: string, lado: "frente" | "fundo"): CenaSpec {
       ["mesa_cozinha", 1, Y(2), 4],
       ["chair_wood", 1, Y(1), 4],
       ["chair_wood", 3, Y(1), 4],
-      ["chair_wood", 1, Y(4), 0],
-      ["chair_wood", 3, Y(4), 0],
-      ["guarda_roupa", 8, Y(4), 6],
+      ["chair_wood", 2, Y(4), 0],
+      ["guarda_roupa", 0, Y(5), 2],
       ["rug_worn", 5, Y(3), 0],
-      ["plant", 0, Y(6), 0],
       ["ceiling_lamp", 4, Y(3), 0],
       // em cima: as canecas e a bandeja do café na mesa, a vela do santinho na cômoda
       ["mug", 2, Y(2), 4],
@@ -257,10 +255,10 @@ const CENAS: CenaSpec[] = [
     particles: ["dust", "smoke"],
     floor: [
       ["portal", 4, 11, 0],
-      ["igarape_altar", 3, 1, 4, hint("O altar", "A toalha de renda está passada e engomada, mas as velas dos castiçais foram apagadas com os dedos: tem cera nas pontas.")],
-      ["candles", 3, 1, 0],
-      ["candelabra", 2, 1, 0],
-      ["candelabra", 6, 1, 0],
+      ["igarape_altar", 3, 0, 4, hint("O altar", "A toalha de renda está passada e engomada, mas as velas dos castiçais foram apagadas com os dedos: tem cera nas pontas.")],
+      ["candles", 4, 0, 0],
+      ["candelabra", 2, 0, 0],
+      ["candelabra", 6, 0, 0],
       ["igarape_santa", 0, 0, 4],
       ["igarape_santa", 8, 0, 4, hint("A imagem da santa", "Nossa Senhora de manto azul. Alguém virou o rosto dela para a parede e depois desvirou: a poeira da peanha está mexida.")],
       ["rug_ornate", 3, 5, 0],
@@ -312,7 +310,7 @@ const CENAS: CenaSpec[] = [
       ["mug", 3, 2, 4],
       ["food_tray", 3, 3, 0],
       ["igarape_rede_pesca", 7, 4, 0],
-      ["igarape_cesto", 6, 5, 0],
+      ["igarape_cesto", 6, 4, 0],
     ],
     wall: [
       ["janela_cozinha", "r", 0, 5.5, 1.75],
@@ -471,8 +469,8 @@ const CENAS: CenaSpec[] = [
       ["mesa_cozinha", 1, 2, 4],
       ["chair_wood", 1, 1, 4],
       ["chair_wood", 3, 1, 4],
-      ["chair_wood", 1, 4, 0],
-      ["guarda_roupa", 8, 4, 6],
+      ["chair_wood", 2, 4, 0],
+      ["guarda_roupa", 0, 5, 2],
       ["rug_worn", 5, 3, 0],
       ["papers", 2, 2, 0, hint("O retrato rasgado", "O retrato da família em pedaços, juntados em cima da mesa: o Geraldo, a Sara e a Cora menina, na frente desta casa.")],
       ["dirt", 6, 5, 0],

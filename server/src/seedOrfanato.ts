@@ -24,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * orfanato é refeito no lugar (e a cena que saiu da montagem é apagada).
  */
 export const ORFANATO = "Orfanato · ";
-export const ORFANATO_REV = 20;
+export const ORFANATO_REV = 23;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -161,8 +161,8 @@ const CENAS: CenaSpec[] = [
       ["portal", 1, 5, 0],
       // a fileira de caminhas de lona contra a parede do fundo, e duas atravessadas embaixo
       ...[2, 4, 6, 8, 10, 12].map((x): FloorSeed => ["catre", x, 0, 4]),
-      ["catre", 4, 5, 2],
-      ["catre", 8, 5, 2],
+      ["catre", 0, 3, 2],
+      ["catre", 0, 4, 2],
       // o que sobrou da enfermaria: o carrinho das bandagens, a bandeja, o balde, o armarinho de remédio
       ["trolley", 3, 3, 0],
       ["med_tray", 7, 3, 0],
@@ -212,9 +212,9 @@ const CENAS: CenaSpec[] = [
       // o teto que caiu em cima de uma das mesas, e as vigas no chão
       ["escombros", 8, 7, 0],
       ["viga_queimada", 5, 5, 0],
-      // o balcão da comida no canto, na parede oposta à das frases, e a prateleira atrás dele
+      // o balcão da comida no canto, na parede oposta à das frases, e a prateleira na parede do fundo
       ...linha("counter_wood", 2, [SALAO_W - 2, 11], [SALAO_W - 2, 13]),
-      ["prateleira", SALAO_W - 1, 11, 2],
+      ["prateleira", 2, 0, 4],
       // a sala comum do bando, no fundo: a fogueira, os colchões em volta, os crânios e a comida
       ["fogueira", 5, 11, 0],
       ["colchao_chao", 3, 11, 0],
@@ -358,7 +358,7 @@ const CENAS: CenaSpec[] = [
       ["toilet", 2, 0, 4],
       ["stall_panel", 3, 0, 4],
       ["toilet", 4, 0, 4],
-      ["sink", 2, 2, 0],
+      ["sink", 1, 0, 4],
       ...de("puddle", [3, 2], [3, 1]),
       ...de("blood_drops", [2, 1], [4, 2]),
     ],
@@ -482,7 +482,7 @@ const CENAS: CenaSpec[] = [
       ["hospital_bed", 7, 0, 4],
       ["iv_stand", 3, 0, 0],
       ["monitor_suporte", 6, 0, 4],
-      ["medical_cabinet", 1, 5, 4],
+      ["medical_cabinet", 1, 3, 2],
       ["table_tools", 8, 4, 2, oculta("Mesa das ferramentas", "Bisturis, serras de osso, ganchos, velas pretas e um livro de capa de couro com páginas de sangue seco.")],
       ["trolley", 5, 5, 0],
       ["drain", 6, 2, 0],
@@ -548,19 +548,19 @@ function quartos(): CenaSpec[] {
         wall.push(["chains_wall", "r", 0, 2.4, 2.4], ["chains_wall", "r", 0, 4.4, 2.4], ["tally_marks", "l", 1, 3.3, 2.6]);
       } else if (desabou) {
         description = `O quarto ${n}: o teto desabou em cima de uma das duas camas, e o que sobrou dela aparece entre as telhas e as vigas queimadas; a outra cama e o armário ficaram, pretos. Cinza por todo lado; ninguém dorme aqui, mas alguém vem aqui: há sangue fresco no chão.`;
-        floor.push(["cama_queimada", 2, 0, 4], ["escombros", 4, 0, 0], ["guarda_roupa", 5, 2, 2], ["viga_queimada", 2, 3, 2]);
+        floor.push(["cama_queimada", 2, 0, 4], ["escombros", 4, 0, 0], ["guarda_roupa", 1, 2, 2], ["viga_queimada", 2, 3, 2]);
         floor.push(...de("cinzas", [1, 3], [5, 2], [3, 2]), ...de("fuligem", [1, 0], [5, 3]), ...de("blood_drops", [2, 2], [4, 3]));
         wall.push(["fuligem_parede", "r", 0, 3.0, 0.3]);
       } else {
         description = `O quarto ${n}, de duas crianças, queimado: as duas camas de ferro retorcidas, o criado-mudo entre elas, o armário arrombado e, no chão, o colchão onde um transtornado dorme agora, encardido de sangue.${i % 2 ? " No canto, os crânios dele, arrumados com cuidado." : ""}`;
         // um quarto de criança de orfanato pobre: duas camas de ferro, o criado-mudo entre elas e o armário; no chão, o
         // colchão do transtornado que dorme aqui agora e o baú dele
-        floor.push(["cama_queimada", 2, 0, 4], ["nightstand", 3, 0, 4], ["cama_queimada", 4, 0, 4], ["guarda_roupa", 5, 0, 2]);
+        floor.push(["cama_queimada", 2, 0, 4], ["nightstand", 3, 0, 4], ["cama_queimada", 4, 0, 4], ["guarda_roupa", 1, 2, 2]);
         floor.push(["colchao_chao", 2, 3, 2], ["chest_army", 5, 3, 0]);
         if (i % 2) floor.push(["pilha_cranios", 4, 3, 0]);
         else floor.push(["candles", 4, 3, 0]);
         floor.push(...de("blood_pool", [3, 1], [3, 2]), ...de("blood_drops", [1, 2], [5, 2]), ...de("fuligem", [1, 3], [1, 0]), ...de("cinzas", [3, 3]));
-        wall.push(["window_barred", "r", 0, 3.5, 2.2], [n % 3 ? "sigil_scratch" : "tally_marks", "l", 1, 3.3, 2.5]);
+        wall.push(["window_barred", "r", 0, 3.5, 2.2], [n % 3 ? "sigil_scratch" : "tally_marks", "l", 1, 0.5, 2.5]);
       }
       const brinquedo = brinquedos[n];
       lista.push({
@@ -578,7 +578,7 @@ function quartos(): CenaSpec[] {
         // na planta (o corredor fica de cabeça para baixo): os da esquerda da cena ficam à direita do corredor, os da
         // direita à esquerda (girados, a porta para o corredor); o primeiro quarto perto da porta da frente, embaixo
         plan: lado === "E" ? { x: ALA_COR_X + ALA_COR_W, y: ALA_Y + (5 - i) * ALA_QUARTO } : { x: 0, y: ALA_Y + (5 - i) * ALA_QUARTO, r: 2 },
-        ...(brinquedo ? { chao: [[1, 3, brinquedo[0], brinquedo[1], "misc"]] as CenaSpec["chao"] } : {}),
+        ...(brinquedo ? { chao: [[3, 2, brinquedo[0], brinquedo[1], "misc"]] as CenaSpec["chao"] } : {}),
       });
     }
   return lista;

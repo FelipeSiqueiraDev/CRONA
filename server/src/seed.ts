@@ -404,7 +404,7 @@ function seedMansao(db: Database) {
       ['papers', 6, 4, 0],
       ['desk_lamp', 7, 4, 0],
       ['chair_office', 6, 5, 0],
-      ['books_stack', 8, 1, 0],
+      ['books_stack', 1, 1, 0],
       ['cabinet_file', 1, 7, 2],
       ['table_small', 3, 8, 0],
       ['crate_wood', 10, 7, 0],

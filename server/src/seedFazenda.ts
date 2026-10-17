@@ -30,7 +30,7 @@ import { partyTokens, planRight, planTop } from "./seedSede";
 
 export const FAZENDA = "Fazenda · ";
 /** Versão da montagem da fazenda: subiu, ela é refeita no lugar (mesmas cenas, peças e registro). */
-export const FAZENDA_REV = 38;
+export const FAZENDA_REV = 40;
 
 const hint = (title: string, text: string): Hint => ({
   icon: "inspect",
@@ -767,8 +767,8 @@ const DECOR = {
   criancas: [
     vela(4, 0),
     dec("books_stack", 6, 0),
-    vela(8, 3),
-    dec("vaso_flores", 8, 4),
+    vela(8, 4),
+    dec("vaso_flores", 8, 5),
     dec("igarape_cesto", 7, 5),
     dec("stool", 5, 5),
   ],
@@ -802,12 +802,12 @@ const DECOR = {
   quarto1: [vela(5, 0), dec("mug", 8, 4), dec("bau_madeira", 3, 5, 4), dec("vaso_flores", 8, 0)],
   quarto2: [
     dec("vaso_flores", 5, 0),
-    vela(1, 4),
-    dec("books_stack", 1, 5),
+    vela(1, 0),
+    dec("books_stack", 2, 0),
     dec("igarape_cesto", 7, 5),
     dec("vaso_flores", 8, 1),
   ],
-  quarto3: [vela(7, 0), dec("books_stack", 8, 3), dec("bau_madeira", 6, 5, 4), dec("vaso_flores", 2, 5)],
+  quarto3: [vela(7, 0), dec("books_stack", 8, 3), dec("bau_madeira", 5, 5, 4), dec("vaso_flores", 2, 5)],
   // o depósito: a mesa de trabalho no meio, a lenha, o feno, os caixotes empilhados e as sacas do outro lado
   mantimentos: [
     dec("table_work", 6, 3),
@@ -1130,8 +1130,8 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["nightstand", 4, 0, 4],
       ["nightstand", 6, 0, 4],
       ["rug_worn", 3, 3, 0],
-      ["comoda", 8, 3, 6],
-      ["crate_wood", 8, 5, 0],
+      ["comoda", 8, 4, 6],
+      ["crate_wood", 1, 1, 0],
       ...lamps([5, 3]),
       ...DECOR.criancas,
     ],
@@ -1320,7 +1320,7 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["nightstand", 5, 0, 4],
       ["rug_worn", 4, 3, 0],
       ["guarda_roupa", 7, 0, 4],
-      ["comoda", 1, 4, 2],
+      ["comoda", 1, 0, 4],
       ...lamps([5, 3]),
       ...DECOR.quarto2,
     ],
@@ -1342,10 +1342,10 @@ const CENAS_BRUTAS: CenaSpec[] = [
       ["cama_solteiro", 6, 0, 4],
       ["nightstand", 7, 0, 4],
       ["rug_worn", 3, 3, 0],
-      ["guarda_roupa", 8, 1, 6],
+      ["guarda_roupa", 1, 0, 4],
       ["desk_wood", 8, 3, 6],
       ["desk_lamp", 8, 4, 6],
-      ["chair_wood", 7, 3, 2],
+      ["chair_wood", 7, 4, 2],
       ...lamps([5, 3]),
       ...DECOR.quarto3,
     ],
@@ -1407,11 +1407,11 @@ const CENAS_BRUTAS: CenaSpec[] = [
     particles: ["dust"],
     floor: [
       ["portal", 1, 2, 2],
-      ["chair_wood", 4, 0, 4],
+      ["chair_wood", 5, 0, 4],
       ["desk_wood", 4, 1, 0],
       ["papers", 4, 1, 4],
       ["bookshelf", 6, 0, 4],
-      ["cabinet_file", 8, 0, 6],
+      ["cabinet_file", 8, 0, 4],
       ["rug_worn", 3, 3, 0],
       ["plant", 8, 5, 0],
       ...lamps([5, 3]),
@@ -1727,10 +1727,10 @@ const CENAS_BRUTAS: CenaSpec[] = [
           "Embaixo do lençol, a pele está fria e cinzenta. Por baixo dela, fraco, alguma coisa brilha dourado, como uma luz que acabou de acender.",
         ),
       ],
-      ["corpo_saco", 6, 1, 4],
+      ["corpo_saco", 6, 0, 4],
       ["corpo_lencol", 2, 4, 2],
       ["skull", 6, 4, 6],
-      ["candles", 6, 0, 0],
+      ["candles", 4, 0, 0],
       ...DECOR.salaSangue,
     ],
     wall: [

@@ -3,7 +3,7 @@ import { M_POR_CASA, Z_PER_M, type FurniDef } from '@crona/shared';
 import { rgba } from './color';
 import { N, naParede, V, type FVisual } from './furniKit';
 import { iso } from './iso';
-import { drawFlame, type LBox, type Painter } from './painter';
+import { boxSilhouette, drawFlame, type LBox, type Painter } from './painter';
 
 /**
  * Móveis com arte (imagem) no lugar do desenho por código. A lista fica em
@@ -285,6 +285,30 @@ function pronta(arquivo: string): Imagens | null {
  * ordem de quem fica na frente), ou null se ele não tem arte (ou ela ainda não chegou).
  * As luzes continuam as do desenho por código. state: o estado do móvel (0 = aceso).
  */
+/**
+ * O parapeito do lado da câmera (`FurniDef.parapeito`): o mesmo desenho, recortado na caixa da beira da frente, numa
+ * caixa própria na ordem de desenho. Quem anda em cima da peça fica entre a peça (antes) e o parapeito (depois), e a
+ * mureta cobre os pés de quem passa rente a ela. A beira da frente é a de u maior nos giros 4 e 2 e a de u menor nos
+ * giros 0 e 6 (as faces que a câmera vê são +x e +y).
+ */
+function parapeitoDaFrente(def: FurniDef, rot: number, desenho: (p: Painter) => void) {
+  const t = def.parapeito!.m / M_POR_CASA;
+  const [u0, u1] = rot === 4 || rot === 2 ? [def.depth - t, def.depth] : [0, t];
+  const b: LBox = [u0, u1, 0, def.width, 0, def.parapeito!.z1];
+  return N(b, (p) => {
+    const sil = boxSilhouette(p.m.box(b));
+    const ctx = p.ctx;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(sil[0][0], sil[0][1]);
+    for (let i = 1; i < sil.length; i++) ctx.lineTo(sil[i][0], sil[i][1]);
+    ctx.closePath();
+    ctx.clip();
+    desenho(p);
+    ctx.restore();
+  });
+}
+
 export function visualComArte(def: FurniDef, base: FVisual, state = 0, seed = 0, rot?: number, piso?: string, escala = 1, vazio = false, modelo?: string): FVisual | null {
   const chave = chaveDaArte(def.id, seed, piso, vazio, modelo);
   const salvo = lista?.[chave];
@@ -334,9 +358,12 @@ export function visualComArte(def: FurniDef, base: FVisual, state = 0, seed = 0,
     // o encaixe na casa, pelas vistas do estado 0 (os outros estados vêm na mesma escala)
     const vistas0 = Object.values(salvo.giros ?? {}).map((v) => (v ? pronta(v.arquivo) : null));
     const enc = encaixe(chave, salvo, def, vistas0.every((x) => !!x) ? (vistas0 as Imagens[]) : (Object.values(prontas) as Imagens[]));
-    const no = N(caixa, (p) => desenharGiro(p, a, prontas, aceso ? (a.brilho?.cor ?? def.colors[0] ?? '#ffd98a') : null, cor, ang, forca, falha, enc, salvo.encosta));
+    const desenho = (p: Painter) => desenharGiro(p, a, prontas, aceso ? (a.brilho?.cor ?? def.colors[0] ?? '#ffd98a') : null, cor, ang, forca, falha, enc, salvo.encosta);
+    const no = N(caixa, desenho);
     // a moldura da porta é parede na ordem de desenho: o que fica na sala, encostado nela, vem na frente
-    return V([def.kind === 'portal' ? naParede(no) : no], luzes);
+    const nos = [def.kind === 'portal' ? naParede(no) : no];
+    if (def.parapeito && rot !== undefined) nos.push(parapeitoDaFrente(def, rot, desenho));
+    return V(nos, luzes);
   }
   if (!a.frente) return null;
   const frente = pronta(a.frente.arquivo);

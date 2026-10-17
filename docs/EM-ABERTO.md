@@ -152,6 +152,29 @@ Conversa aberta na nuvem (claude.ai/code), num clone limpo do GitHub: **o que es
   - **Visual de game antigo (10/10, pedido do Felipe: "abandonamos o papel"):** o painel é um HUD com a moldura azul do tabuleiro (`--ui-tabuleiro-moldura-tabuleiro-fonte`), os botões do HUD e a fonte Pixelify Sans, como a plaquinha do tabuleiro. O terreno é pixel art (4 pixels por casa, ampliado sem suavizar: grama pontilhada, estrada com beira, água com marola, copas redondas com sombra, telhado de quatro águas com telhas e cumeeira, milho em fileira, cerca com mourão). A planta do andar é como o mapa de masmorra: piso em ladrilhos escuros, parede clara por fora e apagada por dentro, portas douradas, escadas ▲ ▼ douradas; o cômodo do grupo em vermelho, que acende com uma varredura quando o grupo entra. A lista de lugares abre numa janela do HUD (Esc fecha). O CSS fica em `client/src/ui/minimapa.css`. **O resto da coluna da esquerda (o cartão da sala, "Nesta cena") ainda é papel.**
 - **Falta / ideias:** abrir o minimapa grande por cima do tabuleiro (tecla M); o painel "Local selecionado" da referência do Códex (foto da cena, descrição, conexões); dar nome às áreas do terreno (hoje "Plantações", "Lago" e "Rio" saem pelo chão); a mesa mostrar só o que o mestre revelou; ver o tablet de verdade.
 
+## Feito em 17/10, noite (branch `claude/tatica-codigo`): móveis na parede e caminho livre em todas as cenas
+
+- **A regra do Felipe, para todas as cenas e as próximas** (no `GUIA-DO-CLAUDE.md`, em "Rodar e conferir"): é um
+  tabuleiro, a peça anda pela cena e chega em todo móvel. O `server/test/moveisNaParede.test.ts` confere o jogo
+  inteiro: (1) móvel de parede (TV, guarda-roupa, fogão, geladeira, pia, estante, arquivo, cômoda, lareira, cama...)
+  encostado numa parede que aparece, de frente para a sala (giro 4 com a parede do fundo atrás, giro 2 com a da
+  esquerda, ou encostado numa divisória); (2) todo chão livre se alcança da porta; (3) todo móvel tem uma casa do
+  lado aonde se chega. O Orfanato, bagunçado de propósito, fica de fora das regras 2 e 3.
+- `npx tsx scripts/dev/sala.mts "Lugar · Sala"` desenha a planta em texto (a letra de cada móvel, `!` no chão preso).
+- **Arrumado:** Santa Amália (cômodos no tamanho de verdade, a recepção do posto com 47 m², a casa comum com a TV na
+  parede, a praça 14 x 10; `SANTA_AMALIA_REV` 11), Sede (celas, posto do carcereiro, Câmara do Selo, laboratório,
+  gabinete, banheiro, enfermaria, bar; `SEDE_REV` 60), Fazenda (quartos 2, 3 e das crianças, escritório do capataz,
+  sala de sangue; `FAZENDA_REV` 40; os "bolsos" que o `fazendaDecor.test.ts` aceitava foram abertos), Igarapé (as
+  casas, a dos Ribeiro, a capela, a palafita; `IGARAPE_REV` 4), Santo Berço (bunker, caverna, celeiro velho com uma
+  tábua caída para entrar nas baias, consultório, ferraria, galeria azul, taverna; `SANTO_BERCO_REV` 16),
+  Tiradentes (boteco, quartos da pousada, sala do café, venda; `TIRADENTES_REV` 3), Orfanato (os armários, os catres,
+  a prateleira, a pia, o armário da cirurgia; `ORFANATO_REV` 23) e a Mansão Alvarez (`seed.ts`: só vale em banco
+  novo, ela não tem REV).
+- **A ponte do Igarapé** com o parapeito da frente desenhado por cima de quem passa (`FurniDef.parapeito`,
+  `parapeitoDaFrente` em `furniArte.ts`) e a altura mudando perto da borda da casa (`userPos` no `RoomView.ts`): a
+  peça anda dentro da ponte, não em cima da mureta.
+- **Falta:** levar ao jogo de verdade (`npm run crona`, com backup antes, quando o Felipe pedir).
+
 ## Feito em 17/10 (branch `claude/tatica-codigo`): Santa Amália e, no Igarapé, a lanchonete, a casa dos Ribeiro e a ponte
 
 - **Santa Amália** (`server/src/seedSantaAmalia.ts`, `SANTA_AMALIA_REV` 4; arte em `scripts/3d/estilo/pecas_px/santa_amalia.py`):
@@ -1006,6 +1029,11 @@ Ainda falta (pedido do Felipe):
 - **Depois:** login e escolha de campanha; a tela do jogador ("modo jogo").
 
 ## Arte em aberto (a fila do Códex)
+
+**Pedidos do Felipe (17/10) para quando a cota do Códex voltar:**
+- A pose **agachado** de todos os personagens (agentes, NPCs e ameaças), no formato das poses do tabuleiro.
+- Os **NPCs novos** que o Felipe vai mandar (no estilo do Miguel).
+
 
 **A fila vive na pasta da arte: `00-COMECE-AQUI.txt`** (em `F:\Dhellow\CRONA\arte\TEXTURAS MAPA\BASE - Ordo Realitas`), com os lotes na ordem e a mensagem pronta para colar no Códex. Reorganizada em 07/10: na raiz ficam só os pedidos que ainda faltam; o que já entrou no jogo foi para `_entregas-originais` e `_arquivo`; as vistas de cima que esperam a peça isométrica ficam em `_aguardando-importar`.
 

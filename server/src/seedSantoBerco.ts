@@ -24,7 +24,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Doutor a sudoeste; as estradas saem pela borda para a fazenda (norte), o bosque (sul) e as minas (oeste).
  */
 export const SANTO_BERCO = "Santo Berço · ";
-export const SANTO_BERCO_REV = 15;
+export const SANTO_BERCO_REV = 16;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -643,8 +643,8 @@ const CENAS: Cena[] = [
       ["balcao_taverna", 9, 3, 4],
       ...de("barril_madeira", [9, 1], [10, 1], [12, 1], [13, 1]),
       ["barril_madeira", 13, 3, 0],
-      ["stool", 9, 4, 0],
-      ["stool", 11, 4, 0],
+      ["stool", 10, 4, 0],
+      ["stool", 12, 4, 0],
       // a lareira na parede da esquerda
       ["lareira_cristal", 0, 3, 2],
       // as mesas compridas com os bancos (o tapete gasto embaixo da primeira) e o que está em cima delas
@@ -699,7 +699,7 @@ const CENAS: Cena[] = [
       ["forja_cristal", 7, 1, 4, hint("A forja", "Não tem carvão de verdade: no meio das brasas, um cristal vermelho mantém o ferro em brasa sem nunca apagar.")],
       ["bigorna", 7, 4, 0],
       ["tina_agua", 9, 4, 0],
-      ["rack_medieval", 10, 5, 6],
+      ["rack_medieval", 0, 2, 2],
       ["armadura_medieval", 10, 7, 6],
       ["armadura_medieval", 0, 7, 2],
       ["table_tools", 2, 5, 2],
@@ -1012,7 +1012,7 @@ const CENAS: Cena[] = [
       ["portal", 7, 3, 6],
       ["maca_doutor", 1, 0, 4],
       ["cristal_verde", 0, 0, 0, hint("Cristal Verde", "O cristal de cura do Doutor: encostado numa ferida, fecha na hora; na boca, adormece. Já está mais apagado de um lado, de tanto uso.")],
-      ["tina_agua", 0, 2, 0],
+      ["tina_agua", 2, 0, 0],
       ["armario_boticario", 4, 0, 4, oculta("O armário de botica", "Ervas secas, pós, unguentos e uns vidros de líquido verde que brilham no escuro: lascas de cristal moídas.")],
       ["mesa_doutor", 2, 4, 4],
       ["chair_wood", 2, 5, 0],
@@ -1114,7 +1114,7 @@ const CENAS: Cena[] = [
   {
     key: "celeiro2",
     name: SANTO_BERCO + "Celeiro Velho",
-    description: "O celeiro de trás, mais velho: as baias fechadas com as tábuas, o feno empilhado até o teto, o bebedouro, as sacas e a carroça. Escuro e quente de bicho, sem bicho nenhum à vista.",
+    description: "O celeiro de trás, mais velho: as baias fechadas com as tábuas (uma delas caída, dá para passar), o feno empilhado até o teto, o bebedouro, as sacas e a carroça. Escuro e quente de bicho, sem bicho nenhum à vista.",
     layout: planBottom(12, 8, 6),
     andar: "Celeiro Velho",
     style: "terra",
@@ -1124,7 +1124,7 @@ const CENAS: Cena[] = [
     floor: [
       ["portal", 6, 7, 0],
       // as baias do fundo à esquerda, com os bichos escondidos dentro
-      ...[...Array(5).keys()].map((i): FloorSeed => ["baia", i, 3, 4]),
+      ...[0, 1, 3, 4].map((i): FloorSeed => ["baia", i, 3, 4]),
       ...giro("baia", 2, [5, 0], [5, 1], [5, 2]),
       ["olhos_escuro", 1, 1, 4, oculta("As baias", "Dentro das baias, a palha se mexe e respira. Uma coisa de pernas demais se encolhe no canto quando alguém olha.")],
       ["olhos_escuro", 3, 0, 4],
@@ -1332,7 +1332,7 @@ const CENAS: Cena[] = [
       ["toca_toupeira", 12, 2, 0],
       ["toca_toupeira", 7, 6, 0],
       ["lodo_preto", 1, 2, 0, oculta("Lodo Preto", "Aqui o lodo já começa a aparecer pelas frestas da rocha, escorrendo da parte de baixo da mina.")],
-      ...giro("escora_mina", 4, [7, 0], [11, 0]), ...giro("escora_mina", 0, [4, 8], [13, 8]),
+      ...giro("escora_mina", 4, [7, 0], [11, 0]), ...giro("escora_mina", 0, [4, 8], [12, 8]),
       ...de("pedras", [15, 0], [0, 0], [15, 8]),
     ],
     wall: [
@@ -1402,7 +1402,6 @@ const CENAS: Cena[] = [
       ["bau_madeira", 0, 1, 2, hint("Os cinco baús", "Um baú para cada um dos Cinco Guardiões, cada um com uma marca entalhada na tampa. Um deles está vazio.")],
       ...giro("bau_madeira", 2, [0, 2], [0, 3], [0, 4], [0, 5]),
       ["mesa_rustica", 4, 3, 4],
-      ["banco_rustico", 4, 2, 4],
       ["banco_rustico", 5, 5, 0],
       ["papers", 4, 3, 0, oculta("Os papéis", "Mapas da vila de épocas diferentes: a vila cresce, some e volta, sempre em volta do Labirinto.")],
       ["books_stack", 6, 4, 0],
@@ -1413,7 +1412,7 @@ const CENAS: Cena[] = [
       ["rack_medieval", 6, 0, 4],
       ["armadura_medieval", 11, 2, 6],
       ["armadura_medieval", 11, 4, 6],
-      ["catre", 9, 5, 4],
+      ["catre", 5, 0, 4],
       ["barril_madeira", 11, 0, 0],
       ["crate_wood", 8, 0, 0],
     ],
@@ -1472,7 +1471,7 @@ const CENAS: Cena[] = [
       ["porta_cela_branca", 2, 3, 4, oculta("As celas dos Mananciais", "Brancas por dentro e por fora, frias como gelo. Nas correntes, a pele de quem esteve preso ficou grudada no metal.")],
       ["porta_cela_branca", 6, 3, 4],
       ["porta_cela_branca", 10, 3, 4, undefined, 1],
-      ["colchao_chao", 6, 1, 4],
+      ["colchao_chao", 7, 0, 4],
       ["skull", 10, 1, 0],
       // o lodo juntando em poças
       ["lodo_preto", 4, 6, 0, oculta("Lodo Preto", "O lodo daqui é mais grosso, quase vivo. Quando alguém se aproxima, ele se mexe na direção dela.")],

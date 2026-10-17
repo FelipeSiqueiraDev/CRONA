@@ -392,7 +392,7 @@ def canteiro(x0, x1, y0, y1, z=0.38, cor='#c8c2b6'):
 
 
 # =====================================================================================================================
-# a casa atual (8 x 7 casas, 4,4 m): a casinha térrea de reboco pintado, o oitão na frente, a porta frisada e as duas
+# a casa atual (9 x 8 casas, 4,6 m): a casinha térrea de reboco pintado, o oitão na frente, a porta frisada e as duas
 # janelas de alumínio com a grade, a calçada de cimento
 # =====================================================================================================================
 PAL_MODERNA = {
@@ -405,17 +405,18 @@ PAL_MODERNA = {
 
 def _casa_moderna(v='a'):
     pal = PAL_MODERNA[v]
-    W, D = 8 * CASA, 7 * CASA
+    W, D = 9 * CASA, 8 * CASA
     X0, X1, Y0, Y1 = 0.25, W - 0.25, 0.3, D - 0.6
     B = (X0, X1, Y0, Y1)
-    XP = TD._porta_x(8)
-    ZE, ZR, BEI = 3.05, 4.38, 0.34
+    XP = TD._porta_x(9)
+    ZE, ZR, BEI = 3.05, 4.55, 0.34
     PAR = mat_parede(pal['parede'], seed=ord(v), sujeira=0.5, descasca=0.1)
     caixa((X0, X1, Y0, Y1, 0.0, ZE), PAR)
-    YA, YB = Y0 + 1.15, Y1 - 1.15
+    YA, YB = Y0 + 1.25, Y1 - 1.25
+    XJ0, XJ1 = X0 + 1.2, X1 - 1.2              # as duas janelas da frente, no meio de cada lado da porta
     vaos = {
-        '+y': [('p', XP, 0.12, 0.82, 2.1), ('j', X0 + 1.0, 1.0, 1.1, 1.1), ('j', X1 - 1.0, 1.0, 1.1, 1.1)],
-        '-y': [('j', X0 + 1.2, 1.0, 1.0, 1.1), ('p', XP, 0.1, 0.8, 2.1), ('j', X1 - 0.9, 1.6, 0.6, 0.45)],
+        '+y': [('p', XP, 0.12, 0.82, 2.1), ('j', XJ0, 1.0, 1.2, 1.1), ('j', XJ1, 1.0, 1.2, 1.1)],
+        '-y': [('j', X0 + 1.2, 1.0, 1.1, 1.1), ('p', XP, 0.1, 0.8, 2.1), ('j', X1 - 1.6, 1.0, 1.0, 1.1), ('j', X1 - 0.6, 1.6, 0.5, 0.45)],
         '+x': [('j', YA, 1.0, 0.9, 1.1), ('j', YB, 1.0, 0.9, 1.1)],
         '-x': [('j', YA, 1.6, 0.6, 0.45), ('j', YB, 1.0, 0.9, 1.1)],
     }
@@ -424,10 +425,11 @@ def _casa_moderna(v='a'):
     porta_frisada(B, '+y', XP, 0.12, 0.82, 2.1, pal['porta'])
     porta_frisada(B, '-y', XP, 0.1, 0.8, 2.1, _escuro(pal['porta'], 1.1))
     degrau('-y', Y0, XP, 1.0, 0.1, prof=0.22)
-    janela_alu(B, '+y', X0 + 1.0, 1.0, 1.1, 1.1, grade=pal['grade'], cortina=pal['cortina'] if v in ('a', 'c') else None)
-    janela_alu(B, '+y', X1 - 1.0, 1.0, 1.1, 1.1, grade=pal['grade'])
-    janela_alu(B, '-y', X0 + 1.2, 1.0, 1.0, 1.1, grade=pal['grade'])
-    janela_alu(B, '-y', X1 - 0.9, 1.6, 0.6, 0.45, basculante=True)
+    janela_alu(B, '+y', XJ0, 1.0, 1.2, 1.1, grade=pal['grade'], cortina=pal['cortina'] if v in ('a', 'c') else None)
+    janela_alu(B, '+y', XJ1, 1.0, 1.2, 1.1, grade=pal['grade'])
+    janela_alu(B, '-y', X0 + 1.2, 1.0, 1.1, 1.1, grade=pal['grade'])
+    janela_alu(B, '-y', X1 - 1.6, 1.0, 1.0, 1.1, grade=pal['grade'], cortina=pal['cortina'] if v in ('b', 'd') else None)
+    janela_alu(B, '-y', X1 - 0.6, 1.6, 0.5, 0.45, basculante=True)
     janela_alu(B, '+x', YA, 1.0, 0.9, 1.1, grade=pal['grade'])
     janela_alu(B, '+x', YB, 1.0, 0.9, 1.1, grade=pal['grade'], cortina=pal['cortina'] if v in ('b', 'd') else None)
     janela_alu(B, '-x', YA, 1.6, 0.6, 0.45, basculante=True)
@@ -439,7 +441,7 @@ def _casa_moderna(v='a'):
                testeira='#ece6da', cumeeira=CUMEEIRA, seed=ord(v), beiral_u=0.28)
     for (yy, sg) in ((Y1, 1), (Y0, -1)):
         y0_, y1_ = (yy, yy + 0.03) if sg > 0 else (yy - 0.03, yy)
-        caixa((XR - 0.28, XR + 0.28, y0_, y1_, 3.3, 3.62), {'*': FF.mat_veneziana(ALU), 'cima': liso(ALU_C)})
+        caixa((XR - 0.3, XR + 0.3, y0_, y1_, 3.4, 3.76), {'*': FF.mat_veneziana(ALU), 'cima': liso(ALU_C)})
     # a calçada, o degrau da porta, a luminária, o medidor de luz e o vaso
     calcada(X0 - 0.15, X1 + 0.15, Y1, D - 0.04)
     degrau('+y', Y1, XP, 1.0, 0.12, prof=0.24)
@@ -450,17 +452,17 @@ def _casa_moderna(v='a'):
 
 
 # =====================================================================================================================
-# a casa dos Valença (12 x 10 casas, 4,6 m): a casa térrea de reboco creme manchado, a varanda coberta embutida no meio da
+# a casa dos Valença (14 x 11 casas, 4,7 m): a casa térrea de reboco creme manchado, a varanda coberta embutida no meio da
 # frente (o piso de cerâmica, os dois pilares, os vasos), as janelas de vidro com as cortinas fechadas, o telhado de
 # quatro águas
 # =====================================================================================================================
 def _casa_valenca():
-    W, D = 12 * CASA, 10 * CASA
+    W, D = 14 * CASA, 11 * CASA
     X0, X1, Y0, Y1 = 0.25, W - 0.25, 0.3, D - 0.55
-    XP = TD._porta_x(12)
+    XP = TD._porta_x(14)
     PX0, PX1 = XP - 1.8, XP + 1.8
     YV = Y1 - 1.1                        # a parede do fundo da varanda
-    ZE, ZR = 3.0, 4.55
+    ZE, ZR = 3.0, 4.65
     PAR = mat_parede('#e6d6b6', seed=71, sujeira=0.65, descasca=0.22)
     BAR = '#8a5a40'
     MBAR = {'*': liso(BAR), 'cima': liso(_hex(_tom(hx(BAR), 1.12)))}
@@ -477,7 +479,8 @@ def _casa_valenca():
     # o barrado marrom (nas alas e em volta da casa)
     TD._faixa(BL, 0.0, 0.4, MBAR, e=0.02, cortes={'-y': [(-9, 99)], '-x': [(-9, 99)]})
     TD._faixa(BR, 0.0, 0.4, MBAR, e=0.02, cortes={'-y': [(-9, 99)], '+x': [(-9, 99)]})
-    TD._faixa(B, 0.0, 0.4, MBAR, e=0.02, cortes={'+y': [(-9, 99)], '-y': [(X1 - 1.6, X1 - 0.6)]})
+    XD = X1 - 1.0                        # a porta dos fundos
+    TD._faixa(B, 0.0, 0.4, MBAR, e=0.02, cortes={'+y': [(-9, 99)], '-y': [(XD - 0.5, XD + 0.5)]})
     # a varanda: o piso de cerâmica (um pouco acima do chão), o degrau, a porta e as janelas da sala
     caixa((PX0, PX1, YV, Y1 + 0.02, 0.0, 0.15), {'cima': mat_ceramica(org=(PX0, YV)), '*': liso(BAR)})
     degrau('+y', Y1 + 0.02, XP, 1.3, 0.15, prof=0.26, cor='#b8a898')
@@ -490,10 +493,11 @@ def _casa_valenca():
         caixa((x - 0.1, x + 0.1, Y1 - 0.2, Y1, 0.15, 2.55), {'*': liso('#e8dcc0'), 'cima': liso('#f2e8d0')})
         caixa((x - 0.13, x + 0.13, Y1 - 0.23, Y1 + 0.03, 0.15, 0.4), MBAR)
     # as janelas das alas (as cortinas fechadas), as de trás e as dos lados
-    janela_alu(BL, '+y', (X0 + PX0) / 2, 1.0, 1.2, 1.1, grade=GR, cortina=CORT[1])
-    janela_alu(BR, '+y', (PX1 + X1) / 2, 1.0, 1.2, 1.1, grade=GR, cortina=CORT[3])
-    ys = [Y0 + 1.2, (Y0 + Y1) / 2, Y1 - 1.2]
-    traz = [('j', 1.25, 1.0, 1.0, 1.1), ('j', 2.95, 1.6, 0.6, 0.45), ('j', 4.6, 1.0, 1.0, 1.1), ('j', 6.3, 1.0, 1.0, 1.1), ('p', X1 - 1.1, 0.1, 0.8, 2.1)]
+    janela_alu(BL, '+y', (X0 + PX0) / 2, 1.0, 1.4, 1.1, grade=GR, cortina=CORT[1])
+    janela_alu(BR, '+y', (PX1 + X1) / 2, 1.0, 1.3, 1.1, grade=GR, cortina=CORT[3])
+    ys = list(np.linspace(Y0 + 1.1, Y1 - 1.3, 4))
+    traz = [('j', 1.3, 1.0, 1.0, 1.1), ('j', 3.0, 1.6, 0.6, 0.45), ('j', 4.7, 1.0, 1.0, 1.1), ('j', 6.4, 1.0, 1.0, 1.1),
+            ('j', 7.95, 1.0, 1.0, 1.1), ('p', XD, 0.1, 0.8, 2.1)]
     _conferir({'-y': traz, '+x': [('j', y, 1.0, 0.9, 1.1) for y in ys], '-x': [('j', y, 1.0, 0.9, 1.1) for y in ys]})
     for k, (t, a, z0, w, h) in enumerate(traz):
         if t == 'p':
@@ -524,7 +528,7 @@ def _casa_valenca():
 
 
 # =====================================================================================================================
-# o posto de saúde (16 x 12 casas, 4,8 m): o prédio branco com o barrado azul, o telhado de quatro águas, a marquise da
+# o posto de saúde (18 x 12 casas, 4,8 m): o prédio branco com o barrado azul, o telhado de quatro águas, a marquise da
 # entrada com a placa da cruz, as portas de vidro, o patamar com a rampa e o corrimão, a escadinha e os canteiros
 # =====================================================================================================================
 def _desenho_cruz(u, v, out):
@@ -571,18 +575,19 @@ def _corrimao(pts, cor='#c8ccd0', alto=0.9):
 
 
 def _posto():
-    W, D = 16 * CASA, 12 * CASA
+    W, D = 18 * CASA, 12 * CASA
     X0, X1, Y0, Y1 = 0.25, W - 0.25, 0.3, D - 1.65
     B = (X0, X1, Y0, Y1)
-    XP = TD._porta_x(16)
+    XP = TD._porta_x(18)
     ZP, ZE, ZR = 0.3, 3.45, 4.75
     AZUL = '#2f6194'
     PAR = mat_parede('#f2f0ea', seed=81, sujeira=0.0, descasca=0.06)
     caixa((X0, X1, Y0, Y1, 0.0, ZE), PAR)
     ys = list(np.linspace(Y0 + 1.0, Y1 - 1.0, 4))
     vaos = {
-        '+y': [('p', XP, ZP, 1.6, 2.3)] + [('j', x, 1.25, 1.0, 1.1) for x in (1.2, 2.6, 4.0, 8.4, 9.8)] + [('j', 11.05, 1.7, 0.6, 0.45)],
-        '-y': [('j', x, 1.45, 1.0, 0.9) for x in (1.2, 3.1, 5.0, 6.9, 8.8)] + [('j', 10.7, 1.7, 0.6, 0.45)],
+        # a frente: três janelas de cada lado da marquise (a da esquerda longe dela: a marquise avança por cima)
+        '+y': [('p', XP, ZP, 1.6, 2.3)] + [('j', x, 1.25, 1.0, 1.1) for x in (1.3, 2.8, 4.3, XP + 2.05, XP + 3.5, XP + 4.95)],
+        '-y': [('j', x, 1.45, 1.0, 0.9) for x in (1.2, 3.1, 5.0, 6.9, 8.8, 10.7)] + [('j', 12.25, 1.7, 0.6, 0.45)],
         '+x': [('j', y, 1.25, 0.9, 1.1) for y in ys],
         '-x': [('j', y, 1.25, 0.9, 1.1) for y in ys[:3]] + [('j', ys[3], 1.7, 0.6, 0.45)],
     }
@@ -646,7 +651,7 @@ def _posto():
 
 
 # =====================================================================================================================
-# o cartório (14 x 11 casas, 5,0 m): o prédio sóbrio de reboco bege com a platibanda e a cornija, o embasamento de
+# o cartório (15 x 12 casas, 5,0 m): o prédio sóbrio de reboco bege com a platibanda e a cornija, o embasamento de
 # granito, o pórtico de duas colunas na entrada com a placa da balança, a porta de madeira de duas folhas e as janelas
 # com a grade preta
 # =====================================================================================================================
@@ -675,10 +680,10 @@ def _coluna(x, y, z0, z1, r=0.12, cor='#efe8d8'):
 
 
 def _cartorio():
-    W, D = 14 * CASA, 11 * CASA
+    W, D = 15 * CASA, 12 * CASA
     X0, X1, Y0, Y1 = 0.25, W - 0.25, 0.3, D - 1.55
     B = (X0, X1, Y0, Y1)
-    XP = TD._porta_x(14)
+    XP = TD._porta_x(15)
     YM = (Y0 + Y1) / 2
     ZP, ZE, ZPL = 0.3, 3.9, 4.45
     BEGE = '#d8ccb4'
@@ -695,10 +700,11 @@ def _cartorio():
     BI = (X0 + 0.14, X1 - 0.14, Y0 + 0.14, Y1 - 0.14)
     telhado4(BI, ZE - 0.05, 4.98, BEI=0.0, eixo='x', seed=92)
     vaos = {
-        '+y': [('p', XP, ZP, 1.3, 2.4)] + [('j', x, 1.1, 0.9, 1.4) for x in (1.15, 2.45, 3.75, 7.0, 8.3, 9.6)],
-        '-y': [('j', x, 1.1, 1.0, 1.4) for x in np.linspace(1.2, 9.3, 6)],
-        '+x': [('j', y, 1.1, 0.9, 1.4) for y in np.linspace(Y0 + 0.9, Y1 - 0.9, 4)],
-        '-x': [('j', y, 1.1, 0.9, 1.4) for y in np.linspace(Y0 + 0.9, Y1 - 0.9, 4)],
+        # a frente simétrica: três janelas de cada lado do pórtico
+        '+y': [('p', XP, ZP, 1.3, 2.4)] + [('j', XP + s * d, 1.1, 0.9, 1.4) for s in (-1, 1) for d in (1.875, 3.175, 4.475)],
+        '-y': [('j', x, 1.1, 1.0, 1.4) for x in np.linspace(1.2, X1 - 0.95, 7)],
+        '+x': [('j', y, 1.1, 0.9, 1.4) for y in np.linspace(Y0 + 1.0, Y1 - 1.25, 4)],
+        '-x': [('j', y, 1.1, 0.9, 1.4) for y in np.linspace(Y0 + 1.0, Y1 - 1.25, 4)],
     }
     _conferir(vaos)
     for face, lista in vaos.items():
@@ -730,7 +736,7 @@ def _cartorio():
     TD._vaso(PX1 - 0.25, PY1 - 0.25, ZP, r=0.17, h=0.32, flores=None, seed=32)
     arandela('+y', Y1, XP - 0.95, 2.3)
     arandela('+y', Y1, XP + 0.95, 2.3)
-    caixa_luz('+x', X1, Y1 - 0.5, 1.0)
+    caixa_luz('+x', X1, Y1 - 0.45, 1.0)
     pegada(X0, X1, Y0, Y1)
     pegada(PX0, PX1, Y1, PY1)
 
@@ -1454,7 +1460,7 @@ def _cafeteira():
 
 
 # =====================================================================================================================
-# a lanchonete (8 x 7 casas, 4,4 m): a fachada amarela com a platibanda, a placa com o cachorro-quente e o copo de açaí
+# a lanchonete (9 x 8 casas, 4,6 m): a fachada amarela com a platibanda, a placa com o cachorro-quente e o copo de açaí
 # desenhados, o toldo listrado de vermelho e branco, a porta de enrolar aberta (a luz de dentro) e as duas mesinhas de
 # plástico vermelhas na calçada
 # =====================================================================================================================
@@ -1534,12 +1540,12 @@ def _mesa_plastico(x, y, cadeiras=((0, -1), (0, 1))):
 
 
 def _lanchonete():
-    W, D = 8 * CASA, 7 * CASA
+    W, D = 9 * CASA, 8 * CASA
     X0, X1, Y0, Y1 = 0.25, W - 0.25, 0.3, D - 1.1
     B = (X0, X1, Y0, Y1)
-    XP = TD._porta_x(8)
+    XP = TD._porta_x(9)
     YM = (Y0 + Y1) / 2
-    ZE, ZR, ZPL = 3.1, 4.38, 3.95
+    ZE, ZR, ZPL = 3.1, 4.55, 3.95
     AMARELO = '#ecc85a'
     PAR = mat_parede(AMARELO, seed=111, sujeira=0.6, descasca=0.12)
     caixa((X0, X1, Y0, Y1, 0.0, ZE), PAR)
@@ -1550,33 +1556,35 @@ def _lanchonete():
     KT = (ZR - ZE) / (YR - Y0)
     FF.telhado(X0, X1, Y0, Y1 - 0.15, [(Y0 - 0.3, ZE - 0.3 * KT), (YR, ZR), (Y1 - 0.15, ZE)], 'x', TELHA, TELHA_J, PAR,
                testeira='#ece6da', cumeeira=CUMEEIRA, seed=112, beiral_u=0.25)
-    YA, YB = Y0 + 1.0, Y1 - 1.0
-    vaos = {'+y': [('p', XP, 0.05, 1.8, 2.3), ('j', X0 + 0.85, 1.0, 0.8, 1.1), ('j', X1 - 0.75, 1.0, 0.8, 1.1)],
-            '-y': [('j', X0 + 1.2, 1.4, 0.8, 0.8), ('j', 3.0, 1.4, 0.8, 0.8), ('p', X1 - 1.1, 0.05, 0.8, 2.1)],
+    YA, YB = Y0 + 1.1, Y1 - 1.1
+    XJ0, XJ1 = (X0 + XP - 0.9) / 2, (XP + 0.9 + X1) / 2     # as janelas da frente, no meio de cada lado da porta
+    XD = X1 - 1.2                                         # a porta dos fundos
+    vaos = {'+y': [('p', XP, 0.05, 1.8, 2.3), ('j', XJ0, 1.0, 1.0, 1.1), ('j', XJ1, 1.0, 1.0, 1.1)],
+            '-y': [('j', X0 + 1.2, 1.4, 0.9, 0.8), ('j', X0 + 2.9, 1.4, 0.9, 0.8), ('p', XD, 0.05, 0.8, 2.1)],
             '+x': [('j', YA, 1.2, 0.6, 0.9), ('j', YB, 1.1, 0.8, 1.0)], '-x': [('j', YA, 1.1, 0.8, 1.0), ('j', YB, 1.1, 0.8, 1.0)]}
     _conferir(vaos)
-    faixa(B, 0.0, 0.45, '#c43a2a', cortes={'+y': [(XP - 0.95, XP + 0.95)], '-y': [(X1 - 1.55, X1 - 0.65)]})
+    faixa(B, 0.0, 0.45, '#c43a2a', cortes={'+y': [(XP - 0.95, XP + 0.95)], '-y': [(XD - 0.45, XD + 0.45)]})
     # a porta de enrolar aberta: o vão com a luz de dentro, a lâmina enrolada em cima e as guias de ferro dos lados
     TD._porta_aberta(B, '+y', XP, 0.05, 1.8, 2.3, {'moldura': '#8a8e92', 'porta': '#9aa0a6'})
     def lamina(L, n, P):
         g = np.floor(P[:, 2] / (2 * PZ)) % 2
         return np.where((g == 0)[:, None], hx('#9aa0a6'), hx('#b8bec4'))
     caixa((XP - 0.98, XP + 0.98, Y1, Y1 + 0.16, 2.45, 2.7), {'*': emissivo(lamina), 'cima': liso('#c8ccd0')})
-    janela_alu(B, '+y', X1 - 0.75, 1.0, 0.8, 1.1, grade=None)
-    janela_alu(B, '+y', X0 + 0.85, 1.0, 0.8, 1.1, grade=None)
-    janela_alu(B, '-y', X0 + 1.2, 1.4, 0.8, 0.8, grade='#2c2c30', vidro='escuro')
-    janela_alu(B, '-y', 3.0, 1.4, 0.8, 0.8, grade='#2c2c30', vidro='escuro')
-    porta_frisada(B, '-y', X1 - 1.1, 0.05, 0.8, 2.1, '#8a2a20')
+    janela_alu(B, '+y', XJ1, 1.0, 1.0, 1.1, grade=None)
+    janela_alu(B, '+y', XJ0, 1.0, 1.0, 1.1, grade=None)
+    janela_alu(B, '-y', X0 + 1.2, 1.4, 0.9, 0.8, grade='#2c2c30', vidro='escuro')
+    janela_alu(B, '-y', X0 + 2.9, 1.4, 0.9, 0.8, grade='#2c2c30', vidro='escuro')
+    porta_frisada(B, '-y', XD, 0.05, 0.8, 2.1, '#8a2a20')
     janela_alu(B, '+x', YA, 1.2, 0.6, 0.9, basculante=True)
     janela_alu(B, '+x', YB, 1.1, 0.8, 1.0, grade='#2c2c30', vidro='escuro')
     for y in (YA, YB):
         janela_alu(B, '-x', y, 1.1, 0.8, 1.0, grade='#2c2c30', vidro='escuro')
     # a placa na platibanda, o toldo e a calçada com as duas mesas
     _placa(Y1 + 0.005, XP - 1.15, XP + 1.15, 3.0, 3.8, _desenho_lanche, '#f6f2e6', '#c43a2a', e=0.05)
-    _toldo(X0 + 0.55, X1 - 0.12, Y1, Y1 + 0.85, 2.82, 2.42)
+    _toldo(X0 + 0.3, X1 - 0.3, Y1, Y1 + 0.85, 2.82, 2.42)
     calcada(X0 - 0.15, X1 + 0.15, Y1, D - 0.04)
-    _mesa_plastico(X0 + 0.55, Y1 + 0.52, cadeiras=((-1, 0), (1, 0)))
-    _mesa_plastico(X1 - 0.8, Y1 + 0.52, cadeiras=((-1, 0), (1, 0)))
+    _mesa_plastico(X0 + 0.7, Y1 + 0.52, cadeiras=((-1, 0), (1, 0)))
+    _mesa_plastico(X1 - 0.7, Y1 + 0.52, cadeiras=((-1, 0), (1, 0)))
     pegada(X0, X1, Y0, Y1)
 
 
@@ -1777,15 +1785,15 @@ def _janela_vidro(xc=1.5, zc=1.5, aberta=True):
 
 # =====================================================================================================================
 ITENS = {
-    'casa_moderna': (8, 7, (0.0, 0.0), lambda: _casa_moderna('a'), {}),
-    'casa_moderna~b': (8, 7, (0.0, 0.0), lambda: _casa_moderna('b'), {}),
-    'casa_moderna~c': (8, 7, (0.0, 0.0), lambda: _casa_moderna('c'), {}),
-    'casa_moderna~d': (8, 7, (0.0, 0.0), lambda: _casa_moderna('d'), {}),
-    'casa_valenca': (12, 10, (0.0, 0.0), _casa_valenca, {}),
-    'posto_saude': (16, 12, (0.0, 0.0), _posto, {}),
-    'cartorio_predio': (14, 11, (0.0, 0.0), _cartorio, {}),
+    'casa_moderna': (9, 8, (0.0, 0.0), lambda: _casa_moderna('a'), {}),
+    'casa_moderna~b': (9, 8, (0.0, 0.0), lambda: _casa_moderna('b'), {}),
+    'casa_moderna~c': (9, 8, (0.0, 0.0), lambda: _casa_moderna('c'), {}),
+    'casa_moderna~d': (9, 8, (0.0, 0.0), lambda: _casa_moderna('d'), {}),
+    'casa_valenca': (14, 11, (0.0, 0.0), _casa_valenca, {}),
+    'posto_saude': (18, 12, (0.0, 0.0), _posto, {}),
+    'cartorio_predio': (15, 12, (0.0, 0.0), _cartorio, {}),
     'prefeitura_predio': (15, 12, (0.0, 0.0), _prefeitura, {}),
-    'lanchonete_predio': (8, 7, (0.0, 0.0), _lanchonete, {}),
+    'lanchonete_predio': (9, 8, (0.0, 0.0), _lanchonete, {}),
     'geladeira': (1, 1, (0.0, 0.0), _geladeira, {}),
     'fogao_gas': (1, 1, (0.0, 0.0), _fogao_gas, {}),
     'maquina_lavar': (1, 1, (0.0, 0.0), _maquina_lavar, {}),

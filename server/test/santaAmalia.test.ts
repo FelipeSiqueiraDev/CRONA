@@ -97,6 +97,29 @@ describe("Santa Amália", () => {
     }
   });
 
+  test("o prédio de fora tem o tamanho dos cômodos de dentro, e cada cômodo tem um tamanho plausível (em m²)", () => {
+    const m2 = (n: string) => {
+      const chao = porNome(n).heightmap.replace(/\r/g, "").split("").filter((c) => c === "0").length - 1;
+      return chao * 0.75 * 0.75;
+    };
+    const predios: [string, string[]][] = [
+      ["casa_valenca", ["Sala dos Valença", "Cozinha dos Valença", "Área de Serviço dos Valença", "Banheiro dos Valença", "Quarto do Casal", "Quarto da Filha"]],
+      ["posto_saude", ["Recepção do Posto", "Consultório", "Sala de Procedimentos", "Triagem", "Farmácia do Posto", "Banheiro do Posto", "Administração do Posto"]],
+      ["cartorio_predio", ["Atendimento do Cartório", "Sala do Oficial", "Arquivo do Cartório", "Depósito do Cartório", "Banheiro do Cartório", "Copa do Cartório"]],
+    ];
+    for (const [id, comodos] of predios) {
+      const def = getFurni(id)!;
+      const fora = def.width * def.depth * 0.75 * 0.75;
+      const dentro = comodos.reduce((t, n) => t + m2(n), 0);
+      assert.ok(dentro <= fora && dentro >= fora * 0.8, `${id}: ${dentro.toFixed(1)} m² dentro, ${fora.toFixed(1)} m² fora`);
+    }
+    // uma sala de espera de uns 15 lugares: nem um corredor, nem um galpão
+    for (const n of ["Recepção do Posto", "Atendimento do Cartório"]) assert.ok(m2(n) >= 40 && m2(n) <= 60, `${n}: ${m2(n)} m²`);
+    for (const n of ["Consultório", "Sala de Procedimentos", "Triagem", "Farmácia do Posto", "Quarto do Casal", "Quarto da Filha", "Cozinha dos Valença", "Sala do Oficial"])
+      assert.ok(m2(n) >= 9 && m2(n) <= 20, `${n}: ${m2(n)} m²`);
+    for (const n of ["Banheiro dos Valença", "Banheiro do Posto", "Banheiro do Cartório"]) assert.ok(m2(n) >= 4 && m2(n) <= 8, `${n}: ${m2(n)} m²`);
+  });
+
   test("sem fogo aceso dentro de casa (a cidade tem luz elétrica): nem fogão a lenha, nem vela", () => {
     for (const r of salas) for (const it of r.items) assert.ok(!/fogao_lenha|candles|candelabra|fogueira|lareira/.test(it.defId), `${r.name}: ${it.defId}`);
   });

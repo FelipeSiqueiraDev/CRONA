@@ -40693,104 +40693,104 @@
     "giros": {
       "4": {
         "arquivo": "casa_moderna/giro-4.png",
-        "ax": 250.0,
-        "ay": 408.0
+        "ax": 282.0,
+        "ay": 441.0
       },
       "2": {
         "arquivo": "casa_moderna/giro-2.png",
-        "ax": 227.0,
-        "ay": 408.0
+        "ax": 259.0,
+        "ay": 441.0
       },
       "0": {
         "arquivo": "casa_moderna/giro-0.png",
-        "ax": 259.0,
-        "ay": 402.0
+        "ax": 291.0,
+        "ay": 435.0
       },
       "6": {
         "arquivo": "casa_moderna/giro-6.png",
-        "ax": 218.0,
-        "ay": 402.0
+        "ax": 250.0,
+        "ay": 435.0
       }
     },
     "real": [
-      6.18,
-      5.19,
-      4.46
+      6.93,
+      5.94,
+      4.63
     ],
     "cima": {
       "arquivo": "casa_moderna/cima.png",
       "caixa": [
         9,
         14,
-        273,
-        235
+        305,
+        267
       ]
     },
     "voo": {
       "25": {
         "4": {
           "arquivo": "casa_moderna/voo-25-giro-4.png",
-          "ax": 184.7,
-          "ay": 229.7
+          "ax": 209.7,
+          "ay": 247.3
         },
         "2": {
           "arquivo": "casa_moderna/voo-25-giro-2.png",
-          "ax": 186.8,
-          "ay": 234.2
+          "ax": 211.7,
+          "ay": 251.8
         },
         "0": {
           "arquivo": "casa_moderna/voo-25-giro-0.png",
-          "ax": 192.7,
-          "ay": 221.7
+          "ax": 217.7,
+          "ay": 239.3
         },
         "6": {
           "arquivo": "casa_moderna/voo-25-giro-6.png",
-          "ax": 180.8,
-          "ay": 228.2
+          "ax": 205.7,
+          "ay": 245.8
         }
       },
       "50": {
         "4": {
           "arquivo": "casa_moderna/voo-50-giro-4.png",
-          "ax": 179.8,
-          "ay": 218.5
+          "ax": 202.6,
+          "ay": 238.9
         },
         "2": {
           "arquivo": "casa_moderna/voo-50-giro-2.png",
-          "ax": 172.3,
-          "ay": 229.0
+          "ax": 196.0,
+          "ay": 249.3
         },
         "0": {
           "arquivo": "casa_moderna/voo-50-giro-0.png",
-          "ax": 184.8,
-          "ay": 206.5
+          "ax": 208.6,
+          "ay": 226.9
         },
         "6": {
           "arquivo": "casa_moderna/voo-50-giro-6.png",
-          "ax": 168.3,
-          "ay": 224.0
+          "ax": 191.0,
+          "ay": 244.3
         }
       },
       "75": {
         "4": {
           "arquivo": "casa_moderna/voo-75-giro-4.png",
-          "ax": 166.7,
-          "ay": 182.5
+          "ax": 187.8,
+          "ay": 202.9
         },
         "2": {
           "arquivo": "casa_moderna/voo-75-giro-2.png",
-          "ax": 151.5,
-          "ay": 200.2
+          "ax": 172.6,
+          "ay": 220.6
         },
         "0": {
           "arquivo": "casa_moderna/voo-75-giro-0.png",
-          "ax": 169.7,
-          "ay": 168.5
+          "ax": 190.8,
+          "ay": 188.9
         },
         "6": {
           "arquivo": "casa_moderna/voo-75-giro-6.png",
-          "ax": 148.5,
-          "ay": 197.2
+          "ax": 169.6,
+          "ay": 217.6
         }
       }
     },
@@ -40804,104 +40804,104 @@
     "giros": {
       "4": {
         "arquivo": "casa_moderna~b/giro-4.png",
-        "ax": 250.0,
-        "ay": 408.0
+        "ax": 282.0,
+        "ay": 441.0
       },
       "2": {
         "arquivo": "casa_moderna~b/giro-2.png",
-        "ax": 227.0,
-        "ay": 408.0
+        "ax": 259.0,
+        "ay": 441.0
       },
       "0": {
         "arquivo": "casa_moderna~b/giro-0.png",
-        "ax": 259.0,
-        "ay": 402.0
+        "ax": 291.0,
+        "ay": 435.0
       },
       "6": {
         "arquivo": "casa_moderna~b/giro-6.png",
-        "ax": 218.0,
-        "ay": 402.0
+        "ax": 250.0,
+        "ay": 435.0
       }
     },
     "real": [
-      6.18,
-      5.19,
-      4.46
+      6.93,
+      5.94,
+      4.63
     ],
     "cima": {
       "arquivo": "casa_moderna~b/cima.png",
       "caixa": [
         9,
         14,
-        273,
-        235
+        305,
+        267
       ]
     },
     "voo": {
       "25": {
         "4": {
           "arquivo": "casa_moderna~b/voo-25-giro-4.png",
-          "ax": 184.7,
-          "ay": 229.7
+          "ax": 209.7,
+          "ay": 247.3
         },
         "2": {
           "arquivo": "casa_moderna~b/voo-25-giro-2.png",
-          "ax": 186.8,
-          "ay": 234.2
+          "ax": 211.7,
+          "ay": 251.8
         },
         "0": {
           "arquivo": "casa_moderna~b/voo-25-giro-0.png",
-          "ax": 192.7,
-          "ay": 221.7
+          "ax": 217.7,
+          "ay": 239.3
         },
         "6": {
           "arquivo": "casa_moderna~b/voo-25-giro-6.png",
-          "ax": 180.8,
-          "ay": 228.2
+          "ax": 205.7,
+          "ay": 245.8
         }
       },
       "50": {
         "4": {
           "arquivo": "casa_moderna~b/voo-50-giro-4.png",
-          "ax": 179.8,
-          "ay": 218.5
+          "ax": 202.6,
+          "ay": 238.9
         },
         "2": {
           "arquivo": "casa_moderna~b/voo-50-giro-2.png",
-          "ax": 172.3,
-          "ay": 229.0
+          "ax": 196.0,
+          "ay": 249.3
         },
         "0": {
           "arquivo": "casa_moderna~b/voo-50-giro-0.png",
-          "ax": 184.8,
-          "ay": 206.5
+          "ax": 208.6,
+          "ay": 226.9
         },
         "6": {
           "arquivo": "casa_moderna~b/voo-50-giro-6.png",
-          "ax": 168.3,
-          "ay": 224.0
+          "ax": 191.0,
+          "ay": 244.3
         }
       },
       "75": {
         "4": {
           "arquivo": "casa_moderna~b/voo-75-giro-4.png",
-          "ax": 166.7,
-          "ay": 182.5
+          "ax": 187.8,
+          "ay": 202.9
         },
         "2": {
           "arquivo": "casa_moderna~b/voo-75-giro-2.png",
-          "ax": 151.5,
-          "ay": 200.2
+          "ax": 172.6,
+          "ay": 220.6
         },
         "0": {
           "arquivo": "casa_moderna~b/voo-75-giro-0.png",
-          "ax": 169.7,
-          "ay": 168.5
+          "ax": 190.8,
+          "ay": 188.9
         },
         "6": {
           "arquivo": "casa_moderna~b/voo-75-giro-6.png",
-          "ax": 148.5,
-          "ay": 197.2
+          "ax": 169.6,
+          "ay": 217.6
         }
       }
     },
@@ -40915,104 +40915,104 @@
     "giros": {
       "4": {
         "arquivo": "casa_moderna~c/giro-4.png",
-        "ax": 250.0,
-        "ay": 408.0
+        "ax": 282.0,
+        "ay": 441.0
       },
       "2": {
         "arquivo": "casa_moderna~c/giro-2.png",
-        "ax": 227.0,
-        "ay": 408.0
+        "ax": 259.0,
+        "ay": 441.0
       },
       "0": {
         "arquivo": "casa_moderna~c/giro-0.png",
-        "ax": 259.0,
-        "ay": 402.0
+        "ax": 291.0,
+        "ay": 435.0
       },
       "6": {
         "arquivo": "casa_moderna~c/giro-6.png",
-        "ax": 218.0,
-        "ay": 402.0
+        "ax": 250.0,
+        "ay": 435.0
       }
     },
     "real": [
-      6.18,
-      5.19,
-      4.46
+      6.93,
+      5.94,
+      4.63
     ],
     "cima": {
       "arquivo": "casa_moderna~c/cima.png",
       "caixa": [
         9,
         14,
-        273,
-        235
+        305,
+        267
       ]
     },
     "voo": {
       "25": {
         "4": {
           "arquivo": "casa_moderna~c/voo-25-giro-4.png",
-          "ax": 184.7,
-          "ay": 229.7
+          "ax": 209.7,
+          "ay": 247.3
         },
         "2": {
           "arquivo": "casa_moderna~c/voo-25-giro-2.png",
-          "ax": 186.8,
-          "ay": 234.2
+          "ax": 211.7,
+          "ay": 251.8
         },
         "0": {
           "arquivo": "casa_moderna~c/voo-25-giro-0.png",
-          "ax": 192.7,
-          "ay": 221.7
+          "ax": 217.7,
+          "ay": 239.3
         },
         "6": {
           "arquivo": "casa_moderna~c/voo-25-giro-6.png",
-          "ax": 180.8,
-          "ay": 228.2
+          "ax": 205.7,
+          "ay": 245.8
         }
       },
       "50": {
         "4": {
           "arquivo": "casa_moderna~c/voo-50-giro-4.png",
-          "ax": 179.8,
-          "ay": 218.5
+          "ax": 202.6,
+          "ay": 238.9
         },
         "2": {
           "arquivo": "casa_moderna~c/voo-50-giro-2.png",
-          "ax": 172.3,
-          "ay": 229.0
+          "ax": 196.0,
+          "ay": 249.3
         },
         "0": {
           "arquivo": "casa_moderna~c/voo-50-giro-0.png",
-          "ax": 184.8,
-          "ay": 206.5
+          "ax": 208.6,
+          "ay": 226.9
         },
         "6": {
           "arquivo": "casa_moderna~c/voo-50-giro-6.png",
-          "ax": 168.3,
-          "ay": 224.0
+          "ax": 191.0,
+          "ay": 244.3
         }
       },
       "75": {
         "4": {
           "arquivo": "casa_moderna~c/voo-75-giro-4.png",
-          "ax": 166.7,
-          "ay": 182.5
+          "ax": 187.8,
+          "ay": 202.9
         },
         "2": {
           "arquivo": "casa_moderna~c/voo-75-giro-2.png",
-          "ax": 151.5,
-          "ay": 200.2
+          "ax": 172.6,
+          "ay": 220.6
         },
         "0": {
           "arquivo": "casa_moderna~c/voo-75-giro-0.png",
-          "ax": 169.7,
-          "ay": 168.5
+          "ax": 190.8,
+          "ay": 188.9
         },
         "6": {
           "arquivo": "casa_moderna~c/voo-75-giro-6.png",
-          "ax": 148.5,
-          "ay": 197.2
+          "ax": 169.6,
+          "ay": 217.6
         }
       }
     },
@@ -41026,104 +41026,104 @@
     "giros": {
       "4": {
         "arquivo": "casa_moderna~d/giro-4.png",
-        "ax": 250.0,
-        "ay": 408.0
+        "ax": 282.0,
+        "ay": 441.0
       },
       "2": {
         "arquivo": "casa_moderna~d/giro-2.png",
-        "ax": 227.0,
-        "ay": 408.0
+        "ax": 259.0,
+        "ay": 441.0
       },
       "0": {
         "arquivo": "casa_moderna~d/giro-0.png",
-        "ax": 259.0,
-        "ay": 402.0
+        "ax": 291.0,
+        "ay": 435.0
       },
       "6": {
         "arquivo": "casa_moderna~d/giro-6.png",
-        "ax": 218.0,
-        "ay": 402.0
+        "ax": 250.0,
+        "ay": 435.0
       }
     },
     "real": [
-      6.18,
-      5.19,
-      4.46
+      6.93,
+      5.94,
+      4.63
     ],
     "cima": {
       "arquivo": "casa_moderna~d/cima.png",
       "caixa": [
         9,
         14,
-        273,
-        235
+        305,
+        267
       ]
     },
     "voo": {
       "25": {
         "4": {
           "arquivo": "casa_moderna~d/voo-25-giro-4.png",
-          "ax": 184.7,
-          "ay": 229.7
+          "ax": 209.7,
+          "ay": 247.3
         },
         "2": {
           "arquivo": "casa_moderna~d/voo-25-giro-2.png",
-          "ax": 186.8,
-          "ay": 234.2
+          "ax": 211.7,
+          "ay": 251.8
         },
         "0": {
           "arquivo": "casa_moderna~d/voo-25-giro-0.png",
-          "ax": 192.7,
-          "ay": 221.7
+          "ax": 217.7,
+          "ay": 239.3
         },
         "6": {
           "arquivo": "casa_moderna~d/voo-25-giro-6.png",
-          "ax": 180.8,
-          "ay": 228.2
+          "ax": 205.7,
+          "ay": 245.8
         }
       },
       "50": {
         "4": {
           "arquivo": "casa_moderna~d/voo-50-giro-4.png",
-          "ax": 179.8,
-          "ay": 218.5
+          "ax": 202.6,
+          "ay": 238.9
         },
         "2": {
           "arquivo": "casa_moderna~d/voo-50-giro-2.png",
-          "ax": 172.3,
-          "ay": 229.0
+          "ax": 196.0,
+          "ay": 249.3
         },
         "0": {
           "arquivo": "casa_moderna~d/voo-50-giro-0.png",
-          "ax": 184.8,
-          "ay": 206.5
+          "ax": 208.6,
+          "ay": 226.9
         },
         "6": {
           "arquivo": "casa_moderna~d/voo-50-giro-6.png",
-          "ax": 168.3,
-          "ay": 224.0
+          "ax": 191.0,
+          "ay": 244.3
         }
       },
       "75": {
         "4": {
           "arquivo": "casa_moderna~d/voo-75-giro-4.png",
-          "ax": 166.7,
-          "ay": 182.5
+          "ax": 187.8,
+          "ay": 202.9
         },
         "2": {
           "arquivo": "casa_moderna~d/voo-75-giro-2.png",
-          "ax": 151.5,
-          "ay": 200.2
+          "ax": 172.6,
+          "ay": 220.6
         },
         "0": {
           "arquivo": "casa_moderna~d/voo-75-giro-0.png",
-          "ax": 169.7,
-          "ay": 168.5
+          "ax": 190.8,
+          "ay": 188.9
         },
         "6": {
           "arquivo": "casa_moderna~d/voo-75-giro-6.png",
-          "ax": 148.5,
-          "ay": 197.2
+          "ax": 169.6,
+          "ay": 217.6
         }
       }
     },
@@ -41137,104 +41137,104 @@
     "giros": {
       "4": {
         "arquivo": "casa_valenca/giro-4.png",
-        "ax": 385.0,
-        "ay": 509.0
+        "ax": 449.0,
+        "ay": 558.0
       },
       "2": {
         "arquivo": "casa_valenca/giro-2.png",
-        "ax": 332.0,
-        "ay": 509.0
+        "ax": 364.0,
+        "ay": 558.0
       },
       "0": {
         "arquivo": "casa_valenca/giro-0.png",
-        "ax": 396.0,
-        "ay": 504.0
+        "ax": 460.0,
+        "ay": 553.0
       },
       "6": {
         "arquivo": "casa_valenca/giro-6.png",
-        "ax": 321.0,
-        "ay": 504.0
+        "ax": 353.0,
+        "ay": 553.0
       }
     },
     "real": [
-      9.402,
-      7.611,
-      4.64
+      10.901,
+      8.361,
+      4.74
     ],
     "cima": {
       "arquivo": "casa_valenca/cima.png",
       "caixa": [
-        4,
+        5,
         7,
-        406,
-        331
+        469,
+        363
       ]
     },
     "voo": {
       "25": {
         "4": {
           "arquivo": "casa_valenca/voo-25-giro-4.png",
-          "ax": 282.6,
-          "ay": 295.7
+          "ax": 322.5,
+          "ay": 320.4
         },
         "2": {
           "arquivo": "casa_valenca/voo-25-giro-2.png",
-          "ax": 278.7,
-          "ay": 302.7
+          "ax": 313.6,
+          "ay": 331.9
         },
         "0": {
           "arquivo": "casa_valenca/voo-25-giro-0.png",
-          "ax": 289.6,
-          "ay": 288.7
+          "ax": 329.5,
+          "ay": 313.4
         },
         "6": {
           "arquivo": "casa_valenca/voo-25-giro-6.png",
-          "ax": 268.7,
-          "ay": 298.7
+          "ax": 303.6,
+          "ay": 326.9
         }
       },
       "50": {
         "4": {
           "arquivo": "casa_valenca/voo-50-giro-4.png",
-          "ax": 273.7,
-          "ay": 292.6
+          "ax": 314.0,
+          "ay": 318.9
         },
         "2": {
           "arquivo": "casa_valenca/voo-50-giro-2.png",
-          "ax": 257.6,
-          "ay": 310.5
+          "ax": 287.5,
+          "ay": 346.2
         },
         "0": {
           "arquivo": "casa_valenca/voo-50-giro-0.png",
-          "ax": 278.7,
-          "ay": 283.6
+          "ax": 319.0,
+          "ay": 309.9
         },
         "6": {
           "arquivo": "casa_valenca/voo-50-giro-6.png",
-          "ax": 246.6,
-          "ay": 307.5
+          "ax": 276.5,
+          "ay": 342.2
         }
       },
       "75": {
         "4": {
           "arquivo": "casa_valenca/voo-75-giro-4.png",
-          "ax": 254.7,
-          "ay": 255.2
+          "ax": 293.5,
+          "ay": 279.1
         },
         "2": {
           "arquivo": "casa_valenca/voo-75-giro-2.png",
-          "ax": 227.4,
-          "ay": 284.6
+          "ax": 251.0,
+          "ay": 322.0
         },
         "0": {
           "arquivo": "casa_valenca/voo-75-giro-0.png",
-          "ax": 256.7,
-          "ay": 243.2
+          "ax": 295.5,
+          "ay": 267.1
         },
         "6": {
           "arquivo": "casa_valenca/voo-75-giro-6.png",
-          "ax": 215.4,
-          "ay": 281.6
+          "ax": 240.0,
+          "ay": 319.0
         }
       }
     },
@@ -41248,27 +41248,27 @@
     "giros": {
       "4": {
         "arquivo": "posto_saude/giro-4.png",
-        "ax": 496.0,
-        "ay": 632.0
+        "ax": 560.0,
+        "ay": 664.0
       },
       "2": {
         "arquivo": "posto_saude/giro-2.png",
         "ax": 400.0,
-        "ay": 632.0
+        "ay": 664.0
       },
       "0": {
         "arquivo": "posto_saude/giro-0.png",
-        "ax": 528.0,
-        "ay": 603.0
+        "ax": 592.0,
+        "ay": 635.0
       },
       "6": {
         "arquivo": "posto_saude/giro-6.png",
         "ax": 368.0,
-        "ay": 603.0
+        "ay": 635.0
       }
     },
     "real": [
-      12.497,
+      13.997,
       9.169,
       4.84
     ],
@@ -41277,7 +41277,7 @@
       "caixa": [
         2,
         5,
-        536,
+        600,
         396
       ]
     },
@@ -41285,67 +41285,67 @@
       "25": {
         "4": {
           "arquivo": "posto_saude/voo-25-giro-4.png",
-          "ax": 346.5,
-          "ay": 363.1
+          "ax": 376.4,
+          "ay": 377.3
         },
         "2": {
           "arquivo": "posto_saude/voo-25-giro-2.png",
-          "ax": 351.6,
-          "ay": 378.2
+          "ax": 371.6,
+          "ay": 399.3
         },
         "0": {
           "arquivo": "posto_saude/voo-25-giro-0.png",
-          "ax": 372.5,
-          "ay": 325.1
+          "ax": 402.4,
+          "ay": 339.3
         },
         "6": {
           "arquivo": "posto_saude/voo-25-giro-6.png",
-          "ax": 326.6,
-          "ay": 352.2
+          "ax": 346.6,
+          "ay": 373.3
         }
       },
       "50": {
         "4": {
           "arquivo": "posto_saude/voo-50-giro-4.png",
-          "ax": 337.4,
-          "ay": 359.3
+          "ax": 370.7,
+          "ay": 371.2
         },
         "2": {
           "arquivo": "posto_saude/voo-50-giro-2.png",
-          "ax": 321.3,
-          "ay": 394.0
+          "ax": 335.6,
+          "ay": 422.8
         },
         "0": {
           "arquivo": "posto_saude/voo-50-giro-0.png",
-          "ax": 362.4,
-          "ay": 307.3
+          "ax": 395.7,
+          "ay": 319.2
         },
         "6": {
           "arquivo": "posto_saude/voo-50-giro-6.png",
-          "ax": 296.3,
-          "ay": 373.0
+          "ax": 310.6,
+          "ay": 401.8
         }
       },
       "75": {
         "4": {
           "arquivo": "posto_saude/voo-75-giro-4.png",
-          "ax": 324.3,
-          "ay": 310.9
+          "ax": 359.6,
+          "ay": 317.7
         },
         "2": {
           "arquivo": "posto_saude/voo-75-giro-2.png",
-          "ax": 278.7,
-          "ay": 367.5
+          "ax": 285.6,
+          "ay": 401.7
         },
         "0": {
           "arquivo": "posto_saude/voo-75-giro-0.png",
-          "ax": 337.3,
-          "ay": 249.9
+          "ax": 372.6,
+          "ay": 256.7
         },
         "6": {
           "arquivo": "posto_saude/voo-75-giro-6.png",
-          "ax": 254.7,
-          "ay": 355.5
+          "ax": 262.6,
+          "ay": 389.7
         }
       }
     },
@@ -41359,28 +41359,28 @@
     "giros": {
       "4": {
         "arquivo": "cartorio_predio/giro-4.png",
-        "ax": 417.0,
-        "ay": 625.0
+        "ax": 449.0,
+        "ay": 657.0
       },
       "2": {
         "arquivo": "cartorio_predio/giro-2.png",
-        "ax": 339.0,
-        "ay": 625.0
+        "ax": 371.0,
+        "ay": 657.0
       },
       "0": {
         "arquivo": "cartorio_predio/giro-0.png",
-        "ax": 434.0,
-        "ay": 599.0
+        "ax": 466.0,
+        "ay": 631.0
       },
       "6": {
         "arquivo": "cartorio_predio/giro-6.png",
-        "ax": 321.0,
-        "ay": 599.0
+        "ax": 353.0,
+        "ay": 631.0
       }
     },
     "real": [
-      10.245,
-      7.895,
+      10.995,
+      8.645,
       5.07
     ],
     "cima": {
@@ -41388,75 +41388,75 @@
       "caixa": [
         19,
         22,
-        456,
-        359
+        488,
+        391
       ]
     },
     "voo": {
       "25": {
         "4": {
           "arquivo": "cartorio_predio/voo-25-giro-4.png",
-          "ax": 298.5,
-          "ay": 357.4
+          "ax": 323.5,
+          "ay": 375.1
         },
         "2": {
           "arquivo": "cartorio_predio/voo-25-giro-2.png",
-          "ax": 293.6,
-          "ay": 367.9
+          "ax": 317.6,
+          "ay": 385.6
         },
         "0": {
           "arquivo": "cartorio_predio/voo-25-giro-0.png",
-          "ax": 308.5,
-          "ay": 321.4
+          "ax": 333.5,
+          "ay": 339.1
         },
         "6": {
           "arquivo": "cartorio_predio/voo-25-giro-6.png",
-          "ax": 277.6,
-          "ay": 344.9
+          "ax": 302.6,
+          "ay": 362.6
         }
       },
       "50": {
         "4": {
           "arquivo": "cartorio_predio/voo-50-giro-4.png",
-          "ax": 292.0,
-          "ay": 336.9
+          "ax": 315.8,
+          "ay": 357.3
         },
         "2": {
           "arquivo": "cartorio_predio/voo-50-giro-2.png",
-          "ax": 266.5,
-          "ay": 363.2
+          "ax": 290.2,
+          "ay": 383.6
         },
         "0": {
           "arquivo": "cartorio_predio/voo-50-giro-0.png",
-          "ax": 298.0,
-          "ay": 288.9
+          "ax": 320.8,
+          "ay": 309.3
         },
         "6": {
           "arquivo": "cartorio_predio/voo-50-giro-6.png",
-          "ax": 250.5,
-          "ay": 343.2
+          "ax": 274.2,
+          "ay": 363.6
         }
       },
       "75": {
         "4": {
           "arquivo": "cartorio_predio/voo-75-giro-4.png",
-          "ax": 274.5,
-          "ay": 277.1
+          "ax": 295.7,
+          "ay": 297.5
         },
         "2": {
           "arquivo": "cartorio_predio/voo-75-giro-2.png",
-          "ax": 231.0,
-          "ay": 320.0
+          "ax": 252.2,
+          "ay": 340.5
         },
         "0": {
           "arquivo": "cartorio_predio/voo-75-giro-0.png",
-          "ax": 275.5,
-          "ay": 229.1
+          "ax": 296.7,
+          "ay": 242.5
         },
         "6": {
           "arquivo": "cartorio_predio/voo-75-giro-6.png",
-          "ax": 214.0,
-          "ay": 309.0
+          "ax": 235.2,
+          "ay": 329.5
         }
       }
     },
@@ -41581,104 +41581,104 @@
     "giros": {
       "4": {
         "arquivo": "lanchonete_predio/giro-4.png",
-        "ax": 250.0,
-        "ay": 427.0
+        "ax": 282.0,
+        "ay": 460.0
       },
       "2": {
         "arquivo": "lanchonete_predio/giro-2.png",
-        "ax": 224.0,
-        "ay": 427.0
+        "ax": 256.0,
+        "ay": 460.0
       },
       "0": {
         "arquivo": "lanchonete_predio/giro-0.png",
-        "ax": 256.0,
-        "ay": 422.0
+        "ax": 288.0,
+        "ay": 454.0
       },
       "6": {
         "arquivo": "lanchonete_predio/giro-6.png",
-        "ax": 218.0,
-        "ay": 422.0
+        "ax": 250.0,
+        "ay": 454.0
       }
     },
     "real": [
-      6.0,
-      5.21,
-      4.46
+      6.75,
+      5.96,
+      4.63
     ],
     "cima": {
       "arquivo": "lanchonete_predio/cima.png",
       "caixa": [
         13,
         13,
-        269,
-        235
+        301,
+        267
       ]
     },
     "voo": {
       "25": {
         "4": {
           "arquivo": "lanchonete_predio/voo-25-giro-4.png",
-          "ax": 184.7,
-          "ay": 228.7
+          "ax": 209.7,
+          "ay": 246.3
         },
         "2": {
           "arquivo": "lanchonete_predio/voo-25-giro-2.png",
-          "ax": 184.8,
-          "ay": 245.2
+          "ax": 209.7,
+          "ay": 260.8
         },
         "0": {
           "arquivo": "lanchonete_predio/voo-25-giro-0.png",
-          "ax": 189.7,
-          "ay": 232.7
+          "ax": 214.7,
+          "ay": 250.3
         },
         "6": {
           "arquivo": "lanchonete_predio/voo-25-giro-6.png",
-          "ax": 180.8,
-          "ay": 244.2
+          "ax": 205.7,
+          "ay": 261.8
         }
       },
       "50": {
         "4": {
           "arquivo": "lanchonete_predio/voo-50-giro-4.png",
-          "ax": 175.8,
-          "ay": 217.5
+          "ax": 199.6,
+          "ay": 238.9
         },
         "2": {
           "arquivo": "lanchonete_predio/voo-50-giro-2.png",
-          "ax": 171.3,
-          "ay": 230.0
+          "ax": 195.0,
+          "ay": 248.3
         },
         "0": {
           "arquivo": "lanchonete_predio/voo-50-giro-0.png",
-          "ax": 180.8,
-          "ay": 200.5
+          "ax": 204.6,
+          "ay": 220.9
         },
         "6": {
           "arquivo": "lanchonete_predio/voo-50-giro-6.png",
-          "ax": 168.3,
-          "ay": 228.0
+          "ax": 191.0,
+          "ay": 248.3
         }
       },
       "75": {
         "4": {
           "arquivo": "lanchonete_predio/voo-75-giro-4.png",
-          "ax": 160.7,
-          "ay": 182.5
+          "ax": 181.8,
+          "ay": 202.9
         },
         "2": {
           "arquivo": "lanchonete_predio/voo-75-giro-2.png",
-          "ax": 151.5,
-          "ay": 196.2
+          "ax": 172.6,
+          "ay": 216.6
         },
         "0": {
           "arquivo": "lanchonete_predio/voo-75-giro-0.png",
-          "ax": 165.7,
-          "ay": 161.5
+          "ax": 186.8,
+          "ay": 180.9
         },
         "6": {
           "arquivo": "lanchonete_predio/voo-75-giro-6.png",
-          "ax": 148.5,
-          "ay": 191.2
+          "ax": 169.6,
+          "ay": 211.6
         }
       }
     },

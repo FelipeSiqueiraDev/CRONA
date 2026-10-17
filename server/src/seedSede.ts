@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 55;
+export const SEDE_REV = 60;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -98,7 +98,7 @@ const table = (x: number, y: number, sides: string): FloorSeed[] => [
  */
 const cell = (bx: number, bedY: number, sideY: number, frontY: number, rot: number): FloorSeed[] => [
   ['bed', bx, bedY, 2],
-  ['toilet_steel', bx + 3, sideY, 6],
+  ['toilet_steel', bx + 3, sideY - 1, 6],
   ['cell_front', bx, frontY, rot],
   ['cell_door_steel', bx + 1, frontY, rot],
   ['cell_front', bx + 2, frontY, rot],
@@ -170,12 +170,11 @@ const ROOMS: RoomSpec[] = [
       ['beer_glass', 4, 3, 0],
       ['beer_glass', 8, 3, 0],
       ['beer_crate', 11, 3, 0],
-      ['stool_bar', 2, 4, 0],
-      ['stool_bar', 4, 4, 0],
-      ['stool_bar', 6, 4, 0],
-      ['stool_bar', 8, 4, 0],
-      ['stool_bar', 10, 4, 0],
-      ['stool_bar', 12, 4, 0],
+      ['stool_bar', 3, 4, 0],
+      ['stool_bar', 5, 4, 0],
+      ['stool_bar', 7, 4, 0],
+      ['stool_bar', 9, 4, 0],
+      ['stool_bar', 11, 4, 0],
       // parede da esquerda: a poltrona, a planta, o fliperama de Tetris e, no canto, a pilha de cadeiras
       ['armchair_red', 1, 5, 2],
       ['plant', 1, 6, 0],
@@ -496,10 +495,10 @@ const ROOMS: RoomSpec[] = [
       // monitores em cima dela (08/10: antes o painel ficava atrás dos armários), e os armários do lado
       ['desk_metal', 20, 0, 4],
       ['monitor', 21, 0, 4],
-      ['chair_office', 21, 1, 0],
+      ['chair_office', 20, 1, 0],
       ['locker_row', 22, 0, 4],
-      ['locker', 23, 1, 6],
-      ['cabinet_file', 23, 3, 6],
+      ['locker', 20, 2, 2],
+      ['cabinet_file', 20, 3, 2],
       // o interrogatório, no meio do pátio: a mesinha, as duas cadeiras e a lâmpada em cima
       ['desk_metal', 11, 9, 0],
       ['chair_wood', 11, 8, 4],
@@ -515,8 +514,8 @@ const ROOMS: RoomSpec[] = [
       // o posto do carcereiro (a caneca esfriando e os papéis) e o armário
       ['papers', 20, 0, 4],
       ['mug', 20, 0, 0],
-      ['books_stack', 23, 3, 0],
-      ['cables_floor', 20, 2, 4],
+      ['books_stack', 20, 3, 0],
+      ['cables_floor', 21, 2, 4],
       ['trash_can', 23, 6, 6],
       // o interrogatório: a ficha do preso e a luminária apontada para ele
       ['papers', 11, 9, 0],
@@ -582,7 +581,7 @@ const ROOMS: RoomSpec[] = [
       ['wax_pool', 5, 1, 2],
       ['wax_pool', 5, 5, 0],
       ['candles', 1, 1, 0],
-      ['candles', 5, 1, 0],
+      ['candles', 4, 1, 0],
       ['candles', 5, 5, 0],
       ['candles', 2, 5, 0],
       // no fundo, o altar entre os dois pedestais com as cinzas
@@ -597,7 +596,7 @@ const ROOMS: RoomSpec[] = [
       ['cinzas', 2, 1, 0],
       ['cinzas', 5, 1, 0],
       ['pilha_cranios', 1, 0, 0],
-      ['pilha_cranios', 6, 1, 0],
+      ['pilha_cranios', 0, 0, 0],
       ['candelabra', 6, 0, 0],
       // a cera das velas que já se foram, nas laterais
       ['wax_pool', 0, 3, 0],
@@ -640,11 +639,11 @@ const ROOMS: RoomSpec[] = [
       ['bancada_lab_ilha', 3, 3, 2],
       ['bancada_lab_ilha', 5, 3, 6],
       ['stool_lab', 4, 4, 0],
-      ['stool_lab', 4, 6, 0],
+      ['stool_lab', 4, 5, 0],
       ['mesa_vidro_lab', 8, 3, 0],
       ['chair_office', 6, 2, 0],
       ['trolley', 7, 7, 0],
-      ...lamps([2, 2], [4, 5], [7, 3]),
+      ...lamps([2, 2], [4, 3], [7, 3]),
       // ---- adensado (15/10): limpo e frio, mas com trabalho em andamento ----
       // a bancada de canto: o microscópio e os frascos
       ['microscope', 0, 0, 4],
@@ -761,7 +760,7 @@ const ROOMS: RoomSpec[] = [
       // no canto, o sofá vermelho embaixo da pintura do Coliseu
       ['sofa_verissimo', 1, 0, 4],
       ['shelf_verissimo', 6, 0, 4],
-      ['candelabra', 5, 0, 4],
+      ['candelabra', 11, 2, 0],
       ['candelabra', 11, 3, 0],
       // a mesa grande perto do centro, com a cadeira do Veríssimo atrás (de costas para o sofá)
       ['chair_verissimo', 4, 1, 4],
@@ -774,7 +773,7 @@ const ROOMS: RoomSpec[] = [
       ['armchair_verissimo', 5, 4, 0],
       ['armchair_verissimo', 2, 6, 2],
       ['armchair_verissimo', 5, 6, 6],
-      ['cabinet_file', 7, 2, 4],
+      ['cabinet_file', 4, 0, 4],
       // o canto de exibição, na parede da esquerda, depois do quadro de detetive (08/10: antes o quadro ficava atrás
       // da vitrine e da armadura): um museu particular; a outra armadura guarda a relíquia do meio da sala
       ['pedestal_relic', 0, 5, 2],
@@ -794,7 +793,7 @@ const ROOMS: RoomSpec[] = [
       ['beer_glass', 3, 3, 0],
       ['papers', 4, 3, 0],
       ['ashtray', 5, 3, 0],
-      ['books_stack', 7, 2, 0],
+      ['books_stack', 4, 0, 0],
       // no meio das poltronas, a mesinha com a vela
       ['table_small', 4, 5, 0],
       ['candles', 4, 5, 0],
@@ -901,7 +900,6 @@ const ROOMS: RoomSpec[] = [
       ['stall_panel', 3, 1, 2],
       ['toilet', 4, 0, 4],
       ['stall_panel', 5, 0, 2],
-      ['sink', 0, 2, 2],
       ['sink', 0, 3, 2],
       ['trash_bin', 2, 3, 4],
       ['dirt', 3, 2, 0],
@@ -942,7 +940,7 @@ const ROOMS: RoomSpec[] = [
         ['iv_stand', x - 1, 1, 0] as FloorSeed,
         ['bed_curtain', x - 1, 10, 0, undefined, x === 5 ? 0 : 1] as FloorSeed,
         ['hospital_bed', x, 11, 0] as FloorSeed,
-        ['iv_stand', x - 1, 13, 0] as FloorSeed,
+        ['iv_stand', x + 1, 13, 0] as FloorSeed,
       ]),
       // os remédios num canto só: os armários na parede do fundo, ao lado da porta, e a pia
       ['medical_cabinet', 13, 1, 4],
@@ -960,9 +958,9 @@ const ROOMS: RoomSpec[] = [
         ['nightstand', x - 1, 2, 2],
         i === 0 ? ['vitals_monitor', x - 1, 2, 2] : i === 1 ? ['med_tray', x - 1, 2, 2] : ['papers', x - 1, 2, 0],
         ...(i === 2 ? ([['mug', x - 1, 2, 0]] as FloorSeed[]) : []),
-        ['nightstand', x - 1, 12, 2],
-        i === 0 ? ['med_tray', x - 1, 12, 2] : i === 1 ? ['vitals_monitor', x - 1, 12, 2] : ['papers', x - 1, 12, 0],
-        ...(i === 2 ? ([['mug', x - 1, 12, 0]] as FloorSeed[]) : []),
+        ['nightstand', x - 1, 13, 2],
+        i === 0 ? ['med_tray', x - 1, 13, 2] : i === 1 ? ['vitals_monitor', x - 1, 13, 2] : ['papers', x - 1, 13, 0],
+        ...(i === 2 ? ([['mug', x - 1, 13, 0]] as FloorSeed[]) : []),
       ]),
       // o canto das pias: o bebedouro, o papel e o copo; o posto: a caneca
       ['med_tray', 18, 1, 4],

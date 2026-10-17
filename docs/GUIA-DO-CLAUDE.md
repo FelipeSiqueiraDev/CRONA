@@ -121,6 +121,11 @@ O básico está no `AGENTS.md`. Além dele:
   - **Andar com uma peça:** `view.myId = id; view.events.walk(x, y)`.
   - **Antes de capturar:** `v.autoFit = true; v.needFit = true`, ou trave a câmera com `autoFit = false; needFit = false; camAnim = null`.
 - **Mudou a montagem da Sede ou da Fazenda?** Suba `SEDE_REV` / `FAZENDA_REV` **a cada edição**: a versão que o banco já aplicou não refaz nada. Confira em memória antes com `npx tsx`, montando `seedDb()` e `upgradeDb()`; o `console.warn` diz o que não coube.
+- **Arrumar os móveis de uma cena (regra do Felipe, 17/10, vale para todas as cenas e as próximas):** é um tabuleiro, a peça tem que andar pela cena e chegar em todo móvel. O teste `server/test/moveisNaParede.test.ts` confere todas as cenas do jogo:
+  1. **Móvel de parede encostado numa parede que aparece**, de frente para a sala: TV, guarda-roupa, fogão, geladeira, pia, estante, arquivo, cômoda, lareira, cama (cabeceira na parede) e afins ficam no giro 4 com a parede do fundo logo atrás, ou no giro 2 com a parede da esquerda. Numa divisória de dentro (a parede da cela), de qualquer lado. Nas paredes da frente, que não aparecem, ele mostra as costas; no meio da sala, fica "jogado". Mesa, sofá, cadeira, tapete e mesa de centro podem ficar soltos.
+  2. **Caminho livre:** todo chão livre se alcança a pé a partir da porta (nada de dar a volta atrás da TV para chegar à mesa, nada de canto preso atrás de móvel).
+  3. **Todo móvel se alcança:** tem uma casa do lado dele aonde a peça chega (a mesa conta pela cadeira; a pilha de caixas, de feno ou de sacas, por inteiro).
+  As regras 2 e 3 não valem no que é bagunçado de propósito (o Orfanato queimado: "aí é até legal, cria um desafio para chegar num lugar"). Não abra exceção no teste só para passar. Para arrumar, `npx tsx scripts/dev/sala.mts "Lugar · Sala"` desenha a planta em texto, com a letra de cada móvel e `!` no chão preso. Cuidado com as plantas espelhadas da Fazenda (`plan.r: 2`): lá, x na tela = largura − 1 − x no seed, e o giro 2 vira 6.
 - **Manhas desta máquina:**
   - **OneDrive:** o Vite usa polling.
   - **Heredoc no Bash:** com `${...}` dentro, ele quebra. Escreva o script com a ferramenta Write e rode o arquivo.

@@ -21,7 +21,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * (giro 4) tem a de dentro na parede da frente (planBottom); virado para o fundo (giro 0), na do fundo (planTop).
  */
 export const TIRADENTES = "Tiradentes · ";
-export const TIRADENTES_REV = 2;
+export const TIRADENTES_REV = 3;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -370,7 +370,7 @@ const CENAS: CenaSpec[] = [
       ["armario_cozinha", 5, 0, 4],
       ["mesa_jantar", 2, 2, 4],
       ["chair_wood", 2, 1, 4],
-      ["chair_wood", 4, 1, 4],
+      ["chair_wood", 5, 1, 4],
       ["chair_wood", 3, 4, 0],
       ["chair_wood", 5, 4, 0],
       ["chair_wood", 1, 2, 2],
@@ -449,7 +449,7 @@ const CENAS: CenaSpec[] = [
       ["candles", 0, 0, 0],
       ["books_stack", 3, 0, 0],
       ["guarda_roupa", 6, 0, 4],
-      ["comoda", 0, 3, 2],
+      ["comoda", 0, 4, 2],
       ["mug", 0, 4, 0],
       ["rug_worn", 2, 3, 0],
       ["armchair", 7, 4, 6],
@@ -511,7 +511,7 @@ const CENAS: CenaSpec[] = [
       ["nightstand", 0, 4, 2],
       ["cama_solteiro", 0, 5, 2, oculta("A cama do 3", "No livro de hóspedes, quem dorme no quarto 3 assina sempre com a mesma letra, com nomes diferentes. Embaixo do colchão, um caderno com a mesma letra: datas, e ao lado de cada uma, \"ainda não\".")],
       ["candles", 0, 4, 0],
-      ["comoda", 7, 2, 6],
+      ["comoda", 6, 1, 4],
       ["chair_wood", 6, 6, 0],
       ["rug_worn", 3, 3, 0],
       ...lampadas([4, 4]),
@@ -533,7 +533,7 @@ const CENAS: CenaSpec[] = [
     descanso: "precario",
     floor: [
       ["portal", 4, 1, 4],
-      ["cama_solteiro", 5, 5, 6],
+      ["cama_solteiro", 0, 4, 2],
       ["crate_wood", 0, 6, 0],
       ["crate_wood", 1, 6, 0],
       ["candles", 0, 6, 0],
@@ -566,7 +566,7 @@ const CENAS: CenaSpec[] = [
       ["food_tray", 5, 3, 0],
       ["mug", 7, 3, 0],
       ["stool", 4, 1, 4],
-      ...de("sacas", [9, 1], [10, 1], [9, 2], [10, 5]),
+      ...de("sacas", [9, 0], [10, 0], [9, 1], [10, 5]),
       ["barrel", 10, 6, 0],
       ["crate_wood", 0, 6, 0],
       ["crate_wood", 1, 6, 0, undefined, 1],
@@ -613,7 +613,7 @@ const CENAS: CenaSpec[] = [
       ["ashtray", 2, 5, 0],
       ["keg", 8, 5, 0],
       ["beer_crate", 8, 6, 0],
-      ["beer_crate", 7, 7, 0],
+      ["beer_crate", 8, 7, 0],
       ...lampadas([2, 3], [6, 5]),
     ],
     wall: [
