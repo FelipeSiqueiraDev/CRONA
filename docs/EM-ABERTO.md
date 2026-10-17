@@ -179,6 +179,29 @@ O Felipe, na Sala dos Valença: "Mesa alta né menino?! Catarina quase sumiu atr
   rosa em lugar nenhum; conferir antes de instalar arte.
 - Falta: conferir de perto a ficha de um NPC criada do zero (a prévia estava ocupada por outra sessão).
 
+## Feito em 17/10 (branch `claude/tatica-codigo`): apagar as luzes, a vela soprada e a chama que treme
+
+O Felipe: "um jeito ali onde eu controlo a iluminação que eu apago todas as fontes de luz, mas não é pra ficar tudo
+PRETÃO... Vela tem que soprar, então suave. E as janelas também não se fecham com isso" e "a iluminação da vela podia
+trepidar, igual na vida real... dar vida!!!".
+- **Apagar as luzes / Acender tudo** no ☀ Clima da cena (`client/src/ui/fx.ts`), com "Fontes de luz: N de M acesas".
+  Cada fonte vai para o estado apagado de verdade, como no clique duplo (dá para religar uma a uma); a escuridão da
+  cena, o modo (Normal, Piscando, Apagão) e as janelas não mudam. As fontes saem do desenho de cada móvel
+  (`client/src/room/fontesDeLuz.ts`: o estado com luz e o sem; a luz `natural` da janela não conta; porta, fechadura,
+  quebrado e móvel sem estados ficam de fora), então a TV e as telas entram sozinhas quando o desenho delas der luz no
+  estado ligado (hoje o `rack_tv` não tem). O servidor recebe tudo numa mensagem só (`luzes`, só o mestre; teste em
+  `server/test/luzes.test.ts`).
+- **A chama viva** (`fogoVivo`, em `client/src/render/lighting.ts`): a luz do fogo balança devagar, treme miúdo e, a
+  cada uns 10 s, engasga e baixa um instante; a poça de luz respira junto e anda um tiquinho para o lado. A vela (o
+  `flicker` pequeno) mexe menos que a lareira. O brilho e a chama em pixel (`particles.ts`) seguem a mesma conta.
+- **A vela soprada** (`client/src/render/sopro.ts` e `soproMovel.ts`): o fogo que apaga continua desenhado aceso por
+  0,65 s, e nesse tempo as chamas desenhadas encolhem até o pavio (`painter.flame`, a arandela), a luz cai e, no fim,
+  sobe um fio de fumaça fino, enrolando (`particles.ts`). A lâmpada elétrica apaga na hora.
+- **Falta:** as duas linhas no `RoomView.ts` que desenham o estado soprado (`estadoDoMovel` no `addFurni` e
+  `estadoDaParede` no `drawWallItem`), combinadas com a sessão que está no RoomView; sem elas, a vela apaga de uma vez
+  (a luz que treme e os botões já valem). E o `luzes` ainda não avisa a chaminé da casa (o `chamines` do fogão a lenha,
+  que a outra sessão pôs no clique duplo). Conferido numa bancada sem conexão, não no jogo com o Felipe.
+
 ## Feito em 17/10 (branch `claude/tatica-codigo`): as miniaturas respiram no tabuleiro
 
 O Felipe: "deixar um movimento fluido e natural das miniaturas respirando no campo", "ninguém respira pela perna, o

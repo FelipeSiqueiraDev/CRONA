@@ -1,4 +1,5 @@
 import { DEFAULT_PARTICLE_LEVEL, type LightMode } from '@crona/shared';
+import { fontesDeLuz } from '../room/fontesDeLuz';
 import type { App } from './app';
 import { clear, h, Win } from './dom';
 
@@ -48,9 +49,32 @@ export class FxWin {
       return h('div', null, h('label', { class: 'field-label' }, label), h('div', { class: 'row' }, i, v));
     };
     const info = this.app.view.info;
+    // as fontes de luz do cômodo (17/10): apagar todas como no clique duplo, sem escurecer tudo nem fechar as janelas
+    const map = this.app.view.map;
+    const fontes = map ? fontesDeLuz(map) : [];
+    const acesas = fontes.filter((f) => f.acesa).length;
+    const trocar = (acender: boolean) => {
+      const itens = fontes.filter((f) => f.acesa !== acender).map((f) => ({ id: f.id, state: acender ? f.acender : f.apagada }));
+      if (itens.length) this.app.net.send({ t: 'luzes', itens });
+      window.setTimeout(() => this.win.isOpen && this.render(), 400);
+    };
+    const luzes = fontes.length
+      ? h(
+          'div',
+          null,
+          h('label', { class: 'field-label' }, `Fontes de luz: ${acesas} de ${fontes.length} acesas`),
+          h(
+            'div',
+            { class: 'row' },
+            h('button', { class: 'btn', disabled: !acesas, title: 'Apaga lâmpadas, velas, lareiras e telas do cômodo (as janelas continuam)', onclick: () => trocar(false) }, 'Apagar as luzes'),
+            h('button', { class: 'btn', disabled: acesas === fontes.length, title: 'Acende de novo todas as fontes de luz do cômodo', onclick: () => trocar(true) }, 'Acender tudo'),
+          ),
+        )
+      : null;
     b.append(
       h('label', { class: 'field-label' }, 'Luz ambiente'),
       modes,
+      ...(luzes ? [luzes] : []),
       slider('Névoa', r.fog, 100, (v) => send({ fog: v }), (v) => info && (info.fog = v)),
       slider('Escuridão', r.darkness, 90, (v) => send({ darkness: v }), (v) => info && (info.darkness = v)),
       slider('Partículas', r.particleLevel ?? DEFAULT_PARTICLE_LEVEL, 100, (v) => send({ particleLevel: v }), (v) => info && (info.particleLevel = v)),

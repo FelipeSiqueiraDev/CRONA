@@ -1,7 +1,8 @@
 import type { ParticleKind, RoomMap } from '@crona/shared';
 import { rgba } from './color';
 import { iso } from './iso';
-import type { Light } from './lighting';
+import { fogoVivo, type Light } from './lighting';
+import { apagandoDe, esquecerSopros, SOPRO_MS } from './sopro';
 
 /**
  * A vida do cômodo (só enfeite, cada tela sorteia a sua). Desde 14/10 vale em TODAS as cenas (o Felipe: "as chamas
@@ -24,7 +25,12 @@ interface P {
   life: number;
   size: number;
   seed: number;
+  /** fumaça em fio (a da vela soprada): fina e enrolando, em vez do rolo que abre */
+  fio?: boolean;
 }
+
+/** O fio de fumaça da vela soprada sobe do pavio até aqui (ms, contando de quando ela apagou). */
+const FUMACA_MS = 2600;
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -50,6 +56,8 @@ export class Particles {
     };
     this.list = [];
     this.emit.clear();
+    this.sopros.clear();
+    esquecerSopros();
     let x0 = Infinity;
     let x1 = -Infinity;
     let y0 = Infinity;
@@ -95,7 +103,7 @@ export class Particles {
   /** Avança e desenha (coordenadas de mundo; o ctx já está na câmera). level = quantidade 0..1; escuro = 0..1. */
   draw(ctx: CanvasRenderingContext2D, now: number, lights: Light[], level: number, escuro = 0.5) {
     if (!this.kinds.size) return;
-    const dt = Math.min(0.1, (now - (this.last || now)) / 1000);
+    const dt = Math.max(0, Math.min(0.1, (now - (this.last || now)) / 1000));
     this.last = now;
     level = Math.max(0, Math.min(1, level));
     const tempo = now / 1000;
@@ -121,7 +129,21 @@ export class Particles {
       }
     }
     // fumaça e brasas saem do fogo
-    const fire = lights.filter((L) => L.kind === 'fire');
+    // a vela soprada (sopro.ts): guarda onde ela fica, para o fio de fumaça subir dali depois que a chama some
+    for (const L of lights) {
+      const a = L.kind === 'fire' && L.seed !== undefined ? apagandoDe(L.seed) : 0;
+      if (a > 0 && !this.sopros.has(L.seed!)) this.sopros.set(L.seed!, { L, t0: now - a * SOPRO_MS, proxima: 0 });
+    }
+    for (const [seed, so] of this.sopros) if (now >= so.t0 + FUMACA_MS) this.sopros.delete(seed);
+    const fire = lights.filter((L) => L.kind === 'fire' && !(L.seed !== undefined && this.sopros.has(L.seed) && apagandoDe(L.seed) > 0));
+    // o fio de fumaça: sobe fino e enrolando do pavio, quando a chama está quase sumindo
+    for (const so of this.sopros.values()) {
+      const k = (now - so.t0) / SOPRO_MS;
+      if (k < 0.55 || now >= so.t0 + FUMACA_MS || now < so.proxima) continue;
+      so.proxima = now + rand(55, 95);
+      const ainda = 1 - (now - so.t0) / FUMACA_MS;
+      this.list.push({ kind: 'smoke', x: so.L.x + rand(-0.4, 0.4), y: so.L.y - 3, vx: rand(-1, 1), vy: rand(-13, -9), age: 0, life: rand(1.6, 2.4), size: 0.5 + 0.5 * ainda, seed: so.L.x * 0.37, fio: true });
+    }
     for (const L of fire) {
       const key = `${Math.round(L.x)},${Math.round(L.y)}`;
       const next = this.emit.get(key) ?? now + rand(0, 800);
@@ -161,13 +183,16 @@ export class Particles {
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
       } else if (p.kind === 'smoke') {
-        p.x += (p.vx + Math.sin(t * 2 + p.seed) * 5) * dt;
+        // o fio enrola mais quanto mais sobe; o rolo da chama acesa balança e abre
+        p.x += (p.vx + (p.fio ? Math.sin(t * 2.6 + p.seed + p.age * 3) * 2.5 * (0.3 + k) : Math.sin(t * 2 + p.seed) * 5)) * dt;
         p.y += p.vy * dt;
-        const r = p.size + k * 9;
+        const r = p.size + k * (p.fio ? 3.5 : 9);
         ctx.globalCompositeOperation = 'source-over';
         const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-        g.addColorStop(0, `rgba(160,150,140,${0.16 * fade * (1 - k)})`);
-        g.addColorStop(1, 'rgba(160,150,140,0)');
+        // o fio é mais cinza e mais denso: aparece contra a parede clara e no escuro
+        const cor = p.fio ? '120,114,108' : '160,150,140';
+        g.addColorStop(0, `rgba(${cor},${(p.fio ? 0.42 : 0.16) * fade * (1 - k)})`);
+        g.addColorStop(1, `rgba(${cor},0)`);
         ctx.fillStyle = g;
         ctx.fillRect(p.x - r, p.y - r, r * 2, r * 2);
       } else {
@@ -183,6 +208,9 @@ export class Particles {
     }
     ctx.restore();
   }
+
+  /** as velas sopradas agora há pouco (sopro.ts): onde fica o pavio e quando apagou, para o fio de fumaça */
+  private sopros = new Map<number, { L: Light; t0: number; proxima: number }>();
 
   /** o fogo em pixel de cada chama (a grade de calor que queima sozinha), pela semente da luz */
   private fogos = new Map<string, FogoPx>();
@@ -208,8 +236,15 @@ export class Particles {
       f.quadro = quadro;
       queimar(f);
     }
-    const tremor = 0.8 + 0.2 * Math.sin(t * 7.3 + (L.seed ?? 0)) * Math.sin(t * 3.1 + (L.seed ?? 0) * 2);
-    const x0 = Math.round(L.x - tipo.w / 2);
+    // o brilho respira junto com a luz do fogo (lighting.ts, fogoVivo, no mesmo relógio)
+    const vivo = fogoVivo(Date.now(), L.seed ?? 0);
+    const tremor = 0.72 + 0.28 * vivo.f;
+    // soprada (sopro.ts): a chama perde o calor de cima para baixo (encolhe para o pavio) e some
+    const sopro = apagandoDe(L.seed);
+    // e, acesa, baixa um pouco quando o fogo engasga (a chama encolhe e volta, como a de verdade)
+    const perde = Math.round(sopro * sopro * 11 + (1 - vivo.f) * 2.2);
+    // a chama pequena pende um pixel para o lado no balanço do ar
+    const x0 = Math.round(L.x - tipo.w / 2 + (tipo === FOGO_PEQUENO ? vivo.dx * 0.9 : 0));
     const y0 = Math.round(L.y + tipo.base - tipo.h);
     ctx.save();
     // o brilho em volta (macio: é luz, não desenho)
@@ -233,7 +268,7 @@ export class Particles {
     ctx.globalAlpha = Math.min(1, 0.4 + L.intensity * 0.6);
     for (let y = 0; y < tipo.h; y++)
       for (let x = 0; x < tipo.w; x++) {
-        const q = f.calor[y * tipo.w + x];
+        const q = f.calor[y * tipo.w + x] - perde - (sopro > 0 ? Math.round((1 - y / tipo.h) * sopro * 6) : 0);
         if (q < 2) continue;
         ctx.fillStyle = PALETA_FOGO[Math.min(PALETA_FOGO.length - 1, q)];
         ctx.fillRect(x0 + x, y0 + y, 1, 1);

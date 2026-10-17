@@ -1,6 +1,7 @@
 import { Z_PER_M } from '@crona/shared';
 import { shade } from './color';
 import { iso } from './iso';
+import { apagandoDe, tamanhoDaChama } from './sopro';
 import type { WBox } from './caixa';
 
 /** Caixa local: [u0, u1, v0, v1, z0, z1]. u = frente, v = lateral. */
@@ -322,8 +323,11 @@ export class Painter {
 
   /** Chama de vela animada. */
   flame(u: number, v: number, z: number, size = 1) {
+    // soprada (sopro.ts): a chama encolhe para o pavio
+    const k = tamanhoDaChama(apagandoDe(this.seed));
+    if (k <= 0.03) return;
     const [x, y] = this.m.p(u, v, z);
-    drawFlame(this.ctx, x, y, size, this.t / 1000 + this.seed * 7.3 + u * 13 + v * 5);
+    drawFlame(this.ctx, x, y, size * k, this.t / 1000 + this.seed * 7.3 + u * 13 + v * 5);
   }
 }
 

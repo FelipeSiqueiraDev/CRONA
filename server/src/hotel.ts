@@ -150,6 +150,7 @@ const GM_ONLY = new Set([
   'moveWallItem',
   'pickup',
   'use',
+  'luzes',
   'setHint',
   'roomSettings',
   'roomFx',

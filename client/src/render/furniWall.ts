@@ -2,6 +2,7 @@ import type { WallFurniDef } from '@crona/shared';
 import { rgba, rng, shade } from './color';
 import { drawBlood, drawSigil, type LightKind } from './furniFloor';
 import { drawFlame, OUTLINE } from './painter';
+import { apagandoDe, tamanhoDaChama } from './sopro';
 import { arteCarregada } from '../ui/icons';
 
 /**
@@ -198,7 +199,9 @@ const draws: Record<string, Draw> = {
     ctx.fillRect(7, 20, 2, 4);
     frameRect(ctx, 3, 16, 10, 3, metal);
     frameRect(ctx, 6, 7, 4, 9, wax);
-    if (on) drawFlame(ctx, 8, 7, 0.9, t / 1000 + seed);
+    // soprada (sopro.ts): a chama encolhe para o pavio
+    const k = tamanhoDaChama(apagandoDe(seed));
+    if (on && k > 0.03) drawFlame(ctx, 8, 7, 0.9 * k, t / 1000 + seed);
   },
 
   door_sealed(ctx, d, _s, seed) {

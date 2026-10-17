@@ -861,6 +861,9 @@ export class RoomInstance {
       case 'use':
         if (isInt(m.id)) this.use(u, m.id, isInt(m.tokenId) ? m.tokenId : undefined);
         break;
+      case 'luzes':
+        if (Array.isArray(m.itens)) this.luzes(u, m.itens);
+        break;
       case 'cobrir':
         if (isInt(m.id)) this.cobrir(u, m.id);
         break;
@@ -1244,6 +1247,40 @@ export class RoomInstance {
       this.persist();
       this.broadcastWall('wallUpdate', it);
     }
+  }
+
+  /**
+   * Apagar ou acender as fontes de luz do cômodo de uma vez (17/10, ☀ Clima da cena): cada item vai para o estado
+   * pedido, como no clique duplo (o quebrado, a porta e a fechadura ficam de fora). A tela acha as fontes de luz
+   * e o estado apagado de cada uma pelo desenho delas.
+   */
+  private luzes(u: RoomUser, itens: unknown[]) {
+    const c = u.client;
+    if (!this.canBuild(c)) return this.err(c, 'Sem permissão.');
+    let mudou = false;
+    for (const x of itens.slice(0, 500)) {
+      const p = x as { id?: unknown; state?: unknown };
+      if (!isInt(p?.id) || !isInt(p?.state) || p.state < 0) continue;
+      const floor = this.map.getItem(p.id);
+      if (floor) {
+        const def = getFurni(floor.defId);
+        if (!def?.states || p.state >= def.states || floor.state === p.state) continue;
+        if (def.portal || def.openState !== undefined || floor.lock || floor.quebrado) continue;
+        const it = { ...floor, state: p.state };
+        this.map.updateItem(it);
+        this.broadcastFloor('itemUpdate', it);
+        mudou = true;
+        continue;
+      }
+      const wall = this.map.getWallItem(p.id);
+      const def = wall ? getWallFurni(wall.defId) : undefined;
+      if (!wall || !def?.states || p.state >= def.states || wall.state === p.state) continue;
+      const it = { ...wall, state: p.state };
+      this.map.setWallItem(it);
+      this.broadcastWall('wallUpdate', it);
+      mudou = true;
+    }
+    if (mudou) this.persist();
   }
 
   /**

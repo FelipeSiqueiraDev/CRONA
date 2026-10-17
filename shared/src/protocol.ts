@@ -424,6 +424,11 @@ export type ClientMsg =
   | { t: 'swapItem'; id: number; defId: string }
   /** `tokenId`: a peça comandada; se a coisa estiver trancada, ela vai até lá tentar abrir */
   | { t: 'use'; id: number; tokenId?: number }
+  /**
+   * apagar ou acender várias fontes de luz do cômodo de uma vez (só o mestre, ☀ Clima da cena): cada item vai para o
+   * estado dado, como se o mestre desse o clique duplo nele; quem escolhe os itens e os estados é a tela
+   */
+  | { t: 'luzes'; itens: { id: number; state: number }[] }
   /** a coberta da cama por cima de quem está deitado (Ctrl + clique na cama): liga e desliga */
   | { t: 'cobrir'; id: number }
   /** trancar ou destrancar um móvel ou porta (Ctrl + clique, só o mestre) */

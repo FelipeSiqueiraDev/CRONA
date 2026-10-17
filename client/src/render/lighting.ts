@@ -1,4 +1,5 @@
 import { rgba, shade } from './color';
+import { apagandoDe } from './sopro';
 
 /** Luz em coordenadas de mundo (px). */
 export interface Light {
@@ -22,6 +23,23 @@ export interface Light {
   movel?: number;
   /** a janela de onde a luz entra (o feixe que cai no chão; particles.ts): a parede, o plano, o meio, a largura e a altura */
   feixe?: { wall: 'l' | 'r'; plane: number; pos: number; larg: number; z0: number; z1: number; chao: number };
+}
+
+/**
+ * O fogo vivo (17/10, o Felipe: "a iluminação da vela podia trepidar, igual na vida real"): a chama de verdade quase
+ * nunca fica parada. Ela balança devagar (o ar do cômodo), treme rápido e miúdo e, de vez em quando, engasga e
+ * baixa um instante. `f` é a força de agora (0..1, 1 = cheia) e `dx` o quanto a chama pende para o lado (-1..1).
+ * Cada fogo (`seed`) no seu tempo. A luz (aqui) e o brilho da chama (particles.ts) usam a mesma conta.
+ */
+export function fogoVivo(tMs: number, seed = 0): { f: number; dx: number } {
+  const s = seed;
+  const lento = Math.sin(tMs / 610 + s * 1.3);
+  const medio = Math.sin(tMs / 173 + s * 2.1) * Math.sin(tMs / 251 + s * 0.7);
+  const rapido = Math.sin(tMs / 47 + s * 3.7) * Math.sin(tMs / 29 + s * 1.9);
+  // o engasgo: uma vez a cada ~10 s, por ~1 s, a chama baixa (a corrente de ar, o pavio)
+  const engasga = Math.max(0, Math.sin(tMs / 1700 + s * 4.1) * Math.sin(tMs / 2300 + s * 0.9) - 0.55) / 0.45;
+  const n = 0.5 + 0.2 * lento + 0.17 * medio + 0.13 * rapido;
+  return { f: Math.max(0, Math.min(1, 1 - 0.55 * n - 0.35 * engasga)), dx: 0.65 * lento + 0.35 * medio };
 }
 
 /** Mapa de luz: escurece a cena e "fura" a escuridão onde há luz, depois soma um brilho colorido. */
@@ -55,11 +73,21 @@ export class Lighting {
     l.globalCompositeOperation = 'destination-out';
     const active = lights.map((L) => {
       const [x, y] = toDev(L.x, L.y);
-      let f = L.flicker ? 1 - L.flicker * (0.5 + 0.5 * Math.sin(t / 90 + (L.seed ?? 0) * 3.1) * Math.sin(t / 237 + (L.seed ?? 0))) : 1;
-      if (L.pulse) f *= 0.35 + 0.65 * Math.max(0, Math.sin(t / L.pulse));
       // a luz baixa (lareira, fogueira, vela) cai no chão: a poça é uma elipse (o círculo do piso visto na diagonal);
       // a luz alta (lanterna na parede, lustre) fica redonda
       const k = L.mundo && L.mundo[2] < 1 ? 0.62 : 1;
+      if (L.kind === 'fire') {
+        // o fogo vivo: a força, o tamanho da poça e um tiquinho do lugar seguem a chama (mais na vela, que é miúda)
+        const v = fogoVivo(t, L.seed ?? 0);
+        const forca = Math.min(1, (L.flicker ?? 0) * 2.2);
+        const f = 1 - forca * (1 - v.f);
+        // soprada (sopro.ts): a luz cai rápido no começo e some de vez no fim, a poça encolhe
+        const a = apagandoDe(L.seed);
+        const sopro = Math.pow(1 - a, 1.6);
+        return { x: x + v.dx * 1.5 * scale * forca, y, r: L.radius * scale * (0.9 + 0.1 * f) * (1 - 0.35 * a), i: Math.min(1, L.intensity * f * sopro), c: L.color, k };
+      }
+      let f = L.flicker ? 1 - L.flicker * (0.5 + 0.5 * Math.sin(t / 90 + (L.seed ?? 0) * 3.1) * Math.sin(t / 237 + (L.seed ?? 0))) : 1;
+      if (L.pulse) f *= 0.35 + 0.65 * Math.max(0, Math.sin(t / L.pulse));
       return { x, y, r: L.radius * scale * (0.97 + 0.03 * f), i: Math.min(1, L.intensity * f), c: L.color, k };
     });
     for (const a of active) {
