@@ -4132,36 +4132,69 @@ html .fx .fx-sl-grade.uma-linha > .fx-sl.sobra {
   }
 }
 
-/* os Recursos do mestre: a placa com o número e, embaixo dela, fora, o nome curto (PV, PE, SAN) */
+/* os Recursos do mestre (17/10, o Felipe: "tô achando isso tão feio"): três cartões que enchem o painel, cada um na
+   cor dele, com o ícone grande em cima, o número grande no meio e o nome numa faixa embaixo */
 .fx-rec-c {
+  --cor: 194, 70, 60;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  gap: 0.4rem;
   min-width: 0;
+  overflow: hidden;
+  border: 0.15rem solid rgba(var(--cor), 0.55);
+  border-radius: 0.6rem;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 32%, rgba(var(--cor), 0.28), transparent 70%),
+    linear-gradient(180deg, rgba(var(--cor), 0.14), rgba(8, 10, 14, 0.85));
+  box-shadow: inset 0 0.1rem 0 rgba(255, 255, 255, 0.08), 0 0.3rem 0.8rem rgba(0, 0, 0, 0.45);
+}
+.fx-rec-c.pe {
+  --cor: 226, 164, 52;
+}
+.fx-rec-c.san {
+  --cor: 86, 150, 214;
+}
+.fx-rec-c > .fx-dv {
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem !important;
+  height: auto !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+.fx-rec-c .fx-dv-ic,
+.fx-rec-c .fx-dv-ic .ic,
+.fx-rec-c .fx-dv-ic img {
+  width: 4.2rem !important;
+  height: 4.2rem !important;
+  filter: drop-shadow(0 0.2rem 0.4rem rgba(0, 0, 0, 0.6));
+}
+.fx-rec-c .fx-dv-v {
+  font-size: 3.4rem !important;
+  line-height: 1 !important;
+  text-align: center;
+  color: #f6eedd !important;
+  text-shadow: 0 0.15rem 0 rgba(0, 0, 0, 0.6);
 }
 .fx-rec-nome {
+  padding: 0.45rem 0 0.5rem;
   text-align: center;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-}
-.fx-rec-c.pv .fx-rec-nome {
-  color: #c2463c;
-}
-.fx-rec-c.pe .fx-rec-nome {
-  color: #b9862c;
-}
-.fx-rec-c.san .fx-rec-nome {
-  color: #2f6b9a;
+  letter-spacing: 0.14em;
+  color: rgb(var(--cor));
+  background: rgba(0, 0, 0, 0.35);
+  border-top: 0.12rem solid rgba(var(--cor), 0.35);
 }
 @media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
   .fx:not(.jogador) .fx-rec .fx-corpo-p {
-    align-content: center;
-    padding-top: 0.8rem !important;
-  }
-  .fx:not(.jogador) .fx-rec .fx-dv {
-    height: 4.6rem;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-content: stretch !important;
+    align-items: stretch;
+    gap: 1rem !important;
+    padding: 0.4rem 1.2rem 1.2rem !important;
   }
 }
 
