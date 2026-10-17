@@ -189,7 +189,7 @@ export class FichasScreen {
     this.pTat = secao('fx-tat', null, null);
     this.pComp = papel(secao('fx-comp', 'COMPANHEIRO', 'pata'), 109);
     this.pEquip = papel(secao('fx-equip', 'ITENS E ATAQUES', 'mochila'), 110);
-    this.pInv = papel(secao('fx-inv', 'INVENTÁRIO', 'caixa', true), 111, { seed: 111, tone: '#d4c3a2', burn: 1, torn: 1, pad: 18 });
+    this.pInv = papel(secao('fx-inv', 'MOCHILA', 'mochila', true), 111, { seed: 111, tone: '#d4c3a2', burn: 1, torn: 1, pad: 18 });
     this.pNotas = papel(secao('fx-notas', 'ANOTAÇÕES / DOCUMENTOS / PISTAS', 'documento'), 112);
     this.pEvol = papel(secao('fx-evol', 'EVOLUÇÃO', 'linhaTempo'), 113);
     // ---------- os grupos (na tela grande): cada um é um papel só, com os painéis dentro; no celular
@@ -692,6 +692,7 @@ export class FichasScreen {
       linha('Patente', h('span', null, pat, h('small', null, ` ${f.pp} PP`)), ed && this.gm ? () => this.editarPP() : undefined, c.patente ? `Crédito ${c.patente.credito}. Só o mestre muda os pontos de prestígio.` : undefined),
       linha('Idade', f.textos?.idade || '—', ed ? () => this.editarTexto('Idade', 'Idade', f.textos?.idade ?? '', (v) => ((f.textos ??= {}), (f.textos.idade = v || undefined))) : undefined),
       linha('Tema', NOME_TEMA[fs.tema ?? 'ordem'], ed ? () => this.escolherTema() : undefined, 'O tema da interface do agente: veste a ficha, a requisição e o celular dele.'),
+      // no computador a campanha vai no título (a casa fica escondida); no celular, aqui
       linha('Campanha', this.campanha?.nomeCampanha || this.campanha?.title || '—'),
       linha('Local', local),
     );
@@ -699,6 +700,9 @@ export class FichasScreen {
     // menu do mestre
     const extra = this.extraDe(this.pIdent);
     extra.replaceChildren();
+    // a campanha vai no título (17/10): é a mesma de todos os agentes, e a identificação fica em duas linhas
+    const campanha = this.campanha?.nomeCampanha || this.campanha?.title;
+    if (campanha) extra.append(h('span', { class: 'fx-id-camp', 'data-dica': 'Campanha' }, campanha));
     if (this.gm && fs.id) extra.append(h('button', { class: 'fx-mini', type: 'button', title: 'Mais', 'aria-label': 'Mais opções', onclick: (e: MouseEvent) => this.menuMestre(e, fs) }, ic('reticencias')));
     else if (!ed) extra.append(h('button', { class: 'fx-mini so-cel', type: 'button', title: 'Editar', 'aria-label': 'Editar', onclick: () => this.entrarEdicao() }, ic('lapis')));
   }
@@ -1692,14 +1696,14 @@ export class FichasScreen {
         { class: `fx-sl${lugar !== 'mochila' ? ' em-uso' : ''}`, type: 'button', 'data-dica': `${inf.nome} · ${romano(inf.categoria)} · ${fmtNum(esp)} esp.${lugar === 'mao' ? ' · na mão' : lugar === 'vestido' ? ' · vestido' : ''}`, 'aria-label': inf.nome, onclick: () => this.detalheItem(i) },
         arteDoItem(it, inf.icone, `ic fx-sl-ic ${inf.icone === 'kitMedico' ? 'vermelho' : ''}`),
         (it.qtd ?? 1) > 1 ? h('small', null, `×${it.qtd}`) : null,
-        // espaços do item, quando não é o 1 de sempre (LR p. 53)
-        esp !== 1 ? h('i', { class: 'fx-sl-esp', 'aria-hidden': 'true' }, fmtNum(esp)) : null,
+        // o selo da categoria no canto (17/10, o Felipe: "um selo amarelinho redondinho com I, II, III ou IV"); o peso
+        // fica no detalhe, ao abrir o item
+        inf.categoria >= 1 && it.tipo !== 'cena' ? h('i', { class: 'fx-sl-cat', 'aria-hidden': 'true' }, romano(inf.categoria)) : null,
       );
     });
-    // as casas vazias são os espaços que sobram da carga (5 por ponto de Força)
-    const livres = Math.max(1, Math.floor(c.carga.espacos - c.carga.usados));
-    const total = Math.max(15, Math.ceil((slots.length + livres) / 5) * 5);
-    for (let i = slots.length; i < total; i++) slots.push(h('button', { class: 'fx-sl vazio', type: 'button', 'aria-label': 'Adicionar item', disabled: i > slots.length, onclick: () => this.adicionarItem() }, i === fs.ficha.inventario.length ? ic('mais') : null));
+    // só as linhas que os itens ocupam (17/10, o Felipe: "o número de linhas igual ao de itens"): os itens e a casa do
+    // "+"; a última linha se completa com casas apagadas (mochilaUmaLinha)
+    slots.push(h('button', { class: 'fx-sl vazio', type: 'button', 'aria-label': 'Adicionar item', onclick: () => this.adicionarItem() }, ic('mais')));
     // a mochila (14/10, o Felipe): casas grandes, uma linha por vez, e a faixa embaixo dizendo que tem mais
     const grade = h('div', { class: 'fx-sl-grade uma-linha' }, ...slots);
     const nav = h('div', { class: 'fx-sl-nav' });
@@ -2002,6 +2006,8 @@ function avisarRolagem<T extends HTMLElement>(el: T): T {
  * A mochila numa linha por vez (14/10): as casas ficam quadradas e do tamanho que a altura deixa (no celular, pela
  * largura), a rolagem para em cada linha e a faixa embaixo mostra em que linha se está e quantos itens há nas de
  * baixo, com as setas para subir e descer. Recalcula quando o painel muda de tamanho.
+ * No computador (17/10), as setas ficam em pé ao lado das casas, com "1/2" e "+3" entre elas (a frase inteira na dica):
+ * a faixa de baixo dava a altura para os Itens e Ataques.
  */
 function mochilaUmaLinha(grade: HTMLElement, nav: HTMLElement, itens: number) {
   const caixa = grade.parentElement!;
@@ -2019,7 +2025,11 @@ function mochilaUmaLinha(grade: HTMLElement, nav: HTMLElement, itens: number) {
     const total = Math.max(1, Math.ceil(grade.children.length / cols));
     const linha = Math.min(total - 1, Math.round(grade.scrollTop / passo));
     const abaixo = Math.max(0, itens - (linha + 1) * cols);
-    texto.textContent = `Linha ${linha + 1} de ${total}` + (abaixo ? ` · ${abaixo} ${abaixo === 1 ? 'item' : 'itens'} embaixo` : '');
+    const frase = `Linha ${linha + 1} de ${total}` + (abaixo ? ` · ${abaixo} ${abaixo === 1 ? 'item' : 'itens'} embaixo` : '');
+    if (caixa.classList.contains('de-lado')) {
+      texto.replaceChildren(h('b', null, `${linha + 1}/${total}`), abaixo ? h('small', null, `+${abaixo}`) : '');
+      texto.dataset.dica = frase;
+    } else texto.textContent = frase;
     sobe.disabled = linha === 0;
     desce.disabled = linha >= total - 1;
     desce.classList.toggle('chama', abaixo > 0);
@@ -2027,9 +2037,10 @@ function mochilaUmaLinha(grade: HTMLElement, nav: HTMLElement, itens: number) {
   const montar = () => {
     const cs = getComputedStyle(grade);
     gap = parseFloat(cs.rowGap) || parseFloat(cs.columnGap) || 0;
+    caixa.classList.toggle('de-lado', !celular());
     const w = grade.clientWidth;
     if (!w) return;
-    const disp = caixa.clientHeight - nav.offsetHeight - (parseFloat(getComputedStyle(caixa).rowGap) || 0);
+    const disp = caixa.classList.contains('de-lado') ? caixa.clientHeight : caixa.clientHeight - nav.offsetHeight - (parseFloat(getComputedStyle(caixa).rowGap) || 0);
     // a casa nunca menor que um dedo: no celular a rem é pequena (~4 px), então o mínimo é em px (o painel lá já
     // vem ampliado 1,45x, então 52 px viram ~75 px na tela)
     const minimo = Math.max(52, parseFloat(getComputedStyle(document.documentElement).fontSize) * 6);

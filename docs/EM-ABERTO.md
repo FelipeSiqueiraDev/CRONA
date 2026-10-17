@@ -199,6 +199,20 @@ peito sobe e desce, acabou", "não estraga os bonecos".
 - **Aprovado pelo Felipe** (versão 2, 17/10: "ficou boa a respiração, pode deixar assim"). O boneco animado
   (`tabuleiro-3d`) e a folha antiga não usam isso.
 
+## Feito em 17/10, tarde (branch `claude/tatica-codigo`): a FICHAS arrumada
+
+O Felipe: "a Mochila não tem título, tá feinha e apertada"; "a Identificação tá tudo torto". (A sessão principal
+liberou os arquivos da FICHAS para esta.) O bloco novo fica no fim do `fichas.css` ("A FICHAS ARRUMADA").
+- **Identificação** em duas linhas de cinco casas iguais (Nome em duas; Jogador, NEX, Patente / Origem, Classe, Trilha,
+  Tema, Local), cada casa uma caixinha com o rótulo em cima e o valor embaixo, e a barra do NEX inteira (estava com 2
+  px). A campanha, igual para todos, foi para o título no computador; no celular continua uma casa.
+- **Títulos dos Derivados e da Mochila**: nos grupos da tela grande só o primeiro painel tinha título; os Derivados
+  ficavam com uma faixa vazia de 4 rem em cima, e a Mochila (antes "Inventário") sem nome.
+- **Mochila**: só as linhas que os itens ocupam (os itens e a casa do "+"; antes completava até 15 casas ou até a carga
+  livre); no computador as setas ficam em pé ao lado das casas, com "1/2" e "+3" entre elas (a frase inteira na dica),
+  e a faixa de baixo saiu: as casas ficaram maiores (80 px). Na casa de cada item, o selo amarelo redondo da categoria
+  (I a IV); o peso aparece ao abrir o item.
+
 ## Feito em 17/10, tarde (branch `claude/tatica-codigo`): o Elenco em sub-abas e as fotos dos NPCs
 
 - **Sub-abas que abrem e fecham** (pedido do Felipe): os NPCs por grupo e as ameaças por elemento (no lugar das

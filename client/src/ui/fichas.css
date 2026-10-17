@@ -4258,3 +4258,169 @@ html .fx .fx-sl-grade.uma-linha > .fx-sl.sobra {
   font-size: 1.2rem;
   color: #a99d8a;
 }
+
+/* =====================================================================
+   A FICHAS ARRUMADA (17/10, o Felipe: "a Mochila não tem título, tá feinha
+   e apertada"; "a Identificação tá tudo torto"):
+   - a Identificação em duas linhas de cinco casas iguais (a campanha, que é
+     a mesma de todos, foi para o título), cada casa uma caixinha com o
+     rótulo em cima e o valor embaixo, e a barra do NEX inteira;
+   - os Derivados e a Mochila com o título deles (nos grupos só o primeiro
+     painel tinha título: os Derivados ficavam com uma faixa vazia em cima);
+   - a mochila com mais altura, e o selo da categoria no canto de cada casa.
+   ===================================================================== */
+@media (min-width: 821px), (orientation: landscape) and (min-width: 561px) {
+  /* ---------- a identificação ---------- */
+  html:not(.modo-ficha) .fx-ident .fx-corpo-p {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+    grid-auto-rows: auto !important;
+    gap: 0.7rem 0.7rem !important;
+    padding: 0.9rem 1.4rem 1.1rem !important;
+  }
+  html:not(.modo-ficha) .fx-ident .fx-id-l {
+    justify-content: center !important;
+    gap: 0.25rem !important;
+    padding: 0.4rem 0.9rem !important;
+    border: 0.12rem solid rgba(161, 136, 115, 0.22) !important;
+    border-left: 0.25rem solid rgba(233, 169, 68, 0.55) !important;
+    border-radius: 0.45rem;
+    background: linear-gradient(180deg, rgba(16, 28, 48, 0.75), rgba(8, 15, 28, 0.75));
+  }
+  html:not(.modo-ficha) .fx-ident .fx-id-r {
+    margin: 0 !important;
+  }
+  html:not(.modo-ficha) .fx-ident .fx-id-v {
+    width: 100%;
+  }
+  html:not(.modo-ficha) .fx-ident [data-campo='Nome'] { order: 1; grid-column: span 2; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Jogador'] { order: 2; grid-column: auto; }
+  html:not(.modo-ficha) .fx-ident [data-campo='NEX'] { order: 3; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Patente'] { order: 4; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Origem'] { order: 5; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Classe'] { order: 6; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Trilha'] { order: 7; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Tema'] { order: 8; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Local'] { order: 9; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Idade'] { order: 9; }
+  html:not(.modo-ficha) .fx-ident [data-campo='Campanha'] { display: none !important; }
+  /* o NEX: o número e a barra inteira ao lado */
+  html:not(.modo-ficha) .fx-ident .fx-nex {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+  }
+  html:not(.modo-ficha) .fx-ident .fx-nex-bar {
+    flex: 1;
+    min-width: 3rem;
+    height: 0.7rem;
+  }
+  /* a campanha no título, à direita, apagada */
+  .fx-id-camp {
+    margin-right: 0.8rem;
+    color: var(--r-texto-3, #a3978a);
+    font: 500 1.3rem var(--r-pixel, monospace);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  /* ---------- os títulos dos Derivados e da Mochila (dentro dos grupos) ---------- */
+  .fx-g-comb > .fx-deriv {
+    padding-top: 0 !important;
+  }
+  :is(.fx-g-comb > .fx-deriv, .fx-g-itens > .fx-inv) > .fx-tit {
+    display: flex !important;
+    height: 3.9rem !important;
+    margin: 0 1.2rem !important;
+    padding: 0.6rem 0.4rem 0.4rem !important;
+    border-bottom: 0.12rem solid transparent !important;
+    border-image: var(--h-linha-ouro, linear-gradient(90deg, #c97f2c, transparent)) 1 !important;
+  }
+  :is(.fx-g-comb > .fx-deriv, .fx-g-itens > .fx-inv) > .fx-tit h3 {
+    display: block !important;
+  }
+  :is(.fx-g-comb > .fx-deriv, .fx-g-itens > .fx-inv) > .fx-tit .fx-tit-ic {
+    display: grid !important;
+  }
+  /* os ataques e a mochila dividindo a altura: a mochila sem a faixa de baixo (as setas ao lado), as casas grandes */
+  html:not(.modo-ficha) .fx-g-itens > .fx-equip {
+    flex: 1 1 56% !important;
+  }
+  html:not(.modo-ficha) .fx-g-itens > .fx-inv {
+    flex: 1 1 44% !important;
+  }
+  .fx-g-itens > .fx-inv .fx-corpo-p {
+    padding: 0.8rem 1.4rem 0.8rem !important;
+  }
+}
+
+/* a campanha no título só no computador (no celular ela é uma casa da Identificação, como antes) */
+@media (max-width: 820px) and (orientation: portrait), (max-width: 560px) {
+  .fx-id-camp {
+    display: none;
+  }
+}
+
+/* o selo da categoria no canto da casa da mochila (17/10): amarelo, redondo, com o I, II, III ou IV */
+.fx-sl-cat {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-width: 2.1rem;
+  height: 2.1rem;
+  padding: 0 0.3rem;
+  border-radius: 1.1rem;
+  background: radial-gradient(circle at 35% 30%, #ffe8a6, #e9a944 55%, #b4741f);
+  box-shadow:
+    0 0.1rem 0.3rem rgba(0, 0, 0, 0.7),
+    inset 0 -0.12rem 0 rgba(120, 60, 10, 0.55),
+    inset 0 0.1rem 0 rgba(255, 245, 210, 0.7);
+  color: #3a1c04;
+  font: 700 1.05rem/1 var(--r-pixel, monospace) !important;
+  font-style: normal;
+  letter-spacing: -0.02em;
+  pointer-events: none;
+}
+
+/* a mochila no computador (17/10): as setas em pé ao lado das casas, com a linha ("1/2") e quantos itens há embaixo
+   ("+3") entre elas; a faixa de baixo saiu e a altura volta para os Itens e Ataques */
+.fx-sl-caixa.de-lado {
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+html .fx .fx-sl-caixa.de-lado > .fx-sl-grade.uma-linha {
+  flex: 1 1 0 !important;
+  min-width: 0;
+}
+.fx-sl-caixa.de-lado > .fx-sl-nav {
+  grid-template-columns: auto;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  gap: 0.5rem;
+  height: auto;
+}
+.fx-sl-caixa.de-lado .fx-sl-onde {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  overflow: visible;
+  white-space: nowrap;
+}
+.fx-sl-caixa.de-lado .fx-sl-onde b {
+  color: var(--r-texto-2, #cdbfa9);
+  font: 600 1.25rem var(--r-pixel, monospace);
+}
+.fx-sl-caixa.de-lado .fx-sl-onde small {
+  color: var(--r-ouro-hi, #ffd27a);
+  font: 600 1.15rem var(--r-pixel, monospace);
+}
+.fx-sl-caixa.de-lado .fx-sl-seta {
+  width: 3.2rem;
+  height: 3rem;
+}
