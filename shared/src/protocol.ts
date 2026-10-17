@@ -616,4 +616,4 @@ export type ServerMsg =
   /** combate da campanha (a mesa recebe só a ordem, a rodada e a vez); null = sem combate */
   | { t: 'combate'; combate: Combate | null; podeDesfazer?: boolean; ameacas?: Record<string, FichaAmeaca> }
   /** o bestiário inteiro (para o mestre) */
-  | { t: 'bestiario'; criaturas: Criatura[]; npcs?: Npc[]; npcGrupos?: string[] };
+  | { t: 'bestiario'; criaturas: Criatura[]; npcs?: Npc[]; npcGrupos?: string[]; npcsEmCampo?: string[] };

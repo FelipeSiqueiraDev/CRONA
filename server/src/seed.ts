@@ -727,6 +727,15 @@ function npcsIniciais(db: Database): boolean {
   const feitas = db.npcsRev ?? (db.npcs ? 1 : 0);
   // os sobrenomes que o Felipe deu depois (17/10), nos bancos que ainda têm o nome antigo
   let renomeados = renomearNpcs(db.npcs ?? []);
+  // os nomes que o Felipe escreveu no "Quem é" dos NPCs novos (17/10: era o único campo de texto no Elenco) vão para o
+  // nome, se o nome ainda é o provisório e a nota parece um nome próprio
+  const provisorios: Record<string, string> = { 'npc-camisa-rosa': 'Camisa Rosa', 'npc-ruivo': 'Ruivo', 'npc-cabelo-rosa': 'Cabelo Rosa', 'npc-jaleco': 'Jaleco' };
+  for (const n of db.npcs ?? [])
+    if (provisorios[n.id] === n.nome && n.nota && /^\p{Lu}[\p{L}'-]+( \p{Lu}[\p{L}'-]+){0,3}$/u.test(n.nota.trim())) {
+      n.nome = n.nota.trim();
+      delete n.nota;
+      renomeados = true;
+    }
   // o companheiro do Tepes é a Camarilla (17/10): o "Cão de guarda" sem imagem ganha o nome e a foto dela
   for (const f of db.fichas ?? [])
     if (/tepes/i.test(f.nome) && f.companheiro && /^c[aã]o de guarda$/i.test(f.companheiro.nome) && !f.companheiro.imagem) {

@@ -92,6 +92,38 @@ describe("npcs", () => {
     }
   });
 
+  test("todo NPC é único: o segundo é recusado, e o Elenco sabe quem está em campo", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    const hotel = new Hotel({ db, persist: false, timers: false });
+    const caixa: { t: string; msg?: string; npcsEmCampo?: string[] }[] = [];
+    const c = hotel.attach((m) => caixa.push(JSON.parse(JSON.stringify(m))), undefined, true);
+    const look = db.npcs![0].look;
+    hotel.receive(c, { t: "login", name: "Mestre", look, gmKey: hotel.gmKey });
+    hotel.receive(c, { t: "join", roomId: db.rooms[0].id });
+    const pecas = () => db.rooms.flatMap((r) => r.tokens ?? []).filter((t) => t.name.startsWith("Miguel"));
+    hotel.receive(c, { t: "npcColocar", npcId: "miguel-albuquerque" });
+    hotel.receive(c, { t: "npcColocar", npcId: "miguel-albuquerque" });
+    assert.equal(pecas().length, 1);
+    assert.ok(caixa.some((m) => m.t === "error" && /já está em cena/.test(m.msg ?? "")));
+    hotel.receive(c, { t: "bestiario" });
+    const ultimo = [...caixa].reverse().find((m) => m.t === "bestiario");
+    assert.deepEqual(ultimo?.npcsEmCampo, ["miguel-albuquerque"]);
+  });
+
+  test("o nome escrito no Quem é dos NPCs novos vai para o nome", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    const p = db.npcs!.find((n) => n.id === "npc-camisa-rosa")!;
+    const r = db.npcs!.find((n) => n.id === "npc-ruivo")!;
+    Object.assign(p, { nome: "Camisa Rosa", nota: "Pedro Cavalcante" });
+    Object.assign(r, { nome: "Ruivo", nota: "nome em aberto" });
+    upgradeDb(db);
+    assert.equal(p.nome, "Pedro Cavalcante");
+    assert.equal(p.nota, undefined);
+    assert.equal(r.nome, "Ruivo");
+  });
+
   test("apagar não traz de volta", () => {
     const db = seedDb();
     upgradeDb(db);

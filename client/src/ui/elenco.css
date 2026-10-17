@@ -420,6 +420,26 @@
 .el-card.escolhido .el-carta {
   filter: drop-shadow(0 0 1.2rem rgba(233, 169, 68, 0.55)) drop-shadow(0 0.6rem 0.9rem rgba(0, 0, 0, 0.6));
 }
+/* o NPC já em cena: a carta apagada, a plaquinha com "Em cena" */
+.el-card.em-cena .el-carta {
+  filter: grayscale(0.85) brightness(0.55) drop-shadow(0 0.6rem 0.9rem rgba(0, 0, 0, 0.6));
+}
+.el-card.em-cena:hover .el-carta {
+  transform: none;
+}
+.el-placa.em-cena {
+  cursor: default;
+}
+.el-placa.em-cena span {
+  color: #b9ad97;
+  letter-spacing: 0.12em;
+  text-indent: 0.12em;
+}
+.el-usar:disabled {
+  filter: grayscale(0.8) brightness(0.65);
+  cursor: default;
+  transform: none;
+}
 .el-novo .el-carta::after {
   border-image-source: var(--ui-cartas-carta-novo-agente-fonte);
 }

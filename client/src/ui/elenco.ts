@@ -226,13 +226,13 @@ export function abrirElenco(app: App) {
    * inteira da carta é o botão Usar. Sem linha embaixo (a nota fica no detalhe). `duasLinhas` põe o nome em cima e o
    * sobrenome embaixo (os NPCs).
    */
-  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean; unico?: boolean }) => {
+  const card = (o: { chave: string; nome: string; linha: string; figura: Node; usar: (ev: Event) => void; cls?: string; duasLinhas?: boolean; unico?: boolean; emCena?: boolean }) => {
     const [primeiro, ...resto] = o.nome.split(' ');
     const nome = o.duasLinhas ? [h('span', null, primeiro), h('span', null, resto.join(' ') || ' ')] : [o.nome];
     return h(
       'article',
       {
-        class: `el-card${sel === o.chave ? ' escolhido' : ''} ${o.cls ?? ''}`,
+        class: `el-card${sel === o.chave ? ' escolhido' : ''}${o.emCena ? ' em-cena' : ''} ${o.cls ?? ''}`,
         tabindex: '0',
         onclick: () => ((sel = o.chave), (aparencia = 'variadas'), (quantidade = 1), sfx.click(), desenhar()),
         onkeydown: (e: KeyboardEvent) => e.key === 'Enter' && ((sel = o.chave), desenhar()),
@@ -243,7 +243,10 @@ export function abrirElenco(app: App) {
         h('span', { class: 'el-quadro' }, o.figura),
         o.unico ? h('span', { class: 'el-unico', title: 'Portador de relíquia: só existe um' }, 'Único') : null,
         h('b', { class: `el-nome${o.duasLinhas ? ' duas' : ''}` }, ...nome),
-        h('button', { class: 'el-placa', type: 'button', title: o.linha ? `${o.linha} · pôr na mesa (Shift: sem fechar a janela)` : 'Pôr na mesa (Shift: sem fechar a janela)', onclick: o.usar }, h('span', null, 'Usar')),
+        // o NPC já em cena (todo NPC é único): a plaquinha diz "Em cena" e não põe outro
+        o.emCena
+          ? h('span', { class: 'el-placa em-cena', title: 'Já está em alguma cena desta campanha' }, h('span', null, 'Em cena'))
+          : h('button', { class: 'el-placa', type: 'button', title: o.linha ? `${o.linha} · pôr na mesa (Shift: sem fechar a janela)` : 'Pôr na mesa (Shift: sem fechar a janela)', onclick: o.usar }, h('span', null, 'Usar')),
       ),
     );
   };
@@ -338,7 +341,7 @@ export function abrirElenco(app: App) {
             cls: `el-mestre${ns.length ? '' : ' vazia'}`,
             aberta: !!busca || (ns.length ? !npcsFechados.has(g) : vaziosAbertos.has(g)),
             alternar: alterna(ns.length ? npcsFechados : vaziosAbertos, g),
-            filhos: !ns.length ? [h('p', { class: 'el-vazio' }, 'Nenhum NPC neste grupo ainda.')] : ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), duasLinhas: true, figura: fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
+            filhos: !ns.length ? [h('p', { class: 'el-vazio' }, 'Nenhum NPC neste grupo ainda.')] : ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), duasLinhas: true, emCena: app.state.npcsEmCampo.includes(n.id), figura: fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
           }),
         ),
       );
@@ -440,10 +443,12 @@ export function abrirElenco(app: App) {
   const detalheNpc = (n: Npc): Node[] => [
     h('div', { class: 'el-d-figura' }, figura({ ...n })),
     h('h4', null, n.nome),
+    // o nome se troca aqui (17/10: o Felipe escrevia os nomes no "Quem é", que era o único campo)
+    h('label', { class: 'el-d-campo' }, h('small', null, 'Nome'), h('input', { value: n.nome, maxlength: '40', placeholder: 'Nome e sobrenome', onchange: (ev: Event) => { const v = (ev.target as HTMLInputElement).value.trim(); if (v && v !== n.nome) app.net.send({ t: 'npcSalvar', npc: { ...n, nome: v } }); } })),
     h('label', { class: 'el-d-campo' }, h('small', null, 'Quem é'), h('input', { value: n.nota ?? '', maxlength: '120', placeholder: 'o irmão da Catarina, o dono do bar…', onchange: (ev: Event) => app.net.send({ t: 'npcSalvar', npc: { ...n, nota: (ev.target as HTMLInputElement).value } }) })),
     h('div', { class: 'el-d-campo' }, h('small', null, 'Grupo'), seletorGrupo(grupoDoNpc(n) === GRUPO_SEM ? undefined : grupoDoNpc(n), (g) => app.net.send({ t: 'npcSalvar', npc: { ...n, grupo: g } }))),
     h('small', { class: 'el-d-info' }, charDaArte(n.arte) ? 'Arte nas 8 direções (anda deslizando, como os agentes).' : n.arte ? 'A arte ainda não chegou: entra como boneco de pixel.' : 'Sem arte: entra como boneco de pixel.'),
-    h('div', { class: 'el-d-acoes' }, h('button', { class: 'el-usar grande', type: 'button', onclick: (ev: Event) => usar(ev, () => colocarNpc(n)) }, 'Usar'), h('button', { class: 'el-apagar', type: 'button', title: 'Tirar do elenco (as peças já em campo ficam)', onclick: () => confirm(`Tirar ${n.nome} do elenco? As peças em campo ficam.`) && (app.net.send({ t: 'npcApagar', id: n.id }), (sel = null)) }, ic('lixo'))),
+    h('div', { class: 'el-d-acoes' }, app.state.npcsEmCampo.includes(n.id) ? h('button', { class: 'el-usar grande', type: 'button', disabled: true, title: 'Já está em alguma cena desta campanha' }, 'Em cena') : h('button', { class: 'el-usar grande', type: 'button', onclick: (ev: Event) => usar(ev, () => colocarNpc(n)) }, 'Usar'), h('button', { class: 'el-apagar', type: 'button', title: 'Tirar do elenco (as peças já em campo ficam)', onclick: () => confirm(`Tirar ${n.nome} do elenco? As peças em campo ficam.`) && (app.net.send({ t: 'npcApagar', id: n.id }), (sel = null)) }, ic('lixo'))),
   ];
 
   const detalheNovoNpc = (): Node[] => {

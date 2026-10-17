@@ -456,6 +456,7 @@ net.onMessage = (m: ServerMsg) => {
       app.state.bestiario = m.criaturas;
       app.state.npcs = m.npcs ?? [];
       app.state.npcGrupos = m.npcGrupos ?? [];
+      app.state.npcsEmCampo = m.npcsEmCampo ?? [];
       app.emit('bestiario');
       break;
     case 'roomList':

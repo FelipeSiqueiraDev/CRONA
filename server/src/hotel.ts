@@ -352,7 +352,21 @@ export class Hotel implements HotelApi {
 
   // ---------- o bestiário (10/10) ----------
   private bestiarioPara(c: Client) {
-    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [], npcs: this.db.npcs ?? [], npcGrupos: this.db.npcGrupos ?? [] });
+    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [], npcs: this.db.npcs ?? [], npcGrupos: this.db.npcGrupos ?? [], npcsEmCampo: c.room ? this.npcsEmCampo(c.room.data.id) : [] });
+  }
+
+  /**
+   * Os NPCs que já estão em alguma cena da campanha desta sala (17/10, o Felipe: "NPC's são todos únicos"): a peça
+   * com a arte dele ou com o nome dele.
+   */
+  private npcsEmCampo(roomId: number): string[] {
+    const pecas = this.sceneGroup(roomId).flatMap((id) => this.rooms.get(id)?.tokenList() ?? []);
+    return (this.db.npcs ?? [])
+      .filter((n) => {
+        const ch = this.charDaArte(n.arte);
+        return pecas.some((t) => (ch !== null && t.look?.charId === ch) || t.name.toLowerCase() === n.nome.toLowerCase());
+      })
+      .map((n) => n.id);
   }
 
   private bestiarioMudou() {
@@ -493,11 +507,13 @@ export class Hotel implements HotelApi {
     if (m.t === 'npcColocar') {
       const npc = (this.db.npcs ?? []).find((x) => x.id === m.npcId);
       if (!npc) return c.send({ t: 'error', msg: 'NPC não encontrado.' });
+      if (this.npcsEmCampo(room.data.id).includes(npc.id)) return c.send({ t: 'error', msg: `${npc.nome} já está em cena.` });
       if (room.tokenList().length + 1 > 30) return c.send({ t: 'error', msg: 'Máximo de 30 peças por cena.' });
       // o nome dele; com outro igual na cena (dois Miguéis?), numerado
       let nome = npc.nome;
       for (let k = 2; this.tokenNameTaken(room.data.id, nome); k++) nome = `${npc.nome} ${k}`;
       room.colocarVarias([{ id: this.nextItemId(), name: nome, look: { ...npc.look, charId: this.charDaArte(npc.arte) }, x: room.data.door.x, y: room.data.door.y, dir: room.data.door.dir, color: '#7f93a8' }]);
+      this.bestiarioPara(c);
       return c.send({ t: 'notice', msg: `${nome} entrou na cena.` });
     }
     if (m.t === 'pecaAparencia' && typeof m.tokenId === 'number' && typeof m.aparencia === 'string') {
