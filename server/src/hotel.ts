@@ -228,6 +228,8 @@ export class Hotel implements HotelApi {
         }
     if (refreshPortraits(this.db.characters)) dirty = true;
     for (const r of this.db.rooms) this.rooms.set(r.id, new RoomInstance(r, this));
+    // as chaminés das casas com o fogão a lenha aceso já começam fumegando
+    for (const r of this.rooms.values()) if (r.fogoAceso()) this.chamines(r.data.id);
     if (this.migrarMochilas()) dirty = true;
     if (dirty && this.persist) saveDbNow(this.db);
     // peças de agente que ainda não têm PV/PE/SAN pegam os da ficha (a MAPA e o combate usam)
@@ -1177,6 +1179,14 @@ export class Hotel implements HotelApi {
   }
 
   /** PV/PE/SAN de uma peça mudou no tabuleiro: a ficha ligada ao personagem acompanha. */
+  /** O fogão a lenha da cena `roomId` acendeu ou apagou: a casa de fora (na cena da cidade) fumega ou para. */
+  chamines(roomId: number) {
+    const r = this.rooms.get(roomId);
+    if (!r) return;
+    const aceso = r.fogoAceso();
+    for (const id of this.sceneGroup(roomId)) if (id !== roomId) this.rooms.get(id)?.marcarFumaca(roomId, aceso);
+  }
+
   vitalEmOutraCena(roomId: number, userId: number, m: Record<string, unknown>) {
     for (const id of this.sceneGroup(roomId)) if (id !== roomId && this.rooms.get(id)?.mudarVital(userId, m)) return;
     // o agente em outra campanha (a aba PLAYERS mostra sempre todos os agentes, 17/10): só a peça de um agente

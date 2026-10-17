@@ -61,6 +61,13 @@ export interface MovelArte {
    * da vista dele, trocados a cada `ms`
    */
   quadrosGiros?: Partial<Record<'0' | '2' | '4' | '6', VistaArte[]>>;
+  /** o modelo só entra quando a montagem pede (a casa com chaminé): não cai no sorteio dos modelos */
+  soModelo?: boolean;
+  /**
+   * a boca da chaminé (17/10), em metros a partir da quina da pegada no giro 4: ao longo da largura, a partir do fundo e
+   * a altura; a fumaça sai daqui quando o fogão a lenha de dentro está aceso (`fumaca` no item)
+   */
+  chamine?: [number, number, number];
   /** item de parede redondo (o relógio): a inclinação das bordas que a arte trouxe, por parede; o jogo inclina a diferença até a da parede */
   inclina?: Record<string, number>;
   /**
@@ -247,7 +254,7 @@ export function chaveDaArte(defId: string, seed: number, piso?: string, vazio = 
   if (vazio && serve(`${defId}!vazio`)) return `${defId}!vazio`;
   const mat = piso ? MATERIAL[piso] : undefined;
   if (mat && serve(`${defId}@${mat}`)) return `${defId}@${mat}`;
-  const outros = modelos.get(defId)?.filter(serve);
+  const outros = modelos.get(defId)?.filter((k) => serve(k) && !L[k].soModelo);
   if (!outros?.length) return defId;
   const i = (Math.imul(seed | 0, 2654435761) >>> 0) % (outros.length + 1);
   return i === 0 ? defId : outros[i - 1];
@@ -433,6 +440,11 @@ export function imagemDeCima(defId: string, estado = 0): { img: HTMLCanvasElemen
  * a que o isométrico desenha (já encaixada na casa), para as duas vistas baterem; enquanto a arte não
  * chega, a medida de verdade.
  */
+/** A boca da chaminé do prédio (metros, no giro 4), se a arte dele tem chaminé. */
+export function chamineDaArte(defId: string, seed: number, modelo?: string): [number, number, number] | null {
+  return lista?.[chaveDaArte(defId, seed, undefined, false, modelo)]?.chamine ?? null;
+}
+
 export function tamanhoReal(defId: string): { real: [number, number, number]; encosta: boolean } | null {
   const a = lista?.[defId];
   if (!a?.real) return null;

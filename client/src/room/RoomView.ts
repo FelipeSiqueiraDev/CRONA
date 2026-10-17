@@ -35,11 +35,11 @@ import {
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
-import { desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
+import { chamineDaArte, desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
 import { furniVisual } from '../render/furniFloor';
 import { drawWallFurni, wallLights } from '../render/furniWall';
 import { drawHintGlyph, drawHintIcon } from '../render/hints';
-import { iso, unIso } from '../render/iso';
+import { iso, unIso, Z_PX } from '../render/iso';
 import { MarcasMesa } from '../render/marcasMesa';
 import { NevoaMesa } from '../render/nevoaMesa';
 import { imagemDoMapa } from '../render/mapaImagem';
@@ -935,6 +935,63 @@ export class RoomView {
     }
     this.ajustes.set(it.id, r);
     return r;
+  }
+
+  /**
+   * A fumaça da chaminé em pixel (17/10, o Felipe: "não dá pra fazer uma coisa contínua e única? olha como a fumaça
+   * sai da chaminé"): uma pluma só, sem bolinhas soltas. Sai fina e escura da boca, sobe ondulando em curvas que correm
+   * para cima o tempo todo, vai abrindo e clareando e o vento a deita para um lado; no alto ela se desfaz em fiapos.
+   */
+  private desenharFumaca(ctx: CanvasRenderingContext2D, wx: number, wy: number, z0: number, seed: number, now: number, boca: [number, number][]) {
+    const t = now / 1000 + (seed % 11) * 3.7;
+    const [bx, by] = iso(wx, wy, z0);
+    const ALTO = 2.8 * Z_PER_M * Z_PX;
+    const PASSOS = 90;
+    ctx.save();
+    // o recorte: só o que fica acima das duas bordas da frente da boca (a quina mais perto da câmera e as duas
+    // vizinhas); o que está abaixo delas é a fumaça ainda dentro da chaminé, tapada pela parede da frente
+    const perto = boca.reduce((m, p, i) => (p[1] > boca[m][1] ? i : m), 0);
+    const esq = boca[(perto + 3) % 4];
+    const dir = boca[(perto + 1) % 4];
+    const [e, d] = esq[0] < dir[0] ? [esq, dir] : [dir, esq];
+    ctx.beginPath();
+    ctx.moveTo(e[0] - 400, e[1]);
+    ctx.lineTo(e[0], e[1]);
+    ctx.lineTo(boca[perto][0], boca[perto][1]);
+    ctx.lineTo(d[0], d[1]);
+    ctx.lineTo(d[0] + 400, d[1]);
+    ctx.lineTo(d[0] + 400, d[1] - 600);
+    ctx.lineTo(e[0] - 400, e[1] - 600);
+    ctx.closePath();
+    ctx.clip();
+    for (let k = 0; k < PASSOS; k++) {
+      const s = k / (PASSOS - 1);
+      // o caminho: sobe, o vento leva para a direita cada vez mais, e as curvas (duas ondas) andam para cima com o tempo
+      const onda = Math.sin(s * 7.5 - t * 1.6) * (1.5 + s * 7) + Math.sin(s * 15 - t * 2.7 + 1.3) * s * 2.5;
+      const cx = bx + s * s * 46 + onda;
+      const cy = by - s * ALTO + Math.cos(s * 6 - t * 1.3) * s * 3;
+      // sai do tamanho da boca (o buraco da chaminé) e engrossa subindo
+      const r = 2.2 + s * 12 + Math.sin(s * 11 - t * 2.2) * s * 2.2;
+      // escura e densa na boca, clara e rala no alto; some no fim
+      const tom = 70 + s * 135;
+      const a = Math.min(1, s * 10 + 0.4) * Math.pow(1 - s, 0.9) * 0.85;
+      const R = Math.ceil(r);
+      const qx = Math.round(cx);
+      const qy = Math.round(cy);
+      for (let dy = -R; dy <= R; dy++)
+        for (let dx = -R; dx <= R; dx++) {
+          const d = Math.hypot(dx, dy * 1.1) / r;
+          if (d > 1) continue;
+          // a borda e o miolo esfarrapados, mexendo devagar (o sorteio muda com o tempo); no alto, mais buracos
+          const h = (hash(seed + k * 31 + Math.floor(t * 5), (dx + 40) * 97 + dy + 40) % 1000) / 1000;
+          if (h < (d - 0.5) * 1.6 + s * 0.35) continue;
+          const luz = dy < 0 && dx < 0 ? 16 : dy > 0 ? -12 : 0;
+          const c = Math.max(0, Math.min(255, Math.round(tom + luz - d * 18)));
+          ctx.fillStyle = `rgba(${c},${c},${c + 5},${(a * (1 - d * 0.4)).toFixed(3)})`;
+          ctx.fillRect(qx + dx, qy + dy, 1, 1);
+        }
+    }
+    ctx.restore();
   }
 
   /** Os fios de água do chuveiro ligado: do chuveiro (a 1,9 m, no canto do fundo do box) até o ralo, caindo sem parar. */
@@ -2852,6 +2909,38 @@ export class RoomView {
       const [, topo] = iso(c.x, c.y, box.z1);
       const [, base] = iso(c.x + 1, c.y + 1, c.h);
       drawables.push({ box, sx0: lx - 30, sx1: rx + 30, sy0: topo - 30, sy1: base + 20, draw: () => this.fog.drawCasa(ctx, c, now) });
+    }
+
+    // a chaminé da casa com o fogão a lenha aceso lá dentro (17/10): a fumaça subindo da boca, por cima do telhado
+    for (const it of map.allItems()) {
+      if (!it.fumaca) continue;
+      const def = getFurni(it.defId);
+      const ch = def ? chamineDaArte(it.defId, it.id, it.modelo) : null;
+      if (!def || !ch) continue;
+      // do giro 4 (metros a partir da quina, ao longo da largura e a partir do fundo) para a casa no mundo
+      const noMundo = (mx: number, my: number): [number, number] => {
+        const [lx, ly] = [mx / M_POR_CASA, my / M_POR_CASA];
+        return it.rot === 4 ? [it.x + lx, it.y + ly] : it.rot === 0 ? [it.x + def.width - lx, it.y + def.depth - ly] : it.rot === 2 ? [it.x + ly, it.y + def.width - lx] : [it.x + def.depth - ly, it.y + lx];
+      };
+      const [wx, wy] = noMundo(ch[0], ch[1]);
+      // o buraco da chaminé (~22 cm, dentro da pedra da borda): a beira da frente dele tapa o começo da fumaça, que
+      // sai lá de dentro e não de cima da pedra
+      const borda = it.z + ch[2] * Z_PER_M;
+      const boca = ([[-0.11, -0.11], [0.11, -0.11], [0.11, 0.11], [-0.11, 0.11]] as const).map(([dx, dy]) => {
+        const [qx, qy] = noMundo(ch[0] + dx, ch[1] + dy);
+        return iso(qx, qy, borda);
+      });
+      // a fumaça nasce lá dentro, uns 30 cm abaixo da borda
+      const z0 = borda - 0.3 * Z_PER_M;
+      const [bx, by] = iso(wx, wy, z0);
+      drawables.push({
+        box: { x0: wx - 0.3, x1: wx + 0.3, y0: wy - 0.3, y1: wy + 0.3, z0, z1: z0 + 3 * Z_PER_M },
+        sx0: bx - 60,
+        sx1: bx + 60,
+        sy0: by - 160,
+        sy1: by + 10,
+        draw: () => this.desenharFumaca(ctx, wx, wy, z0, it.id, now, boca),
+      });
     }
 
     // o chuveiro ligado (17/10): os fios de água do chuveiro até o ralo, na ordem de profundidade dentro do box; o som da

@@ -20,7 +20,7 @@ import { corredorDe, predioDeApartamentos } from "./predioApartamentos";
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 12;
+export const IGARAPE_REV = 13;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -94,10 +94,11 @@ function porta(id: string, x: number, y: number, rot: 0 | 4): [number, number] {
  */
 const PREDIOS: [string, number, number, 0 | 4, string][] = [
   ["igarape_capela", 14, 3, 4, "capela"],
-  ["igarape_casa", 3, 6, 4, "casa1"],
+  // a casa 1 e a 4 têm a chaminé e o fogão a lenha aceso dentro (a fumaça sai quando ele está aceso); as outras, não
+  ["igarape_casa~c", 3, 6, 4, "casa1"],
   ["igarape_casa~b", 21, 6, 4, "casa2"],
   ["igarape_casa", 3, 24, 0, "casa3"],
-  ["igarape_casa~b", 8, 31, 0, "casa4"],
+  ["igarape_casa~d", 8, 31, 0, "casa4"],
   ["igarape_venda", 19, 24, 0, "venda"],
   ["igarape_palafita", 25, 30, 4, "palafita"],
   ["igarape_palafita_b", 32, 29, 0, "palafita2"],
@@ -180,6 +181,9 @@ const paredesDaCasa = (y0: number, Y: (y: number) => number): WallSeed[] => [
   ["clock", "r", y0, 8.0, 2.9],
   ["wall_shelf", "l", 0, Y(3), 2.6],
 ];
+
+const DESCRICAO_LENHA =
+  "Uma casa de Igarapé das antigas: o chão de tábua encerado, o fogão a lenha aceso com a chaleira (a fumaça sai pela chaminé), a pia, a mesa com as cadeiras, a TV na sala com o sofá, a cama de casal com a colcha de crochê e o santinho na cômoda. Cheira a café passado e a lenha.";
 
 const DESCRICAO_CASA =
   "Uma casa de Igarapé: o chão de tábua encerado, a cozinha com o fogão a gás e a geladeira, a mesa com as cadeiras, a TV na sala com o sofá, a cama de casal com a colcha de crochê e o santinho na cômoda. Cheira a café passado.";
@@ -362,10 +366,10 @@ const CENAS: CenaSpec[] = [
     chao: [[4, 7, "Garrafa de Cachaça", 1, "misc"]],
   },
   // ------------------------------------------------------------ as casas comuns (sem nome: a casa mineira padrão)
-  ...casaMineira({ key: "casa1", prefixo: IGARAPE, lado: "frente", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa1", prefixo: IGARAPE, lado: "frente", description: DESCRICAO_LENHA, style: "taco", clima: DENTRO, paredes: paredesDaCasa, lenha: true }),
   ...casaMineira({ key: "casa2", prefixo: IGARAPE, lado: "frente", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
   ...casaMineira({ key: "casa3", prefixo: IGARAPE, lado: "fundo", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
-  ...casaMineira({ key: "casa4", prefixo: IGARAPE, lado: "fundo", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
+  ...casaMineira({ key: "casa4", prefixo: IGARAPE, lado: "fundo", description: DESCRICAO_LENHA, style: "taco", clima: DENTRO, paredes: paredesDaCasa, lenha: true }),
   ...casaMineira({ key: "casa6", prefixo: IGARAPE, lado: "frente", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
   ...casaMineira({ key: "casa7", prefixo: IGARAPE, lado: "fundo", description: DESCRICAO_CASA, style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
   // ------------------------------------------------------------ a lanchonete do largo (17/10)

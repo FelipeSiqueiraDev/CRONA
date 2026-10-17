@@ -147,6 +147,11 @@ export interface FloorItem {
    * barulho da tranca. Separado do aberto e fechado (`state`).
    */
   trancado?: boolean;
+  /**
+   * a casa de fora com a chaminé fumegando (17/10): o servidor marca quando o fogão a lenha de dentro dela está aceso, e
+   * o tabuleiro desenha a fumaça subindo da boca da chaminé
+   */
+  fumaca?: boolean;
 }
 
 /** A altura que o móvel tapa de verdade: o quebrado, só a metade. */

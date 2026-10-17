@@ -136,6 +136,8 @@ export interface HotelApi {
   vitaisDaPeca(personagem: number | null | undefined, v: Vitals): void;
   /** o + e o − do painel PLAYERS para uma peça que está em outra cena da campanha */
   vitalEmOutraCena(roomId: number, userId: number, m: Record<string, unknown>): void;
+  /** o fogão a lenha da cena acendeu ou apagou: a chaminé da casa de fora fumega ou para */
+  chamines(roomId: number): void;
   /** peça nova (ou com outra folha): sem PV/PE/SAN, pega os da ficha ligada ao personagem */
   vitaisDaFicha(personagem: number | null | undefined): void;
   /** item do cenário entregue a uma peça: com ficha, vai para a mochila. true = levou; texto = por que não */
@@ -505,6 +507,35 @@ export class RoomInstance {
       out.push([def.kind, it.x, it.y, fp.sx, fp.sy]);
     }
     return out;
+  }
+
+  /** O fogão a lenha desta cena está aceso (a chaminé da casa fumega). */
+  fogoAceso() {
+    return this.map.allItems().some((it) => it.defId === 'fogao_lenha' && it.state === 1);
+  }
+
+  /**
+   * A casa de fora cuja porta leva à cena `destino` (o prédio colado na passagem): a chaminé fumega ou para. Devolve se
+   * mudou alguma coisa.
+   */
+  marcarFumaca(destino: number, aceso: boolean) {
+    const portas = this.map.allItems().filter((it) => it.link === destino && getFurni(it.defId)?.portal);
+    let mudou = false;
+    for (const p of portas)
+      for (const it of this.map.allItems()) {
+        const def = getFurni(it.defId);
+        if (def?.kind !== 'predio_vila' || !!it.fumaca === aceso) continue;
+        const fp = footprint(def, it.rot);
+        const perto = p.x >= it.x - 1 && p.x <= it.x + fp.sx && p.y >= it.y - 1 && p.y <= it.y + fp.sy;
+        if (!perto) continue;
+        const novo = { ...it, fumaca: aceso || undefined };
+        if (!aceso) delete novo.fumaca;
+        this.map.updateItem(novo);
+        this.broadcastFloor('itemUpdate', novo);
+        mudou = true;
+      }
+    if (mudou) this.persist();
+    return mudou;
   }
 
   portals() {
@@ -1236,6 +1267,8 @@ export class RoomInstance {
       this.map.updateItem(it);
       this.persist();
       this.broadcastFloor('itemUpdate', it);
+      // o fogão a lenha aceso ou apagado: a chaminé da casa, lá fora, fumega ou para
+      if (def.kind === 'fogao') this.hotel.chamines(this.data.id);
       return;
     }
     const wall = this.map.getWallItem(id);

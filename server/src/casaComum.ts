@@ -125,7 +125,7 @@ export function casaDeCidade(o: Casa & { janela: string }): [CenaSpec, CenaSpec]
  * as cadeiras e o café; na parede da esquerda, a TV, e o sofá virado para ela. As paredes (o oratório, os quadros, a
  * janela) são de cada cidade.
  */
-export function casaMineira(o: Casa & { paredes: (y0: number, Y: (y: number) => number) => WallSeed[] }): [CenaSpec, CenaSpec] {
+export function casaMineira(o: Casa & { paredes: (y0: number, Y: (y: number) => number) => WallSeed[]; lenha?: boolean }): [CenaSpec, CenaSpec] {
   const fundo = o.lado === "fundo";
   const y0 = fundo ? 1 : 0;
   const Y = (y: number) => y + y0;
@@ -136,8 +136,10 @@ export function casaMineira(o: Casa & { paredes: (y0: number, Y: (y: number) => 
       fundo ? ["portal", 4, 1, 4] : ["portal", 4, 6, 0],
       // a parede do fundo: a cozinha, a cômoda (a vela e os livros em cima, o oratório na parede) e a cama
       ["pia_cozinha", 0, Y(0), 4],
-      ["fogao_gas", 2, Y(0), 4],
-      ["geladeira", 3, Y(0), 4],
+      // a casa com chaminé (`lenha`): o fogão a lenha aceso no lugar do fogão a gás e da geladeira (a fumaça sai lá fora)
+      ...(o.lenha
+        ? [["fogao_lenha", 2, Y(0), 4, undefined, 1] as FloorSeed]
+        : [["fogao_gas", 2, Y(0), 4] as FloorSeed, ["geladeira", 3, Y(0), 4] as FloorSeed]),
       ["comoda", 5, Y(0), 4],
       ["candles", 5, Y(0), 0],
       ["books_stack", 6, Y(0), 0],

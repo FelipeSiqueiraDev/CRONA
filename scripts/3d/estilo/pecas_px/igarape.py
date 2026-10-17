@@ -94,21 +94,25 @@ def mat_cal(seed=0, sujeira=0.4):
     return FF.mat_reboco(CAL, seed=seed, sujeira=sujeira)
 
 
-def _telhado_colonial(B, ZE, ZR, BEI=0.36, seed=0, eixo='x'):
-    """O telhado de duas águas de telha de barro, a cumeeira ao longo da fachada (eixo 'x'): o beiral largo na frente."""
+def _telhado_colonial(B, ZE, ZR, BEI=0.36, seed=0, eixo='x', lateral=0.3):
+    """
+    O telhado de duas águas de telha de barro, a cumeeira ao longo da fachada (eixo 'x'): o beiral largo na frente.
+    lateral: quanto o telhado passa das empenas. Na casa (17/10, o Felipe: "telhado bugado"), curto: a água de trás fica
+    de costas para a câmera e não aparece, e a tábua da ponta dela, 30 cm para fora da parede, ficava solta no ar.
+    """
     X0, X1, Y0, Y1 = B
     if eixo == 'x':
         YM = (Y0 + Y1) / 2
         KT = (ZR - ZE) / (YM - Y0)
         perfil = [(Y1 + BEI, ZE - BEI * KT), (YM, ZR), (Y0 - BEI, ZE - BEI * KT)]
         FF.telhado(X0, X1, Y0, Y1, perfil, 'x', TELHA, TELHA_J, mat_cal(seed + 1), testeira='#e8e2d4', cumeeira=CUMEEIRA,
-                   seed=seed, beiral_u=0.3, musgo=0.25)
+                   seed=seed, beiral_u=lateral, musgo=0.25)
     else:
         XM = (X0 + X1) / 2
         KT = (ZR - ZE) / (XM - X0)
         perfil = [(X0 - BEI, ZE - BEI * KT), (XM, ZR), (X1 + BEI, ZE - BEI * KT)]
         FF.telhado(Y0, Y1, X0, X1, perfil, 'y', TELHA, TELHA_J, mat_cal(seed + 1), testeira='#e8e2d4', cumeeira=CUMEEIRA,
-                   seed=seed, beiral_u=0.3, musgo=0.25)
+                   seed=seed, beiral_u=lateral, musgo=0.25)
     return perfil
 
 
@@ -138,7 +142,7 @@ def _vaso_flor(x, y, cor='#d84a6a'):
 # a casa (7 x 5 casas, 4,6 m): a casinha térrea de parede caiada, as janelas azuis de folhas abertas, a porta azul no
 # meio da casa floor(7/2), o telhado de barro de duas águas com o beiral largo na frente e a chaminé do fogão de lenha
 # =====================================================================================================================
-def _casa(moldura=AZUL, batente=AZUL_J, folhas=AZUL_FOLHA, porta=AZUL_PORTA, seed=0):
+def _casa(moldura=AZUL, batente=AZUL_J, folhas=AZUL_FOLHA, porta=AZUL_PORTA, seed=0, chamine=False):
     W, D = 7 * CASA, 5 * CASA
     X0, X1, Y0, Y1 = 0.3, W - 0.3, 0.35, D - 0.55
     B = (X0, X1, Y0, Y1)
@@ -159,10 +163,12 @@ def _casa(moldura=AZUL, batente=AZUL_J, folhas=AZUL_FOLHA, porta=AZUL_PORTA, see
         VP._andar(B, 0.0, ZE - 0.16, vaos, cor=moldura, seed=seed + 3, soleira=False, escoras=False)
     # o degrau de pedra na porta
     VP._degraus('+y', Y1, XP, 1.1, 0.16, n=1, prof=0.2, seed=seed)
-    _telhado_colonial(B, ZE, ZR, seed=seed + 5)
-    # a chaminé do fogão de lenha (a cozinha fica nos fundos, à direita), com a fumacinha
-    FF.chamine(X1 - 1.0, X1 - 0.6, Y0 + 0.25, Y0 + 0.65, ZE - 0.3, ZR + 0.15)
-    VP._fumaca(X1 - 0.8, Y0 + 0.45, ZR + 0.2, n=3, seed=seed + 2, r=0.12, sobe=0.28)
+    _telhado_colonial(B, ZE, ZR, seed=seed + 5, lateral=0.06)
+    # a chaminé do fogão de lenha (a cozinha fica nos fundos, à direita), só nas casas que têm o fogão (17/10, o Felipe:
+    # "casas que têm chaminé podem ter o fogão a lenha dentro... vamos tirar da maioria"). A fumaça não vai pintada: o
+    # jogo a desenha mexendo, só com o fogão aceso lá dentro (CHAMINE_IGARAPE, a boca dela)
+    if chamine:
+        FF.chamine(X1 - 1.0, X1 - 0.6, Y0 + 0.25, Y0 + 0.65, ZE - 0.3, ZR + 0.15)
     # os vasos de flor na frente
     _vaso_flor(X0 + 0.25, Y1 + 0.24)
     _vaso_flor(XP + 0.72, Y1 + 0.22, cor='#f0f0f0')
@@ -968,6 +974,10 @@ ITENS = {
     'igarape_casa': (7, 5, (0.0, 0.0), lambda: _casa(), {}),
     'igarape_casa~b': (7, 5, (0.0, 0.0), lambda: _casa(moldura=OCRE, batente=OCRE_J, folhas=VERDE_FOLHA,
                                                       porta=['#3e6e4a', '#386644', '#447652'], seed=20), {}),
+    # as mesmas casas com a chaminé (e o fogão a lenha dentro)
+    'igarape_casa~c': (7, 5, (0.0, 0.0), lambda: _casa(chamine=True), {}),
+    'igarape_casa~d': (7, 5, (0.0, 0.0), lambda: _casa(moldura=OCRE, batente=OCRE_J, folhas=VERDE_FOLHA,
+                                                      porta=['#3e6e4a', '#386644', '#447652'], seed=20, chamine=True), {}),
     'igarape_venda': (8, 6, (0.0, 0.0), _venda, {}),
     'igarape_capela': (6, 8, (0.0, 0.0), _capela, {}),
     'igarape_palafita': (5, 5, (0.0, 0.0), _palafita, {}),

@@ -33174,29 +33174,29 @@
     "giros": {
       "4": {
         "arquivo": "igarape_casa/giro-4.png",
-        "ax": 216.0,
-        "ay": 396.0
+        "ax": 209.0,
+        "ay": 391.0
       },
       "2": {
         "arquivo": "igarape_casa/giro-2.png",
-        "ax": 160.0,
-        "ay": 463.0
+        "ax": 150.0,
+        "ay": 391.0
       },
       "0": {
         "arquivo": "igarape_casa/giro-0.png",
-        "ax": 224.0,
-        "ay": 413.0
+        "ax": 214.0,
+        "ay": 386.0
       },
       "6": {
         "arquivo": "igarape_casa/giro-6.png",
-        "ax": 152.0,
-        "ay": 391.0
+        "ax": 142.0,
+        "ay": 386.0
       }
     },
     "real": [
-      5.25,
+      4.87,
       3.643,
-      4.752
+      4.63
     ],
     "cima": {
       "arquivo": "igarape_casa/cima.png",
@@ -33285,29 +33285,29 @@
     "giros": {
       "4": {
         "arquivo": "igarape_casa~b/giro-4.png",
-        "ax": 216.0,
-        "ay": 396.0
+        "ax": 209.0,
+        "ay": 391.0
       },
       "2": {
         "arquivo": "igarape_casa~b/giro-2.png",
-        "ax": 160.0,
-        "ay": 463.0
+        "ax": 150.0,
+        "ay": 391.0
       },
       "0": {
         "arquivo": "igarape_casa~b/giro-0.png",
-        "ax": 224.0,
-        "ay": 413.0
+        "ax": 214.0,
+        "ay": 386.0
       },
       "6": {
         "arquivo": "igarape_casa~b/giro-6.png",
-        "ax": 152.0,
-        "ay": 391.0
+        "ax": 142.0,
+        "ay": 386.0
       }
     },
     "real": [
-      5.25,
+      4.87,
       3.643,
-      4.752
+      4.63
     ],
     "cima": {
       "arquivo": "igarape_casa~b/cima.png",
@@ -44380,5 +44380,83 @@
       }
     },
     "vooKv": 48.0
+  },
+  "igarape_casa~c": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_casa~c/giro-4.png",
+        "ax": 209.0,
+        "ay": 391.0
+      },
+      "2": {
+        "arquivo": "igarape_casa~c/giro-2.png",
+        "ax": 150.0,
+        "ay": 410.0
+      },
+      "0": {
+        "arquivo": "igarape_casa~c/giro-0.png",
+        "ax": 214.0,
+        "ay": 386.0
+      },
+      "6": {
+        "arquivo": "igarape_casa~c/giro-6.png",
+        "ax": 142.0,
+        "ay": 386.0
+      }
+    },
+    "real": [
+      4.87,
+      3.643,
+      4.752
+    ],
+    "soModelo": true,
+    "chamine": [
+      4.15,
+      0.8,
+      4.76
+    ]
+  },
+  "igarape_casa~d": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "igarape_casa~d/giro-4.png",
+        "ax": 209.0,
+        "ay": 391.0
+      },
+      "2": {
+        "arquivo": "igarape_casa~d/giro-2.png",
+        "ax": 150.0,
+        "ay": 410.0
+      },
+      "0": {
+        "arquivo": "igarape_casa~d/giro-0.png",
+        "ax": 214.0,
+        "ay": 386.0
+      },
+      "6": {
+        "arquivo": "igarape_casa~d/giro-6.png",
+        "ax": 142.0,
+        "ay": 386.0
+      }
+    },
+    "real": [
+      4.87,
+      3.643,
+      4.752
+    ],
+    "soModelo": true,
+    "chamine": [
+      4.15,
+      0.8,
+      4.76
+    ]
   }
 }
