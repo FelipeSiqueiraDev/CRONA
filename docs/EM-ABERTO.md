@@ -172,9 +172,9 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   faixa medida é a da altura em pé, não a do agachado). A cor por histograma (a do `normalizar.py`) avermelhava o
   rosto (a área de cada cor muda com a pose): quando o gerador satura, `--cor` casa cada tom com o tom parecido da pose
   de pé (`casar_paleta`). O agachado tem ~70% da altura de pé.
-  **Feitos (6 de 14):** Miguel, Tepes, Catarina (com `--cor`), Cora (refeita: o rosto e o cabelo saíram diferentes),
-  Alosi (com `--cor`; as lentes saíram levemente rosadas) e o Jaleco. **Faltam 8, a cota do Códex acabou às 11h de
-  17/10 e volta às 18:47:** Ágata, Ivete, Samuel, Geraldo, Arantes, Ruivo, Cabelo Rosa e Camisa Rosa. A fila retoma
+  **Feitos (7 de 14):** Miguel, Tepes, Catarina (com `--cor`), Cora (refeita: o rosto e o cabelo saíram diferentes),
+  Alosi (com `--cor`; as lentes saíram levemente rosadas), Ivete (com `--cor`) e o Jaleco. **Faltam 7, a cota do Códex
+  acabou às 11h de 17/10 e volta às 18:47:** Ágata, Samuel, Geraldo, Arantes, Ruivo, Cabelo Rosa e Camisa Rosa. A fila retoma
   sozinha (`agachado/depois_da_cota.sh`, em segundo plano); se não rodar, `./fila.sh <ids>` e depois, para cada um,
   `python normalizar_agachado.py <id> <id>-agachado-8-direcoes-v1.png` (conferir `conf-<id>.png`) e `--instalar`.
   **Falta ligar no código:** o tabuleiro ainda achata a pose de pé em 72% (`u.agachado` em `RoomView.ts`) e o
