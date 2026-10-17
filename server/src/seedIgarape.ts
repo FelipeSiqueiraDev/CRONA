@@ -20,7 +20,7 @@ import { corredorDe, predioDeApartamentos } from "./predioApartamentos";
  * ficam a oeste (à esquerda), a estrada da van chega pelo leste.
  */
 export const IGARAPE = "Igarapé · ";
-export const IGARAPE_REV = 11;
+export const IGARAPE_REV = 12;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -252,17 +252,19 @@ const CENAS: CenaSpec[] = [
     key: "palafita",
     name: IGARAPE + "Casa de Palafita",
     description:
-      "A casa de palafita por dentro: o assoalho de tábua que range e deixa ver o rio pelas frestas, as paredes de tábua, as duas redes armadas, o fogão de lenha aceso com a panela de peixe, a mesa redonda com o banco e a vela, os barris e o caixote. Pela janela, a água passa embaixo.",
+      "A casa de palafita por dentro: o assoalho de tábua que range e deixa ver o rio pelas frestas, as paredes de tábua, as duas redes armadas, o fogão a gás com a panela de peixe, a geladeira pequena, a mesa redonda com o banco e a vela, os barris e o caixote. Pela janela, a água passa embaixo.",
     layout: planBottom(8, 6, 4),
     andar: "Casa de Palafita",
     style: "pier",
     ...DENTRO,
     darkness: 0.42,
     ambient: "#c8a070",
-    particles: ["dust", "smoke"],
+    particles: ["dust"],
     floor: [
       ["portal", 4, 5, 0],
-      ["fogao_lenha", 0, 0, 4, undefined, 1],
+      // o fogão a gás e a geladeira no lugar do fogão de lenha (17/10, o Felipe: cidade, não roça)
+      ["fogao_gas", 0, 0, 4],
+      ["geladeira", 1, 0, 4],
       ["prateleira", 2, 0, 4],
       ["igarape_rede", 4, 0, 2],
       ["igarape_rede", 7, 0, 4, hint("A rede", "Ainda está morna, e balança sozinha devagar, como se alguém tivesse acabado de levantar.")],
@@ -290,7 +292,7 @@ const CENAS: CenaSpec[] = [
   {
     key: "palafita2",
     name: IGARAPE + "Palafita",
-    description: "Uma palafita da beira do rio: o assoalho de tábua, a rede, o fogão de lenha, a mesinha e o caixote. Simples e arrumada.",
+    description: "Uma palafita da beira do rio: o assoalho de tábua, a rede, o fogão a gás com o botijão, a mesinha e o caixote. Simples e arrumada.",
     layout: planTop(7, 5, 3),
     andar: "Palafita",
     style: "pier",
@@ -299,7 +301,7 @@ const CENAS: CenaSpec[] = [
     ambient: "#c8a070",
     floor: [
       ["portal", 3, 1, 4],
-      ["fogao_lenha", 0, 1, 4, undefined, 1],
+      ["fogao_gas", 0, 1, 4],
       ["igarape_rede", 6, 1, 4],
       ["table_small", 2, 3, 4],
       ["chair_wood", 2, 4, 0],
@@ -428,7 +430,7 @@ const CENAS: CenaSpec[] = [
     particles: ["dust"],
     floor: [
       ["portal", 4, 6, 0],
-      // apartamento: a pia e o fogão a gás no lugar do fogão de lenha das casas térreas
+      // apartamento: a pia, o armário e o fogão a gás
       ["pia_cozinha", 0, 0, 4],
       ["armario_cozinha", 2, 0, 4],
       ["fogao_gas", 4, 0, 4],

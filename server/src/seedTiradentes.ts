@@ -22,7 +22,7 @@ import { casaMineira } from "./casaComum";
  * (giro 4) tem a de dentro na parede da frente (planBottom); virado para o fundo (giro 0), na do fundo (planTop).
  */
 export const TIRADENTES = "Tiradentes · ";
-export const TIRADENTES_REV = 6;
+export const TIRADENTES_REV = 7;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -312,7 +312,7 @@ const CENAS: CenaSpec[] = [
     key: "cafe",
     name: TIRADENTES + "Sala do Café",
     description:
-      "A sala do café da pousada: o fogão a lenha aceso com o bule em cima, o louceiro, a mesa comprida posta com o café, o pão de queijo e o bolo de fubá, as cadeiras, o aparador com as flores, a janela de cortina para o quintal.",
+      "A sala do café da pousada: o fogão a gás com o bule em cima, a geladeira, o louceiro, a mesa comprida posta com o café, o pão de queijo e o bolo de fubá, as cadeiras, o aparador com as flores, a janela de cortina para o quintal.",
     // a porta para a recepção fica do lado dela (à direita da sala)
     layout: planRight(8, 6, 3),
     andar: POUSADA,
@@ -320,7 +320,9 @@ const CENAS: CenaSpec[] = [
     ...DENTRO,
     floor: [
       ["portal", 7, 3, 6],
-      ["fogao_lenha", 2, 0, 4, undefined, 1],
+      // o fogão a gás e a geladeira no lugar do fogão a lenha (17/10, o Felipe: cidade histórica, não roça)
+      ["fogao_gas", 2, 0, 4],
+      ["geladeira", 3, 0, 4],
       ["armario_cozinha", 5, 0, 4],
       ["mesa_jantar", 2, 2, 4],
       ["chair_wood", 2, 1, 4],
