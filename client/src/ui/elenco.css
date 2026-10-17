@@ -279,6 +279,15 @@
   height: 4rem;
   color: var(--r-ouro, #e9a944);
 }
+/* a imagem do Felipe no card do NPC (17/10): o rosto e o tronco, cortados no quadro */
+.el-quadro .el-foto {
+  align-self: stretch;
+  width: 100%;
+  height: 13rem;
+  object-fit: cover;
+  object-position: 50% 8%;
+  border-radius: 0.6rem;
+}
 .el-pose {
   max-height: 12.4rem;
   max-width: 100%;
@@ -370,26 +379,6 @@
 .el-d-figura .el-pose,
 .el-d-figura .el-retrato {
   max-height: 21rem;
-}
-/* com a imagem de referência do Felipe: a foto grande e a pose do tabuleiro pequena no canto */
-.el-d-figura.com-foto {
-  position: relative;
-  height: 30rem;
-  overflow: hidden;
-}
-.el-d-figura .el-foto {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 18%;
-  border-radius: 0.7rem;
-}
-.el-d-figura.com-foto > :not(.el-foto) {
-  position: absolute;
-  right: 0.6rem;
-  bottom: 0.6rem;
-  max-height: 12rem;
-  filter: drop-shadow(0 0 0.6rem rgba(0, 0, 0, 0.8));
 }
 .el-d-figura .el-selo {
   width: 11rem;

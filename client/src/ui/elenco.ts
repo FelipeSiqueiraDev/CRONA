@@ -18,7 +18,8 @@ import './elenco.css';
  * - Clicar no card mostra o detalhe ao lado (quantas, qual aparência, a ficha); "Usar" fecha a janela (com Shift, fica).
  * - Sub-abas que abrem e fecham (17/10, o Felipe): os NPCs por grupo (`grupoDoNpc`, o mestre muda no detalhe) e as
  *   ameaças por elemento, da de VD mais baixo para a mais alta. O que fica aberto é lembrado no navegador.
- * - O detalhe do NPC mostra a imagem do Felipe que deu origem a ele (`arte/personagens/<arte>/foto.jpg`) ao lado da pose.
+ * - O card do NPC mostra a imagem do Felipe que deu origem a ele (`arte/personagens/<arte>/foto.jpg`), no lugar da pose
+ *   do tabuleiro (17/10, o Felipe: "ao invés dos bonequinhos ali pra fazer escolha, a foto deles"); sem foto, a pose.
  */
 
 type Aba = 'npcs' | 'ameacas';
@@ -254,7 +255,7 @@ export function abrirElenco(app: App) {
             cls: 'el-mestre',
             aberta: !!busca || !npcsFechados.has(g),
             alternar: alterna(npcsFechados, g),
-            filhos: ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), figura: figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
+            filhos: ns.map((n) => card({ chave: `npc:${n.id}`, nome: n.nome, linha: n.nota ?? (charDaArte(n.arte) ? '8 direções' : 'boneco de pixel'), figura: fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }), usar: (ev) => usar(ev, () => colocarNpc(n)) })),
           }),
         ),
         h('div', { class: 'el-secao-grade' }, h('article', { class: `el-card el-novo${sel === 'novo-npc' ? ' escolhido' : ''}`, tabindex: '0', onclick: () => ((sel = 'novo-npc'), sfx.click(), desenhar()) }, h('span', { class: 'el-quadro' }, ic('mais')), h('b', { class: 'el-nome' }, 'Novo NPC'), h('small', { class: 'el-linha' }, 'nome e quem é'))),
@@ -298,7 +299,7 @@ export function abrirElenco(app: App) {
   /** Os grupos que já existem, para o campo sugerir. */
   const listaGrupos = () => h('datalist', { id: 'el-grupos' }, ...[...new Set(app.state.npcs.map(grupoDoNpc))].map((g) => h('option', { value: g })));
   const detalheNpc = (n: Npc): Node[] => [
-    h('div', { class: `el-d-figura${fotoDe(n.arte) ? ' com-foto' : ''}` }, fotoDe(n.arte) ? h('img', { class: 'el-foto', src: fotoDe(n.arte)!, alt: `${n.nome}: a imagem de referência`, decoding: 'async' }) : null, figura({ ...n })),
+    h('div', { class: 'el-d-figura' }, figura({ ...n })),
     h('h4', null, n.nome),
     h('label', { class: 'el-d-campo' }, h('small', null, 'Quem é'), h('input', { value: n.nota ?? '', maxlength: '120', placeholder: 'o irmão da Catarina, o dono do bar…', onchange: (ev: Event) => app.net.send({ t: 'npcSalvar', npc: { ...n, nota: (ev.target as HTMLInputElement).value } }) })),
     h('label', { class: 'el-d-campo' }, h('small', null, 'Grupo'), h('input', { value: grupoDoNpc(n), maxlength: '40', list: 'el-grupos', placeholder: 'Sede da Ordem, Santa Amália…', onchange: (ev: Event) => app.net.send({ t: 'npcSalvar', npc: { ...n, grupo: (ev.target as HTMLInputElement).value.trim() || undefined } }) }), listaGrupos()),

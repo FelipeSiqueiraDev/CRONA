@@ -180,8 +180,9 @@ peito sobe e desce, acabou", "não estraga os bonecos".
 - **Grupo do NPC** (`Npc.grupo`, `grupoDoNpc` em `shared/src/npcs.ts`): o mestre muda no detalhe (campo Grupo, com os
   grupos que já existem sugeridos) e ao criar. Os que vieram com o jogo: Sede da Ordem (Miguel, Ágata, Ivete, Samuel), Da
   história (Geraldo, Arantes) e Novos (sem nome) (os 4 de 17/10); criado sem grupo vai para "Do mestre".
-- **A foto de cada NPC** (as imagens do Felipe que deram origem a eles) em `arte/personagens/<id>/foto.jpg`, os 10; o
-  detalhe mostra a foto grande e a pose do tabuleiro no canto.
+- **A foto de cada NPC** (as imagens do Felipe que deram origem a eles) em `arte/personagens/<id>/foto.jpg`, os 10: é
+  ela que aparece no card do Elenco, no lugar do bonequinho (o Felipe: "ao invés dos bonequinhos ali pra fazer escolha, a
+  foto deles"); o detalhe ao lado continua com a pose do tabuleiro. NPC sem foto mostra a pose.
 
 ## Feito em 17/10, tarde (branch `claude/tatica-codigo`): arte pelo Códex da conta nova (NPCs novos, agachado, Santa Amália)
 
