@@ -16,8 +16,9 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - **A fila do Códex** (sessão "Sprite Agachado", conta dhellinhocreycrey, Plus; cota de imagem curta, ~9 por vez):
   segue sozinha (Geraldo agachado, depois o sentado dos NPCs da Ordem e dos Marcados, o agachado armado e os
   portadores de relíquia). Cada peça é conferida (altura, cabeça, cor, contorno rosa) antes de instalar.
-- **Pedidos do Felipe ainda não feitos:** conferir no combate o "Andar e atacar", o passo Efeito da manobra e o alvo
-  que não zera ao passar o turno; Marcela Geleerd (precisa de referência dele); a Camarilla deitada.
+- **Andar e atacar: conferido pelo Felipe em 17/10, "deu certinho".**
+- **Pedidos do Felipe ainda não feitos:** conferir no combate o passo Efeito da manobra e o alvo que não zera ao
+  passar o turno; Marcela Geleerd (precisa de referência dele); a Camarilla deitada.
 - Visto só na prévia (conferir no 8080): a tranca, apagar as luzes, o chuveiro, as TVs, a fumaça da chaminé.
 
 ## Feito em 17/10, tarde e noite (branch `claude/tatica-codigo`, sessão principal)
