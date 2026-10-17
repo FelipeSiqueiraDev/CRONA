@@ -367,8 +367,10 @@ scripts e as tentativas ficam fora do git, em `F:\Dhellow\CRONA\arte\PERSONAGENS
   min se ainda der o limite de imagem): Camarilla em pé e sentada; Pedro (npc-camisa-rosa, pistola grossa) e Rosa
   (npc-cabelo-rosa, uma submetralhadora em cada mão) armados em pé; os agachados que faltam; o sentado dos Marcados e de
   todos os NPCs; o agachado armado (agentes, Miguel, Pedro, Rosa, Joaquin); os portadores de relíquia; os Existidos.
-  O Joaquin é o npc-ruivo (machado de uma mão e escudo de choque), também na fila. A Camarilla já entrou (em pé e
-  sentada).
+  O Joaquin é o npc-ruivo (machado de uma mão e escudo de choque), também na fila. Já entraram: a Camarilla (em pé e
+  sentada), o Pedro armado (pistola grossa na mão direita) e a Rosa armada (uma submetralhadora em cada mão). O Códex
+  agora põe um brilho em volta com alfa baixo: corta-se o alfa em 240 antes do `cortar_8`. A Rosa casou pela altura
+  (`normalizar.py --pela-altura`): o cabelo armado veio mais cheio e, pela cabeça, ela ficava 7% mais baixa.
   **Para o futuro (o Felipe, 17/10):** variar a postura de cada personagem (nem todo mundo agacha, cai ou dorme do mesmo
   jeito), junto com as animações. Por ora, todos na mesma postura.
 - **Santa Amália no mapa-múndi e na chegada:** a ilha `arte/mapa/lugar-santa-amalia-hd.png` (praça com coreto,
