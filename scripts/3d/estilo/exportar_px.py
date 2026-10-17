@@ -59,6 +59,9 @@ ITENS = {
 }
 # o fogo do fogão aceso (só no giro de frente da cena: nos outros, a fornalha fica de lado ou de costas)
 FOGO = {'fogao_lenha': {'1': 1.0}}
+# ATENÇÃO (17/10, o Felipe: a chama solta em cima da chapa, "cuidado com isso"): no jogo, o fogo fica só dentro da
+# fornalha. A chama que o chamas_boca sobe da boca aberta da chapa foi tirada à mão do giro-4-1.png (e do prof-4-1.png):
+# a boca ficou tampada com a fresta em brasa, como nos outros giros. Exportou de novo? Tire a chama da chapa outra vez.
 # peças com arte só em alguns giros (a porta: só nas paredes do fundo, giros 4 e 2; nos outros, o jogo desenha a soleira)
 SO_GIROS = {}
 
