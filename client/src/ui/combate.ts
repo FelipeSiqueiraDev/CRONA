@@ -865,10 +865,12 @@ export class CombateScreen {
    */
   private jogadasDe(p: Participante, calc: regras.Calculado): ArmaOpcao[] {
     const fs = this.fichaDe(p.id);
-    if (!fs?.jogadas?.length) return [];
+    if (!fs) return [];
     const gasto = this.combate ? (cb.acoesDe(this.combate, p.id).pe ?? 0) : 0;
     const peAtual = this.vitais(p.id)?.pe;
-    return fs.jogadas.map((j) => {
+    // as do livro (Ataque Especial, Ataque Furtivo) vêm prontas; só entram as que a ficha, o PE e o limite do turno deixam usar
+    const doLivro = regras.jogadasDoLivro(fs.ficha, calc).filter((j) => regras.conferirJogada(fs.ficha, calc, j, { ...(peAtual !== undefined ? { peAtual } : {}), gastoTurno: gasto }).ok);
+    return [...(fs.jogadas ?? []), ...doLivro].map((j) => {
       const r = regras.conferirJogada(fs.ficha, calc, j, { ...(peAtual !== undefined ? { peAtual } : {}), gastoTurno: gasto });
       const a = r.ataque;
       const jogada = { nome: j.nome, pe: r.pe, linhas: r.linhas, erros: r.erros, avisos: r.avisos, ...(j.nota ? { nota: j.nota } : {}) };

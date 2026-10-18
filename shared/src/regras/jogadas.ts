@@ -72,6 +72,32 @@ export function poderesDaJogada(f: Ficha, calc: Calculado): { poder: PoderObtido
   return out;
 }
 
+/**
+ * As jogadas do livro, prontas sem o jogador montar nada (18/10, o Felipe: "os poderes que gastam PE têm que gastar sozinhos e
+ * aplicar o efeito"): para cada arma na mão e o desarmado, o Ataque Especial (+5, +10… no ataque ou no dano, um degrau por NEX)
+ * e o Ataque Furtivo (+Nd6 de dano). O combate confere cada uma (PE, limite do turno) e esconde as que não dão; o PE sai junto
+ * com o ataque. O que depende da situação (furtivo só contra desprevenido ou flanqueado) vai como aviso para o mestre.
+ */
+export function jogadasDoLivro(f: Ficha, calc: Calculado): Jogada[] {
+  const out: Jogada[] = [];
+  const poderes = poderesDaJogada(f, calc);
+  const armas = calc.ataques.filter((a) => a.naMao);
+  const furtivo = poderes.find((x) => x.poder.id === 'ataque-furtivo');
+  const dadosFurtivo = f.nex >= 99 ? '4d6' : f.nex >= 65 ? '3d6' : f.nex >= 40 ? '2d6' : '1d6';
+  for (const a of armas) {
+    const chave = a.uid === undefined ? 'desarmado' : String(a.uid);
+    const arma = a.uid === undefined ? {} : { arma: a.uid };
+    const esp = poderes.find((x) => x.poder.id === 'ataque-especial');
+    for (const e of esp?.escala ?? []) {
+      out.push({ id: `livro:ae:${chave}:${e.pe}:a`, nome: `Ataque Especial +${e.bonus} no ataque`, ...arma, passos: [{ poder: 'ataque-especial', pe: e.pe, ataque: e.bonus }] });
+      out.push({ id: `livro:ae:${chave}:${e.pe}:d`, nome: `Ataque Especial +${e.bonus} no dano`, ...arma, passos: [{ poder: 'ataque-especial', pe: e.pe, dano: e.bonus }] });
+    }
+    if (furtivo && !(a.alcance && /longo|extremo/i.test(String(a.alcance))))
+      out.push({ id: `livro:af:${chave}`, nome: `Ataque Furtivo +${dadosFurtivo}`, ...arma, passos: [{ poder: 'ataque-furtivo', pe: furtivo.custo, danoDados: dadosFurtivo }], nota: 'Só vale contra alvo desprevenido ou flanqueado, uma vez por rodada.' });
+  }
+  return out;
+}
+
 export interface JogadaConferida {
   ok: boolean;
   erros: string[];
