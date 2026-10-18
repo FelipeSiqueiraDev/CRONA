@@ -1153,3 +1153,15 @@ describe('correções da conferência de 01/10 (Veríssimo): o combate', () => {
     assert.equal(combate.textoRolagem(3, 0, -1), 'Role 2d20, fique com o maior');
   });
 });
+
+describe('combate: soma dos dados digitada', () => {
+  test('avisa quando a soma não cabe nos dados e cala quando cabe', () => {
+    const d4 = combate.lerDano('1d4');
+    assert.equal(combate.avisoSomaDeDados(d4, 13)?.startsWith('13 não cabe'), true);
+    assert.equal(combate.avisoSomaDeDados(d4, 0)?.includes('de 1 a 4'), true);
+    assert.equal(combate.avisoSomaDeDados(d4, 3), null);
+    assert.equal(combate.avisoSomaDeDados(combate.lerDano('2d10+8'), 14), null);
+    assert.equal(combate.avisoSomaDeDados(combate.lerDano('2d10+8'), 21)?.includes('2d10'), true);
+    assert.equal(combate.avisoSomaDeDados(d4, null), null);
+  });
+});

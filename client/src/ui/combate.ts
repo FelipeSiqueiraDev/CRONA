@@ -238,6 +238,8 @@ export class CombateScreen {
   private movimento: { ator: number; casas: Casa[] } | null = null;
   /** passo a passo da resolução: a página que o mestre abriu pelos números (null = a do passo de agora) */
   private pagina: number | null = null;
+  /** ao abrir a manobra ou o ritual, a tela começa na escolha (a manobra e o alvo de antes não pulam essa parte) */
+  private comecarNaEscolha = false;
   private paginaDe = '';
   private filtro: 'todos' | cb.TipoRegistro = 'todos';
   private visivel = false;
@@ -378,6 +380,7 @@ export class CombateScreen {
     this.fluxo = fluxo;
     if (aba) this.aba = aba;
     this.pagina = null;
+    this.comecarNaEscolha = fluxo === 'acao' && (this.aba === 'manobra' || this.aba === 'ritual');
     if (!(fluxo === 'acao' && this.aba === 'movimento')) this.desligarMovimento();
     this.sigs.delete('res');
     this.renderRes();
@@ -421,6 +424,15 @@ export class CombateScreen {
         h('span', { class: 'vez-acao-ic card-quadro' }, arteOu([`/arte/icones/${pintado}.png`], ic(icone))),
         h('small', { class: 'card-placa' }, ok ? sub : (motivo ?? sub)),
         h('span', { class: 'card-pe' }, ok ? CUSTO[id] ?? 'Ação' : 'Já usada'),
+      );
+    // morrendo (17/10): está inconsciente, não age; só o grupo salva (Medicina DT 20) e a vez passa
+    if (vitalConditions(this.vitais(ator.id)).morrendo)
+      return h(
+        'div',
+        { class: 'vez-menu' },
+        h('p', { class: 'vez-pergunta' }, `${ator.nome.split(/\s+/)[0]} está morrendo (${ator.morrendo}/3) e não age.`),
+        h('p', { class: 'cb-vazio' }, 'Primeiros socorros de um aliado (Medicina DT 20) estabilizam; senão o contador sobe a cada turno dele (LR p. 88).'),
+        h('div', { class: 'vez-acoes' }, botaoMenu('passar', 'Passar a vez', 'combate-passar-turno', 'avancar', 'fim do turno', true, () => this.acao({ tipo: 'passar' }))),
       );
     return h(
       'div',
@@ -546,13 +558,13 @@ export class CombateScreen {
         this.irPara('menu');
         return true;
       };
-    const extra = ACOES.movimento.filter((o) => ['levantar', 'mirar', 'recarregar'].includes(o.id));
+    const extra = ACOES.movimento.filter((o) => ['levantar', 'mirar', 'recarregar'].includes(o.id) && this.acaoServe(c, ator, o.id));
     const alvo = this.alvoId !== null && this.alvoId !== ator.id ? cb.participante(c, this.alvoId) : undefined;
     return h(
       'div',
       { class: 'vez-menu' },
       h('div', { class: 'atq-bloco atq-chama' }, ic('bota'), h('div', null, h('b', null, 'Clique no mapa onde ir'), h('small', null, `as casas acesas: até ${cb.textoMetros(metros)} (${qual === 'movimento' ? 'a ação de movimento' : 'a ação padrão, que vira movimento'})`))),
-      h('p', { class: 'vez-pergunta menor' }, 'Ou, sem andar:'),
+      extra.length ? h('p', { class: 'vez-pergunta menor' }, 'Ou, sem andar:') : null,
       h(
         'div',
         { class: 'vez-cartoes' },
@@ -568,6 +580,13 @@ export class CombateScreen {
         ),
       ),
     );
+  }
+
+  /** Levantar-se só para quem está caído; mirar e recarregar só para quem tem arma de disparo (17/10: opção que não serve some da lista). */
+  private acaoServe(c: Combate, ator: Participante, id: string): boolean {
+    if (id === 'levantar') return this.condicoesDe(c, ator).includes('caido');
+    if (id === 'mirar' || id === 'recarregar') return this.armasDe(ator).some((a) => !!a.faixa);
+    return true;
   }
 
   private desligarMovimento() {
@@ -1781,7 +1800,8 @@ export class CombateScreen {
       const chave = `${this.aba}:${v.ator.id}:${passo}`;
       if (chave !== this.paginaDe) {
         this.paginaDe = chave;
-        this.pagina = null;
+        this.pagina = this.comecarNaEscolha && passo > 0 ? mapa[0] : null;
+        this.comecarNaEscolha = false;
       }
       const atual = this.pagina ?? mapa[Math.min(passo, mapa.length - 1)];
       corpo.classList.add('cb-pap');
@@ -2169,7 +2189,7 @@ export class CombateScreen {
       default: {
         const aba = this.aba as 'movimento' | 'outras';
         const icone: NomeIcone = aba === 'movimento' ? 'bota' : 'reticencias';
-        lista = ACOES[aba].map((o) => opcao(icone, o.nome, o.dica, o.qual, () => this.acaoDoLivro(c, ator, o, alvo), `LR p. ${o.pagina}`));
+        lista = ACOES[aba].filter((o) => this.acaoServe(c, ator, o.id)).map((o) => opcao(icone, o.nome, o.dica, o.qual, () => this.acaoDoLivro(c, ator, o, alvo), `LR p. ${o.pagina}`));
       }
     }
     return h(

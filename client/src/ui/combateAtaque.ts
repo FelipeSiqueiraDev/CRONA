@@ -815,6 +815,7 @@ export class ResolucaoAtaque {
                 { class: 'atq-contas' },
                 linhaConta(arma.nome, arma.tipo, this.e.soma, k.dano),
                 ex ? linhaConta(`${arma.nome} (à parte)`, ex.tipo, this.e.somaExtra, k.extra) : null,
+                ...[cb.avisoSomaDeDados(k.dano.partes, this.e.soma), ex && k.extra ? cb.avisoSomaDeDados(k.extra.partes, this.e.somaExtra) : null].filter((t): t is string => !!t).map((t) => h('p', { class: 'atq-efeito ruim' }, t)),
                 h('div', { class: 'atq-total-dano' }, h('span', null, `${alvo.p.nome} toma`), h('strong', null, String(total)), h('span', null, k.naoLetal ? 'de dano não letal' : 'de dano')),
                 ...[k.dano, k.extra].filter((d) => d?.previa?.massivo).map((d) => h('p', { class: 'atq-efeito ruim' }, `Dano massivo: Fortitude DT ${d!.previa!.massivo} (LR p. 88)`)),
                 alvo.p.sustenta ? h('p', { class: 'atq-efeito' }, `${alvo.p.nome} sustenta ${alvo.p.sustenta}: o dano pode quebrar.`) : null,

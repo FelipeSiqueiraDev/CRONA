@@ -250,6 +250,15 @@ export function lerDano(formula: string): PartesDano {
   return { grupos, fixo };
 }
 
+/** O aviso de uma soma de dados impossível (o mestre digitou errado): fora do que os dados dão. Nulo se está certa ou ainda vazia. */
+export function avisoSomaDeDados(p: PartesDano, soma: number | null): string | null {
+  if (soma === null || !p.grupos.length || p.grupos.some((g) => g.n <= 0)) return null;
+  const min = p.grupos.reduce((t, g) => t + g.n, 0);
+  const max = p.grupos.reduce((t, g) => t + g.n * g.faces, 0);
+  if (soma >= min && soma <= max) return null;
+  return `${soma} não cabe nos dados (${p.grupos.map((g) => `${g.n}d${g.faces}`).join(' + ')} só dá de ${min} a ${max}). Confira o que saiu na mesa.`;
+}
+
 export function textoFormula(p: PartesDano): string {
   const g = p.grupos.map((x, i) => `${i && x.n > 0 ? '+' : ''}${x.n}d${x.faces}`).join('');
   return `${g}${p.fixo ? sinal(p.fixo) : ''}` || '0';
