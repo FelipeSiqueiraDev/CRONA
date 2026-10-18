@@ -3,7 +3,7 @@ import { describe, test } from "node:test";
 import fs from "node:fs";
 import { regras, type FichaSalva } from "@crona/shared";
 import type { Database } from "../src/db";
-import { igualarMarcadosCris } from "../src/marcadosCris";
+import { igualarMarcadosCris, mochilasDaHistoria } from "../src/marcadosCris";
 
 /** Os 4 Marcados iguais ao C.R.I.S (18/10): o estado de jogo, a mochila e os avisos, uma vez só. */
 describe("Marcados iguais ao C.R.I.S", () => {
@@ -37,5 +37,18 @@ describe("Marcados iguais ao C.R.I.S", () => {
 
   test("cada um tem os avisos", () => {
     for (const nome of ["D.Tepes", "Catarina Albuquerque", "Alosi Walker", "Cora Falcão"]) assert.ok(ficha(nome).ficha.avisos?.length, nome);
+  });
+
+  test("a mochila da história: só o que o Felipe disse", () => {
+    assert.equal(mochilasDaHistoria(db), true);
+    assert.equal(mochilasDaHistoria(db), false);
+    assert.deepEqual(ficha("D.Tepes").ficha.inventario.map((i) => i.id), ["corrente"]);
+    assert.deepEqual(ficha("Cora Falcão").ficha.inventario.map((i) => i.id), ["faca", "arma-improvisada"]);
+    assert.deepEqual(ficha("Catarina Albuquerque").ficha.inventario.map((i) => i.id), ["arma-improvisada"]);
+    const alosi = ficha("Alosi Walker").ficha.inventario;
+    assert.equal(alosi.filter((i) => i.tipo === "cena").length, 2);
+    assert.deepEqual(alosi.filter((i) => i.escolha?.elemento).map((i) => i.escolha!.elemento), ["morte", "morte", "sangue", "energia", "energia"]);
+    const k = regras.calcular(ficha("Alosi Walker").ficha);
+    assert.ok(!k.problemas.some((p) => /desconhecid/i.test(p.texto)));
   });
 });

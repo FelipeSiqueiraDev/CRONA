@@ -81,3 +81,49 @@ export function igualarMarcadosCris(db: Database): boolean {
   feitas['marcados-1810'] = n;
   return true;
 }
+
+/**
+ * A mochila de agora, na história (18/10, o Felipe: "o Tepes só tem a corrente; a Cora, uma faca e um pé de mesa; a
+ * Catarina, um pé de mesa; a Alosi tem a mochila, dois papéis, um com o ritual Cicatrização e outro com Espirais da
+ * Perdição, e componentes para rituais: 2 de Morte, 1 de Sangue e 2 de Energia"). Troca a mochila inteira, uma vez.
+ */
+const componente = (elemento: 'morte' | 'sangue' | 'energia', nome: string): regras.ItemFicha => ({ id: 'componentes-ritualisticos-de-elemento', tipo: 'equipamento', escolha: { elemento }, apelido: `Componentes ritualísticos de ${nome}` });
+const papel = (ritual: string): regras.ItemFicha => ({ id: `Papel: ${ritual}`, tipo: 'cena', nome: `Papel com o ritual ${ritual}`, achado: true, espacos: 0, tipoCena: 'document', descricao: `Um papel com o ritual ${ritual} anotado.` });
+const MOCHILAS: Record<string, { itens: regras.ItemFicha[]; avisos?: string[] }> = {
+  'D.Tepes': { itens: [{ id: 'corrente', tipo: 'arma' }] },
+  'Cora Falcão': { itens: [{ id: 'faca', tipo: 'arma' }, { id: 'arma-improvisada', tipo: 'arma', apelido: 'Pé de mesa' }] },
+  'Catarina Albuquerque': {
+    itens: [{ id: 'arma-improvisada', tipo: 'arma', apelido: 'Pé de mesa' }],
+    avisos: ['Perito: faltam escolher as duas perícias (na aba Evolução). No C.R.I.S também não estão marcadas.'],
+  },
+  'Alosi Walker': {
+    itens: [
+      { id: 'mochila-militar', tipo: 'equipamento' },
+      papel('Cicatrização'),
+      papel('Espirais da Perdição'),
+      componente('morte', 'Morte'),
+      componente('morte', 'Morte'),
+      componente('sangue', 'Sangue'),
+      componente('energia', 'Energia'),
+      componente('energia', 'Energia'),
+    ],
+  },
+};
+
+export function mochilasDaHistoria(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['mochilas-1810'] !== undefined) return false;
+  const fichas = db.fichas ?? [];
+  let n = 0;
+  for (const [nome, m] of Object.entries(MOCHILAS)) {
+    const f = fichas.find((x) => x.nome === nome && !x.npc);
+    if (!f) continue;
+    let uid = Math.max(0, ...fichas.flatMap((x) => x.ficha.inventario.map((i) => i.uid ?? 0))) + 1;
+    f.ficha.inventario = m.itens.map((i) => ({ ...i, uid: uid++ }));
+    if (m.avisos) f.ficha.avisos = m.avisos;
+    f.atualizadaEm = new Date().toISOString();
+    n++;
+  }
+  feitas['mochilas-1810'] = n;
+  return true;
+}
