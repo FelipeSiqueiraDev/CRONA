@@ -63,7 +63,22 @@ export function abrirCenas(app: App) {
   const j = janela('CENAS', 'imagem', () => off(), 96);
   j.el.classList.add('cne-fundo');
 
-  const lista = h('div', { class: 'cne-lista' });
+  // uma imagem só, na hora, na frente do tabuleiro de todos (o tablet da mesa e os celulares): vira a cena "Imagem rápida"
+  const rapida = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp', class: 'hidden' }) as HTMLInputElement;
+  rapida.addEventListener('change', async () => {
+    const f = rapida.files?.[0];
+    rapida.value = '';
+    if (!f) return;
+    try {
+      const imagem = await enviarImagem(f);
+      app.net.send({ t: 'cenaSalvar', cena: { id: 'imagem-rapida', titulo: 'Imagem rápida', quadros: [{ imagem, movimento: 'parado', nota: 'Fecha no X quando quiser voltar ao tabuleiro.' }] } });
+      app.net.send({ t: 'cenaTocar', id: 'imagem-rapida' });
+      j.fechar();
+    } catch (e) {
+      toast((e as Error).message, 'error');
+    }
+  });
+  const lista = h('div', { class: 'cne-lista' }, rapida);
   const editor = h('div', { class: 'cne-editor' });
   j.corpo.append(h('div', { class: 'cne' }, lista, editor));
 
@@ -80,7 +95,7 @@ export function abrirCenas(app: App) {
   const desenharLista = () => {
     const cenas = app.state.cenas;
     lista.replaceChildren(
-      h('div', { class: 'cne-lista-topo' }, botao('Nova cena', 'mais', 'forte', () => abrirRasc(null))),
+      h('div', { class: 'cne-lista-topo' }, botao('Nova cena', 'mais', 'forte', () => abrirRasc(null)), botao('Mostrar imagem', 'imagem', 'normal', () => rapida.click())),
       ...(cenas.length
         ? cenas.map((c) =>
             h(
