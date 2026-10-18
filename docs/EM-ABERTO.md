@@ -2,6 +2,13 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 18/10: as fichas do C.R.I.S dentro do CRONA
+
+- **O arquivo:** `docs/fichas-cris/` tem `fichas-do-cris.json` (tudo que o banco do C.R.I.S tinha: 12 fichas de agente, os 5 personagens de história e as 5 criaturas, cru) e `FICHAS-DO-CRIS.md` (a versão legível, com índice e tabela-resumo). Os retratos ficam em `avatares/`, fora do git. `COMPARACAO-CRONA.md` tem a tabela C.R.I.S × CRONA (PV, PE, SAN, Defesa) e as diferenças.
+- **No jogo:** `server/src/seedFichasCris.ts` (dados já convertidos para o modelo de ficha, só escolhas) é chamado por `upgradeDb` e só **cria**: Miguel, Agatha e Ivete ganham ficha ligada ao personagem do tabuleiro; Marcela, Nico, Veríssimo, Ômega-99 e "???" entram no Elenco sem arte e sem peça. Não sobrescreve ficha que já exista para o NPC, o que o mestre apagar não volta (`fichasCris` no config), e banco novo (sem `gmKey`) fica como estava. Testes: `server/test/fichasCris.test.ts`.
+- **Pendências do mestre (o C.R.I.S estava em branco ou parcial):** Agatha (33), Ivete e Marcela (13 cada), Miguel (6: perícias, Perito, atributo do NEX 50%, o poder da Expansão de Conhecimento e do Especialista Diletante), Ômega-99 (4: rituais do Grimório e o poder do NEX 90%), ??? (3) e Nico (2). A Marcela falta como personagem no tabuleiro (arte e referência).
+- **Não foi para o 8080:** só a cópia de testes (`crona_visual`) subiu com isso; a sessão principal sobe o jogo depois do backup.
+
 ## Feito em 17/10, fim da tarde (branch `claude/tatica-codigo`): o jogo de verdade atualizado e a tela do COMBATE com respiro
 
 - **O jogo de verdade (8080) subiu com tudo de 17/10** (backup `crona_2026-10-17_16-25-32.dump` antes; o `SEDE_REV`/`FAZENDA_REV` refizeram as salas: ajuste à mão no jogo que não estava no seed voltou ao seed). O "nome do NPC não salva" era o 8080 ainda no código velho: no código novo salva pelo Elenco, pelo lápis da aba NPCs e pela Identificação (conferido na prévia, também depois de recarregar).

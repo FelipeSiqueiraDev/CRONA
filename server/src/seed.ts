@@ -31,6 +31,7 @@ import { IGARAPE, montarIgarape } from './seedIgarape';
 import { montarTiradentes, TIRADENTES } from './seedTiradentes';
 import { montarSantaAmalia, SANTA_AMALIA } from './seedSantaAmalia';
 import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgentes } from './seedSede';
+import { aplicarFichasCris } from './seedFichasCris';
 
 export const SYSTEM_OWNER = 'CRONA';
 
@@ -780,7 +781,7 @@ function trancasSemCadeado(db: Database): boolean {
 }
 
 export function upgradeDb(db: Database): boolean {
-  const trancas = trancasSemCadeado(db);
+  const trancas = [trancasSemCadeado(db), aplicarFichasCris(db)].some(Boolean); // as fichas do C.R.I.S entram no Elenco (18/10)
   const v = db.seedVersion ?? 1;
   // a Sede e a fazenda mudam de montagem sem esperar versão nova do banco
   if (v >= SEED_VERSION) {
