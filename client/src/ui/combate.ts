@@ -560,6 +560,9 @@ export class CombateScreen {
       };
     const extra = ACOES.movimento.filter((o) => ['levantar', 'mirar', 'recarregar'].includes(o.id) && this.acaoServe(c, ator, o.id));
     const alvo = this.alvoId !== null && this.alvoId !== ator.id ? cb.participante(c, this.alvoId) : undefined;
+    // o passo pelas sombras (Onipresença da Magistrada, LR p. 252: ação de movimento): quem tem a habilidade (dado da criatura)
+    const crId = v?.users.get(-ator.id)?.criatura?.id;
+    const sombras = crId && this.app.state.bestiario.find((x) => x.id === crId)?.passoSombras;
     return h(
       'div',
       { class: 'vez-menu' },
@@ -568,6 +571,31 @@ export class CombateScreen {
       h(
         'div',
         { class: 'vez-cartoes' },
+        sombras
+          ? h(
+              'button',
+              {
+                class: 'vez-cartao',
+                type: 'button',
+                onclick: () => {
+                  sfx.click();
+                  this.app.view.escolherSombra(
+                    -ator.id,
+                    (x, y) => {
+                      this.app.net.send({ t: 'passoSombras', tokenId: -ator.id, x, y });
+                      this.acao({ tipo: 'declarar', qual, texto: 'Onipresença: passa pelas sombras', quem: ator.id });
+                      this.irPara('menu');
+                    },
+                    () => undefined,
+                  );
+                },
+              },
+              h('b', { class: 'card-tit' }, 'Passo pelas sombras'),
+              h('span', { class: 'vez-cartao-ic card-quadro' }, ic('seta')),
+              h('small', { class: 'card-placa' }, `some numa sombra e sai de outra (${qual === 'movimento' ? 'a ação de movimento' : 'a ação padrão'})`),
+              h('span', { class: 'card-pe' }, 'Escolher a sombra'),
+            )
+          : null,
         ...extra.map((o) =>
           h(
             'button',
@@ -954,6 +982,7 @@ export class CombateScreen {
       enviar: (a) => this.acao(a),
       sacar: (arma) => arma.uid !== undefined && this.acao({ tipo: 'declarar', qual: 'movimento', texto: `sacou ${arma.nome}`, quem: ator.id, sacar: arma.uid }),
       andarAteOAlvo: alvo ? this.andarAteOAlvo(c, ator, alvo.p) : undefined,
+      colarNoAlvo: alvo ? this.colarNoAlvo(ator, alvo.p) : undefined,
       mudou: () => (this.sigs.delete('res'), this.renderRes(), this.atualizarMarcas()),
       retrato: (id, t) => this.retrato(id, t),
     };
@@ -963,6 +992,15 @@ export class CombateScreen {
    * Andar até o alvo para o corpo a corpo: com a ação de movimento livre, a casa colada nele mais perto de quem ataca,
    * dentro do deslocamento. A peça anda (gasta o movimento) e, quando chega, o ataque se refaz já colado.
    */
+  /** A investida (LR p. 85): a peça corre até a casa colada no alvo, no máximo o dobro do deslocamento (17/10: ela não saía do lugar). */
+  private colarNoAlvo(ator: Participante, alvo: Participante): (() => void) | undefined {
+    const onde = this.casa(alvo.id);
+    if (!onde) return undefined;
+    const destino = this.casasAlcancaveis(ator, this.deslocamentoDe(ator) * 2).find((k) => Math.max(Math.abs(k.x - onde.x), Math.abs(k.y - onde.y)) === 1);
+    if (!destino) return undefined;
+    return () => this.app.net.send({ t: 'tokenWalk', tokenId: -ator.id, x: destino.x, y: destino.y });
+  }
+
   private andarAteOAlvo(c: Combate, ator: Participante, alvo: Participante): CtxAtaque['andarAteOAlvo'] {
     const ac = cb.acoesDe(c, ator.id);
     if (ac.movimento || ac.completa) return undefined;
@@ -2263,7 +2301,7 @@ export class CombateScreen {
     const passa = gasto + custo > limite;
     void confirmar(
       `USAR ${nome.toUpperCase()}?`,
-      `Gasta ${custo} PE (limite ${limite} por turno, já gastos ${gasto}).${passa ? ' Passa do limite: só vale se for o custo mínimo de uma habilidade neste turno (LR p. 23).' : ''}`,
+      `Gasta ${custo} PE (limite ${limite} por turno, já gastos ${gasto}).${nome === 'Ataque Especial' ? ' O +5 (no teste de ataque ou no dano, à escolha) você soma à mão no d20 ou na soma do dano.' : ''}${passa ? ' Passa do limite: só vale se for o custo mínimo de uma habilidade neste turno (LR p. 23).' : ''}`,
       'Usar',
     ).then((ok) => {
       if (!ok) return;

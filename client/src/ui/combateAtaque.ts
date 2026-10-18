@@ -95,6 +95,8 @@ export interface CtxAtaque {
    * vou usar ela, ir até lá, e atacar")
    */
   andarAteOAlvo?: { metros: number; fazer: () => void };
+  /** a investida anda até colar no alvo (até o dobro do deslocamento) antes do golpe; a peça vai quando o ataque é confirmado */
+  colarNoAlvo?: () => void;
   /** pede para desenhar de novo (mudou uma escolha) */
   mudou: () => void;
   /** o retrato de uma peça (o cartão do dano mostra quem apanha) */
@@ -618,6 +620,7 @@ export class ResolucaoAtaque {
         onclick: () => {
           if (!arma || !alvo || !k.res || !k.teste) return;
           sfx.click();
+          if (k.ids.includes('investida') && !arma.faixa && !x.tab?.adjacente) x.colarNoAlvo?.();
           const ataque: cb.AtaqueConfirmado = {
             quem: x.ator.id,
             alvo: alvo.p.id,
