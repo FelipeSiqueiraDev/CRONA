@@ -147,6 +147,14 @@ refazer nossos NPCs todos para esse estilo, em todas as posições e formatos"**
   mesa de verdade (a mensagem é a mesma para todos).
 - Falta (se o Felipe quiser): a peça sair de uma sombra **de outra cena**; um som/forma diferente por criatura.
 
+## 18/10, 14h: o que falta de sprite (contado nas pastas) e as cenas
+
+- **Já têm tudo (em pé, 8 direções, agachado, sentado, deitado):** Ágata, Ivete, Samuel, Geraldo, Herman, Rebecca (jaleco), Miguel, Pedro, Joaquin, Rosa; e os 4 Marcados, que ainda têm armado e machucado.
+- **Faltam:** agachado **armado** (Tepes, Catarina, Cora, Alosi, Miguel, Pedro, Joaquin, Rosa); a **Camarilla** sentada (hoje senta pelo agachado dela) e deitada; **Marcela** (NPC e arte); os monstros (Existidos, Diabo, Deus da Morte, Magistrada, Anfitrião e faces) só têm em pé: sem agachado, sentado e deitado; as outras ameaças do bestiário só têm o retrato da lista.
+- O Códex está sem cota de imagem até ~19:40 de 18/10 (conta dhellinhocreycrey).
+- **A cela do Geraldo** (cena `cela-geraldo`): o Geraldo aparece grande e de pé atrás da grade (`cela-rosto-v2.png`, ampliado por código; a imagem do Códex é pequena, ~300 px: se der, pedir uma maior). A cena está salva só na prévia; no 8080 entra ao subir.
+- **Pesadelo da Cora:** só a parte 1 está montada com arte (8 quadros: Aurora, o casarão, o chapéu, o raio). O resto é o modelo de 23 quadros com imagens-bloco.
+
 ## PARA A SESSÃO DE 18/10 (Sede / Fazenda): o que falta
 
 - **Atualizar o jogo de verdade (8080) de manhã**, antes da sessão: backup do banco (`npm run banco:backup`) e
