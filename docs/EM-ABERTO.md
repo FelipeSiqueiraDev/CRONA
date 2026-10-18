@@ -2,12 +2,68 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 18/10 (madrugada): NPCs e Marcados refeitos no estilo das peças dos monstros (instalado, com QA)
+
+Os 10 NPCs e os 4 Marcados (Tepes, Catarina, Cora, Alosi) estão no estilo novo (contorno limpo, sombreado em 3-4 tons), uma pose de cada vez, com a conferência
+da folha (contact sheet), segunda opinião de um revisor independente antes de instalar e backup do que foi sobrescrito. **Nada foi para o jogo de verdade (8080):**
+só a pasta `client/public/arte/personagens/`, commitada em commits pequenos (um por personagem e pose, `arte: <nome> ... no estilo das pecas dos monstros`).
+
+| personagem | em pé | agachado | sentado | deitado (dorm./caído) | machucado | armado |
+|---|---|---|---|---|---|---|
+| Miguel | instalado | instalado | instalado | instalado | n/a | **antigo** (pendente) |
+| Ágata | instalado | instalado | instalado | instalado | n/a | n/a |
+| Ivete | instalado | instalado | instalado | instalado | n/a | n/a |
+| Samuel | instalado (refeito 1x: pele) | instalado | instalado | instalado (cor ajustada por código) | n/a | n/a |
+| Geraldo | instalado | instalado | instalado | instalado | n/a | n/a |
+| Pedro (camisa rosa) | instalado | instalado | instalado | instalado | n/a | **antigo** (pendente) |
+| Joaquin (ruivo) | instalado | instalado | instalado | instalado | n/a | **antigo** (pendente) |
+| Rosa (cabelo rosa) | instalado | instalado | instalado | instalado | n/a | **antigo** (pendente) |
+| Rebecca (jaleco) | instalado | instalado | instalado | instalado | n/a | n/a |
+| Herman | instalado | **PENDENTE** (ver abaixo) | instalado | instalado | n/a | n/a |
+| Tepes | instalado | instalado | instalado | instalado | instalado | **antigo** (pendente) |
+| Catarina | instalado | instalado | instalado | instalado | instalado | **antigo** (pendente) |
+| Cora | instalado | instalado | instalado | instalado | instalado | **antigo** (pendente) |
+| Alosi | instalado | instalado | instalado | instalado (cor ajustada por código) | instalado | **antigo** (pendente) |
+
+- **Por que ficou pendente:** o Códex (geração de imagem) bateu no limite diário de imagens (429 `usage_limit_reached`, janela de 1440 min) às ~03h de 18/10 e **só volta às 19:40
+  de 18/10** (o "limite renovado às 7:20" era outro: a geração de imagem continua travada). Pendente por isso: (1) **Herman agachado**: a 1ª versão saiu sem a máscara oni na mão (identidade
+  errada, reprovada; a folha está em `agachado/herman-arantes-agachado-8-direcoes-v2-sem-mascara.png`) e o pedido refeito com a máscara (v3) não rodou; (2) **o armado no estilo novo** dos 4 Marcados e dos
+  4 NPCs que têm armado hoje (Miguel, Pedro, Joaquin, Rosa; só esses 8 têm `idle-armado-*`): o que está no jogo é o antigo, de altura 434-511 contra 470 do em pé: **o armado fica em estilo antigo
+  ao lado do em pé novo até lá**; (3) Alosi e Samuel deitado em versão 2 pelo Códex (a v1 foi aprovada com ressalva e corrigida por código, abaixo).
+- **Para retomar quando o limite voltar** (nada a refazer à mão): `cd arte\PERSONAGENS-ANIMACAO\trabalho` e `set FILA_DIR=fila-estilo-4 & python fila_estilo_tudo.py a` (e `b`). A fila lê `fila-estilo-4\jobs.txt`
+  (Herman agachado v3 com a nota da máscara, Alosi/Samuel deitado v2, armado dos 4 Marcados e dos 4 NPCs), espera a cota sozinha (5 em 5 min) e grava o resultado em `agachado\`, `deitado-estilo\<id>\`,
+  `armado-estilo\`. Para conferir e instalar: `processar_novos.sh` (corta, iguala a cabeça, limpa a franja e monta a folha de conferência), `instalar_pose.sh <id> agachado|sentado "<nome>"`,
+  `instalar_deitado.sh`, `instalar_estilo.py`. O armado precisa de um `cortar_estado.py <id> armado <folha> <pasta>` (já existe, iguala a cabeça à do em pé) e instala em `idle-armado-<dir>.png`.
+- **Reprovações e refações:** Samuel em pé v1 reprovado (pele laranja demais, cabelo claro) -> refeito 1x (v2, aprovado); Herman agachado v2 reprovado (sumiu a máscara) -> v3 pendente na cota; Ágata e Cora, Alosi e Rosa:
+  franja magenta/roxa do fundo corrigida por código (`limpar_franja.py`); Alosi e Samuel deitado: o Códex pintou os óculos do Alosi de vermelho e a pele do Samuel laranja, corrigido por ajuste de paleta
+  (`corrigir_cor_deitado.py`, aprovado com ressalva: a pele do Alosi dormindo ficou um pouco rosada e o caído do Alosi ainda tem rosto "fofo" e sangue só no corpo).
+- **Ressalvas conhecidas (nada grave):** o cabelo da Ivete e da Cora saiu um pouco mais rosado/quente que o de hoje (a cor medida é igual); o rosto e as botas dos deitados do estilo novo são maiores que os de hoje
+  (a cabeça é a do chibi novo; o jogo desenha o deitado pela largura, na escala certa); o livro do Alosi some no agachado de frente; Cora agachada de sudoeste esconde o fuzil atrás da cabeça.
+- **Conferido no jogo:** a prévia (`crona-visual`) abre e carrega as imagens novas; com o tamanho de tela da prévia (800 px) não deu para ver o boneco em detalhe: conferir no jogo, em pé / agachado / sentado / deitado,
+  na primeira vez que o Felipe abrir o tabuleiro. A conferência numérica: em pé 470 +-8 px, cabeça agachado/sentado 1,00 +-0,06 da cabeça em pé (`qa_agachado.sh`).
+- **Como reverter:** `python instalar_estilo.py --reverter <id>` copia de volta o que estava no jogo (`trabalho\backup-pre-estilo-novo\<id>\...`, a PRIMEIRA cópia de cada arquivo, nunca sobrescrita) e depois
+  `git checkout <commit-anterior> -- <caminho>` ou `git revert <commit do personagem>` (um commit por personagem e pose). O backup da correção de escala do caído do Samuel/Alosi (da sessão principal) está em
+  `backup-pre-estilo-novo\fix-caido`.
+- **Onde estão os logs e o trabalho:** `arte\PERSONAGENS-ANIMACAO\trabalho\fila-estilo*\fila.log` (as filas do Códex), `qa\` (as folhas de conferência de cada lote, em pé, agachado, sentado, deitado, machucado),
+  `estilo-monstro\<id>\`, `agachado\`, `deitado-estilo\`, `machucado-estilo\`, `armado-estilo\`; scripts: `pedir_estilo_monstro.py`, `fila_estilo_tudo.py`, `qa_pe_pipeline.sh`, `qa_agachado.sh`,
+  `cortar_deitado.py`, `cortar_estado.py`, `limpar_franja.py`, `ajustar_altura.py`, `instalar_*.sh`.
+- **Decisão que depende do Felipe:** aprovar o olhar do estilo novo no jogo de verdade (a sessão principal sobe no 8080); e se o armado antigo pode ficar até o Códex voltar (19:40) ou se prefere desligar o
+  armado dos 8 até lá.
+
 ## Feito em 18/10: as fichas do C.R.I.S dentro do CRONA
 
 - **O arquivo:** `docs/fichas-cris/` tem `fichas-do-cris.json` (tudo que o banco do C.R.I.S tinha: 12 fichas de agente, os 5 personagens de história e as 5 criaturas, cru) e `FICHAS-DO-CRIS.md` (a versão legível, com índice e tabela-resumo). Os retratos ficam em `avatares/`, fora do git. `COMPARACAO-CRONA.md` tem a tabela C.R.I.S × CRONA (PV, PE, SAN, Defesa) e as diferenças.
 - **No jogo:** `server/src/seedFichasCris.ts` (dados já convertidos para o modelo de ficha, só escolhas) é chamado por `upgradeDb` e só **cria**: Miguel, Agatha e Ivete ganham ficha ligada ao personagem do tabuleiro; Marcela, Nico, Veríssimo, Ômega-99 e "???" entram no Elenco sem arte e sem peça. Não sobrescreve ficha que já exista para o NPC, o que o mestre apagar não volta (`fichasCris` no config), e banco novo (sem `gmKey`) fica como estava. Testes: `server/test/fichasCris.test.ts`.
 - **Pendências do mestre (o C.R.I.S estava em branco ou parcial):** Agatha (33), Ivete e Marcela (13 cada), Miguel (6: perícias, Perito, atributo do NEX 50%, o poder da Expansão de Conhecimento e do Especialista Diletante), Ômega-99 (4: rituais do Grimório e o poder do NEX 90%), ??? (3) e Nico (2). A Marcela falta como personagem no tabuleiro (arte e referência).
 - **Não foi para o 8080:** só a cópia de testes (`crona_visual`) subiu com isso; a sessão principal sobe o jogo depois do backup.
+
+### Atualização 18/10 (13h): refações pedidas pelo Felipe ("ressalva = refazer")
+Instalado e aprovado pelo revisor rigoroso: **Alosi deitado v4** (caído machucado), **Samuel deitado v3** (pele uniforme), **Herman agachado v6** (óculos pretos, máscara longe da borda).
+**NÃO resolvido após 3-4 refações no Códex (o instalado continua o de antes, com as ressalvas):** armado de Catarina (mão some em ne/n/nw), Miguel (luva fora do corpo em ne), Cora (mãos/cano nas costas), Pedro (pistola ilegível), Alosi (aro dos óculos com reflexo laranja e mão de dedos estranhos em ne/n/nw); Ivete (cabelo mais claro/rosado e pele mais pálida que a antiga em pé/agachado/sentado/deitado: a correção por código não convenceu; o instalado continua a v1 aprovada com ressalva); Alosi agachado (aro dourado claro); Cora agachada SW passou na revisão mas não foi reinstalada. Os arquivos das tentativas estão em `trabalhormado-estilo\` (v1-v4, `saida4-*`, `cab4-*`) e `qa\`. Fila `fila-estilo-5` parada.
+
+### Atualização 18/10 (manhã, Códex de volta): fechado o que faltava
+Instalados com QA e segunda opinião (um commit por personagem e pose): **Herman agachado** (v4, máscara oni presente; refeito 2x), **armado no estilo novo** de Tepes, Catarina, Cora, Alosi, Miguel, Pedro, Joaquin e Rosa (Rosa refeita 1x: o 1º veio com cabelo magenta e pele vermelha), **Samuel deitado v2** (pele escura) e **Alosi deitado v3**. Com isso a tabela acima fica toda instalada; só as 14 pessoas citadas, nada pendente no Códex.
+Ressalvas aceitas do revisor: Catarina armado com a lâmina espelhada entre ne e nw (e rente ao topo em s/se); Cora armado e Miguel armado um pouco mais quentes/saturados que o em pé; Miguel com a luva pouco visível em ne/nw/w; Pedro com a pistola menor que a antiga; aro dos óculos do Alosi/Herman um tom mais laranja em s; Samuel deitado com antebraço mais alaranjado que o rosto. Backups em `trabalhoackup-pre-estilo-novo\<id>\`. Não conferido ainda no boneco do tabuleiro (prévia pequena): o Felipe deve olhar o armado e o deitado quando abrir.
 
 ## Feito em 17/10, fim da tarde (branch `claude/tatica-codigo`): o jogo de verdade atualizado e a tela do COMBATE com respiro
 
@@ -45,15 +101,12 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
   Médio (LR p. 230); o Felipe acha que ele é bem maior: decidir se ganha o tamanho Grande ou só a escala do desenho.
 - **O Alosi no estilo dos monstros** foi desenhado só para comparar (`docs/alosi-antigo-e-novo.png`); não entrou no jogo. O Felipe decide se os
   Marcados e os NPCs vão para esse estilo ou se os monstros voltam ao dos NPCs.
-- **Ideia do Felipe, ainda não feita:** o passo pelas sombras da Magistrada (ao se mover, uma sombra se abre no chão, ela entra pintada de preto e sai
-  de outra sombra que o mestre escolhe).
 
 ## Feito em 17/10, madrugada
 - ATRAVESSA anda para os lados (alavanca em x; dedo: para onde aponta); em dupla o outro aparece na posição real.
 - Feliperama: a notinha da música não cobre mais o canto do letreiro pintado (era o "quadrado feio").
 - Cenas: até 40 quadros e quadros de 0,2 s; **modelos quadradões** guardados no jogo: "MODELO · Pesadelo da Cora" (23 quadros, calmo → cortes rápidos/flash → olhos rosa) e "MODELO · Geraldo nas grades" (grades, mão, dedos, rosto). Imagens-bloco em `client/public/arte/modelo-cenas/`; gerador em `scratchpad/modelo_cora.py` (rascunho).
 - Fila dos NPCs no estilo dos monstros TERMINOU (10 de 10 folhas v1 em `trabalho/estilo-monstro/<id>/`); comparação em `docs/npcs-estilo-novo-v1.png`. Falta o Felipe aprovar.
-- Sessão "passo pelas sombras" ficou pela metade na árvore (hotel.ts, roomInstance.ts, seed.ts, RoomView.ts, db.ts, protocol.ts + test/passoSombras.test.ts, 2 testes falhando): NÃO foi para o jogo.
 
 ## COMEÇOU, FALTA CONTINUAR (17/10, noite): os NPCs refeitos no estilo dos monstros
 
@@ -72,6 +125,27 @@ refazer nossos NPCs todos para esse estilo, em todas as posições e formatos"**
   e o armado dos Marcados; o retrato do Elenco/ficha fica como está. (5) depois, os Marcados (Tepes, Catarina, Cora; o Alosi já está feito) pelo mesmo caminho;
   a Camarilla (cachorro, escala 0,8 m) e o Existido ficam de fora por enquanto.
 - Conferir sempre: altura (470 px, a da Catarina), contorno rosa (`scripts/contorno_rosa.py`), e o quadro no tabuleiro (a pose sentada em banco alto e baixo).
+
+## Feito em 18/10 (branch `claude/tatica-codigo`): o passo pelas sombras da Magistrada
+
+- **O que é:** a Onipresença da Magistrada (LR p. 252, **ação de movimento**: ela se desloca para qualquer lugar onde haja sombra). No tabuleiro,
+  uma poça escura (elipse 2:1) se abre sob ela, ela fica preta sólida e afunda (~0,4 s), a poça fecha; na sombra escolhida a poça abre, ela sobe
+  preta e desbota para as cores. Dois sons curtos sintetizados (`sfx.sombraEntra` / `sombraSai`). Roda igual no mestre e na mesa (o servidor manda
+  `passoSombras` para todos que olham a cena; a posição nova vem no `status` logo depois).
+- **Como o mestre usa:** seleciona a Magistrada → grupo **Sombras** do painel PERSONAGEM → **Passo**: as casas que são sombra se acendem em roxo
+  (por cima da escuridão) e o clique numa delas leva a peça (Esc cancela). **Marcar** liga o modo de marcar sombras à mão (clique marca/desmarca; vale
+  além das casas escuras; fica na cena, `RoomData.sombras`). **Em combate**, na etapa Movimento aparece o cartão "Passo pelas sombras": gasta a ação de
+  movimento (ou a padrão, se a de movimento já foi), como o Movimentar-se; a ficha do livro ganhou a ação "Onipresença" (movimento).
+- **O que é "sombra":** casa de chão livre e vazia onde a escuridão que sobra passa de 0,45 (`LIMIAR_SOMBRA`): a escuridão do cômodo menos o que as
+  luzes furam, com o mesmo degradê do mapa de luz (`shared/src/sombras.ts`, `casasDeSombra()` no `RoomView`). Cômodo sem escuridão não tem sombra de luz:
+  só as marcadas à mão. O servidor não conhece as luzes (ficam no tabuleiro): ele confere só que a casa existe, é de pisar, está vazia e é da mesma cena.
+- **Por dado, não if:** `Criatura.passoSombras` (bestiário); `criaturaDoLivro` preenche para os ids de `CRIATURAS_PASSO_SOMBRAS` (só a
+  `mascara-do-desespero`) e o `upgradeDb` preenche nas criaturas que já estavam no banco. Para outra criatura, ligue o campo.
+- **Testes:** `server/test/passoSombras.test.ts` (habilidade por dado, casa livre, ocupada, fora da planta, móvel, outra cena, jogador recusado, sombras à
+  mão, limiar da luz e a linha do tempo da animação). Typecheck, 411 testes e build sem erro. Visto na prévia (Calabouço da Fazenda): sombras acesas,
+  clique, a Magistrada some e reaparece em outra casa; a animação foi conferida quadro a quadro. **Não visto:** o cartão do COMBATE (só typecheck) e a
+  mesa de verdade (a mensagem é a mesma para todos).
+- Falta (se o Felipe quiser): a peça sair de uma sombra **de outra cena**; um som/forma diferente por criatura.
 
 ## PARA A SESSÃO DE 18/10 (Sede / Fazenda): o que falta
 

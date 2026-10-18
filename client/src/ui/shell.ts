@@ -625,6 +625,12 @@ export class Shell {
       this.renderAcoes();
     });
     app.on('items', () => (this.renderInspector(), this.renderQuick(), this.renderAcoes()));
+    // o bestiário chegou depois de a peça ser escolhida (recarregou a página): o painel da criatura (aparência, passo pelas sombras) se refaz
+    app.on('bestiario', () => {
+      const sel = this.app.view.selection;
+      const cid = sel?.kind === 'user' ? this.app.view.users.get(sel.id)?.criatura?.id : undefined;
+      if (cid && this.app.state.bestiario.some((c) => c.id === cid)) this.renderInspector(true);
+    });
     app.on('characters', () => ((this.sigs.party = ''), this.renderParty()));
     setInterval(() => this.captureThumb(), 4000);
     setInterval(() => this.markWalking(), 180);
@@ -2100,6 +2106,13 @@ export class Shell {
         this.gm ? h('button', { class: 'tool', title: 'Girar para a esquerda (Q)', onclick: () => this.turnToken(id, false) }, '↺ Girar') : null,
         this.gm ? h('button', { class: 'tool', title: 'Girar para a direita (E)', onclick: () => this.turnToken(id, true) }, 'Girar ↻') : null,
       ),
+      this.gm && cr?.passoSombras
+        ? grupo(
+            'Sombras',
+            tool('Passo', () => this.passoPelasSombras(id), `${cr.nome} some numa sombra e sai de outra que você escolhe (Onipresença, LR p. 252)`),
+            this.stateTool('Marcar', view.marcandoSombra, 'Marca ou desmarca uma sombra à mão no chão (além das casas escuras de luz)', () => this.marcarSombras()),
+          )
+        : null,
       this.gm
         ? grupo(
             'Postura',
@@ -2123,6 +2136,26 @@ export class Shell {
       sc.addEventListener('change', () => sc.value && net.send({ t: 'tokenScene', tokenId: id, roomId: Number(sc.value) }));
       body.append(h('div', { class: 'tk-grupo' }, h('span', { class: 'tk-rot' }, 'Cena'), sc));
     }
+  }
+
+  /** O passo pelas sombras (Magistrada): as sombras se acendem e o clique numa delas leva a peça para lá. */
+  private passoPelasSombras(id: number) {
+    const view = this.app.view;
+    view.marcandoSombra = false;
+    view.escolherSombra(
+      id,
+      (x, y) => this.app.net.send({ t: 'passoSombras', tokenId: id, x, y }),
+      () => undefined,
+    );
+  }
+
+  /** Liga e desliga o marcar sombras à mão: o clique numa casa marca ou desmarca. */
+  private marcarSombras() {
+    const view = this.app.view;
+    view.cancelarSombra();
+    view.marcandoSombra = !view.marcandoSombra;
+    view.aoMarcarSombra = (x, y, marcada) => this.app.net.send({ t: 'sombraMarcar', x, y, marcada });
+    this.renderInspector(true);
   }
 
   /** Abre a aba ITENS na mochila do agente (id da peça). */

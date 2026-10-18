@@ -9,6 +9,7 @@ import {
   type CenaAoVivo,
   getFurni,
   lerCriatura,
+  chamaDaCriatura,
   lerNpc,
   lerGrupoNpc,
   GRUPOS_NPC_PADRAO,
@@ -159,6 +160,8 @@ const GM_ONLY = new Set([
   'setHint',
   'roomSettings',
   'roomFx',
+  'passoSombras',
+  'sombraMarcar',
   'marca',
   'nevoa',
   'mapaImprovisado',
@@ -599,6 +602,7 @@ export class Hotel implements HotelApi {
           vitals: { pv: cr.pv, pvMax: cr.pv, pe: 0, peMax: 0, san: 0, sanMax: 0 },
           criatura: { id: cr.id, aparencia: ap.id },
           ...(cr.flutua ? { flutua: true } : {}),
+          ...(chamaDaCriatura(cr.id, cr.chama) ? { chama: chamaDaCriatura(cr.id, cr.chama)! } : {}),
         });
       }
       room.colocarVarias(lista);
@@ -1446,6 +1450,11 @@ export class Hotel implements HotelApi {
         changed = true;
       }
     if (changed) this.save();
+  }
+
+  /** A criatura do bestiário se move pelas sombras (a Magistrada, `Criatura.passoSombras`)? */
+  criaturaPassoSombras(id?: string): boolean {
+    return !!id && !!this.db.bestiario?.find((x) => x.id === id)?.passoSombras;
   }
 
   /** A cor do elemento da criatura de uma peça (as que já estavam em campo também ganham a cor certa). */

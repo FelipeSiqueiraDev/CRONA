@@ -4,6 +4,7 @@ import type { RollResult } from './dice';
 import type { FloorItem, FloorStyle, Hint, ParticleKind, WallItem } from './room';
 import type { LugarInfo } from './lugares';
 import type { Criatura } from './bestiario';
+import type { ChamaCriatura } from './chama';
 import type { Npc } from './npcs';
 import type { CenaAoVivo, CenaMomento } from './cenas';
 import type { ViagemInfo } from './viagem';
@@ -292,6 +293,8 @@ export interface UserInfo extends UserStatus {
   alto?: boolean;
   /** flutua (a criatura que anda sem tocar o chão, como o Existido) */
   flutua?: boolean;
+  /** a chama fantasmagórica (cor e intensidade) */
+  chama?: ChamaCriatura;
   /** a peça é uma criatura do bestiário: qual e com que aparência */
   criatura?: { id: string; aparencia: string };
 }
@@ -334,6 +337,8 @@ export interface RoomInfo {
   particleLevel?: number;
   /** vista tática: a câmera do tabuleiro em cima, como um mapa de batalha (o mestre liga; a mesa acompanha) */
   tatico?: boolean;
+  /** as sombras que o mestre marcou à mão (além das casas escuras de luz): o passo pelas sombras (sombras.ts) */
+  sombras?: { x: number; y: number }[];
   /** o quarto (de hotel, de pousada): a condição do descanso de quem dorme aqui no interlúdio (LR p. 92) */
   descanso?: LugarDescanso;
   /** Santo Berço: não há fogo; o que seria fogo (lareira, forja, vela, lampião) é a luz dos cristais vermelhos */
@@ -492,6 +497,10 @@ export type ClientMsg =
   | { t: 'roomFx'; lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; tatico?: boolean }
   /** ponto de atenção ou desenho rápido para a mesa (só o mestre; some sozinho) */
   | { t: 'marca'; marca: MarcaMesa }
+  /** o passo pelas sombras (só o mestre; `tokenId` como no `tokenWalk`; Onipresença da Magistrada, LR p. 252): a peça some na sombra dela e sai na casa (x, y), livre e da mesma cena */
+  | { t: 'passoSombras'; tokenId: number; x: number; y: number }
+  /** marca ou desmarca uma sombra à mão na casa (só o mestre) */
+  | { t: 'sombraMarcar'; x: number; y: number; marcada: boolean }
   /** a névoa revelada aos poucos da cena (só o mestre) */
   | ({ t: 'nevoa' } & AcaoNevoa)
   /**
@@ -594,6 +603,8 @@ export type ServerMsg =
   | { t: 'roomUpdate'; room: RoomInfo }
   /** ponto de atenção ou desenho do mestre, para todos que olham a cena */
   | { t: 'marca'; marca: MarcaMesa }
+  /** a peça entrou numa sombra e saiu noutra (a animação, para todos que olham a cena; a posição nova vem em `status`) */
+  | { t: 'passoSombras'; tokenId: number; de: { x: number; y: number }; para: { x: number; y: number } }
   | { t: 'userJoin'; user: UserInfo }
   | { t: 'userLeave'; id: number }
   /** a peça atravessou uma passagem para outra cena (quem a comanda vai junto) */

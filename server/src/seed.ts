@@ -1,6 +1,7 @@
 import { desencostarItensDeParede } from './paredes';
 import {
   existidoPadrao,
+  CRIATURAS_PASSO_SOMBRAS,
   npcsPorLeva,
   renomearNpcs,
   GRUPOS_NPC_PADRAO,
@@ -750,6 +751,8 @@ function npcsIniciais(db: Database): boolean {
   if (sede >= 0) ((db.npcGrupos[sede] = 'Ordo Realitas'), (db.npcGrupos = [...new Set(db.npcGrupos)]), (renomeados = true));
   // a "Máscara do Desespero" é a Magistrada (17/10): a criatura do bestiário que ainda tem o nome antigo troca
   for (const cr of db.bestiario ?? []) if (cr.ficha.livro === 'mascara-do-desespero' && cr.nome === 'Máscara do Desespero') ((cr.nome = 'Magistrada'), (renomeados = true));
+  // o passo pelas sombras (Onipresença, LR p. 252) é dado da criatura: as do livro que o têm ganham o campo (18/10)
+  for (const cr of db.bestiario ?? []) if (cr.ficha.livro && CRIATURAS_PASSO_SOMBRAS.includes(cr.ficha.livro) && cr.passoSombras === undefined) ((cr.passoSombras = true), (renomeados = true));
   // a criatura do livro aponta para a pasta da arte dela (arte/personagens/<id do livro>/), como as novas
   for (const cr of db.bestiario ?? [])
     for (const ap of cr.aparencias) if (cr.ficha.livro && ap.id === 'padrao' && !ap.arte) ((ap.arte = cr.ficha.livro), (renomeados = true));

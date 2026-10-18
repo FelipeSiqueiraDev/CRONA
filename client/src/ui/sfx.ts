@@ -549,6 +549,33 @@ class Sfx {
     }, ms - 60);
   }
 
+  /**
+   * O passo pelas sombras (Magistrada, 18/10), os dois sons curtos: `entra` = a poça se abre e engole (um sopro grave que
+   * desce, um gorgolejo e o baque surdo quando a peça some); `sai` = a poça se abre e devolve (o baque surdo, o sopro que
+   * sobe e um brilho frio quando ela desbota para as cores). Tudo sintetizado, no tempo da animação (shared/sombras.ts).
+   */
+  sombraEntra() {
+    this.burst({ dur: 0.5, type: 'lowpass', freq: 900, freq2: 140, q: 1.1, gain: 0.34, attack: 0.05, release: 0.3 });
+    this.tone(160, 48, 0.55, 0.3, 'sine');
+    setTimeout(() => this.tone(420, 150, 0.12, 0.08, 'triangle'), 120);
+    setTimeout(() => this.tone(300, 110, 0.14, 0.07, 'triangle'), 240);
+    setTimeout(() => {
+      this.tone(80, 40, 0.2, 0.4);
+      this.burst({ dur: 0.1, type: 'lowpass', freq: 400, gain: 0.3, attack: 0.003, release: 0.08 });
+    }, 560);
+  }
+
+  sombraSai() {
+    this.tone(70, 42, 0.18, 0.34);
+    this.burst({ dur: 0.1, type: 'lowpass', freq: 380, gain: 0.26, attack: 0.003, release: 0.08 });
+    setTimeout(() => this.burst({ dur: 0.5, type: 'lowpass', freq: 140, freq2: 1100, q: 1.1, gain: 0.3, attack: 0.12, release: 0.25 }), 120);
+    setTimeout(() => this.tone(60, 180, 0.4, 0.22, 'sine'), 140);
+    setTimeout(() => {
+      this.tone(1100, 1500, 0.22, 0.05, 'sine');
+      this.tone(1650, 2100, 0.2, 0.03, 'sine');
+    }, 520);
+  }
+
   private agua: { src: AudioBufferSourceNode; g: GainNode; lfo: OscillatorNode } | null = null;
   /**
    * O chuveiro ligado (17/10): o chiado da água caindo, em loop, enquanto o cômodo tem um chuveiro aberto. O ruído passa

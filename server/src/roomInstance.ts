@@ -75,6 +75,7 @@ import {
   type VitalKey,
   type Vitals,
   type WallItem,
+  type ChamaCriatura,
 } from '@crona/shared';
 import type { RoomData, TokenData } from './db';
 import { SYSTEM_OWNER } from './seed';
@@ -117,6 +118,8 @@ export interface HotelApi {
   inventory(client: Client): InvItem[];
   sendInventory(client: Client): void;
   roomChanged(): void;
+  /** a criatura do bestiário se move pelas sombras (Onipresença da Magistrada)? */
+  criaturaPassoSombras(id?: string): boolean;
   /** leva o cliente para outro quarto (Passagem) */
   teleport(client: Client, roomId: number, fromRoomId: number): void;
   /** leva uma peça para outra cena */
@@ -174,7 +177,7 @@ interface RoomUser {
   /** chegou por esta passagem: não teleporta até sair do tile */
   arrivedAt: Point | null;
   /** cor, limite de carga, estado do retrato e ficha (PV/PE/SAN) da peça */
-  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; alto?: boolean; vitals?: Vitals; criatura?: PecaCriatura; flutua?: boolean };
+  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; alto?: boolean; vitals?: Vitals; criatura?: PecaCriatura; flutua?: boolean; chama?: ChamaCriatura };
 }
 
 const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v);
@@ -305,7 +308,7 @@ export class RoomInstance {
       // nasce "chegando": em cima de uma passagem, só atravessa depois de sair dela e voltar
       // (sem isso, a peça salva em cima de uma porta trocava de cena a cada reinício)
       arrivedAt: { x: sx, y: sy },
-      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, agachado: t.agachado, alto: t.alto, vitals: sanitizeVitals(t.vitals), ...(t.criatura ? { criatura: t.criatura } : {}), ...(t.flutua ? { flutua: true } : {}) },
+      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, agachado: t.agachado, alto: t.alto, vitals: sanitizeVitals(t.vitals), ...(t.criatura ? { criatura: t.criatura } : {}), ...(t.flutua ? { flutua: true } : {}), ...(t.chama ? { chama: t.chama } : {}) },
     };
     this.users.set(u.client.id, u);
     this.settle(u);
@@ -415,6 +418,7 @@ export class RoomInstance {
     if (u.meta?.vitals) t.vitals = u.meta.vitals;
     if (u.meta?.criatura) t.criatura = u.meta.criatura;
     if (u.meta?.flutua) t.flutua = true;
+    if (u.meta?.chama) t.chama = u.meta.chama;
     return t;
   }
 
@@ -575,6 +579,7 @@ export class RoomInstance {
       particles: this.data.particles,
       particleLevel: this.data.particleLevel,
       tatico: this.data.tatico,
+      ...(this.data.sombras?.length ? { sombras: this.data.sombras } : {}),
       descanso: this.data.descanso,
       luzDeCristal: this.data.luzDeCristal,
       nevoa: this.nevoaAtual() ?? undefined,
@@ -618,7 +623,7 @@ export class RoomInstance {
   }
 
   private userInfo(u: RoomUser): UserInfo {
-    return { ...this.status(u), name: u.client.name ?? '?', look: u.client.look, color: u.meta?.color, ...(u.meta?.agachado ? { agachado: true } : {}), ...(u.meta?.alto ? { alto: true } : {}), ...(u.meta?.flutua ? { flutua: true } : {}), ...(u.meta?.criatura ? { criatura: u.meta.criatura } : {}) };
+    return { ...this.status(u), name: u.client.name ?? '?', look: u.client.look, color: u.meta?.color, ...(u.meta?.agachado ? { agachado: true } : {}), ...(u.meta?.alto ? { alto: true } : {}), ...(u.meta?.flutua ? { flutua: true } : {}), ...(u.meta?.chama ? { chama: u.meta.chama } : {}), ...(u.meta?.criatura ? { criatura: u.meta.criatura } : {}) };
   }
 
   private status(u: RoomUser): UserStatus {
@@ -916,6 +921,12 @@ export class RoomInstance {
         break;
       case 'roomFx':
         this.fx(u, m);
+        break;
+      case 'passoSombras':
+        if (isInt(m.tokenId) && isInt(m.x) && isInt(m.y)) this.passoSombras(u, m.tokenId, m.x, m.y);
+        break;
+      case 'sombraMarcar':
+        if (isInt(m.x) && isInt(m.y)) this.sombraMarcar(u, m.x, m.y, m.marcada === true);
         break;
       case 'marca':
         this.marca(u, m.marca);
@@ -1855,6 +1866,55 @@ export class RoomInstance {
       if (m.tatico) this.data.tatico = true;
       else delete this.data.tatico;
     }
+    this.hotel.save();
+    this.enviarInfo();
+  }
+
+  /**
+   * O passo pelas sombras (Onipresença da Magistrada, LR p. 252; sombras.ts): a peça some na sombra dela e sai na casa
+   * (x, y) que o mestre escolheu. Só o mestre; a peça tem que ser desta cena e de uma criatura com `passoSombras`
+   * (dado do bestiário); a casa tem que existir, ser de chão livre e estar vazia. Quem decide que a casa é uma sombra
+   * é a tela do mestre (as luzes da cena ficam no tabuleiro); aqui só se confere que dá para pisar.
+   * Devolve o motivo quando não dá (e avisa o mestre).
+   */
+  passoSombras(u: RoomUser, tokenId: number, x: number, y: number): string | null {
+    const c = u.client;
+    const falha = (msg: string) => (this.err(c, msg), msg);
+    if (!this.isOwner(c)) return falha('Só o mestre faz o passo pelas sombras.');
+    const t = this.users.get(tokenId);
+    if (!t) return falha('Essa peça não está nesta cena.');
+    if (!this.hotel.criaturaPassoSombras(t.meta?.criatura?.id)) return falha('Essa peça não anda pelas sombras.');
+    if (x < 0 || y < 0 || x >= this.map.width || y >= this.map.height || this.map.floorHeight(x, y) === null) return falha('Essa casa não existe.');
+    if (this.map.walkState(x, y) !== 'walk') return falha('Essa casa não dá para pisar.');
+    if (t.x === x && t.y === y) return falha('Ela já está nessa sombra.');
+    if (this.occupied(x, y, t.client.id)) return falha('Já tem alguém nessa casa.');
+    const de = { x: t.x, y: t.y };
+    // a animação vai antes da posição nova: as telas seguram a peça na sombra de saída até ela afundar
+    this.broadcast({ t: 'passoSombras', tokenId, de, para: { x, y } });
+    t.x = x;
+    t.y = y;
+    t.goal = t.next = null;
+    t.sit = 0;
+    t.z = this.map.standHeight(x, y);
+    t.arrivedAt = { x, y };
+    this.settle(t);
+    t.dirty = false;
+    this.broadcast({ t: 'status', updates: [this.status(t)] });
+    this.broadcast({ t: 'tokens', sceneId: this.data.id, tokens: [this.tokenState(t)] });
+    this.saveTokens();
+    this.hotel.log(this.data.id, 'scene', `${t.client.name ?? 'A peça'} entrou numa sombra e saiu de outra.`);
+    return null;
+  }
+
+  /** O mestre marca (ou desmarca) uma casa como sombra, à mão: vale além das casas que a luz da cena deixa escuras. */
+  private sombraMarcar(u: RoomUser, x: number, y: number, marcada: boolean) {
+    const c = u.client;
+    if (!this.isOwner(c)) return this.err(c, 'Só o mestre marca sombras.');
+    if (x < 0 || y < 0 || x >= this.map.width || y >= this.map.height || this.map.floorHeight(x, y) === null) return this.err(c, 'Essa casa não existe.');
+    const sem = (this.data.sombras ?? []).filter((s) => !(s.x === x && s.y === y));
+    const lista = marcada ? [...sem, { x, y }].slice(-400) : sem;
+    if (lista.length) this.data.sombras = lista;
+    else delete this.data.sombras;
     this.hotel.save();
     this.enviarInfo();
   }

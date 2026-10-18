@@ -522,6 +522,10 @@ net.onMessage = (m: ServerMsg) => {
     case 'userLeave':
       view.removeUser(m.id);
       break;
+    case 'passoSombras':
+      // a Magistrada some numa sombra e sai de outra: a animação roda no mestre e na mesa
+      view.receberPassoSombras(m);
+      break;
     case 'tokenTravel':
       // a peça comandada atravessou uma passagem: a câmera vai junto para o cômodo novo
       // (a mesa segue o mestre sozinha)

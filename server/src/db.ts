@@ -1,4 +1,4 @@
-import type { CenaMomento, Criatura, Npc, PecaCriatura, regras } from '@crona/shared';
+import type { CenaMomento, ChamaCriatura, Criatura, Npc, PecaCriatura, regras } from '@crona/shared';
 import type { ViagemInfo, IconeLugar, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
@@ -41,6 +41,8 @@ export interface RoomData {
   montagem?: string;
   /** vista tática ligada (a câmera do tabuleiro em cima) */
   tatico?: boolean;
+  /** as sombras marcadas à mão pelo mestre (o passo pelas sombras, sombras.ts) */
+  sombras?: { x: number; y: number }[];
   /** o quarto (de hotel, de pousada): a condição do descanso de quem dorme aqui no interlúdio (LR p. 92) */
   descanso?: regras.LugarDescanso;
   /** Santo Berço: não há fogo; o que seria fogo é a luz dos cristais vermelhos */
@@ -77,6 +79,8 @@ export interface TokenData {
   criatura?: PecaCriatura;
   /** flutua (a criatura que anda sem tocar o chão) */
   flutua?: boolean;
+  /** a chama fantasmagórica da criatura (cor e intensidade; shared/src/chama.ts) */
+  chama?: ChamaCriatura;
 }
 
 export interface UserData {

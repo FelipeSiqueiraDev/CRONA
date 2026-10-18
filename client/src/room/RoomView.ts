@@ -31,6 +31,14 @@ import {
   type CorGiz,
   type FormaTraco,
   type MarcaMesa,
+  type ChamaCriatura,
+  chamaDaCriatura,
+  fasePasso,
+  PASSO_SOMBRAS,
+  ehSombra,
+  escuridaoNoPonto,
+  chaveCasa,
+  type LuzDeCasa,
 } from '@crona/shared';
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
@@ -52,6 +60,7 @@ import { hash, hexToRgb, rgba } from '../render/color';
 import { Fog } from '../render/fog';
 import { Lighting, type Light } from '../render/lighting';
 import { Particles } from '../render/particles';
+import { ChamasDasPecas, desenharBrilhoChama, desenharCamadaChama } from '../render/chamaPeca';
 import { boxSilhouette, Mapper, Painter, pointInPoly, type WBox } from '../render/painter';
 import { buildStatic, doorClipPath, roomBounds, type StaticLayer } from '../render/roomStatic';
 import { versaoTexturas } from '../render/texturas';
@@ -80,6 +89,7 @@ import {
   type SpriteFrame,
 } from '../render/sprites';
 import { sfx } from '../ui/sfx';
+import { desenharCasaSombra, desenharPoca } from '../render/pocaSombra';
 
 /**
  * Ferramenta do mestre no tabuleiro (docs/FERRAMENTAS-DA-MESA.md): com ela ligada, o clique e o
@@ -107,6 +117,8 @@ export interface ClientUser {
   alto?: boolean;
   /** flutua um pouco acima do chão (o Existido) */
   flutua?: boolean;
+  /** a chama fantasmagórica (cor e intensidade) */
+  chama?: ChamaCriatura;
   /** a criatura do bestiário que a peça é, e a aparência */
   criatura?: { id: string; aparencia: string };
   anim: { fx: number; fy: number; fz: number; tx: number; ty: number; tz: number; start: number; ms: number } | null;
@@ -440,6 +452,8 @@ export class RoomView {
   /** as celas da cena (porta de cela): fechadas no escuro, abertas acesas */
   private celas = new Celas();
   private fog = new Fog();
+  /** a chama fantasmagórica das criaturas (o Anfitrião e as faces), uma grade de calor por peça */
+  private chamas = new ChamasDasPecas();
   private particles = new Particles();
   /** o vapor do banho no cômodo (0 a 1): sobe com o chuveiro ligado e a porta fechada, e se desfaz devagar */
   private vapor = 0;
@@ -777,6 +791,7 @@ export class RoomView {
       agachado: u.agachado,
       alto: u.alto,
       flutua: u.flutua,
+      chama: u.chama,
       criatura: u.criatura,
       anim: u.mv ? { fx: u.x, fy: u.y, fz: u.z, tx: u.mv.x, ty: u.mv.y, tz: u.mv.z, start: performance.now(), ms: u.mv.ms ?? TICK_MS } : null,
       waveUntil: 0,
@@ -1216,7 +1231,104 @@ export class RoomView {
     ctx.restore();
   }
 
+  // ================================================================ o passo pelas sombras (Magistrada, 18/10)
+  /** os passos pelas sombras em andamento, por peça: de onde ela some, onde sai e quando começou (shared/sombras.ts) */
+  private passosSombra = new Map<number, { de: { x: number; y: number }; para: { x: number; y: number }; t0: number }>();
+  /** as luzes e a escuridão do último quadro, em px do mundo: quais casas são sombra de luz */
+  private luzCasas: { luzes: LuzDeCasa[]; escuro: number } = { luzes: [], escuro: 0 };
+  private sombraEscolha: { tokenId: number; aoEscolher: (x: number, y: number) => void; aoFim: () => void } | null = null;
+  /** o mestre está marcando sombras à mão: o clique numa casa marca ou desmarca */
+  marcandoSombra = false;
+  aoMarcarSombra: ((x: number, y: number, marcada: boolean) => void) | null = null;
+  private sombraTecla = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') this.cancelarSombra();
+  };
+
+  /** Chegou o passo pelas sombras de uma peça: a animação começa agora (o mestre e a mesa veem a mesma coisa). */
+  receberPassoSombras(m: { tokenId: number; de: { x: number; y: number }; para: { x: number; y: number } }) {
+    const u = this.users.get(m.tokenId);
+    if (!u) return;
+    this.passosSombra.set(m.tokenId, { de: m.de, para: m.para, t0: performance.now() });
+    u.anim = null;
+    sfx.sombraEntra();
+    setTimeout(() => sfx.sombraSai(), PASSO_SOMBRAS.sobe - 220);
+  }
+
+  /**
+   * As casas que valem como sombra: as que a luz da cena deixa escuras (`ehSombra`, o limiar de shared/sombras.ts) e as que
+   * o mestre marcou à mão, de chão livre e vazias. Chave "x,y".
+   */
+  casasDeSombra(): Map<string, 'luz' | 'marcada'> {
+    const out = new Map<string, 'luz' | 'marcada'>();
+    const map = this.map;
+    if (!map) return out;
+    const manual = new Set((this.info?.sombras ?? []).map((c) => chaveCasa(c.x, c.y)));
+    const ocupadas = new Set([...this.users.values()].map((u) => chaveCasa(u.x, u.y)));
+    for (let y = 0; y < map.height; y++)
+      for (let x = 0; x < map.width; x++) {
+        const h = map.floorHeight(x, y);
+        if (h === null || map.walkState(x, y) !== 'walk') continue;
+        const k = chaveCasa(x, y);
+        if (ocupadas.has(k)) continue;
+        if (manual.has(k)) out.set(k, 'marcada');
+        else {
+          const [wx, wy] = iso(x + 0.5, y + 0.5, h);
+          if (ehSombra(escuridaoNoPonto(this.luzCasas.luzes, this.luzCasas.escuro, wx, wy))) out.set(k, 'luz');
+        }
+      }
+    return out;
+  }
+
+  /** O mestre vai escolher de qual sombra a peça sai: as sombras se acendem e o clique numa delas chama `aoEscolher`. */
+  escolherSombra(tokenId: number, aoEscolher: (x: number, y: number) => void, aoFim: () => void) {
+    this.cancelarSombra();
+    this.sombraEscolha = { tokenId, aoEscolher, aoFim };
+    window.addEventListener('keydown', this.sombraTecla);
+    const n = this.casasDeSombra().size;
+    this.events.aviso?.(n ? 'Clique na sombra de onde ela sai (Esc cancela).' : 'Nenhuma casa escura aqui: marque sombras à mão (Marcar sombras).');
+  }
+
+  cancelarSombra() {
+    const e = this.sombraEscolha;
+    if (!e) return;
+    this.sombraEscolha = null;
+    window.removeEventListener('keydown', this.sombraTecla);
+    e.aoFim();
+  }
+
+  get escolhendoSombra() {
+    return this.sombraEscolha !== null;
+  }
+
+  /** O clique do mestre no modo das sombras. Devolve true quando usou o clique. */
+  private cliqueSombra(tile: { x: number; y: number } | null): boolean {
+    if (!tile) return !!this.sombraEscolha;
+    if (this.marcandoSombra && !this.sombraEscolha) {
+      if (this.map?.floorHeight(tile.x, tile.y) == null) return true;
+      const marcada = (this.info?.sombras ?? []).some((c) => c.x === tile.x && c.y === tile.y);
+      this.aoMarcarSombra?.(tile.x, tile.y, !marcada);
+      return true;
+    }
+    const e = this.sombraEscolha;
+    if (!e) return false;
+    if (!this.casasDeSombra().has(chaveCasa(tile.x, tile.y))) {
+      this.events.aviso?.('Essa casa não é uma sombra.');
+      return true;
+    }
+    this.sombraEscolha = null;
+    window.removeEventListener('keydown', this.sombraTecla);
+    e.aoEscolher(tile.x, tile.y);
+    e.aoFim();
+    return true;
+  }
+
   private userPos(u: ClientUser, now: number) {
+    // no passo pelas sombras a peça fica na casa de saída até afundar nela
+    const fxs = this.passosSombra.get(u.id);
+    if (fxs && now - fxs.t0 < PASSO_SOMBRAS.troca) {
+      const [x, y] = this.vis(fxs.de.x, fxs.de.y);
+      return { x, y, z: this.map?.standHeight(fxs.de.x, fxs.de.y) ?? u.z, moving: false };
+    }
     if (u.anim) {
       const t = (now - u.anim.start) / u.anim.ms;
       const k = Math.min(1, Math.max(0, t));
@@ -1697,6 +1809,11 @@ export class RoomView {
     let tile = tat ? this.casaTatica() : this.tileAt(wx, wy);
     // o desenho do móvel por cima de chão livre: um clique é andar (o duplo usa o móvel)
     if (!tat && !dbl && this.cobreChaoLivre(hit, tile)) hit = null;
+    // escolher a sombra do passo (ou marcar sombras à mão): o clique é todo dessa ferramenta
+    if (this.sombraEscolha || this.marcandoSombra) {
+      const alvo = tile ?? (hit?.kind === 'user' ? (this.users.get(hit.id) ?? null) : null);
+      if (this.cliqueSombra(alvo ? { x: alvo.x, y: alvo.y } : null)) return;
+    }
     // ferramenta do combate (medir, área): a casa da peça também serve
     if (this.aoClicarCasa) {
       if (!tile && hit?.kind === 'user') {
@@ -2564,11 +2681,49 @@ export class RoomView {
     }
     // o que fica no chão embaixo das peças (sombras e anel) vai antes de tudo que fica em pé: o que está na frente tapa
     const chaoPecas: (() => void)[] = [];
+    // as sombras acesas para escolher (ou marcar): por cima da escuridão, para se verem; e as poças do passo pelas sombras
+    let sombrasAcesas: (() => void) | null = null;
+    if (this.sombraEscolha || this.marcandoSombra) {
+      const casas = this.casasDeSombra();
+      const pulsa = 0.5 + 0.5 * Math.sin(now / 300);
+      const hov = this.hoverTile && this.mouse.inside ? chaveCasa(this.hoverTile.x, this.hoverTile.y) : '';
+      sombrasAcesas = () => {
+        const quad = (x: number, y: number): [number, number][] => {
+          const h = map.floorHeight(x, y) ?? 0;
+          return [iso(x, y, h), iso(x + 1, y, h), iso(x + 1, y + 1, h), iso(x, y + 1, h)];
+        };
+        for (const [k, estado] of casas) {
+          const [x, y] = k.split(',').map(Number);
+          desenharCasaSombra(ctx, quad(x, y), now, k === hov ? 'mouse' : estado, pulsa);
+        }
+        if (this.marcandoSombra && hov && !casas.has(hov)) {
+          const [x, y] = hov.split(',').map(Number);
+          if (map.floorHeight(x, y) !== null) desenharCasaSombra(ctx, quad(x, y), now, 'mouse', pulsa);
+        }
+      };
+    }
+    for (const [id, fx] of this.passosSombra) {
+      const f = fasePasso(now - fx.t0);
+      if (f.acabou) {
+        this.passosSombra.delete(id);
+        continue;
+      }
+      chaoPecas.push(() => {
+        const [dx, dy] = iso(fx.de.x + 0.5, fx.de.y + 0.5, map.standHeight(fx.de.x, fx.de.y));
+        desenharPoca(ctx, dx, dy, f.pocaSaida, now, id);
+        const [px, py] = iso(fx.para.x + 0.5, fx.para.y + 0.5, map.standHeight(fx.para.x, fx.para.y));
+        desenharPoca(ctx, px, py, f.pocaChegada, now, id + 3);
+      });
+    }
 
     // avatares
     for (const u of this.users.values()) {
       const p = this.userPos(u, now);
       if (oculta(p.x + 0.5, p.y + 0.5)) continue;
+      // no passo pelas sombras: afundando, preta; entre as duas sombras, dentro do chão (não se vê nada dela)
+      const passoSombra = this.passosSombra.get(u.id);
+      const fase = passoSombra ? fasePasso(now - passoSombra.t0) : null;
+      if (fase && !fase.visivel) continue;
       const cx = p.x + 0.5;
       const cy = p.y + 0.5;
       const sp = u.look.charId ? sprites.get(u.look.charId) : null;
@@ -2726,6 +2881,10 @@ export class RoomView {
       const poeira = u.poeira;
       if (!seated)
         chaoPecas.push(() => {
+          if (fase) {
+            ctx.save();
+            ctx.globalAlpha *= Math.max(0, fase.altura);
+          }
           if (clip) {
             ctx.save();
             ctx.clip(door!.path, 'evenodd');
@@ -2839,7 +2998,9 @@ export class RoomView {
             ctx.restore();
           }
           if (clip) ctx.restore();
+          if (fase) ctx.restore();
         });
+      const chamaDaPeca = chamaDaCriatura(u.criatura?.id, u.chama);
       const d: Drawable = {
         box,
         sob,
@@ -2855,7 +3016,37 @@ export class RoomView {
           // numa cela fechada, a peça fica no escuro com ela
           const eCela = escuroEm(celas, cx, cy);
           if (eCela > 0.01) ctx.filter = `brightness(${(1 - 0.78 * eCela).toFixed(3)})`;
+          // o passo pelas sombras: a peça afunda nos pés (escala vertical até zero) e fica preta, sólida
+          if (fase) {
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.scale(1, Math.max(0.001, fase.altura));
+            ctx.translate(-sx, -sy);
+            if (fase.preto > 0.01) ctx.filter = `brightness(${(1 - fase.preto).toFixed(3)})`;
+          }
           const antes = privada ? this.fotoDaPeca(ctx, sx, sy, HE) : null;
+          // a chama fantasmagórica da criatura (chama.ts): atrás do corpo; a ponta quente volta por cima dele, mais abaixo
+          const dancaY = u.dance ? -Math.abs(Math.sin((now * Math.PI) / 320 + u.phase)) * 4 : 0;
+          const levitaY = u.flutua && !deitada ? 11 + Math.sin(now / 650 + u.phase) * 2.5 : 0;
+          const camadasChama =
+            chamaDaPeca && quadro
+              ? this.chamas.camadas({
+                  id: u.id,
+                  chama: chamaDaPeca,
+                  quadro,
+                  x: sx,
+                  y: sy + (afunda + dancaY - levitaY) * ESCALA_ARTE_PESSOA,
+                  escala: ESCALA_ARTE_PESSOA,
+                  escalaY: sob ? 0.62 : u.agachado && !pfAgachado ? 0.72 : 1,
+                  ativa: !deitada && !seated && u.sit !== 2,
+                  now,
+                  fase: u.phase,
+                })
+              : null;
+          if (camadasChama) {
+            desenharBrilhoChama(ctx, chamaDaPeca!, sx, sy + (afunda + dancaY - levitaY) * ESCALA_ARTE_PESSOA, camadasChama.h, now, u.phase);
+            desenharCamadaChama(ctx, camadasChama, 'tras');
+          }
           // a pessoa na escala do tabuleiro, a partir dos pés (de cócoras, mais baixa)
           ctx.save();
           ctx.translate(sx, sy);
@@ -2947,9 +3138,11 @@ export class RoomView {
           if (turning) ctx.restore();
           if (wave && sp) this.drawEmote(sx, fy - H - 14, now);
           ctx.restore();
+          if (camadasChama) desenharCamadaChama(ctx, camadasChama, 'frente');
           if (antes) this.mosaicoDaPeca(ctx, antes);
           // a coberta fora da escala da pessoa: na mesma medida da cama, para cair em cima dela
           if (naCama?.it.coberta) this.desenharCoberta(ctx, map, naCama.it, naCama.def);
+          if (fase) ctx.restore();
           if (eCela > 0.01) ctx.filter = 'none';
           if (clip) ctx.restore();
         },
@@ -2970,6 +3163,9 @@ export class RoomView {
       });
       // a luz da peça desce até as pernas: ilumina o chão em volta junto com o corpo (sem parecer colado por cima)
       lights.push({ x: sx, y: sy - HE * 0.22, radius: 88, color: '#ffe2b8', intensity: u.id === this.myId ? 0.42 : 0.3, kind: 'personal' });
+      // a chama também é luz: no escuro ela ilumina a si mesma e o chão em volta, na cor dela (some junto com a chama)
+      if (chamaDaPeca && !deitada && !seated)
+        lights.push({ x: sx, y: sy - HE * 0.4, radius: 78 + 26 * chamaDaPeca.intensidade, color: chamaDaPeca.cor, intensity: Math.min(0.75, 0.38 + 0.2 * chamaDaPeca.intensidade), flicker: 0.3, seed: u.phase, kind: 'personal' });
     }
 
     // a neblina densa (o miolo do labirinto): casa a casa, ordenada com a sebe, para ficar DENTRO das paredes
@@ -3179,8 +3375,17 @@ export class RoomView {
         if (surge > 0.05) active.push({ ...L, intensity: L.intensity * surge });
       } else active.push(L);
     }
+    this.luzCasas = {
+      luzes: active.map((L) => ({ x: L.x, y: L.y, radius: L.radius, intensity: L.intensity, k: L.mundo && L.mundo[2] < 1 ? 0.62 : 1 })),
+      escuro: darkness > 0.01 ? darkness : 0,
+    };
     if (darkness > 0.01)
       this.lighting.render(ctx, active, darkness, (x, y) => [(x * z + this.cam.x) * dpr, (y * z + this.cam.y) * dpr], scale, t, this.info.ambient);
+
+    if (sombrasAcesas) {
+      ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);
+      sombrasAcesas();
+    }
 
     // a vida da cena (14/10, em todas as cenas): a chama que mexe e o brilho do fogo, o feixe da janela, a poeira na
     // luz, a fumaça e as brasas (fora da vista tática, que é a planta limpa)
