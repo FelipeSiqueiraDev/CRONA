@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@crona/shared": "*",
+    "bcryptjs": "^3.0.3",
     "postgres": "^3.4.9",
     "ws": "^8.22.0"
   },

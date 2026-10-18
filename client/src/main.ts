@@ -10,6 +10,7 @@ import './ui/itens.css';
 import './ui/teclado.css';
 import './ui/requisicao.css';
 import './ui/entrada.css';
+import './ui/falsoCris.css';
 import './ui/mapaMundi.css';
 import './ui/cenas.css';
 import './ui/kit.css';
@@ -43,6 +44,7 @@ import { loadLogin, saveLogin } from './ui/login';
 import { TableScreen } from './ui/table';
 import { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha, TelaFicha } from './ui/telaFicha';
 import { Entrada } from './ui/entrada';
+import { FalsoCris } from './ui/falsoCris';
 import { mostrarTelaViagem } from './ui/viagemTela';
 import { mostrarCena } from './ui/cenaTela';
 import { iniciarSugestaoDeCenas } from './ui/cenaSugestao';
@@ -83,6 +85,8 @@ const devAuto = import.meta.env.DEV && new URLSearchParams(location.search).has(
 /** quem entra pela conta: o mestre e o jogador sem link (a mesa e os links continuam como antes) */
 const pedeConta = !tableMode && !fichaMode && !gmKey && !devAuto;
 let entrada: Entrada | null = null;
+/** a tela do falso C.R.I.S, enquanto estiver na frente (ui/falsoCris.ts) */
+let falsoCris: FalsoCris | null = null;
 const root = document.getElementById('app')!;
 const canvas = h('canvas', { class: 'room-canvas', 'aria-label': 'Tabuleiro' });
 
@@ -288,12 +292,65 @@ function login(fresh = false) {
 
 /** A tela de entrada (conta da plataforma), com um aviso se houver. */
 function mostrarEntrada(aviso?: string) {
-  entrada ??= new Entrada({
+  criarEntrada().mostrar(aviso);
+}
+
+function criarEntrada() {
+  return (entrada ??= new Entrada({
     enviar: (m) => net.send(m),
     verMesa: () => location.replace(`${location.pathname}?mesa`),
     sairDaConta: () => sairDaConta(),
-  });
-  entrada.mostrar(aviso);
+  }));
+}
+
+/**
+ * A brincadeira de 18/10: quem vem de fora (o link, a rede) vê primeiro a entrada do C.R.I.S, que quebra e vira a do
+ * CRONA. Quem decide é o servidor (a opção do mestre e de onde vem o pedido); ?cris força, ?crona pula.
+ */
+function mostrarEntradaOuCris() {
+  const q = new URLSearchParams(location.search);
+  if (q.has('crona')) return mostrarEntrada();
+  const cris: Promise<boolean> = q.has('cris')
+    ? Promise.resolve(true)
+    : fetch('/api/entrada')
+        .then((r) => r.json())
+        .then((j: { falsoCris?: boolean }) => !!j.falsoCris);
+  void cris
+    .catch(() => false)
+    .then((sim) => {
+      if (!sim) return mostrarEntrada();
+      falsoCris = new FalsoCris({ enviar: (m) => net.send(m) });
+      falsoCris.mostrar();
+      // a entrada do CRONA já carrega por baixo (a arte é pesada): quando o C.R.I.S quebrar, ela está pronta
+      criarEntrada().preparar();
+    });
+}
+
+/** A conta respondeu na tela do C.R.I.S: o erro de lá, ou o pau e a entrada do CRONA, que segue como sempre. */
+function contaPeloCris(m: Extract<ServerMsg, { t: 'conta' }>) {
+  const cris = falsoCris!;
+  if (!m.ok) return cris.erro(m.erro);
+  falsoCris = null;
+  sessaoConta = { sessao: m.sessao, nome: m.nome, papel: m.papel };
+  guardarSessao(sessaoConta);
+  if (m.papel === 'jogador' && m.fichaKey) guardarChaveFicha(m.fichaKey);
+  cris.quebrar(
+    () => {
+      mostrarEntrada();
+      entrada!.preencher(m.nome);
+    },
+    // um tempo com o CRONA à vista, e segue como a entrada de sempre
+    () =>
+      setTimeout(() => {
+        if (m.papel !== 'jogador') {
+          entrada?.sucesso(m.nome);
+          login();
+        } else if (m.fichaKey) {
+          entrada?.sucesso(m.nome);
+          setTimeout(() => location.replace(`${location.pathname}?ficha`), 1800);
+        } else entrada?.semFicha(m.nome);
+      }, 1700),
+  );
 }
 
 /**
@@ -327,7 +384,7 @@ if (pedeConta && sessaoConta?.papel === 'jogador') {
     mostrarEntrada();
     entrada!.semFicha(sessaoConta.nome);
   }
-} else if (pedeConta && !sessaoConta) mostrarEntrada();
+} else if (pedeConta && !sessaoConta) mostrarEntradaOuCris();
 else login();
 let loginTries = 0;
 
@@ -353,6 +410,10 @@ net.onMessage = (m: ServerMsg) => {
       }
       break;
     case 'conta':
+      if (falsoCris) {
+        contaPeloCris(m);
+        break;
+      }
       if (m.ok) {
         sessaoConta = { sessao: m.sessao, nome: m.nome, papel: m.papel };
         guardarSessao(sessaoConta);
@@ -430,6 +491,9 @@ net.onMessage = (m: ServerMsg) => {
         telaFicha?.erro(m.msg);
       } else if (!app.state.me && entrada) entrada.erro(m.msg);
       else toast(m.msg, 'error');
+      break;
+    case 'falsoCris':
+      shell?.mostrarFalsoCris(m.ligado);
       break;
     case 'notice':
       toast(m.msg);

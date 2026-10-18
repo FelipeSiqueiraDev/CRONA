@@ -10,6 +10,7 @@
  * As contas ficam no Database (`contas`), que o banco guarda na tabela `config`.
  */
 import crypto from 'node:crypto';
+import bcrypt from 'bcryptjs';
 import type { PapelConta } from '@crona/shared';
 
 export interface Conta {
@@ -17,7 +18,10 @@ export interface Conta {
   nome: string;
   /** em minúsculas */
   email: string;
-  /** scrypt$N$r$p$sal$hash (base64) */
+  /**
+   * scrypt$N$r$p$sal$hash (base64). A conta trazida do C.R.I.S chega com o bcrypt de lá ($2b$...) e vira scrypt
+   * no primeiro login certo (`senhaAntiga`).
+   */
   senha: string;
   papel: PapelConta;
   /** a ficha do jogador, ligada quando ele abre o link dela com a conta */
@@ -25,6 +29,8 @@ export interface Conta {
   /** sha256 das sessões abertas e quando cada uma começou */
   sessoes: { h: string; em: number }[];
   criadaEm: number;
+  /** a conta veio do C.R.I.S (o id do usuário lá; scripts/dev/importar-cris.mts) */
+  crisId?: string;
 }
 
 const N = 16384;
@@ -49,7 +55,12 @@ export async function hashSenha(senha: string): Promise<string> {
   return `scrypt$${N}$${R}$${P}$${sal.toString('base64')}$${h.toString('base64')}`;
 }
 
+/** O hash é do C.R.I.S (bcrypt), e não o nosso: depois do login certo, a senha vira scrypt. */
+export const senhaAntiga = (guardada: string) => /^\$2[aby]\$\d\d\$/.test(guardada);
+
 export async function confereSenha(senha: string, guardada: string): Promise<boolean> {
+  // a conta trazida do C.R.I.S: a senha de sempre, conferida com o bcrypt de lá
+  if (senhaAntiga(guardada)) return bcrypt.compare(senha, guardada).catch(() => false);
   const [alg, n, r, p, sal, h] = guardada.split('$');
   if (alg !== 'scrypt' || !sal || !h) return false;
   const esperado = Buffer.from(h, 'base64');

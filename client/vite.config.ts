@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 
-const target = 'http://localhost:3001';
+// o servidor do desenvolvimento (CRONA_PORT, se o servidor subir em outra porta)
+const target = `http://localhost:${process.env.CRONA_PORT || 3001}`;
 
 export default defineConfig({
   server: {
@@ -13,7 +14,7 @@ export default defineConfig({
     proxy: {
       // xfwd: o servidor precisa saber quem é deste computador (o mestre) e quem é o tablet
       '/ws': { target, ws: true, xfwd: true },
-      '/api': { target },
+      '/api': { target, xfwd: true },
       '/uploads': { target },
     },
   },

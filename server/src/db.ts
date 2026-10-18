@@ -174,6 +174,8 @@ export interface Database {
   /** contas da plataforma (a tela de entrada; ver src/contas.ts) */
   contas?: Conta[];
   nextContaId?: number;
+  /** a tela do falso C.R.I.S para quem entra de fora (sem valor = ligada; hotel.ts, falsoCrisLigado) */
+  falsoCris?: boolean;
 }
 
 export type { FichaSalva } from '@crona/shared';

@@ -345,9 +345,20 @@ export class Entrada {
     });
   }
 
+  /**
+   * Monta a tela escondida por baixo de outra (o falso C.R.I.S, falsoCris.ts): a arte e a cena carregam enquanto a
+   * pessoa digita lá, sem música, sem foco e sem dar para chegar nos campos com o Tab. Depois, `mostrar`.
+   */
+  preparar() {
+    if (!this.el.isConnected) document.body.append(this.el);
+    this.el.inert = true;
+    this.ajustar();
+  }
+
   /** Mostra a tela (com um aviso, se houver: "sua sessão terminou"). */
   mostrar(aviso?: string) {
     if (!this.el.isConnected) document.body.append(this.el);
+    this.el.inert = false;
     addEventListener('resize', this.aoRedimensionar);
     addEventListener('keydown', this.aoTocar);
     this.ajustar();
@@ -379,6 +390,16 @@ export class Entrada {
     this.painel.classList.add('treme');
     clearTimeout(this.erroTempo);
     this.erroTempo = window.setTimeout(() => this.painel.classList.remove('com-erro'), 6000);
+  }
+
+  /**
+   * Os campos já preenchidos, como se a pessoa tivesse entrado por aqui (quem vem da tela do falso C.R.I.S,
+   * falsoCris.ts). A senha é só enfeite: pontinhos, nunca a de verdade.
+   */
+  preencher(usuario: string) {
+    this.campos.email.input.value = usuario;
+    this.campos.senha.input.value = '••••••••';
+    this.esperar(true);
   }
 
   /** A conta abriu: o botão diz quem entrou enquanto o tabuleiro carrega. */

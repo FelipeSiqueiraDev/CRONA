@@ -831,8 +831,32 @@ export class Shell {
       h('b', null, 'Sons da interface'),
       h('span', null, sfx.enabled ? 'Ligados: clique para desligar.' : 'Desligados: clique para ligar.'),
     );
-    j.corpo.append(h('div', { class: 'cfg-grade' }, ...opcoes.map(([i, n, t, f]) => cartao(i, n, t, f)), som));
+    // a tela do falso C.R.I.S (a brincadeira de 18/10): o estado vem do servidor (mostrarFalsoCris)
+    const cris = h(
+      'button',
+      { class: 'cfg-carta cfg-som', type: 'button', role: 'switch', onclick: () => (sfx.click(), this.app.net.send({ t: 'falsoCris', ligado: !cris.classList.contains('on') })) },
+      ic('fantasma'),
+      h('b', null, 'Tela do C.R.I.S'),
+      h('span', null, '…'),
+    );
+    this.cartaoCris = cris;
+    this.app.net.send({ t: 'falsoCris' });
+    j.corpo.append(h('div', { class: 'cfg-grade' }, ...opcoes.map(([i, n, t, f]) => cartao(i, n, t, f)), som, cris));
     j.rodape.append(h('span', { class: 'fj-esp' }), botao('Fechar', 'fechar', '', () => j.fechar()));
+  }
+
+  /** o cartão da tela do C.R.I.S nas Configurações, enquanto a janela estiver aberta */
+  private cartaoCris: HTMLElement | null = null;
+
+  /** O servidor disse como está a tela do falso C.R.I.S (quem entra de fora vê o C.R.I.S, que quebra e vira o CRONA). */
+  mostrarFalsoCris(ligado: boolean) {
+    const c = this.cartaoCris;
+    if (!c?.isConnected) return;
+    c.classList.toggle('on', ligado);
+    c.setAttribute('aria-checked', String(ligado));
+    c.querySelector('span')!.textContent = ligado
+      ? 'Ligada: quem entra pelo link vê o C.R.I.S, que dá pau e vira o CRONA. Clique para desligar.'
+      : 'Desligada: todo mundo vê a entrada do CRONA. Clique para ligar.';
   }
 
   /** Registro da sessão (objetivos e as últimas ações), no botão de documento do topo: uma janela de papel. */

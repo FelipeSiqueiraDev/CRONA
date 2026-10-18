@@ -80,7 +80,7 @@ import {
   MAPA_MIN,
   URL_MAPA_RE,
 } from '@crona/shared';
-import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSessao, SENHA_MIN, type Conta } from './contas';
+import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSessao, SENHA_MIN, senhaAntiga, type Conta } from './contas';
 import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type TokenData, type UserData } from './db';
 import { RoomInstance, type Client, type HotelApi } from './roomInstance';
 import { folhaDaPasta, refreshPortraits } from './portraits';
@@ -2034,6 +2034,9 @@ export class Hotel implements HotelApi {
       case 'rooms':
         c.send({ t: 'roomList', rooms: this.roomList() });
         return;
+      case 'falsoCris':
+        this.falsoCris(c, m);
+        return;
       case 'createRoom':
         this.createRoom(c, m);
         return;
@@ -2338,7 +2341,30 @@ export class Hotel implements HotelApi {
       return falha('E-mail ou senha não conferem.');
     }
     c.falhasConta = 0;
+    // a conta trazida do C.R.I.S entrou com a senha de sempre: daqui em diante ela fica em scrypt, como as outras
+    if (senhaAntiga(conta.senha)) {
+      conta.senha = await hashSenha(senha);
+      if (this.persist) console.log(`[contas] ${conta.nome}: a senha do C.R.I.S virou scrypt`);
+    }
     this.contaAberta(c, conta);
+  }
+
+  /**
+   * A tela do falso C.R.I.S (a brincadeira de 18/10): quem entra de fora (pelo link, sem ser o computador do
+   * servidor) vê a entrada do C.R.I.S, que "dá pau" e vira a do CRONA. Ligada até o mestre desligar.
+   */
+  falsoCrisLigado() {
+    return this.db.falsoCris !== false;
+  }
+
+  private falsoCris(c: Client, m: Record<string, unknown>) {
+    if (c.role !== 'gm') return;
+    // sem `ligado`, o mestre só pergunta como está
+    if (typeof m.ligado === 'boolean' && m.ligado !== this.falsoCrisLigado()) {
+      this.db.falsoCris = m.ligado;
+      this.save();
+    }
+    c.send({ t: 'falsoCris', ligado: this.falsoCrisLigado() });
   }
 
   private contaAberta(c: Client, conta: Conta) {

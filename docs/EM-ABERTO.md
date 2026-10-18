@@ -2,6 +2,25 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 18/10 (tarde): o falso C.R.I.S (a brincadeira da sessão de 18/10) — pronto, falta subir
+
+Os jogadores jogavam no C.R.I.S e não sabem do CRONA. Quem abre o CRONA de fora (o link do túnel, a rede; não o computador do servidor, não a `?mesa`)
+vê a entrada do C.R.I.S, copiada da que está no ar (cartão, d20 dourado com a frase, botão coral, Blanka e Montserrat em `client/public/cris/`, a aba com o
+título e o ícone de lá). Com a senha certa o C.R.I.S "dá pau" (soluço, tremedeira, cores separadas, texto embaralhando, chiado, aviso de erro, a tela apagando
+como TV) e por baixo aparece a entrada do CRONA, já carregada, com o usuário preenchido e "BEM-VINDO"; segue para a ficha como sempre.
+
+- **Código:** `client/src/ui/falsoCris.ts` + `falsoCris.css`; `main.ts` (`mostrarEntradaOuCris`, `contaPeloCris`); `Entrada.preparar`/`preencher` em `entrada.ts`.
+  Quem decide é o servidor: `GET /api/entrada` → `{ falsoCris }` = opção do mestre e pedido de fora (`index.ts`). `?cris` força, `?crona` pula.
+- **Opção do mestre:** Configurações (engrenagem) → cartão "Tela do C.R.I.S" (mensagem `falsoCris`; `db.falsoCris`, sem valor = ligada).
+- **Contas:** `scripts/dev/importar-cris.mts` (lógica em `server/src/importarCris.ts`) lê o C.R.I.S só leitura (`docker exec cris-postgres`, transação read-only)
+  e cria contas de jogador ligadas às fichas: Anderson → Alosi (3), Gasai → D.Tepes (1), Ioliverg → Cora (4), Lorena (entra pelo `liz-coolan@hotmail.com`) → Catarina (2).
+  As fichas sem link ganham um. Rodar de novo só atualiza (a conta guarda `crisId`). A senha vai como o bcrypt de lá; `contas.ts` confere bcrypt e, no primeiro login certo,
+  regrava em scrypt. O `jogador_teste` do C.R.I.S fica de fora (sem ficha).
+- **Para subir (falta):** backup do banco, parar o jogo (o script recusa com o banco travado), `npx tsx scripts/dev/importar-cris.mts --sim`, depois sem `--sim`,
+  `npm run crona`. Testado num banco à parte (cópia da prévia) com uma conta de teste bcrypt; não rodou no `crona` de verdade nem na `crona_visual`.
+- **Não visto ao vivo:** a revelação animada do CRONA (o painel de testes ficou escondido e não roda animação); o DOM confirmou a ordem (C.R.I.S quebra → CRONA pronto por baixo → BEM-VINDO → ficha).
+- Depois da sessão: desligar a opção (ou deixar, para jogador novo pelo link).
+
 ## Feito em 18/10 (madrugada): NPCs e Marcados refeitos no estilo das peças dos monstros (instalado, com QA)
 
 Os 10 NPCs e os 4 Marcados (Tepes, Catarina, Cora, Alosi) estão no estilo novo (contorno limpo, sombreado em 3-4 tons), uma pose de cada vez, com a conferência

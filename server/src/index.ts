@@ -255,6 +255,8 @@ function route(req: http.IncomingMessage, res: http.ServerResponse) {
   }
   if (url.pathname === '/api/health') return sendJson(res, 200, { ok: true });
   if (url.pathname === '/api/arte') return sendJson(res, 200, { arquivos: listarArte() });
+  // a tela de entrada pergunta se mostra o falso C.R.I.S (só para quem vem de fora: o link, a rede)
+  if (url.pathname === '/api/entrada') return sendJson(res, 200, { falsoCris: hotel.falsoCrisLigado() && !pedidoLocal(req) });
 
   // Cliente compilado (npm run build). Em desenvolvimento o Vite serve o cliente.
   if (!fs.existsSync(CLIENT_DIST)) {
@@ -294,6 +296,10 @@ function isLocal(req: http.IncomingMessage) {
   return !list.length || LOOPBACK.has(list[list.length - 1]);
 }
 
+/** os pedidos que chegaram pela porta local do Docker (CRONA_PORTA_LOCAL): são deste computador */
+const pelaPortaLocal = new WeakSet<http.IncomingMessage>();
+const pedidoLocal = (req: http.IncomingMessage) => pelaPortaLocal.has(req) || isLocal(req);
+
 /** Endereço deste computador na rede (para o link do tablet). No Docker, quem diz é o CRONA_IP. */
 function lanAddress() {
   if (process.env.CRONA_IP) return process.env.CRONA_IP;
@@ -313,7 +319,10 @@ wss.on('connection', (ws, req) => hotel.connect(ws, isLocal(req)));
  */
 const PORTA_LOCAL = Number(process.env.CRONA_PORTA_LOCAL) || 0;
 if (PORTA_LOCAL) {
-  const local = http.createServer(atender);
+  const local = http.createServer((req, res) => {
+    pelaPortaLocal.add(req);
+    atender(req, res);
+  });
   const wssLocal = new WebSocketServer({ server: local, path: '/ws', maxPayload: 256 * 1024 });
   wssLocal.on('connection', (ws) => hotel.connect(ws, true));
   local.listen(PORTA_LOCAL);

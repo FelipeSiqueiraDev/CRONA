@@ -1,0 +1,446 @@
+/* ════════════════════════════════════════════════════════════════════
+   O falso C.R.I.S (falsoCris.ts): a tela de entrada do C.R.I.S, copiada da que está no ar (as cores, as medidas e
+   as letras de lá: Blanka no título, Montserrat no resto), e o "pau" que vira a tela do CRONA.
+   ════════════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'CRIS Blanka';
+  src: url('/cris/Blanka-Regular.otf') format('opentype');
+  font-display: block;
+}
+@font-face {
+  font-family: 'CRIS Montserrat';
+  src: url('/cris/Montserrat-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: block;
+}
+
+.falso-cris {
+  --void: #06070c;
+  --char-2: #12151e;
+  --panel: #111520;
+  --line: #262e3d;
+  --ink: #eaeff5;
+  --ink-dim: #98a3b3;
+  --ink-faint: #5d6879;
+  --accent: #ff6b6e;
+  --missao: 224 162 74;
+  --critical: #f87171;
+  --sans: 'CRIS Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --display: 'CRIS Blanka', 'CRIS Montserrat', 'Segoe UI', system-ui, sans-serif;
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  overflow: auto;
+  background: radial-gradient(ellipse 70% 60% at 50% 0%, rgb(var(--missao) / 0.07), transparent 70%), var(--void);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-align: left;
+  letter-spacing: normal;
+}
+.falso-cris *,
+.falso-cris *::before,
+.falso-cris *::after {
+  box-sizing: border-box;
+}
+
+.fcris-palco {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.fcris-pilha {
+  position: relative;
+  display: flex;
+}
+
+.fcris-cartao {
+  display: flex;
+  width: min(880px, 94vw);
+  min-height: 540px;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: var(--panel);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+/* ── esquerda: o formulário ── */
+.fcris-esq {
+  flex: 1 1 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  background: var(--panel);
+}
+.fcris-form {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+}
+.fcris-titulo {
+  margin: 0 0 4px;
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.fcris-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: 600 13px/1.55 var(--sans);
+  color: var(--ink-dim);
+  margin: 0;
+}
+.fcris-inp {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  margin: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font: 400 15px var(--sans);
+  outline: none;
+  box-shadow: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.fcris-inp::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+.fcris-inp:focus,
+.fcris-inp:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #ff6b6e24;
+}
+.fcris-erro {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--critical) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--critical) 40%, transparent);
+  color: var(--critical);
+  font: 400 13px/1.55 var(--sans);
+}
+.fcris-erro[hidden] {
+  display: none;
+}
+.fcris-botao {
+  width: 100%;
+  height: 44px;
+  margin: 4px 0 0;
+  padding: 0 20px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #2a0708;
+  font: 700 15px var(--sans);
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+  box-shadow: 0 2px 18px #ff6b6e6b, inset 0 0 0 1px #ff6b6e4d;
+  transition: filter 0.15s, transform 0.15s;
+}
+.fcris-botao:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.fcris-botao:active:not(:disabled) {
+  transform: scale(0.99);
+}
+.fcris-botao:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.fcris-botao:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.fcris-sub {
+  margin: 4px 0 4px;
+  text-align: center;
+  font: 400 13px/1.55 var(--sans);
+  color: var(--ink-dim);
+}
+
+/* ── direita: o d20 dourado ── */
+.fcris-dir {
+  position: relative;
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 65% at 50% 30%, rgb(var(--missao) / 0.16), transparent 70%),
+    linear-gradient(165deg, var(--char-2), var(--void) 85%);
+}
+.fcris-anel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 78%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px dashed rgb(var(--missao) / 0.18);
+  transform: translate(-50%, -50%);
+  animation: fcris-anel 100s linear infinite;
+  pointer-events: none;
+}
+@keyframes fcris-anel {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+.fcris-d20 {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  transform: scale(var(--d20-escala, 1));
+}
+.fcris-d20-gira {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.5));
+}
+.fcris-d20-gira svg {
+  display: block;
+}
+.fcris-numero {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display);
+  font-size: 40px;
+  font-weight: 700;
+  color: #221b12;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+.fcris-rolagem {
+  position: relative;
+  max-width: 260px;
+  min-height: 22px;
+  text-align: center;
+}
+.fcris-frase {
+  font: 600 17px/1.55 var(--sans);
+  letter-spacing: 0.01em;
+  color: var(--ink-dim);
+}
+
+@media (max-width: 760px) {
+  .fcris-cartao {
+    flex-direction: column;
+    width: min(420px, 94vw);
+    min-height: 0;
+  }
+  .fcris-dir {
+    order: -1;
+    padding: 28px 0 20px;
+  }
+  .fcris-esq {
+    padding: 32px 28px 40px;
+  }
+  .fcris-d20 {
+    --d20-escala: 0.72;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   O pau. fcris-bug1: um soluço; fcris-bug2: treme, as cores se separam, linhas de TV, o aviso de erro; fcris-bug3: o pior;
+   fcris-apaga: a tela vira uma linha e some como TV velha, com o CRONA por baixo.
+   ════════════════════════════════════════════════════════════════════ */
+.fcris-linhas,
+.fcris-chiado,
+.fcris-pane {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+.fcris-linhas {
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+.fcris-chiado {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  mix-blend-mode: screen;
+}
+.fcris-pane {
+  inset: auto 0 9vh;
+  display: flex;
+  justify-content: center;
+  padding: 10px 16px;
+  font: 700 clamp(13px, 2.2vw, 20px) / 1.3 'Ubuntu Mono', 'JetBrains Mono', 'Courier New', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff2d4a;
+  text-shadow: 2px 0 #00f0ff, -2px 0 #ff00c8, 0 0 18px #ff2d4a;
+  background: linear-gradient(90deg, transparent, rgba(10, 0, 4, 0.85) 20%, rgba(10, 0, 4, 0.85) 80%, transparent);
+}
+
+/* as cópias coloridas do cartão (só aparecem a partir do bug2) */
+.fcris-rgb {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.75;
+}
+.fcris-rgb-r {
+  filter: sepia(1) saturate(9) hue-rotate(-50deg) brightness(0.9);
+  animation: fcris-fatia-r 0.42s steps(1) infinite;
+}
+.fcris-rgb-c {
+  filter: sepia(1) saturate(9) hue-rotate(140deg) brightness(0.9);
+  animation: fcris-fatia-c 0.36s steps(1) infinite;
+}
+@keyframes fcris-fatia-r {
+  0% { clip-path: inset(8% 0 78% 0); transform: translate(-14px, 0); }
+  20% { clip-path: inset(40% 0 42% 0); transform: translate(10px, 2px); }
+  40% { clip-path: inset(66% 0 18% 0); transform: translate(-22px, -1px); }
+  60% { clip-path: inset(22% 0 60% 0); transform: translate(6px, 0); }
+  80% { clip-path: inset(84% 0 4% 0); transform: translate(-8px, 2px); }
+}
+@keyframes fcris-fatia-c {
+  0% { clip-path: inset(55% 0 30% 0); transform: translate(12px, 1px); }
+  25% { clip-path: inset(12% 0 70% 0); transform: translate(-9px, 0); }
+  50% { clip-path: inset(74% 0 10% 0); transform: translate(18px, -2px); }
+  75% { clip-path: inset(30% 0 52% 0); transform: translate(-4px, 1px); }
+}
+
+/* 1: o soluço */
+.falso-cris.fcris-bug1 .fcris-cartao:not(.fcris-rgb) {
+  animation: fcris-soluco 0.32s steps(2) 1;
+}
+@keyframes fcris-soluco {
+  0% { transform: translate(-7px, 0) skewX(5deg); filter: hue-rotate(110deg) contrast(1.4); }
+  35% { transform: translate(5px, 1px); filter: invert(0.85) hue-rotate(180deg); clip-path: inset(0 0 46% 0); }
+  70% { transform: none; filter: none; clip-path: none; }
+}
+
+/* 2: o pau de verdade */
+.falso-cris.fcris-bug2 .fcris-cartao:not(.fcris-rgb) {
+  animation:
+    fcris-treme 0.11s steps(2) infinite,
+    fcris-cor 1.1s steps(7) infinite;
+}
+.falso-cris.fcris-bug2 .fcris-linhas {
+  opacity: 0.55;
+}
+.falso-cris.fcris-bug2 .fcris-chiado {
+  opacity: 0.07;
+}
+.falso-cris.fcris-bug2 .fcris-pane {
+  opacity: 1;
+  animation: fcris-pisca 0.5s steps(2) infinite;
+}
+.falso-cris.fcris-bug2 :is(.fcris-titulo, .fcris-frase, .fcris-botao) {
+  text-shadow: 2px 0 rgba(0, 240, 255, 0.8), -2px 0 rgba(255, 0, 80, 0.8);
+}
+.falso-cris.fcris-bug2 .fcris-d20-gira {
+  animation: fcris-d20 0.5s steps(5) infinite;
+}
+.falso-cris.fcris-bug2 .fcris-anel {
+  border-color: rgba(255, 45, 74, 0.6);
+  animation-duration: 1.2s;
+}
+@keyframes fcris-treme {
+  0% { transform: translate(-3px, 1px); }
+  50% { transform: translate(3px, -2px) skewX(-1deg); }
+}
+@keyframes fcris-cor {
+  0% { filter: none; }
+  20% { filter: hue-rotate(140deg) saturate(2.2); }
+  35% { filter: none; }
+  55% { filter: invert(1) hue-rotate(180deg) contrast(1.3); }
+  65% { filter: contrast(1.6) saturate(0); }
+  85% { filter: hue-rotate(-70deg) saturate(3); }
+}
+@keyframes fcris-pisca {
+  50% { opacity: 0.35; }
+}
+@keyframes fcris-d20 {
+  0% { transform: rotate(0) scale(1); }
+  20% { transform: rotate(-18deg) scale(1.08) translateX(-6px); filter: hue-rotate(160deg) drop-shadow(0 0 22px #ff2d4a); }
+  40% { transform: rotate(24deg) scale(0.92); }
+  60% { transform: rotate(-90deg) scale(1.12); filter: invert(1) drop-shadow(0 0 22px #00f0ff); }
+  80% { transform: rotate(160deg) scale(1); }
+}
+
+/* 3: o pior */
+.falso-cris.fcris-bug3 {
+  animation: fcris-fundo 0.24s steps(2) infinite;
+}
+.falso-cris.fcris-bug3 .fcris-cartao:not(.fcris-rgb) {
+  animation:
+    fcris-treme-forte 0.08s steps(2) infinite,
+    fcris-cor 0.5s steps(7) infinite;
+}
+.falso-cris.fcris-bug3 .fcris-chiado {
+  opacity: 0.2;
+}
+.falso-cris.fcris-bug3 .fcris-rgb {
+  opacity: 0.95;
+}
+@keyframes fcris-treme-forte {
+  0% { transform: translate(-10px, 3px) skewX(3deg); }
+  50% { transform: translate(9px, -4px) skewX(-4deg) scaleY(1.02); }
+}
+@keyframes fcris-fundo {
+  50% { background-color: #1a0208; }
+}
+
+/* fim: a tela vira uma linha clara e some (o CRONA já está por baixo) */
+.falso-cris.fcris-apaga {
+  overflow: hidden;
+  animation: fcris-apaga 0.8s cubic-bezier(0.6, 0, 0.9, 0.4) forwards;
+}
+.falso-cris.fcris-apaga .fcris-chiado {
+  opacity: 0.35;
+}
+@keyframes fcris-apaga {
+  0% { transform: scale(1, 1); filter: brightness(1); opacity: 1; }
+  45% { transform: scale(1, 0.006); filter: brightness(6); opacity: 1; }
+  80% { transform: scale(0.002, 0.006); filter: brightness(10); opacity: 1; }
+  100% { transform: scale(0, 0); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fcris-anel,
+  .falso-cris :is(.fcris-cartao, .fcris-d20-gira, .fcris-pane, .fcris-rgb) {
+    animation: none !important;
+  }
+  .falso-cris.fcris-bug3 {
+    animation: none;
+  }
+  .falso-cris.fcris-apaga {
+    animation: fcris-some 0.4s ease forwards;
+  }
+  @keyframes fcris-some {
+    to { opacity: 0; }
+  }
+}
