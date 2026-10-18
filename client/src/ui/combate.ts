@@ -2203,14 +2203,35 @@ export class CombateScreen {
     const ficha = this.fichaDe(ator.id)?.ficha ?? null;
     const gasto = cb.acoesDe(c, ator.id).pe ?? 0;
     let lista: HTMLElement[] = [];
+    let extra: HTMLElement | null = null;
     let nota = 'Declarar escreve no registro e gasta a ação do turno. O resultado dos dados que não tem conta aqui vai no lápis do registro.';
     switch (this.aba) {
       case 'habilidade':
-        if (ficha && calc)
+        if (ficha && calc) {
+          // o que cada poder faz, escrito na hora (18/10, o Felipe: "preciso de algo que me indique claramente o que os poderes fazem"):
+          // os que o combate aplica sozinho levam ao Atacar; os que pedem teste de perícia gastam o PE e o mestre aplica; os passivos só informam
+          const NO_ATAQUE = ['ataque-especial', 'ataque-furtivo'];
+          const linhas: HTMLElement[] = [];
           for (const p of calc.poderes) {
             const custo = custoPoder(p, ficha);
-            if (custo) lista.push(opcao('estrela', p.nome, `${custo} PE · NEX ${p.nex}%`, 'livre', () => this.usarHabilidade(ator, p.nome, custo, calc.limitePe, gasto, contra)));
+            const resumo = regras.resumoDoPoder(p, ficha);
+            const noAtaque = NO_ATAQUE.includes(p.id);
+            if (custo)
+              lista.push(
+                opcao('estrela', p.nome, noAtaque ? `${custo} PE · aplica no Atacar` : `${custo} PE · você aplica o efeito`, 'livre', () => (noAtaque ? (toast(`${p.nome}: escolha a carta dele em Atacar; o PE sai e o bônus entra sozinhos.`), this.irPara('atacar')) : this.usarHabilidade(ator, p.nome, custo, calc.limitePe, gasto, contra, resumo))),
+              );
+            linhas.push(
+              h(
+                'li',
+                { class: custo ? 'gasta' : 'passivo' },
+                h('b', null, p.nome),
+                h('em', null, custo ? `${custo} PE${noAtaque ? ' · automático no Atacar' : ' · você aplica o efeito'}` : 'sempre ativo'),
+                h('span', null, resumo || 'Sem descrição no catálogo.'),
+              ),
+            );
           }
+          if (linhas.length) extra = h('ul', { class: 'cb-poderes', 'aria-label': 'O que cada poder faz' }, ...linhas);
+        }
         nota = lista.length
           ? 'Usar gasta o PE e escreve no registro. A ação de cada habilidade é a que a descrição dela diz; sem nada escrito, é livre (LR p. 78).'
           : calc
@@ -2236,6 +2257,7 @@ export class CombateScreen {
       'div',
       { class: 'cb-aba-corpo' },
       lista.length ? h('div', { class: 'vez-cartoes' }, ...lista) : null,
+      extra,
       // o texto no fim da tela e a etiqueta do alvo colada em cima dele (17/10, o Felipe)
       h(
         'div',
@@ -2299,11 +2321,11 @@ export class CombateScreen {
     declarar();
   }
 
-  private usarHabilidade(ator: Participante, nome: string, custo: number, limite: number, gasto: number, contra: string) {
+  private usarHabilidade(ator: Participante, nome: string, custo: number, limite: number, gasto: number, contra: string, resumo = '') {
     const passa = gasto + custo > limite;
     void confirmar(
       `USAR ${nome.toUpperCase()}?`,
-      `Gasta ${custo} PE (limite ${limite} por turno, já gastos ${gasto}).${nome === 'Ataque Especial' ? ' O +5 (no teste de ataque ou no dano, à escolha) você soma à mão no d20 ou na soma do dano.' : ''}${passa ? ' Passa do limite: só vale se for o custo mínimo de uma habilidade neste turno (LR p. 23).' : ''}`,
+      `${resumo ? `${resumo} ` : ''}Gasta ${custo} PE (limite ${limite} por turno, já gastos ${gasto}).${nome === 'Ataque Especial' ? ' O +5 (no teste de ataque ou no dano, à escolha) você soma à mão no d20 ou na soma do dano.' : ''}${passa ? ' Passa do limite: só vale se for o custo mínimo de uma habilidade neste turno (LR p. 23).' : ''}`,
       'Usar',
     ).then((ok) => {
       if (!ok) return;

@@ -1176,3 +1176,45 @@ html:not(.modo-ficha) .cb-ini .cb-ini-linha:nth-child(n + 5) .cb-ini-brilho {
     animation: none;
   }
 }
+
+/* o que cada poder faz (18/10, o Felipe: "preciso de algo que me indique claramente o que os poderes fazem"):
+   a lista fica embaixo dos cartões da Habilidade, rola se for grande e não corta nada */
+html:not(.modo-ficha) .cb-res .cb-poderes {
+  list-style: none;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+html:not(.modo-ficha) .cb-res .cb-poderes li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.1rem 0.8rem;
+  align-items: baseline;
+  padding: 0.5rem 0.8rem;
+  border-left: 0.25rem solid rgba(180, 150, 100, 0.45);
+  background: rgba(10, 18, 34, 0.55);
+}
+html:not(.modo-ficha) .cb-res .cb-poderes li.gasta {
+  border-left-color: #e9a944;
+}
+html:not(.modo-ficha) .cb-res .cb-poderes li b {
+  font-size: 1.25rem;
+  color: #f2d9a0;
+}
+html:not(.modo-ficha) .cb-res .cb-poderes li em {
+  font-style: normal;
+  font-size: 1rem;
+  color: #e9a944;
+  text-align: right;
+}
+html:not(.modo-ficha) .cb-res .cb-poderes li span {
+  grid-column: 1 / -1;
+  font-size: 1.1rem;
+  line-height: 1.35;
+  color: #cfd6e6;
+}

@@ -60,6 +60,25 @@ export function custoDoPoder(p: PoderObtido, f: Ficha): number | undefined {
   return undefined;
 }
 
+/** O que o poder faz, em uma frase do livro (para o mestre ler na hora do combate). */
+export function resumoDoPoder(p: PoderObtido, f: Ficha): string {
+  const d: { resumo?: string; texto?: string; descricao?: string } | undefined | null = (
+    p.tipo === 'classe'
+      ? cat.poder(p.id)
+      : p.tipo === 'paranormal'
+        ? cat.paranormal(p.id)
+        : p.tipo === 'trilha'
+          ? f.trilha
+            ? cat.trilha(f.trilha)?.habilidades.find((x) => x.id === p.id)
+            : undefined
+          : p.tipo === 'origem'
+            ? (f.origem ? cat.origem(f.origem) : undefined)?.poder
+            : f.classe
+              ? cat.classe(f.classe).habilidades.find((x) => x.id === p.id)
+              : undefined) as typeof d;
+  return (d?.resumo ?? d?.texto ?? d?.descricao ?? '').toString().trim();
+}
+
 /** Os poderes que entram numa jogada (os que gastam PE), com a escala do livro quando tem. */
 export function poderesDaJogada(f: Ficha, calc: Calculado): { poder: PoderObtido; custo: number; escala?: { pe: number; bonus: number }[] }[] {
   const out: { poder: PoderObtido; custo: number; escala?: { pe: number; bonus: number }[] }[] = [];
