@@ -2531,6 +2531,32 @@ export class RoomView {
         };
         (flat ? flats : drawables).push(d);
         if (!ghost) hitOf.set(d, { kind: 'floor', id: it.id, test: (x, y) => pointInPoly(x, y, sil) });
+        // o encosto do lado da câmera (a cadeira virada para o fundo, rot 0 ou 6): quem senta fica entre o assento e o
+        // encosto, então o encosto é redesenhado por cima dela, como na cama (18/10, o Felipe: "coloca esse sentado e
+        // depois desenha outro encosto neles"; antes a pessoa saía na frente do encosto, fora da cadeira)
+        if (def.sit && !def.deita && !flat && !ghost && (rot === 0 || rot === 6)) {
+          const fp = footprint(def, rot);
+          const fatia = rot === 0 ? { x0: it.x, x1: it.x + fp.sx, y0: it.y + fp.sy - 0.24, y1: it.y + fp.sy } : { x0: it.x + fp.sx - 0.24, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy };
+          const caixa = { ...fatia, z0: it.z, z1: it.z + 1.4 * Z_PER_M };
+          const recorte = boxSilhouette(caixa);
+          drawables.push({
+            box: caixa,
+            sx0: d.sx0,
+            sx1: d.sx1,
+            sy0: d.sy0,
+            sy1: d.sy1,
+            draw: () => {
+              ctx.save();
+              ctx.beginPath();
+              ctx.moveTo(recorte[0][0], recorte[0][1]);
+              for (let i = 1; i < recorte.length; i++) ctx.lineTo(recorte[i][0], recorte[i][1]);
+              ctx.closePath();
+              ctx.clip();
+              d.draw();
+              ctx.restore();
+            },
+          });
+        }
         if (def.vazio?.length && !flat) {
           // peça vazada (a cortina do leito, a mesa em U): o que está dentro fica entre as paredes do
           // fundo e as da frente. A peça inteira vai para trás de tudo de dentro (a quina do fundo) e
