@@ -124,6 +124,12 @@ function focosDoMovimento(m: CenaQuadro['movimento']): [Foco, Foco] {
       return [c(50, 38, 1.16), c(50, 62, 1.16)];
     case 'tremor':
       return [c(50, 50, 1.07), c(50, 50, 1.07)];
+    case 'tremorForte':
+      return [c(50, 50, 1.12), c(50, 50, 1.3)];
+    case 'correndo':
+      return [c(50, 50, 1), c(50, 50, 1.6)];
+    case 'queda':
+      return [c(50, 50, 1.1), c(50, 60, 1.25)];
     case 'parado':
       return [c(50, 50, 1), c(50, 50, 1)];
     default:
@@ -231,7 +237,9 @@ function montarQuadro(q: CenaQuadro, vwNow = innerWidth, vhNow = innerHeight): H
     return { k, im };
   });
   for (const { im } of camadas) palco.append(im);
-  const quadro = h('div', { class: `cn-quadro${q.movimento === 'tremor' ? ' tremor' : ''}` }, palco);
+  const mov = q.movimento === 'tremor' ? ' tremor' : q.movimento === 'tremorForte' ? ' tremor forte' : q.movimento === 'correndo' ? ' correndo' : q.movimento === 'queda' ? ' queda' : '';
+  const quadro = h('div', { class: `cn-quadro${mov}` }, palco);
+  if (q.duracao) quadro.style.setProperty('--dur', `${q.duracao}s`);
   const ms = q.duracao ? q.duracao * 1000 : CAMERA_MANUAL_MS;
   const [de, para] = q.camera ? [q.camera.de, q.camera.para] : focosDoMovimento(q.movimento);
   const ligar = () => {
@@ -289,8 +297,15 @@ function mostrarQuadro(e: Estado, c: CenaAoVivo, mestre: boolean) {
     novo.classList.add(`tr-${tr}`);
     e.tela.insertBefore(novo, e.tela.querySelector('.cn-vinheta'));
     e.atual = novo;
+    if (tr === 'olho') {
+      // as pálpebras: fecham sobre o quadro de antes, a tela fica preta um instante e abrem no novo
+      const olho = h('div', { class: 'cn-olho' }, h('i'), h('i'));
+      e.tela.append(olho);
+      setTimeout(() => olho.remove(), 2600);
+    }
     if (velho) {
       if (tr === 'corte' || tr === 'flash') velho.remove();
+      else if (tr === 'olho') setTimeout(() => velho.remove(), 1000);
       else if (tr === 'preto') {
         velho.classList.add('some');
         setTimeout(() => velho.remove(), 800);
@@ -301,7 +316,8 @@ function mostrarQuadro(e: Estado, c: CenaAoVivo, mestre: boolean) {
       e.tela.append(clarao);
       setTimeout(() => clarao.remove(), 700);
     }
-    requestAnimationFrame(() => requestAnimationFrame(() => novo.classList.add('on')));
+    if (tr === 'olho') setTimeout(() => novo.classList.add('on'), 1000);
+    else requestAnimationFrame(() => requestAnimationFrame(() => novo.classList.add('on')));
     tocarEfeito(q.som);
     // a legenda troca com um respiro: some, e volta digitada
     e.legenda.classList.remove('on');

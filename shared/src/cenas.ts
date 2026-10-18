@@ -8,10 +8,14 @@ export const CENA_MAX_QUADROS = 40;
 export const CENA_MAX_CENAS = 60;
 
 /** O que a câmera faz na imagem enquanto o quadro está na tela. */
-export const MOVIMENTOS = ['zoom', 'afasta', 'esquerda', 'direita', 'cima', 'baixo', 'tremor', 'parado'] as const;
+/**
+ * O que a câmera faz na imagem enquanto o quadro está na tela. `correndo`: chega perto balançando, como quem corre;
+ * `queda`: tomba e cai (quem desmaia); `tremorForte`: o tremor do fim, o mundo acabando (18/10, o pesadelo da Cora).
+ */
+export const MOVIMENTOS = ['zoom', 'afasta', 'esquerda', 'direita', 'cima', 'baixo', 'tremor', 'tremorForte', 'correndo', 'queda', 'parado'] as const;
 export type MovimentoCena = (typeof MOVIMENTOS)[number];
-/** Como o quadro entra: dissolve, corte seco, clarão branco ou passando pelo preto. */
-export const TRANSICOES = ['fade', 'corte', 'flash', 'preto'] as const;
+/** Como o quadro entra: dissolve, corte seco, clarão branco, passando pelo preto ou o olho (pálpebras fecham e abrem). */
+export const TRANSICOES = ['fade', 'corte', 'flash', 'preto', 'olho'] as const;
 export type TransicaoCena = (typeof TRANSICOES)[number];
 export const CENA_MAX_DURACAO = 120;
 

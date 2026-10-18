@@ -20,6 +20,9 @@ const MOVIMENTOS_ROTULO: [MovimentoCena | 'custom', string][] = [
   ['cima', 'Deslizar para cima'],
   ['baixo', 'Deslizar para baixo'],
   ['tremor', 'Tremer (pancada, susto)'],
+  ['tremorForte', 'Tremer forte (o mundo acabando)'],
+  ['correndo', 'Correndo até lá'],
+  ['queda', 'Cair (desmaio)'],
   ['parado', 'Parado'],
   ['custom', 'Personalizada (escolher na imagem)'],
 ];
@@ -28,6 +31,7 @@ const TRANSICOES_ROTULO: [TransicaoCena, string][] = [
   ['corte', 'Corte seco'],
   ['flash', 'Clarão branco'],
   ['preto', 'Passando pelo preto'],
+  ['olho', 'Fechar e abrir o olho'],
 ];
 const ENTRADAS_ROTULO: [EntradaCamada, string][] = [
   ['fade', 'Surgir'],

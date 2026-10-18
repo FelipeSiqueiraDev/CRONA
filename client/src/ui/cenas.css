@@ -32,6 +32,7 @@
   transition: opacity 1.3s ease;
 }
 .cn-quadro.tr-corte,
+.cn-quadro.tr-olho,
 .cn-quadro.tr-flash {
   transition: none;
 }
@@ -165,6 +166,101 @@
   }
   100% {
     translate: 0.2% -0.2%;
+  }
+}
+/* o tremor forte (o fim do pesadelo): maior e mais nervoso */
+.cn-quadro.tremor.forte {
+  animation: cn-treme-forte 0.07s steps(2, end) infinite;
+}
+@keyframes cn-treme-forte {
+  0% {
+    translate: 1.4% 0.9%;
+    rotate: 0.4deg;
+  }
+  50% {
+    translate: -1.2% -1.3%;
+    rotate: -0.5deg;
+  }
+  100% {
+    translate: 0.9% -0.8%;
+  }
+}
+/* correndo: a câmera sobe e desce a cada passo, cada vez mais rápido */
+.cn-quadro.correndo {
+  animation: cn-corre 0.34s ease-in-out infinite alternate;
+}
+@keyframes cn-corre {
+  from {
+    translate: -0.4% -1.1%;
+    rotate: -0.6deg;
+  }
+  to {
+    translate: 0.4% 1.1%;
+    rotate: 0.6deg;
+  }
+}
+/* a queda: tomba de lado e desce, no tempo do quadro */
+.cn-quadro.queda {
+  animation: cn-queda var(--dur, 2.5s) cubic-bezier(0.55, 0, 0.85, 0.4) forwards;
+  transform-origin: 50% 80%;
+}
+@keyframes cn-queda {
+  0% {
+    rotate: 0deg;
+    translate: 0 0;
+  }
+  30% {
+    rotate: -3deg;
+    translate: -1% 1%;
+  }
+  100% {
+    rotate: -24deg;
+    translate: -4% 14%;
+    filter: blur(2px) brightness(0.6);
+  }
+}
+/* o olho: duas faixas pretas fecham de cima e de baixo, ficam fechadas e abrem */
+.cn-olho {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.cn-olho i {
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  height: 52%;
+  background: #000;
+  animation: cn-palpebra 2.6s ease-in-out both;
+}
+.cn-olho i:first-child {
+  top: 0;
+  transform-origin: top;
+  border-radius: 0 0 50% 50% / 0 0 30% 30%;
+}
+.cn-olho i:last-child {
+  bottom: 0;
+  transform-origin: bottom;
+  border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+}
+@keyframes cn-palpebra {
+  0% {
+    transform: scaleY(0);
+  }
+  32%,
+  45% {
+    transform: scaleY(1);
+  }
+  /* abre devagar, pisca meio fechado (a visão turva) e abre de vez */
+  70% {
+    transform: scaleY(0.45);
+  }
+  80% {
+    transform: scaleY(0.75);
+  }
+  100% {
+    transform: scaleY(0);
   }
 }
 /* o clarão branco da transição */
