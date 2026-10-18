@@ -1,0 +1,500 @@
+[
+ {
+  "id": 1,
+  "nome": "D.Tepes",
+  "tema": "sangue",
+  "atual": {
+   "pe": 3,
+   "pv": 22,
+   "san": 12
+  },
+  "ficha": {
+   "pp": 35,
+   "nex": 20,
+   "nome": "D.Tepes",
+   "classe": "combatente",
+   "origem": "policial",
+   "regras": {
+    "sah": true,
+    "nexZero": true
+   },
+   "trilha": "monstruoso",
+   "versao": 1,
+   "pericias": {
+    "grupos": [
+     "luta",
+     "fortitude"
+    ],
+    "livres": [
+     "adestramento",
+     "investigacao",
+     "vontade"
+    ]
+   },
+   "atributos": {
+    "agi": 1,
+    "for": 2,
+    "int": 2,
+    "pre": 1,
+    "vig": 3
+   },
+   "inventario": [
+    {
+     "id": "cao-adestrado",
+     "uid": 3867,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "isqueiro",
+     "uid": 3868,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "algemas",
+     "uid": 3869,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "corda",
+     "uid": 3870,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "mochila-militar",
+     "uid": 3871,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "celular",
+     "uid": 3872,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "protecao-leve",
+     "uid": 3873,
+     "tipo": "protecao",
+     "modificacoes": [
+      "reforcada"
+     ]
+    },
+    {
+     "id": "corrente",
+     "uid": 3874,
+     "tipo": "arma",
+     "empunhado": false
+    },
+    {
+     "id": "arma-improvisada",
+     "uid": 3875,
+     "tipo": "arma",
+     "apelido": "Pé de mesa"
+    },
+    {
+     "id": "Chave da Escrivaninha",
+     "uid": 410,
+     "nome": "Chave da Escrivaninha",
+     "tipo": "cena",
+     "achado": true,
+     "espacos": 0,
+     "tipoCena": "key"
+    }
+   ],
+   "progressao": {
+    "10": {
+     "parametros": {
+      "ser-amaldicoado": {
+       "elemento": "sangue"
+      }
+     }
+    },
+    "15": {
+     "poder": {
+      "id": "combate-defensivo"
+     }
+    }
+   },
+   "comecouMundano": false
+  },
+  "campanha": 33,
+  "criadaEm": "2026-09-30T00:49:06.250Z",
+  "personagem": 1,
+  "companheiro": {
+   "nome": "Camarilla",
+   "tipo": "Cão adestrado",
+   "imagem": "camarilla-rosto.jpg"
+  },
+  "atualizadaEm": "2026-10-06T11:24:26.767Z"
+ },
+ {
+  "id": 2,
+  "nome": "Catarina Albuquerque",
+  "tema": "morte",
+  "atual": {
+   "pe": 17,
+   "pv": 23,
+   "san": 10
+  },
+  "ficha": {
+   "pp": 35,
+   "nex": 20,
+   "nome": "Catarina Albuquerque",
+   "classe": "especialista",
+   "origem": "atleta",
+   "regras": {
+    "sah": true,
+    "nexZero": true
+   },
+   "trilha": "infiltrador",
+   "versao": 1,
+   "pericias": {
+    "grupos": [],
+    "livres": [
+     "crime",
+     "furtividade",
+     "iniciativa",
+     "investigacao",
+     "luta",
+     "percepcao",
+     "reflexos",
+     "tecnologia",
+     "vontade"
+    ]
+   },
+   "atributos": {
+    "agi": 3,
+    "for": 1,
+    "int": 2,
+    "pre": 2,
+    "vig": 1
+   },
+   "inventario": [
+    {
+     "id": "protecao-leve",
+     "uid": 3876,
+     "tipo": "protecao",
+     "vestido": true
+    },
+    {
+     "id": "katana",
+     "uid": 3877,
+     "tipo": "arma",
+     "empunhado": true,
+     "modificacoes": [
+      "cruel"
+     ]
+    },
+    {
+     "id": "mochila-militar",
+     "uid": 3878,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "kit-de-ladrao",
+     "uid": 3881,
+     "tipo": "equipamento",
+     "apelido": "Kit de perícia"
+    },
+    {
+     "id": "Diário Rasgado",
+     "uid": 409,
+     "nome": "Diário Rasgado",
+     "tipo": "cena",
+     "achado": true,
+     "espacos": 1,
+     "tipoCena": "document"
+    }
+   ],
+   "progressao": {
+    "15": {
+     "poder": {
+      "id": "ninja-urbano"
+     }
+    },
+    "20": {
+     "atributo": "agi"
+    }
+   },
+   "comecouMundano": false
+  },
+  "campanha": 33,
+  "criadaEm": "2026-09-30T00:49:06.250Z",
+  "personagem": 2,
+  "atualizadaEm": "2026-10-09T12:48:09.411Z"
+ },
+ {
+  "id": 3,
+  "nome": "Alosi Walker",
+  "tema": "conhecimento",
+  "atual": {
+   "pe": 5,
+   "pv": 12,
+   "san": 15
+  },
+  "ficha": {
+   "pp": 35,
+   "nex": 20,
+   "nome": "Alosi Walker",
+   "classe": "ocultista",
+   "origem": "religioso",
+   "regras": {
+    "sah": true,
+    "nexZero": true
+   },
+   "trilha": "graduado",
+   "versao": 1,
+   "pericias": {
+    "grupos": [],
+    "livres": [
+     "diplomacia",
+     "intuicao",
+     "investigacao",
+     "medicina",
+     "percepcao",
+     "profissao"
+    ]
+   },
+   "atributos": {
+    "agi": 1,
+    "for": 1,
+    "int": 3,
+    "pre": 3,
+    "vig": 1
+   },
+   "profissao": "Historiador",
+   "inventario": [
+    {
+     "id": "componentes-ritualisticos-de-elemento",
+     "uid": 3883,
+     "tipo": "equipamento",
+     "apelido": "Componentes ritualísticos de Conhecimento"
+    },
+    {
+     "id": "componentes-ritualisticos-de-elemento",
+     "uid": 3884,
+     "tipo": "equipamento",
+     "apelido": "Componentes ritualísticos de Morte"
+    },
+    {
+     "id": "componentes-ritualisticos-de-elemento",
+     "uid": 3885,
+     "tipo": "equipamento",
+     "apelido": "Componentes ritualísticos de Energia"
+    },
+    {
+     "id": "bandoleira",
+     "uid": 3886,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "cranio-espiral",
+     "uid": 3887,
+     "tipo": "amaldicoado"
+    },
+    {
+     "id": "mochila-militar",
+     "uid": 3888,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "amuleto-sagrado",
+     "uid": 3889,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "Caderno de Anotações",
+     "uid": 429,
+     "nome": "Caderno de Anotações",
+     "tipo": "cena",
+     "achado": true,
+     "espacos": 1,
+     "tipoCena": "document"
+    },
+    {
+     "id": "Lanterna",
+     "uid": 430,
+     "nome": "Lanterna",
+     "tipo": "cena",
+     "achado": true,
+     "espacos": 1,
+     "tipoCena": "misc"
+    }
+   ],
+   "progressao": {
+    "5": {
+     "parametros": {
+      "escolhido-pelo-outro-lado": {
+       "rituais": [
+        "perturbacao",
+        "eletrocussao",
+        "decadencia"
+       ]
+      }
+     }
+    },
+    "10": {
+     "rituais": [
+      "cicatrizacao"
+     ],
+     "parametros": {
+      "saber-ampliado": {
+       "rituais": [
+        "cineraria"
+       ]
+      }
+     }
+    },
+    "15": {
+     "poder": {
+      "id": "ritual-potente"
+     },
+     "rituais": [
+      "embaralhar"
+     ]
+    },
+    "20": {
+     "rituais": [
+      "espirais-da-perdicao"
+     ],
+     "atributo": "pre"
+    }
+   },
+   "comecouMundano": false
+  },
+  "campanha": 33,
+  "criadaEm": "2026-09-30T00:49:06.250Z",
+  "personagem": 3,
+  "atualizadaEm": "2026-10-05T21:57:22.965Z"
+ },
+ {
+  "id": 4,
+  "nome": "Cora Falcão",
+  "tema": "energia",
+  "atual": {
+   "pe": 12,
+   "pv": 27,
+   "san": 11
+  },
+  "ficha": {
+   "pp": 35,
+   "nex": 20,
+   "nome": "Cora Falcão",
+   "classe": "combatente",
+   "origem": "militar",
+   "regras": {
+    "sah": true,
+    "nexZero": true
+   },
+   "trilha": "aniquilador",
+   "versao": 1,
+   "pericias": {
+    "grupos": [
+     "luta",
+     "reflexos"
+    ],
+    "livres": [
+     "iniciativa",
+     "percepcao"
+    ]
+   },
+   "atributos": {
+    "agi": 3,
+    "for": 2,
+    "int": 1,
+    "pre": 2,
+    "vig": 1
+   },
+   "inventario": [
+    {
+     "id": "celular",
+     "uid": 3890,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "alarme-de-movimento",
+     "uid": 3891,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "fuzil-de-caca",
+     "uid": 3892,
+     "tipo": "arma",
+     "empunhado": false,
+     "modificacoes": [
+      "calibre-grosso",
+      "mira-laser"
+     ]
+    },
+    {
+     "id": "balas-longas",
+     "uid": 3893,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "coagulante",
+     "uid": 3894,
+     "tipo": "equipamento"
+    },
+    {
+     "id": "faca",
+     "uid": 3895,
+     "tipo": "arma"
+    },
+    {
+     "id": "arma-improvisada",
+     "uid": 3896,
+     "tipo": "arma",
+     "apelido": "Pé de mesa"
+    },
+    {
+     "id": "Espingarda",
+     "uid": 431,
+     "nome": "Espingarda",
+     "tipo": "cena",
+     "achado": true,
+     "espacos": 5,
+     "tipoCena": "weapon"
+    },
+    {
+     "id": "Munição",
+     "uid": 432,
+     "nome": "Munição",
+     "tipo": "cena",
+     "achado": true,
+     "espacos": 2,
+     "tipoCena": "box"
+    },
+    {
+     "id": "Corda",
+     "uid": 433,
+     "nome": "Corda",
+     "tipo": "cena",
+     "achado": true,
+     "espacos": 3,
+     "tipoCena": "misc"
+    }
+   ],
+   "progressao": {
+    "10": {
+     "parametros": {
+      "a-favorita": {
+       "arma": "fuzil-de-caca"
+      }
+     }
+    },
+    "15": {
+     "poder": {
+      "id": "tiro-certeiro"
+     }
+    },
+    "20": {
+     "atributo": "vig"
+    }
+   },
+   "comecouMundano": false
+  },
+  "campanha": 33,
+  "criadaEm": "2026-09-30T00:49:06.250Z",
+  "personagem": 4,
+  "atualizadaEm": "2026-10-05T18:43:59.661Z"
+ }
+]

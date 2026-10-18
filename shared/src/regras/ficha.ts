@@ -130,6 +130,11 @@ export interface Ficha {
   inventario: ItemFicha[];
   /** ajustes do mestre somados às contas */
   ajustes?: { pv?: number; pe?: number; san?: number; limitePe?: number; defesa?: number };
+  /**
+   * avisos do mestre para o jogador (18/10, o Felipe: "se tiver algo errado na ficha de lá [do C.R.I.S], deixa de aviso
+   * ali pra eles quando entrarem"): aparecem numa janela quando ele abre a ficha e na Evolução do mestre
+   */
+  avisos?: string[];
   /** perdas permanentes (rituais de Medo, Custo do Paranormal) */
   perdas?: { san?: number; pe?: number };
   regras: RegrasFicha;

@@ -1334,6 +1334,7 @@ export class FichasScreen {
         h('span', null, pend ? `${pend} escolha${pend > 1 ? 's' : ''} pendente${pend > 1 ? 's' : ''}` : 'Tudo escolhido', erros ? ` · ${erros} erro${erros > 1 ? 's' : ''}` : '', avisos ? ` · ${avisos} aviso${avisos > 1 ? 's' : ''}` : ''),
         h('button', { class: 'fx-bt mini', type: 'button', onclick: () => this.abrirEvolucao() }, ic('linhaTempo'), h('span', null, 'Ver tudo')),
       ),
+      ...(f.avisos?.length ? [h('div', { class: 'fx-evc aviso' }, h('div', { class: 'fx-evc-cab' }, h('b', null, 'Avisos para o jogador'), h('span', { class: 'fx-evc-selo' }, String(f.avisos.length))), ...f.avisos.map((t) => h('div', { class: 'fx-evc-l aviso' }, ic('alerta'), h('span', null, t))))] : []),
       h('div', { class: 'fx-evc-lista' }, ...cartoes),
     );
   }

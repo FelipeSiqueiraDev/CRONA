@@ -39,6 +39,7 @@ import {
   escuridaoNoPonto,
   chaveCasa,
   type LuzDeCasa,
+  DIRS,
 } from '@crona/shared';
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
@@ -163,6 +164,8 @@ function piscando(u: ClientUser, now: number): boolean {
 
 /** Duração do efeito de giro da peça parada. */
 const TURN_MS = 240;
+/** quanto os pés da pose sentada ficam à frente do quadril, em casas (uns 22 cm) */
+const PES_A_FRENTE_SENTADO = 0.3;
 
 /** Sombras de contato prontas, por tamanho. */
 const sombrasPes = new Map<string, HTMLCanvasElement>();
@@ -2820,7 +2823,11 @@ export class RoomView {
       const pisoSentado = map.floorHeight(u.x, u.y) ?? p.z;
       const baseZ = standBy ? pisoSentado : pfSentado ? pisoSentado + Math.max(0, p.z - pisoSentado - 0.45 * Z_PER_M) : p.z;
       const half = seated ? 0.25 : 0.3;
-      const [sx, sy] = iso(cx, cy, baseZ);
+      // sentada, os pés ficam à frente do quadril: a âncora (os pés) vai um tanto para a frente, para o quadril cair no
+      // meio do assento (18/10, o Felipe: "eles ainda estão posicionados errados na cadeira"; de costas, o quadril
+      // ficava na frente do assento, e de frente, atrás dele)
+      const [fdx, fdy] = pfSentado ? (DIRS[u.dir] ?? [0, 0]) : [0, 0];
+      const [sx, sy] = iso(cx + fdx * PES_A_FRENTE_SENTADO, cy + fdy * PES_A_FRENTE_SENTADO, baseZ);
       // H: a altura na arte; HE: na tela (a arte vem na escala antiga e o tabuleiro reduz)
       const H = bq ? bq.ay : sp ? sp.def.height : pf ? pf.h : PIXEL_AVATAR_HEIGHT;
       const HE = H * ESCALA_ARTE_PESSOA;

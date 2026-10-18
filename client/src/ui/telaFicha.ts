@@ -68,6 +68,33 @@ export class TelaFicha {
     this.jogo.setFicha(fichas[0] ?? null);
     this.ficha.setFicha(fichas[0] ?? null);
     if (equipe) this.jogo.setEquipe(equipe);
+    this.mostrarAvisos(fichas[0] ?? null);
+  }
+
+  /** Os avisos do mestre na ficha: uma janela na primeira vez que o jogador abre a ficha com eles (por aparelho). */
+  private mostrarAvisos(fs: FichaSalva | null) {
+    const avisos = fs?.ficha.avisos ?? [];
+    if (!fs || !avisos.length) return;
+    const chave = `crona.avisos.${fs.id}`;
+    const marca = avisos.join('|');
+    try {
+      if (localStorage.getItem(chave) === marca) return;
+    } catch {
+      /* sem armazenamento: mostra de novo */
+    }
+    const j = janela('AVISOS DA SUA FICHA', 'alerta', () => {
+      try {
+        localStorage.setItem(chave, marca);
+      } catch {
+        /* sem armazenamento */
+      }
+    }, 46);
+    j.el.classList.add('tf-avisos');
+    j.corpo.append(
+      h('p', { class: 'tf-avisos-intro' }, 'O mestre conferiu a sua ficha com a do C.R.I.S. O que estava diferente do livro:'),
+      h('ul', { class: 'tf-avisos-lista' }, ...avisos.map((t) => h('li', null, t))),
+    );
+    j.rodape.append(botao('Entendi', 'ok', 'forte', () => j.fechar()));
   }
 
   private verFicha(sim: boolean) {
