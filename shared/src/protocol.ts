@@ -499,6 +499,10 @@ export type ClientMsg =
   | { t: 'roomFx'; lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; tatico?: boolean }
   /** ponto de atenção ou desenho rápido para a mesa (só o mestre; some sozinho) */
   | { t: 'marca'; marca: MarcaMesa }
+  /** a câmera do mestre (o centro e o pedaço do mundo que ele vê, em pixels do iso): a mesa enquadra igual (18/10) */
+  | { t: 'camMestre'; cx: number; cy: number; w: number; h: number }
+  /** o mestre esconde o tabuleiro da mesa atrás da tela de carregamento (18/10) */
+  | { t: 'telaEscondida'; on: boolean }
   /** o passo pelas sombras (só o mestre; `tokenId` como no `tokenWalk`; Onipresença da Magistrada, LR p. 252): a peça some na sombra dela e sai na casa (x, y), livre e da mesma cena */
   | { t: 'passoSombras'; tokenId: number; x: number; y: number }
   /** marca ou desmarca uma sombra à mão na casa (só o mestre) */
@@ -607,6 +611,10 @@ export type ServerMsg =
   | { t: 'roomUpdate'; room: RoomInfo }
   /** ponto de atenção ou desenho do mestre, para todos que olham a cena */
   | { t: 'marca'; marca: MarcaMesa }
+  /** a câmera do mestre (o centro e o pedaço do mundo que ele vê, em pixels do iso): a mesa enquadra igual (18/10) */
+  | { t: 'camMestre'; cx: number; cy: number; w: number; h: number }
+  /** o mestre esconde o tabuleiro da mesa atrás da tela de carregamento (18/10) */
+  | { t: 'telaEscondida'; on: boolean }
   /** a peça entrou numa sombra e saiu noutra (a animação, para todos que olham a cena; a posição nova vem em `status`) */
   | { t: 'passoSombras'; tokenId: number; de: { x: number; y: number }; para: { x: number; y: number } }
   | { t: 'userJoin'; user: UserInfo }

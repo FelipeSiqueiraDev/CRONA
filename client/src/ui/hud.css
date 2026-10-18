@@ -4221,3 +4221,8 @@ html:not(.modo-ficha) .cb-tab > .cb-tab-clima {
 html:not(.modo-ficha) .rpg-body > .rpg-player:last-child {
   margin-bottom: 0 !important;
 }
+/* o esconder a tela (18/10): aceso enquanto a mesa está escondida */
+html:not(.modo-ficha) .bv-esconde.on {
+  color: #ff6b6e;
+  border-color: #ff6b6e;
+}

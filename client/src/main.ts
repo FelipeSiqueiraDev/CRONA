@@ -45,6 +45,7 @@ import { TableScreen } from './ui/table';
 import { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha, TelaFicha } from './ui/telaFicha';
 import { Entrada } from './ui/entrada';
 import { FalsoCris } from './ui/falsoCris';
+import { mostrarTelaEscondida } from './ui/telaEscondida';
 import { mostrarTelaViagem } from './ui/viagemTela';
 import { mostrarCena } from './ui/cenaTela';
 import { iniciarSugestaoDeCenas } from './ui/cenaSugestao';
@@ -580,6 +581,13 @@ net.onMessage = (m: ServerMsg) => {
     case 'marca':
       view.receberMarca(m.marca);
       break;
+    case 'camMestre':
+      // a mesa enquadra o que o mestre está vendo
+      if (tableMode) view.seguirMestre(m);
+      break;
+    case 'telaEscondida':
+      if (app.state.role !== 'gm') mostrarTelaEscondida(m.on);
+      break;
     case 'userJoin':
       view.addUser(m.user);
       break;
@@ -731,3 +739,18 @@ window.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// a câmera do mestre vai para a mesa (18/10, o Felipe: "o tablet deve refletir o que tá aqui na minha tela"): a cada
+// 300 ms, se mudou, o mestre manda o pedaço do mundo que está vendo
+{
+  let ultima = '';
+  setInterval(() => {
+    if (tableMode || app.state.role !== 'gm' || !app.state.room) return;
+    const v = view.vistaDoMestre();
+    if (!v) return;
+    const chave = `${app.state.room.id}:${v.cx}:${v.cy}:${v.w}:${v.h}`;
+    if (chave === ultima) return;
+    ultima = chave;
+    net.send({ t: 'camMestre', ...v });
+  }, 300);
+}

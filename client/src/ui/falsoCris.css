@@ -444,3 +444,57 @@
     to { opacity: 0; }
   }
 }
+
+/* a tela escondida do mestre (telaEscondida.ts): o carregamento do C.R.I.S por cima do tabuleiro da mesa */
+.tela-escondida {
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse 70% 60% at 50% 0%, rgb(var(--missao) / 0.07), transparent 70%), var(--void);
+  z-index: 5000;
+  animation: te-entra 0.35s ease both;
+}
+.tela-escondida.saindo {
+  animation: te-sai 0.45s ease both;
+}
+.te-meio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: var(--ink-faint);
+  font-family: var(--sans);
+}
+.te-d20 {
+  width: 104px;
+  height: 104px;
+  animation: te-gira 2.4s cubic-bezier(0.6, 0, 0.4, 1) infinite;
+}
+.te-texto {
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  animation: te-pisca 1.8s ease-in-out infinite;
+}
+@keyframes te-gira {
+  0% {
+    rotate: 0deg;
+  }
+  70%,
+  100% {
+    rotate: 360deg;
+  }
+}
+@keyframes te-pisca {
+  50% {
+    opacity: 0.45;
+  }
+}
+@keyframes te-entra {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes te-sai {
+  to {
+    opacity: 0;
+  }
+}

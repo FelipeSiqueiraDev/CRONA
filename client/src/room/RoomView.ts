@@ -626,8 +626,34 @@ export class RoomView {
   private needFit = false;
 
   /** Escolhe o maior zoom em que o quarto inteiro cabe na tela e centraliza. */
+  /** a câmera do mestre que a mesa segue (18/10): o centro e o pedaço do mundo que ele vê */
+  private camDoMestre: { cx: number; cy: number; w: number; h: number } | null = null;
+
+  /** A mesa enquadra o mesmo pedaço do mundo que o mestre está vendo. */
+  seguirMestre(c: { cx: number; cy: number; w: number; h: number }) {
+    this.camDoMestre = c;
+    this.follow = false;
+    this.autoFit = false;
+    this.needFit = false;
+    const f = this.frame_();
+    if (!f.w || !f.h) return;
+    this.zoom = Math.max(0.2, Math.min(4, Math.min(f.w / c.w, f.h / c.h)));
+    const tx = Math.round(f.x + f.w / 2 - c.cx * this.zoom);
+    const ty = Math.round(f.y + f.h / 2 - c.cy * this.zoom);
+    this.camAnim = { fx: this.cam.x, fy: this.cam.y, tx, ty, t0: performance.now(), dur: 280 };
+  }
+
+  /** O que o mestre está vendo agora (para mandar à mesa). */
+  vistaDoMestre(): { cx: number; cy: number; w: number; h: number } | null {
+    if (!this.map) return null;
+    const f = this.frame_();
+    if (!f.w || !f.h) return null;
+    return { cx: Math.round((f.x + f.w / 2 - this.cam.x) / this.zoom), cy: Math.round((f.y + f.h / 2 - this.cam.y) / this.zoom), w: Math.round(f.w / this.zoom), h: Math.round(f.h / this.zoom) };
+  }
+
   fit() {
     if (!this.map) return;
+    if (this.camDoMestre && this.watchOnly) return this.seguirMestre(this.camDoMestre);
     const b = roomBounds(this.map, !!this.info?.aberto);
     const f = this.frame_();
     // a Viagem: a cena é só a van (o mundo passa por fora, como ilustração de um momento): a van enche o quadro,

@@ -550,6 +550,9 @@ export class RoomInstance {
   }
 
   /** Só o mestre controla a cena (o servidor decide pelo papel da conexão). */
+  /** o mestre escondeu o tabuleiro da mesa (a tela de carregamento) */
+  escondida = false;
+
   isOwner(c: Client) {
     return c.role === 'gm';
   }
@@ -921,6 +924,17 @@ export class RoomInstance {
         break;
       case 'roomFx':
         this.fx(u, m);
+        break;
+      case 'camMestre':
+        // a câmera do mestre vai para a mesa (e para quem mais estiver vendo a cena)
+        if (this.isOwner(u.client) && [m.cx, m.cy, m.w, m.h].every((v) => typeof v === 'number' && Number.isFinite(v)) && (m.w as number) > 0 && (m.h as number) > 0)
+          this.broadcast({ t: 'camMestre', cx: m.cx as number, cy: m.cy as number, w: m.w as number, h: m.h as number }, u.client.id);
+        break;
+      case 'telaEscondida':
+        if (this.isOwner(u.client)) {
+          this.escondida = m.on === true;
+          this.broadcast({ t: 'telaEscondida', on: this.escondida });
+        }
         break;
       case 'passoSombras':
         if (isInt(m.tokenId) && isInt(m.x) && isInt(m.y)) this.passoSombras(u, m.tokenId, m.x, m.y);

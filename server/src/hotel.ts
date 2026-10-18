@@ -160,6 +160,8 @@ const GM_ONLY = new Set([
   'setHint',
   'roomSettings',
   'roomFx',
+  'camMestre',
+  'telaEscondida',
   'passoSombras',
   'sombraMarcar',
   'marca',

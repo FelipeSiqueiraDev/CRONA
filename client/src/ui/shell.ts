@@ -521,6 +521,27 @@ export class Shell {
         svg('<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'),
         h('span', null, 'AMPLIAR'),
       ),
+      // esconder a tela da mesa atrás do carregamento do C.R.I.S (18/10)
+      h(
+        'button',
+        {
+          class: 'bv bv-esconde',
+          type: 'button',
+          title: 'Esconder a tela da mesa (mostra o carregamento do C.R.I.S)',
+          'aria-pressed': 'false',
+          onclick: (e: MouseEvent) => {
+            const bt = e.currentTarget as HTMLElement;
+            const on = bt.getAttribute('aria-pressed') !== 'true';
+            bt.setAttribute('aria-pressed', String(on));
+            bt.classList.toggle('on', on);
+            bt.querySelector('span')!.textContent = on ? 'MOSTRAR' : 'ESCONDER';
+            sfx.click();
+            app.net.send({ t: 'telaEscondida', on });
+          },
+        },
+        svg('<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c5 0 9 4.5 10 7-.4 1-1.3 2.4-2.6 3.7M6.2 6.3C4.2 7.7 2.7 9.7 2 12c1 2.5 5 7 10 7 1.7 0 3.3-.5 4.7-1.3"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>'),
+        h('span', null, 'ESCONDER'),
+      ),
     );
     try {
       if (localStorage.getItem('crona.foco') === '1') queueMicrotask(() => this.alternarFoco(this.vistaEl.querySelector('.bv-foco')!, true));
