@@ -83,6 +83,12 @@
 .cn-camada.ent-zoom {
   animation-name: cn-ent-zoom;
 }
+.cn-camada.ent-aproxima {
+  animation-name: cn-ent-aproxima;
+  animation-duration: 6s;
+  animation-timing-function: cubic-bezier(0.3, 0, 0.35, 1);
+  transform-origin: 48% 32%;
+}
 .cn-camada.ent-corte {
   animation-name: cn-ent-corte;
   animation-duration: 0.001s;
@@ -120,6 +126,22 @@
   from {
     opacity: 0;
     scale: 1.35;
+  }
+}
+/* vem do fundo da cela: pequena, borrada e no escuro, até chegar na grade */
+@keyframes cn-ent-aproxima {
+  from {
+    opacity: 0;
+    scale: 0.72;
+    filter: brightness(0.15) blur(3px);
+  }
+  35% {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    filter: none;
   }
 }
 @keyframes cn-ent-corte {

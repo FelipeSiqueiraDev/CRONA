@@ -37,6 +37,7 @@ const ENTRADAS_ROTULO: [EntradaCamada, string][] = [
   ['baixo', 'Subir de baixo'],
   ['zoom', 'Crescer'],
   ['corte', 'De repente'],
+  ['aproxima', 'Vir do escuro'],
 ];
 function opcoes<T extends string>(lista: [T, string][], valor: T, aoMudar: (v: T) => void, rotulo: string) {
   const sel = h('select', { class: 'fx-inp cne-sel', 'aria-label': rotulo, onchange: () => aoMudar(sel.value as T) }, ...lista.map(([v, nome]) => h('option', { value: v, selected: v === valor }, nome))) as HTMLSelectElement;

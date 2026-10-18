@@ -27,8 +27,11 @@ export interface Foco {
 }
 export const FOCO_ZOOM_MIN = 0.3;
 export const FOCO_ZOOM_MAX = 4;
-/** Como uma camada entra por cima do fundo: surge, desliza de um lado, cresce ou aparece de um golpe. */
-export const ENTRADAS = ['fade', 'esquerda', 'direita', 'cima', 'baixo', 'zoom', 'corte'] as const;
+/**
+ * Como uma camada entra por cima do fundo: surge, desliza de um lado, cresce, aparece de um golpe ou se aproxima (vem do
+ * fundo escuro, pequena e apagada, até o lugar dela: o Geraldo chegando na grade, 18/10).
+ */
+export const ENTRADAS = ['fade', 'esquerda', 'direita', 'cima', 'baixo', 'zoom', 'corte', 'aproxima'] as const;
 export type EntradaCamada = (typeof ENTRADAS)[number];
 export const CENA_MAX_CAMADAS = 6;
 
