@@ -41,6 +41,13 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - **Ideia do Felipe, ainda não feita:** o passo pelas sombras da Magistrada (ao se mover, uma sombra se abre no chão, ela entra pintada de preto e sai
   de outra sombra que o mestre escolhe).
 
+## Feito em 17/10, madrugada
+- ATRAVESSA anda para os lados (alavanca em x; dedo: para onde aponta); em dupla o outro aparece na posição real.
+- Feliperama: a notinha da música não cobre mais o canto do letreiro pintado (era o "quadrado feio").
+- Cenas: até 40 quadros e quadros de 0,2 s; **modelos quadradões** guardados no jogo: "MODELO · Pesadelo da Cora" (23 quadros, calmo → cortes rápidos/flash → olhos rosa) e "MODELO · Geraldo nas grades" (grades, mão, dedos, rosto). Imagens-bloco em `client/public/arte/modelo-cenas/`; gerador em `scratchpad/modelo_cora.py` (rascunho).
+- Fila dos NPCs no estilo dos monstros TERMINOU (10 de 10 folhas v1 em `trabalho/estilo-monstro/<id>/`); comparação em `docs/npcs-estilo-novo-v1.png`. Falta o Felipe aprovar.
+- Sessão "passo pelas sombras" ficou pela metade na árvore (hotel.ts, roomInstance.ts, seed.ts, RoomView.ts, db.ts, protocol.ts + test/passoSombras.test.ts, 2 testes falhando): NÃO foi para o jogo.
+
 ## COMEÇOU, FALTA CONTINUAR (17/10, noite): os NPCs refeitos no estilo dos monstros
 
 O Felipe viu o Alosi no estilo das peças dos monstros (contorno, sombreado e acabamento do Anfitrião e do Existido) ao lado do de hoje e mandou: **"vamos
