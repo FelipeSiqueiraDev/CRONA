@@ -1,7 +1,7 @@
 import { regras, type FichaSalva, type PartyMember, type SceneInfo } from '@crona/shared';
 import type { App } from './app';
 import { portraitCanvas } from '../render/portrait';
-import { h } from './dom';
+import { h, toast } from './dom';
 import { arteOu, ic, type NomeIcone } from './icons';
 import { askNote } from './note';
 import { sfx } from './sfx';
@@ -79,6 +79,8 @@ export class AbaInterludio {
       const marcar = (a: regras.AcaoInterludio) => {
         const atual = this.escolhas.get(f.id) ?? { acoes: [] };
         const acoes = atual.acoes.includes(a) ? atual.acoes.filter((x) => x !== a) : [...atual.acoes, a].slice(-2);
+        // cada um faz até duas ações (LR p. 92): a terceira troca a mais antiga, e o mestre fica sabendo
+        if (!atual.acoes.includes(a) && atual.acoes.length >= 2) toast('Só duas ações por interlúdio: a mais antiga saiu.', 'info');
         const nova: regras.EscolhaInterludio = { acoes };
         if (acoes.includes('alimentar')) nova.prato = atual.prato;
         this.escolhas.set(f.id, nova);
