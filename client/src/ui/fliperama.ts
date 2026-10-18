@@ -321,7 +321,7 @@ export class Fliperama implements TelaDoBar {
     if (!p || !j) return;
     if (d.tipo === 'pong' && j instanceof Pong) j.aplicar(d.s);
     else if (d.tipo === 'raquete' && j instanceof Pong && typeof d.y === 'number') j.remoto = d.y;
-    else if (d.tipo === 'pos' && j instanceof Atravessa && typeof d.y === 'number' && typeof d.p === 'number') j.outro = { y: d.y, p: d.p, passos: typeof d.passos === 'number' ? d.passos : 0 };
+    else if (d.tipo === 'pos' && j instanceof Atravessa && typeof d.y === 'number' && typeof d.p === 'number') j.outro = { y: d.y, p: d.p, passos: typeof d.passos === 'number' ? d.passos : 0, x: typeof d.x === 'number' ? d.x : undefined };
     else if (d.tipo === 'pos' && j instanceof PulaPula && typeof d.p === 'number') j.outro = { p: d.p, vivo: true };
     else if (d.tipo === 'fim' && typeof d.p === 'number') {
       p.fimOutro = d.p;

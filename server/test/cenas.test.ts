@@ -66,7 +66,7 @@ describe('Cenas de momento: o que vale', () => {
     assert.equal(urlDeCena('/uploads/x.png', 'audio'), null);
   });
 
-  test('lerCena exige título e pelo menos um quadro com imagem; descarta o quadro torto e limita a 12', () => {
+  test('lerCena exige título e pelo menos um quadro com imagem; descarta o quadro torto e limita a 40', () => {
     assert.equal(lerCena({ titulo: '', quadros: [{ imagem: '/uploads/a.png' }] }, () => 'n'), null);
     assert.equal(lerCena({ titulo: 'x', quadros: [{ imagem: 'http://fora/a.png' }] }, () => 'n'), null);
     const c = lerCena({ titulo: ' Cena ', quadros: [{ imagem: '/uploads/a.png', legenda: ' oi ' }, { imagem: 'lixo' }, null, { imagem: '/uploads/b.jpg' }], musica: 'http://fora/m.mp3' }, () => 'novo');
@@ -76,8 +76,8 @@ describe('Cenas de momento: o que vale', () => {
     assert.equal(c.quadros.length, 2);
     assert.equal(c.quadros[0].legenda, 'oi');
     assert.equal(c.musica, undefined);
-    const muitos = lerCena({ titulo: 'x', quadros: Array.from({ length: 30 }, (_, i) => ({ imagem: `/uploads/q${i}.png` })) }, () => 'n');
-    assert.equal(muitos?.quadros.length, 12);
+    const muitos = lerCena({ titulo: 'x', quadros: Array.from({ length: 60 }, (_, i) => ({ imagem: `/uploads/q${i}.png` })) }, () => 'n');
+    assert.equal(muitos?.quadros.length, 40);
   });
 
   test('semNotas tira a fala do mestre e deixa a legenda', () => {

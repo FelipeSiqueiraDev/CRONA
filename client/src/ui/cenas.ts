@@ -199,13 +199,13 @@ export function abrirCenas(app: App) {
     const dur = h('input', {
       class: 'fx-inp cne-num',
       type: 'number',
-      min: 1,
+      min: 0.2,
       max: 120,
-      step: 1,
+      step: 0.1,
       placeholder: 'fica',
       value: q.duracao ?? '',
       title: 'Quantos segundos o quadro fica na tela antes de passar sozinho. Vazio: fica até você avançar (o último quadro congela até você fechar)',
-      oninput: () => ((q.duracao = dur.value ? Math.max(1, Math.min(120, Number(dur.value))) : undefined), marcar()),
+      oninput: () => ((q.duracao = dur.value ? Math.max(0.2, Math.min(120, Number(dur.value))) : undefined), marcar()),
     }) as HTMLInputElement;
     const arqSom = h('input', { type: 'file', accept: 'audio/mpeg,audio/ogg,audio/wav,audio/mp4,audio/webm,.mp3,.ogg,.wav,.m4a', class: 'hidden' }) as HTMLInputElement;
     arqSom.addEventListener('change', async () => {

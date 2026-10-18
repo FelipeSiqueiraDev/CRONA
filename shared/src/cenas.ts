@@ -4,7 +4,7 @@
  * todo mundo (o mestre, a mesa e os celulares), com música e uma fala só do mestre em cada quadro.
  */
 
-export const CENA_MAX_QUADROS = 12;
+export const CENA_MAX_QUADROS = 40;
 export const CENA_MAX_CENAS = 60;
 
 /** O que a câmera faz na imagem enquanto o quadro está na tela. */
@@ -125,7 +125,7 @@ export function lerCena(raw: unknown, novoId: () => string): CenaMomento | null 
     const nota = texto(r.nota, 300);
     const movimento = (MOVIMENTOS as readonly string[]).includes(r.movimento as string) && r.movimento !== 'zoom' ? (r.movimento as MovimentoCena) : undefined;
     const transicao = (TRANSICOES as readonly string[]).includes(r.transicao as string) && r.transicao !== 'fade' ? (r.transicao as TransicaoCena) : undefined;
-    const duracao = typeof r.duracao === 'number' && Number.isFinite(r.duracao) && r.duracao >= 1 ? Math.min(CENA_MAX_DURACAO, Math.round(r.duracao * 10) / 10) : undefined;
+    const duracao = typeof r.duracao === 'number' && Number.isFinite(r.duracao) && r.duracao >= 0.2 ? Math.min(CENA_MAX_DURACAO, Math.round(r.duracao * 10) / 10) : undefined;
     const som = urlDeCena(r.som, 'audio');
     const somNome = texto(r.somNome, 60);
     const foco = (v: unknown): Foco | null => {

@@ -421,7 +421,7 @@ export class Atravessa implements Jogo {
   private protegido = 0;
   private faixas: { y: number; vel: number; dir: number; carros: Carro[] }[] = [];
   /** em dupla: o outro agente (a altura e os pontos que o celular dele manda) */
-  outro: { y: number; p: number; passos: number } | null = null;
+  outro: { y: number; p: number; passos: number; x?: number } | null = null;
   private xOutro = 0;
 
   constructor(
@@ -479,6 +479,9 @@ export class Atravessa implements Jogo {
     const forte = e.segura.has('a') || !!e.dedo;
     const sobe = forte ? 1 : Math.max(0, -e.eixo.y);
     const desce = forte ? 0 : Math.max(0, e.eixo.y);
+    // para os lados (17/10, o Felipe: "tem que dar pra ir pros lados"): a alavanca em x; com o dedo, para onde ele aponta
+    const lado = e.dedo ? (Math.abs(e.dedo.x - (this.x + 4)) > 14 ? Math.sign(e.dedo.x - (this.x + 4)) : 0) : e.eixo.x;
+    if (Math.abs(lado) > 0.02) (this.x = Math.max(1, Math.min(W - 9, this.x + 1.1 * lado))), this.passos++;
     if (sobe > 0.02) (this.y -= 0.85 * sobe), this.passos++;
     else if (desce > 0.02 && this.y < 186) (this.y = Math.min(186, this.y + 0.85 * desce)), this.passos++;
     if (this.y <= 20) {
@@ -530,7 +533,7 @@ export class Atravessa implements Jogo {
     }
     for (const f of this.faixas) for (const c of f.carros) this.carro(g, c, f.y, f.dir);
     // o outro agente (em dupla), de terno vinho
-    if (this.outro) boneco(g, [...AGENTE, ...PERNAS[(this.outro.passos >> 3) % 2]], this.xOutro, this.outro.y - 9, CORES_OUTRO);
+    if (this.outro) boneco(g, [...AGENTE, ...PERNAS[(this.outro.passos >> 3) % 2]], this.outro.x ?? this.xOutro, this.outro.y - 9, CORES_OUTRO);
     // o agente (pisca quando o carro pega)
     if (this.atropelado === 0 || (quadro >> 2) % 2 === 0) {
       const p = PERNAS[(this.passos >> 3) % 2];
@@ -553,7 +556,7 @@ export class Atravessa implements Jogo {
 
   /** O que vai para o celular do outro (em dupla). */
   posicao() {
-    return { y: Math.round(this.y * 10) / 10, p: this.pontos, passos: this.passos };
+    return { y: Math.round(this.y * 10) / 10, x: Math.round(this.x), p: this.pontos, passos: this.passos };
   }
 
   private carro(g: CanvasRenderingContext2D, c: Carro, y: number, dir: number) {

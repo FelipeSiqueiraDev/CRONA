@@ -276,6 +276,17 @@
   -webkit-tap-highlight-color: transparent;
   transition: opacity 0.2s, color 0.2s;
 }
+/* com o letreiro pintado o círculo escuro cobria o canto do desenho (o "quadrado feioso", 17/10): vira só a notinha, dentro da placa */
+.flip.tem-letreiro .flip-som {
+  right: 17%;
+  top: 14%;
+  width: calc(var(--u) * 7);
+  height: calc(var(--u) * 7);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  text-shadow: 0 calc(var(--u) * 0.4) 0 #1b0d03;
+}
 .flip-som.off {
   color: var(--c-texto-3);
   opacity: 0.6;
