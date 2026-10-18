@@ -1,0 +1,2857 @@
+{
+ "origem": "banco do C.R.I.S (cris-postgres, so leitura), exportado em 18/10/2026",
+ "agent_sheets": [
+  {
+   "id": "28a8fa83-3e43-4e6a-b658-3a872cee45e6",
+   "character_name": "???",
+   "player_name": "",
+   "origem": "atleta",
+   "classe": "combatente",
+   "trilha": "guerreiro",
+   "nex": "65%",
+   "patente": "Agente de Elite",
+   "pp": 200,
+   "agi": 2,
+   "forca": 3,
+   "intel": 1,
+   "pre": 2,
+   "vig": 3,
+   "pv_max": 107,
+   "pv": 107,
+   "pe_max": 52,
+   "pe": 52,
+   "pe_por_rodada": 13,
+   "san_max": 48,
+   "san": 48,
+   "defesa": 14,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": true,
+   "tem_bloqueio": true,
+   "tem_contra_ataque": true,
+   "pericias_json": {
+    "Acrobacia": "treinado",
+    "Adestramento": "",
+    "Artes": "",
+    "Atletismo": "treinado",
+    "Atualidades": "",
+    "Ciências": "",
+    "Crime": "",
+    "Diplomacia": "",
+    "Enganação": "",
+    "Fortitude": "expert",
+    "Furtividade": "",
+    "Iniciativa": "",
+    "Intimidação": "",
+    "Intuição": "",
+    "Investigação": "",
+    "Luta": "veterano",
+    "Medicina": "",
+    "Ocultismo": "",
+    "Percepção": "",
+    "Pilotagem": "",
+    "Pontaria": "",
+    "Profissão": "",
+    "Reflexos": "expert",
+    "Religião": "",
+    "Sobrevivência": "",
+    "Tática": "",
+    "Tecnologia": "",
+    "Vontade": "veterano"
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "3d20 (fica com o maior) +10 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 3,
+     "manterPior": false,
+     "bonusTreino": 10
+    },
+    {
+     "arma": "Katana",
+     "teste": "3d20 (fica com o maior) +10 (Luta)",
+     "dano": "1d10 + FOR",
+     "critico": "19",
+     "alcance": "Curto",
+     "tipo": "Corte",
+     "auto": true,
+     "dadosAtributo": 3,
+     "manterPior": false,
+     "bonusTreino": 10
+    }
+   ],
+   "inventario_json": [
+    {
+     "item": "Mochila Militar",
+     "espacos": 0,
+     "categoria": "I",
+     "desc": "+2 espaços de carga"
+    },
+    {
+     "item": "Bandoleira",
+     "espacos": 1,
+     "categoria": "I",
+     "desc": "Sacar/guardar como ação livre (1/rodada)"
+    },
+    {
+     "item": "Vestimenta",
+     "espacos": 1,
+     "categoria": "I",
+     "desc": "+2 em uma perícia à escolha (exceto Luta/Pontaria); máx. 2 vestimentas ativas ao mesmo tempo",
+     "periciaBonusValor": 2,
+     "periciaEscolhida": "Fortitude",
+     "slotTipo": "vestimenta"
+    },
+    {
+     "item": "Katana",
+     "espacos": 2,
+     "categoria": "I",
+     "desc": "Dano 1d10 (Corte) · Crítico 19 · Ágil; 2 Mãos (veterano Luta = 1 mão)"
+    }
+   ],
+   "limite_credito": "Ilimitado",
+   "habilidades_json": [
+    {
+     "name": "Ataque Especial",
+     "desc": "Ao realizar um ataque, pode gastar 2 PE para receber +5 no teste de ataque ou na rolagem de dano. Mesmo com limite de PE por turno menor, sempre pode pagar o custo mínimo de uma habilidade."
+    },
+    {
+     "name": "Técnica Letal",
+     "desc": "+2 na margem de ameaça em ataques corpo a corpo."
+    },
+    {
+     "name": "Revidar",
+     "desc": "Reação de 2 PE: ataca imediatamente após bloquear com sucesso um golpe."
+    },
+    {
+     "name": "Força Opressora",
+     "desc": "Por 1 PE, realiza as manobras Derrubar ou Empurrar como ação livre ao acertar um ataque corpo a corpo."
+    },
+    {
+     "name": "110%",
+     "desc": "Gasta 2 PE para +5 em um teste de Força ou Agilidade (exceto Luta e Pontaria)."
+    },
+    {
+     "name": "Golpe Pesado",
+     "desc": "O dano de armas corpo a corpo aumenta em um dado do mesmo tipo."
+    },
+    {
+     "name": "Proteção Pesada",
+     "desc": "Recebe proficiência com proteções pesadas."
+    },
+    {
+     "name": "Reflexos Defensivos",
+     "desc": "+5 na Defesa e em testes de resistência contra inimigos em alcance curto."
+    },
+    {
+     "name": "Versatilidade",
+     "desc": "Escolha entre receber um poder de combatente ou o primeiro poder de uma trilha de combatente que não a sua."
+    },
+    {
+     "name": "A Favorita",
+     "desc": "Escolha uma arma favorita; sua categoria é reduzida em I. (via Versatilidade, trilha Aniquilador)"
+    }
+   ],
+   "rituais_json": [],
+   "dt_rituais": 25,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "",
+   "gm_owned": true,
+   "faccao": "lotus_branca",
+   "is_escriba": false,
+   "created_at": "2026-07-08T20:02:16.108805+00:00",
+   "afinidade": "nenhuma",
+   "esquiva": 29,
+   "bloqueio": 15,
+   "contra_ataque_val": 10,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "a244810f-2d67-4426-a179-66d2d7fc3367",
+   "character_name": "Agatha Volkomenn",
+   "player_name": "",
+   "origem": "vitima",
+   "classe": "ocultista",
+   "trilha": "graduado",
+   "nex": "80%",
+   "patente": "Recruta",
+   "pp": 0,
+   "agi": 1,
+   "forca": 1,
+   "intel": 3,
+   "pre": 3,
+   "vig": 2,
+   "pv_max": 74,
+   "pv": 74,
+   "pe_max": 112,
+   "pe": 112,
+   "pe_por_rodada": 16,
+   "san_max": 111,
+   "san": 111,
+   "defesa": 11,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": true,
+   "tem_bloqueio": false,
+   "tem_contra_ataque": false,
+   "pericias_json": {
+    "Acrobacia": "",
+    "Adestramento": "",
+    "Artes": "",
+    "Atletismo": "",
+    "Atualidades": "",
+    "Ciências": "",
+    "Crime": "",
+    "Diplomacia": "",
+    "Enganação": "",
+    "Fortitude": "",
+    "Furtividade": "",
+    "Iniciativa": "",
+    "Intimidação": "",
+    "Intuição": "",
+    "Investigação": "",
+    "Luta": "",
+    "Medicina": "",
+    "Ocultismo": "",
+    "Percepção": "",
+    "Pilotagem": "",
+    "Pontaria": "",
+    "Profissão": "",
+    "Reflexos": "treinado",
+    "Religião": "",
+    "Sobrevivência": "",
+    "Tática": "",
+    "Tecnologia": "",
+    "Vontade": "treinado"
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "1d20 (fica com o maior) +0 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 1,
+     "manterPior": false,
+     "bonusTreino": 0
+    }
+   ],
+   "inventario_json": [],
+   "limite_credito": "Baixo",
+   "habilidades_json": [
+    {
+     "name": "Saber Ampliado",
+     "desc": "Aprende rituais adicionais por círculo além do normal."
+    },
+    {
+     "name": "Grimório Ritualístico",
+     "desc": "Possui um grimório com rituais extras; número de rituais no livro é baseado em Intelecto."
+    },
+    {
+     "name": "Rituais Eficientes",
+     "desc": "A DT para resistir aos seus rituais aumenta em +5."
+    },
+    {
+     "name": "Cicatrizes Psicológicas",
+     "desc": "+1 de Sanidade para cada 5% de NEX."
+    },
+    {
+     "name": "Escolhido pelo Outro Lado",
+     "desc": "Permite aprender e conjurar rituais. Começa conhecendo 3 rituais de 1º círculo; a cada novo NEX aprende +1 ritual de qualquer círculo que já possa lançar."
+    }
+   ],
+   "rituais_json": [],
+   "dt_rituais": 29,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "[imagem em avatares/agatha-volkomenn.jpg]",
+   "gm_owned": true,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-04T18:59:15.251312+00:00",
+   "afinidade": "nenhuma",
+   "esquiva": 16,
+   "bloqueio": 0,
+   "contra_ataque_val": 0,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "f8b647b5-beb5-43f7-b49c-4466b87699a7",
+   "character_name": "Alosi Walker",
+   "player_name": "",
+   "origem": "religioso",
+   "classe": "ocultista",
+   "trilha": "graduado",
+   "nex": "20%",
+   "patente": "Operador",
+   "pp": 35,
+   "agi": 1,
+   "forca": 1,
+   "intel": 3,
+   "pre": 4,
+   "vig": 1,
+   "pv_max": 22,
+   "pv": 9,
+   "pe_max": 32,
+   "pe": 23,
+   "pe_por_rodada": 4,
+   "san_max": 35,
+   "san": 28,
+   "defesa": 11,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": false,
+   "tem_bloqueio": false,
+   "tem_contra_ataque": false,
+   "pericias_json": {
+    "Acrobacia": "",
+    "Adestramento": "",
+    "Artes": "",
+    "Atletismo": "",
+    "Atualidades": "",
+    "Ciências": "",
+    "Crime": "",
+    "Diplomacia": "treinado",
+    "Enganação": "",
+    "Fortitude": "",
+    "Furtividade": "",
+    "Iniciativa": "",
+    "Intimidação": "",
+    "Intuição": "treinado",
+    "Investigação": "treinado",
+    "Luta": "",
+    "Medicina": "treinado",
+    "Ocultismo": "treinado",
+    "Percepção": "treinado",
+    "Pilotagem": "",
+    "Pontaria": "",
+    "Reflexos": "",
+    "Religião": "treinado",
+    "Sobrevivência": "",
+    "Tática": "",
+    "Tecnologia": "",
+    "Vontade": "treinado",
+    "Profissão (Históriador)": "treinado"
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "1d20 (fica com o maior) +0 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 1,
+     "manterPior": false,
+     "bonusTreino": 0
+    }
+   ],
+   "inventario_json": [
+    {
+     "item": "Componentes Ritualísticos de Conhecimento",
+     "espacos": 1,
+     "categoria": "0"
+    },
+    {
+     "item": "Componentes Ritualísticos de Morte",
+     "espacos": 1,
+     "categoria": "0"
+    },
+    {
+     "item": "Componentes Ritualísticos de Energia",
+     "espacos": 1,
+     "categoria": "0"
+    },
+    {
+     "item": "Bandoleira",
+     "espacos": 1,
+     "categoria": "I",
+     "desc": "Sacar/guardar como ação livre (1/rodada)"
+    },
+    {
+     "item": "Crânio Espiral",
+     "espacos": 1,
+     "categoria": "II",
+     "desc": "1x/rodada, ação livre pra ganhar uma ação padrão extra na rodada. Cada uso exige Vontade (DT 15 +5 por uso no dia); falha envelhece 1d4 anos e trava o item pro resto do dia."
+    },
+    {
+     "item": "Mochila Militar",
+     "espacos": 0,
+     "categoria": "I",
+     "desc": "+2 espaços de carga"
+    },
+    {
+     "item": "Amuleto Sagrado",
+     "espacos": 1,
+     "categoria": "0",
+     "desc": "+2 em Religião e Vontade; ocupa espaço de um item vestido",
+     "periciaFixa": [
+      {
+       "pericia": "Religião",
+       "valor": 2
+      },
+      {
+       "pericia": "Vontade",
+       "valor": 2
+      }
+     ],
+     "slotTipo": "vestimenta"
+    }
+   ],
+   "limite_credito": "Médio",
+   "habilidades_json": [
+    {
+     "name": "Saber Ampliado",
+     "desc": "Aprende rituais adicionais por círculo além do normal."
+    },
+    {
+     "name": "Acalentar",
+     "desc": "+5 em Religião para acalmar; alvo recupera 1d6 + Presença de Sanidade."
+    },
+    {
+     "name": "Escolhido pelo Outro Lado",
+     "desc": "Permite aprender e conjurar rituais. Começa conhecendo 3 rituais de 1º círculo; a cada novo NEX aprende +1 ritual de qualquer círculo que já possa lançar."
+    },
+    {
+     "name": "Ritual Potente",
+     "desc": "Soma Intelecto no dano ou cura de rituais."
+    }
+   ],
+   "rituais_json": [
+    {
+     "name": "Perturbação",
+     "circulo": "1",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Eletrocussão",
+     "circulo": "1",
+     "elemento": "Energia",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Decadência",
+     "circulo": "1",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Cicatrização",
+     "circulo": "1",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Cinerária",
+     "circulo": "1",
+     "elemento": "Medo",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Embaralhar",
+     "circulo": "1",
+     "elemento": "Energia",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Espirais da Perdição",
+     "circulo": "1",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    }
+   ],
+   "dt_rituais": 18,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "/api/agent-avatar/f8b647b5-beb5-43f7-b49c-4466b87699a7",
+   "gm_owned": false,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-03T21:38:49.225394+00:00",
+   "afinidade": "nenhuma",
+   "esquiva": 0,
+   "bloqueio": 0,
+   "contra_ataque_val": 0,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "d58e3bd4-9811-4bba-833a-36024ea7f1ec",
+   "character_name": "Catarina Albuquerque",
+   "player_name": "",
+   "origem": "atleta",
+   "classe": "especialista",
+   "trilha": "infiltrador",
+   "nex": "20%",
+   "patente": "Operador",
+   "pp": 35,
+   "agi": 4,
+   "forca": 1,
+   "intel": 2,
+   "pre": 2,
+   "vig": 1,
+   "pv_max": 29,
+   "pv": 29,
+   "pe_max": 20,
+   "pe": 20,
+   "pe_por_rodada": 4,
+   "san_max": 28,
+   "san": 23,
+   "defesa": 19,
+   "deslocamento": 6,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": true,
+   "tem_bloqueio": false,
+   "tem_contra_ataque": true,
+   "pericias_json": {
+    "Acrobacia": "treinado",
+    "Adestramento": "",
+    "Artes": "",
+    "Atletismo": "treinado",
+    "Atualidades": "",
+    "Ciências": "",
+    "Crime": "treinado",
+    "Diplomacia": "",
+    "Enganação": "",
+    "Fortitude": "",
+    "Furtividade": "treinado",
+    "Iniciativa": "treinado",
+    "Intimidação": "",
+    "Intuição": "",
+    "Investigação": "treinado",
+    "Luta": "treinado",
+    "Medicina": "",
+    "Ocultismo": "",
+    "Percepção": "treinado",
+    "Pilotagem": "",
+    "Pontaria": "",
+    "Profissão": "",
+    "Reflexos": "treinado",
+    "Religião": "",
+    "Sobrevivência": "",
+    "Tática": "",
+    "Tecnologia": "treinado",
+    "Vontade": "treinado"
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "1d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 1,
+     "manterPior": false,
+     "bonusTreino": 5
+    },
+    {
+     "arma": "Katana",
+     "teste": "1d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d10 + FOR +2 +2 (Ninja Urbano)",
+     "critico": "19",
+     "alcance": "Curto",
+     "tipo": "Corte",
+     "auto": true,
+     "dadosAtributo": 1,
+     "manterPior": false,
+     "bonusTreino": 5
+    },
+    {
+     "arma": "Pé de Mesa",
+     "teste": "1d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d6 + FOR",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 1,
+     "manterPior": false,
+     "bonusTreino": 5
+    }
+   ],
+   "inventario_json": [
+    {
+     "item": "Armadura Leve",
+     "espacos": 2,
+     "categoria": "I",
+     "defesaBonus": 5,
+     "mods": [],
+     "curses": []
+    },
+    {
+     "item": "Katana",
+     "espacos": 2,
+     "categoria": "II",
+     "desc": "Dano 1d10 (Corte) · Crítico 19 · Ágil; 2 Mãos (veterano Luta = 1 mão)",
+     "isWeapon": true,
+     "mods": [
+      "Cruel"
+     ],
+     "curses": [],
+     "baseCategoria": "I"
+    },
+    {
+     "item": "Mochila Militar",
+     "espacos": 0,
+     "categoria": "I",
+     "desc": "+2 espaços de carga"
+    },
+    {
+     "item": "Granada de Fumaça",
+     "espacos": 1,
+     "categoria": "0",
+     "usos": 1,
+     "usosMax": 1,
+     "desc": "Área 6m: cegos e camuflagem total por 2 rodadas"
+    },
+    {
+     "item": "Granada de Fragmentação",
+     "espacos": 1,
+     "categoria": "I",
+     "usos": 1,
+     "usosMax": 1,
+     "desc": "Área 6m: 8d6 perfuração (Reflexos DT Agi reduz à metade)"
+    },
+    {
+     "item": "Kit de Perícia",
+     "espacos": 1,
+     "categoria": "0",
+     "desc": "Evita penalidade de –5 em testes técnicos"
+    },
+    {
+     "item": "Pé de Mesa",
+     "espacos": 1,
+     "categoria": "0",
+     "tipo": "Impacto",
+     "dano": "1d6",
+     "isWeapon": true,
+     "critico": "x2"
+    }
+   ],
+   "limite_credito": "Médio",
+   "habilidades_json": [
+    {
+     "name": "Eclético",
+     "desc": "Gasta 2 PE para receber o bônus de treinamento (+5) em uma perícia na qual não é treinado, para um teste específico."
+    },
+    {
+     "name": "Perito",
+     "desc": "Escolha duas perícias treinadas (exceto Luta e Pontaria). Ao testá-las, pode gastar 2 PE para somar +1d6 ao resultado."
+    },
+    {
+     "name": "110%",
+     "desc": "Gasta 2pe \nGanha +5 em um teste de perícia"
+    },
+    {
+     "name": "Ataque Furtivo",
+     "desc": "Por 1 PE, causa +1d6 de dano em alvos desprevenidos ou flanqueados (evolui até +4d6 em NEXs mais altos). (via Versatilidade, trilha Infiltrador)"
+    },
+    {
+     "name": "Ninja Urbano",
+     "desc": "Proficiência com armas táticas corpo a corpo e de disparo, e +2 no dano com elas."
+    }
+   ],
+   "rituais_json": [],
+   "dt_rituais": 16,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "[imagem em avatares/catarina-albuquerque.jpg]",
+   "gm_owned": false,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-03T21:38:21.778652+00:00",
+   "afinidade": "nenhuma",
+   "esquiva": 24,
+   "bloqueio": 0,
+   "contra_ataque_val": 5,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "91fff1c6-ce40-4f18-a283-1828ac1dca3a",
+   "character_name": "Cora Falcão",
+   "player_name": "",
+   "origem": "militar",
+   "classe": "combatente",
+   "trilha": "aniquilador",
+   "nex": "20%",
+   "patente": "Operador",
+   "pp": 35,
+   "agi": 3,
+   "forca": 2,
+   "intel": 1,
+   "pre": 2,
+   "vig": 2,
+   "pv_max": 36,
+   "pv": 27,
+   "pe_max": 16,
+   "pe": 12,
+   "pe_por_rodada": 4,
+   "san_max": 21,
+   "san": 11,
+   "defesa": 13,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": true,
+   "tem_bloqueio": false,
+   "tem_contra_ataque": true,
+   "pericias_json": {
+    "Luta": "treinado",
+    "Artes": "",
+    "Crime": "",
+    "Tática": "treinado",
+    "Vontade": "",
+    "Medicina": "",
+    "Pontaria": "treinado",
+    "Reflexos": "treinado",
+    "Acrobacia": "",
+    "Atletismo": "",
+    "Ciências": "",
+    "Fortitude": "",
+    "Ocultismo": "",
+    "Pilotagem": "",
+    "Religião": "",
+    "Diplomacia": "",
+    "Iniciativa": "treinado",
+    "Intuição": "",
+    "Profissão": "",
+    "Tecnologia": "",
+    "Atualidades": "",
+    "Enganação": "",
+    "Furtividade": "",
+    "Percepção": "treinado",
+    "Adestramento": "",
+    "Intimidação": "",
+    "Investigação": "",
+    "Sobrevivência": ""
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "2d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 2,
+     "manterPior": false,
+     "bonusTreino": 5
+    },
+    {
+     "arma": "Faca",
+     "teste": "3d20 (fica com o maior) +5 (Pontaria)",
+     "dano": "1d4",
+     "critico": "19",
+     "alcance": "Curto",
+     "tipo": "Corte",
+     "auto": true,
+     "dadosAtributo": 3,
+     "manterPior": false,
+     "bonusTreino": 5
+    },
+    {
+     "arma": "Fuzil de Caça",
+     "teste": "3d20 (fica com o maior) +5 (Pontaria)",
+     "dano": "3d8",
+     "critico": "17/x3",
+     "alcance": "Médio",
+     "tipo": "Balístico",
+     "auto": true,
+     "dadosAtributo": 3,
+     "manterPior": false,
+     "bonusTreino": 5
+    }
+   ],
+   "inventario_json": [
+    {
+     "item": "Celular",
+     "espacos": 1,
+     "categoria": "0"
+    },
+    {
+     "item": "Alarme de Movimento",
+     "espacos": 1,
+     "categoria": "0"
+    },
+    {
+     "item": "Fuzil de Caça",
+     "espacos": 2,
+     "categoria": "II",
+     "desc": "Dano 2d8 (Balístico) · Crítico 19/x3 · Alcance Médio · 2 Mãos; balas longas",
+     "isWeapon": true,
+     "mods": [
+      "Calibre Grosso",
+      "Mira Laser"
+     ],
+     "curses": [],
+     "baseCategoria": "I"
+    },
+    {
+     "item": "Munição (Balas Longas)",
+     "espacos": 1,
+     "categoria": "I",
+     "usos": 1,
+     "usosMax": 1,
+     "desc": "Repõe cargas de Fuzil de Caça, Fuzil de Assalto, Fuzil de Precisão, Metralhadora (1 cena/pacote)"
+    },
+    {
+     "item": "Coagulante",
+     "espacos": 0.5,
+     "categoria": "I",
+     "usos": 1,
+     "usosMax": 1,
+     "desc": "+5 em testes para estabilizar sangrando e para remover a condição morrendo"
+    },
+    {
+     "item": "Pé de Mesa",
+     "espacos": 1,
+     "categoria": "0",
+     "tipo": "Impacto",
+     "dano": "1d6",
+     "isWeapon": true,
+     "critico": "x2"
+    },
+    {
+     "item": "Faca",
+     "espacos": 1,
+     "categoria": "0"
+    }
+   ],
+   "limite_credito": "Médio",
+   "habilidades_json": [
+    {
+     "name": "Ataque Especial",
+     "desc": "Ao realizar um ataque, pode gastar 2 PE para receber +5 no teste de ataque ou na rolagem de dano. Mesmo com limite de PE por turno menor, sempre pode pagar o custo mínimo de uma habilidade."
+    },
+    {
+     "name": "A Favorita",
+     "desc": "Escolha uma arma favorita; sua categoria é reduzida em I."
+    },
+    {
+     "name": "Para Bellum",
+     "desc": "+2 em rolagens de dano com armas de fogo."
+    },
+    {
+     "name": "Tiro Certeiro",
+     "desc": "Soma Agilidade no dano de armas de disparo e ignora penalidade contra alvos em combate corpo a corpo com aliados."
+    }
+   ],
+   "rituais_json": [],
+   "dt_rituais": 16,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "[imagem em avatares/cora-falcao.jpg]",
+   "gm_owned": false,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-03T21:22:59.078737+00:00",
+   "afinidade": "nenhuma",
+   "esquiva": 18,
+   "bloqueio": 0,
+   "contra_ataque_val": 5,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "Fuzil de Caça",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "595c86b4-6282-4c08-ba94-c1c5f68aef5d",
+   "character_name": "D. Tepes",
+   "player_name": "",
+   "origem": "policial",
+   "classe": "combatente",
+   "trilha": "monstruoso",
+   "nex": "20%",
+   "patente": "Operador",
+   "pp": 35,
+   "agi": 1,
+   "forca": 2,
+   "intel": 2,
+   "pre": 1,
+   "vig": 3,
+   "pv_max": 48,
+   "pv": 34,
+   "pe_max": 12,
+   "pe": 12,
+   "pe_por_rodada": 4,
+   "san_max": 21,
+   "san": 6,
+   "defesa": 20,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": false,
+   "tem_bloqueio": true,
+   "tem_contra_ataque": true,
+   "pericias_json": {
+    "Acrobacia": "",
+    "Adestramento": "treinado",
+    "Artes": "",
+    "Atletismo": "",
+    "Atualidades": "",
+    "Ciências": "",
+    "Crime": "",
+    "Diplomacia": "",
+    "Enganação": "",
+    "Fortitude": "treinado",
+    "Furtividade": "",
+    "Iniciativa": "",
+    "Intimidação": "",
+    "Intuição": "",
+    "Investigação": "treinado",
+    "Luta": "treinado",
+    "Medicina": "",
+    "Ocultismo": "treinado",
+    "Percepção": "treinado",
+    "Pilotagem": "",
+    "Pontaria": "treinado",
+    "Profissão": "",
+    "Reflexos": "",
+    "Religião": "",
+    "Sobrevivência": "",
+    "Tática": "",
+    "Tecnologia": "",
+    "Vontade": "treinado",
+    "Faro": "treinado"
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "2d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 2,
+     "manterPior": false,
+     "bonusTreino": 5
+    },
+    {
+     "arma": "Pé de Mesa",
+     "teste": "2d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d6 + FOR",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 2,
+     "manterPior": false,
+     "bonusTreino": 5
+    },
+    {
+     "arma": "Corrente",
+     "teste": "2d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d8 + FOR",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 2,
+     "manterPior": false,
+     "bonusTreino": 5
+    }
+   ],
+   "inventario_json": [
+    {
+     "item": "Cão Adestrado",
+     "espacos": 0,
+     "categoria": "I"
+    },
+    {
+     "item": "Isqueiro",
+     "espacos": 0.5,
+     "categoria": "0"
+    },
+    {
+     "item": "Algemas",
+     "espacos": 1,
+     "categoria": "0"
+    },
+    {
+     "item": "Corda",
+     "espacos": 1,
+     "categoria": "0",
+     "desc": "10m; +5 em Atletismo em descidas ou para amarrar alvos"
+    },
+    {
+     "item": "Mochila Militar",
+     "espacos": 0,
+     "categoria": "I",
+     "desc": "+2 espaços de carga"
+    },
+    {
+     "item": "Cão de Guarda",
+     "espacos": 0,
+     "categoria": "0",
+     "isPet": true
+    },
+    {
+     "item": "Celular",
+     "espacos": 1,
+     "categoria": "0",
+     "desc": "+2 em perícias p/ obter informação (se houver sinal); lanterna fraca (cone 4,5m)"
+    },
+    {
+     "item": "Pé de Mesa",
+     "espacos": 1,
+     "categoria": "0",
+     "tipo": "Impacto",
+     "dano": "1d6",
+     "isWeapon": true,
+     "critico": "x2"
+    },
+    {
+     "item": "Armadura Leve",
+     "espacos": 2,
+     "categoria": "II",
+     "defesaBonus": 7,
+     "mods": [
+      "Reforçada"
+     ],
+     "curses": []
+    },
+    {
+     "item": "Corrente",
+     "espacos": 1,
+     "categoria": "I",
+     "tipo": "Impacto",
+     "dano": "1d8",
+     "isWeapon": true,
+     "critico": "x2",
+     "desc": "Dano 1d8 (Impacto) · +2 em desarmar e derrubar"
+    }
+   ],
+   "limite_credito": "Médio",
+   "habilidades_json": [
+    {
+     "name": "Ataque Especial",
+     "desc": "Ao realizar um ataque, pode gastar 2 PE para receber +5 no teste de ataque ou na rolagem de dano. Mesmo com limite de PE por turno menor, sempre pode pagar o custo mínimo de uma habilidade."
+    },
+    {
+     "name": "Mutação Inicial",
+     "desc": "Escolhe um elemento (Sangue, Morte, Conhecimento ou Energia) e desenvolve uma mutação física paranormal inicial. [Sangue: Resistência a Balístico e Sangue 5; soma Vigor no dano de contra-ataques; penalidade em Ciências/Intuição — Sobrevivendo ao Horror, Ser Amaldiçoado NEX 10%]",
+     "efeito": {
+      "kind": "resistencia",
+      "alvo": "sangue",
+      "valor": 5
+     }
+    },
+    {
+     "name": "Patrulha",
+     "desc": "+2 na Defesa."
+    },
+    {
+     "name": "Combate Defensivo",
+     "desc": "Ao agredir, pode sofrer –1d20 nos testes de ataque para receber +5 na Defesa até o próximo turno."
+    }
+   ],
+   "rituais_json": [],
+   "dt_rituais": 15,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "[imagem em avatares/d-tepes.jpg]",
+   "gm_owned": false,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-03T21:38:34.106461+00:00",
+   "afinidade": "nenhuma",
+   "esquiva": 0,
+   "bloqueio": 8,
+   "contra_ataque_val": 5,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {
+    "sangue": 5
+   },
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "8e2dc24e-b5a8-4f24-b756-cf2703a284eb",
+   "character_name": "Ivete Beicur",
+   "player_name": "",
+   "origem": "",
+   "classe": "especialista",
+   "trilha": "",
+   "nex": "50%",
+   "patente": "Recruta",
+   "pp": 0,
+   "agi": 1,
+   "forca": 1,
+   "intel": 1,
+   "pre": 1,
+   "vig": 1,
+   "pv_max": 53,
+   "pv": 53,
+   "pe_max": 40,
+   "pe": 40,
+   "pe_por_rodada": 10,
+   "san_max": 52,
+   "san": 52,
+   "defesa": 11,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": false,
+   "tem_bloqueio": false,
+   "tem_contra_ataque": false,
+   "pericias_json": {
+    "Acrobacia": "",
+    "Adestramento": "",
+    "Artes": "",
+    "Atletismo": "",
+    "Atualidades": "",
+    "Ciências": "",
+    "Crime": "",
+    "Diplomacia": "",
+    "Enganação": "",
+    "Fortitude": "",
+    "Furtividade": "",
+    "Iniciativa": "",
+    "Intimidação": "",
+    "Intuição": "",
+    "Investigação": "",
+    "Luta": "",
+    "Medicina": "",
+    "Ocultismo": "",
+    "Percepção": "",
+    "Pilotagem": "",
+    "Pontaria": "",
+    "Profissão": "",
+    "Reflexos": "",
+    "Religião": "",
+    "Sobrevivência": "",
+    "Tática": "",
+    "Tecnologia": "",
+    "Vontade": ""
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "1d20 (fica com o maior) +0 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 1,
+     "manterPior": false,
+     "bonusTreino": 0
+    }
+   ],
+   "inventario_json": [],
+   "limite_credito": "Baixo",
+   "habilidades_json": [
+    {
+     "name": "Eclético",
+     "desc": "Gasta 2 PE para receber o bônus de treinamento (+5) em uma perícia na qual não é treinado, para um teste específico."
+    },
+    {
+     "name": "Perito",
+     "desc": "Escolha duas perícias treinadas (exceto Luta e Pontaria). Ao testá-las, pode gastar 2 PE para somar +1d6 ao resultado."
+    }
+   ],
+   "rituais_json": [],
+   "dt_rituais": 21,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "[imagem em avatares/ivete-beicur.jpg]",
+   "gm_owned": true,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-04T19:01:05.029036+00:00",
+   "afinidade": "nenhuma",
+   "esquiva": 0,
+   "bloqueio": 0,
+   "contra_ataque_val": 0,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "c49fa010-d3c1-4a0d-990f-97b364ad4654",
+   "character_name": "Marcela Geleerd",
+   "player_name": "",
+   "origem": "",
+   "classe": "especialista",
+   "trilha": "",
+   "nex": "50%",
+   "patente": "Recruta",
+   "pp": 0,
+   "agi": 1,
+   "forca": 1,
+   "intel": 1,
+   "pre": 1,
+   "vig": 1,
+   "pv_max": 53,
+   "pv": 53,
+   "pe_max": 40,
+   "pe": 40,
+   "pe_por_rodada": 10,
+   "san_max": 52,
+   "san": 52,
+   "defesa": 11,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": false,
+   "tem_bloqueio": false,
+   "tem_contra_ataque": false,
+   "pericias_json": {
+    "Acrobacia": "",
+    "Adestramento": "",
+    "Artes": "",
+    "Atletismo": "",
+    "Atualidades": "",
+    "Ciências": "",
+    "Crime": "",
+    "Diplomacia": "",
+    "Enganação": "",
+    "Fortitude": "",
+    "Furtividade": "",
+    "Iniciativa": "",
+    "Intimidação": "",
+    "Intuição": "",
+    "Investigação": "",
+    "Luta": "",
+    "Medicina": "",
+    "Ocultismo": "",
+    "Percepção": "",
+    "Pilotagem": "",
+    "Pontaria": "",
+    "Profissão": "",
+    "Reflexos": "",
+    "Religião": "",
+    "Sobrevivência": "",
+    "Tática": "",
+    "Tecnologia": "",
+    "Vontade": ""
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "1d20 (fica com o maior) +0 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 1,
+     "manterPior": false,
+     "bonusTreino": 0
+    }
+   ],
+   "inventario_json": [],
+   "limite_credito": "Baixo",
+   "habilidades_json": [
+    {
+     "name": "Eclético",
+     "desc": "Gasta 2 PE para receber o bônus de treinamento (+5) em uma perícia na qual não é treinado, para um teste específico."
+    },
+    {
+     "name": "Perito",
+     "desc": "Escolha duas perícias treinadas (exceto Luta e Pontaria). Ao testá-las, pode gastar 2 PE para somar +1d6 ao resultado."
+    }
+   ],
+   "rituais_json": [],
+   "dt_rituais": 21,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "[imagem em avatares/marcela-geleerd.webp]",
+   "gm_owned": true,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-04T18:59:41.54237+00:00",
+   "afinidade": "nenhuma",
+   "esquiva": 0,
+   "bloqueio": 0,
+   "contra_ataque_val": 0,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "57adb4d5-180f-4c67-80a7-06e228ee98e0",
+   "character_name": "Miguel Albuquerque",
+   "player_name": "",
+   "origem": "lutador",
+   "classe": "especialista",
+   "trilha": "tecnico",
+   "nex": "50%",
+   "patente": "Agente Especial",
+   "pp": 75,
+   "agi": 2,
+   "forca": 1,
+   "intel": 3,
+   "pre": 3,
+   "vig": 1,
+   "pv_max": 53,
+   "pv": 53,
+   "pe_max": 60,
+   "pe": 60,
+   "pe_por_rodada": 10,
+   "san_max": 44,
+   "san": 44,
+   "defesa": 19,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": true,
+   "tem_bloqueio": false,
+   "tem_contra_ataque": true,
+   "pericias_json": {
+    "Acrobacia": "",
+    "Adestramento": "",
+    "Artes": "",
+    "Atletismo": "",
+    "Atualidades": "",
+    "Ciências": "",
+    "Crime": "",
+    "Diplomacia": "",
+    "Enganação": "",
+    "Fortitude": "",
+    "Furtividade": "",
+    "Iniciativa": "",
+    "Intimidação": "",
+    "Intuição": "",
+    "Investigação": "",
+    "Luta": "treinado",
+    "Medicina": "",
+    "Ocultismo": "",
+    "Percepção": "",
+    "Pilotagem": "",
+    "Pontaria": "",
+    "Reflexos": "treinado",
+    "Religião": "",
+    "Sobrevivência": "",
+    "Tática": "",
+    "Tecnologia": "",
+    "Vontade": "",
+    "Profissão (Engenharia)": ""
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "1d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d8 +1 +2 (Mão Pesada)",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 1,
+     "manterPior": false,
+     "bonusTreino": 5
+    },
+    {
+     "arma": "Fuzil de Assalto",
+     "teste": "2d20 (fica com o maior) +2 (Pontaria)",
+     "dano": "2d10",
+     "critico": "19/x3",
+     "alcance": "Médio",
+     "tipo": "Balístico",
+     "auto": true,
+     "dadosAtributo": 2,
+     "manterPior": false,
+     "bonusTreino": 2
+    }
+   ],
+   "inventario_json": [
+    {
+     "item": "Soqueira",
+     "espacos": 1,
+     "categoria": "II",
+     "desc": "+1 no dano desarmado; aceita modificações de arma corpo a corpo",
+     "isWeapon": true,
+     "mods": [],
+     "curses": [
+      "Ritualística"
+     ],
+     "baseCategoria": "0"
+    },
+    {
+     "item": "Fuzil de Assalto",
+     "espacos": 2,
+     "categoria": "III",
+     "desc": "Dano 2d10 (Balístico) · Crítico 19/x3 · Alcance Médio · 2 Mãos; arma automática",
+     "isWeapon": true,
+     "mods": [
+      "Alongada"
+     ],
+     "curses": [],
+     "baseCategoria": "II"
+    },
+    {
+     "item": "Munição (Balas Longas)",
+     "espacos": 1,
+     "categoria": "I",
+     "usos": 1,
+     "usosMax": 1,
+     "desc": "Repõe cargas de Fuzil de Caça, Fuzil de Assalto, Fuzil de Precisão, Metralhadora (1 cena/pacote)"
+    },
+    {
+     "item": "Armadura Leve",
+     "espacos": 2,
+     "categoria": "II",
+     "defesaBonus": 7,
+     "desc": "Defesa +5",
+     "mods": [
+      "Reforçada"
+     ],
+     "curses": [],
+     "baseCategoria": "I"
+    },
+    {
+     "item": "Bandoleira",
+     "espacos": 1,
+     "categoria": "I",
+     "desc": "Sacar/guardar como ação livre (1/rodada)"
+    },
+    {
+     "item": "Mochila Militar",
+     "espacos": 0,
+     "categoria": "I",
+     "desc": "+2 espaços de carga"
+    },
+    {
+     "item": "Componentes Ritualísticos de Conhecimento",
+     "espacos": 1,
+     "categoria": "0"
+    },
+    {
+     "item": "Kit de Tecnologia",
+     "espacos": 1,
+     "categoria": "0",
+     "desc": "Evita penalidade de –5 em testes de Tecnologia"
+    },
+    {
+     "item": "Kit de Perícia (Ocultismo)",
+     "espacos": 1,
+     "categoria": "0",
+     "desc": "Evita penalidade de –5 em testes técnicos"
+    },
+    {
+     "item": "Lanterna Tática",
+     "espacos": 1,
+     "categoria": "I",
+     "desc": "Ilumina; pode ofuscar inimigos"
+    },
+    {
+     "item": "Corda",
+     "espacos": 1,
+     "categoria": "0",
+     "desc": "10m; +5 em Atletismo em descidas ou para amarrar alvos"
+    },
+    {
+     "item": "Algemas",
+     "espacos": 1,
+     "categoria": "0",
+     "desc": "Exige agarrar o alvo; –5 em testes que usam as mãos e impede conjuração"
+    }
+   ],
+   "limite_credito": "Médio",
+   "habilidades_json": [
+    {
+     "name": "Eclético",
+     "desc": "Gasta 2 PE para receber o bônus de treinamento (+5) em uma perícia na qual não é treinado, para um teste específico."
+    },
+    {
+     "name": "Perito",
+     "desc": "Escolha duas perícias treinadas (exceto Luta e Pontaria). Ao testá-las, pode gastar 2 PE para somar +1d6 ao resultado."
+    },
+    {
+     "name": "Inventário Otimizado",
+     "desc": "Soma Intelecto à Força para calcular os espaços de carga."
+    },
+    {
+     "name": "Remendão",
+     "desc": "Conserta itens danificados e reduz em I a categoria de itens de investigação."
+    },
+    {
+     "name": "Mão Pesada",
+     "desc": "+2 em rolagens de dano com ataques corpo a corpo."
+    },
+    {
+     "name": "Artista Marcial ✦",
+     "desc": "Ataques desarmados causam 1d6 (→ 1d8 NEX 35% → 1d10 NEX 70%), podem causar dano letal e contam como armas ágeis."
+    },
+    {
+     "name": "Sensitivo",
+     "desc": "+5 em testes de Diplomacia, Intimidação e Intuição. (NEX 50%.)",
+     "viaTranscender": true
+    },
+    {
+     "name": "Expansão de Conhecimento",
+     "desc": "Aprende um poder de outra classe. (NEX 50%.)",
+     "viaTranscender": true
+    },
+    {
+     "name": "Ataque Especial",
+     "desc": "Ao realizar um ataque, pode gastar 2 PE para receber +5 no teste de ataque ou na rolagem de dano. Mesmo com limite de PE por turno menor, sempre pode pagar o custo mínimo de uma habilidade. (via Expansão de Conhecimento)"
+    },
+    {
+     "name": "Especialista Diletante",
+     "desc": "Aprende um poder de outra classe cujos pré-requisitos possa cumprir (exceto trilha ou paranormal)."
+    },
+    {
+     "name": "Escolhido pelo Outro Lado",
+     "desc": "Permite aprender e conjurar rituais. Começa conhecendo 3 rituais de 1º círculo; a cada novo NEX aprende +1 ritual de qualquer círculo que já possa lançar. (via Especialista Diletante)"
+    }
+   ],
+   "rituais_json": [
+    {
+     "name": "Amaldiçoar Arma",
+     "circulo": "1",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Perturbação",
+     "circulo": "1",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Terceiro Olho",
+     "circulo": "1",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    }
+   ],
+   "dt_rituais": 23,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "[imagem em avatares/miguel-albuquerque.png]",
+   "gm_owned": true,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-04T11:56:34.180484+00:00",
+   "afinidade": "conhecimento",
+   "esquiva": 24,
+   "bloqueio": 0,
+   "contra_ataque_val": 5,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "d2e961b9-3246-452a-8cbd-1639be13570c",
+   "character_name": "Nico Delagnore",
+   "player_name": "",
+   "origem": "vitima",
+   "classe": "ocultista",
+   "trilha": "lamina-paranormal",
+   "nex": "65%",
+   "patente": "Agente Especial",
+   "pp": 75,
+   "agi": 2,
+   "forca": 1,
+   "intel": 3,
+   "pre": 3,
+   "vig": 2,
+   "pv_max": 62,
+   "pv": 62,
+   "pe_max": 117,
+   "pe": 117,
+   "pe_por_rodada": 13,
+   "san_max": 63,
+   "san": 63,
+   "defesa": 12,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": true,
+   "tem_bloqueio": false,
+   "tem_contra_ataque": true,
+   "pericias_json": {
+    "Acrobacia": "",
+    "Adestramento": "",
+    "Artes": "",
+    "Atletismo": "",
+    "Atualidades": "treinado",
+    "Ciências": "treinado",
+    "Crime": "",
+    "Diplomacia": "",
+    "Enganação": "treinado",
+    "Fortitude": "",
+    "Furtividade": "treinado",
+    "Iniciativa": "treinado",
+    "Intimidação": "",
+    "Intuição": "treinado",
+    "Investigação": "treinado",
+    "Luta": "treinado",
+    "Medicina": "treinado",
+    "Ocultismo": "expert",
+    "Percepção": "treinado",
+    "Pilotagem": "",
+    "Pontaria": "",
+    "Profissão": "",
+    "Reflexos": "veterano",
+    "Religião": "",
+    "Sobrevivência": "treinado",
+    "Tática": "",
+    "Tecnologia": "",
+    "Vontade": "veterano"
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "1d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 1,
+     "manterPior": false,
+     "bonusTreino": 5
+    },
+    {
+     "arma": "Espada",
+     "teste": "3d20 (fica com o maior) +15 (Ocultismo)",
+     "dano": "1d8/1d10 + FOR +1d8 (Morte) +2 (Ninja Urbano)",
+     "critico": "19",
+     "alcance": "Curto",
+     "tipo": "Corte",
+     "auto": true,
+     "dadosAtributo": 3,
+     "manterPior": false,
+     "bonusTreino": 15
+    }
+   ],
+   "inventario_json": [
+    {
+     "item": "Espada",
+     "espacos": 1,
+     "categoria": "III",
+     "desc": "Dano 1d8/1d10 (Corte) · Crítico 19 · 1 ou 2 Mãos",
+     "isWeapon": true,
+     "mods": [],
+     "curses": [
+      "Erosiva"
+     ],
+     "baseCategoria": "I"
+    },
+    {
+     "item": "Máscara das Pessoas nas Sombras",
+     "espacos": 1,
+     "categoria": "II",
+     "desc": "Item amaldiçoado de Conhecimento (marca da Seita das Máscaras). Concede Resistência a Conhecimento 10. Teleporte: ação de movimento + 2 PE p/ entrar numa sombra adjacente e sair em outra que você veja em alcance médio. Preço da maldição: falhar teste de Intelecto custa 2 SAN por portar o item"
+    },
+    {
+     "item": "Vestimenta",
+     "espacos": 1,
+     "categoria": "II",
+     "desc": "+2 em uma perícia à escolha (exceto Luta/Pontaria); máx. 2 vestimentas ativas ao mesmo tempo; não cumulativo com outro item na mesma perícia",
+     "mods": [
+      "Aprimorado"
+     ],
+     "curses": [],
+     "baseCategoria": "I",
+     "periciaBonusValor": 5,
+     "slotTipo": "vestimenta",
+     "periciaEscolhida": "Reflexos"
+    }
+   ],
+   "limite_credito": "Médio",
+   "habilidades_json": [
+    {
+     "name": "Lâmina Maldita",
+     "desc": "Usa Ocultismo para testes de ataque com armas amaldiçoadas."
+    },
+    {
+     "name": "Gladiador Paranormal",
+     "desc": "Ganha PE temporários ao acertar golpes corpo a corpo."
+    },
+    {
+     "name": "Conjuração Marcial",
+     "desc": "Após um ritual (ação padrão), gasta 2 PE para um ataque corpo a corpo (ação livre)."
+    },
+    {
+     "name": "Escolhido pelo Outro Lado",
+     "desc": "Permite aprender e conjurar rituais. Começa conhecendo 3 rituais de 1º círculo; a cada novo NEX aprende +1 ritual de qualquer círculo que já possa lançar."
+    },
+    {
+     "name": "Cicatrizes Psicológicas",
+     "desc": "+1 de Sanidade para cada 5% de NEX."
+    },
+    {
+     "name": "Potencial Aprimorado",
+     "desc": "+1 PE adicional por NEX. (NEX 65%.)",
+     "viaTranscender": true,
+     "count": 2
+    },
+    {
+     "name": "Surto Temporal",
+     "desc": "Uma vez por cena, ação padrão adicional gastando 3 PE. (NEX 65%.)",
+     "viaTranscender": true
+    },
+    {
+     "name": "Visão do Oculto",
+     "desc": "+5 em Percepção e enxerga no escuro. (NEX 65%.)",
+     "viaTranscender": true
+    },
+    {
+     "name": "Escapar da Morte",
+     "desc": "Uma vez por cena, se cair para 0 PV, fica com 1 PV. (NEX 65%.)",
+     "viaTranscender": true
+    },
+    {
+     "name": "Expansão de Conhecimento",
+     "desc": "Aprende um poder de outra classe. (NEX 65%.)",
+     "viaTranscender": true
+    },
+    {
+     "name": "Ninja Urbano",
+     "desc": "Proficiência com armas táticas corpo a corpo e de disparo, e +2 no dano com elas. (via Expansão de Conhecimento)"
+    }
+   ],
+   "rituais_json": [
+    {
+     "name": "Amaldiçoar Arma",
+     "circulo": "1",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Decadência",
+     "circulo": "1",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Definhar",
+     "circulo": "1",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Cicatrização",
+     "circulo": "1",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Desacelerar Impacto",
+     "circulo": "2",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Miasma Entrópico",
+     "circulo": "2",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Paradoxo",
+     "circulo": "2",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Poeira da Podridão",
+     "circulo": "3",
+     "elemento": "Morte",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Compreensão Paranormal",
+     "circulo": "1",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Terceiro Olho",
+     "circulo": "1",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Localização",
+     "circulo": "2",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Detecção de Ameaças",
+     "circulo": "2",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Invadir Mente",
+     "circulo": "2",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Vidência",
+     "circulo": "3",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    },
+    {
+     "name": "Mergulho Mental",
+     "circulo": "3",
+     "elemento": "Conhecimento",
+     "execucao": "",
+     "alcance": "",
+     "alvo": "",
+     "duracao": ""
+    }
+   ],
+   "dt_rituais": 26,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "",
+   "gm_owned": true,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-09T16:22:01.828764+00:00",
+   "afinidade": "morte",
+   "esquiva": 22,
+   "bloqueio": 0,
+   "contra_ataque_val": 5,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "8712b698-1b74-42bf-9ca8-0cf3310cc9e9",
+   "character_name": "Sr. Veríssimo",
+   "player_name": "",
+   "origem": "desgarrado",
+   "classe": "combatente",
+   "trilha": "comandante-de-campo",
+   "nex": "70%",
+   "patente": "Agente de Elite",
+   "pp": 200,
+   "agi": 2,
+   "forca": 3,
+   "intel": 2,
+   "pre": 2,
+   "vig": 2,
+   "pv_max": 100,
+   "pv": 100,
+   "pe_max": 56,
+   "pe": 56,
+   "pe_por_rodada": 14,
+   "san_max": 51,
+   "san": 51,
+   "defesa": 24,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 0,
+   "tem_esquiva": true,
+   "tem_bloqueio": true,
+   "tem_contra_ataque": true,
+   "pericias_json": {
+    "Acrobacia": "",
+    "Adestramento": "",
+    "Artes": "",
+    "Atletismo": "",
+    "Atualidades": "",
+    "Ciências": "",
+    "Crime": "",
+    "Diplomacia": "treinado",
+    "Enganação": "",
+    "Fortitude": "expert",
+    "Furtividade": "",
+    "Iniciativa": "treinado",
+    "Intimidação": "",
+    "Intuição": "",
+    "Investigação": "treinado",
+    "Luta": "expert",
+    "Medicina": "treinado",
+    "Ocultismo": "",
+    "Percepção": "treinado",
+    "Pilotagem": "treinado",
+    "Pontaria": "",
+    "Profissão": "",
+    "Reflexos": "veterano",
+    "Religião": "",
+    "Sobrevivência": "treinado",
+    "Tática": "veterano",
+    "Tecnologia": "",
+    "Vontade": "expert"
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "3d20 (fica com o maior) +15 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 3,
+     "manterPior": false,
+     "bonusTreino": 15
+    }
+   ],
+   "inventario_json": [
+    {
+     "item": "Armadura Pesada",
+     "espacos": 5,
+     "categoria": "II",
+     "defesaBonus": 10,
+     "desc": "Defesa +10 · RD 2 (Físicos)"
+    }
+   ],
+   "limite_credito": "Ilimitado",
+   "habilidades_json": [
+    {
+     "name": "Inspirar Confiança",
+     "desc": "Reação de 2 PE: faça um aliado em alcance curto rolar novamente um teste recém-realizado."
+    },
+    {
+     "name": "Estrategista",
+     "desc": "Gasta 1 PE por aliado para conceder uma ação de movimento adicional no próximo turno deles."
+    },
+    {
+     "name": "Brecha na Guarda",
+     "desc": "Reação de 2 PE: você ou um aliado faz um ataque adicional contra um alvo que acabou de sofrer dano."
+    },
+    {
+     "name": "Oficial Comandante",
+     "desc": "Por 5 PE, concede uma ação padrão adicional para todos os aliados em alcance médio."
+    },
+    {
+     "name": "Calejado",
+     "desc": "+1 PV para cada 5% de NEX."
+    },
+    {
+     "name": "Ataque Especial",
+     "desc": "Ao realizar um ataque, pode gastar 2 PE para receber +5 no teste de ataque ou na rolagem de dano. Mesmo com limite de PE por turno menor, sempre pode pagar o custo mínimo de uma habilidade."
+    },
+    {
+     "name": "Casca Grossa",
+     "desc": "+1 PV para cada 5% de NEX e soma Vigor na resistência do bloqueio. (via Versatilidade, trilha Tropa de Choque)"
+    },
+    {
+     "name": "Golpe Pesado",
+     "desc": "O dano de armas corpo a corpo aumenta em um dado do mesmo tipo."
+    },
+    {
+     "name": "Proteção Pesada",
+     "desc": "Recebe proficiência com proteções pesadas."
+    },
+    {
+     "name": "Ataque de Oportunidade",
+     "desc": "Reação (1 PE): ataca corpo a corpo um ser que saia voluntariamente de um espaço adjacente ao seu."
+    },
+    {
+     "name": "Tanque de Guerra",
+     "desc": "Aumenta Defesa e RD de proteções pesadas em +2."
+    }
+   ],
+   "rituais_json": [],
+   "dt_rituais": 26,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "[imagem em avatares/sr-verissimo.webp]",
+   "gm_owned": true,
+   "faccao": "ordo_realitas",
+   "is_escriba": false,
+   "created_at": "2026-07-04T18:57:36.916297+00:00",
+   "afinidade": "nenhuma",
+   "esquiva": 22,
+   "bloqueio": 10,
+   "contra_ataque_val": 15,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  },
+  {
+   "id": "1892c54a-937d-4c0f-99fa-736176e63341",
+   "character_name": "Ômega-99",
+   "player_name": "",
+   "origem": "religioso",
+   "classe": "ocultista",
+   "trilha": "graduado",
+   "nex": "99%",
+   "patente": "Agente de Elite",
+   "pp": 200,
+   "agi": 3,
+   "forca": 2,
+   "intel": 3,
+   "pre": 3,
+   "vig": 3,
+   "pv_max": 110,
+   "pv": 110,
+   "pe_max": 140,
+   "pe": 140,
+   "pe_por_rodada": 20,
+   "san_max": 115,
+   "san": 115,
+   "defesa": 30,
+   "deslocamento": 9,
+   "res_balistico": 0,
+   "res_fisico": 0,
+   "res_elemental": 10,
+   "tem_esquiva": true,
+   "tem_bloqueio": true,
+   "tem_contra_ataque": true,
+   "pericias_json": {
+    "Acrobacia": "",
+    "Adestramento": "",
+    "Artes": "veterano",
+    "Atletismo": "",
+    "Atualidades": "treinado",
+    "Ciências": "expert",
+    "Crime": "",
+    "Diplomacia": "treinado",
+    "Enganação": "veterano",
+    "Fortitude": "treinado",
+    "Furtividade": "treinado",
+    "Iniciativa": "veterano",
+    "Intimidação": "treinado",
+    "Intuição": "veterano",
+    "Investigação": "expert",
+    "Luta": "treinado",
+    "Medicina": "treinado",
+    "Ocultismo": "expert",
+    "Percepção": "veterano",
+    "Pilotagem": "",
+    "Pontaria": "",
+    "Profissão": "",
+    "Reflexos": "treinado",
+    "Religião": "veterano",
+    "Sobrevivência": "",
+    "Tática": "treinado",
+    "Tecnologia": "veterano",
+    "Vontade": "expert"
+   },
+   "ataques_json": [
+    {
+     "arma": "Soco/Chute",
+     "teste": "2d20 (fica com o maior) +5 (Luta)",
+     "dano": "1d3",
+     "critico": "x2",
+     "alcance": "Curto",
+     "tipo": "Impacto",
+     "auto": true,
+     "dadosAtributo": 2,
+     "manterPior": false,
+     "bonusTreino": 5
+    },
+    {
+     "arma": "Espada Amaldiçoada — Sanguinária",
+     "teste": "+8 (Luta)",
+     "dano": "1d8+1d8 (Corte + Sangue)",
+     "critico": "19-20/x2",
+     "alcance": "Corpo a corpo",
+     "tipo": "Corte",
+     "desc": "Maldição Sanguinária: dano de Sangue extra multiplicado em críticos. Em crítico: 2d10 PV temporários e alvo fica Fraco."
+    }
+   ],
+   "inventario_json": [
+    {
+     "item": "Espada Amaldiçoada — Sanguinária",
+     "espacos": 1,
+     "categoria": "II",
+     "elemento": "sangue",
+     "desc": "Maldição de arma (Sangue): +1d8 dano de Sangue extra, multiplicado em críticos."
+    },
+    {
+     "item": "Armadura Pesada Amaldiçoada — Cinética",
+     "espacos": 5,
+     "categoria": "III",
+     "elemento": "energia",
+     "defesaBonus": 12,
+     "desc": "Base: Defesa +10, RD 2 (Físicos). Maldição Cinética (Energia): +2 Defesa e RD 5 (proteção pesada)."
+    },
+    {
+     "item": "Bracelete Amaldiçoado — Defesa",
+     "espacos": 0.5,
+     "categoria": "0",
+     "elemento": "energia",
+     "defesaBonus": 5,
+     "desc": "Maldição de acessório (Energia): +5 na Defesa."
+    },
+    {
+     "item": "Anel Amaldiçoado — Pujança",
+     "espacos": 0.5,
+     "categoria": "0",
+     "elemento": "sangue",
+     "desc": "Maldição de acessório (Sangue): +1 em Força."
+    },
+    {
+     "item": "Coração Pulsante",
+     "espacos": 1,
+     "categoria": "II",
+     "elemento": "sangue",
+     "desc": "Item Amaldiçoado Especial. Empunhando, ao sofrer dano pode gastar reação pra reduzi-lo à metade. Cada uso exige Fortitude (DT 15 +5 por uso adicional no dia); falha destrói o item."
+    },
+    {
+     "item": "Talismã da Sorte",
+     "espacos": 1,
+     "categoria": "II",
+     "elemento": "energia",
+     "desc": "Item Amaldiçoado Especial. Vestindo e sofrendo dano: reação + 3 PE, rola 1d4. 2-3 evita o dano; 4 evita mas destrói o talismã; 1 dobra o dano e destrói."
+    },
+    {
+     "item": "Jaqueta de Veríssimo",
+     "espacos": 1,
+     "categoria": "II",
+     "elemento": "medo",
+     "desc": "Item Amaldiçoado Especial. Resistência a dano paranormal 15. Aliado adjacente ia sofrer dano: reação + 2 PE pra virar o alvo no seu lugar."
+    },
+    {
+     "item": "Dedo Decepado",
+     "espacos": 1,
+     "categoria": "II",
+     "elemento": "varia",
+     "desc": "Item Amaldiçoado Especial. Concede um poder paranormal aleatório do antigo dono. 1d4=1 ao descansar: não recupera PV/PE/SAN. Visto com o item: -10 em Diplomacia."
+    },
+    {
+     "item": "Grimório Pessoal",
+     "espacos": 1,
+     "categoria": "I",
+     "desc": "Registra os rituais conhecidos — Grimório Ritualístico: número de rituais extras no livro baseado em Intelecto."
+    },
+    {
+     "item": "Selos Paranormais (Terceiro Olho)",
+     "espacos": 1,
+     "categoria": "I",
+     "desc": "Selo gravado com o ritual Terceiro Olho — empunhar e ler em voz alta ativa e desfaz o selo."
+    },
+    {
+     "item": "Selos Paranormais (Fim Inevitável)",
+     "espacos": 1,
+     "categoria": "IV",
+     "desc": "Selo gravado com o ritual Fim Inevitável (4º círculo) — categoria = círculo do ritual."
+    },
+    {
+     "item": "Componentes Ritualísticos — (todos elementos)",
+     "espacos": 1,
+     "categoria": "0",
+     "desc": "Kit completo: cinzas (Morte), circuitos (Energia), sal (Conhecimento), agulhas (Sangue). Essenciais p/ conjurar rituais (exceto Medo)."
+    },
+    {
+     "item": "Cicatrizante",
+     "espacos": 1,
+     "categoria": "I",
+     "usos": 1,
+     "usosMax": 1,
+     "desc": "Cura 2d8+2 PV"
+    },
+    {
+     "item": "Cicatrizante",
+     "espacos": 1,
+     "categoria": "I",
+     "usos": 1,
+     "usosMax": 1,
+     "desc": "Cura 2d8+2 PV"
+    },
+    {
+     "item": "Mochila Militar",
+     "espacos": 0,
+     "categoria": "I",
+     "desc": "+2 espaços de carga"
+    },
+    {
+     "item": "Kit de Perícia - (Ocultismo)",
+     "espacos": 1,
+     "categoria": "0"
+    }
+   ],
+   "limite_credito": "Ilimitado",
+   "habilidades_json": [
+    {
+     "name": "Rituais Eficientes",
+     "desc": "A DT para resistir aos seus rituais aumenta em +5."
+    },
+    {
+     "name": "Conhecendo o Medo",
+     "desc": "Aprende automaticamente o ritual Conhecendo o Medo."
+    },
+    {
+     "name": "Acalentar",
+     "desc": "+5 em Religião para acalmar; alvo recupera 1d6 + Presença de Sanidade."
+    },
+    {
+     "name": "Escolhido pelo Outro Lado",
+     "desc": "Permite aprender e conjurar rituais. Começa conhecendo 3 rituais de 1º círculo; a cada novo NEX aprende +1 ritual de qualquer círculo que já possa lançar."
+    },
+    {
+     "name": "Saber Ampliado",
+     "desc": "Trilha Graduado — ganha +1 ritual (não conta no limite) a cada círculo desbloqueado: NEX 10/25/55/85%."
+    },
+    {
+     "name": "Grimório Ritualístico",
+     "desc": "Possui um grimório com rituais extras; número de rituais no livro é baseado em Intelecto."
+    },
+    {
+     "name": "Inventário Organizado",
+     "desc": "Soma Intelecto ao limite de carga; itens de peso 0,5 ocupam só 0,25. Pré-requisito: Int 2."
+    },
+    {
+     "name": "Ritual Potente",
+     "desc": "Soma Intelecto nas rolagens de dano ou efeitos de cura de seus rituais. Pré-requisito: Int 2."
+    },
+    {
+     "name": "Mestre em Elemento (Morte)",
+     "desc": "Custo para lançar rituais de Morte diminui em -1 PE. Pré-requisitos: Especialista em Elemento (Morte), NEX 45%."
+    },
+    {
+     "name": "Especialista em Elemento (Morte)",
+     "desc": "A DT para resistir aos seus rituais de Morte aumenta em +2."
+    },
+    {
+     "name": "Criar Selo",
+     "desc": "Sabe fabricar selos amaldiçoados. Máximo de selos ativos igual à Presença."
+    },
+    {
+     "name": "Fluxo de Poder",
+     "desc": "Mantém dois efeitos sustentados de rituais simultaneamente com uma ação livre. Pré-requisito: NEX 60%."
+    }
+   ],
+   "rituais_json": [
+    {
+     "name": "Amaldiçoar Arma",
+     "circulo": "1",
+     "elemento": "Sangue"
+    },
+    {
+     "name": "Armadura de Sangue",
+     "circulo": "1",
+     "elemento": "Sangue"
+    },
+    {
+     "name": "Corpo Adaptado",
+     "circulo": "1",
+     "elemento": "Sangue"
+    },
+    {
+     "name": "Aprimorar Físico",
+     "circulo": "2",
+     "elemento": "Sangue"
+    },
+    {
+     "name": "Forma Monstruosa",
+     "circulo": "2",
+     "elemento": "Sangue"
+    },
+    {
+     "name": "Purgatório",
+     "circulo": "3",
+     "elemento": "Sangue"
+    },
+    {
+     "name": "Martírio de Sangue",
+     "circulo": "4",
+     "elemento": "Sangue"
+    },
+    {
+     "name": "Eletrocussão",
+     "circulo": "1",
+     "elemento": "Energia"
+    },
+    {
+     "name": "Overclock",
+     "circulo": "1",
+     "elemento": "Energia"
+    },
+    {
+     "name": "Chamas do Caos",
+     "circulo": "2",
+     "elemento": "Energia"
+    },
+    {
+     "name": "Salto Fantasma",
+     "circulo": "3",
+     "elemento": "Energia"
+    },
+    {
+     "name": "Teletransporte",
+     "circulo": "4",
+     "elemento": "Energia"
+    },
+    {
+     "name": "Decadência",
+     "circulo": "1",
+     "elemento": "Morte"
+    },
+    {
+     "name": "Cicatrização",
+     "circulo": "1",
+     "elemento": "Morte"
+    },
+    {
+     "name": "Definhar",
+     "circulo": "1",
+     "elemento": "Morte"
+    },
+    {
+     "name": "Miasma Entrópico",
+     "circulo": "2",
+     "elemento": "Morte"
+    },
+    {
+     "name": "Paradoxo",
+     "circulo": "2",
+     "elemento": "Morte"
+    },
+    {
+     "name": "Poeira da Podridão",
+     "circulo": "3",
+     "elemento": "Morte"
+    },
+    {
+     "name": "Fim Inevitável",
+     "circulo": "4",
+     "elemento": "Morte"
+    },
+    {
+     "name": "Terceiro Olho",
+     "circulo": "1",
+     "elemento": "Conhecimento"
+    },
+    {
+     "name": "Compreensão Paranormal",
+     "circulo": "1",
+     "elemento": "Conhecimento"
+    },
+    {
+     "name": "Localização",
+     "circulo": "2",
+     "elemento": "Conhecimento"
+    },
+    {
+     "name": "Invadir Mente",
+     "circulo": "2",
+     "elemento": "Conhecimento"
+    },
+    {
+     "name": "Vidência",
+     "circulo": "3",
+     "elemento": "Conhecimento"
+    },
+    {
+     "name": "Controle Mental",
+     "circulo": "4",
+     "elemento": "Conhecimento"
+    },
+    {
+     "name": "Presença do Medo",
+     "circulo": "4",
+     "elemento": "Medo"
+    }
+   ],
+   "dt_rituais": 33,
+   "aparencia": "",
+   "personalidade": "",
+   "historico": "",
+   "objetivo": "",
+   "avatar": "",
+   "gm_owned": true,
+   "faccao": "lotus_branca",
+   "is_escriba": false,
+   "created_at": "2026-07-16T14:25:16.162737+00:00",
+   "afinidade": "morte",
+   "esquiva": 32,
+   "bloqueio": 5,
+   "contra_ataque_val": 8,
+   "bonus_tokens_json": [],
+   "condicoes_json": [],
+   "campaign_id": "f2b7207c-23b9-45f0-ad17-8911c373ae50",
+   "arma_favorita": "",
+   "pet_nome": "",
+   "pet_avatar": "",
+   "updated_at": "2026-08-09T14:18:06.574869+00:00",
+   "inventario_stash_json": [],
+   "res_elementos_json": {},
+   "is_test": false,
+   "pv_ajuste": 0,
+   "pe_ajuste": 0,
+   "san_ajuste": 0,
+   "limite_pe_ajuste": 0,
+   "defesa_ajuste": 0,
+   "san_perda_permanente": 0,
+   "pe_perda_permanente": 0,
+   "pv_temp": 0,
+   "pe_temp": 0,
+   "san_temp": 0
+  }
+ ],
+ "characters": [
+  {
+   "id": "dbc7f4e3-1cd9-46cf-a07e-21eb5bbbda35",
+   "name": "A Voz que Conta Nomes",
+   "type": "npc",
+   "status": "missing",
+   "sanity": 0,
+   "exposure": 100,
+   "threat": 5,
+   "element": "conhecimento",
+   "secrets": "Entidade do Conhecimento. Alimenta-se de ser ouvida.",
+   "notes": "",
+   "created_at": "2026-06-28T20:12:14+00:00"
+  },
+  {
+   "id": "654693dd-c64b-4973-ad35-58ebe3622304",
+   "name": "Det. Marina Couto",
+   "type": "player",
+   "status": "alive",
+   "sanity": 72,
+   "exposure": 30,
+   "threat": 2,
+   "element": null,
+   "secrets": "Ouve a voz desde a infância, mas nunca contou à equipe.",
+   "notes": "",
+   "created_at": "2026-06-28T20:12:14+00:00"
+  },
+  {
+   "id": "22534d13-716b-467c-a260-ab5471186213",
+   "name": "Dr. Aílton Vega",
+   "type": "player",
+   "status": "alive",
+   "sanity": 55,
+   "exposure": 45,
+   "threat": 3,
+   "element": null,
+   "secrets": "Falsificou laudos para encobrir a causa de morte das vítimas.",
+   "notes": "",
+   "created_at": "2026-06-28T20:12:14+00:00"
+  },
+  {
+   "id": "0647f524-bc9a-453a-9406-b434a9bf508d",
+   "name": "Padre Eustáquio",
+   "type": "npc",
+   "status": "alive",
+   "sanity": 64,
+   "exposure": 20,
+   "threat": 2,
+   "element": null,
+   "secrets": "Sabe o ritual de selamento, mas teme o preço de usá-lo.",
+   "notes": "",
+   "created_at": "2026-06-28T20:12:14+00:00"
+  },
+  {
+   "id": "76c183fb-57d2-4892-af97-70362b2fed49",
+   "name": "Tomás, o Sobrevivente",
+   "type": "npc",
+   "status": "corrupted",
+   "sanity": 18,
+   "exposure": 88,
+   "threat": 5,
+   "element": "conhecimento",
+   "secrets": "Voltou do Casarão repetindo um nome que não é o seu. É o vetor da entidade.",
+   "notes": "",
+   "created_at": "2026-06-28T20:12:14+00:00"
+  }
+ ],
+ "monsters": [
+  {
+   "id": "1a526a1a-02dd-4997-878b-3df886985836",
+   "name": "Zumbi de Sangue",
+   "avatar": "🧟",
+   "element": "sangue",
+   "threat": 2,
+   "pv": 18,
+   "max_pv": 18,
+   "pe": 0,
+   "max_pe": 0,
+   "defense": 12,
+   "powers": "Garras: +6, 1d8+2 de corte\nFrenesi: ao reduzir um alvo a 0 PV, recebe ação extra",
+   "notes": "",
+   "initiative": 8,
+   "active": false,
+   "in_combat": false,
+   "sort_order": 0,
+   "created_at": "2026-06-28T20:12:14+00:00"
+  },
+  {
+   "id": "baa90970-f268-4aaa-85b6-95d771a107fe",
+   "name": "Sussurro do Conhecimento",
+   "avatar": "👁️",
+   "element": "conhecimento",
+   "threat": 4,
+   "pv": 12,
+   "max_pv": 12,
+   "pe": 6,
+   "max_pe": 6,
+   "defense": 16,
+   "powers": "Nome Verdadeiro: alvo faz teste de Sanidade DT 18 ou perde 1d6 SAN\nIntangível: resistência a dano físico 5",
+   "notes": "",
+   "initiative": 15,
+   "active": false,
+   "in_combat": false,
+   "sort_order": 1,
+   "created_at": "2026-06-28T20:12:14+00:00"
+  },
+  {
+   "id": "996fef20-7894-4aa6-8eb0-02c9edad449a",
+   "name": "Tomás Possesso",
+   "avatar": "🩸",
+   "element": "conhecimento",
+   "threat": 5,
+   "pv": 32,
+   "max_pv": 32,
+   "pe": 0,
+   "max_pe": 0,
+   "defense": 14,
+   "powers": "Investida Desesperada: +9, 2d6+4\nColapso Mental (1/cena): todos em 9m testam Sanidade DT 20",
+   "notes": "",
+   "initiative": 11,
+   "active": false,
+   "in_combat": true,
+   "sort_order": 2,
+   "created_at": "2026-06-28T20:12:14+00:00"
+  },
+  {
+   "id": "8fafae81-d4a3-496c-bdf5-eb2fce9e0a4a",
+   "name": "Bicho-Papão",
+   "avatar": "👹",
+   "element": "conhecimento",
+   "threat": 5,
+   "pv": 600,
+   "max_pv": 600,
+   "pe": 0,
+   "max_pe": 0,
+   "defense": 27,
+   "powers": "Garras Atormentadoras (corpo a corpo, x2)\nDestruir Mente: pode trocar o dano por dano mental contra alvo enlouquecendo\nTamanho Adaptável: encolhe e se esconde\nTormento Infantil (fraqueza): fica desprevenido ao ouvir cantiga/choro de criança",
+   "notes": "Atributos: AGI 5 · FOR 4 · INT 3 · PRE 5 · VIG 4 · VD 320\nElemento Conhecimento (criatura do Medo) · Imune mental/medo e dano · Resist. 10, Conhecimento 15 · Vuln. Sangue · Presença Perturbadora (NEX 90%, DT 25, 6d6 mental)",
+   "initiative": 15,
+   "active": true,
+   "in_combat": true,
+   "sort_order": 3,
+   "created_at": "2026-07-01T01:03:56+00:00"
+  },
+  {
+   "id": "03551844-88f3-4333-a983-763a30a91f87",
+   "name": "Zumbi de Sangue Bestial",
+   "avatar": "🧟",
+   "element": "sangue",
+   "threat": 4,
+   "pv": 112,
+   "max_pv": 112,
+   "pe": 0,
+   "max_pe": 0,
+   "defense": 19,
+   "powers": "Mordida de Sangue: 2d10+4 Sangue\nGarras: 2d8+2 Sangue\nAtaque Furtivo: bônus ao atacar alvos desprevenidos",
+   "notes": "Atributos: AGI 3 · FOR 3 · INT 0 · PRE 1 · VIG 2 · VD 80\nResist. balístico/impacto/perfuração 5 · Sangue 10 · Age de forma predatória e estratégica",
+   "initiative": 12,
+   "active": false,
+   "in_combat": false,
+   "sort_order": 4,
+   "created_at": "2026-07-01T19:26:18+00:00"
+  }
+ ],
+ "nota": "agent_sheets sem a ficha de teste (Agente Teste); avatares em base64 foram salvos como arquivos em avatares/ (ficam fora do git)."
+}
