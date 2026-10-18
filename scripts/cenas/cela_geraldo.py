@@ -94,25 +94,24 @@ ma[147:, 103:, 3] = 0
 ma[..., :3] *= [0.88, 0.9, 0.97]
 mao = Image.fromarray(ma.astype(np.uint8), 'RGBA')
 BARRA_MAO = 124.5           # o meio da barra, na mão
-SM = 0.95 * K
+# uma mão só (18/10, o Felipe: "foca em um braço só, do jeito certo, no tamanho certo"): a direita dele, na barra à
+# esquerda do rosto, com o braço descendo para o lado do ombro direito (a mão da arte vem de baixo e da esquerda)
+SM = 1.75 * K
 
 
-def mao_na(barra_x, topo_y, espelho, nome, luz=1.0):
-    im = mao.transpose(Image.FLIP_LEFT_RIGHT) if espelho else mao
-    bx = (mao.width - BARRA_MAO) if espelho else BARRA_MAO
-    im = im.resize((round(im.width * SM), round(im.height * SM)), Image.LANCZOS)
+def mao_na(barra_x, topo_y, nome, luz=1.0):
+    im = mao.resize((round(mao.width * SM), round(mao.height * SM)), Image.LANCZOS).filter(ImageFilter.UnsharpMask(3, 60, 2))
     if luz != 1.0:
         a = np.asarray(im).astype(float)
         a[..., :3] *= luz
         im = Image.fromarray(a.astype(np.uint8), 'RGBA')
     c = Image.new('RGBA', (W, H))
-    c.alpha_composite(im, (round(barra_x * K - bx * SM), round(topo_y * K)))
+    c.alpha_composite(im, (round(barra_x * K - BARRA_MAO * SM), round(topo_y * K)))
     c.save(OUT + f'/{nome}.png', optimize=True)
     return c
 
 
-mE = mao_na((682 + 712) / 2, 500, True, 'cela-mao-esq-v3', 1.0)
-mD = mao_na((1139 + 1167) / 2, 482, False, 'cela-mao-dir-v3', 0.72)
+mE = mao_na((682 + 712) / 2, 368, 'cela-mao-v4', 0.95)
 
 # ---------------------------------------------------------------- as prévias
 def previa(camadas, nome, foco=None):
@@ -127,5 +126,5 @@ def previa(camadas, nome, foco=None):
 
 
 previa([ger, grade], 'v3_a_inteira')
-previa([ger, grade, mE, mD], 'v3_b_maos')
-previa([ger, grade, mE, mD], 'v3_c_perto', (927, 420, 1.7))
+previa([ger, grade, mE], 'v4_b_mao')
+previa([ger, grade, mE], 'v4_c_perto', (900, 400, 1.7))
