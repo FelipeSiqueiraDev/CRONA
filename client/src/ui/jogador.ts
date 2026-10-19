@@ -29,23 +29,24 @@ import { h, toast, trocarFilhos } from './dom';
 import { iconePixel } from './iconesPixel';
 import { botao, confirmar, escolher, janela } from './fichaModal';
 import { opcoesMelhoria } from './melhorias';
-import { infoItem, NOME_ELEMENTO, textoRef } from './fichaRegras';
+import { GRAU_CURTO, infoItem, NOME_ATR, NOME_ELEMENTO, NOME_GRAU, textoRef, textoTeste } from './fichaRegras';
 import { arteOu, ic, type NomeIcone } from './icons';
 import { sfx } from './sfx';
 import { vestirTema } from './temaUi';
 
 type Calc = regras.Calculado;
-type Aba = 'agente' | 'mochila' | 'ataques' | 'poderes' | 'rituais' | 'docs' | 'notas';
+type Aba = 'agente' | 'pericias' | 'mochila' | 'ataques' | 'poderes' | 'rituais' | 'docs';
 const cat = regras.catalogo;
 
 const ABAS: { id: Aba; rotulo: string; icone: NomeIcone; pintado?: string }[] = [
   { id: 'agente', rotulo: 'Agente', icone: 'pessoa', pintado: 'titulo-atributos' },
+  // 19/10, o Felipe: "entre o agente e a mochila, as Perícias"; as Notas viram um filtro de Documentos
+  { id: 'pericias', rotulo: 'Perícias', icone: 'lista', pintado: 'titulo-pericias' },
   { id: 'mochila', rotulo: 'Mochila', icone: 'mochila', pintado: 'titulo-inventario' },
   { id: 'ataques', rotulo: 'Ataques', icone: 'espadas', pintado: 'combate-atacar' },
   { id: 'poderes', rotulo: 'Poderes', icone: 'estrela', pintado: 'titulo-poderes' },
   { id: 'rituais', rotulo: 'Rituais', icone: 'pentagrama', pintado: 'titulo-rituais' },
   { id: 'docs', rotulo: 'Docs', icone: 'documento', pintado: 'topo-registro' },
-  { id: 'notas', rotulo: 'Notas', icone: 'pena', pintado: 'titulo-anotacoes' },
 ];
 
 
@@ -161,7 +162,9 @@ export class TelaJogador {
   private filtroPoder: FiltroPoder = 'classe';
   private poderSel: string | null = null;
   private ritualSel: string | null = null;
-  private filtroDoc: GrupoDocumento | 'todos' = 'todos';
+  private filtroDoc: GrupoDocumento | 'todos' | 'notas' = 'todos';
+  /** a aba Perícias: só as treinadas (o padrão) ou todas, como na FICHAS do mestre */
+  private soTreinadas = true;
   private docSel: number | null = null;
   private soFixadas = false;
   private notaSel: string | null = null;
@@ -433,8 +436,8 @@ export class TelaJogador {
       ataques: () => this.abaAtaques(),
       poderes: () => this.abaPoderes(),
       rituais: () => this.abaRituais(),
+      pericias: () => this.abaPericias(),
       docs: () => this.abaDocs(),
-      notas: () => this.abaNotas(),
     };
     this.conteudo.dataset.aba = this.aba;
     this.el.dataset.aba = this.aba;
@@ -920,16 +923,52 @@ export class TelaJogador {
 
   // ---------------------------------------------------------------- Docs
 
+  // ---------------------------------------------------------------- Perícias
+
+  /** As perícias do agente (19/10): só as treinadas ou todas, com o grau, o atributo e o teste, como na FICHAS. */
+  private abaPericias(): Node[] {
+    const fs = this.fs!;
+    const c = this.calc!;
+    const linhas: HTMLElement[] = [];
+    for (const p of cat.CATALOGO.pericias) {
+      const pc = c.pericias[p.id];
+      if (this.soTreinadas && pc.grau === 'destreinado') continue;
+      const nome = p.id === 'profissao' && fs.ficha.profissao ? `Profissão (${fs.ficha.profissao})` : p.nome;
+      linhas.push(
+        h(
+          'div',
+          { class: `jg-per${pc.grau !== 'destreinado' ? ' treinada' : ''}${!pc.podeUsar ? ' nao-usa' : ''}`, title: `${p.nome} · ${NOME_GRAU[pc.grau]}${p.somenteTreinada ? ' · só treinada' : ''}${p.carga ? ' · carga' : ''}` },
+          h('span', { class: 'jg-per-n' }, nome),
+          h('span', { class: `jg-per-g ${pc.grau}` }, GRAU_CURTO[pc.grau]),
+          h('span', { class: 'jg-per-a' }, NOME_ATR[pc.atributo]),
+          h('b', { class: 'jg-per-t' }, pc.podeUsar ? textoTeste(pc.dados, pc.bonus, pc.penalidadeDados) : '—'),
+        ),
+      );
+    }
+    const alternar = h(
+      'button',
+      { class: `jg-tit-bt${this.soTreinadas ? ' on' : ''}`, type: 'button', title: this.soTreinadas ? 'Mostrar todas as perícias' : 'Mostrar só as treinadas', onclick: () => ((this.soTreinadas = !this.soTreinadas), sfx.click(), this.renderConteudo()) },
+      h('span', null, this.soTreinadas ? 'Treinadas' : 'Todas'),
+    );
+    return [
+      this.titulo('PERÍCIAS', 'lista', alternar),
+      h('div', { class: 'jg-per-cab' }, h('span', null, 'PERÍCIA'), h('span', null, 'GRAU'), h('span', null, 'ATR.'), h('span', null, 'TESTE')),
+      linhas.length ? h('div', { class: 'jg-lista jg-pers' }, ...linhas) : h('p', { class: 'jg-vazio' }, 'Nenhuma perícia treinada.'),
+    ];
+  }
+
   private abaDocs(): Node[] {
     const fs = this.fs!;
     const lista = this.docs
       .filter((d) => this.filtroDoc === 'todos' || d.grupo === this.filtroDoc)
       .sort((a, b) => b.atualizadoEm.localeCompare(a.atualizadoEm));
     if (this.docSel !== null && !this.docs.some((d) => d.id === this.docSel)) this.docSel = null;
-    const filtros: { id: GrupoDocumento | 'todos'; rotulo: string; icone: NomeIcone; pintado: string | string[] }[] = [
+    const filtros: { id: GrupoDocumento | 'todos' | 'notas'; rotulo: string; icone: NomeIcone; pintado: string | string[] }[] = [
       { id: 'todos', rotulo: 'Todos', icone: 'documento', pintado: IC.docsTodos },
       { id: 'evidencia', rotulo: 'Evidências', icone: 'lupa', pintado: IC.docsEvidencias },
       { id: 'pista', rotulo: 'Pistas', icone: 'mapa', pintado: IC.docsPistas },
+      // as notas do jogador (antes uma aba só delas, 19/10)
+      { id: 'notas', rotulo: 'Notas', icone: 'pena', pintado: 'titulo-anotacoes' },
     ];
     const meta = (d: Documento) => [nomeTipoDocumento(d.tipo), d.origem, `${d.paginas.length} página${d.paginas.length > 1 ? 's' : ''}`].filter(Boolean).join(' · ');
     const linhas = lista.map((d) =>
@@ -942,15 +981,17 @@ export class TelaJogador {
       ),
     );
     const sel = this.docs.find((d) => d.id === this.docSel);
+    const barra = h(
+      'div',
+      { class: 'jg-filtros quatro' },
+      ...filtros.map((x) =>
+        h('button', { class: `jg-filtro${x.id === this.filtroDoc ? ' on' : ''}`, type: 'button', onclick: () => ((this.filtroDoc = x.id), sfx.click(), this.renderConteudo()) }, pintado(x.pintado, x.icone), h('span', null, x.rotulo)),
+      ),
+    );
+    if (this.filtroDoc === 'notas') return [this.titulo('DOCUMENTOS', 'documento'), barra, ...this.abaNotas()];
     return [
       this.titulo('DOCUMENTOS', 'documento'),
-      h(
-        'div',
-        { class: 'jg-filtros' },
-        ...filtros.map((x) =>
-          h('button', { class: `jg-filtro${x.id === this.filtroDoc ? ' on' : ''}`, type: 'button', onclick: () => ((this.filtroDoc = x.id), sfx.click(), this.renderConteudo()) }, pintado(x.pintado, x.icone), h('span', null, x.rotulo)),
-        ),
-      ),
+      barra,
       lista.length
         ? h('div', { class: 'jg-lista' }, ...lista.flatMap((d, i) => (d === sel ? [linhas[i], this.detalheDoc(d, meta(d))] : [linhas[i]])))
         : h('p', { class: 'jg-vazio' }, this.docs.length ? 'Nada neste filtro.' : 'Nenhum documento ainda. O que o mestre entregar (relatórios, fotos, pistas) aparece aqui.'),

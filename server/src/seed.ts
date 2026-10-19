@@ -33,7 +33,7 @@ import { montarTiradentes, TIRADENTES } from './seedTiradentes';
 import { montarSantaAmalia, SANTA_AMALIA } from './seedSantaAmalia';
 import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgentes } from './seedSede';
 import { aplicarFichasCris } from './seedFichasCris';
-import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados, avisosDe1910, tepesECora1910 } from './marcadosCris';
+import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados, avisosDe1910, tepesECora1910, contaTesteNoMiguel } from './marcadosCris';
 
 export const SYSTEM_OWNER = 'CRONA';
 
@@ -785,7 +785,7 @@ function trancasSemCadeado(db: Database): boolean {
 }
 
 export function upgradeDb(db: Database): boolean {
-  const trancas = [trancasSemCadeado(db), aplicarFichasCris(db), igualarMarcadosCris(db), mochilasDaHistoria(db), zerarMochilasMarcados(db), avisosDe1910(db), tepesECora1910(db)].some(Boolean); // as fichas do C.R.I.S entram no Elenco (18/10)
+  const trancas = [trancasSemCadeado(db), aplicarFichasCris(db), igualarMarcadosCris(db), mochilasDaHistoria(db), zerarMochilasMarcados(db), avisosDe1910(db), tepesECora1910(db), contaTesteNoMiguel(db)].some(Boolean); // as fichas do C.R.I.S entram no Elenco (18/10)
   const v = db.seedVersion ?? 1;
   // a Sede e a fazenda mudam de montagem sem esperar versão nova do banco
   if (v >= SEED_VERSION) {

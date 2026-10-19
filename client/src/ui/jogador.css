@@ -3044,3 +3044,56 @@ html.modo-ficha .fj:not(.rq) .fj-chips {
   }
 }
 
+
+/* ---------------------------------------------------------------- a aba Perícias (19/10) */
+.jg-filtros.quatro .jg-filtro span {
+  font-size: calc(var(--t-rotulo) * 0.9);
+}
+.jg-per-cab,
+.jg-per {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) calc(var(--u) * 14) calc(var(--u) * 10) calc(var(--u) * 22);
+  align-items: center;
+  gap: var(--s1);
+  padding: 0 var(--s2);
+}
+.jg-per-cab {
+  color: var(--c-texto-3, var(--c-texto-2));
+  font: 600 calc(var(--t-rotulo) * 0.85) / 1 var(--f-pixel);
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+}
+.jg-pers {
+  gap: calc(var(--u) * 0.8);
+}
+.jg-per {
+  min-height: calc(var(--u) * 10);
+  border: calc(var(--u) * 0.3) solid var(--c-borda-2);
+  border-radius: calc(var(--raio) * 0.8);
+  background: rgba(5, 11, 20, 0.6);
+  color: var(--c-texto-2);
+}
+.jg-per.treinada {
+  border-color: rgba(226, 166, 74, 0.45);
+  color: var(--c-texto);
+}
+.jg-per.nao-usa {
+  opacity: 0.45;
+}
+.jg-per-n {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.jg-per-g.treinado {
+  color: var(--c-ouro);
+}
+.jg-per-g.veterano,
+.jg-per-g.expert {
+  color: #ffd27a;
+  font-weight: 700;
+}
+.jg-per-t {
+  text-align: right;
+  white-space: nowrap;
+}

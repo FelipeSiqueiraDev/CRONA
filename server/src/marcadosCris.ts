@@ -183,3 +183,14 @@ export function tepesECora1910(db: Database): boolean {
   feitas['tepes-cora-1910'] = 1;
   return true;
 }
+
+/** 19/10, o Felipe: "desvincula a conta teste da ficha da Catarina, coloca ela na ficha do Miguel". Uma vez só. */
+export function contaTesteNoMiguel(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['conta-teste-miguel-1910'] !== undefined) return false;
+  const conta = (db.contas ?? []).find((c) => c.nome.toLowerCase() === 'teste');
+  const miguel = (db.fichas ?? []).find((f) => f.nome === 'Miguel Albuquerque');
+  if (conta && miguel) conta.fichaId = miguel.id;
+  feitas['conta-teste-miguel-1910'] = conta && miguel ? miguel.id : 0;
+  return true;
+}

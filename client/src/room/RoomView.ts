@@ -2205,7 +2205,8 @@ export class RoomView {
         cor: base ?? u.color,
         lado: base === COR_LADO.inimigo ? 'ameaca' : 'agente',
         retrato: this.retratoDe(u),
-        pv: this.pvDe?.(u.id) ?? undefined,
+        // a mesa (o tablet) não mostra a vida de ninguém: os jogadores não podem saber (19/10)
+        pv: this.watchOnly ? undefined : (this.pvDe?.(u.id) ?? undefined),
         vez: !!m?.vez.has(u.id),
         escolhida: !this.watchOnly && (u.id === this.myId || this.grupo.has(u.id) || (sel?.kind === 'user' && sel.id === u.id)),
         caido: !!m?.deitadas.has(u.id),
