@@ -685,7 +685,7 @@ describe('requisição de equipamento (a janela de escolher itens)', () => {
     assert.equal(op(f, cat1[2].id).ok, true);
   });
 
-  test('carga: até o dobro entra sobrecarregado; acima, não cabe (LR p. 53)', () => {
+  test('carga: até o dobro entra sobrecarregado; acima, entra com o aviso (mesa do Felipe, 19/10; LR p. 53)', () => {
     const f = combatente();
     const id = 'item-extremamente-volumoso';
     assert.deepEqual(op(f, id).avisos, []);
@@ -693,8 +693,8 @@ describe('requisição de equipamento (a janela de escolher itens)', () => {
     assert.ok(op(f, id).avisos[0].startsWith('Fica sobrecarregado'));
     assert.equal(op(f, id).ok, true);
     f.inventario.push({ id, tipo: 'equipamento' });
-    assert.equal(op(f, id).ok, false);
-    assert.ok(op(f, id).motivos[0].startsWith('Não cabe'));
+    assert.equal(op(f, id).ok, true);
+    assert.ok(op(f, id).avisos.some((a) => a.startsWith('Passa do máximo')));
   });
 
   test('arma de fogo: diz a munição e se a mochila tem (LR p. 59)', () => {

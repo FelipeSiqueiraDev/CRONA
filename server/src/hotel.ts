@@ -1235,9 +1235,6 @@ export class Hotel implements HotelApi {
       f.campanha = antiga.campanha;
       if (antiga.npc) f.npc = antiga.npc;
       else delete f.npc;
-      // pedir itens do catálogo só na base da Ordem (19/10, o Felipe): fora dela, a mochila só ganha o que o mestre dá
-      const doCatalogo = (x: regras.Ficha) => x.inventario.filter((i) => i.tipo !== 'cena').length;
-      if (doCatalogo(f.ficha) > doCatalogo(antiga.ficha) && !this.naBase(antiga)) return c.send({ t: 'error', msg: 'Itens da Ordem só se pedem na base (a Sede). Peça ao mestre.' });
       delete f.naBase;
       // a requisição do jogador respeita a patente: nenhuma categoria acima do limite a mais que antes (LR p. 52)
       try {
@@ -1252,6 +1249,9 @@ export class Hotel implements HotelApi {
       } catch {
         /* ficha que o motor não fecha: o mestre confere */
       }
+      // pedir itens do catálogo só na base da Ordem (19/10, o Felipe): fora dela, a mochila só ganha o que o mestre dá
+      const doCatalogo = (x: regras.Ficha) => x.inventario.filter((i) => i.tipo !== 'cena').length;
+      if (doCatalogo(f.ficha) > doCatalogo(antiga.ficha) && !this.naBase(antiga)) return c.send({ t: 'error', msg: 'Itens da Ordem só se pedem na base (a Sede). Peça ao mestre.' });
     }
     if (antiga) f.chave = antiga.chave;
     else delete f.chave;
