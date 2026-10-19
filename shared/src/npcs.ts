@@ -92,10 +92,10 @@ export function npcsPorLeva(): Npc[][] {
     ],
     // 17/10: quatro NPCs novos, ainda sem nome (o Felipe dá depois; o nome se edita no Elenco)
     [
-      { id: 'npc-camisa-rosa', nome: 'Camisa Rosa', arte: 'npc-camisa-rosa', nota: 'nome em aberto', look: { ...lookBase, skin: '#6a4430', hair: '#1e1612', top: '#e89aa8', pants: '#c8b08a', shoes: '#8a6a4a' } },
-      { id: 'npc-ruivo', nome: 'Ruivo', arte: 'npc-ruivo', nota: 'nome em aberto', look: { ...lookBase, skin: '#e0b090', hair: '#d0702a', top: '#1e1c1a', pants: '#3a3a3e', shoes: '#6a4a2e' } },
-      { id: 'npc-cabelo-rosa', nome: 'Cabelo Rosa', arte: 'npc-cabelo-rosa', nota: 'nome em aberto', look: { ...lookBase, skin: '#c8926a', hair: '#e0a0c0', top: '#1a1a1a', pants: '#1e1c1c', shoes: '#141210' } },
-      { id: 'npc-jaleco', nome: 'Jaleco', arte: 'npc-jaleco', nota: 'nome em aberto', look: { ...lookBase, skin: '#e8c8b0', hair: '#141214', top: '#e8e4dc', pants: '#1a1816', shoes: '#141210' } },
+      { id: 'npc-camisa-rosa', nome: 'Pedro Cavalcante', arte: 'npc-camisa-rosa', look: { ...lookBase, skin: '#6a4430', hair: '#1e1612', top: '#e89aa8', pants: '#c8b08a', shoes: '#8a6a4a' } },
+      { id: 'npc-ruivo', nome: 'Joaquin Oliveira', arte: 'npc-ruivo', look: { ...lookBase, skin: '#e0b090', hair: '#d0702a', top: '#1e1c1a', pants: '#3a3a3e', shoes: '#6a4a2e' } },
+      { id: 'npc-cabelo-rosa', nome: 'Rosa Pimenta', arte: 'npc-cabelo-rosa', look: { ...lookBase, skin: '#c8926a', hair: '#e0a0c0', top: '#1a1a1a', pants: '#1e1c1c', shoes: '#141210' } },
+      { id: 'npc-jaleco', nome: 'Rebecca Zarkov', arte: 'npc-jaleco', look: { ...lookBase, skin: '#e8c8b0', hair: '#141214', top: '#e8e4dc', pants: '#1a1816', shoes: '#141210' } },
     ],
     // 17/10: a Camarilla, a cachorra caramelo do Tepes (anda no tabuleiro como peça; em pé e sentada)
     [{ id: 'camarilla', nome: 'Camarilla', arte: 'camarilla', nota: 'a cachorra do Tepes', altura: 0.8, look: { ...lookBase, skin: '#c8924a', hair: '#c8924a', top: '#c8924a', pants: '#c8924a', shoes: '#8a5a2a' } }],
