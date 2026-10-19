@@ -140,6 +140,12 @@ export interface Ficha {
    * dia; sem ela, fome e sede. O mestre marca no painel PLAYERS ("Cumpriu"); passar o dia desmarca (19/10)
    */
   etapaCumprida?: boolean;
+  /**
+   * regra da mesa (19/10): quantas vezes por dia vale cada poder, ritual ou item (a chave de `chaveDia`, em porDia.ts);
+   * o mestre marca. `usosDia` é quanto já foi usado hoje; passar o dia zera.
+   */
+  limitesDia?: Record<string, number>;
+  usosDia?: Record<string, number>;
   /** 19/10, uma vez: depois das escolhas do NEX, o jogador refaz o equipamento (a mochila foi zerada); some ao fazer */
   refazerEquipamento?: boolean;
   /** perdas permanentes (rituais de Medo, Custo do Paranormal) */

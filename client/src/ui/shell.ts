@@ -1137,7 +1137,7 @@ export class Shell {
               class: 'rp-dia-bt',
               type: 'button',
               title: 'Começa o dia seguinte: o que é "1 vez por dia" volta (a etapa ritualística do Ser Amaldiçoado fica por cumprir)',
-              onclick: async () => (await askNote('PASSAR O DIA?', `Começa o dia ${this.dia + 1}. O que é "1 vez por dia" zera, e a etapa ritualística do Ser Amaldiçoado volta a ficar por cumprir.`, 'Passar o dia')) && this.app.net.send({ t: 'diaPassar' }),
+              onclick: async () => (await askNote('PASSAR O DIA?', `Começa o dia ${this.dia + 1}. Os poderes, rituais e itens marcados como "por dia" voltam a ficar livres em todas as fichas, e a etapa ritualística do Ser Amaldiçoado volta a ficar por cumprir.`, 'Passar o dia')) && this.app.net.send({ t: 'diaPassar' }),
             },
             h('span', null, 'Passar o dia'),
             ic('direita'),

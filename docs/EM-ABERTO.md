@@ -7,7 +7,8 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - **Edição direta do mestre** (`client/src/ui/fichas.ts`, `comecarDireto`/`fecharDireto`): clicar no NEX, na patente, na origem, classe, trilha, nome, jogador, idade, tema, nas perícias, no companheiro ou num item abre a janela daquilo; quando a última janela fecha, a ficha grava sozinha se algo mudou ("Ficha salva."). Quem avisa é `quandoFecharTodas` em `fichaModal.ts`. A patente agora é uma lista das patentes (os PP vão para o mínimo dela) com "Pontos exatos…". O Salvar e o Cancelar só aparecem no agente novo (o assistente de criação continua para ele). O jogador segue com o Editar dele.
 - **Fotos de corpo inteiro na ficha**: `arte/personagens/<pasta>/foto-ficha.webp` dos 4 Marcados (as do Felipe, 19/10) e o `foto.jpg` dos NPCs cobrem o quadro do personagem (`object-fit: cover`, sem distorcer). Só na FICHAS.
 - **Avisos sem o C.R.I.S** (migração `avisosSemCris1910`).
-- **Falta:** o "1 vez por dia" genérico (o Passar o dia zerar magias, ações e itens por dia, não só a etapa do Tepes); a Catarina escolher as 2 perícias do Perito (o Felipe sabe); conferir no celular do Felipe (conta teste = Miguel).
+- **1 vez por dia (feito, 19/10 noite):** o mestre clica num poder ou ritual na FICHAS (ou abre um item) e marca "Sem limite / 1× / 2× / 3× por dia"; as bolinhas (cheia = livre, vazia = usada) aparecem na linha e no celular do jogador, que marca o uso (o limite é só do mestre: o servidor guarda o de antes). Passar o dia zera os usos de todas as fichas (`regras.passarDia`). Contas em `shared/src/regras/porDia.ts`, tela em `client/src/ui/porDia.ts`, teste em `server/test/jogador.test.ts`.
+- **Falta:** a Catarina escolhe as 2 perícias do Perito na próxima sessão (fica o aviso); conferir no celular do Felipe (conta teste = Miguel).
 
 ## Feito em 18/10 (tarde): o falso C.R.I.S (a brincadeira da sessão de 18/10) — pronto, falta subir
 

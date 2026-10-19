@@ -26,6 +26,7 @@ import { sprites } from '../render/sprites';
 import type { App } from './app';
 import { arteDoItem } from './arteItem';
 import { h, toast, trocarFilhos } from './dom';
+import { blocoDia, seloDia } from './porDia';
 import { iconePixel } from './iconesPixel';
 import { botao, confirmar, escolher, janela } from './fichaModal';
 import { opcoesMelhoria } from './melhorias';
@@ -490,6 +491,18 @@ export class TelaJogador {
 
   // ---------------------------------------------------------------- Mochila
 
+  /** O "por dia" (19/10): o limite é o mestre que marca; o jogador marca o uso nas bolinhas, e passar o dia devolve. */
+  private blocoDia(chave: string): HTMLElement | null {
+    const caixa = h('div', { class: 'jg-dia' });
+    const pintar = (): void => {
+      const f = this.fs?.ficha;
+      const b = f ? blocoDia(f, chave, false, () => {}, (u) => (this.mudar((x) => regras.marcarUsosDia(x.ficha, chave, u), false), pintar())) : null;
+      caixa.replaceChildren(b ?? '');
+    };
+    pintar();
+    return this.fs && regras.limiteDia(this.fs.ficha, chave) ? caixa : null;
+  }
+
   private abaMochila(): Node[] {
     const fs = this.fs!;
     const c = this.calc!;
@@ -567,6 +580,8 @@ export class TelaJogador {
       }),
     );
     j.corpo.append(corpoDoItem(it, this.calc));
+    const dia = this.blocoDia(regras.chaveDia.item(uid));
+    if (dia) j.corpo.append(dia);
     if (acoes.length) j.rodape.append(...acoes);
     else j.rodape.append(h('span', { class: 'fj-esp' }), botao('Fechar', 'ok', 'forte', () => j.fechar()));
   }
@@ -799,7 +814,7 @@ export class TelaJogador {
         'button',
         { class: `jg-linha${this.poderSel === p.id ? ' on' : ''}`, type: 'button', onclick: () => ((this.poderSel = this.poderSel === p.id ? null : p.id), (this.focarDetalhe = true), sfx.click(), this.renderConteudo()) },
         h('span', { class: 'jg-linha-ic' }, pintado(filtro.pintado, filtro.icone)),
-        h('span', { class: 'jg-linha-txt' }, h('span', { class: 'jg-linha-n' }, p.nome, h('em', { class: `jg-selo${info.custo ? ' pe' : ''}` }, info.custo ? `${info.custo} PE` : 'Passivo')), info.resumo ? h('small', null, info.resumo) : null),
+        h('span', { class: 'jg-linha-txt' }, h('span', { class: 'jg-linha-n' }, p.nome, h('em', { class: `jg-selo${info.custo ? ' pe' : ''}` }, info.custo ? `${info.custo} PE` : 'Passivo'), seloDia(f, regras.chaveDia.poder(p.id))), info.resumo ? h('small', null, info.resumo) : null),
         ic('direita'),
       );
     });
@@ -856,6 +871,7 @@ export class TelaJogador {
         bloco('Efeitos', 'alvo', info.efeitos.length ? info.efeitos.join('; ') + '.' : null),
         bloco('De onde', 'pino', `NEX ${p.nex}%${p.via ? ` (${p.via})` : ''}.`, info.ref ? textoRef(info.ref) : null),
       ),
+      this.blocoDia(regras.chaveDia.poder(p.id)),
     );
   }
 
@@ -901,7 +917,7 @@ export class TelaJogador {
         h(
           'span',
           { class: 'jg-rit-txt' },
-          h('span', { class: 'jg-rit-n' }, r.nome),
+          h('span', { class: 'jg-rit-n' }, r.nome, seloDia(fs.ficha, regras.chaveDia.ritual(r.id))),
           h('span', { class: 'jg-rit-campos' }, campo('Círculo', 'mais3', `${r.circulo}º`), campo('Custo', 'raio', `${k.pe} PE`), campo('Execução', 'ampulheta', r.execucao), campo('Alcance', 'alvo', r.alcance), campo('DT', 'olho', r.resistencia ? String(k.dt) : '—')),
         ),
         estrela(r),
@@ -935,6 +951,7 @@ export class TelaJogador {
         h('p', { class: 'jg-det-meta' }, textoRef(r.ref)),
       ),
       h('div', { class: 'jg-rit-campos largo' }, linha('Execução', r.execucao), linha('Alcance', r.alcance), linha('Resistência', r.resistencia ?? '—'), linha('DT', r.resistencia ? String(k.dt) : '—'), linha('Custo', `${k.pe} PE`)),
+      this.blocoDia(regras.chaveDia.ritual(r.id)),
       h('div', { class: 'jg-det-bts' }, estrela, h('span', null, fav ? 'Favorito' : 'Marcar favorito')),
     );
   }

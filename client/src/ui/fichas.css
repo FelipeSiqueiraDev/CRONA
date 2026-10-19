@@ -4598,3 +4598,105 @@ html .fx .fx-sl-caixa.de-lado > .fx-sl-grade.uma-linha {
 .fx:not(.editando) .fx-id-l.clica .fx-id-v {
   cursor: pointer;
 }
+
+/* o "N vezes por dia" (19/10): bolinhas cheias = livres hoje, vazias = usadas; passar o dia devolve */
+.dia-bolas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  flex: none;
+}
+.dia-bola {
+  width: 1.3rem;
+  height: 1.3rem;
+  padding: 0;
+  border: 0.15rem solid #e2a64a;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.dia-bola.livre {
+  background: radial-gradient(circle at 40% 35%, #ffd98a, #e2a64a 60%, #9a6a20);
+  box-shadow: 0 0 0.5rem rgba(226, 166, 74, 0.55);
+}
+.dia-bolas.gasto .dia-bola {
+  border-color: #7a6a55;
+}
+.dia-bolas.grande {
+  gap: 0.7rem;
+  margin-left: 0;
+}
+.dia-bolas.grande .dia-bola {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-width: 0.22rem;
+}
+.dia-bolas.grande small {
+  margin-left: 0.6rem;
+  font-size: 1.4rem;
+  opacity: 0.85;
+}
+.dia-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+.dia-bloco .fj-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.dia-bloco .fj-sub .ic {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.dia-ops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.fx-pi.clica {
+  cursor: pointer;
+}
+.fx-pi.clica:hover {
+  border-color: #6d5a3a;
+}
+.fx-rt:not(.vazio) {
+  cursor: pointer;
+}
+/* no círculo do ritual, as bolinhas ficam embaixo, por fora */
+.fx-rt .dia-bolas {
+  position: absolute;
+  left: 50%;
+  bottom: -0.7rem;
+  transform: translateX(-50%);
+  margin: 0;
+  gap: 0.2rem;
+}
+.fx-rt .dia-bola {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.12rem;
+}
+/* no celular do jogador */
+.jg-selo.dia {
+  margin-left: var(--s1);
+  border-color: rgba(226, 166, 74, 0.75);
+  background: rgba(226, 166, 74, 0.14);
+  color: #ffd98a;
+}
+.jg-selo.dia.gasto {
+  border-color: var(--c-borda-2);
+  background: none;
+  color: var(--c-texto-2);
+  text-decoration: line-through;
+}
+.jg-dia .dia-bloco {
+  padding: 0 var(--s2, 1rem);
+}
+.jg-dia .dia-bolas.grande .dia-bola {
+  width: 3.4rem;
+  height: 3.4rem;
+}

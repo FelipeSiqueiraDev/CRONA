@@ -1251,7 +1251,7 @@ export class Hotel implements HotelApi {
   private diaPassar(c: Client) {
     if (c.role !== 'gm') return c.send({ t: 'error', msg: 'Só o mestre passa o dia.' });
     this.db.dia = (this.db.dia ?? 1) + 1;
-    for (const f of this.db.fichas ?? []) if (f.ficha.etapaCumprida) delete f.ficha.etapaCumprida;
+    for (const f of this.db.fichas ?? []) regras.passarDia(f.ficha);
     this.save();
     for (const x of this.clients.values()) x.send({ t: 'dia', dia: this.db.dia });
     this.enviarFichas();
@@ -1289,6 +1289,9 @@ export class Hotel implements HotelApi {
       f.ficha.nex = antiga.ficha.nex;
       f.ficha.pp = antiga.ficha.pp;
       f.ficha.regras = antiga.ficha.regras;
+      // quantas vezes por dia é do mestre; o jogador só marca o uso (19/10)
+      f.ficha.limitesDia = antiga.ficha.limitesDia;
+      if (!f.ficha.limitesDia) delete f.ficha.limitesDia;
       f.personagem = antiga.personagem;
       f.campanha = antiga.campanha;
       if (antiga.npc) f.npc = antiga.npc;
@@ -1329,6 +1332,7 @@ export class Hotel implements HotelApi {
     const usados = new Set(lista.filter((o) => o !== f).flatMap((o) => o.ficha.inventario.map((it) => it.uid)));
     for (const it of f.ficha.inventario) if (usados.has(it.uid)) delete it.uid;
     regras.numerarItens(f.ficha.inventario, () => this.nextItemId());
+    regras.limparPorDia(f.ficha);
     if (f.personagem) {
       this.fichaParaPecas(f);
       this.sincronizarArmado(f);

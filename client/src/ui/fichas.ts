@@ -18,6 +18,7 @@ import { caberNumaLinha, corpoDoItem } from './jogador';
 import { abrirRequisicao } from './requisicao';
 import { confirmar, escolher, janela, janelaAberta, mostrar, perguntarTexto, quandoFecharTodas } from './fichaModal';
 import { opcoesMelhoria } from './melhorias';
+import { blocoDia, bolinhasDia } from './porDia';
 import { abrirCriacao, type Assistente } from './criacao';
 import {
   escolherCampo,
@@ -1336,7 +1337,14 @@ export class FichasScreen {
         h('h4', null, titulo),
         ...itens.map((p) => {
           const info = infoPoder(p);
-          return h('div', { class: 'fx-pi', 'data-dica': info }, h('span', { class: 'fx-pi-ic' }, icp()), h('span', { class: 'fx-pi-n' }, p.nome, p.escolha ? h('small', null, ` ${textoValor(p.escolha)}`) : null));
+          const chave = regras.chaveDia.poder(p.id);
+          return h(
+            'div',
+            { class: 'fx-pi clica', role: 'button', tabindex: 0, 'data-dica': info, onclick: () => this.janelaDia(p.nome, icone, info, chave) },
+            h('span', { class: 'fx-pi-ic' }, icp()),
+            h('span', { class: 'fx-pi-n' }, p.nome, p.escolha ? h('small', null, ` ${textoValor(p.escolha)}`) : null),
+            bolinhasDia(f, chave, (u) => this.marcarDia(chave, u)),
+          );
         }),
       );
     };
@@ -1355,6 +1363,31 @@ export class FichasScreen {
     if (!c.poderes.length) corpo.append(h('p', { class: 'fx-nada' }, 'Sem poderes ainda.'));
   }
 
+  /** Marca o uso de hoje de um poder, ritual ou item: grava na hora, como PV e condições. */
+  private marcarDia(chave: string, usos: number) {
+    this.mudar((x) => regras.marcarUsosDia(x.ficha, chave, usos));
+  }
+
+  /** A janela de um poder ou ritual: o que faz e, para o mestre, quantas vezes vale por dia (19/10). */
+  private janelaDia(titulo: string, icone: NomeIcone, texto: string, chave: string) {
+    const j = mostrar(titulo, icone, [], 52);
+    const pintar = () => {
+      const f = this.atual()?.ficha;
+      if (!f) return;
+      j.corpo.replaceChildren(
+        h('p', { class: 'fj-texto' }, texto),
+        blocoDia(
+          f,
+          chave,
+          this.gm,
+          (n) => (this.mudar((x) => regras.definirLimiteDia(x.ficha, chave, n)), pintar()),
+          (u) => (this.marcarDia(chave, u), pintar()),
+        ) ?? '',
+      );
+    };
+    pintar();
+  }
+
   // ---------------------------------------------------------------- rituais
 
   private renderRit(fs: FichaSalva, c: Calc) {
@@ -1367,11 +1400,13 @@ export class FichasScreen {
       const conhecidos = c.rituais.filter((r) => cat.ritual(r.id)?.circulo === circ);
       const slots: HTMLElement[] = conhecidos.map((r) => {
         const rit = cat.ritual(r.id)!;
+        const chave = regras.chaveDia.ritual(rit.id);
         return h(
-          'button',
-          { class: 'fx-rt', type: 'button', style: `--cor:${COR_ELEMENTO[rit.elemento]}`, 'data-dica': infoRitual(rit, c), 'aria-label': rit.nome },
+          'div',
+          { class: 'fx-rt', role: 'button', tabindex: 0, style: `--cor:${COR_ELEMENTO[rit.elemento]}`, 'data-dica': infoRitual(rit, c), 'aria-label': rit.nome, onclick: () => this.janelaDia(rit.nome, 'pentagrama', infoRitual(rit, c), chave) },
           sigiloComArte(rit.elemento),
           h('span', { class: 'fx-rt-n' }, rit.nome),
+          bolinhasDia(f, chave, (u) => this.marcarDia(chave, u)),
         );
       });
       const liberado = circ <= Math.max(max, c.rituais.length ? 1 : 0);
@@ -1394,7 +1429,10 @@ export class FichasScreen {
       rows.push(h('div', { class: `fx-rc-circ${liberado ? '' : ' travado'}` }, h('h4', null, `CÍRCULO ${circ}`, !liberado ? ic('cadeado') : null), h('div', { class: 'fx-rt-lista' }, ...slots)));
     }
     const paran = c.poderes.filter((p) => p.tipo === 'paranormal');
-    corpo.replaceChildren(...rows, paran.length ? h('div', { class: 'fx-rit-par' }, h('h4', null, 'PODERES PARANORMAIS'), ...paran.map((p) => h('div', { class: 'fx-pi', 'data-dica': infoPoder(p) }, h('span', { class: 'fx-pi-ic' }, ic('olho')), h('span', { class: 'fx-pi-n' }, p.nome)))) : '');
+    corpo.replaceChildren(...rows, paran.length ? h('div', { class: 'fx-rit-par' }, h('h4', null, 'PODERES PARANORMAIS'), ...paran.map((p) => {
+              const chave = regras.chaveDia.poder(p.id);
+              return h('div', { class: 'fx-pi clica', role: 'button', tabindex: 0, 'data-dica': infoPoder(p), onclick: () => this.janelaDia(p.nome, 'olho', infoPoder(p), chave) }, h('span', { class: 'fx-pi-ic' }, ic('olho')), h('span', { class: 'fx-pi-n' }, p.nome), bolinhasDia(f, chave, (u) => this.marcarDia(chave, u)));
+            })) : '');
     this.extraDe(this.pRit).replaceChildren(c.rituais.length || f.classe === 'ocultista' ? h('span', { class: 'fx-dt', 'data-dica': 'DT dos rituais: 10 + limite de PE + Presença.' }, `DT ${c.dtRituais}`) : '');
   }
 
@@ -1754,6 +1792,23 @@ export class FichasScreen {
     if (it.tipo !== 'cena') {
       const cb = h('input', { type: 'checkbox', checked: !!it.achado, onchange: (e: Event) => (it.achado = (e.target as HTMLInputElement).checked || undefined) });
       j.corpo.append(h('label', { class: 'fj-check' }, cb, 'Achado na missão (não ocupa vaga da patente)'));
+    }
+    // quantas vezes por dia (19/10): no rascunho, como o resto do item
+    if (it.uid) {
+      const chave = regras.chaveDia.item(it.uid);
+      const dia = h('div');
+      const pintarDia = (): void =>
+        dia.replaceChildren(
+          blocoDia(
+            fs.ficha,
+            chave,
+            true,
+            (n) => (regras.definirLimiteDia(fs.ficha, chave, n), pintarDia()),
+            (u) => (regras.marcarUsosDia(fs.ficha, chave, u), pintarDia()),
+          ) ?? '',
+        );
+      pintarDia();
+      j.corpo.append(dia);
     }
     // modificações e maldições
     const mods = h('div', { class: 'fj-chips' });

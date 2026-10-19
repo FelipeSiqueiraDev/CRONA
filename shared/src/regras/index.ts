@@ -13,3 +13,4 @@ export * from './rolagem';
 export * as catalogo from './dados';
 export * from './interludio';
 export * from './jogadas';
+export * from './porDia';

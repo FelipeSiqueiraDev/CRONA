@@ -191,3 +191,43 @@ describe('documentos', () => {
     assert.deepEqual(salva.favoritos, ['amaldicoar_arma']);
   });
 });
+
+describe('1 vez por dia (19/10)', () => {
+  test('o mestre marca o limite, o jogador gasta (sem mexer no limite) e passar o dia devolve', () => {
+    const chave = regras.chaveDia.poder('ataque-especial');
+    // o mestre: Ataque Especial vale 1 vez por dia
+    const doMestre = structuredClone(ficha('Catarina Albuquerque'));
+    regras.definirLimiteDia(doMestre.ficha, chave, 1);
+    gm.send({ t: 'fichaSalvar', ficha: doMestre });
+    assert.equal(regras.limiteDia(ficha('Catarina Albuquerque').ficha, chave), 1);
+    // o jogador gasta e tenta subir o limite: o uso fica, o limite não
+    const minha = structuredClone(jog.last('fichas')!.fichas[0]);
+    regras.marcarUsosDia(minha.ficha, chave, 1);
+    minha.ficha.limitesDia = { [chave]: 5 };
+    jog.send({ t: 'fichaSalvar', ficha: minha });
+    assert.equal(regras.limiteDia(ficha('Catarina Albuquerque').ficha, chave), 1, 'o limite é do mestre');
+    assert.equal(regras.usosDia(ficha('Catarina Albuquerque').ficha, chave), 1, 'o uso de hoje ficou');
+    // passa o dia: o uso volta, o limite fica
+    gm.send({ t: 'diaPassar' });
+    assert.equal(regras.usosDia(ficha('Catarina Albuquerque').ficha, chave), 0);
+    assert.equal(regras.limiteDia(ficha('Catarina Albuquerque').ficha, chave), 1);
+    assert.equal(jog.last('fichas')!.fichas[0].ficha.usosDia, undefined, 'o celular recebe o dia novo');
+  });
+
+  test('o uso nunca passa do limite, e o item que sai da mochila leva o limite junto', () => {
+    const f = regras.novaFicha('X');
+    const k = regras.chaveDia.ritual('decadencia');
+    regras.marcarUsosDia(f, k, 3);
+    assert.equal(regras.usosDia(f, k), 0, 'sem limite não marca');
+    regras.definirLimiteDia(f, k, 2);
+    regras.marcarUsosDia(f, k, 7);
+    assert.equal(regras.usosDia(f, k), 2);
+    regras.definirLimiteDia(f, k, 1);
+    assert.equal(regras.usosDia(f, k), 1, 'baixar o limite corta o uso');
+    const ki = regras.chaveDia.item(99);
+    regras.definirLimiteDia(f, ki, 1);
+    regras.limparPorDia(f);
+    assert.equal(regras.limiteDia(f, ki), 0, 'item 99 não está na mochila');
+    assert.equal(regras.limiteDia(f, k), 1);
+  });
+});
