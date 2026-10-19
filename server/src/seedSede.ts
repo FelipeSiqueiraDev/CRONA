@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 60;
+export const SEDE_REV = 61;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -811,69 +811,59 @@ const ROOMS: RoomSpec[] = [
     links: [[2, 9, 'corredor']],
   },
   {
+    // a Loja da Agatha (19/10, o Felipe: "a sala de rituais da Agatha não tá certa; aliás, a lojinha da Agatha"): como na
+    // série (docs/SEDE-NA-SERIE.md, seção 8, e docs/referencias/sede-serie/loja-agatha-balcao.png): o balcão comprido de
+    // madeira na frente, com o pano escuro, as joias, os frascos coloridos e o grimório; atrás, o símbolo grande no chão,
+    // as estantes de livros e de frascos, a mesa dos aparelhos e a mesa de tatuagem; a névoa dos experimentos e a luz
+    // vermelho-arroxeada. Quem entra fica do lado de cá do balcão.
     key: 'rituais',
-    ambient: '#c02a24',
-    particles: ['dust', 'smoke', 'embers'],
+    ambient: '#9a2a5a',
+    particles: ['dust', 'smoke'],
     name: SEDE + 'Sala de Rituais',
-    description: 'Um círculo vermelho pintado no chão, a mesa das ferramentas e o balcão dos frascos. O ar pesa aqui dentro.',
+    description: 'A loja da Agatha: o balcão comprido com os frascos coloridos, as joias e o grimório; atrás dele, o símbolo grande no chão, estantes de livros, ossos e frascos, e a mesa de tatuagem. Uma névoa fina não sai nunca da sala.',
     layout: plan(9, 11, 8),
     floorName: 'Subsolo',
     style: 'musgo',
-    darkness: 0.74,
-    fog: 0.4,
+    darkness: 0.72,
+    fog: 0.55,
     plan: { x: 66, y: 1 },
     floor: [
       ['portal', 1, 8, 2],
-      // o círculo no meio da sala: o crânio no centro, velas nos quatro lados, sangue
-      ['sigil_floor', 4, 4, 0],
-      ['skull', 5, 5, 4],
-      ['candles', 5, 3, 0],
-      ['candles', 3, 5, 0],
-      ['candles', 7, 5, 0],
-      ['candles', 5, 7, 0],
-      ['blood_pool', 6, 6, 0],
-      ['blood_drops', 4, 4, 0],
-      ['blood_drops', 7, 7, 0],
-      // na parede do fundo: a estante, o balcão dos frascos e a mesa redonda do canto
+      // o fundo da loja (atrás do balcão): as estantes na parede do fundo e na da esquerda
       ['bookshelf', 1, 0, 4],
-      ['counter_wood', 3, 0, 4],
-      ['flasks', 3, 0, 4],
-      ['candles', 4, 0, 4],
-      ['counter_wood', 5, 0, 4],
-      ['books_stack', 5, 0, 4],
-      ['flasks', 6, 0, 4],
-      ['table_round', 8, 0, 0],
-      ['papers', 8, 0, 0],
-      ['chair_wood', 8, 2, 0],
-      // na parede da esquerda: a mesa das ferramentas (a faca, o giz, a tigela) e mais balcão
-      ['table_tools', 1, 3, 2],
-      ['stool', 2, 3, 6],
-      ['counter_wood', 1, 5, 2],
-      ['skull', 1, 5, 2],
-      // ---- adensado (15/10): o ritual está no meio ----
-      // a mesa redonda do canto e o balcão do fundo
-      ['candles', 9, 0, 0],
-      ['books_stack', 8, 1, 0],
-      ['flasks', 9, 1, 0],
-      ['candles', 1, 6, 2],
-      // as velas derretidas, o sangue e as cinzas em volta do círculo, as pilhas de crânios e o candelabro
-      ['wax_pool', 3, 5, 0],
-      ['wax_pool', 7, 5, 0],
-      ['blood_drops', 3, 7, 0],
-      ['cinzas', 6, 8, 0],
-      ['pilha_cranios', 8, 9, 0],
-      ['candelabra', 8, 4, 0],
-      // a mesinha de apoio no fundo, perto da porta
-      ['table_small', 5, 9, 0],
-      ['books_stack', 5, 9, 0],
-      ['candles', 5, 9, 0],
+      ['vitrine_paranormal', 3, 0, 4],
+      ['estante_frascos', 5, 0, 4],
+      ['bookshelf', 7, 0, 4],
+      ['table_small', 9, 0, 0],
+      ['papers', 9, 0, 0],
+      ['estante_frascos', 1, 2, 2],
+      // o símbolo grande no chão, no meio do fundo, com as velas e as cinzas dos experimentos
+      ['sigil_floor', 4, 2, 0],
+      ['candles', 3, 3, 0],
+      ['candles', 7, 3, 0],
+      ['wax_pool', 7, 2, 0],
+      ['cinzas', 3, 2, 0],
+      // a mesa de tatuagem no canto do fundo, com o banco e os frascos de tinta
+      ['maca_exame', 9, 2, 0],
+      ['stool', 8, 3, 6],
+      // o balcão da loja, de um lado ao outro (passa-se por trás dele pelas pontas)
+      ['balcao_loja', 2, 6, 4],
+      ['flasks', 2, 6, 0],
+      ['velas_cristal', 3, 6, 0],
+      ['books_stack', 4, 6, 0],
+      ['velas_cristal', 5, 6, 0],
+      ['frascos_boticario', 6, 6, 0],
+      ['flasks', 7, 6, 0],
+      // o lado de cá do balcão, de quem compra: o tapete gasto, o candelabro e os crânios no canto
+      ['rug_worn', 4, 8, 0],
+      ['candelabra', 9, 8, 0],
+      ['pilha_cranios', 9, 10, 0],
+      ['candles', 1, 10, 0],
     ],
     wall: [
-      ['poster_sigil', 'r', 0, 4.5, 2.36],
-      ['poster_sigil', 'l', 1, 7.0, 2.36],
-      ['sconce', 'l', 1, 2.5, 2.9],
-      ['sconce', 'l', 1, 5.5, 2.9],
-      ['sconce', 'r', 0, 7.5, 2.9],
+      ['poster_sigil', 'l', 1, 3.0, 2.36],
+      ['sconce', 'l', 1, 5.0, 2.9],
+      ['sconce', 'l', 1, 7.0, 2.9],
     ],
     links: [[1, 8, 'corredor']],
   },
