@@ -1200,6 +1200,12 @@ export class Hotel implements HotelApi {
     if (this.db.liveScene !== undefined) this.log(this.db.liveScene, 'scene', `Começou o dia ${this.db.dia}.`);
   }
 
+  /** A peça do agente está numa cena da Sede da Ordem: é lá que ele pede itens (19/10). */
+  private naBase(f: FichaSalva): boolean {
+    const sala = this.salaDoPersonagem(f.personagem);
+    return !!sala && this.campaignFor(Math.min(...this.sceneGroup(sala.data.id))).title === 'Sede da Ordem';
+  }
+
   private enviarFichas(so?: Client, nova?: number) {
     const todas = this.db.fichas ?? [];
     const para = (c: Client) => {
@@ -1208,7 +1214,7 @@ export class Hotel implements HotelApi {
       const minha = todas.find((f) => f.id === c.fichaId);
       // a equipe (para entregar um item): os outros agentes da mesma campanha, só o nome
       const equipe = minha ? todas.filter((f) => f !== minha && f.campanha === minha.campanha).map((f) => ({ id: f.id, nome: f.nome })) : [];
-      c.send({ t: 'fichas', fichas: minha ? [{ ...minha, chave: undefined }] : [], equipe });
+      c.send({ t: 'fichas', fichas: minha ? [{ ...minha, chave: undefined, naBase: this.naBase(minha) }] : [], equipe });
     };
     if (so) return para(so);
     for (const c of this.clients.values()) para(c);
@@ -1229,6 +1235,10 @@ export class Hotel implements HotelApi {
       f.campanha = antiga.campanha;
       if (antiga.npc) f.npc = antiga.npc;
       else delete f.npc;
+      // pedir itens do catálogo só na base da Ordem (19/10, o Felipe): fora dela, a mochila só ganha o que o mestre dá
+      const doCatalogo = (x: regras.Ficha) => x.inventario.filter((i) => i.tipo !== 'cena').length;
+      if (doCatalogo(f.ficha) > doCatalogo(antiga.ficha) && !this.naBase(antiga)) return c.send({ t: 'error', msg: 'Itens da Ordem só se pedem na base (a Sede). Peça ao mestre.' });
+      delete f.naBase;
       // a requisição do jogador respeita a patente: nenhuma categoria acima do limite a mais que antes (LR p. 52)
       try {
         const antes = regras.calcular(antiga.ficha).itens;

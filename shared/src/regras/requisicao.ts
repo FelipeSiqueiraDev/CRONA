@@ -89,7 +89,8 @@ export function opcoesDeItens(f: Ficha, c: Calculado = calcular(f)): OpcaoItem[]
     }
     // a carga: até o dobro dá para levar, sobrecarregado; acima do dobro, não (LR p. 53)
     const depois = c.carga.usados + x.espacos;
-    if (depois > c.carga.maximo) o.motivos.push(`Não cabe: ficaria com ${num(depois)} espaços, o máximo é ${num(c.carga.maximo)} (LR p. 53).`);
+    // acima do dobro o livro não deixa carregar (LR p. 53); na mesa do Felipe (19/10) entra com o aviso, e o mestre decide
+    if (depois > c.carga.maximo) o.avisos.push(`Passa do máximo: ${num(depois)} espaços, o máximo é ${num(c.carga.maximo)} (LR p. 53). Sobrecarregado (−5 na Defesa e nas perícias de carga, −3 m) e, pelo livro, nem consegue carregar tudo: combine com o mestre.`);
     else if (x.espacos > 0 && depois > c.carga.espacos) o.avisos.push(`Fica sobrecarregado: ${num(depois)} de ${num(c.carga.espacos)} espaços (−5 na Defesa, −3 m; LR p. 53).`);
     extra(o);
     o.ok = o.motivos.length === 0;

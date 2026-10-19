@@ -29,6 +29,7 @@ import { h, toast, trocarFilhos } from './dom';
 import { iconePixel } from './iconesPixel';
 import { botao, confirmar, escolher, janela } from './fichaModal';
 import { opcoesMelhoria } from './melhorias';
+import { abrirRequisicao } from './requisicao';
 import { GRAU_CURTO, infoItem, NOME_ATR, NOME_ELEMENTO, NOME_GRAU, textoRef, textoTeste } from './fichaRegras';
 import { arteOu, ic, type NomeIcone } from './icons';
 import { sfx } from './sfx';
@@ -512,7 +513,24 @@ export class TelaJogador {
     const partes: (HTMLElement | null)[] = [
       this.titulo('MOCHILA', 'mochila', h('span', { class: 'jg-tit-extra' }, pintado(IC.carga, 'mochila'), h('b', null, `${numero(c.carga.usados)}/${c.carga.espacos}`), ' espaços')),
       h('div', { class: 'jg-casas' }, ...casas),
-      inv.length ? null : h('p', { class: 'jg-vazio' }, 'A mochila está vazia. Os itens vêm da requisição (na ficha completa) e do que o mestre entrega.'),
+      // na base da Ordem (a Sede), o agente pede itens: a patente limita; a carga a mais só avisa (19/10)
+      this.fs?.naBase
+        ? botao('Pedir itens à Ordem', 'mais', 'forte', () => {
+            const r: FichaSalva = JSON.parse(JSON.stringify(this.fs));
+            const antes = r.ficha.inventario.length;
+            abrirRequisicao({
+              ficha: r.ficha,
+              nome: r.nome,
+              tema: r.tema,
+              mestre: false,
+              aoAdicionar: () => {},
+              aoFechar: () => {
+                if (r.ficha.inventario.length !== antes) this.mudar((fs) => (fs.ficha = { ...fs.ficha, inventario: r.ficha.inventario }));
+              },
+            });
+          })
+        : h('p', { class: 'jg-nota-base' }, ic('pino'), 'Itens da Ordem só se pedem na base (a Sede).'),
+      inv.length ? null : h('p', { class: 'jg-vazio' }, 'A mochila está vazia. Os itens vêm da requisição da Ordem e do que o mestre entrega.'),
     ];
     return partes.filter((x): x is HTMLElement => !!x);
   }

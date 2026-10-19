@@ -66,6 +66,8 @@ export interface FichaSalva {
   bonus?: { exercicio?: number; leitura?: number };
   /** chave do link do jogador (`?ficha=CHAVE`); só o mestre vê e gera */
   chave?: string;
+  /** só na mensagem para o jogador (não se guarda): a peça dele está na base da Ordem, onde pede itens (19/10) */
+  naBase?: boolean;
   criadaEm: string;
   atualizadaEm: string;
 }
