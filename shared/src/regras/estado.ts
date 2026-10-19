@@ -517,8 +517,9 @@ export function montarEstado(f: Ficha, ate: Nex = f.nex, excluir?: Exclusao): Es
           conferirAtributosIniciais(nex, 4);
           st.atributos = { ...f.atributos };
           aplicarOrigem(nex);
-          receberClasse(nex);
+          // as perícias da classe antes das habilidades: o Perito escolhe entre as treinadas, as livres também (LR p. 28)
           if (classeAgente) aplicarPericiasDaClasse(nex, classeAgente.pericias.livres + f.atributos.int);
+          receberClasse(nex);
           break;
         }
         case 'treinamento': {
@@ -530,8 +531,8 @@ export function montarEstado(f: Ficha, ate: Nex = f.nex, excluir?: Exclusao): Es
             st.atributos[a] += 1;
             if (a === 'int') periciaPorIntelecto(nex);
           }
-          receberClasse(nex);
           if (classeAgente) aplicarPericiasDaClasse(nex, classeAgente.pericias.livres + f.atributos.int);
+          receberClasse(nex);
           break;
         }
         case 'atributo': {

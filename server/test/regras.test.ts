@@ -733,3 +733,17 @@ describe('requisição de equipamento (a janela de escolher itens)', () => {
     assert.equal(regras.opcoesDeItens(f).some((o) => o.id === sah.id), true);
   });
 });
+
+describe('Perito na criação (19/10)', () => {
+  test('aceita as perícias livres da criação, não só as da origem', () => {
+    const f = novaFicha('Perita');
+    f.atributos = { agi: 3, for: 1, int: 3, pre: 1, vig: 1 };
+    f.origem = 'vitima';
+    f.classe = 'especialista';
+    f.pericias.livres = ['atletismo', 'intimidacao', 'ocultismo', 'percepcao', 'fortitude', 'furtividade', 'iniciativa', 'luta', 'pontaria', 'tatica'];
+    f.progressao[5] = { parametros: { perito: { pericias: ['atletismo', 'furtividade'] } } };
+    const c = calcular(f);
+    assert.deepEqual(c.problemas.filter((p) => p.onde === 'Perito'), []);
+    assert.ok(!c.pendencias.some((p) => /Perito/.test(p.texto)));
+  });
+});
