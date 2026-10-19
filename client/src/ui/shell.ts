@@ -654,7 +654,8 @@ export class Shell {
       const cid = sel?.kind === 'user' ? this.app.view.users.get(sel.id)?.criatura?.id : undefined;
       if (cid && this.app.state.bestiario.some((c) => c.id === cid)) this.renderInspector(true);
     });
-    app.on('characters', () => ((this.sigs.party = ''), this.renderParty()));
+    // os retratos dependem da lista de personagens: o PLAYERS se refaz quando ela chega (19/10: as fotos sumiam)
+    app.on('characters', () => ((this.sigs.party = ''), this.renderParty(), this.renderRpg(true)));
     setInterval(() => this.captureThumb(), 4000);
     setInterval(() => this.markWalking(), 180);
     window.addEventListener('resize', () => (this.minimapa.desenhar(), this.plantaGrande?.mm.desenhar()));
@@ -1162,7 +1163,7 @@ export class Shell {
           { class: 'rp-info' },
           // armado: a arma logo depois do nome, em pixel (14/10: antes era um selo por cima do retrato; depois do nome
           // para o nome não mudar de lugar quando o agente saca ou guarda)
-          h('div', { class: 'rp-nome' }, h('b', null, p.name, p.armed ? this.armaNaMao(id) : null), h('button', { class: 'rp-mais', type: 'button', title: 'Mais', 'aria-label': `Mais de ${p.name}`, onclick: (ev: Event) => (sfx.click(), this.menuDaPeca(ev.currentTarget as HTMLElement, p, here)) }, ic('reticencias'))),
+          h('div', { class: 'rp-nome' }, h('b', null, p.name, p.armed ? this.armaNaMao(id) : null), this.botoesDoMarcado(p), h('button', { class: 'rp-mais', type: 'button', title: 'Mais', 'aria-label': `Mais de ${p.name}`, onclick: (ev: Event) => (sfx.click(), this.menuDaPeca(ev.currentTarget as HTMLElement, p, here)) }, ic('reticencias'))),
           h('div', { class: 'rp-local' }, ic('pino'), h('span', null, this.sceneName(p.roomId) || '—')),
           this.vitaisCarta(id, p),
         ),
@@ -2333,14 +2334,11 @@ export class Shell {
       const labels = conditionLabels(vitalConditions(q.vitals));
       const ficha = this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === q.look?.charId);
       const marcadas = (ficha?.condicoes ?? []).map((c) => regras.catalogo.condicao(c)?.nome ?? c);
-      // a etapa ritualística do dia (Ser Amaldiçoado, SaH p. 17), só de quem tem: o mestre marca "Cumpriu"
-      const temEtapa = !!ficha && regras.calcular(ficha.ficha).poderes.some((x) => x.id === 'ser-amaldicoado');
-      const cumpriu = !!ficha?.ficha.etapaCumprida;
-      const k = JSON.stringify([labels, marcadas, !!ficha, this.gm, temEtapa, cumpriu]);
+      const k = JSON.stringify([labels, marcadas, !!ficha, this.gm]);
       if (k === chave) return;
       chave = k;
       conds.replaceChildren(
-        ...(labels.length || marcadas.length || (this.gm && ficha) || temEtapa
+        ...(labels.length || marcadas.length || (this.gm && ficha)
           ? [
               h(
                 'div',
@@ -2348,28 +2346,6 @@ export class Shell {
                 ...labels.map((l) => h('span', { class: 'vt-cond' }, l)),
                 ...marcadas.map((l) => h('span', { class: 'vt-cond marcada' }, l)),
                 this.gm && ficha ? h('button', { class: 'vt-cond mais', type: 'button', title: 'Condições', 'aria-label': `Condições de ${q.name}`, onclick: () => this.escolherCondicoes(ficha) }, ic('mais'), marcadas.length ? null : h('span', null, 'Condição')) : null,
-                temEtapa && ficha
-                  ? h(
-                      'button',
-                      {
-                        class: `vt-cond etapa${cumpriu ? ' cumpriu' : ''}`,
-                        type: 'button',
-                        disabled: !this.gm,
-                        'aria-pressed': String(cumpriu),
-                        title: cumpriu
-                          ? 'Cumpriu a etapa ritualística hoje: o efeito do elemento vale até o fim do dia (SaH p. 17). Clique para desfazer.'
-                          : 'Não cumpriu a etapa ritualística hoje: fome e sede, sem o efeito do elemento (SaH p. 17). Clique quando cumprir.',
-                        onclick: () => {
-                          sfx.click();
-                          const nova: FichaSalva = { ...ficha, ficha: { ...ficha.ficha, etapaCumprida: !cumpriu }, atualizadaEm: new Date().toISOString() };
-                          if (!nova.ficha.etapaCumprida) delete nova.ficha.etapaCumprida;
-                          this.app.net.send({ t: 'fichaSalvar', ficha: nova });
-                        },
-                      },
-                      ic(cumpriu ? 'ok' : 'lua'),
-                      h('span', null, cumpriu ? 'Cumpriu' : 'Etapa do dia'),
-                    )
-                  : null,
               ),
             ]
           : []),
@@ -2394,6 +2370,59 @@ export class Shell {
       pintaConds(q);
     };
     return wrap;
+  }
+
+  /**
+   * Os quadradinhos ao lado do ⋯ (19/10): a gota da etapa ritualística do dia (só quem tem Ser Amaldiçoado; vermelha
+   * quando cumpriu) e a patinha do companheiro (apagada, ele não está junto; verde, segue o agente para qualquer cena).
+   */
+  private botoesDoMarcado(p: PartyMember): HTMLElement | null {
+    const ficha = this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === p.look?.charId && !f.npc);
+    if (!ficha) return null;
+    const salvar = (fn: (f: FichaSalva) => void) => {
+      const nova: FichaSalva = JSON.parse(JSON.stringify(ficha));
+      fn(nova);
+      nova.atualizadaEm = new Date().toISOString();
+      sfx.click();
+      this.app.net.send({ t: 'fichaSalvar', ficha: nova });
+    };
+    const bts: HTMLElement[] = [];
+    if (regras.calcular(ficha.ficha).poderes.some((x) => x.id === 'ser-amaldicoado')) {
+      const on = !!ficha.ficha.etapaCumprida;
+      bts.push(
+        h(
+          'button',
+          {
+            class: `rp-ico etapa${on ? ' on' : ''}`,
+            type: 'button',
+            disabled: !this.gm,
+            'aria-pressed': String(on),
+            title: on ? 'Cumpriu a etapa ritualística hoje: o efeito do elemento vale até o fim do dia (SaH p. 17). Clique para desfazer.' : 'Etapa ritualística do dia por cumprir: fome e sede, sem o efeito do elemento (SaH p. 17). Clique quando cumprir.',
+            onclick: () => salvar((f) => (on ? delete f.ficha.etapaCumprida : (f.ficha.etapaCumprida = true))),
+          },
+          ic('gota'),
+        ),
+      );
+    }
+    const cp = ficha.companheiro;
+    if (cp) {
+      const on = !!cp.segue;
+      bts.push(
+        h(
+          'button',
+          {
+            class: `rp-ico comp${on ? ' on' : ''}`,
+            type: 'button',
+            disabled: !this.gm,
+            'aria-pressed': String(on),
+            title: on ? `${cp.nome} está com ${ficha.nome}: vai junto para onde ${ficha.nome} for. Clique para deixar.` : `${cp.nome} não está com ${ficha.nome}. Clique para ela ir junto (vem para o lado dele).`,
+            onclick: () => salvar((f) => f.companheiro && (on ? delete f.companheiro.segue : (f.companheiro.segue = true))),
+          },
+          ic('pata'),
+        ),
+      );
+    }
+    return bts.length ? h('span', { class: 'rp-icos' }, ...bts) : null;
   }
 
   /** O dia da missão (mensagem `dia` do servidor). */

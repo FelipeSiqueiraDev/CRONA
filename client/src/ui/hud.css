@@ -4284,3 +4284,46 @@ html:not(.modo-ficha) .rp-dia-bt .ic {
   width: 1.2rem;
   height: 1.2rem;
 }
+
+/* os quadradinhos ao lado do ⋯ (19/10): a gota da etapa do dia e a patinha do companheiro */
+html:not(.modo-ficha) .rp-icos {
+  display: inline-flex;
+  gap: 0.3rem;
+  margin-left: auto;
+  margin-right: 0.3rem;
+}
+html:not(.modo-ficha) .rp-ico {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  border: 0.14rem solid rgba(161, 136, 115, 0.4);
+  border-radius: 0.35rem;
+  background: var(--h-campo);
+  color: rgba(200, 190, 175, 0.35);
+  cursor: pointer;
+}
+html:not(.modo-ficha) .rp-ico:disabled {
+  cursor: default;
+}
+html:not(.modo-ficha) .rp-ico .ic {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+html:not(.modo-ficha) .rp-ico.etapa.on {
+  border-color: #b8231f;
+  background: rgba(184, 35, 31, 0.25);
+  color: #ff4a3d;
+}
+html:not(.modo-ficha) .rp-ico.etapa.on .ic {
+  fill: currentColor;
+}
+html:not(.modo-ficha) .rp-ico.comp.on {
+  border-color: #3f9a4a;
+  background: rgba(63, 154, 74, 0.22);
+  color: #7be08a;
+}
+html:not(.modo-ficha) .rp-ico.comp.on .ic {
+  fill: currentColor;
+}

@@ -672,4 +672,6 @@ export interface MarcadoNoJogo {
   /** a cena onde a peça está; sem ela, fora do tabuleiro */
   cena?: number;
   cenaNome?: string;
+  /** o companheiro (o cão da Camarilla): o nome (o NPC do Elenco com esse nome) e a foto em arte/companheiros/ */
+  companheiro?: { nome: string; imagem?: string };
 }

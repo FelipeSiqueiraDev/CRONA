@@ -373,7 +373,8 @@ export class Hotel implements HotelApi {
       .filter((f) => !f.npc && f.personagem)
       .map((f) => {
         const sala = this.salaDoPersonagem(f.personagem);
-        return { fichaId: f.id, nome: f.nome, personagem: f.personagem!, ...(sala ? { cena: sala.data.id, cenaNome: sala.data.name } : {}) };
+        const comp = f.companheiro?.nome ? { companheiro: { nome: f.companheiro.nome, ...(f.companheiro.imagem ? { imagem: f.companheiro.imagem } : {}) } } : {};
+        return { fichaId: f.id, nome: f.nome, personagem: f.personagem!, ...(sala ? { cena: sala.data.id, cenaNome: sala.data.name } : {}), ...comp };
       });
   }
 
@@ -1334,6 +1335,9 @@ export class Hotel implements HotelApi {
     }
     this.save();
     this.enviarFichas(undefined, nova);
+    // a patinha acabou de ligar: o companheiro vem para perto do agente
+    const salva = (this.db.fichas ?? []).find((x) => x.id === f.id);
+    if (salva?.companheiro?.segue && !antiga?.companheiro?.segue) this.companheiroJunto(salva);
     this.touch();
   }
 
@@ -2004,6 +2008,42 @@ export class Hotel implements HotelApi {
     const t = from.takeToken(tokenId);
     if (!t) return;
     to.putToken(t, from.data.id);
+    this.companheiroSegue(t.look?.charId, from, to);
+  }
+
+  /**
+   * O companheiro que está com o agente (a Camarilla do Tepes, 19/10: "pra onde eu levar o Tepes ela segue ele"): a peça
+   * dele (o NPC do Elenco com o nome do companheiro) vai para a cena do agente e chega do lado dele.
+   */
+  private companheiroSegue(personagem: number | null | undefined, de: RoomInstance, para: RoomInstance, perto?: { x: number; y: number }) {
+    const f = (this.db.fichas ?? []).find((x) => !x.npc && x.personagem && x.personagem === personagem);
+    const cp = f?.companheiro;
+    if (!cp?.segue) return;
+    const nome = cp.nome.toLowerCase();
+    for (const r of this.rooms.values()) {
+      if (r === para) continue;
+      const tc = r.tokenList().find((x) => x.name.toLowerCase() === nome);
+      if (!tc) continue;
+      const dado = r.takeToken(tc.id);
+      // trocando de cena, chega pela mesma passagem do agente (do lado dele); ligando a patinha, nasce do lado dele
+      if (dado) para.putToken(perto ? { ...dado, x: perto.x, y: perto.y } : dado, perto ? null : de.data.id);
+      return;
+    }
+    // sem peça em lugar nenhum: nasce do NPC do Elenco com esse nome, do lado do agente
+    if (para.tokenList().some((x) => x.name.toLowerCase() === nome)) return;
+    const npc = (this.db.npcs ?? []).find((x) => x.nome.toLowerCase() === nome);
+    if (!npc) return;
+    const d = perto ?? para.data.door;
+    para.putToken({ id: this.nextItemId(), name: npc.nome, look: { ...npc.look, charId: this.charDaArte(npc.arte) }, x: d.x, y: d.y, dir: 3, color: '#7f93a8' }, perto ? null : de.data.id);
+  }
+
+  /** Liga ou desliga o companheiro junto do agente (a patinha no PLAYERS); ligando, ele vem para a cena do agente. */
+  companheiroJunto(f: FichaSalva) {
+    if (!f.companheiro?.segue) return;
+    const sala = this.salaDoPersonagem(f.personagem);
+    const ag = sala?.tokenList().find((x) => x.look?.charId === f.personagem);
+    const pos = ag ? sala!.posDaPeca(ag.id) : null;
+    if (sala && pos) this.companheiroSegue(f.personagem, sala, sala, { x: pos.x + 1, y: pos.y });
   }
 
   teleport(c: Client, roomId: number, fromRoomId: number) {

@@ -76,6 +76,7 @@ import {
   type Vitals,
   type WallItem,
   type ChamaCriatura,
+  DIRS,
 } from '@crona/shared';
 import type { RoomData, TokenData } from './db';
 import { SYSTEM_OWNER } from './seed';
@@ -289,7 +290,13 @@ export class RoomInstance {
     // chegando por uma passagem ocupada (ou de outra cena sem passagem para cá, como a van da viagem, que
     // deixa o grupo inteiro na porta): vai para a casa livre mais perto dela, e ninguém fica empilhado
     if ((back || fromRoomId !== null) && (this.occupied(sx, sy, -t.id) || this.map.walkState(sx, sy) !== 'walk')) {
-      const free = this.freeNear(sx, sy, -t.id);
+      // pela escada, quem chega depois do primeiro fica na frente do pé dela, do lado da sala, e nunca nos degraus nem
+      // atrás deles (19/10, o Felipe: "às vezes eles ficam atrás da escada")
+      const [fx, fy] = pe ? (DIRS[back!.rot] ?? [0, 0]) : [0, 0];
+      const naFrente = pe
+        ? (nx: number, ny: number) => (nx - sx) * fx + (ny - sy) * fy >= 0 && !/stairs|escada/.test(this.map.topItem(nx, ny)?.defId ?? '')
+        : undefined;
+      const free = this.freeNear(sx, sy, -t.id, naFrente) ?? this.freeNear(sx, sy, -t.id);
       if (free) [sx, sy] = [free.x, free.y];
     }
     const u: RoomUser = {
@@ -330,7 +337,7 @@ export class RoomInstance {
   }
 
   /** Casa livre (andável e sem peça) mais perto de (x, y), em anéis. */
-  private freeNear(x: number, y: number, selfId: number): Point | null {
+  private freeNear(x: number, y: number, selfId: number, aceita?: (x: number, y: number) => boolean): Point | null {
     for (let r = 1; r <= 4; r++)
       for (let dy = -r; dy <= r; dy++)
         for (let dx = -r; dx <= r; dx++) {
@@ -339,6 +346,7 @@ export class RoomInstance {
           const ny = y + dy;
           if (this.map.walkState(nx, ny) !== 'walk' || this.occupied(nx, ny, selfId)) continue;
           if (getFurni(this.map.topItem(nx, ny)?.defId ?? '')?.portal) continue;
+          if (aceita && !aceita(nx, ny)) continue;
           return { x: nx, y: ny };
         }
     return null;
@@ -385,6 +393,12 @@ export class RoomInstance {
     this.hotel.vitaisDaPeca(u.client.look?.charId, v);
     this.saveTokens();
     return { ...antes };
+  }
+
+  /** A casa onde a peça está (null se não está nesta cena). */
+  posDaPeca(tokenId: number): { x: number; y: number } | null {
+    const u = this.users.get(tokenId);
+    return u ? { x: u.x, y: u.y } : null;
   }
 
   /** Tira a peça desta cena e devolve os dados dela. */

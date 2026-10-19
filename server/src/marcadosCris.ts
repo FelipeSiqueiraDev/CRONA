@@ -194,3 +194,13 @@ export function contaTesteNoMiguel(db: Database): boolean {
   feitas['conta-teste-miguel-1910'] = conta && miguel ? miguel.id : 0;
   return true;
 }
+
+/** 19/10, o Felipe: "a Camarilla tem PV 100" (a cachorra do Tepes, o companheiro da ficha dele). Uma vez só. */
+export function camarillaPv1910(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['camarilla-pv-1910'] !== undefined) return false;
+  const tepes = (db.fichas ?? []).find((x) => x.nome === 'D.Tepes' && !x.npc);
+  if (tepes?.companheiro) tepes.companheiro = { ...tepes.companheiro, pvMax: 100, pv: 100 };
+  feitas['camarilla-pv-1910'] = 1;
+  return true;
+}

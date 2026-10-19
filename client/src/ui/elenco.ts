@@ -342,6 +342,22 @@ export function abrirElenco(app: App) {
       const pastaDe = (personagem: number) => app.state.characters.find((ch) => ch.id === personagem)?.poses?.desarmado?.sw?.match(/\/arte\/personagens\/([^/]+)\//)?.[1];
       const trazer = (x: MarcadoNoJogo) => app.net.send({ t: 'marcadoColocar', fichaId: x.fichaId });
       const lista = app.state.marcados.filter((x) => !busca || semAcento(x.nome).includes(busca));
+      // os companheiros (a Camarilla do Tepes, 19/10): o NPC do Elenco com o nome do companheiro da ficha, com a foto dela
+      const comps = app.state.marcados
+        .filter((x) => x.companheiro)
+        .map((x) => ({ x, n: app.state.npcs.find((n) => semAcento(n.nome) === semAcento(x.companheiro!.nome)) }))
+        .filter((c): c is { x: MarcadoNoJogo; n: Npc } => !!c.n && (!busca || semAcento(c.n.nome).includes(busca)));
+      const cardComp = ({ x, n }: { x: MarcadoNoJogo; n: Npc }) =>
+        card({
+          chave: `npc:${n.id}`,
+          nome: n.nome,
+          linha: `de ${x.nome}`,
+          duasLinhas: true,
+          emCena: app.state.npcsEmCampo.includes(n.id),
+          figura: x.companheiro?.imagem ? h('img', { class: 'el-foto', src: `/arte/companheiros/${x.companheiro.imagem}`, alt: n.nome, decoding: 'async', loading: 'lazy' }) : figura({ ...n }),
+          usar: (ev) => usar(ev, () => colocarNpc(n)),
+        });
+      const nComp = app.state.npcs.find((n) => `npc:${n.id}` === sel && comps.some((c) => c.n === n));
       grade.replaceChildren(
         secao({
           nome: 'Marcados',
@@ -363,7 +379,12 @@ export function abrirElenco(app: App) {
             });
           }),
         }),
+        ...(comps.length ? [secao({ nome: 'Companheiros', n: comps.length, icone: 'pata', cls: 'el-mestre', aberta: true, alternar: () => {}, filhos: comps.map(cardComp) })] : []),
       );
+      if (nComp) {
+        detalhe.replaceChildren(...detalheNpc(nComp));
+        return;
+      }
       const x = app.state.marcados.find((m) => `marcado:${m.fichaId}` === sel);
       if (!x) {
         detalhe.replaceChildren(h('p', { class: 'el-vazio' }, 'Os Marcados são os agentes dos jogadores: cada um é uma peça só. "Usar" põe na cena em que você está (se estiver em outra, sai de lá).'));
@@ -386,7 +407,9 @@ export function abrirElenco(app: App) {
     }
     if (aba === 'npcs') {
       chips.replaceChildren();
-      const lista = npcs.filter((n) => !busca || semAcento(n.nome).includes(busca) || semAcento(n.nota ?? '').includes(busca) || semAcento(grupoDoNpc(n)).includes(busca));
+      // os companheiros dos Marcados ficam na aba Marcados (19/10)
+      const deComp = new Set(app.state.marcados.map((x) => x.companheiro && semAcento(x.companheiro.nome)).filter(Boolean));
+      const lista = npcs.filter((n) => !deComp.has(semAcento(n.nome)) && (!busca || semAcento(n.nome).includes(busca) || semAcento(n.nota ?? '').includes(busca) || semAcento(grupoDoNpc(n)).includes(busca)));
       // os grupos na ordem guardada (os vazios também, fechados); na busca, só os que têm alguém, abertos
       const grupos = gruposDoElenco(app.state.npcGrupos, npcs)
         .map((g) => [g, lista.filter((n) => grupoDoNpc(n) === g)] as const)

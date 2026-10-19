@@ -8,7 +8,7 @@
  * salvos sozinhos) e editar (um rascunho da ficha inteira; Salvar grava,
  * Cancelar descarta). NEX e pontos de prestígio só o mestre muda.
  */
-import { NOME_TEMA, TEMAS, regras, vitalConditions, type AvatarLook, type CampaignState, type CharacterDef, type FichaSalva, type Npc, type Vitals } from '@crona/shared';
+import { combate, NOME_TEMA, TEMAS, regras, vitalConditions, type AvatarLook, type CampaignState, type CharacterDef, type FichaSalva, type Npc, type Vitals } from '@crona/shared';
 import { portraitCanvas } from '../render/portrait';
 import type { App } from './app';
 import { CorpoView } from './corpo';
@@ -1459,10 +1459,8 @@ export class FichasScreen {
         { class: 'fx-cp-dados' },
         h('b', { class: 'fx-cp-nome' }, cp.nome),
         h('span', { class: 'fx-cp-tipo' }, cp.tipo || '—'),
+        // só o PV (19/10, o Felipe: "a foto grandinha na horizontal e as informações embaixo; é só PV")
         h('div', { class: 'fx-cp-l' }, h('span', null, ic('coracao'), 'PV'), h('span', { class: `fx-bar ${cp.pvMax ? 'pv' : 'sem'} mini` }, h('i', { style: `width:${cp.pvMax ? pct : 0}%` }), h('span', null, pv))),
-        h('div', { class: 'fx-cp-l' }, h('span', null, 'Status'), h('span', { class: 'fx-bar st mini' }, h('i', { style: 'width:100%' }), h('span', null, 'Normal'))),
-        h('div', { class: 'fx-cp-l' }, h('span', null, 'Função'), h('span', { class: 'fx-cp-v' }, cp.funcao || '—')),
-        h('div', { class: 'fx-cp-l' }, h('span', null, 'Traços'), h('span', { class: 'fx-cp-tracos' }, ...(cp.tracos?.length ? cp.tracos.map((t) => h('i', null, t)) : ['—']))),
       ),
     );
     this.extraDe(this.pComp).replaceChildren(this.editando ? h('button', { class: 'fx-mini', type: 'button', title: 'Editar companheiro', 'aria-label': 'Editar companheiro', onclick: () => this.editarCompanheiro() }, ic('reticencias')) : '');
@@ -1495,7 +1493,9 @@ export class FichasScreen {
           type: 'button',
           onclick: () => {
             if (!nome.value.trim()) return toast('Dê um nome ao companheiro.', 'error');
-            const max = Math.round(Number(pv.value) || 0);
+            // sem PV digitado, o do livro: o tipo que bate com um animal das ameaças do livro (Cão de Guarda, LR p. 282)
+            const doLivro = combate.AMEACAS_LIVRO.find((a) => a.tipo === 'Animal' && regras.slug(a.nome) === regras.slug(tipo.value.trim()));
+            const max = Math.round(Number(pv.value) || 0) || doLivro?.pv || 0;
             fs.companheiro = {
               nome: nome.value.trim(),
               tipo: tipo.value.trim(),

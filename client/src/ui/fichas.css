@@ -4424,3 +4424,22 @@ html .fx .fx-sl-caixa.de-lado > .fx-sl-grade.uma-linha {
   width: 3.2rem;
   height: 3rem;
 }
+
+/* o companheiro (19/10): a foto grande e deitada em cima, o nome, o tipo e o PV embaixo */
+.fx-comp .fx-corpo-p {
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+}
+.fx-comp .fx-cp-foto {
+  min-height: 0;
+}
+.fx-comp .fx-cp-foto img {
+  object-position: 50% 30%;
+}
+.fx-comp .fx-cp-dados {
+  gap: 0.2rem;
+}
+.fx-comp .fx-cp-tipo {
+  margin-bottom: 0.2rem;
+}

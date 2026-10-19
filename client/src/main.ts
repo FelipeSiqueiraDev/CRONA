@@ -114,9 +114,10 @@ function startPlace(defId: string, invId?: number) {
 }
 
 /**
- * O grupo anda junto (09/10, o Felipe): cada peça vai para uma casa livre perto do destino, sem empilhar. As casas saem
- * de uma busca a partir do destino (as mais perto primeiro); a peça mais perto do destino fica com a casa do clique, e
- * as outras, em ordem de distância, com as seguintes.
+ * O grupo anda junto, em bloco (19/10, o Felipe: "que eles andem em bloco, sem mudar de posição: é importante que
+ * mantenham uma formação tática"): cada peça vai para a casa do clique mais a distância que ela tem da peça comandada,
+ * e a formação chega igual. A casa que cair em parede, móvel ou em outra peça vira a livre mais perto dela (busca a
+ * partir dela, sem atravessar parede).
  */
 function andarEmGrupo(x: number, y: number) {
   const map = app.view.map;
@@ -124,30 +125,38 @@ function andarEmGrupo(x: number, y: number) {
   const ids = [...app.view.grupo].filter((id) => app.view.users.has(id));
   const doGrupo = new Set(ids);
   const ocupadas = new Set([...app.view.users.values()].filter((u) => !doGrupo.has(u.id)).map((u) => `${u.x},${u.y}`));
-  const casas: { x: number; y: number }[] = [];
-  const vistas = new Set([`${x},${y}`]);
-  const fila = [{ x, y }];
-  while (fila.length && casas.length < ids.length) {
-    const c = fila.shift()!;
-    if (map.walkState(c.x, c.y) === 'walk' && !ocupadas.has(`${c.x},${c.y}`)) casas.push(c);
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
-      const n = { x: c.x + dx, y: c.y + dy };
-      const k = `${n.x},${n.y}`;
-      if (vistas.has(k) || map.floorHeight(n.x, n.y) === null) continue;
-      vistas.add(k);
-      // não atravessa parede nem móvel na busca (a casa do lado de lá de um armário não é "perto")
-      if (map.walkState(n.x, n.y) === 'blocked') continue;
-      fila.push(n);
+  const lider = app.view.users.get(app.view.myId) ?? app.view.users.get(ids[0])!;
+  const livre = (c: { x: number; y: number }) => map.walkState(c.x, c.y) === 'walk' && !ocupadas.has(`${c.x},${c.y}`);
+  /** a casa livre mais perto de `alvo` (ela mesma, se der) */
+  const maisPerto = (alvo: { x: number; y: number }) => {
+    const vistas = new Set([`${alvo.x},${alvo.y}`]);
+    const fila = [alvo];
+    while (fila.length) {
+      const c = fila.shift()!;
+      if (livre(c)) return c;
+      if (vistas.size > 200) break;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+        const n = { x: c.x + dx, y: c.y + dy };
+        const k = `${n.x},${n.y}`;
+        if (vistas.has(k) || map.floorHeight(n.x, n.y) === null) continue;
+        vistas.add(k);
+        if (map.walkState(n.x, n.y) === 'blocked' && !livre(n)) {
+          // não atravessa parede nem móvel na busca (a casa do lado de lá de um armário não é "perto")
+          if (map.walkState(c.x, c.y) !== 'blocked') continue;
+        }
+        fila.push(n);
+      }
     }
-  }
-  const dist = (id: number) => {
-    const u = app.view.users.get(id)!;
-    return Math.hypot(u.x - x, u.y - y);
+    return { x: alvo.x, y: alvo.y };
   };
-  ids.sort((a, b) => dist(a) - dist(b)).forEach((id, i) => {
-    const c = casas[i] ?? { x, y };
+  // o líder primeiro (ele fica com a casa do clique), depois os mais perto dele: a formação se desfaz o mínimo
+  const ordem = [...ids].sort((a, b) => (a === lider.id ? -1 : b === lider.id ? 1 : 0) || Math.hypot(app.view.users.get(a)!.x - lider.x, app.view.users.get(a)!.y - lider.y) - Math.hypot(app.view.users.get(b)!.x - lider.x, app.view.users.get(b)!.y - lider.y));
+  for (const id of ordem) {
+    const u = app.view.users.get(id)!;
+    const c = maisPerto({ x: x + (u.x - lider.x), y: y + (u.y - lider.y) });
+    ocupadas.add(`${c.x},${c.y}`);
     net.send({ t: 'tokenWalk', tokenId: id, x: c.x, y: c.y });
-  });
+  }
 }
 
 const view = new RoomView(canvas, {

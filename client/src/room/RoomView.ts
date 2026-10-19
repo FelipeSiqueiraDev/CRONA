@@ -480,6 +480,8 @@ export class RoomView {
   private hoverKey = '';
   private wallTarget: WallTarget | null = null;
   private drag: { sx: number; sy: number; cx: number; cy: number; tx: number; ty: number; moved: boolean } | null = null;
+  /** Ctrl + arrastar (19/10): o retângulo de seleção; quem ficar dentro vira o grupo e anda junto */
+  private caixaSel: { x0: number; y0: number; x1: number; y1: number } | null = null;
   private lastClick = { t: 0, key: '' };
   private raf = 0;
   private door: { seg: WallSeg; path: Path2D } | null = null;
@@ -1558,6 +1560,11 @@ export class RoomView {
       }
       if (e.button !== 0) return;
       c.setPointerCapture(e.pointerId);
+      // Ctrl + arrastar: a seleção por área (o mestre junta pessoas e monstros num grupo e anda com todos)
+      if ((e.ctrlKey || e.metaKey) && !this.placement && this.info?.isOwner && this.tat.t <= 0) {
+        this.caixaSel = { x0: e.offsetX, y0: e.offsetY, x1: e.offsetX, y1: e.offsetY };
+        return;
+      }
       // a ferramenta do mestre (ou o Alt, que aponta sem ligar nada)
       if ((this.ferramenta || e.altKey) && !this.placement && this.info?.isOwner) {
         this.comecarRisco(this.ferramenta ?? { tipo: 'ponto' });
@@ -1568,6 +1575,11 @@ export class RoomView {
     c.addEventListener('pointermove', (e) => {
       if (this.watchOnly) return;
       this.mouse = { x: e.offsetX, y: e.offsetY, inside: true };
+      if (this.caixaSel) {
+        this.caixaSel.x1 = e.offsetX;
+        this.caixaSel.y1 = e.offsetY;
+        return;
+      }
       if (this.risco) {
         this.updateHover();
         this.seguirRisco();
@@ -1594,6 +1606,17 @@ export class RoomView {
       this.updateHover();
     });
     c.addEventListener('pointerup', (e) => {
+      if (this.caixaSel) {
+        const k = this.caixaSel;
+        this.caixaSel = null;
+        // arrasto curto é um Ctrl + clique normal
+        if (Math.hypot(k.x1 - k.x0, k.y1 - k.y0) < 6) {
+          this.mouse = { x: e.offsetX, y: e.offsetY, inside: true };
+          this.updateHover();
+          this.click(e.shiftKey, true);
+        } else this.selecionarNaCaixa(k);
+        return;
+      }
       if (this.risco) {
         this.mouse = { x: e.offsetX, y: e.offsetY, inside: true };
         this.acabarRisco();
@@ -3523,6 +3546,44 @@ export class RoomView {
     if (viagem) this.mundoViagem.clima(ctx, viagem, now, this.dpr);
     this.bubbles.draw(ctx, (wx) => wx * z + this.cam.x, this.vw);
     if (viagem?.destino) this.faixaDoDestino(viagem.destino);
+    // o retângulo da seleção por área (Ctrl + arrastar)
+    const k = this.caixaSel;
+    if (k) {
+      const x = Math.min(k.x0, k.x1);
+      const y = Math.min(k.y0, k.y1);
+      const w = Math.abs(k.x1 - k.x0);
+      const hh = Math.abs(k.y1 - k.y0);
+      ctx.save();
+      ctx.fillStyle = 'rgba(226, 166, 74, 0.12)';
+      ctx.strokeStyle = 'rgba(255, 210, 122, 0.95)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.fillRect(x, y, w, hh);
+      ctx.strokeRect(x + 0.5, y + 0.5, w, hh);
+      ctx.restore();
+    }
+  }
+
+  /** Quem está dentro do retângulo (o meio do corpo na tela) vira o grupo: o clique no chão manda todos (19/10). */
+  private selecionarNaCaixa(k: { x0: number; y0: number; x1: number; y1: number }) {
+    const [x0, x1] = [Math.min(k.x0, k.x1), Math.max(k.x0, k.x1)];
+    const [y0, y1] = [Math.min(k.y0, k.y1), Math.max(k.y0, k.y1)];
+    const now = performance.now();
+    const dentro: number[] = [];
+    for (const u of this.users.values()) {
+      const p = this.userPos(u, now);
+      const [wx, wy] = iso(p.x + 0.5, p.y + 0.5, p.z);
+      const sx = wx * this.zoom + this.cam.x;
+      const pes = wy * this.zoom + this.cam.y;
+      const meio = (wy - this.avatarHeight(u) * 0.5) * this.zoom + this.cam.y;
+      if (sx >= x0 && sx <= x1 && ((pes >= y0 && pes <= y1) || (meio >= y0 && meio <= y1))) dentro.push(u.id);
+    }
+    if (!dentro.length) return;
+    this.grupo.clear();
+    if (dentro.length > 1) for (const id of dentro) this.grupo.add(id);
+    this.myId = dentro[0];
+    this.events.grupoMudou?.(this.grupo.size);
+    this.select({ kind: 'user', id: this.myId });
   }
 
   /** O que o mestre escreveu como destino da viagem, numa faixa no alto do tabuleiro (a mesa também lê). */

@@ -18,6 +18,8 @@ export interface Companheiro {
   tracos?: string[];
   /** arte em /arte/companheiros/<imagem> */
   imagem?: string;
+  /** está com o agente (19/10): a peça dele (o NPC do Elenco com este nome) vai junto para onde o agente for */
+  segue?: boolean;
 }
 
 /**
@@ -159,6 +161,7 @@ export function sanitizarFicha(raw: unknown): FichaSalva | null {
       funcao: texto(c.funcao, 120),
       tracos: lista(c.tracos, 8),
       imagem: texto(c.imagem, 120),
+      ...(c.segue === true ? { segue: true } : {}),
     };
   }
   return out;
