@@ -3,7 +3,7 @@ import { describe, test } from "node:test";
 import fs from "node:fs";
 import { regras, type FichaSalva } from "@crona/shared";
 import type { Database } from "../src/db";
-import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados } from "../src/marcadosCris";
+import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados, avisosDe1910 } from "../src/marcadosCris";
 
 /** Os 4 Marcados iguais ao C.R.I.S (18/10): o estado de jogo, a mochila e os avisos, uma vez só. */
 describe("Marcados iguais ao C.R.I.S", () => {
@@ -56,5 +56,15 @@ describe("Marcados iguais ao C.R.I.S", () => {
     assert.equal(zerarMochilasMarcados(db), true);
     assert.equal(zerarMochilasMarcados(db), false);
     for (const nome of ["D.Tepes", "Catarina Albuquerque", "Alosi Walker", "Cora Falcão"]) assert.deepEqual(ficha(nome).ficha.inventario, [], nome);
+  });
+
+  test("regra da mesa: o Vigor e a Presença só do NEX do aumento em diante (Cora 37 PV, Alosi 29 PE)", () => {
+    assert.equal(regras.calcular(ficha("Cora Falcão").ficha).pv, 37);
+    assert.equal(regras.calcular(ficha("Alosi Walker").ficha).pe, 29);
+    assert.equal(regras.calcular(ficha("D.Tepes").ficha).pv, 44);
+    assert.equal(avisosDe1910(db), true);
+    assert.equal(avisosDe1910(db), false);
+    assert.match(ficha("Cora Falcão").ficha.avisos![0], /37/);
+    assert.ok(ficha("D.Tepes").ficha.avisos!.some((t) => /Ciências e Intuição/.test(t)));
   });
 });

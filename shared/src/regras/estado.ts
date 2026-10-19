@@ -86,6 +86,11 @@ export interface Estado {
   nex: Nex;
   classe: ClasseId;
   atributos: Record<AtributoId, number>;
+  /**
+   * os atributos como estavam ao fim de cada NEX (19/10, regra da mesa do Felipe: o aumento de atributo só conta dali
+   * para a frente; os PV e PE de cada NEX usam o Vigor e a Presença daquele NEX)
+   */
+  atributosNoNex: Partial<Record<Nex, Record<AtributoId, number>>>;
   graus: Record<PericiaId, Grau>;
   /** bônus de perícia por treino repetido ("se já for treinado, +2") */
   bonusTreino: Partial<Record<PericiaId, number>>;
@@ -139,6 +144,7 @@ function vazio(nex: Nex): Estado {
     nex,
     classe: 'mundano',
     atributos: { agi: 1, for: 1, int: 1, pre: 1, vig: 1 },
+    atributosNoNex: {},
     graus,
     bonusTreino: {},
     elementoTrilha: null,
@@ -480,7 +486,10 @@ export function montarEstado(f: Ficha, ate: Nex = f.nex, excluir?: Exclusao): Es
 
   // ---------- NEX a NEX ----------
   let circuloAntes = 0;
+  let nexAnterior: Nex | null = null;
   for (const nex of nexAte(ate, inicio)) {
+    if (nexAnterior !== null) st.atributosNoNex[nexAnterior] = { ...st.atributos };
+    nexAnterior = nex;
     st.nex = nex;
     const circuloAgora = f.classe ? circuloMaximo(f.classe, nex) : 0;
     if (circuloAgora > circuloAntes && circuloAntes > 0)
@@ -623,6 +632,7 @@ export function montarEstado(f: Ficha, ate: Nex = f.nex, excluir?: Exclusao): Es
     else treinar(p, nex, 'Perícia do Intelecto');
   }
 
+  if (nexAnterior !== null) st.atributosNoNex[nexAnterior] = { ...st.atributos };
   return st;
 }
 

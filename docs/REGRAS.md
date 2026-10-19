@@ -385,6 +385,8 @@ Cena de descanso em lugar seguro. Cada personagem faz até **duas ações**:
 
 ## 12. Regras da casa
 
+**Regra da mesa, sempre ligada (19/10, decidida pelo Felipe):** o aumento de atributo só vale do NEX dele em diante. Os PV de cada NEX somam o Vigor daquele NEX, e os PE, a Presença daquele NEX (ou o atributo que a substitui): "antes era 1, soma-se como 1; upou e aumentou, aí soma-se como 2". O livro não diz (AUDITORIA-REGRAS.md, D1). Os itens que dão atributo valem em todos os NEX enquanto estão com a pessoa. Conta em `shared/src/regras/calcular.ts` (`atributosNoNex`, guardado NEX a NEX por `montarEstado`).
+
 Por campanha, guardadas no CRONA. Tudo desligado = livro puro. Só o mestre liga e desliga. A lista começa pelas que o C.R.I.S prevê:
 
 | Chave | O que muda |

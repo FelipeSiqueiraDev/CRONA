@@ -64,7 +64,7 @@ Conferidos e certos: atributos, perícias, trilhas e requisitos, poderes (Combat
 
 | | Dúvida | Leituras | Sugestão |
 |---|---|---|---|
-| D1 | Quando Vigor ou Presença sobem, os PV e PE dos NEX anteriores também sobem? | O livro não diz. (a) retroativo (o CRONA faz assim); (b) só a partir do NEX do aumento. Alosi PE 32 × 29; Cora PV 40 × 37 | (a), a leitura comum; registrar como regra da mesa |
+| D1 | Quando Vigor ou Presença sobem, os PV e PE dos NEX anteriores também sobem? | O livro não diz. (a) retroativo (o CRONA faz assim); (b) só a partir do NEX do aumento. Alosi PE 32 × 29; Cora PV 40 × 37 | **Decidido em 19/10 pelo Felipe: (b), só a partir do NEX do aumento** (Cora 37 PV, Alosi 29 PE); regra da mesa em REGRAS.md, seção 12 |
 | D2 | Tepes: qual atributo subiu em NEX 20%? | O PV 48 do C.R.I.S aponta para Vigor | Confirmar com o jogador |
 | D3 | Cora: o aumento de NEX 20% foi no Vigor? | Com D1 (a), os números são iguais | Só para o registro |
 | D4 | O "pé de mesa" é arma improvisada ou bastão? | Improvisada: 1d6, −1d20 (LR p. 57). Bastão: 1d6/1d8, sem penalidade (LR p. 56 e 58) | Improvisada, pelo livro; o CRONA já aplica o −1d20 |

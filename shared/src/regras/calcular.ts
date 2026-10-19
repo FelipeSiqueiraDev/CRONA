@@ -11,7 +11,7 @@ import { lugarDoItem, maosDoItem, maosOcupadas, MAOS, vestivel } from './mochila
 import { limitePeDoNex, patamar } from './nex';
 import { NOME_ATRIBUTO } from './requisitos';
 import type { AlvoModificacao, Arma, AtributoId, Categoria, ClasseId, Efeito, Elemento, Escopo, Grau, Nex, PericiaId, Proficiencia, TipoDano, Valor } from './tipos';
-import { ATRIBUTOS } from './tipos';
+import { ATRIBUTOS, NEX_LISTA } from './tipos';
 
 export interface PericiaCalculada {
   grau: Grau;
@@ -309,13 +309,25 @@ export function calcular(f: Ficha): Calculado {
   const passos = agente ? Math.max(0, pat - 1) : 0;
 
   // ---------- PV, PE, SAN ----------
-  let pv = classe.pv.inicial + atr.vig + passos * (classe.pv.porNex + atr.vig);
+  // regra da mesa (19/10, o Felipe: "o vigor só vale dali pra frente; antes era 1, soma-se como 1; upou e aumentou, aí
+  // soma-se como 2"): cada NEX soma o Vigor e a Presença daquele NEX; o aumento não volta para os NEX de antes. O livro
+  // não diz (AUDITORIA-REGRAS.md, D1). Os itens (Pujança...) valem em todos, enquanto estão com a pessoa.
+  const nexDoAgente = agente ? NEX_LISTA.filter((n) => n >= 5 && n <= nex) : [];
+  const noNex = (n: Nex, a: AtributoId) => (st.atributosNoNex[n] ?? st.atributos)[a];
+  const somaPorNex = (porNex: number, valor: (n: Nex) => number) => nexDoAgente.slice(1).reduce<number>((t, n) => t + porNex + valor(n), 0);
+  const vigNoNex = (n: Nex) => noNex(n, 'vig') + (mochila.atributos.vig ?? 0);
+  let pv = agente && nexDoAgente.length ? classe.pv.inicial + vigNoNex(nexDoAgente[0]) + somaPorNex(classe.pv.porNex, vigNoNex) : classe.pv.inicial + atr.vig + passos * (classe.pv.porNex + atr.vig);
   for (const x of doTipo('pv')) pv += escala(x.efeito, pat, atr);
   pv += f.ajustes?.pv ?? 0;
 
   let atrPe: number = st.atributos.pre;
   for (const x of doTipo('atributoPe')) atrPe = Math.max(atrPe, st.atributos[x.efeito.atributo]);
-  let pe = classe.pe.inicial + atrPe + passos * (classe.pe.porNex + atrPe);
+  const pePorNex = (n: Nex) => {
+    let v = noNex(n, 'pre');
+    for (const x of doTipo('atributoPe')) v = Math.max(v, noNex(n, x.efeito.atributo));
+    return v;
+  };
+  let pe = agente && nexDoAgente.length ? classe.pe.inicial + pePorNex(nexDoAgente[0]) + somaPorNex(classe.pe.porNex, pePorNex) : classe.pe.inicial + atrPe + passos * (classe.pe.porNex + atrPe);
   for (const x of doTipo('pe')) pe += escala(x.efeito, pat, atr);
   pe += (f.ajustes?.pe ?? 0) - (f.perdas?.pe ?? 0);
 

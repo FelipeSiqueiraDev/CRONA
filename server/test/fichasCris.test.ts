@@ -14,14 +14,20 @@ const doCris = (nome: string) => cris.agent_sheets.find((s) => s.character_name 
 
 /** O que o CRONA calcula quando é diferente do C.R.I.S (e por quê), por ficha: [campo, valor do CRONA]. */
 const DIFERENCAS: Record<string, Record<string, number>> = {
-  // o C.R.I.S tem 6 Transcender; o livro dá 5 até NEX 65% (a Expansão de Conhecimento ficou de fora): +5 de SAN
-  nico: { san: 68 },
-  // o 100 do C.R.I.S não soma Calejado (+14) nem Casca Grossa (+14); o +2 do Tanque de Guerra é condicional
-  verissimo: { pv: 128, defesa: 22 },
-  // o bônus de Reflexos Defensivos é condicional
-  interrogacao: { defesa: 12 },
-  // sobrecarregado pelas contas do livro (19 de 15 espaços): −5 na Defesa
-  omega: { defesa: 25 },
+  // regra da mesa (19/10): o aumento de Vigor e de Presença só vale do NEX dele em diante; o C.R.I.S soma em todos
+  miguel: { pe: 57 },
+  agatha: { pe: 109 },
+  // o C.R.I.S tem 6 Transcender; o livro dá 5 até NEX 65% (a Expansão de Conhecimento ficou de fora): +5 de SAN;
+  // e o Vigor de cada aumento só do NEX dele em diante
+  nico: { pv: 53, san: 68 },
+  // o 100 do C.R.I.S não soma Calejado (+14) nem Casca Grossa (+14); o +2 do Tanque de Guerra é condicional; e o
+  // Vigor de cada aumento só do NEX dele em diante
+  verissimo: { pv: 119, defesa: 22 },
+  // o bônus de Reflexos Defensivos é condicional; o Vigor de cada aumento só do NEX dele em diante
+  interrogacao: { pv: 98, defesa: 12 },
+  // sobrecarregado pelas contas do livro (19 de 15 espaços): −5 na Defesa; o Vigor e a Presença de cada aumento só do
+  // NEX dele em diante
+  omega: { pv: 77, pe: 131, defesa: 25 },
 };
 
 describe("fichas do C.R.I.S", () => {

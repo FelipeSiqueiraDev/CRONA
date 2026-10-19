@@ -143,3 +143,19 @@ export function zerarMochilasMarcados(db: Database): boolean {
   feitas['mochilas-zeradas-1910'] = n;
   return true;
 }
+
+/**
+ * Os avisos depois da regra da mesa de 19/10 (o aumento de atributo só do NEX dele em diante): a Cora fica com 37 PV;
+ * o do Tepes ganha o que faltava do Ser Amaldiçoado (Veríssimo, V-122). Uma vez só.
+ */
+export function avisosDe1910(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['avisos-1910'] !== undefined) return false;
+  const ficha = (nome: string) => (db.fichas ?? []).find((x) => x.nome === nome && !x.npc);
+  const cora = ficha('Cora Falcão');
+  if (cora) cora.ficha.avisos = ['PV máximo: 37. O combatente tem 20 + Vigor no NEX 5% e +4 + Vigor a cada NEX (LR p. 25), e na nossa mesa o Vigor que sobe só vale do NEX do aumento em diante: Vigor 1 nos NEX 5%, 10% e 15%, Vigor 2 no 20%. O C.R.I.S ficou com 36.'];
+  const tepes = ficha('D.Tepes');
+  if (tepes?.ficha.avisos) tepes.ficha.avisos = tepes.ficha.avisos.map((t) => (t.startsWith('Ser Amaldiçoado') ? 'Ser Amaldiçoado (Sangue), a "Mutação Inicial" do C.R.I.S: no dia em que você cumpre a etapa ritualística, tem RD 5 a balístico e a Sangue, faro e o Vigor no dano do contra-ataque, mas −1d20 em Ciências e Intuição; no dia sem a etapa, fome e sede (SaH p. 17). No C.R.I.S a RD a Sangue fica sempre ligada, a de balístico não aparece e a penalidade não está. Faro é um sentido, não uma perícia.' : t));
+  feitas['avisos-1910'] = 1;
+  return true;
+}
