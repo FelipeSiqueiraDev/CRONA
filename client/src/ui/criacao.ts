@@ -28,6 +28,22 @@ const PASSOS: { id: Passo; nome: string; icone: NomeIcone }[] = [
   { id: 'revisao', nome: 'Revisão', icone: 'ok' },
 ];
 
+/**
+ * O que fazer em cada passo, em uma ou duas frases (19/10, o Felipe: "dá pra entender nada de como usar isso"): fica
+ * logo embaixo do título, num quadro, antes do que se mexe.
+ */
+const GUIA: Record<Passo, string> = {
+  comeco: 'O nome do agente e quem joga. O mestre também acerta aqui o NEX (subir abre as escolhas novas no passo Evolução) e os pontos de prestígio (a patente).',
+  atributos: 'Distribua os pontos com o − e o +. Todos começam em 1; dá para baixar um para 0 e ganhar 1 ponto; na criação nada passa de 3. Ao lado, o que cada atributo muda.',
+  origem: 'Escolha de onde o agente veio. A origem dá duas perícias treinadas e um poder. Toque num cartão para escolher; os travados dizem o motivo.',
+  classe: 'Combatente, Especialista ou Ocultista. A classe define PV, PE, SAN, as perícias da classe e os poderes que vêm em cada NEX.',
+  pericias: 'Marque as perícias treinadas: uma de cada grupo da classe e as livres (as da classe mais uma por ponto de Intelecto). As da origem já vêm marcadas.',
+  evolucao: 'Cada NEX até o de agora: o que ele deu e o que falta escolher. Toque em "Escolher" em cada pendência, de cima para baixo, até não sobrar nenhuma.',
+  mochila: 'O equipamento. "Requisitar equipamento" abre a lista da Ordem (a patente limita as categorias). Toque num item para mudar o apelido, a mão e as modificações.',
+  final: 'A idade, a aparência, a personalidade, o histórico e o objetivo do agente (tudo opcional), e o tema da interface dele.',
+  revisao: 'Confira cada parte. Um cartão com aviso tem coisa pendente: toque nele para ir ao passo. Quando estiver tudo certo, "Salvar ficha".',
+};
+
 const ATRIB: { id: regras.AtributoId; nome: string; muda: string }[] = [
   { id: 'agi', nome: 'Agilidade', muda: 'Defesa e iniciativa; perícias de Agilidade.' },
   { id: 'for', nome: 'Força', muda: 'Carga (5 espaços por ponto; Força 0 dá 2) e dano corpo a corpo.' },
@@ -170,7 +186,7 @@ export function abrirCriacao(ctx: ContextoCriacao): Assistente {
     const f = fs.ficha;
     const c = regras.calcular(f);
     const tit = PASSOS.find((p) => p.id === passo)!;
-    const corpo: (Node | null)[] = [h('h3', { class: 'cr-tit' }, ic(tit.icone), tit.nome)];
+    const corpo: (Node | null)[] = [h('h3', { class: 'cr-tit' }, ic(tit.icone), tit.nome), h('p', { class: 'cr-guia' }, ic('dica'), GUIA[passo])];
     const campo = (rot: string, el: HTMLElement, dica?: string) => h('label', { class: 'fj-campo' }, h('span', null, rot), el, dica ? h('small', { class: 'cr-dica' }, dica) : null);
     switch (passo) {
       case 'comeco': {
@@ -333,9 +349,23 @@ export function abrirCriacao(ctx: ContextoCriacao): Assistente {
       }
       case 'revisao': {
         const erros = c.problemas.filter((p) => p.severidade === 'erro');
+        const fal = faltas(f, c);
         corpo.push(
-          h('p', { class: 'cr-texto' }, c.pendencias.length || erros.length ? 'Dá para salvar assim; o que falta fica como pendência na ficha.' : 'Tudo escolhido. Pode salvar.'),
-          ...PASSOS.filter((p) => p.id !== 'revisao').map((p) => h('button', { class: 'cr-rev', type: 'button', onclick: () => ((passo = p.id), pintar()) }, ic(p.icone), h('span', null, p.nome), h('small', null, resumoPasso(p.id, fs, c)))),
+          h('p', { class: `cr-estado${c.pendencias.length || erros.length ? ' falta' : ' ok'}` }, ic(c.pendencias.length || erros.length ? 'alerta' : 'ok'), c.pendencias.length || erros.length ? `Faltam ${c.pendencias.length + erros.length} coisa(s). Dá para salvar assim: o que falta fica como pendência na ficha.` : 'Tudo escolhido. Pode salvar.'),
+          // os passos em cartões grandes: o que foi escolhido em cada um, e o aviso de quem tem pendência (toque leva ao passo)
+          h(
+            'div',
+            { class: 'cr-revs' },
+            ...PASSOS.filter((p) => p.id !== 'revisao').map((p) =>
+              h(
+                'button',
+                { class: `cr-rev-card${fal[p.id] ? ' falta' : ''}`, type: 'button', title: `Ir ao passo ${p.nome}`, onclick: () => ((passo = p.id), sfx.click(), pintar()) },
+                h('span', { class: 'cr-rev-ic' }, ic(p.icone)),
+                h('span', { class: 'cr-rev-txt' }, h('b', null, p.nome), h('span', null, resumoPasso(p.id, fs, c))),
+                fal[p.id] ? h('span', { class: 'cr-falta' }, `${fal[p.id]} pendente(s)`) : h('span', { class: 'cr-rev-ok' }, ic('ok')),
+              ),
+            ),
+          ),
           ...erros.map((p) => h('div', { class: 'cr-prob erro' }, ic('fechar'), h('span', null, `${p.onde}: ${p.texto}`))),
         );
         break;

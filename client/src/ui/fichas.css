@@ -4472,3 +4472,94 @@ html .fx .fx-sl-caixa.de-lado > .fx-sl-grade.uma-linha {
 .fx-corpo.com-foto > :is(.fx-seta, .corpo-fig) {
   display: none;
 }
+
+/* o assistente de edição (19/10): o guia de cada passo e a revisão em cartões */
+.cr-guia {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  margin: 0;
+  padding: 1rem 1.2rem;
+  border: 0.12rem solid rgba(226, 166, 74, 0.45);
+  border-radius: 0.5rem;
+  background: rgba(226, 166, 74, 0.08);
+  font-size: 1.6rem;
+  line-height: 1.4;
+}
+.cr-guia .ic {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  color: #e2a64a;
+}
+.cr-estado {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+.cr-estado.ok .ic {
+  color: #79d98f;
+}
+.cr-estado.falta .ic {
+  color: #e2a64a;
+}
+.cr-revs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30rem, 1fr));
+  gap: 1rem;
+}
+.cr-rev-card {
+  display: grid;
+  grid-template-columns: 4.4rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  min-height: 8rem;
+  padding: 1rem 1.2rem;
+  border: 0.14rem solid rgba(161, 136, 115, 0.4);
+  border-radius: 0.6rem;
+  background: rgba(20, 36, 64, 0.4);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cr-rev-card:hover {
+  border-color: rgba(226, 166, 74, 0.8);
+}
+.cr-rev-card.falta {
+  border-color: rgba(226, 166, 74, 0.75);
+}
+.cr-rev-ic .ic {
+  width: 3.2rem;
+  height: 3.2rem;
+}
+.cr-rev-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.cr-rev-txt b {
+  font-size: 1.8rem;
+}
+.cr-rev-txt span {
+  font-size: 1.45rem;
+  opacity: 0.85;
+}
+.cr-rev-ok .ic {
+  width: 2.4rem;
+  height: 2.4rem;
+  color: #79d98f;
+}
+.cr-janela .cr-passo {
+  min-height: 4.6rem;
+  font-size: 1.6rem;
+}
+.cr-janela .cr-tit {
+  font-size: 2.8rem;
+}
+.cr-janela .cr-num {
+  font-size: 1.6rem;
+}
