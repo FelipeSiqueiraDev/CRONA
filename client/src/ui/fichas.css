@@ -4576,3 +4576,25 @@ html .fx .fx-sl-caixa.de-lado > .fx-sl-grade.uma-linha {
   object-position: 50% 30%;
   filter: none;
 }
+
+/* a edição direta do mestre (19/10): no lugar do Salvar, a dica de clicar nos campos */
+.fx-b-dica {
+  position: absolute;
+  left: 147.5rem;
+  top: 88.6rem;
+  width: 17.3rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  opacity: 0.7;
+}
+.fx-b-dica .ic {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.fx:not(.editando) .fx-id-l.clica .fx-id-v {
+  cursor: pointer;
+}

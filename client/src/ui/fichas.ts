@@ -16,7 +16,7 @@ import { h, toast } from './dom';
 import { arteDoItem } from './arteItem';
 import { caberNumaLinha, corpoDoItem } from './jogador';
 import { abrirRequisicao } from './requisicao';
-import { confirmar, escolher, janela, mostrar, perguntarTexto } from './fichaModal';
+import { confirmar, escolher, janela, janelaAberta, mostrar, perguntarTexto, quandoFecharTodas } from './fichaModal';
 import { opcoesMelhoria } from './melhorias';
 import { abrirCriacao, type Assistente } from './criacao';
 import {
@@ -359,6 +359,65 @@ export class FichasScreen {
 
   // ================================================================ modos
 
+  /**
+   * A edição direta do mestre (19/10, o Felipe: "tirar o botão Editar; cliquei no NEX, abre o modal para upar o NEX;
+   * cliquei na patente, abre para mudar a patente"): o clique num campo abre um rascunho sem mudar a tela, a janela
+   * mexe nele, e quando a última janela fecha a ficha grava sozinha (se mudou algo) e o rascunho some.
+   */
+  private direto: { base: string } | null = null;
+  private comecarDireto(): boolean {
+    if (this.editando) return true;
+    const fs = this.atual();
+    if (!fs) return false;
+    this.rascunho = clone(fs);
+    this.modo = 'editar';
+    this.direto = { base: JSON.stringify(this.rascunho) };
+    quandoFecharTodas(() => this.fecharDireto());
+    // a ação que não abriu janela nenhuma (um aviso só) não deixa o rascunho preso
+    window.setTimeout(() => {
+      if (this.direto && !janelaAberta()) this.fecharDireto();
+    }, 120);
+    return true;
+  }
+
+  private fecharDireto() {
+    const d = this.direto;
+    if (!d) return;
+    this.direto = null;
+    const fs = this.rascunho;
+    this.rascunho = null;
+    this.modo = 'jogo';
+    if (fs && JSON.stringify(fs) !== d.base) {
+      fs.nome = (fs.ficha.nome || fs.nome || 'Sem nome').trim();
+      fs.ficha.nome = fs.nome;
+      fs.atualizadaEm = agora();
+      this.app.net.send({ t: 'fichaSalvar', ficha: fs });
+      const npc = fs.npc ? this.app.state.npcs.find((n) => n.id === fs.npc) : undefined;
+      if (npc && npc.nome !== fs.nome) this.app.net.send({ t: 'npcSalvar', npc: { ...npc, nome: fs.nome } });
+      const i = this.lista.findIndex((x) => x.id === fs.id);
+      if (i >= 0) this.lista[i] = clone(fs);
+      sfx.stamp();
+      toast('Ficha salva.');
+    }
+    this.render();
+  }
+
+  /** Antes de abrir uma janela que mexe na ficha: o mestre edita direto; o jogador entra na edição. */
+  private garantirEdicao(): boolean {
+    if (this.editando) return true;
+    if (this.gm) return this.comecarDireto();
+    this.entrarEdicao();
+    return this.editando;
+  }
+
+  /** O clique de um campo da ficha: o mestre sempre, o jogador só editando. */
+  private acao(fn: () => void): (() => void) | undefined {
+    if (!this.editando && !this.gm) return undefined;
+    return () => {
+      if (this.garantirEdicao()) fn();
+    };
+  }
+
   private entrarEdicao(passos = true) {
     const fs = this.atual();
     if (!fs || this.editando) return;
@@ -433,6 +492,7 @@ export class FichasScreen {
 
   private selecionar(id: number) {
     if (id === this.selId && !this.rascunho) return;
+    if (this.direto) this.fecharDireto();
     if (this.editando) {
       toast('Salve ou cancele a edição antes de trocar de agente.', 'error');
       return;
@@ -463,7 +523,7 @@ export class FichasScreen {
   private renderTela() {
     const fs = this.atual();
     this.calc = fs ? regras.calcular(fs.ficha) : null;
-    this.el.classList.toggle('editando', this.editando);
+    this.el.classList.toggle('editando', this.editando && !this.direto);
     // o tema do agente veste a ficha dele (e, no celular, a tela inteira do jogador)
     vestirTema(this.el, fs?.tema);
     const tela = this.el.closest<HTMLElement>('.tela-ficha');
@@ -640,8 +700,10 @@ export class FichasScreen {
     this.pCorpo.classList.toggle('sem-folha', !def);
     // a foto: a de corpo inteiro, só da ficha (foto-ficha.webp, 19/10), que cobre o quadro todo; senão o retrato
     // do agente, ou a foto que o mestre mandou do NPC
-    const pasta = def?.sheet?.match(/\/arte\/personagens\/([^/]+)\//)?.[1];
-    const fotos = [pasta && `/arte/personagens/${pasta}/foto-ficha.webp`, def?.portraits?.desarmado?.open, pasta && `/arte/personagens/${pasta}/foto.jpg`].filter((x): x is string => !!x);
+    // o NPC: a pasta da arte dele (a foto que o Felipe mandou, foto.jpg, de corpo inteiro como a dos Marcados)
+    const npc = fs.npc ? this.app.state.npcs.find((n) => n.id === fs.npc) : undefined;
+    const pasta = npc?.arte ?? def?.sheet?.match(/\/arte\/personagens\/([^/]+)\//)?.[1];
+    const fotos = [pasta && `/arte/personagens/${pasta}/foto-ficha.webp`, pasta && `/arte/personagens/${pasta}/foto.jpg`, def?.portraits?.desarmado?.open].filter((x): x is string => !!x);
     const chave = fotos.join('|');
     if (this.corpoFoto.dataset.fotos !== chave) {
       this.corpoFoto.dataset.fotos = chave;
@@ -650,7 +712,12 @@ export class FichasScreen {
         if (++i < fotos.length) this.corpoFoto.src = fotos[i];
         else this.pCorpo.classList.remove('com-foto');
       };
-      this.corpoFoto.onload = () => this.pCorpo.classList.toggle('foto-cheia', this.corpoFoto.src.includes('/foto-ficha.webp'));
+      this.corpoFoto.onload = () => {
+        this.pCorpo.classList.toggle('foto-cheia', /\/foto(-ficha)?\.(webp|jpg)$/.test(this.corpoFoto.src));
+        this.corpoFoto.style.visibility = '';
+      };
+      // a foto do agente de antes não aparece enquanto a nova carrega
+      this.corpoFoto.style.visibility = 'hidden';
       this.pCorpo.classList.remove('foto-cheia');
       if (fotos.length) this.corpoFoto.src = fotos[0];
     }
@@ -682,6 +749,7 @@ export class FichasScreen {
     if (!fs || !c) return;
     const f = fs.ficha;
     const ed = this.editando;
+    void ed;
     const corpo = this.corpoDe(this.pIdent);
     const linha = (rotulo: string, valor: Node | string, acao?: () => void, dica?: string) =>
       h(
@@ -692,7 +760,9 @@ export class FichasScreen {
       );
     const origem = f.origem ? cat.origem(f.origem) : undefined;
     const trilha = f.trilha ? cat.trilha(f.trilha) : undefined;
-    const escolherF = (campo: Campo, nex: Nex) => () => this.abrirEscolha(escolherCampo(this.rascunho!.ficha, nex, campo));
+    const escolherF = (campo: Campo, nex: Nex) => this.acao(() => this.abrirEscolha(escolherCampo(this.rascunho!.ficha, nex, campo)));
+    const r = () => this.rascunho!;
+    const gmAcao = (fn: () => void) => (this.gm ? this.acao(fn) : undefined);
     const nexBar = h('span', { class: 'fx-nex' }, h('b', null, `${f.nex}%`), h('span', { class: 'fx-nex-bar' }, h('i', { style: `width:${f.nex}%` })));
     const pat = c.patente ? `${c.patente.nome}` : f.nex === 0 ? 'Pessoa comum' : '—';
     const party = this.campanha?.party.find((p) => p.look?.charId && p.look.charId === fs.personagem);
@@ -700,19 +770,19 @@ export class FichasScreen {
     const esquerda = h(
       'div',
       { class: 'fx-id-col' },
-      linha('Nome', h('span', null, h('strong', null, fs.nome), f.textos?.idade ? h('small', { class: 'fx-id-idade' }, ` · ${f.textos.idade}`) : null), ed ? () => this.editarTexto('Nome do agente', 'Nome', fs.nome, (v) => ((fs.nome = v || 'Sem nome'), (f.nome = fs.nome))) : undefined),
-      linha('Jogador', f.jogador || '—', ed ? () => this.editarTexto('Jogador', 'Quem joga', f.jogador ?? '', (v) => (f.jogador = v || undefined)) : undefined),
-      linha('Origem', origem?.nome ?? 'Escolher…', ed ? escolherF('origem', f.comecouMundano ? 0 : 5) : undefined, origem ? `${origem.resumo ?? ''} (${textoRef(origem.ref)})` : undefined),
-      linha('Classe', CLASSE_NOME(f.classe), ed ? escolherF('classe', 5) : undefined),
-      linha('Trilha', trilha?.nome ?? (f.nex >= 10 ? 'Escolher…' : '— (NEX 10%)'), ed && f.nex >= 10 && f.classe ? escolherF('trilha', 10) : undefined, trilha ? `${trilha.resumo ?? ''} (${textoRef(trilha.ref)})` : undefined),
+      linha('Nome', h('span', null, h('strong', null, fs.nome), f.textos?.idade ? h('small', { class: 'fx-id-idade' }, ` · ${f.textos.idade}`) : null), this.acao(() => this.editarTexto('Nome do agente', 'Nome', r().nome, (v) => ((r().nome = v || 'Sem nome'), (r().ficha.nome = r().nome))))),
+      linha('Jogador', f.jogador || '—', this.acao(() => this.editarTexto('Jogador', 'Quem joga', r().ficha.jogador ?? '', (v) => (r().ficha.jogador = v || undefined)))),
+      linha('Origem', origem?.nome ?? 'Escolher…', escolherF('origem', f.comecouMundano ? 0 : 5), origem ? `${origem.resumo ?? ''} (${textoRef(origem.ref)})` : undefined),
+      linha('Classe', CLASSE_NOME(f.classe), escolherF('classe', 5)),
+      linha('Trilha', trilha?.nome ?? (f.nex >= 10 ? 'Escolher…' : '— (NEX 10%)'), f.nex >= 10 && f.classe ? escolherF('trilha', 10) : undefined, trilha ? `${trilha.resumo ?? ''} (${textoRef(trilha.ref)})` : undefined),
     );
     const direita = h(
       'div',
       { class: 'fx-id-col' },
-      linha('NEX', nexBar, ed && this.gm ? () => this.escolherNex() : undefined, 'Nível de exposição paranormal. Só o mestre muda.'),
-      linha('Patente', h('span', null, pat, h('small', null, ` ${f.pp} PP`)), ed && this.gm ? () => this.editarPP() : undefined, c.patente ? `Crédito ${c.patente.credito}. Só o mestre muda os pontos de prestígio.` : undefined),
-      linha('Idade', f.textos?.idade || '—', ed ? () => this.editarTexto('Idade', 'Idade', f.textos?.idade ?? '', (v) => ((f.textos ??= {}), (f.textos.idade = v || undefined))) : undefined),
-      linha('Tema', NOME_TEMA[fs.tema ?? 'ordem'], ed ? () => this.escolherTema() : undefined, 'O tema da interface do agente: veste a ficha, a requisição e o celular dele.'),
+      linha('NEX', nexBar, gmAcao(() => this.escolherNex()), 'Nível de exposição paranormal. Só o mestre muda.'),
+      linha('Patente', h('span', null, pat, h('small', null, ` ${f.pp} PP`)), gmAcao(() => this.escolherPatente()), c.patente ? `Crédito ${c.patente.credito}. Só o mestre muda os pontos de prestígio.` : undefined),
+      linha('Idade', f.textos?.idade || '—', this.acao(() => this.editarTexto('Idade', 'Idade', r().ficha.textos?.idade ?? '', (v) => ((r().ficha.textos ??= {}).idade = v || undefined)))),
+      linha('Tema', NOME_TEMA[fs.tema ?? 'ordem'], this.acao(() => this.escolherTema()), 'O tema da interface do agente: veste a ficha, a requisição e o celular dele.'),
       // no computador a campanha vai no título (a casa fica escondida); no celular, aqui
       linha('Campanha', this.campanha?.nomeCampanha || this.campanha?.title || '—'),
       linha('Local', local),
@@ -774,6 +844,40 @@ export class FichasScreen {
       },
       () => this.render(),
     );
+  }
+
+  private escolherPatente() {
+    const fs = this.rascunho;
+    if (!fs || !this.gm) return;
+    const f = fs.ficha;
+    const pats = cat.CATALOGO.patentes;
+    const daPP = (pp: number) => [...pats].reverse().find((p) => pp >= p.pp) ?? pats[0];
+    const ops = [
+      ...pats.map((p, i) => {
+        const prox = pats[i + 1];
+        const itens = ([1, 2, 3, 4] as const).map((k) => `${romano(k)} ${p.itens[k]}`).join(' · ');
+        return { id: p.id, nome: p.nome, ref: p.ref, resumo: `${prox ? `${p.pp} a ${prox.pp - 1} PP` : `${p.pp} PP ou mais`}. Crédito ${p.credito}; itens por categoria: ${itens}.`, ok: true, motivos: [], avisos: [] };
+      }),
+      { id: 'pp', nome: 'Pontos exatos…', resumo: `Hoje ${f.pp} PP. Digitar os pontos de prestígio; a patente sai deles.`, ok: true, motivos: [], avisos: [] },
+    ];
+    let exato = false;
+    void escolher(
+      {
+        titulo: 'Patente',
+        dica: 'A patente vem dos pontos de prestígio (LR p. 52). Escolher uma patente põe os PP no mínimo dela; quem já está nela fica com os pontos que tem.',
+        qtd: 1,
+        opcoes: () => ops,
+        atual: () => [daPP(f.pp).id],
+        aplicar: (ids) => {
+          if (ids[0] === 'pp') return void (exato = true);
+          const p = pats.find((x) => x.id === ids[0]);
+          if (p && daPP(f.pp).id !== p.id) f.pp = p.pp;
+        },
+      },
+      () => this.render(),
+    ).then(() => {
+      if (exato) this.editarPP();
+    });
   }
 
   private editarPP() {
@@ -1074,7 +1178,7 @@ export class FichasScreen {
   // ---------------------------------------------------------------- perícias
 
   private renderPer(fs: FichaSalva, c: Calc) {
-    const ed = this.editando;
+    const ed = this.editando || this.gm;
     const corpo = this.corpoDe(this.pPer);
     const cab = h('div', { class: 'fx-tab-cab' }, h('span', null, 'PERÍCIA'), h('span', null, 'GRAU'), h('span', null, 'ATR.'), h('span', null, 'TESTE'));
     const linhas: HTMLElement[] = [];
@@ -1089,7 +1193,7 @@ export class FichasScreen {
           {
             class: `fx-tab-l${pc.grau !== 'destreinado' ? ' treinada' : ''}${!pc.podeUsar ? ' nao-usa' : ''}`,
             type: ed ? 'button' : undefined,
-            onclick: ed ? () => this.editarPericias() : undefined,
+            onclick: ed ? this.acao(() => this.editarPericias()) : undefined,
             'data-dica': `${p.nome} (${NOME_ATR_LONGO[pc.atributo]})${marcas ? ` · ${marcas}` : ''} · ${NOME_GRAU[pc.grau]} · ${textoRef(p.ref)}`,
           },
           h('span', { class: 'fx-tab-n' }, nome),
@@ -1407,6 +1511,7 @@ export class FichasScreen {
 
   /** Linha do tempo completa: o que foi escolhido em cada NEX, o que falta e o que quebra regra. */
   private abrirEvolucao(so?: Nex) {
+    if (this.gm) this.garantirEdicao();
     const fs = this.atual();
     if (!fs) return;
     const pintar = () => {
@@ -1447,7 +1552,7 @@ export class FichasScreen {
   /** Abre a escolha no rascunho e redesenha ao gravar. */
   private abrirEscolha(e: ReturnType<typeof escolherCampo>, depois?: () => void) {
     if (!e) return toast('Essa escolha é feita no painel da ficha.', 'error');
-    if (!this.editando) this.entrarEdicao();
+    if (!this.garantirEdicao()) return;
     void escolher(e, () => {
       this.render();
       depois?.();
@@ -1459,12 +1564,12 @@ export class FichasScreen {
   private renderComp(fs: FichaSalva) {
     const cp = fs.companheiro;
     this.pComp.classList.toggle('vazio', !cp);
-    this.el.classList.toggle('sem-comp', !cp && !this.editando);
+    this.el.classList.toggle('sem-comp', !cp && !this.editando && !this.gm);
     const corpo = this.corpoDe(this.pComp);
     if (!cp) {
       corpo.replaceChildren(
-        this.editando
-          ? h('button', { class: 'fx-bt', type: 'button', onclick: () => this.editarCompanheiro() }, ic('mais'), h('span', null, 'Adicionar companheiro'))
+        this.editando || this.gm
+          ? h('button', { class: 'fx-bt', type: 'button', onclick: this.acao(() => this.editarCompanheiro()) }, ic('mais'), h('span', null, 'Adicionar companheiro'))
           : h('p', { class: 'fx-nada' }, 'Sem companheiro.'),
       );
       this.extraDe(this.pComp).replaceChildren();
@@ -1484,7 +1589,7 @@ export class FichasScreen {
         h('div', { class: 'fx-cp-l' }, h('span', null, ic('coracao'), 'PV'), h('span', { class: `fx-bar ${cp.pvMax ? 'pv' : 'sem'} mini` }, h('i', { style: `width:${cp.pvMax ? pct : 0}%` }), h('span', null, pv))),
       ),
     );
-    this.extraDe(this.pComp).replaceChildren(this.editando ? h('button', { class: 'fx-mini', type: 'button', title: 'Editar companheiro', 'aria-label': 'Editar companheiro', onclick: () => this.editarCompanheiro() }, ic('reticencias')) : '');
+    this.extraDe(this.pComp).replaceChildren(this.editando || this.gm ? h('button', { class: 'fx-mini', type: 'button', title: 'Editar companheiro', 'aria-label': 'Editar companheiro', onclick: this.acao(() => this.editarCompanheiro()) }, ic('reticencias')) : '');
   }
 
   private editarCompanheiro() {
@@ -1599,6 +1704,7 @@ export class FichasScreen {
   }
 
   private detalheItem(i: number) {
+    if (this.gm) this.garantirEdicao();
     const fs = this.atual();
     if (!fs) return;
     const it = fs.ficha.inventario[i];
@@ -1739,7 +1845,7 @@ export class FichasScreen {
   }
 
   private adicionarItem() {
-    if (!this.editando) this.entrarEdicao();
+    if (!this.garantirEdicao()) return;
     const fs = this.rascunho;
     if (!fs) return;
     // a requisição: o item entra no rascunho (Salvar grava) e a ficha atrás acompanha
@@ -1751,7 +1857,7 @@ export class FichasScreen {
     if (!fs || !this.calc) return;
     const p = this.calc.pendencias.find((x) => x.tipo === 'ritual') ?? this.calc.pendencias.find((x) => x.tipo === 'paranormal');
     if (!p) return toast(fs.ficha.classe === 'ocultista' ? 'Nenhum ritual para aprender agora: o ocultista aprende um a cada NEX.' : 'Rituais vêm do ocultista ou do poder paranormal Aprender Ritual.', 'error');
-    if (!this.editando) this.entrarEdicao();
+    if (!this.garantirEdicao()) return;
     this.abrirEscolha(escolherPendencia(this.rascunho!.ficha, p));
   }
 
@@ -1807,8 +1913,18 @@ export class FichasScreen {
   // ---------------------------------------------------------------- botões
 
   private renderBarra(fs: FichaSalva) {
-    const ed = this.editando;
+    const ed = this.editando && !this.direto;
     const bt = (rotulo: string, icone: NomeIcone, cls: string, onclick: () => void, desligado = false) => h('button', { class: `fx-bt ${cls}`, type: 'button', disabled: desligado, onclick }, ic(icone), h('span', null, rotulo));
+    // o mestre edita clicando em cada campo (19/10): sem Editar; o Salvar e o Cancelar só no agente novo, que ainda não existe
+    if (this.gm) {
+      this.barra.replaceChildren(
+        ed ? bt('Cancelar', 'fechar', 'fx-b-cancelar', () => this.cancelarEdicao()) : h('span'),
+        bt('Adicionar Item', 'caixa', 'fx-b-item', () => this.adicionarItem()),
+        bt('Adicionar Ritual', 'pentagrama', 'fx-b-ritual', () => this.adicionarRitual()),
+        ed ? bt('Salvar Ficha', 'salvar', 'fx-b-salvar forte', () => this.salvarEdicao()) : h('span', { class: 'fx-b-dica', 'data-dica': 'Clique em qualquer campo da ficha para mudar: grava ao confirmar.' }, ic('lapis'), 'Clique num campo para mudar'),
+      );
+      return;
+    }
     this.barra.replaceChildren(
       bt('Cancelar', 'fechar', 'fx-b-cancelar', () => this.cancelarEdicao(), !ed),
       bt(ed ? 'Editando' : 'Editar', 'lapis', `fx-b-editar${ed ? ' on' : ''}`, () => this.entrarEdicao()),

@@ -24,6 +24,19 @@ window.addEventListener('keydown', (e) => {
   abertas[abertas.length - 1].fechar();
 });
 
+/** Quem espera todas as janelas fecharem (a edição direta da FICHAS grava nessa hora). */
+const aoFecharTodas: (() => void)[] = [];
+/** Roda `fn` uma vez, quando não sobrar janela aberta (a que abre logo em seguida conta: espera um instante). */
+export function quandoFecharTodas(fn: () => void): void {
+  aoFecharTodas.push(fn);
+}
+function conferirFechadas() {
+  setTimeout(() => {
+    if (abertas.length) return;
+    for (const fn of aoFecharTodas.splice(0)) fn();
+  }, 60);
+}
+
 /** Alguma janela aberta (os atalhos do tabuleiro ficam quietos enquanto isso). */
 export function janelaAberta(): boolean {
   return abertas.length > 0;
@@ -50,6 +63,7 @@ export function janela(titulo: string, icone: NomeIcone, aoFechar: () => void, l
       fundo.classList.add('saindo');
       setTimeout(() => fundo.remove(), 160);
       aoFechar();
+      if (!abertas.length) conferirFechadas();
     },
   };
   fecharBt.addEventListener('click', () => j.fechar());
