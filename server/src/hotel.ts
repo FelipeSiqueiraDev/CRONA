@@ -2037,6 +2037,11 @@ export class Hotel implements HotelApi {
     para.putToken({ id: this.nextItemId(), name: npc.nome, look: { ...npc.look, charId: this.charDaArte(npc.arte) }, x: d.x, y: d.y, dir: 3, color: '#7f93a8' }, perto ? null : de.data.id);
   }
 
+  /** Os companheiros com a patinha ligada (o relógio de cada cena faz eles andarem junto do agente). */
+  companheirosQueSeguem(): { nome: string; personagem: number }[] {
+    return (this.db.fichas ?? []).filter((f) => !f.npc && f.personagem && f.companheiro?.segue).map((f) => ({ nome: f.companheiro!.nome.toLowerCase(), personagem: f.personagem! }));
+  }
+
   /** Liga ou desliga o companheiro junto do agente (a patinha no PLAYERS); ligando, ele vem para a cena do agente. */
   companheiroJunto(f: FichaSalva) {
     if (!f.companheiro?.segue) return;

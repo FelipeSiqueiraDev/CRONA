@@ -125,6 +125,8 @@ export interface HotelApi {
   teleport(client: Client, roomId: number, fromRoomId: number): void;
   /** leva uma peça para outra cena */
   moveToken(from: RoomInstance, tokenId: number, toRoomId: number): void;
+  /** os companheiros que andam com o agente (a patinha ligada): o nome da peça dele e o personagem do agente */
+  companheirosQueSeguem(): { nome: string; personagem: number }[];
   roomExists(roomId: number): boolean;
   /** registra em "Últimas ações" da campanha deste quarto */
   log(roomId: number, icon: LogIcon, text: string): void;
@@ -204,6 +206,9 @@ function tokenClient(t: TokenData, room: RoomInstance): Client {
  * Uma cena do tabuleiro. As peças (tokens) andam aqui; quem está conectado só
  * assiste e comanda (`viewers`) — uma pessoa controla o tabuleiro.
  */
+/** de quanto em quanto tempo o companheiro com a patinha confere se está longe do agente */
+const PASSO_COMPANHEIRO_MS = 500;
+
 export class RoomInstance {
   data: RoomData;
   map: RoomMap;
@@ -393,6 +398,30 @@ export class RoomInstance {
     this.hotel.vitaisDaPeca(u.client.look?.charId, v);
     this.saveTokens();
     return { ...antes };
+  }
+
+  /**
+   * O companheiro com a patinha ligada anda junto do agente na sala (19/10, o Felipe: "eu quero que ela siga ele na sala
+   * também, sempre perto; se eu quiser que ela ande sozinha, eu desligo a patinha"): parado e a mais de uma casa dele,
+   * vai para uma casa livre do lado, de preferência atrás.
+   */
+  private seguiuEm = 0;
+  private seguirCompanheiros() {
+    const pares = this.hotel.companheirosQueSeguem();
+    if (!pares.length) return;
+    const us = [...this.users.values()];
+    for (const p of pares) {
+      const ag = us.find((u) => u.client.look?.charId === p.personagem);
+      const cp = us.find((u) => (u.client.name ?? '').toLowerCase() === p.nome);
+      if (!ag || !cp || cp.goal || cp.next) continue;
+      const alvo = ag.goal ?? { x: ag.x, y: ag.y };
+      if (Math.max(Math.abs(cp.x - alvo.x), Math.abs(cp.y - alvo.y)) <= 1) continue;
+      // atrás do agente (o contrário de para onde ele olha), depois os lados, depois qualquer casa em volta
+      const [fx, fy] = DIRS[ag.dir] ?? [0, 1];
+      const ordem: [number, number][] = [[-fx, -fy], [-fy, fx], [fy, -fx], [-fx - fy, -fy + fx], [-fx + fy, -fy - fx], [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
+      const casa = ordem.map(([dx, dy]) => ({ x: alvo.x + dx, y: alvo.y + dy })).find((c) => this.map.walkState(c.x, c.y) === 'walk' && !this.occupied(c.x, c.y, cp.client.id));
+      if (casa) cp.goal = casa;
+    }
   }
 
   /** A casa onde a peça está (null se não está nesta cena). */
@@ -761,6 +790,11 @@ export class RoomInstance {
    */
   step(meio = false) {
     const now = Date.now();
+    // o relógio anda de meio em meio passo: o companheiro confere a cada passo inteiro
+    if (now - this.seguiuEm >= PASSO_COMPANHEIRO_MS) {
+      this.seguiuEm = now;
+      this.seguirCompanheiros();
+    }
     const updates: UserStatus[] = [];
     for (const u of this.users.values()) {
       if (u.next && meio && (u.falta ?? 0) > 1) {
