@@ -64,6 +64,107 @@ export class FichaCelular {
   setFicha(fs: FichaSalva | null) {
     this.fs = fs ? clone(fs) : null;
     this.render();
+    this.subida?.();
+  }
+
+  /** a janela da subida de NEX aberta: redesenha quando a ficha volta do servidor */
+  private subida: (() => void) | null = null;
+  /** o jogador fechou a janela nesta visita (volta na próxima vez que entrar) */
+  private subidaFechada = false;
+  /** a lista saiu da frente para uma escolha (volta quando ela fecha) */
+  private escolhendo = false;
+
+  /** As escolhas que o jogador faz sozinho ao subir de NEX (as da criação são com o mestre). */
+  private pendenciasDaSubida(): regras.Pendencia[] {
+    if (!this.fs) return [];
+    return regras.calcular(this.fs.ficha).pendencias.filter((p) => p.tipo !== 'atributos' && p.tipo !== 'pericias');
+  }
+
+  /**
+   * A subida de NEX (19/10, o Felipe: "quando eles entrarem, uma mensagem: parece que você está mais forte e precisa
+   * tomar decisões; a lista do que decidir, clica, escolhe, confirma e volta pra lista até acabar; de 20 para 30, primeiro
+   * as escolhas do 25, depois as do 30"). Mostra só o NEX mais baixo que tem escolha; acabando, passa ao seguinte.
+   * Depois de tudo, uma vez, o aviso de refazer o equipamento.
+   */
+  verificarSubida() {
+    if (this.subida || !this.fs) return;
+    if (!this.pendenciasDaSubida().length) return this.verificarEquipamento();
+    if (this.subidaFechada) return;
+    const j = janela('MAIS FORTE', 'estrela', () => {
+      this.subida = null;
+      if (this.escolhendo) return;
+      if (this.pendenciasDaSubida().length) this.subidaFechada = true;
+      else this.verificarEquipamento();
+    }, 46);
+    j.el.classList.add('fc-subida');
+    const pintar = () => {
+      const pend = this.pendenciasDaSubida();
+      if (!pend.length) return j.fechar();
+      const nex = Math.min(...pend.map((p) => p.nex));
+      const doNex = pend.filter((p) => p.nex === nex);
+      const outros = [...new Set(pend.filter((p) => p.nex > nex).map((p) => p.nex))];
+      const r = clone(this.fs!);
+      j.corpo.replaceChildren(
+        h('p', { class: 'fc-subida-intro' }, 'Parece que você está mais forte e precisa tomar decisões.'),
+        h('h4', { class: 'fc-subida-nex' }, `NEX ${nex}%`),
+        h(
+          'div',
+          { class: 'fc-pends' },
+          ...doNex.map((p) => {
+            const e = escolherPendencia(r.ficha, p);
+            return h(
+              'button',
+              {
+                class: 'fc-pend',
+                type: 'button',
+                disabled: !e,
+                title: e ? 'Abre as opções do livro' : 'Essa escolha é com o mestre',
+                // a lista sai da frente enquanto ele escolhe e volta depois (a escolha abria por trás dela)
+                onclick: () => {
+                  if (!e) return;
+                  this.escolhendo = true;
+                  j.fechar();
+                  void escolher(e, () => this.salvar(r)).then(() => {
+                    this.escolhendo = false;
+                    this.verificarSubida();
+                  });
+                },
+              },
+              h('span', { class: 'fc-pend-txt' }, p.texto),
+              e ? ic('direita') : h('small', null, 'com o mestre'),
+            );
+          }),
+        ),
+        ...(outros.length ? [h('p', { class: 'fj-dica' }, `Depois: NEX ${outros.map((n) => `${n}%`).join(', ')}.`)] : []),
+      );
+    };
+    this.subida = pintar;
+    pintar();
+  }
+
+  /** O aviso único de refazer o equipamento (19/10): abre a requisição da Ordem, pelas regras. */
+  private verificarEquipamento() {
+    if (!this.fs?.ficha.refazerEquipamento || this.subida) return;
+    const j = janela('EQUIPAMENTO', 'mochila', () => {}, 42);
+    j.corpo.append(h('p', { class: 'fc-subida-intro' }, 'Ops, parece que não sobrou quase nada por aí, né?! Vamos refazer nossos equipamentos.'), h('p', { class: 'fj-dica' }, 'Peça à Ordem o que vai levar: a patente limita as categorias, e a carga a mais só avisa. As modificações ficam em cada item da mochila.'));
+    j.rodape.append(
+      botao('Agora não', 'fechar', '', () => j.fechar()),
+      botao('Vamos lá', 'mochila', 'forte', () => {
+        j.fechar();
+        const r = clone(this.fs!);
+        abrirRequisicao({
+          ficha: r.ficha,
+          nome: r.nome,
+          tema: r.tema,
+          mestre: false,
+          aoAdicionar: () => {},
+          aoFechar: () => {
+            delete r.ficha.refazerEquipamento;
+            this.salvar(r);
+          },
+        });
+      }),
+    );
   }
 
   /** Manda a cópia mexida (o servidor confere e devolve a ficha para todo mundo). */
@@ -76,6 +177,7 @@ export class FichaCelular {
     sfx.stamp();
     toast('Ficha salva.');
     this.render();
+    this.subida?.();
   }
 
   private render() {

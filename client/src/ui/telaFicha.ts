@@ -69,6 +69,8 @@ export class TelaFicha {
     this.ficha.setFicha(fichas[0] ?? null);
     if (equipe) this.jogo.setEquipe(equipe);
     this.mostrarAvisos(fichas[0] ?? null);
+    // subiu de NEX: a lista do que escolher; depois, uma vez, refazer o equipamento (19/10)
+    this.ficha.verificarSubida();
   }
 
   /** Os avisos do mestre na ficha: uma janela na primeira vez que o jogador abre a ficha com eles (por aparelho). */

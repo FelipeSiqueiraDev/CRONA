@@ -204,3 +204,15 @@ export function camarillaPv1910(db: Database): boolean {
   feitas['camarilla-pv-1910'] = 1;
   return true;
 }
+
+/** 19/10, o Felipe: na próxima entrada, depois das escolhas do NEX, os 4 refazem o equipamento (a mochila foi zerada). */
+export function refazerEquipamento1910(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['refazer-equipamento-1910'] !== undefined) return false;
+  for (const nome of ['D.Tepes', 'Catarina Albuquerque', 'Alosi Walker', 'Cora Falcão']) {
+    const f = (db.fichas ?? []).find((x) => x.nome === nome && !x.npc);
+    if (f) f.ficha.refazerEquipamento = true;
+  }
+  feitas['refazer-equipamento-1910'] = 1;
+  return true;
+}

@@ -140,6 +140,8 @@ export interface Ficha {
    * dia; sem ela, fome e sede. O mestre marca no painel PLAYERS ("Cumpriu"); passar o dia desmarca (19/10)
    */
   etapaCumprida?: boolean;
+  /** 19/10, uma vez: depois das escolhas do NEX, o jogador refaz o equipamento (a mochila foi zerada); some ao fazer */
+  refazerEquipamento?: boolean;
   /** perdas permanentes (rituais de Medo, Custo do Paranormal) */
   perdas?: { san?: number; pe?: number };
   regras: RegrasFicha;
