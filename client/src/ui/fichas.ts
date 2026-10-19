@@ -638,11 +638,23 @@ export class FichasScreen {
     this.poseDoCorpo(fs);
     this.corpo.setCondicoes(vitalConditions(this.vitais(fs, c)));
     this.pCorpo.classList.toggle('sem-folha', !def);
-    // a foto: o retrato do agente (a pintura dele), ou a foto que o mestre mandou do NPC
+    // a foto: a de corpo inteiro, só da ficha (foto-ficha.webp, 19/10), que cobre o quadro todo; senão o retrato
+    // do agente, ou a foto que o mestre mandou do NPC
     const pasta = def?.sheet?.match(/\/arte\/personagens\/([^/]+)\//)?.[1];
-    const foto = def?.portraits?.desarmado?.open ?? (pasta ? `/arte/personagens/${pasta}/foto.jpg` : '');
-    if (foto && this.corpoFoto.getAttribute('src') !== foto) this.corpoFoto.src = foto;
-    this.pCorpo.classList.toggle('com-foto', !!foto);
+    const fotos = [pasta && `/arte/personagens/${pasta}/foto-ficha.webp`, def?.portraits?.desarmado?.open, pasta && `/arte/personagens/${pasta}/foto.jpg`].filter((x): x is string => !!x);
+    const chave = fotos.join('|');
+    if (this.corpoFoto.dataset.fotos !== chave) {
+      this.corpoFoto.dataset.fotos = chave;
+      let i = 0;
+      this.corpoFoto.onerror = () => {
+        if (++i < fotos.length) this.corpoFoto.src = fotos[i];
+        else this.pCorpo.classList.remove('com-foto');
+      };
+      this.corpoFoto.onload = () => this.pCorpo.classList.toggle('foto-cheia', this.corpoFoto.src.includes('/foto-ficha.webp'));
+      this.pCorpo.classList.remove('foto-cheia');
+      if (fotos.length) this.corpoFoto.src = fotos[0];
+    }
+    this.pCorpo.classList.toggle('com-foto', fotos.length > 0);
   }
 
   private verMaior() {

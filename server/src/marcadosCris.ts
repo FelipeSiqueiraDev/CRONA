@@ -216,3 +216,20 @@ export function refazerEquipamento1910(db: Database): boolean {
   feitas['refazer-equipamento-1910'] = 1;
   return true;
 }
+
+/** 19/10, o Felipe: "não menciona o C.R.I.S nos avisos". Sai das fichas toda frase que fala do C.R.I.S. Uma vez só. */
+export function avisosSemCris1910(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['avisos-sem-cris-1910'] !== undefined) return false;
+  for (const f of db.fichas ?? []) {
+    if (!f.ficha.avisos?.length) continue;
+    const avisos = f.ficha.avisos
+      .map((t) => t.split(/(?<=\.)\s+/).filter((frase) => !frase.includes('C.R.I.S')).join(' ').trim())
+      .filter(Boolean);
+    if (avisos.length) f.ficha.avisos = avisos;
+    else delete f.ficha.avisos;
+    f.atualizadaEm = new Date().toISOString();
+  }
+  feitas['avisos-sem-cris-1910'] = 1;
+  return true;
+}
