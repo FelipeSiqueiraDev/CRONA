@@ -542,6 +542,7 @@ net.onMessage = (m: ServerMsg) => {
       app.state.npcGrupos = m.npcGrupos ?? [];
       app.state.npcsEmCampo = m.npcsEmCampo ?? [];
       app.state.reliquiasEmCampo = m.reliquiasEmCampo ?? [];
+      app.state.marcados = m.marcados ?? [];
       app.emit('bestiario');
       break;
     case 'roomList':

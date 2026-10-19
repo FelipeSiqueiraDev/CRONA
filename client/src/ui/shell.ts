@@ -1062,9 +1062,8 @@ export class Shell {
   private renderRpg(force = false) {
     // os agentes primeiro (todos, onde estiverem: é aqui que o mestre tira e dá PV, PE e SAN, 17/10), depois as outras
     // peças da campanha (os NPCs e as ameaças em cena)
-    const agentes = this.campaign?.agentes ?? [];
-    const deAgente = new Set(agentes.map((p) => p.id));
-    const party = [...agentes, ...(this.campaign?.party ?? []).filter((p) => !deAgente.has(p.id))];
+    // só os 4 Marcados (19/10, o Felipe: "a aba de agentes fique sempre com os 4 apenas"); NPCs e ameaças ficam no Elenco
+    const party = this.campaign?.agentes ?? [];
     // a estrutura (o que obriga a refazer as cartas) fica separada dos números (PV, PE, SAN): os números se
     // acertam no lugar. Refazer tudo a cada ponto de vida piscava o painel inteiro.
     const sig = JSON.stringify([this.rpgTab, this.gm, this.dia, party.map((p) => [p.id, p.name, p.color, p.roomId, p.look?.charId ?? null, !!p.armed, vitalConditions(p.vitals).machucado])]);

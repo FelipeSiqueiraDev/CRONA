@@ -1,4 +1,4 @@
-import type { AvatarLook, CenaMomento, CharacterDef, Criatura, InvItem, LugarInfo, Npc, Role, RoomInfo, RoomSummary } from '@crona/shared';
+import type { AvatarLook, CenaMomento, CharacterDef, Criatura, InvItem, LugarInfo, Npc, Role, RoomInfo, RoomSummary, MarcadoNoJogo } from '@crona/shared';
 import type { Net } from '../net';
 import type { RoomView } from '../room/RoomView';
 import { SessionStore } from '../session/store';
@@ -27,6 +27,8 @@ export interface AppState {
   npcsEmCampo: string[];
   /** os portadores de relíquia (id do livro) já em campo na campanha */
   reliquiasEmCampo: string[];
+  /** os Marcados (os 4 agentes dos jogadores) e onde está a peça de cada um (19/10) */
+  marcados: MarcadoNoJogo[];
   /** as cenas de momento do mestre (17/10; só o mestre recebe) */
   cenas: CenaMomento[];
   room: RoomInfo | null;
@@ -37,7 +39,7 @@ export interface AppState {
 export type AppEvent = 'cenas' | 'me' | 'inventory' | 'characters' | 'rooms' | 'lugares' | 'bestiario' | 'room' | 'selection' | 'items' | 'placement';
 
 export class App {
-  state: AppState = { me: null, inventory: [], characters: [], rooms: [], lugares: [], bestiario: [], npcs: [], npcGrupos: [], npcsEmCampo: [], reliquiasEmCampo: [], cenas: [], room: null, role: 'player' };
+  state: AppState = { me: null, inventory: [], characters: [], rooms: [], lugares: [], bestiario: [], npcs: [], npcGrupos: [], npcsEmCampo: [], reliquiasEmCampo: [], marcados: [], cenas: [], room: null, role: 'player' };
   net: Net;
   /** sessão compartilhada (contrato novo, docs/CONTRATO.md) */
   readonly session: SessionStore;

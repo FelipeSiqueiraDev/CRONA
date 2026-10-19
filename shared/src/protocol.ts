@@ -410,6 +410,12 @@ export type ClientMsg =
   | { t: 'falsoCris'; ligado?: boolean }
   /** o mestre passa o dia (19/10): o que é "1 vez por dia" zera (a etapa ritualística do Ser Amaldiçoado) */
   | { t: 'diaPassar' }
+  /**
+   * os Marcados (os 4 agentes dos jogadores) no Elenco (19/10): cada um é uma peça só. Colocar põe na cena do mestre
+   * (de outra cena, a peça vem de lá); tirar guarda a peça fora do tabuleiro
+   */
+  | { t: 'marcadoColocar'; fichaId: number }
+  | { t: 'marcadoTirar'; fichaId: number }
   /** ações da sessão (contrato em session.ts); só o mestre */
   | { t: 'act'; a: SessionAction }
   | { t: 'rooms' }
@@ -656,4 +662,14 @@ export type ServerMsg =
   /** combate da campanha (a mesa recebe só a ordem, a rodada e a vez); null = sem combate */
   | { t: 'combate'; combate: Combate | null; podeDesfazer?: boolean; ameacas?: Record<string, FichaAmeaca> }
   /** o bestiário inteiro (para o mestre) */
-  | { t: 'bestiario'; criaturas: Criatura[]; npcs?: Npc[]; npcGrupos?: string[]; npcsEmCampo?: string[]; reliquiasEmCampo?: string[] };
+  | { t: 'bestiario'; criaturas: Criatura[]; npcs?: Npc[]; npcGrupos?: string[]; npcsEmCampo?: string[]; reliquiasEmCampo?: string[]; marcados?: MarcadoNoJogo[] };
+
+/** Um Marcado (agente de jogador) e onde a peça dele está (19/10): para a aba Marcados do Elenco. */
+export interface MarcadoNoJogo {
+  fichaId: number;
+  nome: string;
+  personagem: number;
+  /** a cena onde a peça está; sem ela, fora do tabuleiro */
+  cena?: number;
+  cenaNome?: string;
+}

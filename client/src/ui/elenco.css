@@ -1311,3 +1311,58 @@ body:has(.el-fundo) .fj-fundo {
   background: #6e1410;
   clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
+
+/* a aba Marcados (19/10): os 4 agentes dos jogadores, uma peça cada */
+.el-marcados {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+  gap: 1rem;
+  padding: 0.4rem;
+}
+.el-marcado {
+  display: grid;
+  grid-template-columns: 6.4rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 0.4rem 0.9rem;
+  padding: 0.8rem;
+  border: 0.16rem solid rgba(161, 136, 115, 0.38);
+  border-radius: 0.6rem;
+  background: rgba(10, 16, 28, 0.7);
+}
+.el-marcado.aqui {
+  border-color: rgba(226, 166, 74, 0.7);
+}
+.el-marcado.fora {
+  opacity: 0.75;
+}
+.el-marcado-img {
+  grid-row: span 2;
+  width: 6.4rem;
+  height: 7.6rem;
+  object-fit: contain;
+  object-position: bottom;
+  image-rendering: pixelated;
+  display: grid;
+  place-items: center;
+}
+.el-marcado-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.el-marcado-txt b {
+  font-size: 1.3rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.el-marcado-txt small {
+  opacity: 0.75;
+}
+.el-marcado-bts {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}

@@ -41,6 +41,8 @@ import {
   playerColorFor,
   SESSION_ACTIONS,
   sceneShortName,
+  defaultLook,
+  type MarcadoNoJogo,
   type CampaignState,
   type Character,
   type Item,
@@ -362,7 +364,62 @@ export class Hotel implements HotelApi {
 
   // ---------- o bestiário (10/10) ----------
   private bestiarioPara(c: Client) {
-    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [], npcs: this.db.npcs ?? [], npcGrupos: this.db.npcGrupos ?? [], npcsEmCampo: c.room ? this.npcsEmCampo(c.room.data.id) : [], reliquiasEmCampo: c.room ? this.reliquiasEmCampo(c.room.data.id) : [] });
+    if (c.role === 'gm') c.send({ t: 'bestiario', criaturas: this.db.bestiario ?? [], npcs: this.db.npcs ?? [], npcGrupos: this.db.npcGrupos ?? [], npcsEmCampo: c.room ? this.npcsEmCampo(c.room.data.id) : [], reliquiasEmCampo: c.room ? this.reliquiasEmCampo(c.room.data.id) : [], marcados: this.marcados() });
+  }
+
+  /** Os Marcados: as fichas de agente (não de NPC) ligadas a um personagem, e onde está a peça de cada um. */
+  private marcados(): MarcadoNoJogo[] {
+    return (this.db.fichas ?? [])
+      .filter((f) => !f.npc && f.personagem)
+      .map((f) => {
+        const sala = this.salaDoPersonagem(f.personagem);
+        return { fichaId: f.id, nome: f.nome, personagem: f.personagem!, ...(sala ? { cena: sala.data.id, cenaNome: sala.data.name } : {}) };
+      });
+  }
+
+  /**
+   * O Marcado na cena do mestre (19/10, o Felipe: "os marcados são únicos; se eu tiver na cena que ele tá, não deixa
+   * puxar; se tiver em outro quarto, me deixa puxar, mas aí ele some do outro lugar"). Fora do tabuleiro, volta como
+   * estava quando saiu.
+   */
+  private marcadoColocar(c: Client, m: Record<string, unknown>) {
+    if (c.role !== 'gm') return c.send({ t: 'error', msg: 'Só o mestre mexe nas peças.' });
+    const f = (this.db.fichas ?? []).find((x) => x.id === m.fichaId && !x.npc && x.personagem);
+    const alvo = c.room;
+    if (!f || !alvo) return c.send({ t: 'error', msg: 'Entre numa cena primeiro.' });
+    const de = this.salaDoPersonagem(f.personagem);
+    if (de === alvo) return c.send({ t: 'error', msg: `${f.nome} já está nesta cena.` });
+    if (de) {
+      const t = de.tokenList().find((x) => x.look?.charId === f.personagem);
+      if (t) this.moveToken(de, t.id, alvo.data.id);
+    } else {
+      const guardada = this.db.marcadosFora?.[String(f.personagem)];
+      const d = alvo.data.door;
+      const t: TokenData = guardada ? { ...guardada, x: d.x, y: d.y, dir: d.dir } : { id: this.nextItemId(), name: f.nome, look: { ...defaultLook(), charId: f.personagem ?? null }, x: d.x, y: d.y, dir: d.dir };
+      if (this.db.marcadosFora) delete this.db.marcadosFora[String(f.personagem)];
+      alvo.putToken(t, null);
+      this.vitaisDaFicha(f.personagem);
+    }
+    this.log(alvo.data.id, 'scene', `${f.nome} entrou em ${sceneShortName(alvo.data.name)}.`);
+    this.save();
+    this.roomChanged();
+    for (const o of this.clients.values()) this.bestiarioPara(o);
+  }
+
+  /** Tira o Marcado do tabuleiro (a peça fica guardada para voltar igual). */
+  private marcadoTirar(c: Client, m: Record<string, unknown>) {
+    if (c.role !== 'gm') return c.send({ t: 'error', msg: 'Só o mestre mexe nas peças.' });
+    const f = (this.db.fichas ?? []).find((x) => x.id === m.fichaId && !x.npc && x.personagem);
+    if (!f) return;
+    const de = this.salaDoPersonagem(f.personagem);
+    const tok = de?.tokenList().find((x) => x.look?.charId === f.personagem);
+    if (!de || !tok) return;
+    const t = de.takeToken(tok.id);
+    if (t) (this.db.marcadosFora ??= {})[String(f.personagem)] = t;
+    this.log(de.data.id, 'scene', `${f.nome} saiu do tabuleiro.`);
+    this.save();
+    this.roomChanged();
+    for (const o of this.clients.values()) this.bestiarioPara(o);
   }
 
   /**
@@ -1432,7 +1489,9 @@ export class Hotel implements HotelApi {
     for (const r of rooms) for (const t of r.tokenList()) party.set(`t${t.id}`, membro(r, t));
     // os agentes do jogo inteiro (o painel de baixo mostra sempre todos, para clicar e levar a cena até eles), na ordem das fichas
     const agentes: PartyMember[] = [];
-    for (const r of this.rooms.values()) for (const t of r.tokenList()) if (this.ehAgente(t.look?.charId)) agentes.push(membro(r, t));
+    // só os Marcados (19/10): as fichas de NPC (o Miguel, a Agatha...) não entram no PLAYERS
+    const deMarcado = new Set((this.db.fichas ?? []).filter((f) => !f.npc && f.personagem).map((f) => f.personagem));
+    for (const r of this.rooms.values()) for (const t of r.tokenList()) if (t.look?.charId && deMarcado.has(t.look.charId)) agentes.push(membro(r, t));
     agentes.sort((a, b) => (a.look?.charId ?? 0) - (b.look?.charId ?? 0) || (a.id ?? 0) - (b.id ?? 0));
     return {
       key,
@@ -2065,6 +2124,12 @@ export class Hotel implements HotelApi {
         return;
       case 'diaPassar':
         this.diaPassar(c);
+        return;
+      case 'marcadoColocar':
+        this.marcadoColocar(c, m);
+        return;
+      case 'marcadoTirar':
+        this.marcadoTirar(c, m);
         return;
       case 'createRoom':
         this.createRoom(c, m);

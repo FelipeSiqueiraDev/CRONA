@@ -134,6 +134,8 @@ export interface Database {
   liveScene?: number;
   /** o dia da missão (19/10): começa no 1, o mestre passa; o que é "1 vez por dia" zera na passagem */
   dia?: number;
+  /** as peças dos Marcados tirados do tabuleiro (19/10), pelo personagem: voltam como estavam */
+  marcadosFora?: Record<string, TokenData>;
   /** versão da montagem da Sede da Ordem (ver SEDE_REV) */
   sedeRev?: number;
   /** os temas dos quatro agentes já foram postos (uma vez só: depois, quem escolhe é o jogador) */

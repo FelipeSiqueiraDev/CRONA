@@ -1,4 +1,4 @@
-import { combate, criaturaDoLivro, GRUPO_SEM, GRUPOS_NPC_PADRAO, grupoDoNpc, gruposDoElenco, type CharacterDef, type Criatura, type Npc } from '@crona/shared';
+import { combate, criaturaDoLivro, GRUPO_SEM, GRUPOS_NPC_PADRAO, grupoDoNpc, gruposDoElenco, type CharacterDef, type Criatura, type MarcadoNoJogo, type Npc } from '@crona/shared';
 import { fundoDoElemento } from './elencoFundo';
 import { confirmar } from './fichaModal';
 import { caberNumaLinha } from './jogador';
@@ -28,7 +28,7 @@ import './elenco.css';
  *   (`rosto.jpg`, os olhos no meio); sem foto, a pose.
  */
 
-type Aba = 'npcs' | 'ameacas';
+type Aba = 'marcados' | 'npcs' | 'ameacas';
 type Grupo = 'sangue' | 'morte' | 'conhecimento' | 'energia' | 'medo' | 'mundanas' | 'mestre';
 // o ícone de cada elemento (17/10, o Felipe: "iconezinhos nas abas de grupo"): ícones próprios do jogo, nunca o
 // símbolo oficial do elemento
@@ -325,6 +325,7 @@ export function abrirElenco(app: App) {
     const todas = entradas();
     abas.replaceChildren(
       ...([
+        ['marcados', 'Marcados', app.state.marcados.length],
         ['npcs', `NPCs`, npcs.length],
         ['ameacas', 'Ameaças', todas.length],
       ] as const).map(([id, nome, n]) =>
@@ -333,6 +334,56 @@ export function abrirElenco(app: App) {
       // os botões de criar, no alto à direita, em cima do detalhe (17/10, o Felipe: "poderiam ficar ali")
       h('div', { class: 'el-topo-acoes' }, ...(aba === 'npcs' ? [novoGrupo(), botaoTopo('Novo NPC', () => ((sel = 'novo-npc'), (criandoGrupo = false), desenhar()), sel === 'novo-npc')] : [botaoTopo('Nova ameaça', () => (fechar(), abrirBestiario(app)), false, 'Abre o bestiário: uma ameaça nova a partir do livro, com as caras e a ficha')])),
     );
+    if (aba === 'marcados') {
+      // os Marcados (19/10): o mesmo card das outras abas, com o retrato; cada um é uma peça só. Na cena do mestre não
+      // puxa; de outra cena, vem de lá; a lixeira (no detalhe) tira do tabuleiro
+      chips.replaceChildren();
+      const aqui = app.state.room?.id;
+      const pastaDe = (personagem: number) => app.state.characters.find((ch) => ch.id === personagem)?.poses?.desarmado?.sw?.match(/\/arte\/personagens\/([^/]+)\//)?.[1];
+      const trazer = (x: MarcadoNoJogo) => app.net.send({ t: 'marcadoColocar', fichaId: x.fichaId });
+      const lista = app.state.marcados.filter((x) => !busca || semAcento(x.nome).includes(busca));
+      grade.replaceChildren(
+        secao({
+          nome: 'Marcados',
+          n: lista.length,
+          icone: 'pessoa',
+          cls: 'el-mestre',
+          aberta: true,
+          alternar: () => {},
+          filhos: lista.map((x) => {
+            const nesta = x.cena !== undefined && x.cena === aqui;
+            return card({
+              chave: `marcado:${x.fichaId}`,
+              nome: x.nome,
+              linha: x.cena === undefined ? 'Fora do tabuleiro' : (x.cenaNome ?? ''),
+              duasLinhas: true,
+              emCena: nesta,
+              figura: figura({ arte: pastaDe(x.personagem), nome: x.nome }),
+              usar: (ev) => (nesta ? ev.stopPropagation() : usar(ev, () => trazer(x))),
+            });
+          }),
+        }),
+      );
+      const x = app.state.marcados.find((m) => `marcado:${m.fichaId}` === sel);
+      if (!x) {
+        detalhe.replaceChildren(h('p', { class: 'el-vazio' }, 'Os Marcados são os agentes dos jogadores: cada um é uma peça só. "Usar" põe na cena em que você está (se estiver em outra, sai de lá).'));
+        return;
+      }
+      const nesta = x.cena !== undefined && x.cena === aqui;
+      detalhe.replaceChildren(
+        h('h4', { class: 'el-d-nome' }, x.nome),
+        h('p', { class: 'el-d-nota' }, x.cena === undefined ? 'Fora do tabuleiro.' : nesta ? 'Nesta cena.' : `Em ${x.cenaNome}.`),
+        h(
+          'div',
+          { class: 'el-d-acoes' },
+          nesta || aqui === undefined
+            ? h('button', { class: 'el-usar grande', type: 'button', disabled: true, title: 'Já está nesta cena' }, 'Em cena')
+            : h('button', { class: 'el-usar grande', type: 'button', title: x.cena === undefined ? 'Põe na porta desta cena' : `Traz de ${x.cenaNome}`, onclick: (ev: Event) => usar(ev, () => trazer(x)) }, x.cena === undefined ? 'Usar' : 'Trazer para cá'),
+          x.cena !== undefined ? h('button', { class: 'el-apagar', type: 'button', title: 'Tirar do tabuleiro (a peça fica guardada como está)', onclick: () => (sfx.click(), app.net.send({ t: 'marcadoTirar', fichaId: x.fichaId })) }, ic('lixo')) : null,
+        ),
+      );
+      return;
+    }
     if (aba === 'npcs') {
       chips.replaceChildren();
       const lista = npcs.filter((n) => !busca || semAcento(n.nome).includes(busca) || semAcento(n.nota ?? '').includes(busca) || semAcento(grupoDoNpc(n)).includes(busca));
