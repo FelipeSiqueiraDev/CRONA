@@ -496,6 +496,9 @@ net.onMessage = (m: ServerMsg) => {
     case 'falsoCris':
       shell?.mostrarFalsoCris(m.ligado);
       break;
+    case 'dia':
+      shell?.setDia(m.dia);
+      break;
     case 'notice':
       toast(m.msg);
       break;

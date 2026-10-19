@@ -334,6 +334,8 @@ export class Shell {
   private teclado: TecladoSenha;
   /** painel da direita: controle do RPG */
   private rpgTab: RpgTab = 'PLAYERS';
+  /** o dia da missão (o servidor manda; o mestre passa no PLAYERS) */
+  private dia = 1;
   /** aba ITENS: a mochila de cada agente, pela ficha */
   private abaItens: AbaItens;
   private fichasMapa: FichaSalva[] = [];
@@ -1065,7 +1067,7 @@ export class Shell {
     const party = [...agentes, ...(this.campaign?.party ?? []).filter((p) => !deAgente.has(p.id))];
     // a estrutura (o que obriga a refazer as cartas) fica separada dos números (PV, PE, SAN): os números se
     // acertam no lugar. Refazer tudo a cada ponto de vida piscava o painel inteiro.
-    const sig = JSON.stringify([this.rpgTab, this.gm, party.map((p) => [p.id, p.name, p.color, p.roomId, p.look?.charId ?? null, !!p.armed, vitalConditions(p.vitals).machucado])]);
+    const sig = JSON.stringify([this.rpgTab, this.gm, this.dia, party.map((p) => [p.id, p.name, p.color, p.roomId, p.look?.charId ?? null, !!p.armed, vitalConditions(p.vitals).machucado])]);
     const vit = JSON.stringify(party.map((p) => [p.id, p.vitals ?? null]));
     if (!force && sig === this.rpgSig) {
       if (vit !== this.rpgVit) {
@@ -1121,6 +1123,27 @@ export class Shell {
       return;
     }
     const cur = this.app.state.room?.id;
+    // o dia da missão e o passar do dia (19/10): o que é "1 vez por dia" zera (a etapa do Ser Amaldiçoado)
+    if (this.gm)
+      body.append(
+        h(
+          'div',
+          { class: 'rp-dia' },
+          ic('sol'),
+          h('b', null, `Dia ${this.dia}`),
+          h(
+            'button',
+            {
+              class: 'rp-dia-bt',
+              type: 'button',
+              title: 'Começa o dia seguinte: o que é "1 vez por dia" volta (a etapa ritualística do Ser Amaldiçoado fica por cumprir)',
+              onclick: async () => (await askNote('PASSAR O DIA?', `Começa o dia ${this.dia + 1}. O que é "1 vez por dia" zera, e a etapa ritualística do Ser Amaldiçoado volta a ficar por cumprir.`, 'Passar o dia')) && this.app.net.send({ t: 'diaPassar' }),
+            },
+            h('span', null, 'Passar o dia'),
+            ic('direita'),
+          ),
+        ),
+      );
     // mais de 4 agentes: o cartão encolhe para todos caberem sem rolar
     body.classList.toggle('muitos', party.filter((p) => p.id).length > 4);
     for (const p of party) {
@@ -2311,11 +2334,14 @@ export class Shell {
       const labels = conditionLabels(vitalConditions(q.vitals));
       const ficha = this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === q.look?.charId);
       const marcadas = (ficha?.condicoes ?? []).map((c) => regras.catalogo.condicao(c)?.nome ?? c);
-      const k = JSON.stringify([labels, marcadas, !!ficha, this.gm]);
+      // a etapa ritualística do dia (Ser Amaldiçoado, SaH p. 17), só de quem tem: o mestre marca "Cumpriu"
+      const temEtapa = !!ficha && regras.calcular(ficha.ficha).poderes.some((x) => x.id === 'ser-amaldicoado');
+      const cumpriu = !!ficha?.ficha.etapaCumprida;
+      const k = JSON.stringify([labels, marcadas, !!ficha, this.gm, temEtapa, cumpriu]);
       if (k === chave) return;
       chave = k;
       conds.replaceChildren(
-        ...(labels.length || marcadas.length || (this.gm && ficha)
+        ...(labels.length || marcadas.length || (this.gm && ficha) || temEtapa
           ? [
               h(
                 'div',
@@ -2323,6 +2349,28 @@ export class Shell {
                 ...labels.map((l) => h('span', { class: 'vt-cond' }, l)),
                 ...marcadas.map((l) => h('span', { class: 'vt-cond marcada' }, l)),
                 this.gm && ficha ? h('button', { class: 'vt-cond mais', type: 'button', title: 'Condições', 'aria-label': `Condições de ${q.name}`, onclick: () => this.escolherCondicoes(ficha) }, ic('mais'), marcadas.length ? null : h('span', null, 'Condição')) : null,
+                temEtapa && ficha
+                  ? h(
+                      'button',
+                      {
+                        class: `vt-cond etapa${cumpriu ? ' cumpriu' : ''}`,
+                        type: 'button',
+                        disabled: !this.gm,
+                        'aria-pressed': String(cumpriu),
+                        title: cumpriu
+                          ? 'Cumpriu a etapa ritualística hoje: o efeito do elemento vale até o fim do dia (SaH p. 17). Clique para desfazer.'
+                          : 'Não cumpriu a etapa ritualística hoje: fome e sede, sem o efeito do elemento (SaH p. 17). Clique quando cumprir.',
+                        onclick: () => {
+                          sfx.click();
+                          const nova: FichaSalva = { ...ficha, ficha: { ...ficha.ficha, etapaCumprida: !cumpriu }, atualizadaEm: new Date().toISOString() };
+                          if (!nova.ficha.etapaCumprida) delete nova.ficha.etapaCumprida;
+                          this.app.net.send({ t: 'fichaSalvar', ficha: nova });
+                        },
+                      },
+                      ic(cumpriu ? 'ok' : 'lua'),
+                      h('span', null, cumpriu ? 'Cumpriu' : 'Etapa do dia'),
+                    )
+                  : null,
               ),
             ]
           : []),
@@ -2347,6 +2395,13 @@ export class Shell {
       pintaConds(q);
     };
     return wrap;
+  }
+
+  /** O dia da missão (mensagem `dia` do servidor). */
+  setDia(dia: number) {
+    if (dia === this.dia) return;
+    this.dia = dia;
+    this.renderRpg(true);
   }
 
   /** As condições do livro para marcar no agente (as automáticas saem sozinhas pelo PV e pela SAN). */

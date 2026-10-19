@@ -132,6 +132,8 @@ export interface Database {
   gmKey?: string;
   /** a última cena que o mestre abriu (em qualquer campanha): a mesa vai para ela */
   liveScene?: number;
+  /** o dia da missão (19/10): começa no 1, o mestre passa; o que é "1 vez por dia" zera na passagem */
+  dia?: number;
   /** versão da montagem da Sede da Ordem (ver SEDE_REV) */
   sedeRev?: number;
   /** os temas dos quatro agentes já foram postos (uma vez só: depois, quem escolhe é o jogador) */

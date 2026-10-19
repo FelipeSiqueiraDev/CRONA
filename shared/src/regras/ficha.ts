@@ -135,6 +135,11 @@ export interface Ficha {
    * ali pra eles quando entrarem"): aparecem numa janela quando ele abre a ficha e na Evolução do mestre
    */
   avisos?: string[];
+  /**
+   * cumpriu hoje a etapa ritualística (Monstruoso, Ser Amaldiçoado, SaH p. 17): liga o efeito do elemento até o fim do
+   * dia; sem ela, fome e sede. O mestre marca no painel PLAYERS ("Cumpriu"); passar o dia desmarca (19/10)
+   */
+  etapaCumprida?: boolean;
   /** perdas permanentes (rituais de Medo, Custo do Paranormal) */
   perdas?: { san?: number; pe?: number };
   regras: RegrasFicha;

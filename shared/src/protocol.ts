@@ -408,6 +408,8 @@ export type ClientMsg =
   | { t: 'contaSair'; sessao: string }
   /** a tela do falso C.R.I.S para quem entra de fora: liga, desliga ou (sem `ligado`) pergunta; só o mestre */
   | { t: 'falsoCris'; ligado?: boolean }
+  /** o mestre passa o dia (19/10): o que é "1 vez por dia" zera (a etapa ritualística do Ser Amaldiçoado) */
+  | { t: 'diaPassar' }
   /** ações da sessão (contrato em session.ts); só o mestre */
   | { t: 'act'; a: SessionAction }
   | { t: 'rooms' }
@@ -591,6 +593,8 @@ export type ServerMsg =
   | { t: 'conta'; ok: false; erro: string; expirou?: boolean }
   /** como está a tela do falso C.R.I.S (resposta ao mestre) */
   | { t: 'falsoCris'; ligado: boolean }
+  /** o dia da missão (começa no 1; o mestre passa) */
+  | { t: 'dia'; dia: number }
   | { t: 'error'; msg: string }
   | { t: 'notice'; msg: string }
   /**

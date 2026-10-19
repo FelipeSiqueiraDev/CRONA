@@ -298,7 +298,8 @@ export function calcular(f: Ficha): Calculado {
   // atributos com os itens (Pujança, Destreza...); os PE usam a Presença sem itens: Carisma não dá PE (LR p. 147)
   const atr = { ...st.atributos };
   for (const k of ATRIBUTOS) atr[k] += mochila.atributos[k] ?? 0;
-  const efeitos = [...efeitosAtivos(st), ...mochila.efeitos];
+  // a etapa ritualística do dia (Ser Amaldiçoado): o efeito do elemento só com ela cumprida; a fome e a sede, sem
+  const efeitos = [...efeitosAtivos(st), ...mochila.efeitos].filter((x) => !x.efeito.etapa || (x.efeito.etapa === 'com') === !!f.etapaCumprida);
   const condicionais: Calculado['condicionais'] = [];
   const doTipo = <A extends Efeito['alvo']>(alvo: A) => efeitos.filter((x) => x.efeito.alvo === alvo && !x.efeito.condicional) as { efeito: Extract<Efeito, { alvo: A }>; origem: PoderObtido }[];
   for (const x of efeitos) if (x.efeito.condicional) condicionais.push({ origem: x.origem.nome, texto: textoEfeito(x.efeito) + ` (${x.efeito.condicional})` });

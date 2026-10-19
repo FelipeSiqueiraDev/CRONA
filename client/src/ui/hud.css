@@ -4226,3 +4226,61 @@ html:not(.modo-ficha) .bv-esconde.on {
   color: #ff6b6e;
   border-color: #ff6b6e;
 }
+
+/* a etapa ritualística do dia (Ser Amaldiçoado, 19/10): apagada até cumprir, acesa em vermelho-sangue quando cumpriu */
+html:not(.modo-ficha) .vt-cond.etapa {
+  border-color: rgba(161, 136, 115, 0.45) !important;
+  background: var(--h-campo) !important;
+  color: var(--r-texto-2) !important;
+  cursor: pointer;
+}
+html:not(.modo-ficha) .vt-cond.etapa.cumpriu {
+  border-color: #b8231f !important;
+  background: rgba(184, 35, 31, 0.22) !important;
+  color: #ffd2c8 !important;
+}
+html:not(.modo-ficha) .vt-cond.etapa:disabled {
+  cursor: default;
+}
+/* o dia da missão, no topo do PLAYERS (19/10) */
+html:not(.modo-ficha) .rp-dia {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  margin-bottom: 0.6rem;
+  border: 0.16rem solid rgba(161, 136, 115, 0.38);
+  border-radius: var(--h-raio);
+  background: var(--h-campo);
+  color: var(--r-texto-2);
+  font: 600 1.15rem / 1 var(--r-pixel);
+}
+html:not(.modo-ficha) .rp-dia .ic {
+  width: 1.6rem;
+  height: 1.6rem;
+  color: #e2a64a;
+}
+html:not(.modo-ficha) .rp-dia b {
+  flex: 1;
+  color: var(--r-texto, #f0e6d2);
+  letter-spacing: 0.06em;
+}
+html:not(.modo-ficha) .rp-dia-bt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  border: 0.14rem solid rgba(226, 166, 74, 0.6);
+  border-radius: var(--h-raio);
+  background: rgba(226, 166, 74, 0.12);
+  color: #ffd27a;
+  font: inherit;
+  cursor: pointer;
+}
+html:not(.modo-ficha) .rp-dia-bt:hover {
+  background: rgba(226, 166, 74, 0.24);
+}
+html:not(.modo-ficha) .rp-dia-bt .ic {
+  width: 1.2rem;
+  height: 1.2rem;
+}

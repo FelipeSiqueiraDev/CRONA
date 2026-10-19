@@ -3,7 +3,7 @@ import { describe, test } from "node:test";
 import fs from "node:fs";
 import { regras, type FichaSalva } from "@crona/shared";
 import type { Database } from "../src/db";
-import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados, avisosDe1910 } from "../src/marcadosCris";
+import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados, avisosDe1910, tepesECora1910 } from "../src/marcadosCris";
 
 /** Os 4 Marcados iguais ao C.R.I.S (18/10): o estado de jogo, a mochila e os avisos, uma vez só. */
 describe("Marcados iguais ao C.R.I.S", () => {
@@ -66,5 +66,22 @@ describe("Marcados iguais ao C.R.I.S", () => {
     assert.equal(avisosDe1910(db), false);
     assert.match(ficha("Cora Falcão").ficha.avisos![0], /37/);
     assert.ok(ficha("D.Tepes").ficha.avisos!.some((t) => /Ciências e Intuição/.test(t)));
+  });
+
+  test("19/10: o Vigor do Tepes no NEX 20% (45 PV), sem os avisos dele e da Cora; a etapa liga o Ser Amaldiçoado", () => {
+    assert.equal(tepesECora1910(db), true);
+    assert.equal(tepesECora1910(db), false);
+    const t = ficha("D.Tepes").ficha;
+    const k = regras.calcular(t);
+    assert.equal(k.atributos.vig, 4);
+    assert.equal(k.pv, 45);
+    assert.equal(k.pendencias.length, 0);
+    assert.equal(t.avisos, undefined);
+    assert.equal(ficha("Cora Falcão").ficha.avisos, undefined);
+    assert.deepEqual(k.resistencias, {});
+    const com = regras.calcular({ ...t, etapaCumprida: true });
+    assert.deepEqual(com.resistencias, { balistico: 5, sangue: 5 });
+    assert.equal(com.pericias.ciencias.penalidadeDados, -1);
+    assert.equal(com.reacoes.bloqueio, 5);
   });
 });

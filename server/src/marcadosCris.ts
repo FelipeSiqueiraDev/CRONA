@@ -159,3 +159,27 @@ export function avisosDe1910(db: Database): boolean {
   feitas['avisos-1910'] = 1;
   return true;
 }
+
+/**
+ * 19/10, o Felipe: "pode tirar o aviso da Cora; no Tepes a escolha de atributo foi Vigor; arruma o bloqueio e as
+ * regras de Ser Amaldiçoado". O Tepes ganha o Vigor do NEX 20% (45 PV, pela regra da mesa); os avisos dele saem (o
+ * bloqueio do CRONA é o do livro, e o Ser Amaldiçoado agora liga pela etapa do dia, no botão "Cumpriu"); o da Cora sai.
+ */
+export function tepesECora1910(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['tepes-cora-1910'] !== undefined) return false;
+  const ficha = (nome: string) => (db.fichas ?? []).find((x) => x.nome === nome && !x.npc);
+  const tepes = ficha('D.Tepes');
+  if (tepes) {
+    tepes.ficha.progressao[20] = { ...tepes.ficha.progressao[20], atributo: 'vig' };
+    delete tepes.ficha.avisos;
+    tepes.atualizadaEm = new Date().toISOString();
+  }
+  const cora = ficha('Cora Falcão');
+  if (cora) {
+    delete cora.ficha.avisos;
+    cora.atualizadaEm = new Date().toISOString();
+  }
+  feitas['tepes-cora-1910'] = 1;
+  return true;
+}

@@ -214,7 +214,8 @@ export type Escopo =
  * `soElemento` = só vale com este elemento: o escolhido no próprio poder, senão
  * o escolhido na trilha (Monstruoso), senão o da afinidade (Possuído).
  */
-export type Efeito = { condicional?: string; afinidade?: boolean; soElemento?: Elemento } & (
+/** `etapa`: só vale com a etapa ritualística do dia cumprida ('com') ou sem ela ('sem') (Ser Amaldiçoado, SaH p. 17) */
+export type Efeito = { condicional?: string; afinidade?: boolean; soElemento?: Elemento; etapa?: 'com' | 'sem' } & (
   | { alvo: 'pv' | 'pe'; fixo?: number; porNex?: number; porDezNex?: number; porNexImpar?: number; valor?: AtributoId }
   | { alvo: 'san'; fixo?: number; porNex?: number }
   /** multiplica a Sanidade inicial da classe (Cultista Arrependido: 0,5) */

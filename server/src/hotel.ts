@@ -1186,6 +1186,20 @@ export class Hotel implements HotelApi {
   private fichasTimer: NodeJS.Timeout | null = null;
 
   /** Manda a lista de fichas para quem é mestre (ou só para um cliente). */
+  /**
+   * O mestre passa o dia (19/10, o Felipe: "um rolêzin pra eu mudar o dia, e aí entram as regras de 1 vez por dia"): o
+   * dia sobe e o que é por dia zera em todas as fichas (a etapa ritualística do Ser Amaldiçoado volta a "não cumpriu").
+   */
+  private diaPassar(c: Client) {
+    if (c.role !== 'gm') return c.send({ t: 'error', msg: 'Só o mestre passa o dia.' });
+    this.db.dia = (this.db.dia ?? 1) + 1;
+    for (const f of this.db.fichas ?? []) if (f.ficha.etapaCumprida) delete f.ficha.etapaCumprida;
+    this.save();
+    for (const x of this.clients.values()) x.send({ t: 'dia', dia: this.db.dia });
+    this.enviarFichas();
+    if (this.db.liveScene !== undefined) this.log(this.db.liveScene, 'scene', `Começou o dia ${this.db.dia}.`);
+  }
+
   private enviarFichas(so?: Client, nova?: number) {
     const todas = this.db.fichas ?? [];
     const para = (c: Client) => {
@@ -2039,6 +2053,9 @@ export class Hotel implements HotelApi {
       case 'falsoCris':
         this.falsoCris(c, m);
         return;
+      case 'diaPassar':
+        this.diaPassar(c);
+        return;
       case 'createRoom':
         this.createRoom(c, m);
         return;
@@ -2427,6 +2444,7 @@ export class Hotel implements HotelApi {
     this.save();
     c.send({ t: 'welcome', id: c.id, name, look: c.look, token: c.token, inventory: ud.inventory, home: this.db.home, role });
     c.send({ t: 'roomList', rooms: this.roomList() });
+    c.send({ t: 'dia', dia: this.db.dia ?? 1 });
     if (role === 'gm' || c.fichaId) {
       this.enviarFichas(c);
       this.enviarDocs(c);
