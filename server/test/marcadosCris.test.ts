@@ -3,7 +3,7 @@ import { describe, test } from "node:test";
 import fs from "node:fs";
 import { regras, type FichaSalva } from "@crona/shared";
 import type { Database } from "../src/db";
-import { igualarMarcadosCris, mochilasDaHistoria } from "../src/marcadosCris";
+import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados } from "../src/marcadosCris";
 
 /** Os 4 Marcados iguais ao C.R.I.S (18/10): o estado de jogo, a mochila e os avisos, uma vez só. */
 describe("Marcados iguais ao C.R.I.S", () => {
@@ -50,5 +50,11 @@ describe("Marcados iguais ao C.R.I.S", () => {
     assert.deepEqual(alosi.filter((i) => i.escolha?.elemento).map((i) => i.escolha!.elemento), ["morte", "morte", "sangue", "energia", "energia"]);
     const k = regras.calcular(ficha("Alosi Walker").ficha);
     assert.ok(!k.problemas.some((p) => /desconhecid/i.test(p.texto)));
+  });
+
+  test("a mochila zerada de todos, uma vez", () => {
+    assert.equal(zerarMochilasMarcados(db), true);
+    assert.equal(zerarMochilasMarcados(db), false);
+    for (const nome of ["D.Tepes", "Catarina Albuquerque", "Alosi Walker", "Cora Falcão"]) assert.deepEqual(ficha(nome).ficha.inventario, [], nome);
   });
 });

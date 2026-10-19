@@ -127,3 +127,19 @@ export function mochilasDaHistoria(db: Database): boolean {
   feitas['mochilas-1810'] = n;
   return true;
 }
+
+/** A mochila zerada dos 4 Marcados (19/10, o Felipe: "eu quero que você zere a mochila de todo mundo"). Uma vez só. */
+export function zerarMochilasMarcados(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['mochilas-zeradas-1910'] !== undefined) return false;
+  let n = 0;
+  for (const nome of ['D.Tepes', 'Catarina Albuquerque', 'Alosi Walker', 'Cora Falcão']) {
+    const f = (db.fichas ?? []).find((x) => x.nome === nome && !x.npc);
+    if (!f) continue;
+    f.ficha.inventario = [];
+    f.atualizadaEm = new Date().toISOString();
+    n++;
+  }
+  feitas['mochilas-zeradas-1910'] = n;
+  return true;
+}
