@@ -16,7 +16,7 @@ import { buildRoom, plan, type FloorSeed, type WallSeed } from './seed';
 export const SEDE = 'Sede · ';
 export const SEDE_CODE = '0413';
 /** Versão da montagem da Sede: subiu, a Sede é refeita no lugar (mesmos cômodos, peças e registro). */
-export const SEDE_REV = 61;
+export const SEDE_REV = 62;
 
 /** Planta retangular com a porta na parede de cima (y = 0), na coluna doorX. */
 export function planTop(w: number, h: number, doorX: number): { heightmap: string; door: Door } {
@@ -832,11 +832,11 @@ const ROOMS: RoomSpec[] = [
       // o fundo da loja (atrás do balcão): as estantes na parede do fundo e na da esquerda
       ['bookshelf', 1, 0, 4],
       ['vitrine_paranormal', 3, 0, 4],
-      ['estante_frascos', 5, 0, 4],
+      ['estante_remedios', 5, 0, 4],
       ['bookshelf', 7, 0, 4],
       ['table_small', 9, 0, 0],
       ['papers', 9, 0, 0],
-      ['estante_frascos', 1, 2, 2],
+      ['estante_remedios', 1, 2, 2],
       // o símbolo grande no chão, no meio do fundo, com as velas e as cinzas dos experimentos
       ['sigil_floor', 4, 2, 0],
       ['candles', 3, 3, 0],
@@ -846,8 +846,11 @@ const ROOMS: RoomSpec[] = [
       // a mesa de tatuagem no canto do fundo, com o banco e os frascos de tinta
       ['maca_exame', 9, 2, 0],
       ['stool', 8, 3, 6],
-      // o balcão da loja, de um lado ao outro (passa-se por trás dele pelas pontas)
-      ['balcao_loja', 2, 6, 4],
+      // o balcão da loja, de um lado ao outro (passa-se por trás dele pelas pontas): três balcões de madeira emendados
+      // (o balcão entalhado do Códex não entra no tabuleiro, que é só pixel art feita por código, desde 15/10)
+      ['counter_wood', 2, 6, 4],
+      ['counter_wood', 4, 6, 4],
+      ['counter_wood', 6, 6, 4],
       ['flasks', 2, 6, 0],
       ['velas_cristal', 3, 6, 0],
       ['books_stack', 4, 6, 0],

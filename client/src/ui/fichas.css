@@ -4443,3 +4443,32 @@ html .fx .fx-sl-caixa.de-lado > .fx-sl-grade.uma-linha {
 .fx-comp .fx-cp-tipo {
   margin-bottom: 0.2rem;
 }
+
+/* as abas Agentes | NPCs só com o ícone (19/10) */
+.fx-ag-tit:has(.fx-ag-aba) .fx-ag-aba {
+  display: grid;
+  place-items: center;
+  padding: 0.5rem 0;
+}
+.fx-ag-aba .ic {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+/* a foto do agente no lugar do boneco grande (19/10) */
+.fx-corpo-foto {
+  display: none;
+}
+.fx-corpo.com-foto .fx-corpo-foto {
+  display: block;
+  position: absolute;
+  inset: 3.2rem 2.4rem 2.4rem;
+  width: calc(100% - 4.8rem);
+  height: calc(100% - 5.6rem);
+  object-fit: contain;
+  object-position: center bottom;
+  z-index: 1;
+  filter: drop-shadow(0 0.6rem 1.2rem rgba(0, 0, 0, 0.6));
+}
+.fx-corpo.com-foto > :is(.fx-seta, .corpo-fig) {
+  display: none;
+}

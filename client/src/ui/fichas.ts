@@ -117,6 +117,8 @@ export class FichasScreen {
   private calc: Calc | null = null;
   private campanha: CampaignState | null = null;
   private corpo = new CorpoView();
+  /** a foto do agente no lugar do boneco grande (19/10, o Felipe: "cada um parece de um sistema diferente; só a foto por enquanto") */
+  private corpoFoto = h('img', { class: 'fx-corpo-foto', alt: '', decoding: 'async' }) as HTMLImageElement;
   private abaNotas: AbaNotas = 'anotacoes';
   private abaGrupo: AbaGrupo = 'poderes';
   private soTreinadas = false;
@@ -172,6 +174,7 @@ export class FichasScreen {
       { class: 'fx-p fx-corpo' },
       h('div', { class: 'fx-corpo-fundo', 'aria-hidden': 'true' }, h('span', { class: 'fx-corpo-marca' }), h('span', { class: 'fx-corpo-chao' })),
       this.corpo.el,
+      this.corpoFoto,
       h('span', { class: 'fx-cantos', 'aria-hidden': 'true' }),
       h('button', { class: 'fx-seta esq', type: 'button', title: 'Girar', 'aria-label': 'Girar para a esquerda', onclick: () => (sfx.click(), this.corpo.girar(-1)) }, ic('esquerda')),
       h('button', { class: 'fx-seta dir', type: 'button', title: 'Girar', 'aria-label': 'Girar para a direita', onclick: () => (sfx.click(), this.corpo.girar(1)) }, ic('direita')),
@@ -509,9 +512,10 @@ export class FichasScreen {
   private renderAgentes() {
     // o título vira as duas abas para o mestre
     if (this.gm) {
-      const aba = (id: 'agentes' | 'npcs', nome: string) =>
-        h('button', { class: `fx-ag-aba${this.grupoAg === id ? ' on' : ''}`, type: 'button', onclick: () => this.trocarGrupo(id) }, nome);
-      this.agTit.replaceChildren(aba('agentes', 'AGENTES'), aba('npcs', 'NPCS'));
+      // só o ícone (19/10, o Felipe: "o trem cortado ali me mata"): o da Ordem para os agentes, a pessoa para os NPCs
+      const aba = (id: 'agentes' | 'npcs', nome: string, icone: NomeIcone) =>
+        h('button', { class: `fx-ag-aba${this.grupoAg === id ? ' on' : ''}`, type: 'button', title: nome, 'aria-label': nome, onclick: () => this.trocarGrupo(id) }, ic(icone));
+      this.agTit.replaceChildren(aba('agentes', 'Agentes', 'escudoEstrela'), aba('npcs', 'NPCs', 'pessoa'));
     } else this.agTit.replaceChildren('AGENTES');
     if (this.gm && this.grupoAg === 'npcs') return this.renderNpcs();
     const cards: HTMLElement[] = [];
@@ -634,6 +638,11 @@ export class FichasScreen {
     this.poseDoCorpo(fs);
     this.corpo.setCondicoes(vitalConditions(this.vitais(fs, c)));
     this.pCorpo.classList.toggle('sem-folha', !def);
+    // a foto: o retrato do agente (a pintura dele), ou a foto que o mestre mandou do NPC
+    const pasta = def?.sheet?.match(/\/arte\/personagens\/([^/]+)\//)?.[1];
+    const foto = def?.portraits?.desarmado?.open ?? (pasta ? `/arte/personagens/${pasta}/foto.jpg` : '');
+    if (foto && this.corpoFoto.getAttribute('src') !== foto) this.corpoFoto.src = foto;
+    this.pCorpo.classList.toggle('com-foto', !!foto);
   }
 
   private verMaior() {
