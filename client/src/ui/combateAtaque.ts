@@ -107,6 +107,11 @@ export interface CtxAtaque {
   mudou: () => void;
   /** o retrato de uma peça (o cartão do dano mostra quem apanha) */
   retrato?: (id: number, tamanho: number) => HTMLElement;
+  /**
+   * Tela nova (cards, 21/10): sem tabuleiro. A distância até o alvo é um campo opcional do mestre (sem ela nada trava) e
+   * cobertura, flanco, altura e corpo a corpo são situações que ele marca à mão.
+   */
+  semMapa?: { metros: number | null; definirMetros: (m: number | null) => void };
 }
 
 interface Estado {
@@ -187,6 +192,8 @@ const ICONE_SIT: Partial<Record<cb.SituacaoId, NomeIcone>> = {
 
 /** Situações que o mestre pode ligar à mão (o tabuleiro não vê). */
 const MANUAIS: cb.SituacaoId[] = ['investida', 'naoLetal', 'alvoDesprevenido', 'alvoCaido', 'flanqueando', 'elevado', 'cobertura'];
+/** Na tela de cards o mapa não vê nada: o mestre também marca o alcance, o corpo a corpo e a camuflagem. */
+const MANUAIS_MESA: cb.SituacaoId[] = [...MANUAIS, 'alcanceDobro', 'emCorpoACorpo', 'camuflagem', 'camuflagemTotal'];
 
 const numero = (s: string): number | null => {
   const t = s.trim();
@@ -370,6 +377,11 @@ export class ResolucaoAtaque {
     if (k.defesaBase === null || this.e.d20 === null || k.falhaPendente) return 4;
     if (k.acertou && (this.e.soma === null || (k.arma.extra && this.e.somaExtra === null))) return 5;
     return 6;
+  }
+
+  /** Tela de cards: 'rolagem' (o d20) ou 'resultado' (acertou: o dano; errou: o aviso) para a trilha de passos. */
+  fase(x: CtxAtaque): 'rolagem' | 'resultado' {
+    return this.passo(x) >= 5 ? 'resultado' : 'rolagem';
   }
 
   // ---------------------------------------------------------------- desenho
@@ -775,7 +787,11 @@ export class ResolucaoAtaque {
 
     // sem alvo: o chamado para clicar no mapa
     if (!alvo) {
-      partes.push(h('div', { class: 'atq-bloco atq-chama' }, ic('mira'), h('div', null, h('b', null, 'Clique no alvo no mapa'), h('small', null, 'ou no nome dele na ordem de iniciativa'))));
+      partes.push(
+        x.semMapa
+          ? h('div', { class: 'atq-bloco atq-chama' }, ic('mira'), h('div', null, h('b', null, 'Escolha o alvo'), h('small', null, 'toque num cartão da lista de alvos, aqui em cima')))
+          : h('div', { class: 'atq-bloco atq-chama' }, ic('mira'), h('div', null, h('b', null, 'Clique no alvo no mapa'), h('small', null, 'ou no nome dele na ordem de iniciativa'))),
+      );
       return h('div', { class: 'atq' }, h('div', { class: 'atq-corpo' }, ...partes));
     }
 
@@ -872,7 +888,7 @@ export class ResolucaoAtaque {
     // ---------- o primeiro cartão: em quem, o que vale e o d20
     const t = x.tab;
     let alcance: [string, string] = ['', ''];
-    if (!t || t.metros === null) alcance = ['aviso', 'em outra cena'];
+    if (!t || t.metros === null) alcance = x.semMapa ? ['', ''] : ['aviso', 'em outra cena'];
     else if (!dist) alcance = t.adjacente ? ['bom', `adjacente (${cb.textoMetros(t.metros)})`] : ['ruim', `longe (${cb.textoMetros(t.metros)})`];
     else {
       const m = cb.METROS_FAIXA[arma.faixa!];
@@ -892,6 +908,7 @@ export class ResolucaoAtaque {
           alcance[1] ? h('span', { class: `atq-alcance ${alcance[0]}` }, alcance[1]) : null,
         ),
         k.defesaBase === null ? h('div', { class: 'atq-linha' }, this.campo('Defesa do alvo', this.e.defesaManual, 99, (n) => ((this.e.defesaManual = n), x.mudou()), 'atk:def'), h('small', null, 'Sem ficha: digite a Defesa.')) : null,
+        x.semMapa ? this.campoDistancia(x.semMapa, arma) : null,
       ),
     );
     if (fora) {
@@ -955,19 +972,21 @@ export class ResolucaoAtaque {
         h('i', { class: 'atq-x', 'aria-hidden': 'true' }, '×'),
       );
     });
-    const paraMarcar = [...new Set([...k.det.keys(), ...MANUAIS])].filter((id) => id !== 'investida' && !k.ids.includes(id) && (!cb.situacao(id).so || (cb.situacao(id).so === 'distancia') === dist));
-    partes.push(
+    const manuais = x.semMapa ? MANUAIS_MESA : MANUAIS;
+    const listaAberta = this.maisSituacoes || !!x.semMapa;
+    const paraMarcar = [...new Set([...k.det.keys(), ...manuais])].filter((id) => id !== 'investida' && !k.ids.includes(id) && (!cb.situacao(id).so || (cb.situacao(id).so === 'distancia') === dist));
+    const blocoVale = (
       h(
         'div',
         { class: 'atq-bloco' },
-        h('div', { class: 'atq-rotulo' }, 'O que vale', h('small', null, etq.length ? ' · o mapa achou; tocar tira' : ' · nada especial neste ataque')),
+        h('div', { class: 'atq-rotulo' }, 'O que vale', h('small', null, x.semMapa ? (etq.length ? ' · tocar tira; marque embaixo o que você viu na mesa' : ' · marque embaixo o que você viu na mesa') : etq.length ? ' · o mapa achou; tocar tira' : ' · nada especial neste ataque')),
         h(
           'div',
           { class: 'atq-sits' },
           ...etq,
-          h('button', { class: `atq-mais${this.maisSituacoes ? ' on' : ''}`, type: 'button', title: 'Marcar outra situação à mão', onclick: () => (sfx.click(), (this.maisSituacoes = !this.maisSituacoes), x.mudou()) }, this.maisSituacoes ? '− fechar' : '+ situação'),
+          x.semMapa ? null : h('button', { class: `atq-mais${this.maisSituacoes ? ' on' : ''}`, type: 'button', title: 'Marcar outra situação à mão', onclick: () => (sfx.click(), (this.maisSituacoes = !this.maisSituacoes), x.mudou()) }, this.maisSituacoes ? '− fechar' : '+ situação'),
         ),
-        this.maisSituacoes
+        listaAberta
           ? h(
               'div',
               { class: 'atq-sits atq-sits-mais' },
@@ -991,7 +1010,7 @@ export class ResolucaoAtaque {
               ),
             )
           : null,
-      ),
+      )
     );
 
     // arremessar a arma de corpo a corpo, o combate defensivo e o ajuste livre do mestre (20/10)
@@ -1021,7 +1040,7 @@ export class ResolucaoAtaque {
       });
       return h('label', { class: 'cb-caixa-dado' }, h('small', null, rot), inp);
     };
-    partes.push(
+    const blocoMesa = (
       h(
         'div',
         { class: 'atq-bloco' },
@@ -1034,8 +1053,10 @@ export class ResolucaoAtaque {
           ajNum('bônus (±)', this.e.ajBonus, -50, 50, (n) => (this.e.ajBonus = n)),
           this.e.passagem || this.e.liberado ? liga('Desfazer a liberação', false, 'Volta a travar pelo alcance', () => (this.e.passagem = this.e.liberado = false)) : null,
         ),
-      ),
+      )
     );
+    // na tela de hoje ficam aqui; na de cards vão para uma gaveta fechada, depois da rolagem (uma coisa de cada vez)
+    if (!x.semMapa) partes.push(blocoVale, blocoMesa);
 
     // a reação do alvo (agente treinado), antes de rolar
     const r = alvo.reacoes;
@@ -1088,8 +1109,42 @@ export class ResolucaoAtaque {
       const contra = !dist && alvo.agente && alvo.reacoes?.contraAtaque && !alvo.p.reacao;
       partes.push(h('div', { class: 'atq-bloco atq-errou' }, h('b', null, k.res.falhou ? 'A camuflagem desviou: sem dano.' : 'Errou: sem dano.'), contra ? h('small', null, `${alvo.p.nome} pode contra-atacar.`) : null));
     }
+    if (x.semMapa) {
+      const n = k.ids.length;
+      partes.push(
+        h(
+          'details',
+          { class: 'atq-det' },
+          h('summary', null, h('span', null, 'Situação e ajustes'), h('small', null, n ? `${n} valendo neste ataque` : 'nada especial'), ic('direita')),
+          blocoVale,
+          blocoMesa,
+        ),
+      );
+    }
     const { desfazer, confirmar } = this.botoesFinais(x, k, this.pronto(x, k));
     return h('div', { class: 'atq' }, h('div', { class: 'atq-corpo' }, ...partes), h('div', { class: 'atq-fim' }, desfazer, confirmar));
+  }
+
+  /** A distância até o alvo, em metros, digitada pelo mestre (opcional): confere o alcance da arma, sem travar nada se ficar vazia. */
+  private campoDistancia(sm: NonNullable<CtxAtaque['semMapa']>, arma: ArmaOpcao): HTMLElement {
+    const inp = h('input', {
+      class: 'cb-dado',
+      type: 'text',
+      inputmode: 'decimal',
+      value: sm.metros === null ? '' : String(sm.metros).replace('.', ','),
+      placeholder: '—',
+      'data-foco': 'atk:dist',
+      'aria-label': 'Distância até o alvo em metros',
+    }) as HTMLInputElement;
+    const enviar = () => {
+      const t = inp.value.trim().replace(',', '.');
+      const n = t ? Number(t) : null;
+      sm.definirMetros(n !== null && Number.isFinite(n) && n >= 0 ? Math.round(n * 10) / 10 : null);
+    };
+    inp.addEventListener('change', enviar);
+    inp.addEventListener('keydown', (ev) => ev.key === 'Enter' && inp.blur());
+    const alcance = arma.faixa ? `alcance ${cb.NOME_FAIXA[arma.faixa]}: até ${cb.textoMetros(cb.METROS_FAIXA[arma.faixa])}` : 'corpo a corpo: até 1,5 m';
+    return h('div', { class: 'atq-linha atq-dist' }, h('label', { class: 'cb-caixa-dado' }, h('small', null, 'distância (m)'), inp), h('small', null, `Opcional: confere o ${alcance}.`));
   }
 
   private carimbo(r: cb.ResultadoAtaque, mult: number): HTMLElement {

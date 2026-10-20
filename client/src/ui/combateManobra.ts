@@ -7,6 +7,7 @@
  */
 import { combate as cb, regras } from '@crona/shared';
 import { campoDado, type AlvoAtaque, type ArmaOpcao, type TabuleiroAtaque } from './combateAtaque';
+import { botaoInfo } from './combateCards';
 import { h } from './dom';
 import { textoTeste } from './fichaRegras';
 import { ic, type NomeIcone } from './icons';
@@ -42,6 +43,10 @@ export interface CtxManobra {
   empurrar: (alvo: number, casas: number) => void;
   /** o alvo longe, com a ação de movimento livre: anda até ficar colado nele (gasta o movimento) */
   andarAteOAlvo?: { metros: number; fazer: () => void };
+  /** tela de cards (21/10): sem tabuleiro, o empurrão é com a miniatura na mesa */
+  semMapa?: boolean;
+  /** abre a abinha "O que é isso?" de uma manobra */
+  info?: (id: cb.ManobraId) => void;
   mudou: () => void;
 }
 
@@ -245,6 +250,7 @@ export class ResolucaoManobra {
         },
         h('span', { class: 'cb-arma-ic' }, ic(ICONE[m.id])),
         h('span', { class: 'cb-arma-txt' }, h('b', null, m.nome), h('small', null, m.efeito)),
+        x.info ? botaoInfo(() => x.info!(m.id)) : null,
       ),
     );
     const extra: HTMLElement[] = [];
@@ -336,7 +342,7 @@ export class ResolucaoManobra {
     );
     // quem resiste: Luta, tamanho e condições
     const colB = h('div', { class: 'cb-man-col cb-rola' });
-    if (!alvo) colB.append(h('p', { class: 'cb-vazio' }, this.e.manobra === 'soltarse' ? 'Ninguém agarra quem age.' : 'Escolha o alvo: clique na peça ou no nome da ordem.'));
+    if (!alvo) colB.append(h('p', { class: 'cb-vazio' }, this.e.manobra === 'soltarse' ? 'Ninguém agarra quem age.' : x.semMapa ? 'Escolha o alvo na lista de alvos, aqui em cima.' : 'Escolha o alvo: clique na peça ou no nome da ordem.'));
     else {
       const luta = k.luta
         ? h('small', null, `Luta ${textoTeste(k.luta.dados, k.luta.bonus, k.luta.penalidade)} (${k.luta.origem})`)
@@ -478,7 +484,7 @@ export class ResolucaoManobra {
           break;
         }
       }
-      if (k.empurrao)
+      if (k.empurrao && !x.semMapa)
         partes.push(
           h(
             'label',

@@ -8,6 +8,7 @@
  */
 import { combate as cb, regras } from '@crona/shared';
 import { campoDado, linhaInfo, type AlvoAtaque } from './combateAtaque';
+import { botaoInfo } from './combateCards';
 import { h } from './dom';
 import { textoTeste } from './fichaRegras';
 import { ic } from './icons';
@@ -52,6 +53,10 @@ export interface CtxRitual {
   metrosAte: (p: cb.Participante) => number | null;
   acoes: cb.AcoesTurno;
   pedirArea: () => void;
+  /** tela de cards (21/10): sem tabuleiro; a área é quem o mestre marca na lista de alvos */
+  semMapa?: boolean;
+  /** abre a abinha "O que é isso?" de um ritual */
+  info?: (r: RitualOpcao) => void;
   enviar: (a: cb.AcaoCombate) => void;
   mudou: () => void;
 }
@@ -168,6 +173,16 @@ export class ResolucaoRitual {
     };
   }
 
+  /** A tela de cards escolhe o modo (um alvo, a área ou ninguém) no passo "Contra quem?". */
+  definirModo(m: 'alvo' | 'area' | 'nenhum') {
+    this.e.modo = m;
+  }
+
+  /** O modo de alvo de agora (a tela de cards troca a lista de alvos por caixas de marcar quando é a área). */
+  modoDeAlvo(): 'alvo' | 'area' | 'nenhum' {
+    return this.e.modo;
+  }
+
   /** Os alvos pelo modo: o escolhido, os da área ou ninguém. */
   private alvos(x: CtxRitual): AlvoAtaque[] {
     if (this.e.modo === 'area') return x.naArea ?? [];
@@ -251,6 +266,7 @@ export class ResolucaoRitual {
         { class: `cb-arma${i === this.e.ritual ? ' on' : ''}`, type: 'button', 'aria-pressed': String(i === this.e.ritual), title: `${r.nome} (${r.ref})`, onclick: escolher(i) },
         h('span', { class: 'cb-arma-ic' }, ic('pentagrama')),
         h('span', { class: 'cb-arma-txt' }, h('b', null, r.nome), h('small', null, `${r.circulo}º · ${r.formas[0].pe} PE · DT ${r.dt}`)),
+        x.info ? botaoInfo(() => x.info!(r)) : null,
       ),
     );
     cards.push(
@@ -313,7 +329,7 @@ export class ResolucaoRitual {
         'div',
         { class: 'cb-rit-modos' },
         modo('alvo', x.alvo ? `Alvo: ${x.alvo.p.nome}` : 'Alvo', 'O alvo escolhido no tabuleiro ou na ordem'),
-        modo('area', x.naArea ? `Área (${x.naArea.length})` : 'Área', 'Quem está na área desenhada no tabuleiro'),
+        modo('area', x.naArea ? `Área (${x.naArea.length})` : 'Área', x.semMapa ? 'Quem o mestre marcou na lista de alvos' : 'Quem está na área desenhada no tabuleiro'),
         modo('nenhum', 'Sem alvo', 'Pessoal, efeito ou área sem ninguém'),
       ),
     ];
@@ -326,7 +342,8 @@ export class ResolucaoRitual {
       if (m !== null && r.alcance === 'toque' && m > 1.5) corpo.push(linhaInfo('alerta', `Toque pede o alvo adjacente (${cb.textoMetros(m)})`, 'ruim'));
     }
     if (this.e.modo === 'area' && !x.naArea) corpo.push(h('p', { class: 'cb-vazio' }, 'Desenhe a área no tabuleiro (botão Área) e clique no ponto.'));
-    if (this.e.modo === 'alvo' && !x.alvo) corpo.push(h('p', { class: 'cb-vazio' }, 'Escolha o alvo: clique na peça ou no nome da ordem.'));
+    if (this.e.modo === 'area' && x.semMapa && !x.naArea?.length) corpo.push(h('p', { class: 'cb-vazio' }, 'Marque na lista de alvos quem está na área do ritual.'));
+    if (this.e.modo === 'alvo' && !x.alvo) corpo.push(h('p', { class: 'cb-vazio' }, x.semMapa ? 'Escolha o alvo na lista de alvos, aqui em cima.' : 'Escolha o alvo: clique na peça ou no nome da ordem.'));
     for (const l of k.linhas) {
       const res = r.resist;
       const linha = h('div', { class: 'cb-rit-alvo' }, h('b', null, l.a.p.nome));
