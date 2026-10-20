@@ -6,7 +6,7 @@ import { drawPixelAvatar } from '../render/avatarPixel';
 import type { App } from './app';
 import { abrirBestiario } from './bestiario';
 import { h } from './dom';
-import { arteCarregada, ic, type NomeIcone } from './icons';
+import { arteCarregada, atualizarArte, ic, type NomeIcone } from './icons';
 import { sfx } from './sfx';
 import './elenco.css';
 
@@ -709,5 +709,7 @@ export function abrirElenco(app: App) {
   app.net.send({ t: 'bestiario' });
   desenhar();
   void arteCarregada.then((lista) => ((arquivos = lista), desenhar()));
+  // e de novo, para a arte que chegou depois que a página abriu (a foto nova de um NPC)
+  void atualizarArte().then((lista) => ((arquivos = lista), desenhar()));
   campoBusca.focus();
 }

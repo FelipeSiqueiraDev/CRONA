@@ -159,6 +159,14 @@ function pedirLista(tentativa = 0): Promise<Set<string>> {
 }
 export const arteCarregada: Promise<Set<string>> = pedirLista();
 
+/** Pede a lista de novo (19/10: a arte que chegou com a página aberta, como a foto nova de um NPC, aparece sem o F5). */
+export function atualizarArte(): Promise<Set<string>> {
+  return fetch('/api/arte', { cache: 'no-cache' })
+    .then((r) => (r.ok ? (r.json() as Promise<{ arquivos: string[] }>) : Promise.reject(new Error(String(r.status)))))
+    .then((j) => (lista = new Set(j.arquivos)))
+    .catch(() => arteCarregada);
+}
+
 /** A imagem existe? */
 export async function existeArte(url: string): Promise<boolean> {
   return (lista ?? (await arteCarregada)).has(url);
