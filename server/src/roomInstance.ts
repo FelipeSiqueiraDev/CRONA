@@ -180,7 +180,7 @@ interface RoomUser {
   /** chegou por esta passagem: não teleporta até sair do tile */
   arrivedAt: Point | null;
   /** cor, limite de carga, estado do retrato e ficha (PV/PE/SAN) da peça */
-  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; alto?: boolean; vitals?: Vitals; criatura?: PecaCriatura; flutua?: boolean; chama?: ChamaCriatura };
+  meta?: { color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; alto?: boolean; vitals?: Vitals; criatura?: PecaCriatura; flutua?: boolean; chama?: ChamaCriatura; outraVitals?: Vitals };
 }
 
 const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v);
@@ -320,7 +320,7 @@ export class RoomInstance {
       // nasce "chegando": em cima de uma passagem, só atravessa depois de sair dela e voltar
       // (sem isso, a peça salva em cima de uma porta trocava de cena a cada reinício)
       arrivedAt: { x: sx, y: sy },
-      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, agachado: t.agachado, alto: t.alto, vitals: sanitizeVitals(t.vitals), ...(t.criatura ? { criatura: t.criatura } : {}), ...(t.flutua ? { flutua: true } : {}), ...(t.chama ? { chama: t.chama } : {}) },
+      meta: { color: t.color, capacity: t.capacity, armed: t.armed, hurt: t.hurt, agachado: t.agachado, alto: t.alto, vitals: sanitizeVitals(t.vitals), ...(t.criatura ? { criatura: t.criatura } : {}), ...(t.flutua ? { flutua: true } : {}), ...(t.chama ? { chama: t.chama } : {}), ...(t.outraVitals ? { outraVitals: sanitizeVitals(t.outraVitals) } : {}) },
     };
     this.users.set(u.client.id, u);
     this.settle(u);
@@ -462,6 +462,7 @@ export class RoomInstance {
     if (u.meta?.criatura) t.criatura = u.meta.criatura;
     if (u.meta?.flutua) t.flutua = true;
     if (u.meta?.chama) t.chama = u.meta.chama;
+    if (u.meta?.outraVitals) t.outraVitals = u.meta.outraVitals;
     return t;
   }
 
@@ -501,6 +502,32 @@ export class RoomInstance {
     u.meta ??= {};
     u.meta.criatura = criatura;
     u.client.look = look;
+    this.broadcast({ t: 'userLeave', id: u.client.id });
+    this.broadcast({ t: 'userJoin', user: this.userInfo(u) });
+    this.saveTokens();
+    return true;
+  }
+
+  /**
+   * A peça troca de forma no mesmo lugar (19/10: o NPC que vira uma criatura e volta): o nome, a cara, a cor, a criatura e os
+   * PV mudam; os PV da forma que sai ficam guardados na peça e voltam na próxima troca.
+   */
+  trocarForma(tokenId: number, nova: { name: string; look: AvatarLook; color?: string; criatura?: PecaCriatura; vitals?: Vitals; flutua?: boolean; chama?: ChamaCriatura }): boolean {
+    const u = this.users.get(-tokenId);
+    if (!u) return false;
+    const antes = u.meta?.vitals;
+    const meta = u.meta ?? {};
+    u.client.name = nova.name;
+    u.client.look = nova.look;
+    u.meta = { ...meta, color: nova.color, vitals: meta.outraVitals ?? nova.vitals, outraVitals: antes };
+    if (!u.meta.vitals) delete u.meta.vitals;
+    if (!u.meta.outraVitals) delete u.meta.outraVitals;
+    if (nova.criatura) u.meta.criatura = nova.criatura;
+    else delete u.meta.criatura;
+    if (nova.flutua) u.meta.flutua = true;
+    else delete u.meta.flutua;
+    if (nova.chama) u.meta.chama = nova.chama;
+    else delete u.meta.chama;
     this.broadcast({ t: 'userLeave', id: u.client.id });
     this.broadcast({ t: 'userJoin', user: this.userInfo(u) });
     this.saveTokens();

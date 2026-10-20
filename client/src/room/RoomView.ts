@@ -375,6 +375,8 @@ export interface RoomEvents {
   aviso?(texto: string): void;
   /** o grupo de peças mudou (Shift + clique): quantas andam juntas (0 = nenhum grupo) */
   grupoMudou?(n: number): void;
+  /** o clique duplo do mestre numa peça (a troca de forma do NPC, 19/10) */
+  pecaDupla?(id: number): void;
   /** Ctrl + clique na cama: a coberta por cima de quem está deitado, liga e desliga */
   cobrir?(id: number): void;
   /** Ctrl + clique do mestre num móvel que abre e fecha: tranca ou destranca (sem nada à vista) */
@@ -1876,6 +1878,7 @@ export class RoomView {
     }
 
     if (hit?.kind === 'user') {
+      if (dbl && !this.watchOnly && this.info?.isOwner) this.events.pecaDupla?.(hit.id);
       if (this.aoClicarPeca?.(hit.id)) return;
       // em combate, clicar numa peça não passa o comando para ela (a tela do combate cuida de quem age), mas ela se
       // escolhe: o painel mostra a ficha dela (17/10, o Felipe: "não consigo clicar em mais ninguém no tabuleiro")

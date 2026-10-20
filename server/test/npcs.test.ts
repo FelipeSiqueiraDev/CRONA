@@ -140,3 +140,46 @@ describe("npcs", () => {
     assert.equal(n.nota, "a dona da pensão");
   });
 });
+
+/** A outra forma do NPC (19/10): o clique duplo do mestre troca o NPC pela criatura e volta; os dois nunca ficam juntos. */
+describe("a outra forma do NPC", () => {
+  test("troca no mesmo lugar, guarda os PV de cada forma e recusa as duas em campo", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    const samuel = db.npcs!.find((n) => n.id === "samuel")!;
+    samuel.forma = { livro: "minotauro" };
+    assert.deepEqual(lerNpc({ ...samuel })?.forma, { livro: "minotauro" }, "a forma passa pela conferência");
+    const hotel = new Hotel({ db, persist: false, timers: false });
+    const caixa: { t: string; msg?: string }[] = [];
+    const c = hotel.attach((m) => caixa.push(JSON.parse(JSON.stringify(m))), undefined, true);
+    hotel.receive(c, { t: "login", name: "Mestre", look: samuel.look, gmKey: hotel.gmKey });
+    const sala = db.rooms[0];
+    hotel.receive(c, { t: "join", roomId: sala.id });
+    hotel.receive(c, { t: "npcColocar", npcId: "samuel" });
+    const peca = () => sala.tokens!.find((t) => t.name === "Samuel Norte" || t.name === "Minotauro")!;
+    const antes = { ...peca() };
+    hotel.receive(c, { t: "pecaForma", tokenId: antes.id });
+    const virou = peca();
+    assert.equal(virou.name, "Minotauro");
+    assert.ok(virou.criatura, "a peça é a criatura");
+    assert.deepEqual([virou.x, virou.y, virou.id], [antes.x, antes.y, antes.id], "no mesmo lugar, a mesma peça");
+    // as duas em campo, não: nem o NPC de novo, nem outra criatura dessa forma
+    hotel.receive(c, { t: "npcColocar", npcId: "samuel" });
+    const cr = db.bestiario!.find((x) => x.ficha.livro === "minotauro")!;
+    hotel.receive(c, { t: "criaturaColocar", criaturaId: cr.id });
+    assert.equal(sala.tokens!.filter((t) => t.name.startsWith("Samuel") || t.name.startsWith("Minotauro")).length, 1);
+    // os PV da criatura ficam guardados para a próxima vez
+    virou.vitals = { ...virou.vitals!, pv: 10 };
+    hotel.receive(c, { t: "join", roomId: sala.id });
+    hotel.receive(c, { t: "pecaForma", tokenId: antes.id });
+    assert.equal(peca().name, "Samuel Norte");
+    assert.equal(peca().criatura, undefined);
+    hotel.receive(c, { t: "npcColocar", npcId: "samuel" });
+    assert.equal(sala.tokens!.filter((t) => t.name.startsWith("Samuel")).length, 1, "de volta, continua único");
+    // NPC sem forma: o clique duplo não faz nada
+    hotel.receive(c, { t: "npcColocar", npcId: "ivete" });
+    const iv = sala.tokens!.find((t) => t.name.startsWith("Ivete"))!;
+    hotel.receive(c, { t: "pecaForma", tokenId: iv.id });
+    assert.equal(sala.tokens!.find((t) => t.id === iv.id)!.name, iv.name);
+  });
+});

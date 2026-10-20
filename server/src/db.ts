@@ -81,6 +81,8 @@ export interface TokenData {
   flutua?: boolean;
   /** a chama fantasmagórica da criatura (cor e intensidade; shared/src/chama.ts) */
   chama?: ChamaCriatura;
+  /** os PV, PE e SAN da outra forma do NPC (a que não está à vista), para voltarem iguais na troca (19/10) */
+  outraVitals?: Vitals;
 }
 
 export interface UserData {

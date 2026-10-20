@@ -496,6 +496,8 @@ export type ClientMsg =
   | { t: 'criaturaApagar'; id: string }
   | { t: 'criaturaColocar'; criaturaId: string; aparencia: string; quantidade: number }
   | { t: 'pecaAparencia'; tokenId: number; aparencia: string }
+  /** o clique duplo do mestre numa peça: o NPC vira a outra forma dele, e volta (19/10) */
+  | { t: 'pecaForma'; tokenId: number }
   /** os NPCs do mestre (16/10): gravar, apagar e pôr um na cena */
   | { t: 'npcSalvar'; npc: Npc }
   | { t: 'npcApagar'; id: string }

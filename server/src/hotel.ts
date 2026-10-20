@@ -11,6 +11,7 @@ import {
   lerCriatura,
   chamaDaCriatura,
   lerNpc,
+  criaturaDoLivro,
   lerGrupoNpc,
   GRUPOS_NPC_PADRAO,
   aparenciaDaVez,
@@ -75,6 +76,8 @@ import {
   lootParaItem,
   noCatalogo,
   type AcaoMochila,
+  type Criatura,
+  type Npc,
   type Loot,
   type PapelConta,
   MAPA_AREA_MAX,
@@ -635,6 +638,10 @@ export class Hotel implements HotelApi {
       // a arte que o Códex entregou vira personagem antes de pôr a peça: senão a primeira entra sem a cara dela (17/10:
       // o portador de relíquia, criado na hora, aparecia como o boneco de pixel até o servidor reiniciar)
       if (this.criaturasComArte(false)) this.broadcastCharacters();
+      // a outra forma de um NPC em campo (19/10): os dois são a mesma pessoa
+      const dono = this.npcDaForma(cr);
+      if (dono && this.npcsEmCampo(room.data.id).includes(dono.id)) return c.send({ t: 'error', msg: `${dono.nome} está em campo: clique duas vezes na peça dele para a troca.` });
+      if (dono && this.formaEmCampo(room.data.id, cr.ficha.livro ?? cr.id)) return c.send({ t: 'error', msg: `${cr.nome} já está em campo (é a outra forma de ${dono.nome}).` });
       // o portador de relíquia é único na campanha (17/10): um só, e nenhum se já houver um em alguma cena dela
       const unico = cmb.ehPortadorDeReliquia(cr.ficha.livro);
       if (unico) {
@@ -674,6 +681,8 @@ export class Hotel implements HotelApi {
       if (!npc) return c.send({ t: 'error', msg: 'NPC não encontrado.' });
       if (this.criaturasComArte(false)) this.broadcastCharacters();
       if (this.npcsEmCampo(room.data.id).includes(npc.id)) return c.send({ t: 'error', msg: `${npc.nome} já está em cena.` });
+      // a outra forma dele já em campo (19/10): os dois são a mesma pessoa
+      if (npc.forma && this.formaEmCampo(room.data.id, npc.forma.livro)) return c.send({ t: 'error', msg: `${npc.nome} já está em campo, na outra forma: clique duas vezes na peça para a troca.` });
       if (room.tokenList().length + 1 > 30) return c.send({ t: 'error', msg: 'Máximo de 30 peças por cena.' });
       // o nome dele; com outro igual na cena (dois Miguéis?), numerado
       let nome = npc.nome;
@@ -682,6 +691,7 @@ export class Hotel implements HotelApi {
       this.bestiarioPara(c);
       return c.send({ t: 'notice', msg: `${nome} entrou na cena.` });
     }
+    if (m.t === 'pecaForma' && typeof m.tokenId === 'number') return this.pecaForma(c, room, m.tokenId);
     if (m.t === 'pecaAparencia' && typeof m.tokenId === 'number' && typeof m.aparencia === 'string') {
       const pc = room.criaturasDasPecas().get(m.tokenId);
       const cr = pc && this.db.bestiario.find((x) => x.id === pc.id);
@@ -689,6 +699,65 @@ export class Hotel implements HotelApi {
       if (!cr || !ap) return;
       room.trocarAparencia(m.tokenId, { id: cr.id, aparencia: ap.id }, { ...ap.look, charId: this.charDaArte(ap.arte) });
     }
+  }
+
+  /** O NPC dono de uma criatura como outra forma (19/10), se houver. */
+  private npcDaForma(cr: Criatura): Npc | undefined {
+    return (this.db.npcs ?? []).find((n) => n.forma && (n.forma.livro === cr.ficha.livro || n.forma.livro === cr.id));
+  }
+
+  /** Alguma peça da criatura do livro `livro` em campo no grupo de cenas de `roomId`. */
+  private formaEmCampo(roomId: number, livro: string): boolean {
+    const deLivro = (id: string) => {
+      const cr = this.db.bestiario?.find((x) => x.id === id);
+      return !!cr && (cr.ficha.livro === livro || cr.id === livro);
+    };
+    return this.sceneGroup(roomId).some((id) => [...(this.rooms.get(id)?.criaturasDasPecas().values() ?? [])].some((p) => deLivro(p.id)));
+  }
+
+  /**
+   * O clique duplo do mestre numa peça (19/10, o Felipe: "se eu clico 2x ele vira o Diabo; os dois não podem estar na mesma
+   * cena ao mesmo tempo, são a mesma pessoa"): o NPC com `forma` vira a criatura, e a criatura volta a ser o NPC, no mesmo
+   * lugar. Peça sem outra forma: nada acontece.
+   */
+  private pecaForma(c: Client, room: RoomInstance, tokenId: number) {
+    const t = room.tokenList().find((x) => x.id === -tokenId);
+    if (!t) return;
+    const npcs = this.db.npcs ?? [];
+    if (t.criatura) {
+      // a criatura volta a ser o NPC
+      const cr = this.db.bestiario?.find((x) => x.id === t.criatura!.id);
+      const npc = cr && this.npcDaForma(cr);
+      if (!npc) return;
+      room.trocarForma(tokenId, { name: npc.nome, look: { ...npc.look, charId: this.charDaArte(npc.arte) }, color: '#7f93a8' });
+      return c.send({ t: 'notice', msg: `${t.name} é ${npc.nome} de novo.` });
+    }
+    const ch = t.look?.charId ?? null;
+    const npc = npcs.find((n) => n.forma && ((ch !== null && this.charDaArte(n.arte) === ch) || n.nome.toLowerCase() === t.name.toLowerCase()));
+    if (!npc?.forma) return;
+    // a criatura do bestiário dessa forma; sem ela, entra a do livro (como o Elenco faz ao pôr em campo)
+    let cr = this.db.bestiario?.find((x) => x.ficha.livro === npc.forma!.livro || x.id === npc.forma!.livro);
+    if (!cr) {
+      const nova = criaturaDoLivro(npc.forma.livro);
+      if (!nova) return c.send({ t: 'error', msg: 'A outra forma dele não está no livro.' });
+      (this.db.bestiario ??= []).push(nova);
+      cr = nova;
+      this.bestiarioMudou();
+    }
+    if (this.criaturasComArte(false)) this.broadcastCharacters();
+    const ap = cr.aparencias[0];
+    if (!ap) return;
+    room.trocarForma(tokenId, {
+      name: cr.nome,
+      look: { ...ap.look, charId: this.charDaArte(ap.arte) },
+      color: COR_DO_ELEMENTO[cr.ficha.elemento ?? ''] ?? '#b3261e',
+      criatura: { id: cr.id, aparencia: ap.id },
+      vitals: { pv: cr.pv, pvMax: cr.pv, pe: 0, peMax: 0, san: 0, sanMax: 0 },
+      ...(cr.flutua ? { flutua: true } : {}),
+      ...(chamaDaCriatura(cr.id, cr.chama) ? { chama: chamaDaCriatura(cr.id, cr.chama)! } : {}),
+    });
+    this.bestiarioPara(c);
+    return c.send({ t: 'notice', msg: `${npc.nome} virou ${cr.nome}.` });
   }
 
   /** Uma ação da tela de combate (só o mestre). */
@@ -2297,6 +2366,7 @@ export class Hotel implements HotelApi {
       case 'criaturaApagar':
       case 'criaturaColocar':
       case 'pecaAparencia':
+      case 'pecaForma':
       case 'npcSalvar':
       case 'npcApagar':
       case 'npcGrupoCriar':

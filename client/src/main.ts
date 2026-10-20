@@ -213,6 +213,7 @@ const view = new RoomView(canvas, {
   },
   cobrir: (id) => net.send({ t: 'cobrir', id }),
   trancar: (id) => net.send({ t: 'trancar', id }),
+  pecaDupla: (id) => net.send({ t: 'pecaForma', tokenId: id }),
   select: () => app.emit('selection'),
   openHint: (kind, id) => hintViewer.open(kind, id),
   aviso: (texto) => toast(texto),

@@ -22,6 +22,11 @@ export interface Npc {
    * o boneco do tabuleiro sai nessa escala. Sem ela, a altura de uma pessoa.
    */
   altura?: number;
+  /**
+   * A outra forma do NPC (19/10): uma criatura do livro (o id em AMEACAS_LIVRO). O clique duplo do mestre na peça troca uma
+   * pela outra no mesmo lugar, e as duas nunca ficam em campo juntas (são a mesma pessoa). Fica só no banco.
+   */
+  forma?: { livro: string };
 }
 
 /**
@@ -141,5 +146,6 @@ export function lerNpc(raw: unknown): Npc | null {
   const nota = texto(o.nota, 120);
   const grupo = texto(o.grupo, 40);
   const altura = typeof o.altura === 'number' && o.altura >= 0.2 && o.altura <= 3 ? Math.round(o.altura * 100) / 100 : undefined;
-  return { id, nome, look: sanitizeLook(o.look), ...(arte ? { arte } : {}), ...(nota ? { nota } : {}), ...(grupo ? { grupo } : {}), ...(altura ? { altura } : {}) };
+  const livro = o.forma && typeof o.forma === 'object' ? slug((o.forma as Record<string, unknown>).livro) : '';
+  return { id, nome, look: sanitizeLook(o.look), ...(arte ? { arte } : {}), ...(nota ? { nota } : {}), ...(grupo ? { grupo } : {}), ...(altura ? { altura } : {}), ...(livro ? { forma: { livro } } : {}) };
 }
