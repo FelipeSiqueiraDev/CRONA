@@ -1612,7 +1612,7 @@ export class FichasScreen {
   private poseDoCorpo(fs: FichaSalva) {
     const v = this.vitais(fs, regras.calcular(fs.ficha));
     const armado = fs.ficha.inventario.some((it) => it.tipo === 'arma' && regras.lugarDoItem(it) === 'mao');
-    this.corpo.setEstado(armado, v.pv < v.pvMax / 2);
+    this.corpo.setEstado(armado, v.pv < Math.floor(v.pvMax / 2));
   }
 
   /** As abas do painel da direita: só a escolhida aparece (no celular, todas, uma embaixo da outra). */

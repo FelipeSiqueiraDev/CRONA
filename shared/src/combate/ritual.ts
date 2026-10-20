@@ -55,6 +55,8 @@ export function lerResistencia(texto?: string): { teste: TesteResistencia; efeit
 
 /** Passa com total ≥ DT; 20 natural passa sempre (LR p. 76). */
 export const passouResistencia = (d20: number, total: number, dt: number) => d20 >= 20 || total >= dt;
+/** Resistir ao que alguém lança contra você: o empate favorece o ataque (20/10), então é preciso passar da DT. */
+export const resisteAoAtaque = (d20: number, total: number, dt: number) => d20 >= 20 || total > dt;
 
 // ------------------------------------------------------------------ elemento contra a criatura
 

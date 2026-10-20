@@ -383,6 +383,8 @@ export interface Consequencia {
 }
 
 const dtMassivo = (dano: number) => 15 + 2 * Math.floor(dano / 10);
+/** A metade de um total (PV, SAN, PE): arredonda sempre para baixo (20/10, o Felipe: "10,5 vira 10"). */
+export const metadeDe = (n: number) => Math.floor(n / 2);
 
 /**
  * Dano letal: PV depois, machucado, 0 PV e dano massivo (≥ metade dos PV
@@ -394,8 +396,8 @@ export function consequencia(v: { pv: number; pvMax: number }, dano: number, nao
   const zerou = pv === 0 && dano > 0;
   const desmaiou = !zerou && dano > 0 && naoLetal > 0 && pv - naoLetal <= 0 && v.pv - naoLetal > 0;
   // desmaiar pelo não letal não tira o dano massivo: falhando, vai a 0 PV e fica morrendo (LR p. 88)
-  const massivo = !zerou && dano > 0 && dano >= v.pvMax / 2 ? dtMassivo(dano) : null;
-  return { pv, machucado: pv > 0 && pv < v.pvMax / 2, zerou, desmaiou, massivo };
+  const massivo = !zerou && dano > 0 && dano >= metadeDe(v.pvMax) ? dtMassivo(dano) : null;
+  return { pv, machucado: pv > 0 && pv < metadeDe(v.pvMax), zerou, desmaiou, massivo };
 }
 
 export interface ConsequenciaNaoLetal {
@@ -411,7 +413,7 @@ export interface ConsequenciaNaoLetal {
 export function consequenciaNaoLetal(v: { pv: number; pvMax: number }, antes: number, dano: number): ConsequenciaNaoLetal {
   const naoLetal = Math.max(0, antes) + Math.max(0, dano);
   const desmaiou = dano > 0 && v.pv - naoLetal <= 0 && v.pv - antes > 0;
-  const massivo = !desmaiou && v.pv - naoLetal > 0 && dano > 0 && dano >= v.pvMax / 2 ? dtMassivo(dano) : null;
+  const massivo = !desmaiou && v.pv - naoLetal > 0 && dano > 0 && dano >= metadeDe(v.pvMax) ? dtMassivo(dano) : null;
   return { naoLetal, desmaiou, massivo };
 }
 
@@ -425,7 +427,7 @@ export interface ConsequenciaMental {
 /** Dano mental: tira da Sanidade, não dos PV (LR p. 82, 88). */
 export function consequenciaMental(v: { san: number; sanMax: number }, dano: number): ConsequenciaMental {
   const san = Math.max(0, v.san - Math.max(0, dano));
-  return { san, perturbado: san > 0 && san < v.sanMax / 2, zerou: san === 0 && dano > 0 };
+  return { san, perturbado: san > 0 && san < metadeDe(v.sanMax), zerou: san === 0 && dano > 0 };
 }
 
 /**

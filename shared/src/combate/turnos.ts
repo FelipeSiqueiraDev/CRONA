@@ -481,7 +481,8 @@ function massivo(c: Combate, a: Extract<AcaoCombate, { tipo: 'massivo' }>, ctx: 
   if (total === undefined) return erro('Falta o total do teste de Fortitude.');
   const d20 = inteiro(a.d20, 1, 20);
   const rolou = `Fortitude ${d20 !== undefined ? `d20 ${d20}, ` : ''}total ${total} contra DT ${m.dt}`;
-  if (total >= m.dt) {
+  // o empate favorece o ataque (20/10): resiste só quem passa da DT
+  if (total > m.dt) {
     registrar(c, ctx.agora, 'acao', `${p.nome} resiste ao dano massivo: ${rolou} — passou.`, ['passou']);
     return { ok: true, combate: c };
   }

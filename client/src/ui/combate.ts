@@ -374,7 +374,7 @@ export class CombateScreen {
     const enviar = (passou?: boolean) => {
       const n = Number(inp.value.trim());
       // sem o total digitado, os botões dizem o resultado: vale o mínimo para passar ou um a menos
-      const total = inp.value.trim() && Number.isFinite(n) ? Math.round(n) : passou ? m.dt : m.dt - 1;
+      const total = inp.value.trim() && Number.isFinite(n) ? Math.round(n) : passou ? m.dt + 1 : m.dt;
       this.acao({ tipo: 'massivo', alvo: m.alvo, total });
     };
     return h(
@@ -384,7 +384,7 @@ export class CombateScreen {
       h(
         'div',
         null,
-        h('p', null, h('b', null, `Dano massivo: ${nome} `), `tomou ${m.dano}${m.naoLetal ? ' de dano não letal' : ''} de uma vez (metade dos PV ou mais). Fortitude `, h('b', null, `DT ${m.dt}`), ` (15 + 2 a cada 10 de dano; LR p. 88).`),
+        h('p', null, h('b', null, `Dano massivo: ${nome} `), `tomou ${m.dano}${m.naoLetal ? ' de dano não letal' : ''} de uma vez (metade dos PV ou mais). Fortitude `, h('b', null, `DT ${m.dt}`), ` (15 + 2 a cada 10 de dano; LR p. 88). Empatar com a DT é falhar: o empate favorece o ataque.`),
         h('p', null, rola ? `${nome} rola: ${rola}.` : 'Sem ficha: o mestre rola a Fortitude.', ' ', m.naoLetal ? 'Se falhar, cai inconsciente (sem morrendo).' : 'Se falhar, vai a 0 PV: inconsciente e morrendo.'),
         h(
           'div',
@@ -2433,7 +2433,7 @@ export class CombateScreen {
           h('span', { class: 'cb-rec-topo' }, h('b', null, 'PV'), h('span', { class: 'cb-rec-n' }, h('strong', null, String(vit.pv)), h('small', null, `/${vit.pvMax}`))),
           h('button', { class: 'cb-barra pv', type: 'button', title: 'Mudar PV', style: `--p:${vit.pvMax ? Math.max(0, Math.min(1, vit.pv / vit.pvMax)) : 0}`, onclick: editarPv }, h('i')),
           h('span', { class: 'cb-machucado' }, h('i')),
-          h('small', null, `machucado: abaixo de ${Math.ceil(vit.pvMax / 2)}`),
+          h('small', null, `machucado: abaixo de ${Math.floor(vit.pvMax / 2)}`),
         )
       : h('div', { class: 'cb-alvo-pv' }, botao('Marcar PV', 'coracao', editarPv, 'cb-mini'));
     // o ícone pintado de cada número do alvo (Defesa, as reações, os testes de resistência)

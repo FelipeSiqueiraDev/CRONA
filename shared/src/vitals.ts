@@ -70,12 +70,13 @@ export interface VitalConditions {
 export function vitalConditions(v: Vitals | undefined): VitalConditions {
   if (!v) return { machucado: false, morrendo: false, perturbado: false, enlouquecendo: false, cansado: false };
   return {
-    machucado: v.pv < v.pvMax / 2,
+    // a metade arredonda para baixo (20/10)
+    machucado: v.pv < Math.floor(v.pvMax / 2),
     morrendo: v.pv <= 0,
-    perturbado: v.san < v.sanMax / 2,
+    perturbado: v.san < Math.floor(v.sanMax / 2),
     // quem não tem Sanidade (as criaturas: SAN 0 de 0) não enlouquece
     enlouquecendo: v.sanMax > 0 && v.san <= 0,
-    cansado: v.pe < v.peMax / 2,
+    cansado: v.pe < Math.floor(v.peMax / 2),
   };
 }
 

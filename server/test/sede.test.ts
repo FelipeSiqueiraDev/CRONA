@@ -370,7 +370,10 @@ describe('ficha: PV, PE e SAN', () => {
     v = applyVital(v, 'san', { max: 12, value: 99 });
     assert.equal(v.san, 12);
     assert.equal(vitalConditions(v).perturbado, false);
+    // a metade arredonda para baixo (20/10): com 5 PE a metade é 2; 2 não é abaixo dela, 1 é
     v = applyVital(v, 'pe', { delta: -3 });
+    assert.equal(vitalConditions(v).cansado, false);
+    v = applyVital(v, 'pe', { delta: -1 });
     assert.equal(vitalConditions(v).cansado, true);
   });
 

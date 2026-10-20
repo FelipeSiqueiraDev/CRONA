@@ -52,15 +52,16 @@ export const lerTamanho = (v: unknown): Tamanho | null => (typeof v === 'string'
 export interface Oposto {
   totalA: number;
   totalB: number;
-  /** "empate": os dois rolam de novo (LR p. 75) */
+  /** "empate" não acontece mais: na mesa, o empate favorece quem ataca (20/10; o livro manda rolar de novo, LR p. 75) */
   vencedor: 'a' | 'b' | 'empate';
   /** quanto o vencedor passou do outro */
   diferenca: number;
 }
 
 /**
- * Teste oposto: o maior total vence; no empate, os dois rolam de novo (LR p.
- * 75). Se só um lado tirou 20 natural, ele vence (REGRAS.md, seção 12).
+ * Teste oposto: o maior total vence; no empate, vence quem ataca (regra da mesa,
+ * 20/10; o livro manda rolar de novo, LR p. 75). Se só um lado tirou 20 natural,
+ * ele vence (REGRAS.md, seção 12).
  */
 export function resolverOposto(a: { d20: number; bonus: number }, b: { d20: number; bonus: number }): Oposto {
   const totalA = a.d20 + a.bonus;
@@ -69,7 +70,8 @@ export function resolverOposto(a: { d20: number; bonus: number }, b: { d20: numb
   const vinteB = b.d20 >= 20;
   let vencedor: Oposto['vencedor'];
   if (vinteA !== vinteB) vencedor = vinteA ? 'a' : 'b';
-  else vencedor = totalA > totalB ? 'a' : totalB > totalA ? 'b' : 'empate';
+  // o empate favorece quem ataca (20/10, o Felipe: "empate sempre favorece o ataque"; o livro manda rolar de novo, LR p. 75)
+  else vencedor = totalA >= totalB ? 'a' : 'b';
   return { totalA, totalB, vencedor, diferenca: Math.abs(totalA - totalB) };
 }
 
