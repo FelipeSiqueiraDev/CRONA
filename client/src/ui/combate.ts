@@ -374,7 +374,7 @@ export class CombateScreen {
     const enviar = (passou?: boolean) => {
       const n = Number(inp.value.trim());
       // sem o total digitado, os botões dizem o resultado: vale o mínimo para passar ou um a menos
-      const total = inp.value.trim() && Number.isFinite(n) ? Math.round(n) : passou ? m.dt + 1 : m.dt;
+      const total = inp.value.trim() && Number.isFinite(n) ? Math.round(n) : passou ? m.dt : m.dt - 1;
       this.acao({ tipo: 'massivo', alvo: m.alvo, total });
     };
     return h(
@@ -384,7 +384,7 @@ export class CombateScreen {
       h(
         'div',
         null,
-        h('p', null, h('b', null, `Dano massivo: ${nome} `), `tomou ${m.dano}${m.naoLetal ? ' de dano não letal' : ''} de uma vez (metade dos PV ou mais). Fortitude `, h('b', null, `DT ${m.dt}`), ` (15 + 2 a cada 10 de dano; LR p. 88). Empatar com a DT é falhar: o empate favorece o ataque.`),
+        h('p', null, h('b', null, `Dano massivo: ${nome} `), `tomou ${m.dano}${m.naoLetal ? ' de dano não letal' : ''} de uma vez (metade dos PV ou mais). Fortitude `, h('b', null, `DT ${m.dt}`), ` (15 + 2 a cada 10 de dano; LR p. 88). Igual ou maior que a DT passa.`),
         h('p', null, rola ? `${nome} rola: ${rola}.` : 'Sem ficha: o mestre rola a Fortitude.', ' ', m.naoLetal ? 'Se falhar, cai inconsciente (sem morrendo).' : 'Se falhar, vai a 0 PV: inconsciente e morrendo.'),
         h(
           'div',

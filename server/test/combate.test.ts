@@ -537,15 +537,12 @@ describe('combate: ataque, PE, condições e ritual', () => {
     assert.ok(c.registro.some((l) => l.texto === 'Dano massivo: Acólito faz Fortitude DT 19; se falhar, vai a 0 PV (LR p. 88).'));
     // o teste fica pendente até o mestre dizer o resultado (20/10)
     assert.deepEqual(c.massivos, [{ alvo: 11, dt: 19, dano: 20 }]);
-    // passou da DT: nada muda e a pendência some; empatar com a DT é falhar (o empate favorece o ataque, 20/10)
-    const empatou = combate.aplicar(c, { tipo: 'massivo', alvo: 11, total: 19 }, ctx());
-    assert.ok(empatou.ok);
-    assert.match(empatou.combate!.registro.at(-1)!.texto, /total 19 contra DT 19 — falhou/);
-    const passou = combate.aplicar(c, { tipo: 'massivo', alvo: 11, total: 20 }, ctx());
+    // igual à DT passa (LR p. 41): nada muda e a pendência some
+    const passou = combate.aplicar(c, { tipo: 'massivo', alvo: 11, total: 19 }, ctx());
     assert.ok(passou.ok);
     assert.equal(passou.combate!.massivos, undefined);
     assert.deepEqual(passou.vitais ?? [], []);
-    assert.equal(passou.combate!.registro.at(-1)!.texto, 'Acólito resiste ao dano massivo: Fortitude total 20 contra DT 19 — passou.');
+    assert.equal(passou.combate!.registro.at(-1)!.texto, 'Acólito resiste ao dano massivo: Fortitude total 19 contra DT 19 — passou.');
     // falhou: vai a 0 PV e deita
     vitais.set(11, { pv: 20, pvMax: 40 });
     const falhou = combate.aplicar(c, { tipo: 'massivo', alvo: 11, total: 12, d20: 7 }, ctx());
@@ -600,9 +597,9 @@ describe('combate: ataque, PE, condições e ritual', () => {
 });
 
 describe('manobras: regras puras', () => {
-  test('teste oposto: o maior vence; o empate favorece quem ataca (20/10); só um 20 natural vence (LR p. 75)', () => {
+  test('teste oposto: o maior vence; empate repete; só um 20 natural vence (LR p. 77, 87)', () => {
     assert.deepEqual(combate.resolverOposto({ d20: 12, bonus: 5 }, { d20: 9, bonus: 4 }), { totalA: 17, totalB: 13, vencedor: 'a', diferenca: 4 });
-    assert.equal(combate.resolverOposto({ d20: 10, bonus: 2 }, { d20: 8, bonus: 4 }).vencedor, 'a');
+    assert.equal(combate.resolverOposto({ d20: 10, bonus: 2 }, { d20: 8, bonus: 4 }).vencedor, 'empate');
     // 20 natural contra total maior
     assert.equal(combate.resolverOposto({ d20: 20, bonus: 0 }, { d20: 15, bonus: 10 }).vencedor, 'a');
     assert.equal(combate.resolverOposto({ d20: 20, bonus: 0 }, { d20: 20, bonus: 3 }).vencedor, 'b');
@@ -1207,9 +1204,9 @@ describe('metade e empate (20/10)', () => {
     assert.equal(combate.consequencia({ pv: 21, pvMax: 21 }, 11).machucado, false);
     assert.equal(combate.consequencia({ pv: 21, pvMax: 21 }, 12).machucado, true);
   });
-  test('o empate favorece o ataque: a resistência ao ritual precisa passar da DT', () => {
-    assert.equal(combate.resisteAoAtaque(10, 15, 15), false);
-    assert.equal(combate.resisteAoAtaque(10, 16, 15), true);
-    assert.equal(combate.resisteAoAtaque(20, 5, 15), true);
+  test('a resistência ao ritual é um teste contra DT: igual passa (LR p. 41, 123)', () => {
+    assert.equal(combate.passouResistencia(10, 15, 15), true);
+    assert.equal(combate.passouResistencia(10, 14, 15), false);
+    assert.equal(combate.passouResistencia(20, 5, 15), true);
   });
 });

@@ -197,7 +197,7 @@ export class ResolucaoRitual {
       const penalidade = base ? (base.penalidade ?? 0) + Math.min(0, el?.dados ?? 0) : 0;
       const d20 = this.e.d20[k] ?? null;
       const total = d20 !== null && base ? d20 + base.bonus : null;
-      const passou = res && d20 !== null && total !== null ? cb.resisteAoAtaque(d20, total, r.dt) : null;
+      const passou = res && d20 !== null && total !== null ? cb.passouResistencia(d20, total, r.dt) : null;
       // anula: passou, nada acontece; metade: metade do dano; parcial: o mestre diz
       const anulou = !!res && passou === true && (res.efeito === 'anula' || res.efeito === 'desacredita');
       const metade = !!res && passou === true && (res.efeito === 'metade' || (res.efeito === 'parcial' && !!this.e.metade[k]));
