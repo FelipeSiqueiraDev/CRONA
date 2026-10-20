@@ -65,23 +65,22 @@ describe('combate: montagem e iniciativa', () => {
     assert.equal(recusa(c, { tipo: 'abrir' }), 'Já existe um combate aberto nesta campanha.');
   });
 
-  test('só começa com a Iniciativa de todos os agentes e a do grupo do mestre', () => {
+  test('só começa com a Iniciativa de todos os seres, os do mestre também (cada um tem turno)', () => {
     let c = aplicar(null, { tipo: 'abrir' });
     assert.match(recusa(c, { tipo: 'comecar' }), /Falta a Iniciativa de Cora, Tepes, Catarina/);
     c = aplicar(c, { tipo: 'participante', id: 1, iniciativa: 22 });
     c = aplicar(c, { tipo: 'participante', id: 2, iniciativa: 18 });
     c = aplicar(c, { tipo: 'participante', id: 3, iniciativa: 12 });
-    assert.equal(recusa(c, { tipo: 'comecar' }), 'Falta a Iniciativa do grupo do mestre.');
+    assert.equal(recusa(c, { tipo: 'comecar' }), 'Falta a Iniciativa de Ocultista, Acólito.');
   });
 
-  test('ordem do maior para o menor, com um turno só para todos os seres do mestre (LR p. 83, 169)', () => {
+  test('ordem do maior para o menor, cada ser do mestre com o turno dele, mesmo com a mesma Iniciativa (21/10)', () => {
     const c = aplicar(montado(), { tipo: 'comecar' });
     assert.deepEqual(
       combate.entradas(c).map((e) => `${combate.nomeEntrada(c, e)} ${e.valor}`),
-      ['Cora 22', 'Tepes 18', 'Turno do mestre 14', 'Catarina 12'],
+      ['Cora 22', 'Tepes 18', 'Ocultista 14', 'Acólito 14', 'Catarina 12'],
     );
-    const m = combate.entrada(c, combate.ID_MESTRE)!;
-    assert.deepEqual(m.participantes, [10, 11]);
+    assert.deepEqual(combate.entrada(c, combate.idAgente(10))!.participantes, [10]);
     assert.equal(c.rodada, 1);
     assert.equal(vez(c), 'Cora');
   });
@@ -114,11 +113,11 @@ describe('combate: rodadas e turnos', () => {
   test('passar percorre a ordem e vira a rodada', () => {
     let c = aplicar(montado(), { tipo: 'comecar' });
     const vistos = [vez(c)];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       c = aplicar(c, { tipo: 'passar' });
       vistos.push(vez(c));
     }
-    assert.deepEqual(vistos, ['Cora', 'Tepes', 'Turno do mestre', 'Catarina', 'Cora']);
+    assert.deepEqual(vistos, ['Cora', 'Tepes', 'Ocultista', 'Acólito', 'Catarina', 'Cora']);
     assert.equal(c.rodada, 2);
     assert.ok(c.registro.some((l) => l.tipo === 'rodada' && l.texto === 'Rodada 2.'));
   });
@@ -129,18 +128,18 @@ describe('combate: rodadas e turnos', () => {
     c = aplicar(c, { tipo: 'comecar' });
     assert.ok(c.registro.some((l) => /Surpreendidos na rodada 1.*Catarina/.test(l.texto)));
     const ordem = [vez(c)];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       c = aplicar(c, { tipo: 'passar' });
       ordem.push(vez(c));
     }
     // rodada 1 sem a Catarina; na 2 ela entra na vez dela
-    assert.deepEqual(ordem, ['Cora', 'Tepes', 'Turno do mestre', 'Cora']);
-    c = aplicar(aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' }), { tipo: 'passar' });
+    assert.deepEqual(ordem, ['Cora', 'Tepes', 'Ocultista', 'Acólito', 'Cora']);
+    c = aplicar(aplicar(aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' }), { tipo: 'passar' }), { tipo: 'passar' });
     assert.equal(vez(c), 'Catarina');
     assert.equal(c.rodada, 2);
   });
 
-  test('o turno do mestre pula a rodada 1 se todos os seres dele foram surpreendidos', () => {
+  test('os turnos dos seres do mestre surpreendidos são pulados na rodada 1', () => {
     let c = montado();
     c = aplicar(c, { tipo: 'participante', id: 10, ciente: false });
     c = aplicar(c, { tipo: 'participante', id: 11, ciente: false });
@@ -155,11 +154,11 @@ describe('combate: rodadas e turnos', () => {
     c = aplicar(c, { tipo: 'atrasar', valor: 13 });
     assert.equal(vez(c), 'Tepes');
     const ordem = [vez(c)];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       c = aplicar(c, { tipo: 'passar' });
       ordem.push(vez(c));
     }
-    assert.deepEqual(ordem, ['Tepes', 'Turno do mestre', 'Cora', 'Catarina']);
+    assert.deepEqual(ordem, ['Tepes', 'Ocultista', 'Acólito', 'Cora', 'Catarina']);
     assert.equal(combate.participante(c, 1)?.iniciativa, 13);
   });
 
@@ -173,7 +172,7 @@ describe('combate: rodadas e turnos', () => {
 
   test('o último da rodada não tem como atrasar', () => {
     let c = aplicar(montado(), { tipo: 'comecar' });
-    for (let i = 0; i < 3; i++) c = aplicar(c, { tipo: 'passar' });
+    for (let i = 0; i < 4; i++) c = aplicar(c, { tipo: 'passar' });
     assert.equal(vez(c), 'Catarina');
     assert.equal(recusa(c, { tipo: 'atrasar', valor: 5 }), 'Ninguém mais age nesta rodada: não há como atrasar.');
   });
@@ -183,15 +182,15 @@ describe('combate: rodadas e turnos', () => {
     c = aplicar(c, { tipo: 'preparar', texto: 'atirar no primeiro que passar pela porta' });
     assert.equal(vez(c), 'Tepes');
     c = aplicar(c, { tipo: 'passar' });
-    assert.equal(vez(c), 'Turno do mestre');
+    assert.equal(vez(c), 'Ocultista');
     c = aplicar(c, { tipo: 'usarPreparada', entrada: combate.idAgente(1) });
     assert.equal(combate.participante(c, 1)?.iniciativa, 14);
-    // fica logo acima do mestre na ordem, e não age de novo nesta rodada
+    // fica logo acima de quem está na vez, e não age de novo nesta rodada
     assert.deepEqual(
       combate.entradas(c).map((e) => combate.nomeEntrada(c, e)),
-      ['Tepes', 'Cora', 'Turno do mestre', 'Catarina'],
+      ['Tepes', 'Cora', 'Ocultista', 'Acólito', 'Catarina'],
     );
-    c = aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' });
+    c = aplicar(aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' }), { tipo: 'passar' });
     assert.equal(c.rodada, 2);
     assert.equal(vez(c), 'Tepes');
   });
@@ -199,7 +198,7 @@ describe('combate: rodadas e turnos', () => {
   test('ação preparada não usada se perde no começo do próximo turno', () => {
     let c = aplicar(montado(), { tipo: 'comecar' });
     c = aplicar(c, { tipo: 'preparar', texto: 'esperar' });
-    for (let i = 0; i < 3; i++) c = aplicar(c, { tipo: 'passar' });
+    for (let i = 0; i < 4; i++) c = aplicar(c, { tipo: 'passar' });
     assert.equal(vez(c), 'Cora');
     assert.deepEqual(c.preparadas, []);
     assert.ok(c.registro.some((l) => l.texto === 'Cora não usou a ação preparada (esperar).'));
@@ -210,7 +209,7 @@ describe('combate: rodadas e turnos', () => {
     assert.equal(recusa(c, { tipo: 'entrar', id: 4, lado: 'agente' }), 'Diga a Iniciativa de quem chega.');
     c = aplicar(c, { tipo: 'entrar', id: 4, lado: 'agente', iniciativa: 30 });
     assert.equal(combate.participante(c, 4)?.desde, 2);
-    for (let i = 0; i < 3; i++) c = aplicar(c, { tipo: 'passar' });
+    for (let i = 0; i < 4; i++) c = aplicar(c, { tipo: 'passar' });
     assert.equal(vez(c), 'Catarina');
     c = aplicar(c, { tipo: 'passar' });
     assert.equal(c.rodada, 2);
@@ -234,15 +233,73 @@ describe('combate: ações do turno', () => {
     assert.deepEqual(combate.acoesDe(c, 2), { padrao: false, movimento: false, completa: false, pe: 0 });
   });
 
-  test('no turno do mestre, cada ser tem as próprias ações', () => {
+  test('cada ser do mestre tem o turno e as ações próprias', () => {
     let c = aplicar(montado(), { tipo: 'comecar' });
     c = aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' });
-    assert.equal(vez(c), 'Turno do mestre');
+    assert.equal(vez(c), 'Ocultista');
     c = aplicar(c, { tipo: 'declarar', qual: 'padrao', texto: 'Agredir', quem: 10 });
-    c = aplicar(c, { tipo: 'declarar', qual: 'padrao', texto: 'Agredir', quem: 11 });
     assert.equal(combate.acoesDe(c, 10).padrao, true);
+    assert.equal(recusa(c, { tipo: 'declarar', qual: 'padrao', texto: 'Agredir', quem: 11 }), 'Esse ser não está na vez.');
+    c = aplicar(c, { tipo: 'passar' });
+    assert.equal(vez(c), 'Acólito');
+    c = aplicar(c, { tipo: 'declarar', qual: 'padrao', texto: 'Agredir', quem: 11 });
     assert.equal(combate.acoesDe(c, 11).padrao, true);
-    assert.equal(recusa(c, { tipo: 'declarar', qual: 'padrao', texto: 'Agredir', quem: 1 }), 'Esse ser não está na vez.');
+    assert.equal(combate.acoesDe(c, 10).padrao, false);
+  });
+
+  test('seis seres com a mesma Iniciativa agem um a um; um morre no meio; atrasar um; a rodada vira (21/10)', () => {
+    const pecas: combate.PecaCombate[] = [{ id: 1, nome: 'Cora', agente: true, naCena: true }, ...[21, 22, 23, 24, 25, 26].map((id) => ({ id, nome: `Existido ${id - 20}`, agente: false, naCena: true }))];
+    const cx = (): combate.Contexto => ({ agora: relogio++, cena: 7, pecas, vitais: () => ({ pv: 20, pvMax: 20, pe: 5, peMax: 5, san: 20, sanMax: 20 }) });
+    const ap = (c: Combate | null, a: Acao) => {
+      const r = combate.aplicar(c, a, cx());
+      if (!r.ok) throw new Error(r.motivo);
+      return r.combate!;
+    };
+    let c = ap(null, { tipo: 'abrir' });
+    c = ap(c, { tipo: 'participante', id: 1, iniciativa: 20 });
+    for (const id of [21, 22, 23, 24, 25, 26]) c = ap(c, { tipo: 'participante', id, iniciativa: 12 });
+    c = ap(c, { tipo: 'comecar' });
+    const nomes = () => combate.entradas(c).map((e) => combate.nomeEntrada(c, e));
+    assert.deepEqual(nomes(), ['Cora', 'Existido 1', 'Existido 2', 'Existido 3', 'Existido 4', 'Existido 5', 'Existido 6']);
+    assert.equal(combate.empates(c).length, 0, 'empate só entre seres do mestre não pede rolagem');
+    c = ap(c, { tipo: 'passar' });
+    assert.equal(vez(c), 'Existido 1');
+    // o 2º morre (sai do combate) no meio: a vez segue para o 3º quando chega
+    c = ap(c, { tipo: 'sair', id: 22, motivo: 'morto' });
+    c = ap(c, { tipo: 'passar' });
+    assert.equal(vez(c), 'Existido 3');
+    // atrasar o 3º: age logo depois do último com valor menor ou igual
+    c = ap(c, { tipo: 'atrasar', valor: 11 });
+    assert.equal(vez(c), 'Existido 4');
+    const ordem = [vez(c)];
+    for (let i = 0; i < 3; i++) {
+      c = ap(c, { tipo: 'passar' });
+      ordem.push(vez(c));
+    }
+    assert.deepEqual(ordem, ['Existido 4', 'Existido 5', 'Existido 6', 'Existido 3']);
+    c = ap(c, { tipo: 'passar' });
+    assert.equal(c.rodada, 2);
+    assert.equal(vez(c), 'Cora');
+  });
+
+  test('combate salvo no formato antigo (turno do mestre) abre e vira turnos individuais', () => {
+    const c = aplicar(montado(), { tipo: 'comecar' });
+    // volta ao formato antigo: um lugar "mestre" com a Iniciativa do grupo
+    const velho = JSON.parse(JSON.stringify(c)) as Combate;
+    for (const p of velho.participantes) if (p.lado !== 'agente') p.iniciativa = null;
+    velho.mestre = { iniciativa: 14, desempate: 0 };
+    velho.vez = combate.ID_MESTRE;
+    velho.agiram = ['p:1', 'p:2'];
+    velho.comecaram = ['p:1', 'p:2', combate.ID_MESTRE];
+    const novo = combate.migrar(velho);
+    assert.equal(novo.mestre.iniciativa, null);
+    assert.deepEqual(combate.entradas(novo).map((e) => `${combate.nomeEntrada(novo, e)} ${e.valor}`), ['Cora 22', 'Tepes 18', 'Ocultista 14', 'Acólito 14', 'Catarina 12']);
+    assert.equal(vez(novo), 'Ocultista');
+    assert.deepEqual(novo.comecaram, ['p:1', 'p:2', 'p:10', 'p:11']);
+    // e continua funcionando
+    const depois = aplicar(novo, { tipo: 'passar' });
+    assert.equal(vez(depois), 'Acólito');
+    assert.deepEqual(combate.migrar(JSON.parse(JSON.stringify(novo))), novo);
   });
 
   test('defesa especial: uma por rodada, volta no começo do próprio turno (LR p. 88)', () => {
@@ -264,11 +321,11 @@ describe('combate: morrendo e enlouquecendo', () => {
     c = aplicar(c, { tipo: 'passar' });
     assert.equal(combate.participante(c, 2)?.morrendo, 1);
     assert.ok(c.registro.some((l) => l.texto === 'Tepes começa o turno morrendo (1/3).'));
-    for (let rodada = 0; rodada < 2; rodada++) for (let i = 0; i < 4; i++) c = aplicar(c, { tipo: 'passar' });
+    for (let rodada = 0; rodada < 2; rodada++) for (let i = 0; i < 5; i++) c = aplicar(c, { tipo: 'passar' });
     assert.equal(combate.participante(c, 2)?.fora, 'morto');
     assert.ok(c.registro.some((l) => /Tepes começou o 3º turno morrendo nesta cena e morreu/.test(l.texto)));
     // a vez pulou para o próximo
-    assert.equal(vez(c), 'Turno do mestre');
+    assert.equal(vez(c), 'Ocultista');
   });
 
   test('SAN 0: enlouquecendo; no 3º turno fica insano', () => {
@@ -276,7 +333,7 @@ describe('combate: morrendo e enlouquecendo', () => {
     vitais.set(1, { pv: 20, san: 0 });
     let c = aplicar(montado(), { tipo: 'comecar' });
     assert.equal(combate.participante(c, 1)?.enlouquecendo, 1);
-    for (let rodada = 0; rodada < 2; rodada++) for (let i = 0; i < 4; i++) c = aplicar(c, { tipo: 'passar' });
+    for (let rodada = 0; rodada < 2; rodada++) for (let i = 0; i < 5; i++) c = aplicar(c, { tipo: 'passar' });
     assert.equal(combate.participante(c, 1)?.enlouquecendo, 3);
     assert.equal(combate.participante(c, 1)?.fora, 'insano');
   });
@@ -287,9 +344,9 @@ describe('combate: morrendo e enlouquecendo', () => {
     c = aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' });
     assert.equal(combate.participante(c, 10)?.morrendo, 0);
     c = aplicar(c, { tipo: 'sair', id: 10, motivo: 'morto' });
-    assert.equal(vez(c), 'Turno do mestre');
+    assert.equal(vez(c), 'Acólito');
     c = aplicar(c, { tipo: 'sair', id: 11 });
-    // sem ninguém no turno do mestre, a vez passa
+    // sem ninguém dos seres do mestre, a vez passa
     assert.equal(vez(c), 'Catarina');
   });
 });
@@ -649,9 +706,8 @@ describe('combate: manobras', () => {
     assert.deepEqual(teste.destaque, ['venceu por 8']);
     assert.match(efeito.texto, /^Ocultista fica agarrado por Cora: desprevenido e imóvel/);
     assert.equal(recusa(c, man(1, 11, 'derrubar')), 'A ação padrão já foi usada neste turno.');
-    c = ate(c, 'Turno do mestre');
+    c = ate(c, 'Ocultista');
     assert.ok(c.registro.some((l) => l.texto === 'Ocultista está agarrado por Cora: soltar-se é ação padrão com teste de manobra (LR p. 85).'));
-    assert.match(recusa(c, man(11, 1, 'soltarse')), /Cora não está agarrando Acólito/);
     c = aplicar(c, man(10, 1, 'soltarse'));
     assert.equal(combate.participante(c, 1)?.agarra, undefined);
     assert.equal(combate.participante(c, 10)?.condicoes, undefined);
@@ -686,8 +742,8 @@ describe('combate: manobras', () => {
     c = aplicar(c, { tipo: 'passar' });
     c = aplicar(c, man(2, 11, 'empurrar', { diferenca: 11, empurrao: 6 }));
     assert.equal(c.registro.at(-1)?.texto, 'Acólito é empurrado 4,5 m; Tepes pode gastar uma ação de movimento para ir junto (LR p. 85).');
-    c = aplicar(c, { tipo: 'passar' });
-    // no turno do mestre, o Acólito tenta desarmar Catarina e perde
+    c = aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' });
+    // no turno dele, o Acólito tenta desarmar Catarina e perde
     c = aplicar(c, man(11, 3, 'desarmar', { venceu: false, diferenca: 3 }));
     assert.equal(c.registro.at(-1)?.texto, 'Acólito tenta desarmar Catarina: teste de manobra d20 15, total 20 contra d20 10, total 12 — Catarina venceu.');
   });
@@ -1017,7 +1073,7 @@ describe('correções da conferência de 01/10 (Veríssimo): o combate', () => {
     assert.deepEqual(combate.participante(c, 3)?.condicoes, ['inconsciente', 'caido']);
     assert.ok(texto(c).includes('Catarina cai inconsciente: o dano não letal passou dos PV, sem morrendo (LR p. 88).'));
     // o turno dela começa sem contar morrendo: os PV continuam 10
-    c = aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' });
+    c = aplicar(aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' }), { tipo: 'passar' });
     assert.equal(vez(c), 'Catarina');
     assert.equal(combate.participante(c, 3)?.morrendo, 0);
     // a cura tira primeiro o não letal: o mestre ajusta, e ela acorda
@@ -1046,7 +1102,7 @@ describe('correções da conferência de 01/10 (Veríssimo): o combate', () => {
     assert.equal(combate.participante(c, 1)?.morrendo, 1, 'o turno já tinha começado nesta rodada');
     assert.equal(c.registro.at(-1)?.texto, 'Cora age agora (tinha atrasado a vez).');
     // na rodada seguinte, conta de novo (a Iniciativa dela ficou em 17, depois do Tepes)
-    for (let i = 0; i < 4; i++) c = aplicar(c, { tipo: 'passar' });
+    for (let i = 0; i < 5; i++) c = aplicar(c, { tipo: 'passar' });
     assert.equal(c.rodada, 2);
     assert.equal(vez(c), 'Cora');
     assert.equal(combate.participante(c, 1)?.morrendo, 2);
@@ -1113,7 +1169,7 @@ describe('correções da conferência de 01/10 (Veríssimo): o combate', () => {
     vitais.set(1, { pv: 30, pvMax: 30, san: 15, sanMax: 15 });
     let c = aplicar(montado(), { tipo: 'comecar' });
     c = aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' });
-    assert.equal(vez(c), 'Turno do mestre');
+    assert.equal(vez(c), 'Ocultista');
     const r = combate.aplicar(c, golpe(10, 1, dano(9, 'morte'), { danoExtra: dano(5, 'mental') }), ctx());
     assert.ok(r.ok);
     assert.deepEqual(r.vitais, [{ id: 1, pv: 21, san: 10 }]);

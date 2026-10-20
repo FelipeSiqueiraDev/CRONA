@@ -257,9 +257,13 @@ describe('combate do jeito da mesa (20/10)', () => {
     const c = gm.last('combate')!.combate!;
     assert.deepEqual(c.participantes.find((p) => p.id === tepes)!.defesaTurno, [{ nome: 'Combate defensivo', valor: 5 }]);
     // passa a vez (Catarina) e o turno do mestre; na vez do Tepes de novo, a Defesa volta ao normal
+    // (cada ser do mestre tem o próprio turno: passa até a vez voltar ao Tepes)
     comb({ tipo: 'passar' });
-    comb({ tipo: 'passar' });
-    comb({ tipo: 'passar' });
+    hotel.pushNow();
+    for (let i = 0; i < 12 && gm.last('combate')!.combate!.vez !== `p:${tepes}`; i++) {
+      comb({ tipo: 'passar' });
+      hotel.pushNow();
+    }
     hotel.pushNow();
     const c2 = gm.last('combate')!.combate!;
     assert.equal(c2.vez, `p:${tepes}`, 'a vez voltou para o Tepes');

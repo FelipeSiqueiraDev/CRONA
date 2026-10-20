@@ -1777,6 +1777,7 @@ export class Hotel implements HotelApi {
         const key = Math.min(...group);
         const camp = this.campaignFor(key);
         this.religarCombate(group, camp);
+        if (camp.combate) cmb.migrar(camp.combate);
         const cb = camp.combate ?? null;
         const podeDesfazer = role === 'gm' && (this.desfazeres.get(key)?.length ?? 0) > 0;
         // as fichas das ameaças são só do mestre (DC-4)

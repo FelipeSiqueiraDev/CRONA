@@ -63,16 +63,43 @@ export function novoCombate(cena: number, pecas: PecaCombate[], agora: number): 
   };
 }
 
-/** A ordem de iniciativa: um lugar por agente e um para o mestre (se ele tiver seres), do maior para o menor. */
+/**
+ * A ordem de iniciativa: um turno por ser, do maior para o menor (21/10, o Felipe: "eu posso até escolher que todas elas tenham
+ * a mesma iniciativa, mas elas têm que ter turno individual"). Seres do mestre com o mesmo valor agem um depois do outro, na
+ * ordem em que ficaram no preparo (e pelo `desempate`).
+ */
 export function entradas(c: Combate): Entrada[] {
   const out: Entrada[] = [];
-  for (const p of c.participantes)
-    if (p.lado === 'agente' && p.iniciativa !== null) out.push({ id: idAgente(p.id), valor: p.iniciativa, desempate: p.desempate, participantes: [p.id], mestre: false });
+  for (const p of c.participantes) if (p.iniciativa !== null) out.push({ id: idAgente(p.id), valor: p.iniciativa, desempate: p.desempate, participantes: [p.id], mestre: false });
+  // empate que o desempate não resolveu: o agente vai antes; entre os do mestre vale a ordem do preparo (a ordenação é estável)
+  return out.sort((a, b) => b.valor - a.valor || b.desempate - a.desempate || Number(participante(c, a.participantes[0])?.lado !== 'agente') - Number(participante(c, b.participantes[0])?.lado !== 'agente'));
+}
+
+/**
+ * Combate salvo no formato antigo (um "turno do mestre" com a Iniciativa do grupo): cada ser do mestre passa a ter o próprio
+ * turno, com o valor do grupo; a vez, os que já agiram, os atrasados e as ações preparadas do "mestre" vão para os seres.
+ * Seguro de repetir.
+ */
+export function migrar(c: Combate): Combate {
+  const m = c.mestre;
+  const antigo = (m && m.iniciativa !== null) || c.vez === ID_MESTRE || c.agiram?.includes(ID_MESTRE) || c.comecaram?.includes(ID_MESTRE) || !!c.atrasados?.[ID_MESTRE] || c.preparadas?.some((x) => x.entrada === ID_MESTRE);
+  if (!antigo) return c;
   const doM = c.participantes.filter(doMestre);
-  if (doM.length && c.mestre.iniciativa !== null)
-    out.push({ id: ID_MESTRE, valor: c.mestre.iniciativa, desempate: c.mestre.desempate, participantes: doM.map((p) => p.id), mestre: true });
-  // empate que o desempate não resolveu: o agente vai antes (o mestre pede a rolagem de desempate na montagem)
-  return out.sort((a, b) => b.valor - a.valor || b.desempate - a.desempate || Number(a.mestre) - Number(b.mestre));
+  if (m && m.iniciativa !== null) for (const p of doM) if (p.iniciativa === null) ((p.iniciativa = m.iniciativa), (p.desempate = m.desempate));
+  if (m) m.iniciativa = null;
+  const ids = doM.map((p) => idAgente(p.id));
+  const primeiro = entradas(c).find((e) => ids.includes(e.id))?.id ?? ids[0] ?? null;
+  const troca = (lista: string[] | undefined) => (lista?.includes(ID_MESTRE) ? [...lista.filter((x) => x !== ID_MESTRE), ...ids.filter((x) => !lista.includes(x))] : lista);
+  if (c.vez === ID_MESTRE) c.vez = primeiro;
+  c.agiram = troca(c.agiram) ?? [];
+  if (c.comecaram) c.comecaram = troca(c.comecaram)!;
+  const guardado = c.atrasados?.[ID_MESTRE];
+  if (c.atrasados && guardado) {
+    for (const p of doM) c.atrasados[idAgente(p.id)] = { [String(p.id)]: guardado[String(p.id)] ?? livre() };
+    delete c.atrasados[ID_MESTRE];
+  }
+  for (const x of c.preparadas ?? []) if (x.entrada === ID_MESTRE && primeiro) x.entrada = primeiro;
+  return c;
 }
 
 export function entrada(c: Combate, id: string | null): Entrada | undefined {
@@ -108,7 +135,8 @@ export function empates(c: Combate): Entrada[][] {
   for (let i = 0; i < es.length; ) {
     let j = i + 1;
     while (j < es.length && es[j].valor === es[i].valor && es[j].desempate === es[i].desempate) j++;
-    if (j - i > 1) out.push(es.slice(i, j));
+    // entre seres do mestre o empate se resolve pela ordem do preparo; só pede rolagem quando um agente está no empate
+    if (j - i > 1 && es.slice(i, j).some((e) => participante(c, e.participantes[0])?.lado === 'agente')) out.push(es.slice(i, j));
     i = j;
   }
   return out;
@@ -148,7 +176,7 @@ function comecarTurno(c: Combate, e: Entrada, ctx: Contexto) {
   (c.comecaram ??= []).push(e.id);
   // a defesa especial volta no começo do próprio turno (DC-7)
   for (const p of ps) p.reacao = false;
-  registrar(c, ctx.agora, 'turno', e.mestre ? `Turno do mestre: ${ps.map((p) => p.nome).join(', ')}.` : `Vez de ${nomeEntrada(c, e)}.`);
+  registrar(c, ctx.agora, 'turno', `Vez de ${nomeEntrada(c, e)}.`);
   // ação preparada que não foi usada até aqui se perde (LR p. 86)
   const i = c.preparadas.findIndex((x) => x.entrada === e.id);
   if (i >= 0) {
@@ -245,13 +273,10 @@ function proximo(c: Combate, ctx: Contexto) {
 
 /** Muda a Iniciativa de um lugar (o agente, ou o grupo do mestre). */
 function porIniciativa(c: Combate, e: Entrada, valor: number, desempate: number) {
-  if (e.mestre) c.mestre = { iniciativa: valor, desempate };
-  else {
-    const p = participante(c, e.participantes[0]);
-    if (p) {
-      p.iniciativa = valor;
-      p.desempate = desempate;
-    }
+  const p = participante(c, e.participantes[0]);
+  if (p) {
+    p.iniciativa = valor;
+    p.desempate = desempate;
   }
 }
 
@@ -728,7 +753,7 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
     return { ok: true, combate: c };
   }
   if (!atual) return erro('Não há combate aberto.');
-  const c = clone(atual);
+  const c = migrar(clone(atual));
   const ok = (): Resultado => ({ ok: true, combate: c });
   const naVez = () => (c.fase === 'andamento' && c.vez ? entrada(c, c.vez) : undefined);
 
@@ -764,7 +789,6 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       const v = inteiro(a.iniciativa, -99, 999);
       const d = inteiro(a.desempate, -99, 99);
       if (v === undefined && d === undefined) return erro('Nada para mudar.');
-      if (p.lado !== 'agente' && v !== undefined) return erro('Os seres do mestre usam a Iniciativa do grupo.');
       const antes = p.iniciativa;
       if (v !== undefined) p.iniciativa = v;
       if (d !== undefined) p.desempate = d;
@@ -772,29 +796,25 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       return ok();
     }
 
+    // compatibilidade: a Iniciativa "do mestre" agora vale para cada ser dele (o turno é individual)
     case 'iniciativaMestre': {
       if (c.fase === 'encerrado') return erro('O combate já acabou.');
-      const antes = c.mestre.iniciativa;
-      if (a.valor === null) {
-        if (c.fase === 'andamento') return erro('Com o combate andando, o grupo do mestre precisa de Iniciativa.');
-        c.mestre.iniciativa = null;
-      } else {
-        const v = inteiro(a.valor, -99, 999);
-        if (v === undefined) return erro('Iniciativa inválida.');
-        c.mestre.iniciativa = v;
-      }
+      const v = a.valor === null ? null : inteiro(a.valor, -99, 999);
+      if (v === undefined) return erro('Iniciativa inválida.');
+      if (v === null && c.fase === 'andamento') return erro('Com o combate andando, cada ser precisa de Iniciativa.');
       const d = inteiro(a.desempate, -99, 99);
-      if (d !== undefined) c.mestre.desempate = d;
-      if (c.fase === 'andamento') registrar(c, ctx.agora, 'estado', `Iniciativa do grupo do mestre corrigida: ${antes ?? '—'} → ${c.mestre.iniciativa}.`);
+      for (const p of c.participantes.filter(doMestre)) {
+        p.iniciativa = v;
+        if (d !== undefined) p.desempate = d;
+      }
       return ok();
     }
 
     case 'comecar': {
       if (c.fase !== 'montando') return erro('O combate já começou.');
       if (!c.participantes.length) return erro('Ninguém no combate.');
-      const semIni = c.participantes.filter((p) => p.lado === 'agente' && p.iniciativa === null);
+      const semIni = c.participantes.filter((p) => p.iniciativa === null);
       if (semIni.length) return erro(`Falta a Iniciativa de ${semIni.map((p) => p.nome).join(', ')}.`);
-      if (c.participantes.some(doMestre) && c.mestre.iniciativa === null) return erro('Falta a Iniciativa do grupo do mestre.');
       c.fase = 'andamento';
       c.rodada = 1;
       c.agiram = [];
@@ -951,8 +971,7 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       if (p && !p.fora) return erro(`${p.nome} já está no combate.`);
       const lado: Lado = a.lado && LADOS.includes(a.lado) ? a.lado : peca.agente ? 'agente' : 'inimigo';
       const v = inteiro(a.iniciativa, -99, 999);
-      if (lado === 'agente' && v === undefined) return erro('Diga a Iniciativa de quem chega.');
-      if (lado !== 'agente' && c.mestre.iniciativa === null && v === undefined) return erro('O grupo do mestre ainda não tem Iniciativa: diga a de quem chega.');
+      if (v === undefined) return erro('Diga a Iniciativa de quem chega.');
       if (!p) {
         p = participanteNovo(peca, c.rodada + 1);
         c.participantes.push(p);
@@ -962,9 +981,8 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       }
       p.lado = lado;
       p.ciente = true;
-      if (lado === 'agente') p.iniciativa = v!;
-      else if (c.mestre.iniciativa === null) c.mestre.iniciativa = v!;
-      registrar(c, ctx.agora, 'estado', `${p.nome} entra no combate e age a partir da rodada ${c.rodada + 1}${lado === 'agente' ? `, com Iniciativa ${v}` : ', no turno do mestre'}.`);
+      p.iniciativa = v!;
+      registrar(c, ctx.agora, 'estado', `${p.nome} entra no combate e age a partir da rodada ${c.rodada + 1}, com Iniciativa ${v}.`);
       if (lado !== 'agente') lembrarPresenca(c, ctx, p);
       return ok();
     }
