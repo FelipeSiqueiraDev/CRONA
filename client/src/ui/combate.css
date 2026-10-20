@@ -2762,3 +2762,15 @@ button.cb-barra {
   padding-top: 1rem;
   border-top: 0.12rem solid rgba(161, 136, 115, 0.25);
 }
+
+/* o teste de Fortitude do dano massivo (20/10) */
+.cb-massivo .cb-massivo-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+.cb-massivo p + p {
+  margin-top: 0.3rem;
+}

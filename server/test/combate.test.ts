@@ -535,6 +535,22 @@ describe('combate: ataque, PE, condições e ritual', () => {
     // turno do mestre: um ser dele acerta o outro com dano massivo
     c = aplicar(c, golpe(10, 11, { dano: { formula: '4d8', soma: 20, total: 20, tipo: 'impacto', conta: '20', final: 20 } }));
     assert.ok(c.registro.some((l) => l.texto === 'Dano massivo: Acólito faz Fortitude DT 19; se falhar, vai a 0 PV (LR p. 88).'));
+    // o teste fica pendente até o mestre dizer o resultado (20/10)
+    assert.deepEqual(c.massivos, [{ alvo: 11, dt: 19, dano: 20 }]);
+    // passou: nada muda e a pendência some
+    const passou = combate.aplicar(c, { tipo: 'massivo', alvo: 11, total: 19 }, ctx());
+    assert.ok(passou.ok);
+    assert.equal(passou.combate!.massivos, undefined);
+    assert.deepEqual(passou.vitais ?? [], []);
+    assert.equal(passou.combate!.registro.at(-1)!.texto, 'Acólito resiste ao dano massivo: Fortitude total 19 contra DT 19 — passou.');
+    // falhou: vai a 0 PV e deita
+    vitais.set(11, { pv: 20, pvMax: 40 });
+    const falhou = combate.aplicar(c, { tipo: 'massivo', alvo: 11, total: 12, d20: 7 }, ctx());
+    assert.ok(falhou.ok);
+    assert.deepEqual(falhou.vitais, [{ id: 11, pv: 0 }]);
+    assert.ok(combate.participante(falhou.combate!, 11)?.condicoes?.includes('caido'));
+    assert.match(falhou.combate!.registro.at(-1)!.texto, /^Acólito não resiste ao dano massivo: Fortitude d20 7, total 12 contra DT 19 — falhou\. Vai a 0 PV/);
+    assert.equal(recusa(falhou.combate!, { tipo: 'massivo', alvo: 11, total: 30 }), 'Não há teste de dano massivo pendente para esse ser.');
   });
 
   test('defesa especial: só agentes, uma por rodada; erro no corpo a corpo lembra o contra-ataque', () => {

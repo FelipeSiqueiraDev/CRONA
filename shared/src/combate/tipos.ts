@@ -124,6 +124,11 @@ export interface Combate {
   /** quando começou (ms) */
   inicio: number;
   ultimo?: UltimoAtaque;
+  /**
+   * Testes de Fortitude do dano massivo esperando o resultado (LR p. 88): quem tomou de uma vez a metade dos PV totais ou
+   * mais e não foi a 0. Falhando, vai a 0 PV (o não letal: inconsciente, sem morrendo).
+   */
+  massivos?: { alvo: number; dt: number; dano: number; naoLetal?: boolean }[];
 }
 
 /** Um lugar na ordem de iniciativa: um agente, ou o turno do mestre com todos os seres dele. */
@@ -292,6 +297,8 @@ export type AcaoCombate =
   | { tipo: 'nota'; texto: string }
   /** ataque resolvido na tela: aplica o dano no alvo e escreve no registro */
   | { tipo: 'ataque'; ataque: AtaqueConfirmado }
+  /** o resultado do teste de Fortitude do dano massivo (o total que o jogador tirou), ou `descartar` */
+  | { tipo: 'massivo'; alvo: number; total?: number; d20?: number; descartar?: boolean }
   /** manobra resolvida na tela: teste oposto, condição no alvo e o dano de esmagar */
   | { tipo: 'manobra'; manobra: ManobraConfirmada }
   /** quem agarra solta o alvo (ação livre, LR p. 85) */

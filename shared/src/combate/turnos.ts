@@ -426,7 +426,10 @@ function aplicarDano(c: Combate, alvo: Participante, d: Record<string, unknown>,
     const q = consequenciaNaoLetal({ pv, pvMax: v.pvMax }, antes, final);
     alvo.naoLetal = q.naoLetal;
     registrar(c, ctx.agora, 'acao', `${nome} ${formula}: ${conta}. ${alvo.nome}: não letal ${antes} → ${q.naoLetal} (PV ${pv}${q.desmaiou ? ', inconsciente' : ''}).`, q.desmaiou ? ['inconsciente'] : undefined);
-    if (q.massivo) registrar(c, ctx.agora, 'estado', `Dano massivo: ${alvo.nome} faz Fortitude DT ${q.massivo}; se falhar, cai inconsciente, sem morrendo (o não letal não deixa morrendo; LR p. 88).`);
+    if (q.massivo) {
+      registrar(c, ctx.agora, 'estado', `Dano massivo: ${alvo.nome} faz Fortitude DT ${q.massivo}; se falhar, cai inconsciente, sem morrendo (o não letal não deixa morrendo; LR p. 88).`);
+      pedirMassivo(c, { alvo: alvo.id, dt: q.massivo, dano: final, naoLetal: true });
+    }
     if (q.desmaiou) {
       comCondicao(alvo, 'inconsciente');
       comCondicao(alvo, 'caido');
@@ -438,7 +441,10 @@ function aplicarDano(c: Combate, alvo: Participante, d: Record<string, unknown>,
   const estado = q.zerou ? '0 PV' : q.desmaiou ? 'inconsciente' : q.machucado ? 'machucado' : '';
   registrar(c, ctx.agora, 'acao', `${nome} ${formula}: ${conta}. ${alvo.nome}: PV ${pv} → ${q.pv}${estado ? ` (${estado})` : ''}.`, estado ? [estado] : undefined);
   if (q.pv !== pv) mudar(vitais, alvo.id, 'pv', q.pv);
-  if (q.massivo) registrar(c, ctx.agora, 'estado', `Dano massivo: ${alvo.nome} faz Fortitude DT ${q.massivo}; se falhar, vai a 0 PV (LR p. 88).`);
+  if (q.massivo) {
+    registrar(c, ctx.agora, 'estado', `Dano massivo: ${alvo.nome} faz Fortitude DT ${q.massivo}; se falhar, vai a 0 PV (LR p. 88).`);
+    pedirMassivo(c, { alvo: alvo.id, dt: q.massivo, dano: final });
+  }
   if (q.desmaiou) {
     comCondicao(alvo, 'inconsciente');
     comCondicao(alvo, 'caido');
@@ -448,6 +454,55 @@ function aplicarDano(c: Combate, alvo: Participante, d: Record<string, unknown>,
     comCondicao(alvo, 'caido');
     registrar(c, ctx.agora, 'estado', alvo.lado === 'agente' ? `${alvo.nome} cai inconsciente e morrendo (LR p. 88).` : `${alvo.nome} chegou a 0 PV: tire do combate (morte ou fora de combate, DC-16).`);
   }
+}
+
+/** Guarda o teste de Fortitude do dano massivo (um por ser: o mais novo vale, LR p. 88). */
+function pedirMassivo(c: Combate, m: { alvo: number; dt: number; dano: number; naoLetal?: boolean }) {
+  c.massivos = [...(c.massivos ?? []).filter((x) => x.alvo !== m.alvo), m];
+}
+
+/**
+ * O resultado do teste de Fortitude do dano massivo (20/10, o Felipe: "se falhar, ele cai para 0 PV, ficando
+ * inconsciente e morrendo"): passou, nada muda; falhou, os PV vão a 0 (no não letal, inconsciente sem morrendo).
+ */
+function massivo(c: Combate, a: Extract<AcaoCombate, { tipo: 'massivo' }>, ctx: Contexto): Resultado {
+  const erro = (motivo: string): Resultado => ({ ok: false, motivo });
+  const m = (c.massivos ?? []).find((x) => x.alvo === a.alvo);
+  if (!m) return erro('Não há teste de dano massivo pendente para esse ser.');
+  const p = participante(c, m.alvo);
+  c.massivos = (c.massivos ?? []).filter((x) => x !== m);
+  if (!c.massivos.length) delete c.massivos;
+  if (!p) return { ok: true, combate: c };
+  if (a.descartar) {
+    registrar(c, ctx.agora, 'estado', `Dano massivo de ${p.nome}: o mestre dispensou o teste.`);
+    return { ok: true, combate: c };
+  }
+  const total = inteiro(a.total, -99, 999);
+  if (total === undefined) return erro('Falta o total do teste de Fortitude.');
+  const d20 = inteiro(a.d20, 1, 20);
+  const rolou = `Fortitude ${d20 !== undefined ? `d20 ${d20}, ` : ''}total ${total} contra DT ${m.dt}`;
+  if (total >= m.dt) {
+    registrar(c, ctx.agora, 'acao', `${p.nome} resiste ao dano massivo: ${rolou} — passou.`, ['passou']);
+    return { ok: true, combate: c };
+  }
+  const vitais: MudancaVitais[] = [];
+  if (m.naoLetal) {
+    comCondicao(p, 'inconsciente');
+    comCondicao(p, 'caido');
+    registrar(c, ctx.agora, 'acao', `${p.nome} não resiste ao dano massivo: ${rolou} — falhou. Cai inconsciente, sem morrendo (dano não letal, LR p. 88).`, ['inconsciente']);
+    return { ok: true, combate: c };
+  }
+  const v = ctx.vitais(p.id);
+  if (v && v.pv > 0) mudar(vitais, p.id, 'pv', 0);
+  comCondicao(p, 'caido');
+  registrar(
+    c,
+    ctx.agora,
+    'acao',
+    `${p.nome} não resiste ao dano massivo: ${rolou} — falhou. ${p.lado === 'agente' ? 'Vai a 0 PV: inconsciente e morrendo' : 'Vai a 0 PV: tire do combate (DC-16)'} (LR p. 88).`,
+    ['0 PV'],
+  );
+  return { ok: true, combate: c, vitais };
 }
 
 /**
@@ -1006,6 +1061,9 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       return ok();
     }
 
+    case 'massivo':
+      return massivo(c, a, ctx);
+
     case 'vitais': {
       const p = participante(c, inteiro(a.id, 1, 1e9) ?? 0);
       if (!p) return erro('Essa peça não está no combate.');
@@ -1071,6 +1129,7 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
 
 const TIPOS = new Set<AcaoCombate['tipo']>([
   'ataque',
+  'massivo',
   'manobra',
   'ritual',
   'soltar',

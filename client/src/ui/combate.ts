@@ -356,6 +356,52 @@ export class CombateScreen {
     });
   }
 
+  /** Quantos testes de dano massivo já vimos (um novo abre a aba Efeitos e pendências sozinho). */
+  private massivosVistos = 0;
+
+  /**
+   * O cartão do dano massivo (20/10, o Felipe: "se falhar, ele cai para 0 PV, ficando inconsciente e morrendo"): quem
+   * faz, a DT (15 + 2 a cada 10 de dano), o que ele rola na Fortitude e a caixa do total; Passou e Falhou aplicam.
+   */
+  private cartaoMassivo(c: Combate, m: NonNullable<Combate['massivos']>[number]): HTMLElement {
+    const p = cb.participante(c, m.alvo);
+    const nome = p?.nome ?? 'O alvo';
+    const calc = this.calcDe(m.alvo);
+    const f = this.ameacaDe(m.alvo);
+    const fort = calc?.pericias.fortitude;
+    const rola = fort ? textoTeste(fort.dados, fort.bonus, fort.penalidadeDados) : f?.fortitude ? textoTeste(f.fortitude.dados, f.fortitude.bonus, 0) : null;
+    const inp = h('input', { class: 'cb-dado', type: 'text', inputmode: 'numeric', maxlength: 3, placeholder: '—', 'aria-label': 'Total da Fortitude' }) as HTMLInputElement;
+    const enviar = (passou?: boolean) => {
+      const n = Number(inp.value.trim());
+      // sem o total digitado, os botões dizem o resultado: vale o mínimo para passar ou um a menos
+      const total = inp.value.trim() && Number.isFinite(n) ? Math.round(n) : passou ? m.dt : m.dt - 1;
+      this.acao({ tipo: 'massivo', alvo: m.alvo, total });
+    };
+    return h(
+      'div',
+      { class: 'cb-pend-item ruim cb-massivo' },
+      h('span', { class: 'cb-pend-ic' }, icPintado('alerta')),
+      h(
+        'div',
+        null,
+        h('p', null, h('b', null, `Dano massivo: ${nome} `), `tomou ${m.dano}${m.naoLetal ? ' de dano não letal' : ''} de uma vez (metade dos PV ou mais). Fortitude `, h('b', null, `DT ${m.dt}`), ` (15 + 2 a cada 10 de dano; LR p. 88).`),
+        h('p', null, rola ? `${nome} rola: ${rola}.` : 'Sem ficha: o mestre rola a Fortitude.', ' ', m.naoLetal ? 'Se falhar, cai inconsciente (sem morrendo).' : 'Se falhar, vai a 0 PV: inconsciente e morrendo.'),
+        h(
+          'div',
+          { class: 'cb-massivo-linha' },
+          h('label', { class: 'cb-caixa-dado' }, h('small', null, 'total'), inp),
+          botao('Conferir', null, () => {
+            if (!inp.value.trim()) return toast('Digite o total da Fortitude, ou use Passou / Falhou.', 'error');
+            enviar();
+          }, 'cb-mini'),
+          botao('Passou', null, () => enviar(true), 'cb-mini'),
+          botao('Falhou', null, () => enviar(false), 'cb-mini'),
+          botao('Dispensar', null, () => this.acao({ tipo: 'massivo', alvo: m.alvo, descartar: true }), 'cb-mini'),
+        ),
+      ),
+    );
+  }
+
   /** Abre uma aba da gaveta de baixo (Alvo, Efeitos e pendências, Registro). */
   private abrirGaveta(id: 'alvo' | 'pend' | 'reg') {
     this.gavetaAba = id;
@@ -1696,6 +1742,9 @@ export class CombateScreen {
 
   private renderPend() {
     const c = this.combate;
+    const nMassivos = c?.massivos?.length ?? 0;
+    if (nMassivos > this.massivosVistos) this.abrirGaveta('pend');
+    this.massivosVistos = nMassivos;
     if (!this.mudou('pend', [c && { ...c, registro: c.registro.slice(-16) }, this.assinaturaPecas(), this.assinaturaFichas(), this.atorId])) return;
     const itens: HTMLElement[] = [];
     const item = (icone: NomeIcone, cls: string, texto: Node | string, ...extra: (Node | null)[]) =>
@@ -1734,6 +1783,8 @@ export class CombateScreen {
         const t = h('span', null, h('b', null, `Começo do turno ${dono}: `), doTurno.length ? doTurno.join(' ') : 'nada pendente.');
         itens.push(item(doTurno.length ? 'alerta' : 'ok', doTurno.length ? 'aviso' : 'bom', t));
       } else itens.push(item('alerta', 'aviso', 'Ninguém pode agir: ponha alguém no combate ou encerre.'));
+      // o teste de Fortitude do dano massivo (LR p. 88): na frente de tudo, com a caixa do total e o resultado
+      for (const m of c.massivos ?? []) itens.unshift(this.cartaoMassivo(c, m));
       for (const d of depois) itens.push(item('alerta', 'ruim', h('span', null, h('b', null, 'Da última ação: '), d)));
       for (const p of c.participantes) {
         const cond = vitalConditions(this.vitais(p.id));
