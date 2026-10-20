@@ -1,0 +1,1610 @@
+/* =====================================================================
+   COMBATE: a tela nova, em cards (21/10, pedido do Felipe; carregado depois do combateRapido.css)
+   "Para batalhas ainda vamos usar as miniaturas": o tabuleiro sai da aba. Em cima a faixa da iniciativa (a mesma de
+   hoje); embaixo três colunas: à ESQUERDA o cardzão de quem age, no MEIO o menu da vez (com a lista de alvos) e à DIREITA
+   o cardzão do alvo, com o que importa para a defesa. O preparo é em dois cards (Marcados e NPCs e ameaças). A gaveta
+   (Efeitos e pendências, Registro) vira uma barra embaixo que abre por cima das colunas.
+   Tudo em rem da escala 1672x941. A tela de hoje não muda: tudo aqui vale só com .cb-modo-cards no palco.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------- o que cada tela mostra */
+.cb-palco:not(.cb-modo-cards) > .cc-novo,
+.cb-palco:not(.cb-modo-cards) .cb-gav-desfazer {
+  display: none !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards > .cb-tab {
+  display: none !important;
+}
+.cb-modo-cards .cb-gav-aba[data-aba='alvo'] {
+  display: none;
+}
+
+/* as colunas (a faixa da iniciativa, de uma ponta à outra) */
+html:not(.modo-ficha) .cb-palco.cb-modo-cards > .cb-ini {
+  left: 0.8rem !important;
+  top: 8.8rem !important;
+  width: 165.6rem !important;
+  height: 14.2rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards > .cc-ator-p {
+  position: absolute;
+  left: 0.8rem;
+  top: 23.8rem;
+  width: 37.4rem;
+  height: 64.4rem;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards > .cb-res {
+  left: 39rem !important;
+  top: 23.8rem !important;
+  width: 89.4rem !important;
+  height: 64.4rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards > .cc-alvo-p {
+  position: absolute;
+  left: 129.2rem;
+  top: 23.8rem;
+  width: 37.2rem;
+  height: 64.4rem;
+}
+/* o preparo: dois cards no lugar de tudo */
+html:not(.modo-ficha) .cb-palco.cb-modo-cards > .cc-mont-p {
+  position: absolute;
+  left: 0.8rem;
+  top: 8.8rem;
+  width: 165.6rem;
+  height: 79.4rem;
+  display: flex;
+  pointer-events: auto;
+}
+.cb-palco.cb-modo-cards[data-fase='montando'] > :is(.cb-ini, .cb-res, .cc-ator-p, .cc-alvo-p) {
+  display: none !important;
+}
+/* sem combate (ou já encerrado): só o convite, na largura toda */
+.cb-palco.cb-modo-cards[data-fase='sem'] > :is(.cb-ini, .cc-ator-p, .cc-alvo-p) {
+  display: none !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards[data-fase='sem'] > .cb-res {
+  left: 0.8rem !important;
+  top: 8.8rem !important;
+  width: 165.6rem !important;
+  height: 79.4rem !important;
+}
+.cb-palco.cb-modo-cards:not([data-fase='montando']) > .cc-mont-p {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------------- a gaveta de baixo: barra fechada, ou aberta por cima */
+html:not(.modo-ficha) .cb-palco.cb-modo-cards > .cb-gaveta {
+  left: 0.8rem;
+  top: 89.1rem;
+  width: 165.6rem;
+  height: 4.2rem;
+  z-index: 6;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards > .cb-gaveta.aberta {
+  top: 46rem;
+  height: 47.3rem;
+  box-shadow: var(--h-janela-sombra), 0 -1.4rem 3rem rgba(0, 0, 0, 0.55);
+}
+.cb-modo-cards .cb-gaveta:not(.aberta) > .cb-p {
+  display: none !important;
+}
+.cb-modo-cards .cb-gaveta .cb-gav-abas {
+  flex: none;
+  align-items: center;
+  height: 4.2rem;
+  padding-top: 0 !important;
+  padding-bottom: 0.2rem;
+  border-bottom-width: 0;
+}
+.cb-modo-cards .cb-gaveta.aberta .cb-gav-abas {
+  border-bottom-width: 0.15rem;
+}
+.cb-modo-cards .cb-gaveta .cb-gav-aba {
+  align-self: center;
+  border: 0.15rem solid rgba(161, 136, 115, 0.3);
+  border-radius: 0.6rem;
+  padding: 0.5rem 1.1rem;
+}
+.cb-modo-cards .cb-gaveta .cb-gav-aba:hover {
+  border-color: rgba(233, 169, 68, 0.75);
+}
+.cb-modo-cards .cb-gaveta .cb-gav-aba.on {
+  border-color: var(--r-ouro-hi, #ffd27a);
+}
+.cb-gav-esp {
+  flex: 1;
+}
+/* a chave da tela: sempre na ponta da barra, longe dos botões do título dos painéis (que ficam no canto) */
+.cb-chave-tela {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: center;
+  height: 3rem;
+  margin-right: 8.5rem;
+  padding: 0 1.1rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.55);
+  border-radius: 99rem;
+  background: rgba(11, 21, 38, 0.9);
+  color: var(--r-texto-2, #cdbfa9);
+  font: 600 1.1rem / 1 var(--r-pixel);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.cb-chave-tela .ic {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.cb-chave-tela:hover {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cb-modo-cards .cb-chave-tela {
+  margin-right: 0.8rem;
+}
+.cb-modo-cards .cb-gav-desfazer {
+  align-self: center;
+  flex: none;
+  height: 3rem;
+  min-height: 0;
+  padding: 0 1.2rem;
+  margin-right: 0.8rem;
+  font-size: 1.1rem;
+}
+.cb-modo-cards .cb-gav-desfazer :is(.ic, .arte-ic, .arte-ic img) {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+/* o Desfazer fica na barra: o do registro sai */
+.cb-modo-cards .cb-reg > .cb-desfazer {
+  display: none;
+}
+/* com a gaveta aberta, o título do painel (o lápis do registro) fica no canto das abas, à esquerda da chave */
+html:not(.modo-ficha) .cb-modo-cards .cb-gaveta .cb-p > .cb-tit {
+  right: 31rem;
+}
+
+/* ---------------------------------------------------------------- a janela dos cards do preparo */
+html:not(.modo-ficha) .cc-janela {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: var(--h-borda) solid #a18873;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, rgba(13, 24, 43, 0.97), rgba(5, 11, 20, 0.97) 42%);
+  box-shadow: var(--h-janela-sombra);
+}
+html:not(.modo-ficha) .cc-janela > .cb-tit {
+  margin-inline: var(--h-respiro, 1.4rem);
+  padding-top: 1.4rem;
+}
+
+/* ---------------------------------------------------------------- os cardzões */
+.cc-corpo {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.6rem 1.2rem 1.4rem;
+}
+.cc-perfil {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+.cc-id {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+}
+.cc-foto {
+  flex: none;
+  width: 10.6rem;
+  height: 11.6rem;
+  border-radius: 0.9rem !important;
+}
+.cc-foto canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+.cc-id-txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.2rem;
+}
+.cc-nome {
+  font: 700 2.1rem / 1.1 var(--r-pixel);
+  color: var(--r-ouro-hi, #ffd27a);
+  text-shadow: var(--r-sombra-pixel);
+  overflow-wrap: anywhere;
+}
+.cc-sub {
+  font: 500 1.25rem / 1.3 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-etqs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.cc-etq {
+  padding: 0.2rem 0.7rem;
+  border: 0.12rem solid rgba(161, 136, 115, 0.5);
+  border-radius: 99rem;
+  font: 600 1.05rem / 1.2 var(--r-pixel);
+  color: var(--r-texto-2, #cdbfa9);
+  white-space: nowrap;
+}
+.cc-etq.lado-agente {
+  border-color: #3fc6ff;
+  color: #7bd9ff;
+}
+.cc-etq.lado-inimigo {
+  border-color: #ff3b35;
+  color: #ff8a73;
+}
+.cc-etq.lado-neutro {
+  border-color: #b9b3a8;
+  color: #cfc8bb;
+}
+.cc-etq.ruim {
+  border-color: #ff3b35;
+  color: #ff8a73;
+}
+.cc-etq.aviso {
+  border-color: #e9a944;
+  color: #f3c060;
+}
+.cc-etq.ritual {
+  border-color: #b783ff;
+  color: #d3b3ff;
+}
+.cc-recs1 {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+.cc-recs2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+.cc-caixas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.4rem, 1fr));
+  gap: 0.6rem;
+}
+.cc-caixas .cb-caixa small {
+  white-space: normal;
+}
+.cc-conta {
+  margin: -0.3rem 0 0;
+  font: 400 1.15rem / 1.4 var(--r-corpo);
+  color: var(--r-texto-3, #b9b0a0);
+}
+.cc-conta em {
+  font-style: normal;
+  color: #f3c060;
+}
+.cc-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.cc-sec-tit {
+  margin: 0;
+  padding-bottom: 0.3rem;
+  border-bottom: 0.12rem solid rgba(161, 136, 115, 0.3);
+  font: 700 1.1rem / 1 var(--r-pixel);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--r-ouro, #e9a944);
+}
+.cc-turno {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.cc-perfil .cb-acoes-chips {
+  flex-wrap: wrap;
+}
+.cc-conds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.cc-testes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.cc-teste {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.4rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.45);
+  border-radius: 0.8rem;
+  background: rgba(11, 21, 38, 0.9);
+}
+.cc-teste b {
+  font: 700 1.5rem / 1 var(--r-pixel);
+  color: var(--r-texto, #f1ead9);
+  text-shadow: var(--r-sombra-pixel);
+  white-space: nowrap;
+}
+.cc-teste small {
+  font: 500 1.05rem / 1 var(--r-pixel);
+  color: var(--r-texto-3, #b9b0a0);
+}
+.cc-linha {
+  margin: 0;
+  font: 400 1.25rem / 1.4 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-linha b {
+  color: var(--r-ouro-hi, #ffd27a);
+  font-weight: 600;
+}
+.cc-linha.bom {
+  color: #79d98f;
+}
+.cc-linha.ruim {
+  color: #ff8a73;
+}
+.cc-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cc-atq,
+.cc-pod {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.15rem 0.7rem;
+  padding: 0.55rem 0.8rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.35);
+  border-radius: 0.7rem;
+  background: rgba(11, 21, 38, 0.7);
+}
+.cc-atq.fora {
+  opacity: 0.55;
+  border-style: dashed;
+}
+.cc-atq b,
+.cc-pod b {
+  font: 700 1.3rem / 1.2 var(--r-pixel);
+  color: var(--r-texto, #f1ead9);
+  overflow-wrap: anywhere;
+}
+.cc-atq-teste,
+.cc-pod em {
+  font: 700 1.2rem / 1.2 var(--r-pixel);
+  font-style: normal;
+  color: var(--r-ouro-hi, #ffd27a);
+  white-space: nowrap;
+}
+.cc-atq small,
+.cc-pod small,
+.cc-pod i {
+  grid-column: 1 / -1;
+  font: 400 1.15rem / 1.35 var(--r-corpo);
+  font-style: normal;
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-pod i {
+  color: var(--r-texto-3, #b9b0a0);
+}
+.cc-vazio-txt,
+.cc-nota {
+  margin: 0;
+  font: 400 1.2rem / 1.4 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-convite {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 1.6rem;
+  text-align: center;
+}
+.cc-convite-ic .ic {
+  width: 6.4rem;
+  height: 6.4rem;
+  color: var(--r-ouro, #e9a944);
+  animation: cr-mira 1.8s ease-in-out infinite;
+}
+.cc-convite b {
+  font: 700 1.9rem / 1.2 var(--r-pixel);
+  color: var(--r-ouro-hi, #ffd27a);
+  text-shadow: var(--r-sombra-pixel);
+}
+.cc-convite small {
+  font: 400 1.3rem / 1.45 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+
+/* ---------------------------------------------------------------- o meio: quem age e a lista de alvos */
+.cc-topo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  flex: none;
+  min-width: 0;
+}
+.cc-topo:empty {
+  display: none;
+}
+.cc-topo .cb-quem {
+  gap: 0.6rem;
+}
+html:not(.modo-ficha) .cc-topo .cb-quem-bt {
+  height: 3.4rem;
+  padding: 0 1.3rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.5);
+  border-radius: 99rem;
+  background: rgba(11, 21, 38, 0.92);
+  color: var(--r-texto-2, #cdbfa9) !important;
+  font: 600 1.25rem / 1 var(--r-pixel);
+  cursor: pointer;
+}
+html:not(.modo-ficha) .cc-topo .cb-quem-bt.on {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  background: radial-gradient(ellipse at 30% 50%, rgba(233, 169, 68, 0.25), transparent 70%), rgba(11, 21, 38, 0.92);
+  color: var(--r-ouro-hi, #ffd27a) !important;
+}
+.cc-alvos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.7rem 0.9rem 0.6rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.3);
+  border-radius: 0.8rem;
+  background: rgba(11, 21, 38, 0.55);
+}
+.cc-alvos-cab {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+.cc-alvos-cab b {
+  font: 700 1.15rem / 1 var(--r-pixel);
+  letter-spacing: 0.1em;
+  color: var(--r-ouro, #e9a944);
+}
+.cc-alvos-cab small {
+  font: 500 1.2rem / 1.2 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-alvos-lista {
+  display: flex;
+  gap: 0.7rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.3rem 0.2rem 0.5rem;
+  scrollbar-width: none;
+  cursor: grab;
+}
+.cc-alvos-lista::-webkit-scrollbar {
+  display: none;
+}
+.cc-alvos-lista.arrastando {
+  cursor: grabbing;
+  user-select: none;
+}
+.cc-alvo-card {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 21rem;
+  height: 7.4rem;
+  padding: 0.5rem 3.6rem 0.5rem 0.9rem;
+  border: var(--h-borda) solid rgba(161, 136, 115, 0.45);
+  border-left: 0.6rem solid #b9b3a8;
+  border-radius: var(--h-raio);
+  background: rgba(11, 21, 38, 0.92);
+  color: var(--r-texto, #f1ead9);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.cc-alvo-card.lado-agente {
+  border-left-color: #3fc6ff;
+}
+.cc-alvo-card.lado-inimigo {
+  border-left-color: #ff3b35;
+}
+.cc-alvo-card:hover {
+  border-color: rgba(233, 169, 68, 0.75);
+}
+.cc-alvo-card.on {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  background: linear-gradient(90deg, rgba(233, 169, 68, 0.22), rgba(20, 36, 64, 0.96) 55%);
+  box-shadow: 0 0 1.2rem rgba(255, 196, 90, 0.25);
+}
+html:not(.modo-ficha) .cc-alvo-foto {
+  flex: none;
+  width: 5rem !important;
+  height: 5rem !important;
+  border-radius: 50% !important;
+}
+.cc-alvo-foto canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+.cc-alvo-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.cc-alvo-txt b {
+  max-width: 14rem;
+  font: 700 1.4rem / 1.1 var(--r-pixel);
+  color: var(--r-texto, #f1ead9);
+  white-space: nowrap;
+}
+.cc-alvo-nums {
+  display: flex;
+  gap: 0.9rem;
+  font: 600 1.15rem / 1 var(--r-pixel);
+  color: var(--r-texto-2, #cdbfa9);
+  white-space: nowrap;
+}
+.cc-alvo-pv {
+  color: #f0503f;
+}
+.cc-alvo-barra {
+  display: block;
+  height: 0.7rem;
+  border-radius: 0.2rem;
+  background: #2a3446;
+  overflow: hidden;
+}
+.cc-alvo-barra i {
+  display: block;
+  width: calc(var(--p, 0) * 100%);
+  height: 100%;
+  background: linear-gradient(180deg, #e2403c, #c52824);
+  transition: width 0.35s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+.cc-alvo-estado {
+  font: 600 1rem / 1 var(--r-pixel);
+  color: #f3c060;
+  white-space: nowrap;
+}
+.cc-alvo-selo {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.8rem;
+  font: 700 1rem / 1 var(--r-pixel);
+  letter-spacing: 0.08em;
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cc-alvo-marca {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0.2rem solid rgba(161, 136, 115, 0.7);
+  border-radius: 0.4rem;
+  font: 700 1.6rem / 1 var(--r-pixel);
+  color: #2b1606;
+}
+.cc-alvo-marca.on {
+  background: var(--h-ouro);
+  border-color: #3a1e08;
+}
+/* o menu da vez: as seis ações numa fileira só (as cartas de arma e de manobra rolam por dentro, sem cortar) */
+.cb-modo-cards .cb-res .cb-res-corpo {
+  overflow-x: hidden;
+}
+.cb-modo-cards .cb-res .vez-acoes {
+  gap: 2rem 1rem;
+}
+.cb-modo-cards .cb-res .vez-acoes > * {
+  flex: 0 0 13rem;
+}
+
+/* ---------------------------------------------------------------- o preparo: Marcados e NPCs e ameaças */
+.cc-mont-corpo {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+.cc-mont {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.cc-mont-cards {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.8rem;
+}
+.cc-mont-n {
+  font: 600 1.15rem / 1 var(--r-pixel);
+  color: var(--r-texto-3, #b9b0a0);
+}
+.cc-mont-dica {
+  margin: 0.4rem 1.4rem 0;
+  font: 400 1.25rem / 1.4 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-mont-mestre {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.6rem 1.4rem 0;
+  padding: 0.6rem 1rem;
+  border: 0.15rem solid rgba(233, 169, 68, 0.6);
+  border-radius: 0.8rem;
+  background: rgba(233, 169, 68, 0.08);
+}
+.cc-mont-mestre .cb-mont-rot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: none;
+}
+.cc-mont-mestre .cb-mont-rot b {
+  font: 700 1.3rem / 1.1 var(--r-pixel);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cc-mont-mestre .cb-mont-rot .ic {
+  width: 2.2rem;
+  height: 2.2rem;
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cc-mont-mestre small {
+  flex: 1;
+  min-width: 0;
+  font: 400 1.15rem / 1.35 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-mont-cab,
+.cc-mont-linha {
+  display: grid;
+  grid-template-columns: 2.4rem 5rem minmax(0, 1fr) 11.2rem 12.4rem 16.6rem;
+  align-items: center;
+  gap: 0.8rem;
+}
+.cc-mont-cab {
+  margin: 0.8rem 1.4rem 0;
+  padding: 0 1rem;
+  font: 600 1rem / 1 var(--r-pixel);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--r-texto-3, #b9b0a0);
+}
+.cc-mont-lista {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.6rem 1.2rem 1.2rem;
+}
+.cc-mont-linha {
+  flex: none;
+  padding: 0.6rem 1rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.35);
+  border-radius: 0.8rem;
+  background: rgba(11, 21, 38, 0.7);
+}
+.cc-mont-linha.fora {
+  opacity: 0.62;
+}
+.cc-mont-linha:not(.fora) {
+  border-color: rgba(233, 169, 68, 0.55);
+  background: linear-gradient(90deg, rgba(233, 169, 68, 0.1), rgba(11, 21, 38, 0.8) 40%);
+}
+html:not(.modo-ficha) .cc-mont-linha .cb-foto {
+  width: 5rem !important;
+  height: 5rem !important;
+  border-radius: 50% !important;
+}
+.cc-mont-linha .cb-foto canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+.cc-mont-linha .cb-mont-nome {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cc-mont-linha .cb-mont-nome b {
+  font: 700 1.4rem / 1.15 var(--r-pixel);
+  color: var(--r-texto, #f1ead9);
+  overflow-wrap: anywhere;
+}
+.cc-mont-linha .cb-mont-nome small {
+  font: 400 1.1rem / 1.3 var(--r-corpo);
+  color: var(--r-texto-3, #b9b0a0);
+}
+.cc-mont-linha .cb-check {
+  width: 2.2rem;
+  height: 2.2rem;
+  accent-color: #e9a944;
+}
+html:not(.modo-ficha) .cc-mont-linha select.cb-sel {
+  width: 100%;
+  height: 3.4rem;
+  font: 600 1.15rem / 1 var(--r-pixel);
+}
+html:not(.modo-ficha) .cc-mont-linha .cb-ciente {
+  height: 3.4rem;
+  padding: 0 0.6rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.5);
+  border-radius: 0.6rem;
+  background: rgba(6, 12, 22, 0.9);
+  color: var(--r-texto, #f1ead9);
+  font: 600 1.15rem / 1 var(--r-pixel);
+  cursor: pointer;
+}
+html:not(.modo-ficha) .cc-mont-linha .cb-ciente:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+html:not(.modo-ficha) .cc-mont-linha .cb-ciente.surpreso {
+  border-color: #ff3b35;
+  background: linear-gradient(180deg, #8e2a24, #5c1612);
+  color: #fff;
+}
+.cc-mont-linha .cb-ini-campo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.cc-mont-linha .cb-ini-campo small {
+  font: 400 1.05rem / 1.25 var(--r-corpo);
+  color: var(--r-texto-3, #b9b0a0);
+}
+.cc-mont-linha .cb-ini-mestre {
+  font: 400 1.1rem / 1.3 var(--r-corpo);
+  color: var(--r-texto-3, #b9b0a0);
+}
+.cc-mont-pe {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem 1.4rem;
+  padding: 0.9rem 1.4rem;
+  border: var(--h-borda) solid #a18873;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, rgba(13, 24, 43, 0.97), rgba(5, 11, 20, 0.97));
+  box-shadow: var(--h-janela-sombra);
+}
+.cc-mont-resumo {
+  font: 600 1.2rem / 1.2 var(--r-pixel);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-mont-esp {
+  flex: 1;
+}
+.cc-mont-pe .cb-empate {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font: 400 1.2rem / 1.3 var(--r-corpo);
+  color: #f3c060;
+}
+
+/* =====================================================================
+   O MEIO EM PASSOS (21/10, o Felipe: "uma coisa de cada vez, tudo grande"): O que vai fazer? > Com o quê? > Contra quem?
+   > Rolagem > Resultado. Só o passo de agora aparece, com cartões grandes; os já feitos voltam com um toque.
+   ===================================================================== */
+.cc-passos {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cc-passos li > :is(button, div) {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 4.6rem;
+  padding: 0.5rem 1rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.3);
+  border-radius: 0.8rem;
+  background: rgba(11, 21, 38, 0.55);
+  color: var(--r-texto-3, #a3978a);
+  text-align: left;
+  font: 600 1.35rem / 1.15 var(--r-pixel);
+}
+.cc-passos li > button {
+  cursor: pointer;
+  color: var(--r-texto-2, #cdbfa9);
+  border-color: rgba(161, 136, 115, 0.55);
+  transition: border-color 0.2s, color 0.2s;
+}
+.cc-passos li > button:hover {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cc-passos span {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: 0.18rem solid currentColor;
+  border-radius: 50%;
+  font: 700 1.5rem / 1 var(--r-pixel);
+}
+.cc-passos b {
+  font-weight: 600;
+}
+.cc-passos li.feito span {
+  background: rgba(233, 169, 68, 0.2);
+}
+.cc-passos li.atual > div {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  background: linear-gradient(90deg, rgba(233, 169, 68, 0.25), rgba(20, 36, 64, 0.96));
+  color: var(--r-ouro-hi, #ffd27a);
+  box-shadow: 0 0 1.2rem rgba(255, 196, 90, 0.25);
+}
+.cc-passos li.atual span {
+  background: var(--h-ouro);
+  border-color: #3a1e08;
+  color: #2b1606;
+}
+
+/* os cartões de ação e de arma: três por fileira, grandes, ocupando a largura toda */
+html:not(.modo-ficha) .cb-modo-cards .cb-res .vez-pergunta {
+  margin: 0.2rem 0 0;
+  font: 700 2.4rem / 1.15 var(--r-pixel);
+  color: var(--r-ouro-hi, #ffd27a);
+  text-shadow: var(--r-sombra-pixel);
+}
+.cb-modo-cards .cb-res :is(.vez-acoes, .vez-cartoes) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-content: stretch;
+  gap: 2.2rem 1.8rem;
+  padding: 1.6rem 0.8rem 1rem;
+}
+.cb-modo-cards .cb-res :is(.vez-acoes, .vez-cartoes) > * {
+  flex: none;
+  min-height: 18rem;
+  padding: 1.6rem 1rem 0.9rem;
+  gap: 0.7rem;
+}
+.cb-modo-cards .cb-res .card-tit {
+  max-width: 100%;
+  padding: 0 2.6rem;
+  font-size: 1.95rem;
+  line-height: 1.15;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.cb-modo-cards .cb-res .card-quadro {
+  width: 8.8rem;
+  height: 8.8rem;
+  padding: 1.1rem;
+}
+.cb-modo-cards .cb-res .card-placa {
+  font-size: 1.55rem !important;
+}
+.cb-modo-cards .cb-res .card-pe {
+  padding: 0.9rem 0.6rem;
+  font-size: 1.5rem;
+}
+.cb-modo-cards .cb-res .vez-menu {
+  gap: 1rem;
+}
+
+/* a trilha de passos já é o caminho: o "Voltar" antigo some */
+.cb-modo-cards .cb-res .vez-trilha {
+  display: none;
+}
+.cb-modo-cards .cb-res .vez-tela > .cc-passos {
+  margin-bottom: 0.4rem;
+}
+
+/* o passo "Contra quem?" */
+.cc-passo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  min-height: 0;
+}
+.cc-passo-cab h3 {
+  margin: 0;
+  font: 700 3rem / 1.1 var(--r-pixel);
+  color: var(--r-ouro-hi, #ffd27a);
+  text-shadow: var(--r-sombra-pixel);
+}
+.cc-passo-cab p {
+  margin: 0.4rem 0 0;
+  font: 400 1.7rem / 1.4 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-modos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+.cc-modo {
+  height: 4.4rem;
+  padding: 0 1.8rem;
+  border: 0.18rem solid rgba(161, 136, 115, 0.5);
+  border-radius: 99rem;
+  background: rgba(11, 21, 38, 0.92);
+  color: var(--r-texto-2, #cdbfa9);
+  font: 600 1.5rem / 1 var(--r-pixel);
+  cursor: pointer;
+}
+.cc-modo.on {
+  border-color: var(--r-ouro-hi, #ffd27a);
+  background: radial-gradient(ellipse at 30% 50%, rgba(233, 169, 68, 0.28), transparent 70%), rgba(11, 21, 38, 0.92);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cc-alvos-grade {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.4rem;
+}
+.cc-passo-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.4rem;
+  font: 600 1.6rem / 1.2 var(--r-pixel);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-alvos-grade .cc-alvo-card {
+  min-width: 0;
+  height: 14.4rem;
+  gap: 1.3rem;
+  padding: 1rem 1.4rem 1rem 1.1rem;
+  border-left-width: 0.8rem;
+}
+html:not(.modo-ficha) .cc-alvos-grade .cc-alvo-foto {
+  width: 10.6rem !important;
+  height: 10.6rem !important;
+  border-radius: 1rem !important;
+}
+.cc-alvos-grade .cc-alvo-txt {
+  flex: 1;
+  gap: 0.6rem;
+}
+.cc-alvos-grade .cc-alvo-txt b {
+  max-width: 100%;
+  font-size: 1.8rem;
+  line-height: 1.15;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.cc-alvos-grade .cc-alvo-nums {
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 1.6rem;
+}
+.cc-alvos-grade .cc-alvo-barra {
+  height: 1.1rem;
+  border-radius: 0.3rem;
+}
+.cc-alvos-grade .cc-alvo-estado {
+  font-size: 1.3rem;
+}
+.cc-alvos-grade .cc-alvo-selo {
+  top: 0.7rem;
+  right: 1rem;
+  font-size: 1.3rem;
+}
+.cc-alvos-grade .cc-alvo-marca {
+  width: 3.2rem;
+  height: 3.2rem;
+}
+
+/* a rolagem e o resultado: maiores, e a situação numa gaveta fechada */
+.cb-modo-cards .atq {
+  gap: 1.2rem;
+}
+.cb-modo-cards .atq-bloco {
+  gap: 0.8rem;
+  padding: 1.3rem 1.6rem;
+}
+.cb-modo-cards .atq-rotulo {
+  font-size: 1.4rem;
+}
+.cb-modo-cards .atq-rotulo small,
+.cb-modo-cards .atq-detalhe,
+.cb-modo-cards .atq-vazio,
+.cb-modo-cards .atq-total,
+.cb-modo-cards .atq-conta small,
+.cb-modo-cards .atq-dist small {
+  font-size: 1.5rem;
+}
+.cb-modo-cards .atq-escolhida b {
+  font-size: 2.2rem;
+}
+.cb-modo-cards .atq-escolhida small {
+  font-size: 1.45rem;
+}
+.cb-modo-cards .atq-alvo-linha b {
+  font-size: 2.2rem;
+}
+.cb-modo-cards :is(.atq-def, .atq-alcance) {
+  font-size: 1.6rem;
+}
+.cb-modo-cards .atq-sit b,
+.cb-modo-cards .atq-sit small {
+  font-size: 1.4rem;
+}
+.cb-modo-cards .atq-reacao,
+.cb-modo-cards .atq-mais {
+  padding: 0.9rem 1.5rem;
+  font-size: 1.5rem;
+}
+.cb-modo-cards .atq .cb-caixa-dado small {
+  font-size: 1.3rem;
+}
+.cb-modo-cards .atq-fim .cb-bt {
+  min-height: 5.4rem;
+  font-size: 1.6rem;
+}
+.atq-det {
+  border: 0.15rem solid rgba(161, 136, 115, 0.35);
+  border-radius: 0.8rem;
+  background: rgba(11, 21, 38, 0.4);
+}
+.atq-det > summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  font: 700 1.5rem / 1.2 var(--r-pixel);
+  color: var(--r-ouro, #e9a944);
+  cursor: pointer;
+  list-style: none;
+}
+.atq-det > summary::-webkit-details-marker {
+  display: none;
+}
+.atq-det > summary small {
+  flex: 1;
+  font: 400 1.4rem / 1.2 var(--r-corpo);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.atq-det > summary .ic {
+  width: 2rem;
+  height: 2rem;
+  transition: transform 0.2s;
+}
+.atq-det[open] > summary .ic {
+  transform: rotate(90deg);
+}
+.atq-det > .atq-bloco {
+  margin: 0 1rem 1rem;
+}
+
+/* as listas de ritual e de manobra (primeira página): cartões grandes */
+.cb-modo-cards .cb-res .cb-arma {
+  position: relative;
+  min-height: 7.4rem;
+  padding: 1rem 5rem 1rem 1.2rem;
+  gap: 1.2rem;
+}
+.cb-modo-cards .cb-res .cb-arma b {
+  font-size: 1.8rem;
+}
+.cb-modo-cards .cb-res .cb-arma small {
+  font-size: 1.35rem;
+}
+.cb-modo-cards .cb-res .cb-arma-ic,
+.cb-modo-cards .cb-res .cb-arma-ic :is(.ic, .arte-ic, img) {
+  width: 4.4rem;
+  height: 4.4rem;
+}
+
+/* ---------------------------------------------------------------- o botão "i" e a abinha "O que é isso?" */
+.cc-info {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.8rem;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border: 0.2rem solid var(--r-ouro, #e9a944);
+  border-radius: 50%;
+  background: rgba(5, 11, 20, 0.92);
+  color: var(--r-ouro-hi, #ffd27a);
+  font: italic 700 1.8rem / 1 var(--r-pixel);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+.cc-info:hover,
+.cc-info:focus-visible {
+  background: var(--r-ouro, #e9a944);
+  color: #2b1606;
+  transform: scale(1.1);
+}
+.cc-atq.com-info,
+.cc-pod.com-info {
+  position: relative;
+  padding-right: 4.8rem;
+  cursor: pointer;
+}
+.cc-atq.com-info:hover,
+.cc-pod.com-info:hover {
+  border-color: rgba(233, 169, 68, 0.7);
+}
+.cc-atq .cc-info,
+.cc-pod .cc-info {
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.5rem;
+}
+.cc-abinha-pai {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  border-radius: 0.9rem;
+}
+.cc-abinha-fundo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  border-radius: 0.9rem;
+  background: rgba(3, 7, 13, 0.72);
+  backdrop-filter: blur(0.3rem);
+  animation: hud-entra 0.25s var(--h-ease) both;
+}
+.cc-abinha {
+  /* as medidas e cores do detalhe da tela do jogador (jogador.css), em rem do combate */
+  --u: 0.5rem;
+  --s1: 1rem;
+  --s2: 1.5rem;
+  --s3: 2rem;
+  --t-mini: 1.3rem;
+  --t-meta: 1.5rem;
+  --t-corpo: 1.8rem;
+  --t-rotulo: 1.6rem;
+  --t-titulo: 2.8rem;
+  --c-noite: #050b14;
+  --c-borda: #a18873;
+  --c-borda-2: rgba(161, 136, 115, 0.38);
+  --c-ouro: #e9a944;
+  --c-ouro-hi: #ffd27a;
+  --c-texto: #f3e9d8;
+  --c-texto-2: #cdbfa9;
+  --c-texto-3: #a3978a;
+  --raio: 1rem;
+  --borda: 0.2rem;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sombra-pixel: 0 0.25rem 0 #1b0d03;
+  --f-pixel: var(--r-pixel);
+  --f-corpo: var(--r-corpo);
+  position: relative;
+  width: min(72rem, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  gap: 1.6rem;
+  padding: 2.2rem 2.6rem 2.6rem;
+  border-color: var(--r-ouro-hi, #ffd27a);
+  box-shadow: 0 1.6rem 4rem rgba(0, 0, 0, 0.7), var(--h-janela-sombra);
+  scrollbar-width: thin;
+  scrollbar-color: #d79a52 rgba(5, 11, 20, 0.7);
+}
+.cc-abinha .jg-det-cab {
+  gap: 1.4rem;
+  padding-right: 4.4rem;
+}
+.cc-abinha-ic {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 7.2rem;
+  height: 7.2rem;
+  padding: 1rem;
+  border: 0.2rem solid rgba(161, 136, 115, 0.5);
+  border-radius: 1rem;
+  background: radial-gradient(circle at 50% 40%, #1c2a44, #050b14 75%);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cc-abinha-ic :is(.arte-ic, img, .ic, svg, canvas) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+.cc-abinha-x {
+  position: absolute;
+  top: 1.4rem;
+  right: 1.6rem;
+  display: grid;
+  place-items: center;
+  width: 3.8rem;
+  height: 3.8rem;
+  border: 0.18rem solid rgba(161, 136, 115, 0.6);
+  border-radius: 50%;
+  background: rgba(11, 21, 38, 0.95);
+  color: var(--r-texto-2, #cdbfa9);
+  cursor: pointer;
+}
+.cc-abinha-x .ic {
+  width: 2rem;
+  height: 2rem;
+}
+.cc-abinha-x:hover {
+  background: #8e2a24;
+  color: #fff;
+}
+.cc-abinha-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 1rem;
+}
+.cc-abinha-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.9rem 1.2rem;
+  border: 0.15rem solid rgba(161, 136, 115, 0.4);
+  border-radius: 0.8rem;
+  background: rgba(11, 21, 38, 0.8);
+}
+.cc-abinha-campo small {
+  font: 500 1.2rem / 1 var(--r-pixel);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--r-texto-3, #a3978a);
+}
+.cc-abinha-campo b {
+  font: 700 1.8rem / 1.2 var(--r-pixel);
+  color: var(--r-texto, #f1ead9);
+}
+
+/* as seções que abrem e fecham dos cardzões */
+details.cc-sec > summary.cc-sec-tit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.2rem;
+  cursor: pointer;
+  list-style: none;
+}
+details.cc-sec > summary.cc-sec-tit::-webkit-details-marker {
+  display: none;
+}
+details.cc-sec > summary i {
+  display: grid;
+  place-items: center;
+  transition: transform 0.2s;
+}
+details.cc-sec > summary i .ic {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+details.cc-sec[open] > summary i {
+  transform: rotate(90deg);
+}
+.cc-sec-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.4rem;
+}
+
+/* as caixas dos dados: grandes, para digitar o que saiu na mesa */
+html:not(.modo-ficha) .cb-modo-cards .atq .cb-caixa-dado input {
+  font-size: 3rem !important;
+}
+html:not(.modo-ficha) .cb-modo-cards .atq .cb-caixa-dado input.grande {
+  font-size: 4.4rem !important;
+}
+.cb-modo-cards .atq .cb-caixa-dado {
+  min-width: 12rem;
+}
+.cb-modo-cards .atq .cb-caixa-dado input.grande {
+  width: 12rem;
+  height: 7rem;
+}
+.cb-modo-cards .atq .cb-caixa-dado input:not(.grande) {
+  width: 9rem;
+  height: 5.2rem;
+}
+
+/* =====================================================================
+   SEM ROLAGEM (21/10, o Felipe: "as coisas se adaptam ao tamanho da tela"): a tela inteira é desenhada na escala 1672x941 e
+   encolhe junto com a janela; o que sobraria vira página (‹ 1 de 2 ›) ou seção que abre e fecha. Nenhuma barra aparece.
+   ===================================================================== */
+.cb-modo-cards :is(.cc-corpo, .cb-res-corpo, .vez-menu, .vez-tela, .atq-corpo, .cb-pend-corpo, .cb-pend-lista, .cb-reg-corpo, .cc-mont-lista, .cb-col-lista, .cb-man-col),
+.cb-modo-cards .cb-rola:not(.cb-ini-lista) {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none !important;
+}
+.cb-modo-cards :is(.cc-corpo, .cb-res-corpo, .vez-menu, .atq-corpo, .cc-mont-lista, .cb-reg-corpo)::-webkit-scrollbar {
+  display: none;
+}
+.cb-modo-cards .cb-res-corpo,
+.cb-modo-cards .vez-tela {
+  min-height: 0;
+}
+.cc-pager {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  padding: 0.4rem 0;
+  font: 600 1.4rem / 1 var(--r-pixel);
+  color: var(--r-texto-2, #cdbfa9);
+}
+.cc-pager button {
+  display: grid;
+  place-items: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border: 0.18rem solid rgba(161, 136, 115, 0.6);
+  border-radius: 50%;
+  background: rgba(11, 21, 38, 0.92);
+  color: var(--r-ouro-hi, #ffd27a);
+  cursor: pointer;
+}
+.cc-pager button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.cc-pager button:not(:disabled):hover {
+  border-color: var(--r-ouro-hi, #ffd27a);
+}
+.cc-pager .ic {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+/* a foto no lugar do boneco */
+.cc-fotoimg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cc-fotoimg img,
+.cc-fotoimg canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  object-position: 50% 18%;
+}
+
+/* os cardzões, mais compactos */
+.cc-corpo {
+  gap: 0.8rem;
+  padding: 0.4rem 1.1rem 1rem;
+}
+.cc-perfil {
+  gap: 0.8rem;
+}
+.cc-foto {
+  width: 9rem;
+  height: 9.6rem;
+}
+.cc-nome {
+  font-size: 1.9rem;
+}
+.cc-id {
+  gap: 1rem;
+}
+.cc-sec.fixa {
+  gap: 0;
+}
+.cc-sec.fixa .cc-conds {
+  margin: 0;
+}
+.cc-atq,
+.cc-pod {
+  padding: 0.45rem 0.7rem;
+}
+.cc-atq.com-info,
+.cc-pod.com-info {
+  padding-right: 4.2rem;
+}
+
+/* o passo "Contra quem?": três por fileira, duas fileiras por página */
+.cc-alvos-grade .cc-alvo-card {
+  height: 13.4rem;
+}
+html:not(.modo-ficha) .cc-alvos-grade .cc-alvo-foto {
+  width: 9.6rem !important;
+  height: 9.6rem !important;
+}
+.cc-alvos-grade {
+  gap: 1.2rem;
+}
+.cc-passo {
+  gap: 1rem;
+}
+.cc-passo-cab h3 {
+  font-size: 2.6rem;
+}
+
+/* a rolagem e o resultado, mais compactos para caber sem rolar */
+.cb-modo-cards .atq {
+  gap: 0.9rem;
+}
+.cb-modo-cards .atq-corpo {
+  gap: 0.8rem;
+}
+.cb-modo-cards .atq-bloco {
+  gap: 0.6rem;
+  padding: 0.9rem 1.3rem;
+}
+.cb-modo-cards .atq-escolhida {
+  padding: 0.2rem 0.4rem;
+}
+.cb-modo-cards .atq-dist small {
+  font-size: 1.3rem;
+}
+.cb-modo-cards .atq-alvo .atq-alvo-linha {
+  gap: 0.2rem 1rem;
+}
+
+/* o preparo: linhas mais baixas, seis por página */
+.cc-mont-linha {
+  padding: 0.5rem 1rem;
+}
+html:not(.modo-ficha) .cc-mont-linha .cb-foto {
+  width: 4.6rem !important;
+  height: 4.6rem !important;
+}
+.cc-mont-lista {
+  gap: 0.5rem;
+  padding: 0.5rem 1.2rem 0.4rem;
+}
+.cc-janela > .cc-pager {
+  padding-bottom: 0.9rem;
+}
+
+/* o passo 2 (Com o quê?) e as listas de cartões: ícone ao lado do texto, três por fileira, duas fileiras por página */
+.cb-modo-cards .cb-res .vez-cartoes > :is(.vez-cartao) {
+  display: grid;
+  grid-template-columns: 8.6rem minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  align-items: center;
+  column-gap: 1.2rem;
+  row-gap: 0.4rem;
+  min-height: 13.6rem;
+  padding: 1.4rem 1.1rem 1rem 1.2rem;
+  text-align: left;
+}
+.cb-modo-cards .cb-res .vez-cartoes > .vez-cartao .card-quadro {
+  grid-row: 1 / 4;
+  grid-column: 1;
+  width: 8.6rem;
+  height: 8.6rem;
+}
+.cb-modo-cards .cb-res .vez-cartoes > .vez-cartao .card-tit {
+  grid-column: 2;
+  grid-row: 1;
+  padding: 0 2.8rem 0 0;
+  text-align: left;
+  font-size: 1.7rem;
+}
+.cb-modo-cards .cb-res .vez-cartoes > .vez-cartao .card-placa {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  text-align: left;
+  font-size: 1.35rem !important;
+}
+.cb-modo-cards .cb-res .vez-cartoes > .vez-cartao .card-pe {
+  grid-column: 2;
+  grid-row: 3;
+  padding: 0.6rem 0.5rem;
+  font-size: 1.3rem;
+}
+/* o passo 1: as seis ações cabem sem rolar */
+.cb-modo-cards .cb-res .vez-acoes > * {
+  min-height: 16.6rem;
+}
+.cb-modo-cards .cb-res .vez-acoes .card-quadro {
+  width: 7.6rem;
+  height: 7.6rem;
+}
+
+.cb-modo-cards .atq-corpo {
+  gap: 0.6rem;
+}
+.cb-modo-cards .atq-bloco {
+  padding: 0.7rem 1.2rem;
+  gap: 0.5rem;
+}
+.cb-modo-cards .atq-resumo {
+  padding: 0.2rem 0;
+}
+
+.cb-modo-cards .atq-corpo {
+  gap: 0.5rem;
+}
+.cb-modo-cards .atq-bloco {
+  padding: 0.55rem 1.2rem;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards > .cb-gaveta.aberta {
+  top: 42rem;
+  height: 51.3rem;
+}
+
+.cb-modo-cards .cb-reg > .cb-desfazer {
+  display: none !important;
+}
+.cb-modo-cards .cb-gaveta .cb-p {
+  min-height: 0;
+  overflow: hidden;
+}
+.cb-modo-cards .cb-gaveta .cb-reg-corpo,
+.cb-modo-cards .cb-gaveta .cb-pend-corpo {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+html:not(.modo-ficha) .cb-modo-cards .cb-gaveta .cb-gav-abas {
+  height: 3.8rem;
+}
+
+html:not(.modo-ficha) .cb-modo-cards .cb-gaveta > .cb-p {
+  margin: 0 !important;
+  max-height: calc(100% - 4rem);
+  padding-bottom: 0.4rem;
+}
+
+/* no turno do mestre com vários seres: o seletor ocupa a vez da pergunta (cabe sem rolar) */
+.cb-modo-cards .cc-topo:not(:empty) ~ .vez-tela .vez-pergunta {
+  display: none;
+}
+html:not(.modo-ficha) .cc-topo .cb-quem-bt {
+  height: 3.2rem;
+}
+
+/* tablet em pé (561 a 820 px): a tela nova também aparece, encolhida na escala do computador (no celular, continua o aviso) */
+@media (min-width: 561px) and (max-width: 820px) and (orientation: portrait) {
+  html:has(.shell.aba-combate) {
+    font-size: clamp(3px, calc(100vw / 167.2), 40px);
+  }
+  .cb-palco.cb-modo-cards {
+    display: block !important;
+  }
+  .cb:has(.cb-modo-cards)::after {
+    display: none;
+  }
+}

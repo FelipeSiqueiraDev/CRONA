@@ -14,6 +14,7 @@ import { cobertura as coberturaEntre, elevado, flanqueia, FORMAS, naArea, type C
 import type { App } from './app';
 import { editarAmeaca } from './combateAmeaca';
 import { ResolucaoAtaque, type AlvoAtaque, type ArmaOpcao, type CtxAtaque, type TabuleiroAtaque } from './combateAtaque';
+import { abinhaInfo, botaoInfo, cardConvite, cardPerfil, cartaoDeAlvo, paginar, type LinhaAtaque, type LinhaPoder, type PerfilCombate, type VMInfo } from './combateCards';
 import { PASSOS_MANOBRA, ResolucaoManobra, type CtxManobra, type TesteLuta } from './combateManobra';
 import { PASSOS_RITUAL, ResolucaoRitual, type CtxRitual, type RitualOpcao } from './combateRitual';
 import { h, toast } from './dom';
@@ -32,7 +33,7 @@ type Calc = regras.Calculado;
 
 type Aba = 'atacar' | 'manobra' | 'ritual' | 'habilidade' | 'item' | 'movimento' | 'outras';
 /** O nível da tela de ação: o menu da vez, o menu de ataque, ou a ação escolhida (a `aba`). */
-type Fluxo = 'menu' | 'atacar' | 'acao';
+type Fluxo = 'menu' | 'atacar' | 'acao' | 'alvo';
 const ABAS: { id: Aba; rotulo: string; icone: NomeIcone }[] = [
   { id: 'atacar', rotulo: 'ATACAR', icone: 'espadas' },
   { id: 'manobra', rotulo: 'MANOBRA', icone: 'mao' },
@@ -106,6 +107,23 @@ const ICONE_CONDICAO: Record<string, NomeIcone> = {
   envenenado: 'frasco',
 };
 const AUTOMATICAS = ['machucado', 'morrendo', 'perturbado', 'enlouquecendo'];
+
+/** A tela de COMBATE em cards (21/10) é o padrão; a chave guarda a escolha neste aparelho (a do mestre). */
+const CHAVE_TELA = 'crona.combate.tela';
+function lerTelaNova(): boolean {
+  try {
+    return localStorage.getItem(CHAVE_TELA) !== 'hoje';
+  } catch {
+    return true;
+  }
+}
+function gravarTelaNova(nova: boolean) {
+  try {
+    localStorage.setItem(CHAVE_TELA, nova ? 'cards' : 'hoje');
+  } catch {
+    /* sem armazenamento: vale só até recarregar */
+  }
+}
 
 const hora = (ms: number) => new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 const nomeCurto = (nome: string) => nome.split('·').pop()?.trim() ?? nome;
@@ -277,6 +295,28 @@ export class CombateScreen {
   /** a gaveta de baixo: o Alvo, os Efeitos e o Registro, um por vez (08/10: eram três painéis espremidos) */
   private gaveta: HTMLElement;
   private gavetaAba: 'alvo' | 'pend' | 'reg' = 'alvo';
+  // ---------- a tela nova (cards, 21/10) ----------
+  /** liga a tela nova: cards no lugar do tabuleiro (a de hoje continua inteira, é só desligar a chave) */
+  private modoCards = lerTelaNova();
+  private palco: HTMLElement;
+  private atorCorpo: HTMLElement;
+  private alvoCardCorpo: HTMLElement;
+  private alvoCardExtra: HTMLElement;
+  private montCorpo: HTMLElement;
+  private btChave: HTMLButtonElement;
+  private btDesfazerGav: HTMLButtonElement;
+  /** a gaveta de baixo da tela nova: fechada (só a barra) ou aberta por cima das colunas */
+  private gavAberta = false;
+  /** a distância até o alvo que o mestre digitou (vale para o par de agora e some quando o turno passa) */
+  private distMestre: { chave: string; metros: number | null } = { chave: '', metros: null };
+  /** quem o mestre marcou como dentro da área do ritual (tela nova: sem tabuleiro para desenhar a área) */
+  private areaSel = new Set<number>();
+  /** o que fazer quando o alvo for escolhido (o passo "Contra quem?" da tela nova) */
+  private pedidoAlvo: (() => void) | null = null;
+  /** o ser sob o mouse na lista de alvos: o cardzão da direita mostra ele */
+  private alvoPrevia: number | null = null;
+  /** a abinha "O que é isso?" por cima do meio */
+  private abinhaEl: HTMLElement;
   /** Apontar e Desenhar (as ferramentas da mesa, as mesmas do MAPA): a tela MAPA liga e desliga */
   aoFerramentaMesa: ((tipo: 'ponto' | 'traco') => void) | null = null;
 
@@ -306,7 +346,9 @@ export class CombateScreen {
     this.quadro = h('section', { class: 'cb-tab' }, this.tabCena, ferr, this.tabArea, this.tabClima);
     // ---------- resolução da ação ----------
     this.resCorpo = h('div', { class: 'cb-res-corpo' });
+    this.abinhaEl = h('div', { class: 'cc-abinha-pai hidden' });
     const pRes = papel(h('section', { class: 'cb-p cb-res' }, titulo('RESOLUÇÃO DA AÇÃO'), this.resCorpo), 303);
+    pRes.append(this.abinhaEl);
     // ---------- alvo ----------
     this.alvoCorpo = h('div', { class: 'cb-alvo-corpo' });
     this.alvoExtra = h('span', { class: 'cb-alvo-extra' });
@@ -324,17 +366,30 @@ export class CombateScreen {
 
     // a gaveta: as abas em cima, um painel por vez
     const abaGaveta = (id: 'alvo' | 'pend' | 'reg', rotulo: string, icone: NomeIcone) =>
-      h('button', { class: 'cb-gav-aba', type: 'button', 'data-aba': id, onclick: () => (sfx.click(), this.abrirGaveta(id)) }, icPintado(icone), h('span', null, rotulo), h('i', { class: 'cb-gav-n' }));
+      h('button', { class: 'cb-gav-aba', type: 'button', 'data-aba': id, onclick: () => (sfx.click(), this.abrirGaveta(id, true)) }, icPintado(icone), h('span', null, rotulo), h('i', { class: 'cb-gav-n' }));
+    // a chave entre a tela nova (cards) e a de hoje (com o mapa), e o Desfazer da tela nova, na barra da gaveta
+    this.btChave = h('button', { class: 'cb-chave-tela', type: 'button', onclick: () => (sfx.click(), this.trocarTela()) }) as HTMLButtonElement;
+    this.btDesfazerGav = botao('Desfazer', 'girarE', () => this.acao({ tipo: 'desfazer' }), 'cb-desfazer cb-gav-desfazer', 'Volta o combate um passo (com o dano que ele causou)') as HTMLButtonElement;
     this.gaveta = h(
       'section',
       { class: 'cb-gaveta', 'data-aba': 'alvo' },
-      h('nav', { class: 'cb-gav-abas' }, abaGaveta('alvo', 'Alvo', 'mira'), abaGaveta('pend', 'Efeitos e pendências', 'alerta'), abaGaveta('reg', 'Registro', 'livro')),
+      h('nav', { class: 'cb-gav-abas' }, abaGaveta('alvo', 'Alvo', 'mira'), abaGaveta('pend', 'Efeitos e pendências', 'alerta'), abaGaveta('reg', 'Registro', 'livro'), h('span', { class: 'cb-gav-esp' }), this.btDesfazerGav, this.btChave),
       pAlvo,
       pPend,
       pReg,
     );
+    // ---------- a tela nova: o cardzão de quem age, o do alvo e o preparo em dois cards ----------
+    this.atorCorpo = h('div', { class: 'cc-corpo cb-rola' });
+    this.alvoCardCorpo = h('div', { class: 'cc-corpo cb-rola' });
+    this.montCorpo = h('div', { class: 'cc-mont-corpo' });
+    const pAtor = h('section', { class: 'cb-p cc-ator-p cc-novo' }, titulo('QUEM AGE'), this.atorCorpo);
+    this.alvoCardExtra = h('span', { class: 'cb-alvo-extra' });
+    const pAlvoCard = h('section', { class: 'cb-p cc-alvo-p cc-novo' }, titulo('O ALVO · DEFESA', this.alvoCardExtra), this.alvoCardCorpo);
+    const pMont = h('section', { class: 'cc-mont-p cc-novo' }, this.montCorpo);
     this.fundo = h('div', { class: 'cb-fundo', 'aria-hidden': 'true' });
-    this.el = h('div', { class: 'cb hidden' }, this.fundo, h('div', { class: 'cb-palco' }, pIni, this.quadro, pRes, this.gaveta));
+    this.palco = h('div', { class: `cb-palco${this.modoCards ? ' cb-modo-cards' : ''}` }, pIni, this.quadro, pRes, pAtor, pAlvoCard, pMont, this.gaveta);
+    this.el = h('div', { class: 'cb hidden' }, this.fundo, this.palco);
+    this.pintarChave();
     // o fundo escuro tem um buraco onde fica o tabuleiro
     new ResizeObserver(() => this.furar()).observe(this.quadro);
     window.addEventListener('resize', () => this.furar());
@@ -343,7 +398,9 @@ export class CombateScreen {
       this.sairFerramenta();
     });
 
-    this.abrirGaveta('alvo');
+    this.abrirGaveta(this.modoCards ? 'pend' : 'alvo');
+    // na tela nova a gaveta começa fechada (só a barra de abas)
+    if (this.modoCards) this.fecharGaveta();
     app.session.subscribe(() => this.render());
     app.on('room', () => this.render());
     app.on('characters', () => (this.sigs.clear(), this.render()));
@@ -402,11 +459,57 @@ export class CombateScreen {
     );
   }
 
-  /** Abre uma aba da gaveta de baixo (Alvo, Efeitos e pendências, Registro). */
-  private abrirGaveta(id: 'alvo' | 'pend' | 'reg') {
+  /**
+   * Abre uma aba da gaveta de baixo (Alvo, Efeitos e pendências, Registro). Na tela nova a gaveta fecha (só a barra de
+   * abas fica à mostra) e abre por cima das colunas; o alvo ali é o cardzão da direita, então a aba dele não existe.
+   */
+  private abrirGaveta(id: 'alvo' | 'pend' | 'reg', alternar = false) {
+    if (this.modoCards) {
+      if (id === 'alvo') return;
+      this.gavAberta = alternar && this.gavetaAba === id ? !this.gavAberta : true;
+    }
     this.gavetaAba = id;
     this.gaveta.dataset.aba = id;
-    for (const b of this.gaveta.querySelectorAll<HTMLElement>('.cb-gav-aba')) b.classList.toggle('on', b.dataset.aba === id);
+    this.gaveta.classList.toggle('aberta', this.modoCards && this.gavAberta);
+    for (const b of this.gaveta.querySelectorAll<HTMLElement>('.cb-gav-aba')) b.classList.toggle('on', b.dataset.aba === id && (!this.modoCards || this.gavAberta));
+  }
+
+  /** Fecha a gaveta da tela nova (a barra de abas continua à mostra). */
+  private fecharGaveta() {
+    this.gavAberta = false;
+    this.gaveta.classList.remove('aberta');
+    for (const b of this.gaveta.querySelectorAll<HTMLElement>('.cb-gav-aba')) b.classList.remove('on');
+  }
+
+  // ================================================================ a chave entre a tela nova e a de hoje (21/10)
+
+  /** O texto da chave: o que ela leva a fazer (a tela que está ligada é a outra). */
+  private pintarChave() {
+    this.btChave.replaceChildren(ic('trocar'), h('span', null, this.modoCards ? 'Tela de hoje' : 'Tela nova'));
+    this.btChave.title = this.modoCards ? 'Volta para a tela de hoje, com o tabuleiro no meio' : 'Liga a tela nova: cards de quem age e do alvo, sem o mapa (a batalha é nas miniaturas)';
+    this.btChave.setAttribute('aria-pressed', String(this.modoCards));
+  }
+
+  /** Liga ou desliga a tela nova. A escolha fica neste aparelho; o combate em si (servidor, regras, registro) é o mesmo. */
+  private trocarTela() {
+    this.modoCards = !this.modoCards;
+    gravarTelaNova(this.modoCards);
+    this.palco.classList.toggle('cb-modo-cards', this.modoCards);
+    this.pintarChave();
+    this.sigs.clear();
+    this.setCombate(this.combate, this.podeDesfazer, this.ameacas);
+    // o que a tela de hoje deixou ligado no mapa (medir, área, movimento) não segue para os cards
+    this.sairFerramenta();
+    this.desligarMovimento();
+    this.fluxo = 'menu';
+    this.pagina = null;
+    if (this.modoCards) {
+      this.abrirGaveta('pend');
+      this.fecharGaveta();
+    } else this.abrirGaveta('alvo');
+    this.render();
+    // o quadro do tabuleiro some (ou volta): a câmera acompanha o tamanho dele
+    requestAnimationFrame(() => this.furar());
   }
 
   /** O número de pendências na aba (o que não é "nada pendente"). */
@@ -500,7 +603,7 @@ export class CombateScreen {
   /** O menu de ataque: cada arma, a investida, a manobra e o ritual. */
   private menuDeAtaque(c: Combate, ator: Participante): HTMLElement {
     const armas = this.armasDe(ator);
-    const cartao = (cls: string, arte: Node, nome: string, sub: string, fazer: (() => void) | null, _motivo?: string): HTMLElement | null =>
+    const cartao = (cls: string, arte: Node, nome: string, sub: string, fazer: (() => void) | null, _motivo?: string, info?: () => void): HTMLElement | null =>
       // o que não dá para usar agora sai da lista (17/10, o Felipe: "os ataques indisponíveis podiam sair da lista, assim a gente
       // não fica com as duas colunas e não tem que dar scroll")
       !fazer
@@ -512,6 +615,7 @@ export class CombateScreen {
         h('span', { class: 'vez-cartao-ic card-quadro' }, arte),
         h('small', { class: 'card-placa' }, sub),
         h('span', { class: 'card-pe' }, cls === 'investida' ? 'Ação completa' : 'Escolher'),
+        info ? botaoInfo(info) : null,
       );
     const lista: HTMLElement[] = [];
     const poe = (el: HTMLElement | null) => el && lista.push(el);
@@ -524,8 +628,9 @@ export class CombateScreen {
           a.jogada ? arteOu(['/arte/icones/combate-habilidade.png'], ic('estrela')) : a.item && a.item !== 'ataque-desarmado' ? arteDoItem({ id: a.item, tipo: 'arma', nome: a.nome }, a.pericia === 'pontaria' ? 'pistola' : 'faca', 'arte-ic') : arteOu([a.item ? '/arte/icones/for.png' : '/arte/icones/combate-atacar.png'], ic('punho')),
           a.jogada ? a.jogada.nome : a.vezes ? `${a.nome} ×${a.vezes}` : a.nome,
           `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} · dano ${a.dano} · ${a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo'}`,
-          naMao && !travada ? () => (this.ataque.escolher(i), this.irPara('acao', 'atacar')) : null,
+          naMao && !travada ? () => (this.ataque.escolher(i), this.seguirParaAlvo('atacar')) : null,
           !naMao ? 'na mochila: saque em Pegar ou guardar' : travada ? a.jogada!.erros.join(' · ') : undefined,
+          this.modoCards ? () => this.abrirInfo(this.infoArma(a)) : undefined,
         ),
       );
     });
@@ -539,14 +644,16 @@ export class CombateScreen {
         arteOu(['/arte/icones/sit-investida.png'], ic('correr')),
         'Investida',
         `corre até ${cb.textoMetros(2 * this.deslocamentoDe(ator))} e ataca${corpo >= 0 ? ` com ${armas[corpo].nome}` : ''}: +1d20 no ataque, −5 na Defesa (ação completa)`,
-        corpo >= 0 && completaLivre ? () => (this.ataque.escolher(corpo, true), this.irPara('acao', 'atacar')) : null,
+        corpo >= 0 && completaLivre ? () => (this.ataque.escolher(corpo, true), this.seguirParaAlvo('atacar')) : null,
         corpo < 0 ? 'precisa de uma arma de corpo a corpo na mão' : 'precisa do turno inteiro (padrão e movimento livres)',
       ),
     );
-    poe(cartao('manobra', arteOu(['/arte/icones/combate-manobra.png'], ic('mao')), 'Manobra', 'agarrar, derrubar, desarmar, empurrar…', () => this.irPara('acao', 'manobra')));
+    poe(cartao('manobra', arteOu(['/arte/icones/combate-manobra.png'], ic('mao')), 'Manobra', 'agarrar, derrubar, desarmar, empurrar…', () => this.seguirParaAlvo('manobra')));
     const rituais = this.rituaisDe(ator);
-    poe(cartao('ritual', arteOu(['/arte/icones/combate-ritual.png'], ic('pentagrama')), 'Ritual', rituais.length ? `${rituais.length} ritua${rituais.length > 1 ? 'is' : 'l'} conhecido${rituais.length > 1 ? 's' : ''}` : 'nenhum ritual', rituais.length ? () => this.irPara('acao', 'ritual') : null, 'nenhum ritual conhecido'));
-    return h('div', { class: 'vez-menu' }, h('p', { class: 'vez-pergunta' }, 'Com o quê?'), h('div', { class: 'vez-cartoes' }, ...lista));
+    poe(cartao('ritual', arteOu(['/arte/icones/combate-ritual.png'], ic('pentagrama')), 'Ritual', rituais.length ? `${rituais.length} ritua${rituais.length > 1 ? 'is' : 'l'} conhecido${rituais.length > 1 ? 's' : ''}` : 'nenhum ritual', rituais.length ? () => this.seguirParaAlvo('ritual') : null, 'nenhum ritual conhecido'));
+    // tela nova: sem rolagem, seis cartões por página
+    const pg = this.modoCards ? paginar('arma', lista, 6, () => (this.sigs.delete('res'), this.renderRes())) : { itens: lista, pager: null };
+    return h('div', { class: 'vez-menu' }, h('p', { class: 'vez-pergunta' }, 'Com o quê?'), h('div', { class: 'vez-cartoes' }, ...pg.itens), pg.pager);
   }
 
   /** O deslocamento em metros: o da ficha, o da ameaça, ou 9 m. */
@@ -710,7 +817,7 @@ export class CombateScreen {
     const ondeEsta = this.casa(ator.id);
     const map = this.app.view?.map;
     const perto: HTMLElement[] = [];
-    if (ondeEsta && map)
+    if (ondeEsta && map && !this.modoCards)
       for (const it of map.allItems()) {
         const livres = (it.loot ?? []).filter((l) => !l.holder && (l.revealed ?? true));
         if (!livres.length) continue;
@@ -722,7 +829,8 @@ export class CombateScreen {
         for (const l of livres)
           perto.push(linha(l.name, def?.name ?? 'no chão', bt('Pegar', () => (this.app.net.send({ t: 'lootGive', itemId: it.id, lootId: l.id, to: ator.nome }), gastar(`pega ${l.name}`)), true)));
       }
-    grupos.push(h('section', { class: 'vez-grupo' }, h('h5', null, 'Perto, para pegar'), ...(perto.length ? perto : [h('p', { class: 'vez-vazio' }, 'Nada ao alcance da mão.')])));
+    // na tela nova não há mapa para ver o chão: o que está no chão o mestre vê na mesa
+    if (!this.modoCards) grupos.push(h('section', { class: 'vez-grupo' }, h('h5', null, 'Perto, para pegar'), ...(perto.length ? perto : [h('p', { class: 'vez-vazio' }, 'Nada ao alcance da mão.')])));
     return h('div', { class: 'vez-menu' }, h('p', { class: 'vez-pergunta' }, `Sacar, guardar ou pegar (${qual === 'movimento' ? 'gasta a ação de movimento' : 'gasta a ação padrão'})`), h('div', { class: 'vez-grupos' }, ...grupos));
   }
 
@@ -762,14 +870,17 @@ export class CombateScreen {
     this.combate = c;
     this.podeDesfazer = podeDesfazer;
     if (this.app.view) {
-      this.app.view.emCombate = !!c && c.fase !== 'encerrado';
-      // só quem participa do combate (e não saiu dele) fica preso às regras dele
-      this.app.view.pecaEmCombate = (viewId) => {
-        const atual = this.combate;
-        if (!atual || atual.fase === 'encerrado') return false;
-        const p = cb.participante(atual, -viewId);
-        return !!p && !p.fora;
-      };
+      // tela nova (21/10): a batalha é nas miniaturas, então o tabuleiro do MAPA e o da mesa mexem todas as peças, sem a trava
+      this.app.view.emCombate = !this.modoCards && !!c && c.fase !== 'encerrado';
+      // na tela de hoje, só quem participa do combate (e não saiu dele) fica preso às regras dele
+      this.app.view.pecaEmCombate = this.modoCards
+        ? null
+        : (viewId) => {
+            const atual = this.combate;
+            if (!atual || atual.fase === 'encerrado') return false;
+            const p = cb.participante(atual, -viewId);
+            return !!p && !p.fora;
+          };
     }
     this.ameacas = ameacas;
     if ((c?.vez ?? null) !== this.ultimaVez) {
@@ -780,6 +891,12 @@ export class CombateScreen {
       this.fluxo = 'menu';
       this.desligarMovimento();
       this.porNaVez();
+      // a distância e a área do ritual eram do turno que passou
+      this.distMestre = { chave: '', metros: null };
+      this.areaSel.clear();
+      this.pedidoAlvo = null;
+      this.alvoPrevia = null;
+      this.fecharInfo();
     }
     // uma ação foi confirmada (entrou uma linha de ação no registro): volta ao menu da vez
     const n = c?.registro.length ?? 0;
@@ -848,7 +965,54 @@ export class CombateScreen {
   }
 
   private retrato(id: number, tamanho: number) {
+    return this.modoCards ? this.foto(id, tamanho) : this.retratoDeCanvas(id, tamanho);
+  }
+
+  private retratoDeCanvas(id: number, tamanho: number) {
     return portraitCanvas(this.personagem(id)?.look ?? null, tamanho, { dir: 2, hurt: vitalConditions(this.vitais(id)).machucado });
+  }
+
+  /** o endereço da foto que deu certo para cada peça (null = sem foto: fica o retrato padrão) */
+  private fotoUrl = new Map<number, string | null>();
+
+  /**
+   * Tela nova (21/10, o Felipe: "fotos, não bonecos"): cada ser é a foto que o Elenco e a FICHAS usam (o rosto, a foto da
+   * ficha ou a do NPC, o retrato da ameaça); sem nenhuma, o retrato padrão do Elenco. Nunca o sprite do tabuleiro.
+   */
+  private foto(id: number, tamanho: number): HTMLElement {
+    const ch = this.personagem(id);
+    const def = ch?.look.charId ? this.app.state.characters.find((x) => x.id === ch.look.charId) : undefined;
+    const pasta = def?.sheet?.match(/\/arte\/personagens\/([^/]+)\//)?.[1];
+    const livro = this.ameacaDe(id)?.livro;
+    const urls = [
+      pasta && `/arte/personagens/${pasta}/rosto.jpg`,
+      pasta && `/arte/personagens/${pasta}/foto-ficha.webp`,
+      pasta && `/arte/personagens/${pasta}/foto.jpg`,
+      pasta && `/arte/personagens/${pasta}/foto.webp`,
+      def?.portraits?.desarmado?.open,
+      livro && `/arte/ameacas/${livro}.png`,
+    ].filter((x): x is string => !!x);
+    const caixa = h('span', { class: 'cc-fotoimg' });
+    const reserva = () => caixa.replaceChildren(this.retratoDeCanvas(id, tamanho));
+    const sabido = this.fotoUrl.get(id);
+    if (sabido === null || !urls.length) {
+      reserva();
+      return caixa;
+    }
+    let i = sabido ? Math.max(0, urls.indexOf(sabido)) : 0;
+    const img = h('img', {
+      alt: '',
+      draggable: false,
+      src: urls[i],
+      onload: () => this.fotoUrl.set(id, urls[i]),
+      onerror: () => {
+        i++;
+        if (i < urls.length) img.src = urls[i];
+        else (this.fotoUrl.set(id, null), reserva());
+      },
+    }) as HTMLImageElement;
+    caixa.append(img);
+    return caixa;
   }
 
   private acao(a: cb.AcaoCombate) {
@@ -1033,23 +1197,52 @@ export class CombateScreen {
   private ctxAtaque(c: Combate, ator: Participante): CtxAtaque {
     const alvoP = this.alvoId !== null && this.alvoId !== ator.id ? cb.participante(c, this.alvoId) : undefined;
     const alvo = alvoP && !alvoP.fora ? this.alvoAtaque(c, alvoP) : null;
+    const cards = this.modoCards;
     return {
       combate: c,
       ator,
       condicoesAtor: this.condicoesDe(c, ator),
       armas: this.armasDe(ator),
       alvo,
-      tab: alvo ? this.tabuleiroEntre(c, ator, alvo.p) : null,
+      tab: alvo ? (cards ? this.tabManual(ator, alvo.p) : this.tabuleiroEntre(c, ator, alvo.p)) : null,
       ...this.clima(),
       acoes: cb.acoesDe(c, ator.id),
       combateDefensivo: !!this.calcDe(ator.id)?.poderes.some((p) => p.id === 'combate-defensivo'),
       enviar: (a) => this.acao(a),
       sacar: (arma) => arma.uid !== undefined && this.acao({ tipo: 'declarar', qual: 'movimento', texto: `sacou ${arma.nome}`, quem: ator.id, sacar: arma.uid }),
-      andarAteOAlvo: alvo ? this.andarAteOAlvo(c, ator, alvo.p) : undefined,
-      colarNoAlvo: alvo ? this.colarNoAlvo(ator, alvo.p) : undefined,
+      andarAteOAlvo: alvo && !cards ? this.andarAteOAlvo(c, ator, alvo.p) : undefined,
+      colarNoAlvo: alvo && !cards ? this.colarNoAlvo(ator, alvo.p) : undefined,
       mudou: () => (this.sigs.delete('res'), this.renderRes(), this.atualizarMarcas()),
       retrato: (id, t) => this.retrato(id, t),
+      ...(cards
+        ? {
+            semMapa: {
+              metros: alvo ? this.distanciaMestre(ator, alvo.p) : null,
+              definirMetros: (m: number | null) => alvo && this.definirDistancia(ator, alvo.p, m),
+            },
+          }
+        : {}),
     };
+  }
+
+  /**
+   * Tela nova (sem mapa): o que o tabuleiro via fica vazio e o mestre informa. Só a distância é número (opcional); cobertura,
+   * flanco, altura e corpo a corpo são as situações que ele marca no passo do ataque.
+   */
+  private tabManual(ator: Participante, alvo: Participante): TabuleiroAtaque {
+    const metros = this.distanciaMestre(ator, alvo);
+    return { metros, adjacente: metros !== null && metros <= 2 * cb.METROS_POR_CASA + 1e-6, cobertura: { tipo: 'nenhuma' }, elevado: false, flanqueia: false, emCorpoACorpo: false };
+  }
+
+  /** A distância que o mestre digitou para este par (null = não informou). */
+  private distanciaMestre(ator: Participante, alvo: Participante): number | null {
+    return this.distMestre.chave === `${ator.id}|${alvo.id}` ? this.distMestre.metros : null;
+  }
+
+  private definirDistancia(ator: Participante, alvo: Participante, m: number | null) {
+    this.distMestre = { chave: `${ator.id}|${alvo.id}`, metros: m };
+    this.sigs.delete('res');
+    this.renderRes();
   }
 
   /**
@@ -1129,11 +1322,13 @@ export class CombateScreen {
       agarradoPor: porP ? this.alvoAtaque(c, porP) : null,
       lutaDe: (p) => this.lutaDe(p),
       tamanhoDe: (p) => this.tamanhoDe(p),
-      tabDe: (p) => this.tabuleiroEntre(c, ator, p),
+      tabDe: (p) => (this.modoCards ? this.tabManual(ator, p) : this.tabuleiroEntre(c, ator, p)),
       acoes: cb.acoesDe(c, ator.id),
       enviar: (a) => this.acao(a),
-      empurrar: (alvo, casas) => this.empurrar(ator.id, alvo, casas),
-      andarAteOAlvo: alvoP && !alvoP.fora ? this.andarAteOAlvo(c, ator, alvoP) : undefined,
+      // na tela nova a miniatura é movida na mesa
+      empurrar: (alvo, casas) => !this.modoCards && this.empurrar(ator.id, alvo, casas),
+      andarAteOAlvo: alvoP && !alvoP.fora && !this.modoCards ? this.andarAteOAlvo(c, ator, alvoP) : undefined,
+      ...(this.modoCards ? { semMapa: true, info: (id: cb.ManobraId) => this.abrirInfo(this.infoManobra(id)) } : {}),
       mudou: () => (this.sigs.delete('res'), this.renderRes(), this.atualizarMarcas()),
     };
   }
@@ -1216,6 +1411,11 @@ export class CombateScreen {
     return c.participantes.filter((p) => !p.fora && (() => { const x = this.casa(p.id); return !!x && naArea(area, x); })()).map((p) => this.alvoAtaque(c, p));
   }
 
+  /** Tela nova: a área do ritual é quem o mestre marcou na lista de alvos. */
+  private areaDoMestre(c: Combate): AlvoAtaque[] {
+    return c.participantes.filter((p) => !p.fora && this.areaSel.has(p.id)).map((p) => this.alvoAtaque(c, p));
+  }
+
   private ctxRitual(c: Combate, ator: Participante): CtxRitual {
     const alvoP = this.alvoId !== null ? cb.participante(c, this.alvoId) : undefined;
     const calc = this.calcDe(ator.id);
@@ -1231,7 +1431,7 @@ export class CombateScreen {
       limite: calc ? (calc.limitePeRituais ?? calc.limitePe) : null,
       gasto: ac.pe ?? 0,
       alvo: alvoP && !alvoP.fora ? this.alvoAtaque(c, alvoP) : null,
-      naArea: this.naAreaDoCombate(c, ator),
+      naArea: this.modoCards ? this.areaDoMestre(c) : this.naAreaDoCombate(c, ator),
       testeDe: (p, t) => {
         const pc = this.calcDe(p.id)?.pericias[t];
         if (pc) return { dados: pc.dados, bonus: pc.bonus, penalidade: pc.penalidadeDados };
@@ -1240,13 +1440,15 @@ export class CombateScreen {
       },
       elementoDe: (p) => this.ameacaDe(p.id)?.elemento ?? null,
       metrosAte: (p) => {
+        if (this.modoCards) return this.distanciaMestre(ator, p);
         const a = this.casa(ator.id);
         const b = this.casa(p.id);
         return a && b ? cb.metrosDe(cb.distanciaCasas(a, b)) : null;
       },
       acoes: ac,
-      pedirArea: () => this.ferramentaArea(),
+      pedirArea: () => (this.modoCards ? toast('Marque, na lista de alvos, quem está na área do ritual.') : this.ferramentaArea()),
       enviar: (a) => this.acao(a),
+      ...(this.modoCards ? { semMapa: true, info: (r: RitualOpcao) => this.abrirInfo(this.infoRitual(r)) } : {}),
       mudou: () => (this.sigs.delete('res'), this.renderRes(), this.atualizarMarcas()),
     };
   }
@@ -1385,7 +1587,8 @@ export class CombateScreen {
   private atualizarMarcas() {
     const v = this.app.view;
     if (!v) return;
-    if (!this.visivel) {
+    // a tela nova não mostra o tabuleiro: nada de marcação no mapa
+    if (!this.visivel || this.modoCards) {
       v.combate = null;
       return;
     }
@@ -1495,12 +1698,17 @@ export class CombateScreen {
 
   private render() {
     if (!this.visivel) return;
+    this.palco.dataset.fase = !this.combate || this.combate.fase === 'encerrado' ? 'sem' : this.combate.fase;
     this.renderIni();
     this.renderPend();
     this.contarPendencias();
     this.renderTab();
     this.renderRes();
-    this.renderAlvo();
+    if (this.modoCards) {
+      this.renderMontagemCards();
+      this.renderAtorCard();
+      this.renderAlvoCard();
+    } else this.renderAlvo();
     this.renderReg();
     this.patchVitais();
     this.atualizarMarcas();
@@ -1537,6 +1745,13 @@ export class CombateScreen {
       poe(r.querySelector('strong'), String(a));
       poe(r.querySelector('small'), `/${m}`);
       r.querySelector<HTMLElement>('.cb-barra')?.style.setProperty('--p', String(m ? Math.max(0, Math.min(1, a / m)) : 0));
+    });
+    // a lista de alvos da tela nova: o PV de cada cartão
+    this.el.querySelectorAll<HTMLElement>('.cc-alvo-card[data-vid]').forEach((r) => {
+      const v = this.vitais(Number(r.dataset.vid));
+      if (!v) return;
+      poe(r.querySelector('.cc-alvo-pv'), `PV ${v.pv}/${v.pvMax}`);
+      r.querySelector<HTMLElement>('.cc-alvo-barra')?.style.setProperty('--p', String(v.pvMax ? Math.max(0, Math.min(1, v.pv / v.pvMax)) : 0));
     });
     this.el.querySelectorAll<HTMLElement>('.cb-alvo-pv[data-vid]').forEach((r) => {
       const v = this.vitais(Number(r.dataset.vid));
@@ -1870,10 +2085,11 @@ export class CombateScreen {
     const tab = x?.tab ?? (mx ? (() => { const a = this.manobra.alvoEscolhido(mx); return a ? mx.tabDe(a.p) : null; })() : null);
     const geo = tab ? [tab.metros === null ? null : Math.round(tab.metros * 10), tab.adjacente, tab.cobertura.tipo, tab.cobertura.nome, tab.elevado, tab.flanqueia, tab.emCorpoACorpo] : null;
     const areaSig = rx ? [this.area?.forma, this.area?.metros, this.area?.alvo, this.area?.fixa, rx.naArea?.map((a) => a.p.id), rx.alvo ? rx.metrosAte(rx.alvo.p) : null] : null;
-    const dados = [c && { ...c, registro: 0 }, this.aba, this.fluxo, this.atorId, this.alvoId, this.assinaturaPecas(), this.assinaturaFichas(), this.app.state.room?.id, this.ameacas, geo, this.clima(), areaSig, this.pagina];
+    const dados = [c && { ...c, registro: 0 }, this.aba, this.fluxo, this.atorId, this.alvoId, this.assinaturaPecas(), this.assinaturaFichas(), this.app.state.room?.id, this.ameacas, geo, this.clima(), areaSig, this.pagina, this.modoCards, this.modoCards ? [this.distMestre, [...this.areaSel], this.ritualRes.modoDeAlvo()] : null];
     if (!this.mudou('res', dados)) return;
     if (!c) return this.trocar(this.resCorpo, this.semCombate());
-    if (c.fase === 'montando') return this.trocar(this.resCorpo, this.montagem(c));
+    // na tela nova o preparo é em dois cards (renderMontagemCards), por cima de tudo
+    if (c.fase === 'montando') return this.trocar(this.resCorpo, ...(this.modoCards ? [] : [this.montagem(c)]));
     if (c.fase === 'encerrado') return this.trocar(this.resCorpo, this.encerrado(c));
     if (!v?.ator)
       return this.trocar(
@@ -1887,13 +2103,21 @@ export class CombateScreen {
         ),
       );
     // o fluxo da vez: o menu, o menu de ataque, ou a ação (o ataque em dois cartões, o movimento, a mochila…)
-    const topo = this.faixaAtor(c, v.e, v.ativos, v.ator);
-    const trilha = this.trilhaDoFluxo(v.ator);
-    const tela = (el: HTMLElement) => this.trocar(this.resCorpo, topo, h('div', { class: `vez-tela vez-${this.fluxo === 'acao' ? this.aba : this.fluxo}` }, trilha, el));
+    const topo = this.modoCards ? this.topoCards(c, v.e, v.ativos, v.ator) : this.faixaAtor(c, v.e, v.ativos, v.ator);
+    const passoCards = this.modoCards ? this.indicePasso(x, mx, rx) : null;
+    const trilha = passoCards !== null ? this.trilhaPassos(passoCards) : this.trilhaDoFluxo(v.ator);
+    const tela = (el: HTMLElement) => {
+      // a lista de alvos rola para o lado: a rolagem não volta ao começo a cada escolha
+      const antes = this.resCorpo.querySelector<HTMLElement>('.cc-alvos-lista')?.scrollLeft ?? 0;
+      this.trocar(this.resCorpo, topo, h('div', { class: `vez-tela vez-${this.fluxo === 'acao' ? this.aba : this.fluxo}` }, trilha, el));
+      const lista = this.resCorpo.querySelector<HTMLElement>('.cc-alvos-lista');
+      if (lista) lista.scrollLeft = antes;
+    };
     if (this.fluxo === 'menu') return tela(this.menuDaVez(c, v.ator));
     if (this.fluxo === 'atacar') return tela(this.menuDeAtaque(c, v.ator));
+    if (this.fluxo === 'alvo') return tela(this.telaAlvo(c, v.ator));
     if (x) return tela(this.ataque.montarRapido(x));
-    if (this.aba === 'movimento') return tela(this.telaMovimento(c, v.ator));
+    if (this.aba === 'movimento') return tela(this.modoCards ? this.telaMovimentoMesa(c, v.ator) : this.telaMovimento(c, v.ator));
     if (this.aba === 'item') return tela(this.telaItem(c, v.ator));
     if (!mx && !rx) return tela(this.conteudoAba(c, v.ator));
     const corpo = mx ? this.manobra.montar(mx) : this.ritualRes.montar(rx!);
@@ -1914,7 +2138,7 @@ export class CombateScreen {
       corpo.classList.add('cb-pap');
       // o passo do alvo: o que fazer agora, em cima da situação (o alvo se escolhe no tabuleiro)
       if (passo === 2 && atual === 1)
-        corpo.children[1]?.prepend(h('p', { class: 'cb-pap-dica' }, icPintado('mira'), h('span', null, 'Escolha o alvo: clique na peça no tabuleiro ou no nome na ordem de iniciativa.')));
+        corpo.children[1]?.prepend(h('p', { class: 'cb-pap-dica' }, icPintado('mira'), h('span', null, this.modoCards ? 'Escolha o alvo na lista de alvos, aqui em cima.' : 'Escolha o alvo: clique na peça no tabuleiro ou no nome na ordem de iniciativa.')));
       [...corpo.children].forEach((el, i) => el.classList.toggle('cb-pag', i === atual));
       // de volta a um passo feito: o botão de seguir leva ao passo de agora
       if (this.pagina !== null)
@@ -1944,11 +2168,8 @@ export class CombateScreen {
     );
   }
 
-  private montagem(c: Combate): HTMLElement {
-    const chars = [...(this.sessao?.characters ?? [])];
-    const dentro = new Set(c.participantes.map((p) => p.id));
-    chars.sort((a, b) => Number(dentro.has(b.id)) - Number(dentro.has(a.id)) || Number(b.sceneId === c.cena) - Number(a.sceneId === c.cena) || a.id - b.id);
-    const linhas = chars.map((ch) => {
+  /** As peças de uma linha da montagem (a de hoje e a dos cards usam as mesmas): incluir, retrato, nome, lado, começo e Iniciativa. */
+  private partesMontagem(c: Combate, ch: Character) {
       const p = cb.participante(c, ch.id);
       const ini = this.calcDe(ch.id)?.pericias.iniciativa;
       const incluir = h('input', {
@@ -1998,17 +2219,19 @@ export class CombateScreen {
         inp.addEventListener('keydown', (ev) => ev.key === 'Enter' && inp.blur());
         campo = h('label', { class: 'cb-ini-campo' }, inp, h('small', null, ini ? `rola ${textoTeste(ini.dados, ini.bonus, ini.penalidadeDados)}` : 'sem ficha'));
       } else campo = h('span', { class: 'cb-ini-mestre' }, p ? (this.ameacaDe(ch.id) ? 'no grupo do mestre' : 'no grupo do mestre · sem ficha') : '');
-      return h(
-        'div',
-        { class: `cb-mont-linha${p ? '' : ' fora'}` },
+      return {
+        p,
         incluir,
-        h('span', { class: 'cb-foto' }, this.retrato(ch.id, 48)),
-        h('span', { class: 'cb-mont-nome' }, h('b', null, ch.name), h('small', null, ch.sceneId === c.cena ? 'nesta cena' : `em ${this.nomeCena(ch.sceneId)}`)),
+        foto: h('span', { class: 'cb-foto' }, this.retrato(ch.id, 48)),
+        nome: h('span', { class: 'cb-mont-nome' }, h('b', null, ch.name), h('small', null, ch.sceneId === c.cena ? 'nesta cena' : `em ${this.nomeCena(ch.sceneId)}`)),
         lado,
         ciente,
         campo,
-      );
-    });
+      };
+  }
+
+  /** A caixa da Iniciativa do grupo do mestre (uma rolagem só por todos os seres dele). */
+  private campoIniMestre(c: Combate) {
     const temMestre = c.participantes.some(cb.doMestre);
     const inpM = h('input', {
       class: 'cb-inp',
@@ -2027,6 +2250,11 @@ export class CombateScreen {
       if (n !== c.mestre.iniciativa) this.acao({ tipo: 'iniciativaMestre', valor: n });
     });
     inpM.addEventListener('keydown', (ev) => ev.key === 'Enter' && inpM.blur());
+    return { temMestre, inpM };
+  }
+
+  /** Os avisos de empate de Iniciativa, com o botão de quem vai antes. */
+  private empatesDe(c: Combate) {
     const empates = cb.empates(c).map((g) =>
       h(
         'div',
@@ -2036,6 +2264,19 @@ export class CombateScreen {
         ...g.map((e) => botao(cb.nomeEntrada(c, e), null, () => this.desempatar(c, g, e), 'cb-mini')),
       ),
     );
+    return empates;
+  }
+
+  private montagem(c: Combate): HTMLElement {
+    const chars = [...(this.sessao?.characters ?? [])];
+    const dentro = new Set(c.participantes.map((p) => p.id));
+    chars.sort((a, b) => Number(dentro.has(b.id)) - Number(dentro.has(a.id)) || Number(b.sceneId === c.cena) - Number(a.sceneId === c.cena) || a.id - b.id);
+    const linhas = chars.map((ch) => {
+      const m = this.partesMontagem(c, ch);
+      return h('div', { class: `cb-mont-linha${m.p ? '' : ' fora'}` }, m.incluir, m.foto, m.nome, m.lado, m.ciente, m.campo);
+    });
+    const { temMestre, inpM } = this.campoIniMestre(c);
+    const empates = this.empatesDe(c);
     return h(
       'div',
       { class: 'cb-mont' },
@@ -2078,21 +2319,18 @@ export class CombateScreen {
     );
   }
 
-  /** Quem age: retrato, recursos, Defesa, deslocamento, limite de PE e o gasto, o que já usou e as abas. */
-  private faixaAtor(c: Combate, e: Entrada, ativos: Participante[], ator: Participante): HTMLElement {
-    const ch = this.personagem(ator.id);
-    const calc = this.calcDe(ator.id);
-    const f = this.fichaDe(ator.id);
-    const am = this.ameacaDe(ator.id);
-    const vit = this.vitais(ator.id);
-    // como no celular: a sigla e o número grande em cima, a barra sozinha embaixo (sem texto dentro)
-    const barra = (rot: string, cls: string, a?: number, m?: number) =>
-      h(
-        'span',
-        { class: `cb-rec ${cls}`, 'data-vid': String(ator.id), 'data-vk': cls },
-        h('span', { class: 'cb-rec-topo' }, h('b', null, rot), h('span', { class: 'cb-rec-n' }, h('strong', null, a !== undefined ? String(a) : '—'), m ? h('small', null, `/${m}`) : null)),
-        h('span', { class: `cb-barra ${cls}`, style: `--p:${a !== undefined && m ? Math.max(0, Math.min(1, a / m)) : 0}` }, h('i')),
-      );
+  /** Uma barra de PV, PE ou SAN: a sigla e o número em cima, a barra embaixo (o `patchVitais` acerta o número no lugar). */
+  private barraRec(id: number, rot: string, cls: 'pv' | 'pe' | 'san', a?: number, m?: number) {
+    return h(
+      'span',
+      { class: `cb-rec ${cls}`, 'data-vid': String(id), 'data-vk': cls },
+      h('span', { class: 'cb-rec-topo' }, h('b', null, rot), h('span', { class: 'cb-rec-n' }, h('strong', null, a !== undefined ? String(a) : '—'), m ? h('small', null, `/${m}`) : null)),
+      h('span', { class: `cb-barra ${cls}`, style: `--p:${a !== undefined && m ? Math.max(0, Math.min(1, a / m)) : 0}` }, h('i')),
+    );
+  }
+
+  /** As ações do turno de quem age: padrão e movimento (tocar marca como usada ou livre), a reação e a postura. */
+  private chipsDoTurno(c: Combate, ator: Participante): HTMLElement[] {
     const ac = cb.acoesDe(c, ator.id);
     const chipAc = (qual: 'padrao' | 'movimento', rot: string) => {
       const usada = ac.completa || ac[qual];
@@ -2134,33 +2372,49 @@ export class CombateScreen {
       },
       `Reação: ${ator.reacao ? 'usada' : 'disponível'}`,
     );
+    return [chipAc('padrao', 'Padrão'), chipAc('movimento', 'Movimento'), reacao, ...(postura ? [postura] : [])];
+  }
+
+  /** No turno do mestre, com vários seres: quem age agora (a escolha também põe a peça no comando). */
+  private seletorQuem(e: Entrada, ativos: Participante[], ator: Participante): HTMLElement | null {
+    if (!e.mestre || ativos.length <= 1) return null;
+    return h(
+      'div',
+      { class: 'cb-quem', role: 'group', 'aria-label': 'Quem age no turno do mestre' },
+      ...ativos.map((p) =>
+        h(
+          'button',
+          {
+            class: `cb-quem-bt${p.id === ator.id ? ' on' : ''}`,
+            type: 'button',
+            'aria-pressed': String(p.id === ator.id),
+            onclick: () => {
+              sfx.click();
+              this.atorId = p.id;
+              this.fluxo = 'menu';
+              this.porNaVez();
+              this.render();
+            },
+          },
+          p.nome,
+        ),
+      ),
+    );
+  }
+
+  /** Quem age: retrato, recursos, Defesa, deslocamento, limite de PE e o gasto, o que já usou e as abas. */
+  private faixaAtor(c: Combate, e: Entrada, ativos: Participante[], ator: Participante): HTMLElement {
+    const ch = this.personagem(ator.id);
+    const calc = this.calcDe(ator.id);
+    const f = this.fichaDe(ator.id);
+    const am = this.ameacaDe(ator.id);
+    const vit = this.vitais(ator.id);
+    // como no celular: a sigla e o número grande em cima, a barra sozinha embaixo (sem texto dentro)
+    const barra = (rot: string, cls: 'pv' | 'pe' | 'san', a?: number, m?: number) => this.barraRec(ator.id, rot, cls, a, m);
+    const ac = cb.acoesDe(c, ator.id);
     const classe = f?.ficha.classe ? ` · ${regras.catalogo.classe(f.ficha.classe).nome} · NEX ${f.ficha.nex}%` : ` · ${am?.tipo ?? NOME_LADO[ator.lado]}`;
     const longe = ch && ch.sceneId !== this.app.state.room?.id ? h('small', { class: 'cb-longe' }, `em ${this.nomeCena(ch.sceneId)}`) : null;
-    const seletor =
-      e.mestre && ativos.length > 1
-        ? h(
-            'div',
-            { class: 'cb-quem', role: 'group', 'aria-label': 'Quem age no turno do mestre' },
-            ...ativos.map((p) =>
-              h(
-                'button',
-                {
-                  class: `cb-quem-bt${p.id === ator.id ? ' on' : ''}`,
-                  type: 'button',
-                  'aria-pressed': String(p.id === ator.id),
-                  onclick: () => {
-                    sfx.click();
-                    this.atorId = p.id;
-                    this.fluxo = 'menu';
-                    this.porNaVez();
-                    this.render();
-                  },
-                },
-                p.nome,
-              ),
-            ),
-          )
-        : null;
+    const seletor = this.seletorQuem(e, ativos, ator);
     const gasto = ac.pe ?? 0;
     const limite = calc?.limitePe;
     return h(
@@ -2187,7 +2441,7 @@ export class CombateScreen {
             'div',
             { class: 'cb-ator-turno' },
             h('span', { class: `cb-limite${limite !== undefined && gasto > limite ? ' alerta' : ''}` }, `Limite de PE: ${limite ?? '—'} · gasto: ${gasto}`),
-            h('div', { class: 'cb-acoes-chips' }, chipAc('padrao', 'Padrão'), chipAc('movimento', 'Movimento'), reacao, postura),
+            h('div', { class: 'cb-acoes-chips' }, ...this.chipsDoTurno(c, ator)),
           ),
         ),
       ),
@@ -2256,7 +2510,7 @@ export class CombateScreen {
     // o mesmo card do menu da vez (17/10, o Felipe: "por que aqui é um trem feio e não um card igual no menu? já existe, é só
     // copiar e adaptar"): o nome, o quadro do ícone, a plaquinha com o detalhe e o rodapé com o que gasta
     const PINTADO: Partial<Record<NomeIcone, string>> = { estrela: 'combate-habilidade', mochila: 'combate-item', bota: 'combate-movimento', reticencias: 'combate-outras' };
-    const opcao = (icone: NomeIcone, nome: string, detalhe: string, qual: cb.TipoAcao, fn: () => void, pagina?: string) =>
+    const opcao = (icone: NomeIcone, nome: string, detalhe: string, qual: cb.TipoAcao, fn: () => void, pagina?: string, info?: () => void) =>
       h(
         'button',
         { class: 'vez-cartao', type: 'button', title: `${nome} (${NOME_QUAL[qual]})${pagina ? ` · ${pagina}` : ''}`, onclick: () => (sfx.click(), fn()) },
@@ -2264,6 +2518,7 @@ export class CombateScreen {
         h('span', { class: 'vez-cartao-ic card-quadro' }, arteOu(PINTADO[icone] ? [`/arte/icones/${PINTADO[icone]}.png`] : [], ic(icone))),
         h('small', { class: 'card-placa' }, detalhe),
         h('span', { class: 'card-pe' }, NOME_QUAL[qual]),
+        info ? botaoInfo(info) : null,
       );
     const declarar = (qual: cb.TipoAcao, texto: string) => this.acao({ tipo: 'declarar', qual, texto, quem: ator.id });
     const calc = this.calcDe(ator.id);
@@ -2285,7 +2540,7 @@ export class CombateScreen {
             const noAtaque = NO_ATAQUE.includes(p.id);
             if (custo)
               lista.push(
-                opcao('estrela', p.nome, noAtaque ? `${custo} PE · aplica no Atacar` : `${custo} PE · você aplica o efeito`, 'livre', () => (noAtaque ? (toast(`${p.nome}: escolha a carta dele em Atacar; o PE sai e o bônus entra sozinhos.`), this.irPara('atacar')) : this.usarHabilidade(ator, p.nome, custo, calc.limitePe, gasto, contra, resumo))),
+                opcao('estrela', p.nome, noAtaque ? `${custo} PE · aplica no Atacar` : `${custo} PE · você aplica o efeito`, 'livre', () => (noAtaque ? (toast(`${p.nome}: escolha a carta dele em Atacar; o PE sai e o bônus entra sozinhos.`), this.irPara('atacar')) : this.usarHabilidade(ator, p.nome, custo, calc.limitePe, gasto, contra, resumo)), undefined, this.modoCards ? () => this.abrirInfo(this.infoPoder(p, ficha, custo, noAtaque)) : undefined),
               );
             linhas.push(
               h(
@@ -2329,7 +2584,8 @@ export class CombateScreen {
       h(
         'div',
         { class: 'cb-res-pe' },
-        h('span', { class: `cb-alvo-tag${alvo ? '' : ' vazio'}` }, ic('mira'), alvo ? `Alvo: ${alvo.nome}` : 'Sem alvo: clique numa peça'),
+        h('span', { class: `cb-alvo-tag${alvo ? '' : ' vazio'}` }, ic('mira'), alvo ? `Alvo: ${alvo.nome}` : this.modoCards ? 'Sem alvo' : 'Sem alvo: clique numa peça'),
+        this.modoCards && this.aba === 'outras' ? botao(alvo ? 'Trocar o alvo' : 'Escolher o alvo', 'mira', () => ((this.pedidoAlvo = () => this.irPara('acao', 'outras')), this.irPara('alvo')), 'cb-mini') : null,
         h('p', { class: 'cb-nota' }, nota),
       ),
     );
@@ -2399,6 +2655,633 @@ export class CombateScreen {
       this.acao({ tipo: 'gastarPe', quem: ator.id, pe: custo, motivo: nome });
       this.acao({ tipo: 'declarar', qual: 'livre', texto: `usa ${nome}${contra}`, quem: ator.id });
     });
+  }
+
+  // ================================================================ a tela nova: cards (21/10, pedido do Felipe)
+  // A batalha é nas miniaturas: a aba vira o cardzão de quem age (esquerda), o menu da vez (meio) e o cardzão do alvo
+  // (direita), com a faixa da iniciativa no topo. Por dentro é o mesmo combate: as mesmas ações, regras e assistentes.
+
+  /** O alvo de verdade de quem age: o marcado, desde que não seja ele mesmo (o alvo continua marcado entre os turnos). */
+  private alvoEfetivo(c: Combate, ator?: Participante | null): Participante | undefined {
+    if (this.alvoId === null || this.alvoId === ator?.id) return undefined;
+    const p = cb.participante(c, this.alvoId);
+    return p && !p.fora ? p : undefined;
+  }
+
+  /** O topo do meio: só o seletor de quem age, no turno do mestre com vários seres (o resto é um passo por tela). */
+  private topoCards(_c: Combate, e: Entrada, ativos: Participante[], ator: Participante): HTMLElement {
+    return h('div', { class: 'cc-topo' }, this.seletorQuem(e, ativos, ator));
+  }
+
+  // ---------------------------------------------------------------- o passo a passo do meio (21/10, um passo por tela)
+
+  /** Vai para o passo "Contra quem?" e, escolhido o alvo, segue para a ação (na tela de hoje o alvo se escolhe no mapa). */
+  private seguirParaAlvo(aba: Aba) {
+    if (!this.modoCards) return this.irPara('acao', aba);
+    this.aba = aba;
+    this.pedidoAlvo = () => this.irPara('acao', aba);
+    this.irPara('alvo');
+  }
+
+  /** Em que passo da trilha está (0 a 4); null = ação de um passo só (habilidade, item, movimento, outras). */
+  private indicePasso(x: CtxAtaque | null, mx: CtxManobra | null, rx: CtxRitual | null): number | null {
+    if (this.fluxo === 'menu') return 0;
+    if (this.fluxo === 'atacar') return 1;
+    if (this.fluxo === 'alvo') return 2;
+    if (this.fluxo !== 'acao') return null;
+    if (x) return this.ataque.fase(x) === 'resultado' ? 4 : 3;
+    if (mx) return this.manobra.passo(mx) >= 4 ? 4 : 3;
+    if (rx) return this.ritualRes.passo(rx) >= 4 ? 4 : 3;
+    return null;
+  }
+
+  /** A trilha de passos do topo: onde está, e os já feitos voltam com um toque. */
+  private trilhaPassos(atual: number): HTMLElement {
+    const nomes = ['O que vai fazer?', 'Com o quê?', 'Contra quem?', 'Rolagem', 'Resultado'];
+    const voltar = (i: number) => {
+      sfx.paper();
+      if (i === 0) this.irPara('menu');
+      else if (i === 1) this.irPara('atacar');
+      else if (i === 2) {
+        const aba = this.aba;
+        this.pedidoAlvo = this.pedidoAlvo ?? (() => this.irPara('acao', aba));
+        this.irPara('alvo');
+      } else this.irPara('acao', this.aba);
+    };
+    return h(
+      'ol',
+      { class: 'cc-passos', 'aria-label': 'Passos da ação' },
+      ...nomes.map((n, i) =>
+        h(
+          'li',
+          { class: `${i < atual ? 'feito' : i === atual ? 'atual' : ''}` },
+          i < atual
+            ? h('button', { type: 'button', title: `Voltar: ${n}`, onclick: () => voltar(i) }, h('span', null, String(i + 1)), h('b', null, n))
+            : h('div', null, h('span', null, String(i + 1)), h('b', null, n)),
+        ),
+      ),
+    );
+  }
+
+  /** O passo "Contra quem?": um cartão grande por ser do combate; o toque escolhe e segue (no ritual de área, marca vários). */
+  private telaAlvo(c: Combate, ator: Participante): HTMLElement {
+    const ritual = this.aba === 'ritual';
+    const modo = ritual ? this.ritualRes.modoDeAlvo() : 'alvo';
+    const area = modo === 'area';
+    const alvo = this.alvoEfetivo(c, ator);
+    const verbo: Partial<Record<Aba, string>> = { atacar: 'atacar', manobra: 'fazer a manobra', ritual: 'lançar o ritual', outras: 'agir' };
+    const seguir = () => {
+      this.alvoPrevia = null;
+      const f = this.pedidoAlvo ?? (() => this.irPara('acao', this.aba));
+      f();
+    };
+    // quem está do outro lado vem primeiro; os do mesmo lado, por último
+    const lugar = (p: Participante) => (p.lado === ator.lado ? 2 : p.lado === 'neutro' || ator.lado === 'neutro' ? 1 : 0);
+    const cartoes = c.participantes
+      .filter((p) => !p.fora && p.id !== ator.id)
+      .map((p, i) => ({ p, i }))
+      .sort((a, b) => lugar(a.p) - lugar(b.p) || a.i - b.i)
+      .map(({ p }) => {
+        const v = this.vitais(p.id);
+        const calc = this.calcDe(p.id);
+        const am = this.ameacaDe(p.id);
+        const base = calc?.defesa ?? am?.defesa;
+        const defesa = base === undefined ? '—' : String(base + (p.defesaTurno ?? []).reduce((t, d) => t + d.valor, 0));
+        const cs = this.condicoesDe(c, p);
+        const cond = vitalConditions(v);
+        const estado = cond.morrendo ? `Morrendo ${p.morrendo}/3` : cs.includes('caido') ? 'Caído' : cb.surpreendido(c, p) ? 'Surpreendido' : p.desde > c.rodada ? `Entra na rodada ${p.desde}` : cond.machucado ? 'Machucado' : null;
+        return cartaoDeAlvo({
+          id: p.id,
+          nome: p.nome,
+          lado: p.lado,
+          foto: this.retrato(p.id, 132),
+          pv: v ? `${v.pv}/${v.pvMax}` : '—',
+          pvPct: v && v.pvMax ? Math.max(0, Math.min(1, v.pv / v.pvMax)) : 0,
+          defesa,
+          estado,
+          escolhido: area ? this.areaSel.has(p.id) : alvo?.id === p.id,
+          caixa: area,
+          aoPassar: (dentro) => {
+            // o cardzão da direita mostra quem está sob o mouse
+            this.alvoPrevia = dentro ? p.id : null;
+            this.renderAlvoCard();
+          },
+          aoClicar: () => {
+            sfx.click();
+            if (area) {
+              if (this.areaSel.has(p.id)) this.areaSel.delete(p.id);
+              else this.areaSel.add(p.id);
+              this.render();
+            } else {
+              this.alvoId = p.id;
+              this.alvoPrevia = null;
+              this.render();
+              seguir();
+            }
+          },
+        });
+      });
+    const pgAlvos = paginar('alvos', cartoes, 6, () => (this.sigs.delete('res'), this.renderRes()));
+    const modos = ritual
+      ? h(
+          'div',
+          { class: 'cc-modos', role: 'group', 'aria-label': 'Quem o ritual alcança' },
+          ...(
+            [
+              ['alvo', 'Um alvo'],
+              ['area', 'Uma área (vários)'],
+              ['nenhum', 'Sem alvo'],
+            ] as const
+          ).map(([id, rot]) =>
+            h(
+              'button',
+              {
+                class: `cc-modo${modo === id ? ' on' : ''}`,
+                type: 'button',
+                'aria-pressed': String(modo === id),
+                onclick: () => {
+                  sfx.click();
+                  this.ritualRes.definirModo(id);
+                  if (id === 'nenhum') return seguir();
+                  this.sigs.delete('res');
+                  this.renderRes();
+                },
+              },
+              rot,
+            ),
+          ),
+        )
+      : null;
+    const rodape = area
+      ? h('div', { class: 'cc-passo-rodape' }, h('span', null, this.areaSel.size ? `${this.areaSel.size} na área` : 'Marque quem está na área'), botao('Continuar', 'avancar', seguir, 'forte', undefined, this.areaSel.size === 0))
+      : null;
+    return h(
+      'div',
+      { class: 'cc-passo cc-passo-alvo' },
+      h('div', { class: 'cc-passo-cab' }, h('h3', null, area ? 'Quem está na área?' : 'Contra quem?'), h('p', null, `${ator.nome.split(/\s+/)[0]} vai ${verbo[this.aba] ?? 'agir'}. ${area ? 'Toque em cada ser que o ritual alcança.' : 'Toque num cartão para escolher.'}`)),
+      modos,
+      h('div', { class: 'cc-alvos-grade' }, ...(cartoes.length ? pgAlvos.itens : [h('p', { class: 'cb-vazio' }, 'Ninguém mais no combate.')])),
+      pgAlvos.pager,
+      rodape,
+    );
+  }
+
+  // ---------------------------------------------------------------- a abinha "O que é isso?"
+
+  private abrirInfo(v: VMInfo) {
+    this.abinhaEl.replaceChildren(abinhaInfo(v, () => this.fecharInfo()));
+    this.abinhaEl.classList.remove('hidden');
+  }
+
+  private fecharInfo() {
+    this.abinhaEl.classList.add('hidden');
+    this.abinhaEl.replaceChildren();
+  }
+
+  /** Um ataque: o teste, o dano, o crítico e o alcance, com o que cada um quer dizer. */
+  private infoArma(a: ArmaOpcao): VMInfo {
+    const pericia = a.pericia === 'luta' ? 'Luta' : 'Pontaria';
+    const teste = textoTeste(a.dados, a.bonus, a.penalidade);
+    const alcance = a.faixa ? `${cb.NOME_FAIXA[a.faixa]} (até ${cb.textoMetros(cb.METROS_FAIXA[a.faixa])})` : 'corpo a corpo (até 1,5 m)';
+    const j = a.jogada;
+    return {
+      titulo: j ? j.nome : a.nome,
+      meta: `${a.faixa ? 'Ataque à distância' : 'Ataque corpo a corpo'} · ${pericia}`,
+      ...(j?.pe ? { selo: { texto: `${j.pe} PE`, pe: true } } : { selo: { texto: 'Ação padrão' } }),
+      icone: a.item && a.item !== 'ataque-desarmado' ? arteDoItem({ id: a.item, tipo: 'arma', nome: a.nome }, a.pericia === 'pontaria' ? 'pistola' : 'faca', 'arte-ic') : arteOu(['/arte/icones/combate-atacar.png'], ic('espadas')),
+      campos: [
+        ['Teste', `${pericia} ${teste}`],
+        ['Dano', `${a.dano}${a.extra ? ` e ${a.extra.dano} ${cb.NOME_TIPO_DANO[a.extra.tipo]}` : ''}`],
+        ['Tipo', cb.NOME_TIPO_DANO[a.tipo] ?? String(a.tipo)],
+        ['Crítico', `${a.margem}/×${a.multiplicador}`],
+        ['Alcance', alcance],
+      ],
+      blocos: [
+        {
+          titulo: 'O que é',
+          icone: 'livro',
+          textos: [
+            `Um ataque: rola ${teste} (${pericia}) e compara com a Defesa do alvo. Acertando, o dano é ${a.dano}. Tirando ${a.margem === 20 ? '20 natural' : `${a.margem} ou mais no d20`}, é crítico e os dados do dano são multiplicados por ${a.multiplicador}.`,
+            ...(a.vezes ? [`Faz ${a.vezes} ataques com a mesma ação padrão.`] : []),
+            ...(a.arremesso ? [`Também se arremessa (Pontaria, alcance ${cb.NOME_FAIXA[a.arremesso.faixa]}; LR p. 55).`] : []),
+          ],
+        },
+        { titulo: 'O que soma', icone: 'estrela', textos: j ? [...j.linhas, ...j.avisos, ...(j.nota ? [`“${j.nota}”`] : [])] : [] },
+        { titulo: 'Notas', icone: 'alerta', textos: a.notas },
+      ],
+    };
+  }
+
+  /** Um ritual: execução, alcance, alvo, duração, resistência, DT e o custo de cada forma. */
+  private infoRitual(r: RitualOpcao): VMInfo {
+    return {
+      titulo: r.nome,
+      meta: `${cb.NOME_ELEMENTO[r.elemento]} · ${r.circulo}º círculo`,
+      selo: { texto: `${r.formas[0]?.pe ?? 0} PE`, pe: true },
+      icone: arteOu([`/arte/rituais/${r.id}.png`, `/arte/icones/sigilo-${r.elemento}.png`], ic('pentagrama')),
+      campos: [
+        ['Execução', NOME_QUAL[r.qual]],
+        ['Alcance', r.alcance],
+        ['Alvo ou área', r.alvo ?? '—'],
+        ['Duração', r.duracao],
+        ['Resistência', r.resistencia ?? 'nenhuma'],
+        ['DT', r.resistencia ? String(r.dt) : '—'],
+      ],
+      blocos: [
+        {
+          titulo: 'O que é',
+          icone: 'livro',
+          textos: [
+            `Ritual de ${cb.NOME_ELEMENTO[r.elemento]} do ${r.circulo}º círculo. Conjurar gasta ${r.formas[0]?.pe ?? 0} PE e uma ação ${NOME_QUAL[r.qual]}; quem conjura faz o Custo do Paranormal. ${r.resistencia ? `O alvo resiste com ${r.resistencia} contra a DT ${r.dt}.` : 'Não tem teste de resistência.'}`,
+            `O efeito completo está no livro (${r.ref}).`,
+          ],
+        },
+        { titulo: 'Formas', icone: 'estrela', textos: r.formas.map((f) => `${cb.NOME_FORMA[f.forma]}: ${f.pe} PE${f.motivo ? ` (travada: ${f.motivo})` : ''}`) },
+      ],
+    };
+  }
+
+  /** Um poder ou habilidade: o que faz, o custo e de onde vem. */
+  private infoPoder(p: regras.PoderObtido, f: regras.Ficha, custo: number | undefined, jogada = false): VMInfo {
+    const efeitos = p.efeitos.filter((e) => e.alvo !== 'nota').map((e) => regras.textoEfeito(e) + (e.condicional ? ` (${e.condicional})` : ''));
+    const notas = p.efeitos.filter((e): e is Extract<regras.Efeito, { alvo: 'nota' }> => e.alvo === 'nota').map((e) => e.texto);
+    const resumo = regras.resumoDoPoder(p, f);
+    return {
+      titulo: p.nome,
+      meta: `${p.tipo === 'classe' ? 'Poder de classe' : p.tipo === 'paranormal' ? 'Poder paranormal' : p.tipo === 'trilha' ? 'Habilidade de trilha' : p.tipo === 'origem' ? 'Poder de origem' : 'Habilidade'} · NEX ${p.nex}%`,
+      selo: custo ? { texto: `${custo} PE`, pe: true } : { texto: 'Passivo' },
+      icone: arteOu(['/arte/icones/combate-habilidade.png'], ic('estrela')),
+      blocos: [
+        { titulo: 'O que faz', icone: 'livro', textos: [resumo || 'Sem descrição no catálogo.', ...notas] },
+        { titulo: 'Efeitos', icone: 'alvo', textos: efeitos.length ? [efeitos.join('; ') + '.'] : [] },
+        { titulo: 'Como usar aqui', icone: 'dados', textos: custo ? [jogada ? 'Escolha a carta dele em Atacar: o PE sai e o bônus entra sozinhos.' : 'Usar gasta o PE e escreve no registro; o efeito você aplica à mão.'] : ['Sempre ativo: já está nas contas da ficha.'] },
+      ],
+    };
+  }
+
+  /** Uma manobra: o que ela faz e como se resolve. */
+  private infoManobra(id: cb.ManobraId): VMInfo {
+    const m = cb.manobra(id)!;
+    return {
+      titulo: m.nome,
+      meta: `Manobra · LR p. ${m.pagina}`,
+      selo: { texto: m.id === 'atropelar' ? 'Livre' : 'Ação padrão' },
+      icone: arteOu(['/arte/icones/combate-manobra.png'], ic('mao')),
+      blocos: [
+        { titulo: 'O que faz', icone: 'livro', textos: [`Vencendo o teste oposto, ${m.efeito}.`] },
+        { titulo: 'Como se resolve', icone: 'dados', textos: ['Teste oposto: Luta de quem faz contra Luta de quem resiste, cada um rola o seu d20. Quem tira o maior total vence; o tamanho, a corrente e as condições entram nas contas.', 'O alvo precisa estar adjacente (1,5 m).'] },
+      ],
+    };
+  }
+
+  /** O movimento sem mapa: a miniatura anda na mesa; aqui só se declara (e, se quiser, quantos metros). */
+  private telaMovimentoMesa(c: Combate, ator: Participante): HTMLElement {
+    const ac = cb.acoesDe(c, ator.id);
+    const metros = this.deslocamentoDe(ator);
+    const qual: cb.TipoAcao = !ac.movimento && !ac.completa ? 'movimento' : 'padrao';
+    const inp = h('input', { class: 'cb-dado', type: 'text', inputmode: 'decimal', placeholder: '—', 'data-foco': 'mov:m', 'aria-label': 'Quantos metros andou' }) as HTMLInputElement;
+    const declarar = () => {
+      const t = inp.value.trim().replace(',', '.');
+      const n = t ? Number(t) : null;
+      if (n !== null && (!Number.isFinite(n) || n < 0)) return toast('Escreva os metros como número (ex.: 4,5).', 'error');
+      if (n !== null && n > metros + 1e-6) toast(`Passou do deslocamento (${cb.textoMetros(metros)}): confira se foi corrida ou uma regra da mesa.`);
+      this.acao({ tipo: 'declarar', qual, texto: n !== null ? `movimenta-se (${cb.textoMetros(n)})` : 'movimenta-se', quem: ator.id });
+      this.irPara('menu');
+    };
+    inp.addEventListener('keydown', (ev) => ev.key === 'Enter' && declarar());
+    const extra = ACOES.movimento.filter((o) => ['levantar', 'mirar', 'recarregar'].includes(o.id) && this.acaoServe(c, ator, o.id));
+    const alvo = this.alvoEfetivo(c, ator);
+    return h(
+      'div',
+      { class: 'vez-menu' },
+      h('div', { class: 'atq-bloco atq-chama' }, ic('bota'), h('div', null, h('b', null, 'Mova a miniatura na mesa'), h('small', null, `até ${cb.textoMetros(metros)} (${qual === 'movimento' ? 'a ação de movimento' : 'a ação padrão, que vira movimento'}). Aqui você só declara.`))),
+      h(
+        'div',
+        { class: 'atq-bloco' },
+        h('div', { class: 'atq-rotulo' }, 'Quanto andou', h('small', null, ' · opcional: vai para o registro')),
+        h('div', { class: 'atq-linha' }, h('label', { class: 'cb-caixa-dado' }, h('small', null, 'metros'), inp), botao('Declarar movimento', 'ok', declarar, 'forte')),
+      ),
+      extra.length ? h('p', { class: 'vez-pergunta menor' }, 'Ou, sem andar:') : null,
+      h(
+        'div',
+        { class: 'vez-cartoes' },
+        ...extra.map((o) =>
+          h(
+            'button',
+            { class: 'vez-cartao', type: 'button', onclick: () => (sfx.click(), this.acaoDoLivro(c, ator, o, alvo), this.irPara('menu')) },
+            h('b', { class: 'card-tit' }, o.nome),
+            h('span', { class: 'vez-cartao-ic card-quadro' }, ic(o.id === 'levantar' ? 'seta' : o.id === 'mirar' ? 'mira' : 'girarD')),
+            h('small', { class: 'card-placa' }, o.dica),
+            h('span', { class: 'card-pe' }, 'Escolher'),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /** "Agente · Classe · NEX 35%" ou "Ameaça · tipo · VD 40 · LR p. 180". */
+  private descricaoDe(p: Participante): string {
+    const f = this.fichaDe(p.id);
+    const am = this.ameacaDe(p.id);
+    if (p.lado === 'agente') return `Agente${f?.ficha.classe ? ` · ${regras.catalogo.classe(f.ficha.classe).nome} · NEX ${f.ficha.nex}%` : ''}`;
+    const quem = p.lado === 'inimigo' ? 'Ameaça' : 'Neutro';
+    if (!am) return `${quem} · sem ficha`;
+    return `${quem} · ${am.tipo}${am.tamanho ? ` ${cb.NOME_TAMANHO[am.tamanho]}` : ''}${am.vd !== undefined ? ` · VD ${am.vd}` : ''}${am.livro ? ` · LR p. ${cb.ameacaLivro(am.livro)?.pagina ?? ''}` : ''}`;
+  }
+
+  /** As condições do ser (as do combate saem no ×), com o "+ Condição". */
+  private elementoCondicoes(c: Combate, p: Participante): HTMLElement {
+    const vit = this.vitais(p.id);
+    const doCombate = new Set(p.condicoes ?? []);
+    const todas = this.condicoesDe(c, p);
+    const chips = todas
+      .filter((k) => k !== 'machucado' || !vitalConditions(vit).morrendo)
+      .map((k) =>
+        h(
+          'span',
+          { class: `cb-cond${doCombate.has(k) ? ' tira' : ''}${AUTOMATICAS.includes(k) || k === 'inconsciente' ? ' auto' : ''}` },
+          ic(ICONE_CONDICAO[k] ?? (k === 'morrendo' ? 'caveira' : k === 'enlouquecendo' || k === 'perturbado' ? 'espiral' : 'alerta')),
+          h('span', null, k === 'morrendo' ? `Morrendo ${p.morrendo}/3` : k === 'enlouquecendo' ? `Enlouquecendo ${p.enlouquecendo}/3` : nomeCond(k)),
+          doCombate.has(k)
+            ? h('button', { class: 'cb-cond-x', type: 'button', title: `Tirar ${nomeCond(k)}`, 'aria-label': `Tirar ${nomeCond(k)}`, onclick: () => (sfx.click(), this.acao({ tipo: 'condicao', id: p.id, condicao: k, ativa: false })) }, ic('fechar'))
+            : null,
+        ),
+      );
+    const podeMexer = c.fase === 'andamento' && !p.fora;
+    return h(
+      'div',
+      { class: 'cb-alvo-conds cc-conds' },
+      ...chips,
+      podeMexer ? h('button', { class: 'cb-cond mais', type: 'button', onclick: () => (sfx.click(), this.escolherCondicao(p)) }, ic('mais'), h('span', null, 'Condição')) : null,
+      !chips.length && !podeMexer ? h('small', null, 'Sem condições.') : null,
+    );
+  }
+
+  /** Os números e textos que os dois cardzões têm em comum. */
+  private perfilBase(c: Combate, p: Participante, papel: 'ator' | 'alvo'): PerfilCombate {
+    const ch = this.personagem(p.id);
+    const calc = this.calcDe(p.id);
+    const am = this.ameacaDe(p.id);
+    const etiquetas: PerfilCombate['etiquetas'] = [];
+    if (ch && ch.sceneId !== c.cena && this.nomeCena(ch.sceneId)) etiquetas.push({ texto: `em ${this.nomeCena(ch.sceneId)}` });
+    if (p.fora) etiquetas.push({ texto: NOME_FORA[p.fora], cls: 'ruim' });
+    else if (p.desde > c.rodada) etiquetas.push({ texto: `entra na rodada ${p.desde}`, cls: 'aviso' });
+    if (p.sustenta) etiquetas.push({ texto: `sustenta ${p.sustenta}`, cls: 'ritual' });
+    // a Defesa de agora, do que ela é feita e o que mexe nela até o próximo turno
+    const ajustes = p.defesaTurno ?? [];
+    const somaAj = ajustes.reduce((t, d) => t + d.valor, 0);
+    const defesaBase = calc?.defesa ?? am?.defesa;
+    const defesa = defesaBase === undefined ? '—' : String(defesaBase + somaAj);
+    let conta = '';
+    if (calc) {
+      const outros = calc.defesa - 10 - calc.atributos.agi - calc.protecao;
+      conta = `Defesa ${calc.defesa} = 10 + Agi ${calc.atributos.agi} + proteção ${calc.protecao}${outros ? ` ${outros > 0 ? '+' : '−'} ${Math.abs(outros)} de outros` : ''}`;
+    } else if (am) conta = `Defesa ${am.defesa}, da ficha da ameaça`;
+    // RD, imunidades, vulnerabilidades e presença
+    const rdFonte: Partial<Record<string, number>> = calc?.resistencias ?? am?.rd ?? {};
+    const porValor = new Map<number, string[]>();
+    for (const [t, n] of resistenciasParaMostrar(rdFonte)) porValor.set(n, [...(porValor.get(n) ?? []), t === 'todos' ? 'todo dano' : (NOME_DANO[t] ?? t).toLowerCase()]);
+    const junta = (xs: string[]) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} e ${xs.at(-1)}` : xs[0]);
+    const rdTexto = [...porValor].map(([n, ts]) => `${junta(ts)} ${n}`).join(' · ');
+    const linhas: NonNullable<PerfilCombate['linhas']> = [];
+    if (rdTexto) linhas.push({ rotulo: 'RD', valor: rdTexto });
+    if (am?.imunidades.length || (am && cb.imunidadesDaAmeaca(am).length)) linhas.push({ rotulo: 'Imune a', valor: cb.imunidadesDaAmeaca(am!).map((t) => this.nomeImune(t)).join(', '), cls: 'bom' });
+    if (am?.vulnerabilidades.length) linhas.push({ rotulo: 'Vulnerável a', valor: am.vulnerabilidades.map((t) => cb.NOME_TIPO_DANO[t]).join(', '), cls: 'ruim' });
+    if (am?.presenca) linhas.push({ rotulo: 'Presença perturbadora', valor: `Vontade DT ${am.presenca.dt}, ${am.presenca.dano} mental (NEX ${am.presenca.nex}% é imune)` });
+    const res = (per: 'fortitude' | 'reflexos' | 'vontade', rotulo: string) => {
+      const pc = calc?.pericias[per];
+      const x = pc ? { dados: pc.dados, bonus: pc.bonus, penalidade: pc.penalidadeDados } : am?.[per];
+      return { rotulo, valor: x ? textoTeste(x.dados, x.bonus, 'penalidade' in x ? x.penalidade : 0) : '—' };
+    };
+    return {
+      papel,
+      nome: p.nome,
+      sub: this.descricaoDe(p),
+      lado: p.lado,
+      ladoNome: NOME_LADO[p.lado],
+      foto: this.retrato(p.id, 132),
+      etiquetas,
+      caixas: [h('span', { class: 'cb-caixa' }, icPintado('escudo', 'defesa'), h('small', null, 'Defesa'), h('b', null, defesa))],
+      defesaConta: conta,
+      defesaAjustes: ajustes.map((d) => `${d.nome} ${d.valor < 0 ? '−' : '+'}${Math.abs(d.valor)} até o próximo turno`),
+      resistencias: [res('fortitude', 'Fortitude'), res('reflexos', 'Reflexos'), res('vontade', 'Vontade')],
+      linhas,
+      condicoes: this.elementoCondicoes(c, p),
+    };
+  }
+
+  /** Os ataques do ser, com o teste, o dano e o crítico (agente: da ficha; ameaça: da ficha rápida). */
+  private ataquesDoCard(p: Participante, comInfo = false): LinhaAtaque[] {
+    return this.armasDe(p).map((a) => ({
+      ...(comInfo ? { info: () => this.abrirInfo(this.infoArma(a)) } : {}),
+      nome: a.jogada ? a.jogada.nome : a.vezes ? `${a.nome} ×${a.vezes}` : a.nome,
+      teste: `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${textoTeste(a.dados, a.bonus, a.penalidade)}`,
+      dano: `${a.dano}${a.extra ? ` e ${a.extra.dano} ${cb.NOME_TIPO_DANO[a.extra.tipo]}` : ''}`,
+      resto: [`crítico ${a.margem}/×${a.multiplicador}`, a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo', a.naMao === false ? 'na mochila' : '', ...a.notas].filter(Boolean).join(' · '),
+      naMao: a.naMao !== false,
+    }));
+  }
+
+  /** O cardzão de quem age: tudo o que o mestre precisa saber de quem está na vez. */
+  private perfilDoAtor(c: Combate, ator: Participante): PerfilCombate {
+    const calc = this.calcDe(ator.id);
+    const ficha = this.fichaDe(ator.id)?.ficha;
+    const vit = this.vitais(ator.id);
+    const ac = cb.acoesDe(c, ator.id);
+    const gasto = ac.pe ?? 0;
+    const limite = calc?.limitePe;
+    const base = this.perfilBase(c, ator, 'ator');
+    const NO_ATAQUE = ['ataque-especial', 'ataque-furtivo'];
+    const poderes: LinhaPoder[] = [];
+    let passivos = 0;
+    if (calc && ficha)
+      for (const p of calc.poderes) {
+        const custo = custoPoder(p, ficha);
+        if (!custo) {
+          passivos++;
+          continue;
+        }
+        poderes.push({ nome: p.nome, pe: custo, resumo: regras.resumoDoPoder(p, ficha) || undefined, etiqueta: NO_ATAQUE.includes(p.id) ? 'aplica no Atacar' : 'você aplica o efeito', info: () => this.abrirInfo(this.infoPoder(p, ficha, custo, NO_ATAQUE.includes(p.id))) });
+      }
+    const rituais: LinhaPoder[] = this.rituaisDe(ator).map((r) => ({ nome: r.nome, pe: r.formas[0]?.pe ?? null, etiqueta: `${r.circulo}º círculo · DT ${r.dt}`, info: () => this.abrirInfo(this.infoRitual(r)) }));
+    return {
+      ...base,
+      // a ameaça sem ficha de agente só tem PV
+      barras: calc
+        ? h('div', { class: 'cb-recs' }, this.barraRec(ator.id, 'PV', 'pv', vit?.pv, vit?.pvMax), this.barraRec(ator.id, 'PE', 'pe', vit?.pe, vit?.peMax), this.barraRec(ator.id, 'SAN', 'san', vit?.san, vit?.sanMax))
+        : h('div', { class: 'cb-recs cc-recs1' }, this.barraRec(ator.id, 'PV', 'pv', vit?.pv, vit?.pvMax)),
+      caixas: [...base.caixas, h('span', { class: 'cb-caixa desloc' }, icPintado('bota', 'deslocamento'), h('small', null, 'Desloc.'), h('b', null, cb.textoMetros(this.deslocamentoDe(ator))))],
+      turno: h(
+        'div',
+        { class: 'cc-turno' },
+        h('div', { class: 'cb-acoes-chips' }, ...this.chipsDoTurno(c, ator)),
+        h('span', { class: `cb-limite${limite !== undefined && gasto > limite ? ' alerta' : ''}` }, `Limite de PE: ${limite ?? '—'} · gasto: ${gasto}`),
+      ),
+      ataques: this.ataquesDoCard(ator, true),
+      poderes,
+      rituais,
+      passivos,
+      refazer: () => (this.sigs.delete('atorcard'), this.renderAtorCard()),
+    };
+  }
+
+  /** O cardzão do alvo: o que importa para a defesa (Defesa e de que é feita, esquiva, bloqueio, resistências, RD, condições). */
+  private perfilDoAlvo(c: Combate, p: Participante): PerfilCombate {
+    const calc = this.calcDe(p.id);
+    const f = this.fichaDe(p.id);
+    const am = this.ameacaDe(p.id);
+    const vit = this.vitais(p.id);
+    const base = this.perfilBase(c, p, 'alvo');
+    const editarPv = () => void this.editarPv(p.id, p.nome, vit);
+    const pv = vit
+      ? h(
+          'div',
+          { class: 'cb-alvo-pv', 'data-vid': String(p.id) },
+          h('span', { class: 'cb-rec-topo' }, h('b', null, 'PV'), h('span', { class: 'cb-rec-n' }, h('strong', null, String(vit.pv)), h('small', null, `/${vit.pvMax}`))),
+          h('button', { class: 'cb-barra pv', type: 'button', title: 'Mudar PV', style: `--p:${vit.pvMax ? Math.max(0, Math.min(1, vit.pv / vit.pvMax)) : 0}`, onclick: editarPv }, h('i')),
+          h('span', { class: 'cb-machucado' }, h('i')),
+          h('small', null, `machucado: abaixo de ${Math.floor(vit.pvMax / 2)}`),
+        )
+      : h('div', { class: 'cb-alvo-pv' }, botao('Marcar PV', 'coracao', editarPv, 'cb-mini'));
+    const podeMexer = c.fase === 'andamento' && !p.fora;
+    const naoLetal = p.naoLetal
+      ? h(
+          'div',
+          { class: 'cb-alvo-ritual nl', title: 'Dano não letal: soma com o letal para desmaiar, mas não deixa morrendo. A cura tira primeiro ele (LR p. 88).' },
+          ic('punho'),
+          h('span', null, `Dano não letal ${p.naoLetal}${vit && vit.pv - p.naoLetal <= 0 ? ' · desmaiado' : ''}`),
+          podeMexer ? botao('Mudar', null, () => void this.editarNaoLetal(p), 'cb-mini') : null,
+        )
+      : null;
+    const esquiva = calc?.reacoes.esquiva;
+    const bloqueio = calc?.reacoes.bloqueio;
+    const caixa = (rot: string, val: string, pintado: string) => h('span', { class: 'cb-caixa' }, icPintado('escudo', pintado), h('small', null, rot), h('b', null, val));
+    const caixas = [...base.caixas];
+    if (esquiva != null) caixas.push(caixa(p.reacao ? 'Esquiva (usada)' : 'Esquiva', String(esquiva), 'deslocamento'));
+    if (bloqueio != null) caixas.push(caixa(p.reacao ? 'Bloqueio (usado)' : 'Bloqueio', `RD ${bloqueio}`, 'protecao'));
+    const agente = p.lado === 'agente' && !!calc;
+    const notasAm = am?.notas ? (am.livro ? am.notas.replace(/^LR p\. \d+( · )?/, '') : am.notas) : '';
+    const notas = notasAm ? [notasAm] : [];
+    const avisos: HTMLElement[] = [];
+    if (p.lado !== 'agente' && !am) avisos.push(h('p', { class: 'cb-alvo-nota aviso' }, icPintado('lapis'), h('span', null, 'Sem ficha: no lápis do cabeçalho, escolha uma ameaça do livro ou preencha à mão.')));
+    if (p.sustenta && podeMexer) avisos.push(h('div', { class: 'cb-alvo-ritual' }, ic('pentagrama'), h('span', null, `Sustentando ${p.sustenta}`), botao('Encerrar', null, () => this.acao({ tipo: 'sustentar', id: p.id, ritual: null }), 'cb-mini')));
+    return {
+      ...base,
+      pv,
+      naoLetal,
+      barras: agente && vit ? h('div', { class: 'cb-recs cc-recs2' }, this.barraRec(p.id, 'PE', 'pe', vit.pe, vit.peMax), this.barraRec(p.id, 'SAN', 'san', vit.san, vit.sanMax)) : null,
+      caixas,
+      // as armas só interessam para a ameaça (para um agente, o que importa é a defesa)
+      ataques: !f && am ? this.ataquesDoCard(p) : undefined,
+      notas,
+      avisos,
+      refazer: () => (this.sigs.delete('alvocard'), this.renderAlvoCard()),
+    };
+  }
+
+  private renderAtorCard() {
+    const c = this.combate;
+    const v = this.daVez();
+    if (!this.mudou('atorcard', [c && { ...c, registro: 0 }, this.atorId, this.assinaturaPecas(), this.assinaturaFichas(), this.ameacas])) return;
+    if (!c || c.fase !== 'andamento' || !v?.ator) return this.trocar(this.atorCorpo, cardConvite('Ninguém age agora', 'Abra ou comece o combate para ver aqui quem está na vez.', 'pessoa'));
+    this.trocar(this.atorCorpo, cardPerfil(this.perfilDoAtor(c, v.ator)));
+  }
+
+  private renderAlvoCard() {
+    const c = this.combate;
+    const v = this.daVez();
+    const ator = v?.ator ?? null;
+    const id = this.alvoPrevia ?? (this.alvoId !== null && this.alvoId !== ator?.id ? this.alvoId : null);
+    const p = c && id !== null ? cb.participante(c, id) : undefined;
+    if (!this.mudou('alvocard', [id, p, c?.fase, c?.rodada, this.assinaturaPecas(), this.assinaturaFichas(), id !== null ? this.ameacas[String(id)] : null])) return;
+    if (!c || !p || c.fase === 'montando') {
+      this.alvoCardExtra.replaceChildren();
+      return this.trocar(this.alvoCardCorpo, cardConvite('Escolha o alvo no menu', 'Toque num cartão de "Contra quem?" no menu do meio: aqui aparecem a Defesa, as resistências e o que protege o alvo.'));
+    }
+    const noCombate = !p.fora;
+    const icone = (nome: NomeIcone, dica: string, fn: () => void) => h('button', { class: 'cb-menu', type: 'button', title: dica, 'aria-label': dica, onclick: () => (sfx.click(), fn()) }, icPintado(nome));
+    const am = this.ameacaDe(p.id);
+    const f = this.fichaDe(p.id);
+    this.alvoCardExtra.replaceChildren(
+      ...[
+        p.lado !== 'agente' || !f ? icone('lapis', am ? 'Ficha da ameaça' : 'Criar a ficha da ameaça (Defesa, resistências, RD, ataques)', () => this.editarFichaAmeaca(p.id, p.nome)) : null,
+        c.fase === 'andamento' ? (noCombate ? icone('sair', 'Tirar do combate', () => this.dialogoSair(p.id)) : icone('entrar', 'Pôr no combate', () => this.dialogoEntrar(p.id))) : null,
+      ].filter((x): x is HTMLButtonElement => !!x),
+    );
+    this.trocar(this.alvoCardCorpo, cardPerfil(this.perfilDoAlvo(c, p)));
+  }
+
+  // ---------------------------------------------------------------- o preparo em dois cards
+
+  /** A lista de um card do preparo, uma página por vez (sem rolagem). */
+  private paginaMont(chave: string, linhas: HTMLElement[], vazio: HTMLElement): HTMLElement[] {
+    const pg = paginar(`mont:${chave}`, linhas, 6, () => (this.sigs.delete('mont'), this.renderMontagemCards()));
+    return [h('div', { class: 'cc-mont-lista' }, ...(linhas.length ? pg.itens : [vazio])), ...(pg.pager ? [pg.pager] : [])];
+  }
+
+  private renderMontagemCards() {
+    const c = this.combate;
+    if (!c || c.fase !== 'montando') {
+      if (this.montCorpo.childElementCount) this.montCorpo.replaceChildren();
+      this.sigs.delete('mont');
+      return;
+    }
+    if (!this.mudou('mont', [{ ...c, registro: 0 }, this.assinaturaPecas(), this.assinaturaFichas(), this.ameacas])) return;
+    this.trocar(this.montCorpo, this.montagemCards(c));
+  }
+
+  /**
+   * O preparo (fase "montando") em dois cards grandes: os MARCADOS (os agentes, com ficha) e os NPCs e ameaças (os seres do
+   * mestre). As peças da cena já vêm marcadas; o mestre marca ou tira outras, diz o lado e a Iniciativa de cada um e confirma.
+   */
+  private montagemCards(c: Combate): HTMLElement {
+    const chars = [...(this.sessao?.characters ?? [])];
+    const dentro = new Set(c.participantes.map((p) => p.id));
+    chars.sort((a, b) => Number(dentro.has(b.id)) - Number(dentro.has(a.id)) || Number(b.sceneId === c.cena) - Number(a.sceneId === c.cena) || a.id - b.id);
+    const linha = (ch: Character) => {
+      const m = this.partesMontagem(c, ch);
+      return h('div', { class: `cc-mont-linha${m.p ? '' : ' fora'}${m.p && m.p.lado !== 'agente' ? ' do-mestre' : ''}` }, m.incluir, m.foto, m.nome, m.lado, m.ciente, m.campo);
+    };
+    const marcados = chars.filter((ch) => this.fichaDe(ch.id));
+    const npcs = chars.filter((ch) => !this.fichaDe(ch.id));
+    const nDentro = (xs: Character[]) => xs.filter((ch) => dentro.has(ch.id)).length;
+    const { temMestre, inpM } = this.campoIniMestre(c);
+    const janelaCard = (cls: string, nome: string, contagem: string, ...filhos: (Node | null)[]) =>
+      h('section', { class: `cc-janela ${cls}` }, titulo(nome, h('span', { class: 'cc-mont-n' }, contagem)), ...filhos);
+    const cabecalho = h('div', { class: 'cc-mont-cab' }, h('span', null, ''), h('span', null, ''), h('span', null, 'Quem'), h('span', null, 'Lado'), h('span', null, 'Começo'), h('span', null, 'Iniciativa'));
+    const vazio = (t: string) => h('p', { class: 'cb-vazio' }, t);
+    const cardA = janelaCard(
+      'cc-mont-marcados',
+      'MARCADOS',
+      `${nDentro(marcados)} de ${marcados.length} na luta`,
+      h('p', { class: 'cc-mont-dica' }, 'Os agentes. Cada um rola a própria Iniciativa: escreva o d20 que ficou.'),
+      cabecalho,
+      ...this.paginaMont('marcados', marcados.map(linha), vazio('Nenhum agente com ficha na campanha.')),
+    );
+    const cardB = janelaCard(
+      'cc-mont-npcs',
+      'NPCs E AMEAÇAS',
+      `${nDentro(npcs)} de ${npcs.length} na luta`,
+      h(
+        'label',
+        { class: 'cc-mont-mestre' },
+        h('span', { class: 'cb-mont-rot' }, ic('dados'), h('b', null, 'Iniciativa do grupo do mestre')),
+        h('small', null, temMestre ? 'Uma rolagem por todos os seres do mestre, com o menor bônus de Iniciativa entre eles (LR p. 83).' : 'Sem inimigos nem neutros marcados.'),
+        inpM,
+      ),
+      cabecalho.cloneNode(true),
+      ...this.paginaMont('npcs', npcs.map(linha), vazio('Nenhum NPC ou ameaça na campanha.')),
+    );
+    const pe = h(
+      'div',
+      { class: 'cc-mont-pe' },
+      h('span', { class: 'cc-mont-resumo' }, `${c.participantes.length} na luta · ${c.participantes.filter((p) => p.lado === 'agente').length} agentes · ${c.participantes.filter(cb.doMestre).length} do mestre`),
+      ...this.empatesDe(c),
+      h('span', { class: 'cc-mont-esp' }),
+      botao('Cancelar', 'fechar', () => this.acao({ tipo: 'encerrar' }), 'claro', 'Apaga o combate que ainda não começou'),
+      botao('Confirmar e começar', 'espadas', () => this.acao({ tipo: 'comecar' }), 'forte'),
+    );
+    return h('div', { class: 'cc-mont' }, h('div', { class: 'cc-mont-cards' }, cardA, cardB), pe);
   }
 
   // ---------------------------------------------------------------- alvo
@@ -2612,6 +3495,7 @@ export class CombateScreen {
   private renderReg() {
     const c = this.combate;
     this.regDesfazer.disabled = !this.podeDesfazer;
+    this.btDesfazerGav.disabled = !this.podeDesfazer;
     if (!this.mudou('reg', [c?.registro, this.filtro])) return;
     const linhas = (c?.registro ?? []).filter((l) => this.filtro === 'todos' || l.tipo === this.filtro || l.tipo === 'rodada');
     if (!linhas.length) {
@@ -2627,7 +3511,9 @@ export class CombateScreen {
           ? h('div', { class: 'cb-reg-rodada' }, h('span', null, `— ${l.texto.replace(/\.$/, '')} —`))
           : h('div', { class: `cb-reg-linha t-${l.tipo}` }, h('time', null, `[${hora(l.em)}]`), h('span', null, ...comDestaque(l.texto, l.destaque))),
       );
-    this.regCorpo.replaceChildren(...els);
+    // tela nova: sem rolagem, uma página de linhas por vez
+    const pg = this.modoCards ? paginar('registro', els, 7, () => (this.sigs.delete('reg'), this.renderReg())) : { itens: els, pager: null };
+    this.regCorpo.replaceChildren(...pg.itens, ...(pg.pager ? [pg.pager] : []));
     this.regCorpo.scrollTop = 0;
   }
 
