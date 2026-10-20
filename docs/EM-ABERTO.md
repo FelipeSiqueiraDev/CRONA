@@ -10,8 +10,7 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - **Bonecos novos** (Códex + limpeza, no estilo dos NPCs refeitos; pedidos em `arte/PERSONAGENS-ANIMACAO/trabalho/<id>/pedir_8.py`, poses pelos `pedir_agachado/sentado/deitado_estilo`): Marcela, Maximilliano Albuquerque, Nico Delagnore (também armado, a cimitarra) e Sr. Veríssimo, com foto e rosto (Elenco e FICHAS). `marcela-geleerd/reforcar.py` aproxima o contorno e o contraste dos outros.
 - **NPC com outra forma** (`forma: { livro }` no NPC, só no banco): o clique duplo do mestre na peça troca o NPC pela criatura do livro e volta, no mesmo lugar, guardando os PV de cada forma; os dois nunca ficam em campo juntos (`pecaForma` no `hotel.ts`, teste em `server/test/npcs.test.ts`). O Max tem uma.
 - **Elenco** pede a lista de arte de novo ao abrir (a foto nova aparece sem F5).
-- **Mansão Albuquerque** (não montada, a pedido do Felipe): as duas chegadas, a saída (`saida-mansao-albuquerque.png`, a tela de partida ainda não usa arte de saída) e a ilha do mapa-múndi. Referências em `F:\Dhellow\CRONA\campanha
-eferencias\mansao-albuquerque\`; o 2º andar (3 suítes e outras coisas) vai ser pensado junto com o Felipe.
+- **Mansão Albuquerque** (não montada, a pedido do Felipe): as duas chegadas, a saída (`saida-mansao-albuquerque.png`, a tela de partida ainda não usa arte de saída) e a ilha do mapa-múndi. Referências em `F:\Dhellow\CRONA\campanha\referencias\mansao-albuquerque\`; o 2º andar (3 suítes e outras coisas) vai ser pensado junto com o Felipe.
 
 ## Feito em 19/10 (noite, branch `claude/tatica-codigo`, no ar): a FICHAS sem o botão Editar
 
