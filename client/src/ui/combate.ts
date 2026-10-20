@@ -7,7 +7,7 @@
  * servidor aplica; esta tela mostra, faz as contas e pede. O tabuleiro é o
  * mesmo da tela MAPA, com as marcações do combate por cima.
  */
-import { combate as cb, footprint, getFurni, regras, vitalConditions, type AcaoMochila, type Character, type FichaSalva, type Session, type Vitals } from '@crona/shared';
+import { combate as cb, footprint, getFurni, regras, vitalConditions, type AcaoMochila, type Character, type CharacterDef, type FichaSalva, type Session, type Vitals } from '@crona/shared';
 import { COR_LADO, marcasVazias } from '../render/combateMarcas';
 import { portraitCanvas } from '../render/portrait';
 import { cobertura as coberturaEntre, elevado, flanqueia, FORMAS, naArea, type Casa, type FormaArea } from '../room/combateGeo';
@@ -22,7 +22,7 @@ import { confirmar, janela, perguntarTexto } from './fichaModal';
 import { textoTeste } from './fichaRegras';
 import { NOME_DANO, resistenciasParaMostrar } from './fichas';
 import { arteDoItem } from './arteItem';
-import { arteOu, ic, type NomeIcone } from './icons';
+import { arteCarregada, arteOu, atualizarArte, ic, type NomeIcone } from './icons';
 import { paperize } from './paperArt';
 import { sfx } from './sfx';
 
@@ -399,6 +399,9 @@ export class CombateScreen {
     });
 
     this.abrirGaveta(this.modoCards ? 'pend' : 'alvo');
+    // as fotos só se tentam depois da lista de arte (a do Elenco); quando chega, a tela se refaz
+    void arteCarregada.then((l) => ((this.arquivosDeArte = l), this.sigs.clear(), this.render()));
+    void atualizarArte().then((l) => ((this.arquivosDeArte = l), this.sigs.clear(), this.render()));
     // na tela nova a gaveta começa fechada (só a barra de abas)
     if (this.modoCards) this.fecharGaveta();
     app.session.subscribe(() => this.render());
@@ -566,6 +569,8 @@ export class CombateScreen {
     const ac = cb.acoesDe(c, ator.id);
     const padraoLivre = !ac.padrao && !ac.completa;
     const movLivre = !ac.movimento && !ac.completa;
+    const bl = this.bloqueiosDe(c, ator);
+    const sp = this.semPe(c, ator);
     const calc = this.calcDe(ator.id);
     const metros = this.deslocamentoDe(ator);
     const temHab = !!calc && calc.poderes.some((p) => {
@@ -575,6 +580,7 @@ export class CombateScreen {
     // o card vertical (10/10, as referências do Felipe): o pregador, o nome, o quadro do ícone, a plaquinha com o
     // detalhe e o rodapé com o que a ação gasta (dourado: dá; cinza: já foi)
     const CUSTO: Record<string, string> = { atacar: 'Ação padrão', movimento: 'Movimento', item: 'Movimento', habilidade: 'Gasta PE', outras: 'Varia', passar: 'Fim do turno' };
+    // tela nova: verde quando dá, cinza (e sem clique) quando já foi gasta ou algo impede, com o motivo escrito
     const botaoMenu = (id: string, rotulo: string, pintado: string, icone: NomeIcone, sub: string, ok: boolean, fazer: () => void, motivo?: string) =>
       h(
         'button',
@@ -584,6 +590,8 @@ export class CombateScreen {
         h('small', { class: 'card-placa' }, ok ? sub : (motivo ?? sub)),
         h('span', { class: 'card-pe' }, ok ? CUSTO[id] ?? 'Ação' : 'Já usada'),
       );
+    const motivoMov = bl.movimento ?? 'sem ação para andar';
+    const movOk = !bl.movimento && (movLivre || (padraoLivre && !bl.padrao));
     // morrendo (17/10): está inconsciente, não age; só o grupo salva (Medicina DT 20) e a vez passa
     if (vitalConditions(this.vitais(ator.id)).morrendo)
       return h(
@@ -600,11 +608,11 @@ export class CombateScreen {
       h(
         'div',
         { class: 'vez-acoes' },
-        botaoMenu('atacar', 'Atacar', 'combate-atacar', 'espadas', 'arma, investida, manobra ou ritual', padraoLivre, () => this.irPara('atacar'), 'a ação padrão já foi usada'),
-        botaoMenu('movimento', 'Movimento', 'combate-movimento', 'bota', `andar até ${cb.textoMetros(metros)}`, movLivre || padraoLivre, () => this.irPara('acao', 'movimento'), 'sem ação para andar'),
-        botaoMenu('item', 'Pegar ou guardar', 'combate-item', 'mochila', 'a mão, a mochila e o chão', movLivre || padraoLivre, () => this.irPara('acao', 'item')),
-        botaoMenu('habilidade', 'Habilidade', 'combate-habilidade', 'estrela', temHab ? 'gastar PE' : 'nada de gastar PE', true, () => this.irPara('acao', 'habilidade')),
-        botaoMenu('outras', 'Outras ações', 'combate-outras', 'reticencias', 'acalmar, socorros, fintar…', true, () => this.irPara('acao', 'outras')),
+        botaoMenu('atacar', 'Atacar', 'combate-atacar', 'espadas', 'arma, investida, manobra ou ritual', padraoLivre && !bl.padrao, () => this.irPara('atacar'), bl.padrao ?? 'a ação padrão já foi usada'),
+        botaoMenu('movimento', 'Movimento', 'combate-movimento', 'bota', bl.movimento ? `andar até ${cb.textoMetros(metros)}` : `andar até ${cb.textoMetros(metros)}`, this.modoCards ? movOk : movLivre || padraoLivre, () => this.irPara('acao', 'movimento'), motivoMov),
+        botaoMenu('item', 'Pegar ou guardar', 'combate-item', 'mochila', 'a mão, a mochila e o chão', this.modoCards ? movOk : movLivre || padraoLivre, () => this.irPara('acao', 'item'), motivoMov),
+        botaoMenu('habilidade', 'Habilidade', 'combate-habilidade', 'estrela', temHab ? 'gastar PE' : 'nada de gastar PE', this.modoCards ? !bl.padrao && !sp && temHab : true, () => this.irPara('acao', 'habilidade'), bl.padrao ?? sp ?? 'sem habilidades que gastam PE'),
+        botaoMenu('outras', 'Outras ações', 'combate-outras', 'reticencias', 'acalmar, socorros, fintar…', this.modoCards ? !bl.padrao : true, () => this.irPara('acao', 'outras'), bl.padrao),
         botaoMenu('passar', 'Passar a vez', 'combate-passar-turno', 'avancar', 'fim do turno', true, () => this.acao({ tipo: 'passar' })),
       ),
     );
@@ -986,43 +994,60 @@ export class CombateScreen {
     return portraitCanvas(this.personagem(id)?.look ?? null, tamanho, { dir: 2, hurt: vitalConditions(this.vitais(id)).machucado });
   }
 
-  /** o endereço da foto que deu certo para cada peça (null = sem foto: fica o retrato padrão) */
-  private fotoUrl = new Map<number, string | null>();
+  /** a lista de arquivos da arte (a mesma do Elenco): só se tenta a foto que existe */
+  private arquivosDeArte: Set<string> | null = null;
+
+  /** As pastas de arte de um ser, na ordem: a do NPC no Elenco, a da criatura (aparência) e a do personagem (a folha das 8 direções). */
+  private pastasDe(id: number): { pastas: string[]; def?: CharacterDef } {
+    const ch = this.personagem(id);
+    const u = this.app.view?.users.get(-id);
+    const def = ch?.look.charId ? this.app.state.characters.find((x) => x.id === ch.look.charId) : undefined;
+    const pastas: string[] = [];
+    const npc = ch ? this.app.state.npcs.find((n) => n.nome === ch.name) : undefined;
+    if (npc?.arte) pastas.push(npc.arte);
+    const cri = u?.criatura ? this.app.state.bestiario.find((x) => x.id === u.criatura!.id) : undefined;
+    const ap = cri?.aparencias.find((a) => a.id === u?.criatura?.aparencia) ?? cri?.aparencias[0];
+    if (ap?.arte) pastas.push(ap.arte);
+    const doDef = def?.sheet?.match(/\/arte\/personagens\/([^/]+)\//)?.[1];
+    if (doDef) pastas.push(doDef);
+    return { pastas: [...new Set(pastas)], ...(def ? { def } : {}) };
+  }
 
   /**
-   * Tela nova (21/10, o Felipe: "fotos, não bonecos"): cada ser é a foto que o Elenco e a FICHAS usam (o rosto, a foto da
-   * ficha ou a do NPC, o retrato da ameaça); sem nenhuma, o retrato padrão do Elenco. Nunca o sprite do tabuleiro.
+   * Tela nova (21/10, o Felipe: "fotos, não bonecos"): cada ser é a foto que o Elenco e a FICHAS usam. A ordem: a pasta de
+   * arte do NPC, a da criatura e a do personagem (rosto.jpg, foto-ficha.webp, foto.jpg, foto.webp); depois o retrato da
+   * ameaça; sem nenhuma, um quadro neutro com as iniciais. NUNCA o sprite do tabuleiro.
    */
-  private foto(id: number, tamanho: number): HTMLElement {
-    const ch = this.personagem(id);
-    const def = ch?.look.charId ? this.app.state.characters.find((x) => x.id === ch.look.charId) : undefined;
-    const pasta = def?.sheet?.match(/\/arte\/personagens\/([^/]+)\//)?.[1];
-    const livro = this.ameacaDe(id)?.livro;
-    const urls = [
-      pasta && `/arte/personagens/${pasta}/rosto.jpg`,
-      pasta && `/arte/personagens/${pasta}/foto-ficha.webp`,
-      pasta && `/arte/personagens/${pasta}/foto.jpg`,
-      pasta && `/arte/personagens/${pasta}/foto.webp`,
-      def?.portraits?.desarmado?.open,
-      livro && `/arte/ameacas/${livro}.png`,
-    ].filter((x): x is string => !!x);
+  private foto(id: number, _tamanho: number): HTMLElement {
     const caixa = h('span', { class: 'cc-fotoimg' });
-    const reserva = () => caixa.replaceChildren(this.retratoDeCanvas(id, tamanho));
-    const sabido = this.fotoUrl.get(id);
-    if (sabido === null || !urls.length) {
-      reserva();
+    const nome = this.personagem(id)?.name ?? '?';
+    const iniciais = () => caixa.replaceChildren(h('span', { class: 'cc-fotoini' }, nome.split(/\s+/).filter(Boolean).slice(0, 2).map((x) => x[0]).join('').toUpperCase()));
+    const arq = this.arquivosDeArte;
+    if (!arq) {
+      iniciais();
       return caixa;
     }
-    let i = sabido ? Math.max(0, urls.indexOf(sabido)) : 0;
+    const { pastas, def } = this.pastasDe(id);
+    const livro = this.ameacaDe(id)?.livro;
+    const urls = [
+      ...pastas.flatMap((p) => ['rosto.jpg', 'foto-ficha.webp', 'foto.jpg', 'foto.webp', 'foto.png'].map((f) => `/arte/personagens/${p}/${f}`)).filter((u) => arq.has(u)),
+      def?.portraits?.desarmado?.open,
+      ...[livro, this.app.view?.users.get(-id)?.criatura?.id].filter((x): x is string => !!x).map((l) => `/arte/ameacas/${l}.png`).filter((u) => arq.has(u)),
+    ].filter((x): x is string => !!x);
+    if (!urls.length) {
+      iniciais();
+      return caixa;
+    }
+    let i = 0;
     const img = h('img', {
       alt: '',
       draggable: false,
-      src: urls[i],
-      onload: () => this.fotoUrl.set(id, urls[i]),
+      src: urls[0],
+      class: /\/rosto\.jpg$/.test(urls[0]) ? 'rosto' : '',
       onerror: () => {
         i++;
-        if (i < urls.length) img.src = urls[i];
-        else (this.fotoUrl.set(id, null), reserva());
+        if (i < urls.length) (img.src = urls[i]), img.classList.toggle('rosto', /\/rosto\.jpg$/.test(urls[i]));
+        else iniciais();
       },
     }) as HTMLImageElement;
     caixa.append(img);
@@ -2343,9 +2368,45 @@ export class CombateScreen {
     );
   }
 
+  /**
+   * O que as condições impedem neste turno (LR p. 309 a 312; o resumo de cada uma está no catálogo): atordoado, pasmo,
+   * inconsciente, petrificado, morrendo e surpreendido não agem; paralisado só faz ação mental e não se move; agarrado e
+   * imóvel não se movem. O texto é o motivo curto que a tela mostra.
+   */
+  private bloqueiosDe(c: Combate, p: Participante): { padrao?: string; movimento?: string; reacao?: string } {
+    const cs = new Set(this.condicoesDe(c, p));
+    const semAcoes: [string, string][] = [
+      ['morrendo', 'morrendo: não age'],
+      ['inconsciente', 'inconsciente: não age'],
+      ['petrificado', 'petrificado: não age'],
+      ['atordoado', 'atordoado: sem ações'],
+      ['pasmo', 'pasmo: sem ações'],
+      ['paralisado', 'paralisado: só ações mentais'],
+      ['surpreendido', 'surpreendido: sem ações nesta rodada'],
+      ['fascinado', 'fascinado: só observa'],
+    ];
+    const acao = semAcoes.find(([k]) => cs.has(k))?.[1];
+    const sempe: Record<string, string> = { agarrado: 'agarrado: não pode se mover', imovel: 'imóvel: deslocamento 0', paralisado: 'paralisado: não pode se mover' };
+    const mov = Object.keys(sempe).find((k) => cs.has(k));
+    // reação: quem não age também não reage (menos o surpreendido e o fascinado)
+    const semReacao = ['morrendo', 'inconsciente', 'petrificado', 'atordoado', 'pasmo', 'paralisado'].some((k) => cs.has(k));
+    return { ...(acao ? { padrao: acao } : {}), ...(acao || mov ? { movimento: acao ?? sempe[mov!] } : {}), ...(semReacao ? { reacao: acao } : {}) };
+  }
+
+  /** Por que não há PE para gastar agora (null = dá): sem PE na peça, ou o limite do turno já foi gasto. */
+  private semPe(c: Combate, p: Participante): string | null {
+    const calc = this.calcDe(p.id);
+    const pe = this.vitais(p.id)?.pe;
+    if (calc && pe !== undefined && pe <= 0) return 'sem PE';
+    const gasto = cb.acoesDe(c, p.id).pe ?? 0;
+    if (calc && gasto >= calc.limitePe) return `limite de ${calc.limitePe} PE do turno gasto`;
+    return null;
+  }
+
   /** As ações do turno de quem age: padrão e movimento (tocar marca como usada ou livre), a reação e a postura. */
   private chipsDoTurno(c: Combate, ator: Participante): HTMLElement[] {
     const ac = cb.acoesDe(c, ator.id);
+    if (this.modoCards) return this.pilulasDoTurno(c, ator);
     const chipAc = (qual: 'padrao' | 'movimento', rot: string) => {
       const usada = ac.completa || ac[qual];
       const texto = !usada ? 'livre' : ac.completa ? 'completa' : qual === 'padrao' ? 'usada' : 'usado';
@@ -2387,6 +2448,63 @@ export class CombateScreen {
       `Reação: ${ator.reacao ? 'usada' : 'disponível'}`,
     );
     return [chipAc('padrao', 'Padrão'), chipAc('movimento', 'Movimento'), reacao, ...(postura ? [postura] : [])];
+  }
+
+  /**
+   * Tela nova (21/10, o Felipe): VERDE = pode usar; CINZA = já gastou ou não pode nesta rodada, com o motivo escrito.
+   * Tocar numa pílula marca como usada ou livre (o mestre corrige à mão), menos nas que uma condição impede.
+   */
+  private pilulasDoTurno(c: Combate, ator: Participante): HTMLElement[] {
+    const ac = cb.acoesDe(c, ator.id);
+    const bl = this.bloqueiosDe(c, ator);
+    const calc = this.calcDe(ator.id);
+    const pilula = (rotulo: string, icone: NomeIcone, estado: 'livre' | 'gasta' | 'bloqueada', motivo: string | undefined, fn?: () => void) =>
+      h(
+        'button',
+        {
+          class: `cc-pil ${estado === 'livre' ? 'livre' : 'apagada'}${estado === 'bloqueada' ? ' bloqueada' : ''}`,
+          type: 'button',
+          title: estado === 'livre' ? `${rotulo}: pode usar` : estado === 'gasta' ? `${rotulo}: já gasta nesta rodada (tocar libera)` : `${rotulo}: ${motivo}`,
+          disabled: estado === 'bloqueada',
+          onclick: fn,
+        },
+        ic(icone),
+        h('span', null, rotulo),
+      );
+    const estado = (usada: boolean, motivo?: string): 'livre' | 'gasta' | 'bloqueada' => (motivo ? 'bloqueada' : usada ? 'gasta' : 'livre');
+    const marcar = (qual: 'padrao' | 'movimento') => () => {
+      const usada = ac.completa || ac[qual];
+      sfx.click();
+      this.acao({ tipo: 'orcamento', qual: ac.completa ? 'completa' : qual, usada: !usada, quem: ator.id });
+    };
+    const motivos = new Set<string>();
+    if (bl.padrao) motivos.add(bl.padrao);
+    if (bl.movimento) motivos.add(bl.movimento);
+    if (bl.reacao) motivos.add(bl.reacao);
+    const pil = [
+      pilula('Padrão', 'punho', estado(ac.completa || ac.padrao, bl.padrao), bl.padrao, marcar('padrao')),
+      pilula('Movimento', 'bota', estado(ac.completa || ac.movimento, bl.movimento), bl.movimento, marcar('movimento')),
+      pilula('Reação', 'escudo', estado(ator.reacao, bl.reacao), bl.reacao, () => (sfx.click(), this.acao({ tipo: 'reacao', id: ator.id, usada: !ator.reacao }))),
+    ];
+    if (calc) {
+      const motivoPe = this.semPe(c, ator);
+      const gasto = ac.pe ?? 0;
+      pil.push(pilula(`PE ${gasto}/${calc.limitePe}`, 'raio', motivoPe ? 'bloqueada' : 'livre', motivoPe ?? undefined));
+      if (motivoPe) motivos.add(motivoPe);
+    }
+    const out: HTMLElement[] = [...pil];
+    const pecaAtor = this.app.view?.users.get(-ator.id);
+    if (pecaAtor)
+      out.push(
+        h(
+          'button',
+          { class: `cc-pil neutra${pecaAtor.agachado ? ' on' : ''}`, type: 'button', title: pecaAtor.agachado ? 'Levantar: o corpo volta a 1,8 m' : 'Agachar: o corpo fica com 1,0 m e um móvel baixo já dá cobertura', onclick: () => (sfx.click(), this.app.net.send({ t: 'tokenEdit', tokenId: -ator.id, agachado: !pecaAtor.agachado })) },
+          ic('agachar'),
+          h('span', null, pecaAtor.agachado ? 'Agachado' : 'Em pé'),
+        ),
+      );
+    if (motivos.size) out.push(h('p', { class: 'cc-motivos' }, [...motivos].join(' · ')));
+    return out;
   }
 
   /** No turno do mestre, com vários seres: quem age agora (a escolha também põe a peça no comando). */
@@ -3130,7 +3248,7 @@ export class CombateScreen {
         'div',
         { class: 'cc-turno' },
         h('div', { class: 'cb-acoes-chips' }, ...this.chipsDoTurno(c, ator)),
-        h('span', { class: `cb-limite${limite !== undefined && gasto > limite ? ' alerta' : ''}` }, `Limite de PE: ${limite ?? '—'} · gasto: ${gasto}`),
+        this.modoCards ? null : h('span', { class: `cb-limite${limite !== undefined && gasto > limite ? ' alerta' : ''}` }, `Limite de PE: ${limite ?? '—'} · gasto: ${gasto}`),
       ),
       ataques: this.ataquesDoCard(ator, true),
       poderes,

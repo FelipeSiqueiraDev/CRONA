@@ -283,6 +283,7 @@ export function cartaoDeAlvo(a: CartaoAlvo): HTMLElement {
       onblur: () => a.aoPassar?.(false),
     },
     a.caixa ? h('span', { class: `cc-alvo-marca${a.escolhido ? ' on' : ''}`, 'aria-hidden': 'true' }, a.escolhido ? '✓' : '') : null,
+    h('span', { class: 'cc-mira', 'aria-hidden': 'true' }),
     h('span', { class: 'cb-foto cc-alvo-foto' }, a.foto),
     h(
       'span',
