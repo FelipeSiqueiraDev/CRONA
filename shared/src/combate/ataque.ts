@@ -54,6 +54,9 @@ export const sinal = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
 // ------------------------------------------------------------------ situações
 
 export type SituacaoId =
+  | 'passagem'
+  | 'combateDefensivo'
+  | 'arremessoSemAlcance'
   | 'cobertura'
   | 'camuflagem'
   | 'camuflagemTotal'
@@ -109,7 +112,17 @@ export const SITUACOES: Situacao[] = [
   { id: 'atacanteAgarrado', nome: 'Atacante agarrado', efeito: '−1d20', dados: -1, pagina: 310 },
   { id: 'atacanteCego', nome: 'Atacante cego', efeito: '50% de falha', falha: 50, pagina: 310 },
   { id: 'naoLetal', nome: 'Dano não letal', efeito: '−5', bonus: -5, so: 'corpo', pagina: 88 },
+  // regra da mesa (20/10, o Felipe: a Catarina passou correndo e bateu no Existido): o livro não deixa ação padrão no meio
+  // do movimento (LR p. 86, só o atropelar); a mesa libera, com −1d20
+  { id: 'passagem', nome: 'De passagem', efeito: '−1d20 (regra da mesa)', dados: -1, so: 'corpo', pagina: 86 },
+  // o poder Combate Defensivo (LR p. 25): −1d20 nos ataques e +5 na Defesa até o próximo turno
+  { id: 'combateDefensivo', nome: 'Combate defensivo', efeito: '−1d20; +5 na sua Defesa até o seu próximo turno', dados: -1, pagina: 25 },
+  // arma sem alcance arremessada em alcance curto (LR p. 55)
+  { id: 'arremessoSemAlcance', nome: 'Arremessada (sem alcance)', efeito: '−5', bonus: -5, so: 'distancia', pagina: 55 },
 ];
+
+/** O que uma situação muda na Defesa de quem ataca até o próximo turno dele (a investida abre a guarda; o combate defensivo fecha). */
+export const DEFESA_ATE_O_TURNO: Partial<Record<SituacaoId, number>> = { investida: -5, combateDefensivo: 5 };
 
 const SIT = new Map(SITUACOES.map((s) => [s.id, s]));
 export const situacao = (id: SituacaoId) => SIT.get(id)!;
@@ -153,7 +166,7 @@ export interface Teste {
  * Soma o que as situações mudam no ataque e na Defesa. Efeitos iguais não
  * somam: desprevenido, vulnerável e indefeso valem o pior (LR p. 311, 313).
  */
-export function montarTeste(o: { dados: number; penalidade?: number; bonus: number; defesaBase: number; distancia: boolean; situacoes: SituacaoId[] }): Teste {
+export function montarTeste(o: { dados: number; penalidade?: number; bonus: number; defesaBase: number; distancia: boolean; situacoes: SituacaoId[]; ajuste?: { dados: number; bonus: number } }): Teste {
   const ativas = SITUACOES.filter((s) => o.situacoes.includes(s.id) && (!s.so || (s.so === 'distancia') === o.distancia));
   let dados = o.dados;
   let penalidade = Math.min(0, o.penalidade ?? 0);
@@ -173,6 +186,11 @@ export function montarTeste(o: { dados: number; penalidade?: number; bonus: numb
     } else if (s.defesa) partesDefesa.push({ nome: s.nome, valor: s.defesa });
   }
   if (pior) partesDefesa.push({ nome: pior.nome, valor: pior.defesa ?? 0 });
+  // o ajuste livre do mestre (dados a mais ou a menos e bônus): a criatividade da mesa que nenhuma situação cobre
+  const aj = o.ajuste;
+  if (aj?.dados && aj.dados > 0) dados += aj.dados;
+  else if (aj?.dados) penalidade += aj.dados;
+  if (aj?.bonus) bonus += aj.bonus;
   const defesa = o.defesaBase + partesDefesa.reduce((t, p) => t + p.valor, 0);
   return { dados, penalidade, bonus, defesa, partesDefesa, falha: Math.min(75, falha), ativas };
 }

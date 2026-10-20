@@ -44,6 +44,8 @@ export interface ArmaOpcao {
   naMao?: boolean;
   /** o item da mochila (para sacar) */
   uid?: number;
+  /** a arma de corpo a corpo que se arremessa (LR p. 55): com Pontaria, na faixa dela (curto e −5 se não tem alcance) */
+  arremesso?: { faixa: cb.Faixa; semAlcance: boolean; dados: number; penalidade?: number; bonus: number };
   /** a jogada pronta do agente (regras/jogadas.ts): já somada; os PE saem junto com o ataque */
   jogada?: { nome: string; pe: number; linhas: string[]; erros: string[]; avisos: string[]; nota?: string };
 }
@@ -51,8 +53,10 @@ export interface ArmaOpcao {
 export interface AlvoAtaque {
   p: cb.Participante;
   agente: boolean;
-  /** Defesa da ficha (agente) ou da ficha rápida (ameaça); null = sem ficha */
+  /** Defesa da ficha (agente) ou da ficha rápida (ameaça), com o que vale até o turno dele; null = sem ficha */
   defesa: number | null;
+  /** o que mexe na Defesa até o próximo turno dele (investida, combate defensivo) */
+  defesaTurno?: { nome: string; valor: number }[];
   rd: Partial<Record<TipoDano, number>>;
   imunidades: TipoDano[];
   vulnerabilidades: TipoDano[];
@@ -86,6 +90,8 @@ export interface CtxAtaque {
   escuridao: 'normal' | 'camuflagem' | 'total';
   nevoa: 'nenhuma' | 'camuflagem' | 'espessa';
   acoes: cb.AcoesTurno;
+  /** quem ataca tem o poder Combate Defensivo (LR p. 25) */
+  combateDefensivo?: boolean;
   enviar: (a: cb.AcaoCombate) => void;
   /** saca a arma da mochila (gasta a ação de movimento) */
   sacar?: (a: ArmaOpcao) => void;
@@ -117,6 +123,17 @@ interface Estado {
   soma: number | null;
   /** soma do dano a mais de outro tipo */
   somaExtra: number | null;
+  /** regra da mesa: o corpo a corpo de passagem (−1d20) ou o alcance liberado pelo mestre */
+  passagem?: boolean;
+  liberado?: boolean;
+  /** a arma de corpo a corpo arremessada; `volta` = puxada de volta (amarrada) em vez de cair perto do alvo */
+  arremessar?: boolean;
+  volta?: boolean;
+  /** o poder Combate Defensivo neste ataque */
+  defensivo?: boolean;
+  /** o ajuste livre do mestre: d20 a mais ou a menos e bônus */
+  ajDados?: number;
+  ajBonus?: number;
 }
 
 /** O ícone pintado do kit de cada situação que tem um parecido (arte/icones/<nome>.png); as outras ficam com o de linha. */
@@ -163,6 +180,9 @@ const ICONE_SIT: Partial<Record<cb.SituacaoId, NomeIcone>> = {
   atacanteAgarrado: 'mao',
   atacanteCego: 'olho',
   naoLetal: 'mao',
+  passagem: 'correr',
+  combateDefensivo: 'escudo',
+  arremessoSemAlcance: 'mira',
 };
 
 /** Situações que o mestre pode ligar à mão (o tabuleiro não vê). */
@@ -232,10 +252,17 @@ export class ResolucaoAtaque {
     this.e = { chave, arma, reacao: 'nenhuma', manual: mesmos ? this.e.manual : {}, defesaManual: mesmos ? this.e.defesaManual : null, d20: null, d10: null, soma: null, somaExtra: null };
   }
 
+  /** A arma como vai ser usada: arremessada, ela troca Luta por Pontaria e ganha a faixa do arremesso. */
+  private comoUsa(a: ArmaOpcao | null): ArmaOpcao | null {
+    if (!a || !this.e.arremessar || !a.arremesso) return a;
+    const r = a.arremesso;
+    return { ...a, pericia: 'pontaria', faixa: r.faixa, dados: r.dados, penalidade: r.penalidade, bonus: r.bonus };
+  }
+
   /** Arma escolhida (a tela usa para o anel de alcance). */
   armaEscolhida(x: CtxAtaque): ArmaOpcao | null {
     this.sincronizar(x);
-    return x.armas[this.e.arma] ?? null;
+    return this.comoUsa(x.armas[this.e.arma] ?? null);
   }
 
   // ---------------------------------------------------------------- contas
@@ -272,6 +299,9 @@ export class ResolucaoAtaque {
   private ativas(x: CtxAtaque, arma: ArmaOpcao | null, det: Map<cb.SituacaoId, string>): cb.SituacaoId[] {
     const ids = new Set<cb.SituacaoId>(det.keys());
     if (this.investida) ids.add('investida');
+    if (this.e.passagem) ids.add('passagem');
+    if (this.e.defensivo) ids.add('combateDefensivo');
+    if (this.e.arremessar && arma?.arremesso?.semAlcance) ids.add('arremessoSemAlcance');
     for (const [k, v] of Object.entries(this.e.manual) as [cb.SituacaoId, boolean][]) {
       if (v) ids.add(k);
       else ids.delete(k);
@@ -292,7 +322,8 @@ export class ResolucaoAtaque {
     const alvo = x.alvo;
     const defesaBase = alvo?.defesa ?? this.e.defesaManual;
     const esquiva = this.e.reacao === 'esquiva' && alvo?.reacoes?.esquiva != null && alvo.defesa != null ? alvo.reacoes.esquiva - alvo.defesa : 0;
-    const bruto = arma ? cb.montarTeste({ dados: arma.dados, penalidade: arma.penalidade ?? 0, bonus: arma.bonus, defesaBase: (defesaBase ?? 0) + esquiva, distancia: !!arma.faixa, situacoes: ids }) : null;
+    const ajuste = this.e.ajDados || this.e.ajBonus ? { dados: this.e.ajDados ?? 0, bonus: this.e.ajBonus ?? 0 } : undefined;
+    const bruto = arma ? cb.montarTeste({ dados: arma.dados, penalidade: arma.penalidade ?? 0, bonus: arma.bonus, defesaBase: (defesaBase ?? 0) + esquiva, distancia: !!arma.faixa, situacoes: ids, ajuste }) : null;
     // a esquiva aparece como parte da Defesa ("21 (16 + 5 esquiva)")
     const teste = bruto && esquiva ? { ...bruto, partesDefesa: [{ nome: 'esquiva', valor: esquiva }, ...bruto.partesDefesa] } : bruto;
     const res =
@@ -660,11 +691,19 @@ export class ResolucaoAtaque {
             ...(k.res.resultado === 'erro' && !arma.faixa && alvo.agente && alvo.reacoes?.contraAtaque && !alvo.p.reacao ? { contraAtaque: true } : {}),
             ...(arma.vezes ? { vezes: arma.vezes } : {}),
             ...(arma.jogada ? { jogada: { nome: arma.jogada.nome, pe: arma.jogada.pe } } : {}),
+            ...(() => {
+              const dt = k.ids.filter((id) => cb.DEFESA_ATE_O_TURNO[id]).map((id) => ({ nome: cb.situacao(id).nome, valor: cb.DEFESA_ATE_O_TURNO[id]! }));
+              return dt.length ? { defesaAteTurno: dt } : {};
+            })(),
+            ...(this.e.arremessar && arma.arremesso ? { arremesso: { ...(arma.uid !== undefined ? { uid: arma.uid } : {}), volta: !!this.e.volta } } : {}),
+            ...(this.e.ajDados || this.e.ajBonus ? { ajuste: { dados: this.e.ajDados ?? 0, bonus: this.e.ajBonus ?? 0 } } : {}),
           };
           x.enviar({ tipo: 'ataque', ataque });
           this.e.d20 = this.e.d10 = this.e.soma = this.e.somaExtra = null;
           this.e.reacao = 'nenhuma';
           this.e.manual = {};
+          this.e.passagem = this.e.liberado = this.e.arremessar = this.e.defensivo = false;
+          this.e.ajDados = this.e.ajBonus = 0;
           x.mudou();
         },
       },
@@ -696,7 +735,7 @@ export class ResolucaoAtaque {
   /** O alvo está onde a arma alcança? (null = dá para atacar; o texto = por que não) */
   private foraDoAlcance(x: CtxAtaque, arma: ArmaOpcao): string | null {
     const t = x.tab;
-    if (!t || t.metros === null) return null;
+    if (!t || t.metros === null || this.e.liberado || this.e.passagem) return null;
     if (t.cobertura.tipo === 'total') return `Cobertura total (${t.cobertura.nome ?? 'obstáculo'}): não dá para mirar.`;
     // a investida anda até o dobro do deslocamento antes do golpe: não trava pela distância
     if (!arma.faixa) return t.adjacente || this.investida ? null : `Longe demais para o corpo a corpo (${cb.textoMetros(t.metros)}). Use Movimento ou a Investida.`;
@@ -857,6 +896,25 @@ export class ResolucaoAtaque {
     );
     if (fora) {
       partes.push(h('div', { class: 'atq-bloco atq-trava' }, ic('alerta'), h('div', null, h('b', null, 'Não dá para atacar daqui'), h('small', null, fora))));
+      // a mesa manda (20/10, o Felipe: "pelas regras é super suave, mas o sistema me trava 100%"): o corpo a corpo de
+      // passagem, com −1d20, ou o alcance liberado; o resto o ajuste do mestre acerta
+      partes.push(
+        h(
+          'button',
+          {
+            class: 'fx-bt atq-andar',
+            type: 'button',
+            onclick: () => {
+              sfx.click();
+              if (arma.faixa) this.e.liberado = true;
+              else this.e.passagem = true;
+              x.mudou();
+            },
+          },
+          ic('correr'),
+          h('span', null, h('b', null, arma.faixa ? 'Liberar o ataque (regra da mesa)' : 'Atacar de passagem (regra da mesa)'), h('small', null, arma.faixa ? 'o mestre deixa; use o ajuste para a penalidade' : 'bate no caminho e segue correndo: −1d20 no ataque')),
+        ),
+      );
       // o corpo a corpo longe, com a ação de movimento livre: anda até ficar colado no alvo e ataca
       const andar = !arma.faixa && x.tab && !x.tab.adjacente ? x.andarAteOAlvo : undefined;
       if (andar)
@@ -884,6 +942,9 @@ export class ResolucaoAtaque {
           onclick: () => {
             sfx.click();
             if (id === 'investida') this.investida = false;
+            else if (id === 'passagem') this.e.passagem = false;
+            else if (id === 'combateDefensivo') this.e.defensivo = false;
+            else if (id === 'arremessoSemAlcance') this.e.arremessar = false;
             else if (k.det.has(id)) this.e.manual[id] = false;
             else delete this.e.manual[id];
             x.mudou();
@@ -930,6 +991,49 @@ export class ResolucaoAtaque {
               ),
             )
           : null,
+      ),
+    );
+
+    // arremessar a arma de corpo a corpo, o combate defensivo e o ajuste livre do mestre (20/10)
+    const base = x.armas[this.e.arma];
+    const liga = (rot: string, on: boolean, dica: string, fn: () => void) =>
+      h('button', { class: `atq-reacao${on ? ' on' : ''}`, type: 'button', title: dica, onclick: () => (sfx.click(), fn(), x.mudou()) }, rot);
+    const opcoes: HTMLElement[] = [];
+    if (base?.arremesso)
+      opcoes.push(
+        liga('Arremessar', !!this.e.arremessar, `Pontaria, alcance ${cb.NOME_FAIXA[base.arremesso.faixa]}${base.arremesso.semAlcance ? ', −5 (arma sem alcance, LR p. 55)' : ''}`, () => {
+          this.e.arremessar = !this.e.arremessar;
+          this.e.passagem = false;
+        }),
+      );
+    if (this.e.arremessar && base?.arremesso)
+      opcoes.push(
+        liga('Cai perto do alvo', !this.e.volta, 'A arma fica no chão, na casa do alvo', () => (this.e.volta = false)),
+        liga('Volta para a mão', !!this.e.volta, 'Amarrada num fio: puxa de volta', () => (this.e.volta = true)),
+      );
+    if (x.combateDefensivo) opcoes.push(liga('Combate defensivo', !!this.e.defensivo, '−1d20 no ataque; +5 na Defesa até o seu próximo turno (LR p. 25)', () => (this.e.defensivo = !this.e.defensivo)));
+    const ajNum = (rot: string, v: number | undefined, min: number, max: number, fn: (n: number) => void) => {
+      const inp = h('input', { class: 'cb-dado', type: 'text', inputmode: 'numeric', value: v ? String(v) : '', placeholder: '0', 'aria-label': rot }) as HTMLInputElement;
+      inp.addEventListener('change', () => {
+        const n = numero(inp.value.replace('−', '-')) ?? 0;
+        fn(Math.max(min, Math.min(max, n)));
+        x.mudou();
+      });
+      return h('label', { class: 'cb-caixa-dado' }, h('small', null, rot), inp);
+    };
+    partes.push(
+      h(
+        'div',
+        { class: 'atq-bloco' },
+        h('div', { class: 'atq-rotulo' }, 'Do jeito da mesa', h('small', null, ' · ajuste livre: d20 a mais (+1) ou a menos (−1) e bônus')),
+        opcoes.length ? h('div', { class: 'atq-linha' }, ...opcoes) : null,
+        h(
+          'div',
+          { class: 'atq-linha' },
+          ajNum('d20 (±)', this.e.ajDados, -5, 5, (n) => (this.e.ajDados = n)),
+          ajNum('bônus (±)', this.e.ajBonus, -50, 50, (n) => (this.e.ajBonus = n)),
+          this.e.passagem || this.e.liberado ? liga('Desfazer a liberação', false, 'Volta a travar pelo alcance', () => (this.e.passagem = this.e.liberado = false)) : null,
+        ),
       ),
     );
 

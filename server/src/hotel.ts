@@ -821,6 +821,14 @@ export class Hotel implements HotelApi {
         largados.push(caiu.uid);
       }
     }
+    // a arma arremessada que não volta (sem o fio): sai da mochila de quem atacou e cai na casa do alvo (20/10)
+    if (a.tipo === 'ataque' && a.ataque.arremesso && !a.ataque.arremesso.volta) {
+      const caiu = this.arremessar(group, a.ataque.quem, a.ataque.alvo, a.ataque.arremesso.uid);
+      if (caiu) {
+        mochilas.push(caiu.antes);
+        largados.push(caiu.uid);
+      }
+    }
     const mudou: { id: number; antes: Vitals }[] = [];
     for (const m of r.vitais ?? []) {
       const velho = this.mudarVitaisPeca(group, m.id, m);
@@ -862,6 +870,23 @@ export class Hotel implements HotelApi {
     this.trocarMochila(f, s.inventario);
     this.fichaMudou(f);
     return { antes: { fichaId: f.id, inventario: inv }, uid: it.uid! };
+  }
+
+  /** A arma arremessada sai da mochila de quem atacou e cai na casa do alvo (ou na dele, se o alvo estiver em outra cena). */
+  private arremessar(group: number[], quem: number, alvo: number, uid: number | undefined): { antes: { fichaId: number; inventario: regras.ItemFicha[] }; uid: number } | null {
+    const f = this.fichaDaPeca(group, quem);
+    if (!f?.personagem || uid === undefined) return null;
+    const inv = f.ficha.inventario;
+    const s = regras.retirar(inv, uid);
+    if (!s.ok) return null;
+    const sala = group.map((id) => this.rooms.get(id)).find((r) => r?.casaDaPeca(alvo)) ?? group.map((id) => this.rooms.get(id)).find((r) => r?.temPersonagem(f.personagem!));
+    if (!sala) return null;
+    const casa = sala.casaDaPeca(alvo);
+    const erro = casa ? sala.largarNaCasa(casa.x, casa.y, itemParaLoot(s.item)) : sala.largarNoChao(f.personagem, itemParaLoot(s.item));
+    if (erro) return null;
+    this.trocarMochila(f, s.inventario);
+    this.fichaMudou(f);
+    return { antes: { fichaId: f.id, inventario: inv }, uid };
   }
 
   /** PV, PE ou SAN de uma peça da campanha (procura a cena em que ela está). Devolve os de antes. */

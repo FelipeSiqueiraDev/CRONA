@@ -1165,3 +1165,16 @@ describe('combate: soma dos dados digitada', () => {
     assert.equal(combate.avisoSomaDeDados(d4, null), null);
   });
 });
+
+describe('ataque do jeito da mesa (20/10)', () => {
+  test('de passagem, combate defensivo e o ajuste do mestre somam na rolagem; a arremessada sem alcance leva −5', () => {
+    const t = combate.montarTeste({ dados: 2, bonus: 5, defesaBase: 15, distancia: false, situacoes: ['passagem', 'combateDefensivo'], ajuste: { dados: -1, bonus: 2 } });
+    assert.equal(t.dados, 2);
+    assert.equal(t.penalidade, -3, '−1d20 da passagem, −1d20 do defensivo e −1d20 do ajuste');
+    assert.equal(t.bonus, 7);
+    const a = combate.montarTeste({ dados: 1, bonus: 3, defesaBase: 12, distancia: true, situacoes: ['arremessoSemAlcance', 'passagem'] });
+    assert.equal(a.bonus, -2, 'o −5 do arremesso; a passagem é só do corpo a corpo');
+    assert.equal(a.penalidade, 0);
+    assert.deepEqual(combate.DEFESA_ATE_O_TURNO, { investida: -5, combateDefensivo: 5 });
+  });
+});

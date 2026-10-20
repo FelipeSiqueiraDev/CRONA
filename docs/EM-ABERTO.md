@@ -2,6 +2,15 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 20/10: o combate do jeito da mesa e a Evolução dos NPCs
+
+- **Ataque de passagem / liberar o alcance (regra da mesa):** onde a tela travava ("Não dá para atacar daqui"), agora há "Atacar de passagem" (corpo a corpo, −1d20; o livro não deixa ação padrão no meio do movimento, LR p. 86) ou "Liberar o ataque" (à distância). O servidor nunca checou distância: a trava era só da tela.
+- **Do jeito da mesa:** o ajuste livre do mestre no ataque (d20 ± e bônus ±), que vai para o registro.
+- **Arremessar:** toda arma de corpo a corpo da ficha (menos o desarmado) tem "Arremessar": Pontaria, a faixa dela (a faca, curto) ou curto com −5 sem alcance (LR p. 55). "Cai perto do alvo" tira da mochila e põe numa pilha na casa do alvo (o Desfazer devolve); "Volta para a mão" (o fio da Cora) deixa com ele. A faca contava como ataque à distância no corpo a corpo: agora é corpo a corpo e o alcance é o do arremesso.
+- **Combate Defensivo** (quem tem o poder): −1d20 no ataque e +5 na Defesa até o começo do próximo turno dele; a **Investida** agora aplica o −5 na Defesa do mesmo jeito (`defesaTurno` no participante; `DEFESA_ATE_O_TURNO` em `shared/src/combate/ataque.ts`).
+- **FICHAS › Evolução** (a terceira abinha, com o número): os NPCs com escolha pendente; o clique abre os passos do NEX mais baixo, a escolha grava ao confirmar e a lista volta até acabar (como os Marcados no celular).
+- Testes em `server/test/mochila.test.ts` e `combate.test.ts`. Visto na prévia: a Evolução e o ataque de passagem; o arremesso só nos testes.
+
 ## Feito em 19/10 (madrugada, branch `claude/tatica-codigo`, no ar): NPCs novos, fichas pelo livro, outra forma e a Mansão Albuquerque
 
 - **Fichas pelo livro** (gravadas no jogo pelo websocket do mestre, com backup): Marcela (Especialista NEX 5%, Legista do Turno da Noite), Ivete (Combatente NEX 10%, Mercenário, Aniquilador), Rosa Pimenta (Especialista NEX 50%, Atiradora de Elite, Vítima; faltam o poder do NEX 15%, a versatilidade do 50% e a afinidade), Pedro Cavalcante (Combatente NEX 40%, Comandante de Campo, Atleta), Veríssimo (Combatente NEX 70%, Aniquilador, Mercenário; falta a afinidade e a regra da Jaqueta). Cada uma tem um aviso do que mudou em relação à ficha de origem.

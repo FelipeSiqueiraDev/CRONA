@@ -1913,6 +1913,18 @@ export class RoomInstance {
   largarNoChao(personagem: number, l: Loot): string | null {
     const u = [...this.users.values()].find((x) => x.client.look?.charId === personagem);
     if (!u) return 'O personagem não está nesta cena.';
+    return this.largarNaCasa(u.x, u.y, l);
+  }
+
+  /** A casa de uma peça desta cena (pelo id da peça), ou null. */
+  casaDaPeca(tokenId: number): { x: number; y: number } | null {
+    const u = this.users.get(-tokenId);
+    return u ? { x: u.x, y: u.y } : null;
+  }
+
+  /** O item cai numa casa (na pilha que já estiver lá, ou numa nova): a arma arremessada que fica perto do alvo (20/10). */
+  largarNaCasa(x: number, y: number, l: Loot): string | null {
+    const u = { x, y };
     const pilha = this.map.allItems().find((it) => it.defId === PILHA_CHAO && it.x === u.x && it.y === u.y);
     if (pilha) {
       if ((pilha.loot ?? []).length >= 30) return 'A pilha no chão já tem 30 itens.';

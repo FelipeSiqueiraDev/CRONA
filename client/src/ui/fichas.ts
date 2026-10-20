@@ -16,7 +16,7 @@ import { h, toast } from './dom';
 import { arteDoItem } from './arteItem';
 import { caberNumaLinha, corpoDoItem } from './jogador';
 import { abrirRequisicao } from './requisicao';
-import { confirmar, escolher, janela, janelaAberta, mostrar, perguntarTexto, quandoFecharTodas } from './fichaModal';
+import { botao, confirmar, escolher, janela, janelaAberta, mostrar, perguntarTexto, quandoFecharTodas } from './fichaModal';
 import { opcoesMelhoria } from './melhorias';
 import { blocoDia, bolinhasDia } from './porDia';
 import { abrirCriacao, type Assistente } from './criacao';
@@ -110,7 +110,7 @@ export class FichasScreen {
   private o: OpcoesFichas;
   private lista: FichaSalva[] = [];
   /** a coluna da esquerda: os agentes ou os NPCs do Elenco (17/10, o Felipe: "uma aba de ficha pros NPCs") */
-  private grupoAg: 'agentes' | 'npcs' = 'agentes';
+  private grupoAg: 'agentes' | 'npcs' | 'evolucao' = 'agentes';
   private agTit!: HTMLElement;
   private selId: number | null = null;
   private rascunho: FichaSalva | null = null;
@@ -574,11 +574,12 @@ export class FichasScreen {
     // o título vira as duas abas para o mestre
     if (this.gm) {
       // só o ícone (19/10, o Felipe: "o trem cortado ali me mata"): o da Ordem para os agentes, a pessoa para os NPCs
-      const aba = (id: 'agentes' | 'npcs', nome: string, icone: NomeIcone) =>
-        h('button', { class: `fx-ag-aba${this.grupoAg === id ? ' on' : ''}`, type: 'button', title: nome, 'aria-label': nome, onclick: () => this.trocarGrupo(id) }, ic(icone));
-      this.agTit.replaceChildren(aba('agentes', 'Agentes', 'escudoEstrela'), aba('npcs', 'NPCs', 'pessoa'));
+      const aba = (id: 'agentes' | 'npcs' | 'evolucao', nome: string, icone: NomeIcone, n = 0) =>
+        h('button', { class: `fx-ag-aba${this.grupoAg === id ? ' on' : ''}`, type: 'button', title: nome, 'aria-label': nome, onclick: () => this.trocarGrupo(id) }, ic(icone), n ? h('span', { class: 'fx-ag-aba-n' }, String(n)) : null);
+      this.agTit.replaceChildren(aba('agentes', 'Agentes', 'escudoEstrela'), aba('npcs', 'NPCs', 'pessoa'), aba('evolucao', 'Evolução dos NPCs', 'linhaTempo', this.npcsComEscolha().length));
     } else this.agTit.replaceChildren('AGENTES');
     if (this.gm && this.grupoAg === 'npcs') return this.renderNpcs();
+    if (this.gm && this.grupoAg === 'evolucao') return this.renderEvolucao();
     const cards: HTMLElement[] = [];
     const lista = this.lista.filter((f) => !f.npc);
     if (this.rascunho?.id === 0) lista.push(this.rascunho);
@@ -604,8 +605,113 @@ export class FichasScreen {
     this.agLista.replaceChildren(...cards);
   }
 
-  /** Agentes ou NPCs: troca a lista e escolhe o primeiro da outra (sem perder uma edição aberta). */
-  private trocarGrupo(id: 'agentes' | 'npcs') {
+  // ---------------------------------------------------------------- evolução dos NPCs
+
+  /**
+   * As fichas de NPC com escolhas por fazer (20/10, o Felipe: "a abinha de evolução na aba de mestre, com todas as escolhas
+   * de NPC que eu preciso tomar agora, um a um, passo a passo igual os Marcados recebem").
+   */
+  private npcsComEscolha(): { fs: FichaSalva; pend: regras.Pendencia[] }[] {
+    return this.lista
+      .filter((f) => !!f.npc)
+      .map((fs) => {
+        try {
+          return { fs, pend: regras.calcular(fs.ficha).pendencias };
+        } catch {
+          return { fs, pend: [] };
+        }
+      })
+      .filter((x) => x.pend.length > 0);
+  }
+
+  /** A aba Evolução: um cartão por NPC com escolha pendente; o clique abre as escolhas dele, passo a passo. */
+  private renderEvolucao() {
+    const lista = this.npcsComEscolha();
+    const cards: HTMLElement[] = lista.map(({ fs, pend }) => {
+      const look = lookDe(fs.personagem);
+      const foto = look ? portraitCanvas(look, 140) : h('span', { class: 'fx-ag-sem' }, ic('pessoa'));
+      const on = fs.id === this.selId;
+      return h(
+        'button',
+        { class: `fx-ag${on ? ' on' : ''}`, type: 'button', title: `${fs.nome}: ${pend.length} escolha${pend.length > 1 ? 's' : ''}`, onclick: () => (this.selecionar(fs.id), this.abrirPassos(fs.id)) },
+        h('span', { class: 'fx-ag-foto' }, foto),
+        h('span', { class: 'fx-ag-placa' }, h('span', { class: 'fx-ag-nome', title: fs.nome }, fs.nome.split(/\s+/)[0]), h('span', { class: 'fx-ag-info' }, `NEX ${fs.ficha.nex}% · ${pend.length} escolha${pend.length > 1 ? 's' : ''}`)),
+        h('span', { class: 'fx-ag-pend', title: `${pend.length} pendência${pend.length > 1 ? 's' : ''}` }, String(pend.length)),
+      );
+    });
+    if (!cards.length) cards.push(h('p', { class: 'fx-ag-vazio' }, 'Nenhum NPC com escolha pendente.'));
+    this.agLista.replaceChildren(...cards);
+  }
+
+  /**
+   * As escolhas de uma ficha, passo a passo, como os Marcados recebem ao subir de NEX: só o NEX mais baixo que tem escolha;
+   * o clique abre as opções do livro, grava ao confirmar e volta para a lista até acabar.
+   */
+  private abrirPassos(id: number) {
+    const fs = this.lista.find((f) => f.id === id);
+    if (!fs) return;
+    let pend: regras.Pendencia[] = [];
+    try {
+      pend = regras.calcular(fs.ficha).pendencias;
+    } catch {
+      return toast('A ficha tem um problema que o motor não fecha: confira nela.', 'error');
+    }
+    if (!pend.length) return toast(`${fs.nome} não tem mais escolhas por fazer.`);
+    const nex = Math.min(...pend.map((p) => p.nex));
+    const doNex = pend.filter((p) => p.nex === nex);
+    const depois = [...new Set(pend.filter((p) => p.nex > nex).map((p) => p.nex))];
+    let saindo = false;
+    const j = janela(`EVOLUÇÃO · ${fs.nome.toUpperCase()}`, 'linhaTempo', () => {}, 50);
+    j.el.classList.add('fx-passos');
+    const escolherUma = (p: regras.Pendencia) => {
+      if (saindo) return;
+      saindo = true;
+      j.fechar();
+      if (!this.garantirEdicao()) return;
+      const f = this.rascunho!.ficha;
+      // quando a escolha fecha (e a ficha grava), a lista volta com o que sobrou
+      quandoFecharTodas(() => window.setTimeout(() => this.abrirPassos(id), 150));
+      if (p.tipo === 'pericias') return this.editarPericias();
+      if (p.tipo === 'atributos') return this.escolherPontoAtributo();
+      const e = escolherPendencia(f, p);
+      if (!e) return toast('Essa escolha é feita no painel da ficha.', 'error');
+      void escolher(e, () => this.render());
+    };
+    j.corpo.append(
+      h('p', { class: 'fc-subida-intro' }, `As escolhas de ${fs.nome} no NEX ${nex}%: clique numa, escolha e confirme.`),
+      h('h4', { class: 'fc-subida-nex' }, `NEX ${nex}%`),
+      h('div', { class: 'fc-pends' }, ...doNex.map((p) => h('button', { class: 'fc-pend', type: 'button', onclick: () => escolherUma(p) }, h('span', { class: 'fc-pend-txt' }, p.texto), ic('direita')))),
+      ...(depois.length ? [h('p', { class: 'fj-dica' }, `Depois: NEX ${depois.map((n) => `${n}%`).join(', ')}.`)] : []),
+    );
+    j.rodape.append(h('span', { class: 'fj-esp' }), botao('Fechar', 'fechar', '', () => j.fechar()));
+  }
+
+  /** O ponto de atributo que falta na criação ("Distribua 1 ponto"): uma escolha entre os que ainda podem subir. */
+  private escolherPontoAtributo() {
+    const f = this.rascunho?.ficha;
+    if (!f) return;
+    const ops = regras.ATRIBUTOS.map((a) => {
+      const pode = podeMudarAtributo(f, a, 1);
+      return { id: a, nome: `${NOME_ATR_LONGO[a]} (${f.atributos[a]} → ${f.atributos[a] + 1})`, ok: pode, motivos: pode ? [] : ['Na criação cada atributo vai até 3.'], avisos: [] };
+    });
+    void escolher(
+      {
+        titulo: 'Ponto de atributo',
+        dica: 'O ponto que falta na criação (cada atributo de 0 a 3).',
+        qtd: 1,
+        opcoes: () => ops,
+        atual: () => [],
+        aplicar: (ids) => {
+          const a = ids[0] as regras.AtributoId | undefined;
+          if (a) f.atributos[a] += 1;
+        },
+      },
+      () => this.render(),
+    );
+  }
+
+  /** Agentes, NPCs ou a Evolução: troca a lista e escolhe o primeiro da outra (sem perder uma edição aberta). */
+  private trocarGrupo(id: 'agentes' | 'npcs' | 'evolucao') {
     if (id === this.grupoAg) return;
     if (this.editando) {
       toast('Salve ou cancele a edição antes de trocar.', 'error');
@@ -614,7 +720,7 @@ export class FichasScreen {
     this.grupoAg = id;
     // a lista dos NPCs vem com o bestiário: pede ao servidor se ainda não chegou
     if (id === 'npcs' && !this.app.state.npcs.length) this.app.net.send({ t: 'bestiario' });
-    const primeira = this.lista.find((f) => (id === 'npcs' ? !!f.npc : !f.npc));
+    const primeira = id === 'evolucao' ? this.npcsComEscolha()[0]?.fs : this.lista.find((f) => (id === 'npcs' ? !!f.npc : !f.npc));
     this.selId = primeira?.id ?? null;
     sfx.click();
     this.render();

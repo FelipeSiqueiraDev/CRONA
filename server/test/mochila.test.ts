@@ -218,3 +218,51 @@ describe('mochila no combate', () => {
     assert.equal(personagem('Catarina Albuquerque').armed, true);
   });
 });
+
+describe('combate do jeito da mesa (20/10)', () => {
+  const comb = (a: Extract<ClientMsg, { t: 'combate' }>['a']) => gm.send({ t: 'combate', a });
+
+  test('a faca arremessada cai na casa do alvo (o Desfazer devolve); com o fio, volta para a mão; a Defesa do combate defensivo dura até o turno', () => {
+    const faca = dar('D.Tepes', { item: { tipo: 'arma', id: 'faca' } });
+    gm.send({ t: 'mochila', fichaId: ficha('D.Tepes').id, uid: faca.id, acao: 'empunhar' });
+    const tepes = personagem('D.Tepes').id;
+    const cat = personagem('Catarina Albuquerque').id;
+    comb({ tipo: 'abrir' });
+    comb({ tipo: 'participante', id: tepes, lado: 'agente', iniciativa: 20 });
+    comb({ tipo: 'participante', id: cat, lado: 'agente', iniciativa: 10 });
+    comb({ tipo: 'iniciativaMestre', valor: 5 });
+    comb({ tipo: 'comecar' });
+    const ataque = (extra: Partial<regras.Ficha> & Record<string, unknown>) =>
+      comb({ tipo: 'ataque', ataque: { quem: tepes, alvo: cat, arma: 'Faca', qual: 'padrao', teste: { dados: 2, bonus: 5, d20: 3, total: 8, defesa: 15 }, situacoes: [], resultado: 'erro', ...extra } as never });
+    // arremessou sem o fio: a faca sai da mochila e cai na casa da Catarina
+    ataque({ arremesso: { uid: faca.id, volta: false }, ajuste: { dados: -1, bonus: 0 } });
+    assert.equal(gm.last('denied')?.reason, undefined, 'não recusou');
+    const room = hotel.rooms.get(sala)!;
+    const casaCat = room.casaDaPeca(cat)!;
+    const pilha = room.map.allItems().find((it) => it.defId === PILHA_CHAO);
+    assert.ok(pilha?.loot?.some((l) => l.id === faca.id), 'a faca está no chão');
+    assert.deepEqual([pilha!.x, pilha!.y], [casaCat.x, casaCat.y], 'na casa do alvo');
+    assert.ok(!ficha('D.Tepes').ficha.inventario.some((x) => x.uid === faca.id));
+    hotel.pushNow();
+    const reg = gm.last('combate')!.combate!.registro.at(-1)!.texto;
+    assert.match(reg, /ajuste do mestre −1d20/);
+    assert.match(reg, /arremessou \(a arma fica perto do alvo\)/);
+    comb({ tipo: 'desfazer' });
+    assert.ok(ficha('D.Tepes').ficha.inventario.some((x) => x.uid === faca.id), 'o Desfazer devolve a faca');
+    assert.ok(!room.map.allItems().some((it) => it.defId === PILHA_CHAO), 'e tira do chão');
+    // com o fio: a faca continua com ele; e o combate defensivo dá +5 na Defesa até o próximo turno dele
+    ataque({ arremesso: { uid: faca.id, volta: true }, defesaAteTurno: [{ nome: 'Combate defensivo', valor: 5 }] });
+    assert.ok(ficha('D.Tepes').ficha.inventario.some((x) => x.uid === faca.id), 'puxou de volta');
+    hotel.pushNow();
+    const c = gm.last('combate')!.combate!;
+    assert.deepEqual(c.participantes.find((p) => p.id === tepes)!.defesaTurno, [{ nome: 'Combate defensivo', valor: 5 }]);
+    // passa a vez (Catarina) e o turno do mestre; na vez do Tepes de novo, a Defesa volta ao normal
+    comb({ tipo: 'passar' });
+    comb({ tipo: 'passar' });
+    comb({ tipo: 'passar' });
+    hotel.pushNow();
+    const c2 = gm.last('combate')!.combate!;
+    assert.equal(c2.vez, `p:${tepes}`, 'a vez voltou para o Tepes');
+    assert.equal(c2.participantes.find((p) => p.id === tepes)!.defesaTurno, undefined, 'o +5 acabou no começo do turno dele');
+  });
+});

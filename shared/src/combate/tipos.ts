@@ -47,6 +47,8 @@ export interface Participante {
   naoLetal?: number;
   /** já usou a defesa especial (bloqueio, esquiva ou contra-ataque) desde o começo do próprio turno */
   reacao: boolean;
+  /** Defesa a mais ou a menos até o começo do próximo turno dele (a investida, o combate defensivo) */
+  defesaTurno?: { nome: string; valor: number }[];
   /** condições marcadas no combate (ids do catálogo). As dos agentes ficam na ficha deles. */
   condicoes?: string[];
   /** ritual que o ser sustenta: paga 1 PE no começo de cada turno (LR p. 120) */
@@ -150,6 +152,12 @@ export type TipoAcao = 'padrao' | 'movimento' | 'completa' | 'livre' | 'reacao';
 export interface AtaqueConfirmado {
   quem: number;
   alvo: number;
+  /** a Defesa de quem ataca muda até o próximo turno dele (investida −5, combate defensivo +5) */
+  defesaAteTurno?: { nome: string; valor: number }[];
+  /** a arma foi arremessada: o item da mochila e se volta para a mão (amarrada num fio) ou cai perto do alvo */
+  arremesso?: { uid?: number; volta: boolean };
+  /** o ajuste livre do mestre no teste (só para o registro) */
+  ajuste?: { dados: number; bonus: number; texto?: string };
   /** nome da arma ou do ataque */
   arma: string;
   /** ação que o ataque gasta */

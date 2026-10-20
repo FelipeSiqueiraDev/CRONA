@@ -896,23 +896,36 @@ export class CombateScreen {
 
   private armasDaFicha(calc: regras.Calculado): ArmaOpcao[] {
     {
+      const luta = calc.pericias.luta;
+      const pont = calc.pericias.pontaria;
       // a arma na mão primeiro (e o desarmado); a da mochila por último, para sacar
-      return [...calc.ataques].sort((x, y) => Number(y.naMao) - Number(x.naMao)).map((a) => ({
-        item: a.item,
-        naMao: a.naMao,
-        ...(a.uid !== undefined ? { uid: a.uid } : {}),
-        nome: a.nome,
-        pericia: a.pericia === 'pontaria' ? 'pontaria' : 'luta',
-        dados: a.dados,
-        penalidade: a.penalidadeDados,
-        bonus: a.bonus,
-        dano: a.dano,
-        tipo: a.tipoDano[0] ?? 'impacto',
-        margem: a.critico.margem,
-        multiplicador: a.critico.multiplicador,
-        faixa: cb.faixaArma(a.alcance),
-        notas: a.notas,
-      }));
+      return [...calc.ataques].sort((x, y) => Number(y.naMao) - Number(x.naMao)).map((a) => {
+        const corpo = a.pericia !== 'pontaria';
+        // a arma de corpo a corpo também se arremessa (LR p. 55): com Pontaria, no alcance dela (a faca, curto) ou em
+        // alcance curto com −5 quando não tem; o que a arma soma além da perícia vai junto (20/10, a faca da Cora)
+        const arremesso =
+          corpo && a.item && a.item !== 'ataque-desarmado' && pont
+            ? { faixa: cb.faixaArma(a.alcance) ?? ('curto' as cb.Faixa), semAlcance: !cb.faixaArma(a.alcance), dados: pont.dados + (a.dados - luta.dados), penalidade: pont.penalidadeDados, bonus: pont.bonus + (a.bonus - luta.bonus) }
+            : undefined;
+        return {
+          item: a.item,
+          naMao: a.naMao,
+          ...(a.uid !== undefined ? { uid: a.uid } : {}),
+          nome: a.nome,
+          pericia: corpo ? ('luta' as const) : ('pontaria' as const),
+          dados: a.dados,
+          penalidade: a.penalidadeDados,
+          bonus: a.bonus,
+          dano: a.dano,
+          tipo: a.tipoDano[0] ?? 'impacto',
+          margem: a.critico.margem,
+          multiplicador: a.critico.multiplicador,
+          // a faca é de corpo a corpo: o alcance dela é o do arremesso (antes ela contava como ataque à distância)
+          faixa: corpo ? null : cb.faixaArma(a.alcance),
+          notas: a.notas,
+          ...(arremesso ? { arremesso } : {}),
+        };
+      });
     }
   }
 
@@ -922,7 +935,9 @@ export class CombateScreen {
     return {
       p,
       agente: p.lado === 'agente',
-      defesa: calc?.defesa ?? f?.defesa ?? null,
+      // a investida (−5) e o combate defensivo (+5) mexem na Defesa até o próximo turno dele
+      defesa: (calc?.defesa ?? f?.defesa ?? null) === null ? null : (calc?.defesa ?? f?.defesa)! + (p.defesaTurno ?? []).reduce((t, d) => t + d.valor, 0),
+      defesaTurno: p.defesaTurno ?? [],
       rd: calc?.resistencias ?? f?.rd ?? {},
       // a criatura é imune a dano mental mesmo na ficha feita à mão (LR p. 180)
       imunidades: f ? cb.imunidadesDaAmeaca(f) : [],
@@ -981,6 +996,7 @@ export class CombateScreen {
       tab: alvo ? this.tabuleiroEntre(c, ator, alvo.p) : null,
       ...this.clima(),
       acoes: cb.acoesDe(c, ator.id),
+      combateDefensivo: !!this.calcDe(ator.id)?.poderes.some((p) => p.id === 'combate-defensivo'),
       enviar: (a) => this.acao(a),
       sacar: (arma) => arma.uid !== undefined && this.acao({ tipo: 'declarar', qual: 'movimento', texto: `sacou ${arma.nome}`, quem: ator.id, sacar: arma.uid }),
       andarAteOAlvo: alvo ? this.andarAteOAlvo(c, ator, alvo.p) : undefined,

@@ -132,6 +132,8 @@ function comecarTurno(c: Combate, e: Entrada, ctx: Contexto) {
   const ps = ativosDa(c, e);
   c.acoes = {};
   for (const p of ps) c.acoes[String(p.id)] = livre();
+  // a guarda aberta da investida e o combate defensivo duram até o começo do próximo turno (LR p. 25, 87)
+  if (!c.comecaram?.includes(e.id)) for (const p of ps) delete p.defesaTurno;
   // quem atrasou volta à vez: o turno já tinha começado nesta rodada, e atrasar é só agir mais tarde (LR p. 87).
   // O que já tinha usado (o PE do sustentado, ações livres) volta junto: o limite de PE é do turno
   if (c.comecaram?.includes(e.id)) {
@@ -344,6 +346,20 @@ function ataque(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
   c.acoes[String(quem.id)] = ac;
   let linha = `${quem.nome} ataca ${alvo.nome} com ${arma}${nomeJogada ? ` (jogada ${nomeJogada}${peJogada ? `, ${peJogada} PE` : ''})` : ''}${golpe}${reacao ? ` (${alvo.nome} usa ${reacao})` : ''}: d20 ${d20}, total ${total} contra Defesa ${defesa}`;
   if (sits.length) linha += ` (${sits.join(', ')})`;
+  const aj = o.ajuste && typeof o.ajuste === 'object' ? (o.ajuste as Record<string, unknown>) : null;
+  const ajD = aj ? (inteiro(aj.dados, -5, 5) ?? 0) : 0;
+  const ajB = aj ? (inteiro(aj.bonus, -50, 50) ?? 0) : 0;
+  if (ajD || ajB) linha += `; ajuste do mestre ${[ajD ? `${ajD > 0 ? '+' : '−'}${Math.abs(ajD)}d20` : '', ajB ? `${ajB > 0 ? '+' : '−'}${Math.abs(ajB)}` : ''].filter(Boolean).join(' ')}${aj && texto(aj.texto, 60) ? ` (${texto(aj.texto, 60)})` : ''}`;
+  const arr = o.arremesso && typeof o.arremesso === 'object' ? (o.arremesso as Record<string, unknown>) : null;
+  if (arr) linha += arr.volta === true ? '; arremessou e puxou de volta' : '; arremessou (a arma fica perto do alvo)';
+  // a Defesa de quem ataca até o próximo turno dele
+  const dt = Array.isArray(o.defesaAteTurno)
+    ? o.defesaAteTurno
+        .map((d) => (d && typeof d === 'object' ? { nome: texto((d as Record<string, unknown>).nome, 40), valor: inteiro((d as Record<string, unknown>).valor, -20, 20) ?? 0 } : null))
+        .filter((d): d is { nome: string; valor: number } => !!d && !!d.nome && d.valor !== 0)
+        .slice(0, 4)
+    : [];
+  if (dt.length) quem.defesaTurno = [...(quem.defesaTurno ?? []).filter((x) => !dt.some((d) => d.nome === x.nome)), ...dt];
   const f = o.falha && typeof o.falha === 'object' ? (o.falha as Record<string, unknown>) : null;
   const d10 = f ? inteiro(f.d10, 1, 100) : undefined;
   const chance = f ? inteiro(f.chance, 0, 100) : undefined;

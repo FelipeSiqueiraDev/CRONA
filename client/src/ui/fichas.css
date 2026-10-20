@@ -4700,3 +4700,64 @@ html .fx .fx-sl-caixa.de-lado > .fx-sl-grade.uma-linha {
   width: 3.4rem;
   height: 3.4rem;
 }
+
+/* a abinha Evolução dos NPCs (20/10): o número de NPCs com escolha pendente */
+.fx-ag-aba {
+  position: relative;
+}
+.fx-ag-aba-n {
+  position: absolute;
+  top: -0.3rem;
+  right: 0.2rem;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.3rem;
+  border-radius: 0.8rem;
+  background: #b3261e;
+  color: #fff;
+  font-size: 1.05rem;
+  line-height: 1.6rem;
+  text-align: center;
+}
+
+/* a janela dos passos da Evolução de um NPC (20/10) */
+.fx-passos .fc-subida-intro {
+  margin: 0 0 0.6rem;
+  font-size: 1.6rem;
+  line-height: 1.4;
+}
+.fx-passos .fc-subida-nex {
+  margin: 0.8rem 0 0.6rem;
+  font-size: 1.5rem;
+  color: #e2a64a;
+}
+.fx-passos .fc-pends {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.fx-passos .fc-pend {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: 5rem;
+  padding: 1rem 1.4rem;
+  border: 0.14rem solid rgba(161, 136, 115, 0.45);
+  border-radius: 0.6rem;
+  background: rgba(10, 18, 30, 0.85);
+  color: inherit;
+  font: inherit;
+  font-size: 1.5rem;
+  text-align: left;
+  cursor: pointer;
+}
+.fx-passos .fc-pend:hover {
+  border-color: rgba(226, 166, 74, 0.85);
+}
+.fx-passos .fc-pend .ic {
+  width: 2rem;
+  height: 2rem;
+  color: #e2a64a;
+}
