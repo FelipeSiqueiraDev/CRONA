@@ -408,6 +408,7 @@ export class CombateScreen {
       const s = app.view?.selection;
       if (!this.visivel || this.pondoNaVez || s?.kind !== 'user' || s.id >= 0) return;
       // clicar numa peça do tabuleiro sem a tela interceptar (fora do combate): vira o alvo
+      if (this.modoCards) return;
       if (-s.id !== this.daVez()?.ator?.id) (this.alvoId = -s.id), this.abrirGaveta('alvo');
       this.render();
     });
@@ -526,6 +527,15 @@ export class CombateScreen {
 
   /** Muda o nível do fluxo (e a categoria de ação de agora, que as marcas do mapa e as contas usam). */
   private irPara(fluxo: Fluxo, aba?: Aba) {
+    // tela nova: voltar ao passo 1 limpa o alvo (só se escolhe alvo para atacar)
+    if (this.modoCards && fluxo === 'menu') {
+      this.alvoId = null;
+      this.alvoPrevia = null;
+      this.areaSel.clear();
+      this.pedidoAlvo = null;
+      this.sigs.delete('alvocard');
+      this.renderAlvoCard();
+    }
     this.fluxo = fluxo;
     if (aba) this.aba = aba;
     this.pagina = null;
@@ -888,6 +898,8 @@ export class CombateScreen {
       this.atorId = null;
       // o alvo marcado continua marcado quando o turno passa, enquanto ele ainda está em combate (17/10)
       if (this.alvoId !== null && (!c || cb.participante(c, this.alvoId)?.fora)) this.alvoId = null;
+      // tela nova (21/10, o Felipe): não há alvo por padrão, ele começa vazio a cada turno
+      if (this.modoCards) this.alvoId = null;
       this.fluxo = 'menu';
       this.desligarMovimento();
       this.porNaVez();
@@ -902,6 +914,8 @@ export class CombateScreen {
     const n = c?.registro.length ?? 0;
     const novas = this.regTam >= 0 && n > this.regTam ? (c?.registro.slice(this.regTam) ?? []) : [];
     if (novas.some((l) => l.tipo === 'acao') && this.fluxo !== 'menu') (this.fluxo = 'menu'), this.desligarMovimento();
+    // tela nova: confirmada uma ação, o alvo some
+    if (this.modoCards && novas.some((l) => l.tipo === 'acao')) this.alvoId = null;
     this.regTam = n;
     this.render();
   }
@@ -1872,7 +1886,7 @@ export class CombateScreen {
         onclick: () => {
           sfx.click();
           const id = ps[0]?.id ?? null;
-          if (id !== null && id !== this.daVez()?.ator?.id) this.alvoId = id;
+          if (!this.modoCards && id !== null && id !== this.daVez()?.ator?.id) this.alvoId = id;
           this.render();
         },
       },
@@ -2773,6 +2787,7 @@ export class CombateScreen {
               else this.areaSel.add(p.id);
               this.render();
             } else {
+              if (this.alvoId !== null && this.alvoId !== p.id && this.pedidoAlvo && this.aba === 'atacar') toast('Alvo trocado: a rolagem recomeça.');
               this.alvoId = p.id;
               this.alvoPrevia = null;
               this.render();
@@ -3191,12 +3206,13 @@ export class CombateScreen {
     const c = this.combate;
     const v = this.daVez();
     const ator = v?.ator ?? null;
-    const id = this.alvoPrevia ?? (this.alvoId !== null && this.alvoId !== ator?.id ? this.alvoId : null);
+    const semAlvo = this.fluxo === 'menu' || (this.fluxo === 'acao' && ['movimento', 'item', 'habilidade'].includes(this.aba));
+    const id = this.alvoPrevia ?? (!semAlvo && this.alvoId !== null && this.alvoId !== ator?.id ? this.alvoId : null);
     const p = c && id !== null ? cb.participante(c, id) : undefined;
-    if (!this.mudou('alvocard', [id, p, c?.fase, c?.rodada, this.assinaturaPecas(), this.assinaturaFichas(), id !== null ? this.ameacas[String(id)] : null])) return;
+    if (!this.mudou('alvocard', [this.fluxo, this.aba, id, p, c?.fase, c?.rodada, this.assinaturaPecas(), this.assinaturaFichas(), id !== null ? this.ameacas[String(id)] : null])) return;
     if (!c || !p || c.fase === 'montando') {
       this.alvoCardExtra.replaceChildren();
-      return this.trocar(this.alvoCardCorpo, cardConvite('Escolha o alvo no menu', 'Toque num cartão de "Contra quem?" no menu do meio: aqui aparecem a Defesa, as resistências e o que protege o alvo.'));
+      return this.trocar(this.alvoCardCorpo, cardConvite('Escolha o alvo quando for atacar', 'Sem alvo por enquanto. No passo "Contra quem?" do menu do meio, toque num cartão: aqui aparecem a Defesa, as resistências e o que protege o alvo.'));
     }
     const noCombate = !p.fora;
     const icone = (nome: NomeIcone, dica: string, fn: () => void) => h('button', { class: 'cb-menu', type: 'button', title: dica, 'aria-label': dica, onclick: () => (sfx.click(), fn()) }, icPintado(nome));
@@ -3205,6 +3221,7 @@ export class CombateScreen {
     this.alvoCardExtra.replaceChildren(
       ...[
         p.lado !== 'agente' || !f ? icone('lapis', am ? 'Ficha da ameaça' : 'Criar a ficha da ameaça (Defesa, resistências, RD, ataques)', () => this.editarFichaAmeaca(p.id, p.nome)) : null,
+        c.fase === 'andamento' && this.fluxo === 'acao' && ['atacar', 'manobra', 'ritual', 'outras'].includes(this.aba) ? icone('mira', 'Trocar alvo', () => ((this.pedidoAlvo = () => this.irPara('acao', this.aba)), this.irPara('alvo'))) : null,
         c.fase === 'andamento' ? (noCombate ? icone('sair', 'Tirar do combate', () => this.dialogoSair(p.id)) : icone('entrar', 'Pôr no combate', () => this.dialogoEntrar(p.id))) : null,
       ].filter((x): x is HTMLButtonElement => !!x),
     );
