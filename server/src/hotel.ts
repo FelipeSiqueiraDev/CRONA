@@ -720,9 +720,12 @@ export class Hotel implements HotelApi {
    * cena ao mesmo tempo, são a mesma pessoa"): o NPC com `forma` vira a criatura, e a criatura volta a ser o NPC, no mesmo
    * lugar. Peça sem outra forma: nada acontece.
    */
-  private pecaForma(c: Client, room: RoomInstance, tokenId: number) {
-    const t = room.tokenList().find((x) => x.id === -tokenId);
+  private pecaForma(c: Client, room: RoomInstance, qual: number) {
+    // o tabuleiro manda o número da peça na tela (o negativo); o resto do servidor usa o da peça guardada
+    const lista = room.tokenList();
+    const t = lista.find((x) => x.id === -qual) ?? lista.find((x) => x.id === qual);
     if (!t) return;
+    const tokenId = -t.id;
     const npcs = this.db.npcs ?? [];
     if (t.criatura) {
       // a criatura volta a ser o NPC

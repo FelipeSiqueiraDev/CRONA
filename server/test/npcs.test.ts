@@ -183,3 +183,20 @@ describe("a outra forma do NPC", () => {
     assert.equal(sala.tokens!.find((t) => t.id === iv.id)!.name, iv.name);
   });
 });
+
+describe("a outra forma pelo clique do tabuleiro", () => {
+  test("o número da peça na tela (o negativo) também troca", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    db.npcs!.find((n) => n.id === "samuel")!.forma = { livro: "minotauro" };
+    const hotel = new Hotel({ db, persist: false, timers: false });
+    const c = hotel.attach(() => {}, undefined, true);
+    hotel.receive(c, { t: "login", name: "Mestre", look: db.npcs![0].look, gmKey: hotel.gmKey });
+    const sala = db.rooms[0];
+    hotel.receive(c, { t: "join", roomId: sala.id });
+    hotel.receive(c, { t: "npcColocar", npcId: "samuel" });
+    const id = sala.tokens!.find((t) => t.name === "Samuel Norte")!.id;
+    hotel.receive(c, { t: "pecaForma", tokenId: -id });
+    assert.equal(sala.tokens!.find((t) => t.id === id)!.name, "Minotauro");
+  });
+});
