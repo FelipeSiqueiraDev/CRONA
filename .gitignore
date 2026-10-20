@@ -28,3 +28,15 @@ client/public/arte/**/*.png.webp
 client/public/arte-leve/
 .previas-codex/
 __pycache__/
+
+# prévias de cenas e ameaças da campanha (spoiler; o repositório é público): ficam só no computador do mestre
+docs/cela-geraldo.mp4
+docs/modelo-geraldo-grades.mp4
+docs/*pesadelo-cora*
+docs/cora-parte1-previa.png
+docs/anfitriao-terno-*.png
+docs/reliquias-tabuleiro.png
+
+# cache de ferramenta e o rascunho de teste da linha de produção dos móveis
+scripts/3d/estilo/.impeccable/
+scripts/3d/estilo/pecas_px/_piloto_teste.py
