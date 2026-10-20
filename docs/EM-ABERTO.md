@@ -2,6 +2,16 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 19/10 (madrugada, branch `claude/tatica-codigo`, no ar): NPCs novos, fichas pelo livro, outra forma e a Mansão Albuquerque
+
+- **Fichas pelo livro** (gravadas no jogo pelo websocket do mestre, com backup): Marcela (Especialista NEX 5%, Legista do Turno da Noite), Ivete (Combatente NEX 10%, Mercenário, Aniquilador), Rosa Pimenta (Especialista NEX 50%, Atiradora de Elite, Vítima; faltam o poder do NEX 15%, a versatilidade do 50% e a afinidade), Pedro Cavalcante (Combatente NEX 40%, Comandante de Campo, Atleta), Veríssimo (Combatente NEX 70%, Aniquilador, Mercenário; falta a afinidade e a regra da Jaqueta). Cada uma tem um aviso do que mudou em relação à ficha de origem.
+- **Motor:** o Perito da criação aceita as perícias livres (as perícias da classe entram antes das habilidades).
+- **Nomes:** Pedro Cavalcante, Joaquin Oliveira, Rosa Pimenta e Rebecca Zarkov no jogo e no `shared/src/npcs.ts` (antes "Camisa Rosa", "Ruivo"...).
+- **Bonecos novos** (Códex + limpeza, no estilo dos NPCs refeitos; pedidos em `arte/PERSONAGENS-ANIMACAO/trabalho/<id>/pedir_8.py`, poses pelos `pedir_agachado/sentado/deitado_estilo`): Marcela, Maximilliano Albuquerque, Nico Delagnore (também armado, a cimitarra) e Sr. Veríssimo, com foto e rosto (Elenco e FICHAS). `marcela-geleerd/reforcar.py` aproxima o contorno e o contraste dos outros.
+- **NPC com outra forma** (`forma: { livro }` no NPC, só no banco): o clique duplo do mestre na peça troca o NPC pela criatura do livro e volta, no mesmo lugar, guardando os PV de cada forma; os dois nunca ficam em campo juntos (`pecaForma` no `hotel.ts`, teste em `server/test/npcs.test.ts`). O Max tem uma.
+- **Elenco** pede a lista de arte de novo ao abrir (a foto nova aparece sem F5).
+- **Mansão Albuquerque** (não montada, a pedido do Felipe): as duas chegadas, a saída (`saida-mansao-albuquerque.png`, a tela de partida ainda não usa arte de saída) e a ilha do mapa-múndi. Referências em `F:\Dhellow\CRONA\campanhaeferencias\mansao-albuquerque\`; o 2º andar (3 suítes e outras coisas) vai ser pensado junto com o Felipe.
+
 ## Feito em 19/10 (noite, branch `claude/tatica-codigo`, no ar): a FICHAS sem o botão Editar
 
 - **Edição direta do mestre** (`client/src/ui/fichas.ts`, `comecarDireto`/`fecharDireto`): clicar no NEX, na patente, na origem, classe, trilha, nome, jogador, idade, tema, nas perícias, no companheiro ou num item abre a janela daquilo; quando a última janela fecha, a ficha grava sozinha se algo mudou ("Ficha salva."). Quem avisa é `quandoFecharTodas` em `fichaModal.ts`. A patente agora é uma lista das patentes (os PP vão para o mínimo dela) com "Pontos exatos…". O Salvar e o Cancelar só aparecem no agente novo (o assistente de criação continua para ele). O jogador segue com o Editar dele.
