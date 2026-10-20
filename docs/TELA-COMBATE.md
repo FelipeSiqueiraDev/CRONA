@@ -122,3 +122,23 @@ A das etapas do COMBATE.md (seção 25). A tela nasce na etapa A, com a iniciati
 - **Registro:** filtro, destaque em vermelho (acerto, crítico, machucado), notas (lápis) e Desfazer último, que devolve também o dano.
 - **Mesa:** a rodada, a vez e a ordem; bases por lado, caídos e morrendo; e, a cada ataque, a linha até o alvo e o carimbo por alguns segundos.
 - **Ainda não:** movimento contado em casas e terreno difícil (etapa B), as habilidades comuns das ameaças no automático e os aliados (resto da etapa H), itens e perigos (etapa I), a conjuração complexa (etapa J).
+
+## A tela nova (cards, 21/10)
+
+Pedido do Felipe: "para batalhas ainda vamos usar as miniaturas". A aba COMBATE perde o tabuleiro (a mesa e o tablet continuam mostrando o tabuleiro como antes) e vira **cards**, na mesma escala 1672x941. A chave **Tela de hoje / Tela nova** fica na ponta da barra de baixo; a tela nova é a padrão e a de hoje segue inteira.
+
+| Região | O que tem |
+|---|---|
+| Faixa da iniciativa (topo) | A mesma de hoje: cartas baixinhas e compridas, arrastar para o lado, Atrasar, Preparar, Passar turno e o menu da rodada. Com fotos. |
+| **Esquerda: quem age** | Foto grande, nome, classe e NEX (ou criatura e VD), lado, PV, PE e SAN, Defesa e de que ela é feita, deslocamento e as condições (sempre à vista). Seções que abrem e fecham, uma por vez: Neste turno (padrão, movimento, reação, postura, limite de PE e gasto), Ataques, Poderes e rituais que gastam PE, Resistências. |
+| **Meio: o menu da vez** | Um passo por tela, com a trilha no topo (os passos feitos voltam): 1 O que vai fazer?, 2 Com o quê? (armas, jogadas, Investida, Manobra, Ritual), 3 Contra quem? (cartões grandes: foto, nome, PV com barra, Defesa; no ritual, um alvo, uma área ou sem alvo), 4 Rolagem (d20, d10 da camuflagem, distância opcional, reação do alvo, "Situação e ajustes" numa gaveta fechada) e 5 Resultado (o dano, a conta, PV de antes e depois, Confirmar). No turno do mestre com vários seres, o seletor de quem age fica no topo. |
+| **Direita: o alvo** | Aparece com o alvo (e acende ao passar o mouse nos cartões do passo 3): foto, nome, PV com a marca de machucado (clicar muda), PE e SAN do agente, Defesa e como é feita, Esquiva e Bloqueio, condições, Resistências (Fortitude, Reflexos, Vontade), RD, imunidades, vulnerabilidades, presença perturbadora e, na ameaça, os ataques e a ficha rápida (lápis). Sem alvo: o convite "Escolha o alvo no menu". |
+| Barra de baixo | Efeitos e pendências (com o número), Registro (uma página por vez), Desfazer e a chave. As abas abrem uma gaveta por cima das colunas. |
+| Preparo | Dois cards grandes: **Marcados** (os agentes, com ficha) e **NPCs e ameaças**, com a caixa de marcar, o lado, Percebeu ou Surpreendido e a Iniciativa de cada um (a do grupo do mestre em destaque), e o botão "Confirmar e começar". As peças da cena já vêm marcadas. |
+
+- **Abinha "O que é isso?"** (botão "i"): ataques, rituais, poderes e manobras abrem o detalhe no padrão da tela do jogador.
+- **Alvo:** persiste entre os turnos (decisão do Felipe) e se troca pelo passo 3. Não se clica mais no mapa.
+- **Movimento:** só se declara (com os metros, se quiser); a miniatura anda na mesa. A Investida continua (a conta é a mesma), mas a peça não anda; **empurrão, "andar até o alvo", o chão perto e o passo pelas sombras** dependiam do mapa e não existem na tela nova.
+- **O mapa fica livre:** com a tela nova o combate não trava peça nenhuma no MAPA e na mesa.
+- **Sem rolagem:** tudo cabe na escala (que encolhe com a janela); o excesso vira página ou seção. No tablet em pé (561 a 820 px) a tela aparece encolhida; no celular continua o aviso.
+- Código: `combate.ts` (modo `modoCards`), `combateCards.ts`, `combateCards.css`; os assistentes (`combateAtaque.ts`, `combateManobra.ts`, `combateRitual.ts`) ganharam só a opção `semMapa`, a abinha e a gaveta de situações.

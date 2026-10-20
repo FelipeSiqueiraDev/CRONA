@@ -2,6 +2,18 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 21/10: a tela nova do COMBATE, em cards (ao lado da de hoje)
+
+- **O pedido do Felipe:** a batalha é nas miniaturas, então a aba COMBATE perde o mapa e vira cards. Entregue **ao lado** da de hoje: a chave "Tela de hoje / Tela nova" fica na ponta da barra de baixo da aba (guardada no aparelho do mestre, `localStorage` `crona.combate.tela`, com try/catch). **Padrão: a tela nova ligada.** A de hoje continua intacta e funcionando (conferido: o mapa, o anel, as colunas e a trava de peças voltam ao desligar a chave).
+- **Descrição, regiões e o que cada cardzão mostra:** em [`TELA-COMBATE.md`](TELA-COMBATE.md), seção "A tela nova (cards)". Código em `client/src/ui/combate.ts` (modo `modoCards`), `combateCards.ts` (os cardzões, os cartões de alvo, a paginação, a abinha) e `combateCards.css` (tudo sob `.cb-modo-cards`).
+- **Meio em passos, um por tela:** O que vai fazer? > Com o quê? > Contra quem? > Rolagem > Resultado, com trilha que volta. Por dentro são os mesmos assistentes (ataque, manobra, ritual, movimento, item, habilidade, outras ações); só mudou a apresentação e a forma de escolher o alvo (cartões, sem mapa). Distância em metros é um campo opcional na rolagem; cobertura, flanco, altura, corpo a corpo e camuflagem são as situações marcadas à mão ("Situação e ajustes", gaveta fechada). Sem distância, nada trava.
+- **Abinha "O que é isso?"** (botão "i"): nos ataques, rituais, poderes e manobras, no padrão do detalhe da tela do jogador (`jg-det`). Mostra custo, ação, alcance, teste/DT/resistência, dano, crítico e o texto. **Os rituais não têm texto de efeito no catálogo** (só os dados e a página do livro): a abinha mostra os números e manda ler o livro; escrever os efeitos é trabalho à parte.
+- **Fotos, não bonecos:** em toda a tela nova cada ser é a foto do Elenco/FICHAS (`rosto.jpg`, `foto-ficha.webp`, `foto.jpg`, retrato da ameaça); sem foto, o retrato padrão do Elenco.
+- **Sem rolagem:** a tela é desenhada na escala 1672x941 e encolhe com a janela; o que sobraria vira página (‹ 1 de 2 ›) ou seção que abre e fecha (uma por vez nos cardzões). Medido por script nos passos 1 a 5 e na gaveta: 1024x600, 1280x720 e 1672x941 sem estouro; no tablet em pé (768x1024, a tela agora aparece em vez do aviso) sobram ~1 rem escondidos em dois lugares (rolagem do passo 4 e da gaveta aberta), sem barra.
+- **O mapa fica livre:** com a tela nova ligada o combate não trava mais nenhuma peça no MAPA nem na mesa (`emCombate` falso e `pecaEmCombate` nulo); na tela de hoje a trava continua. Visto: uma peça andou pelo MAPA com o combate aberto.
+- **O que não deu para ver ao vivo / ficou fraco:** o ritual até o fim (a prévia recusa PE de quem está em outra cena: "não tem PE marcados na peça", é do servidor); a mesa de verdade; o preparo com mais de 6 por card (paginado, só o código); as telas de ritual e manobra por dentro ainda têm o miolo antigo (só aumentei e paginei); o turno do mestre com 10 seres (paginado).
+- Prints em `docs/prints-combate-cards/` (JPG pequeno, o painel do navegador só captura 800 px).
+
 ## Feito em 20/10: o combate do jeito da mesa e a Evolução dos NPCs
 
 - **Ataque de passagem / liberar o alcance (regra da mesa):** onde a tela travava ("Não dá para atacar daqui"), agora há "Atacar de passagem" (corpo a corpo, −1d20; o livro não deixa ação padrão no meio do movimento, LR p. 86) ou "Liberar o ataque" (à distância). O servidor nunca checou distância: a trava era só da tela.
