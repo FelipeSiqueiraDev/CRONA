@@ -477,6 +477,8 @@ export type ClientMsg =
   | { t: 'bonusInterludio'; fichaId: number; tipo: 'exercicio' | 'leitura' | 'todos'; delta: number }
   /** põe ou tira uma modificação ou maldição de um item da mochila (só o mestre; LR p. 60 e 144) */
   | { t: 'mochilaMelhorar'; fichaId: number; uid: number; tipo: 'modificacao' | 'maldicao'; id: string; por: boolean }
+  /** várias modificações/maldições de uma vez: só o conjunto final precisa caber no limite da patente */
+  | { t: 'mochilaMelhorias'; fichaId: number; uid: number; poe: { tipo: 'modificacao' | 'maldicao'; id: string }[]; tira: { tipo: 'modificacao' | 'maldicao'; id: string }[] }
   | { t: 'fichaApagar'; id: number }
   /** documentos da investigação (docs/TELA-DO-JOGADOR.md): o mestre cria, muda e apaga */
   | { t: 'docSalvar'; doc: Documento }

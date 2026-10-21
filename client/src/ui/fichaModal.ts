@@ -121,10 +121,11 @@ export function escolher(e: Escolher, aoGravar: () => void): Promise<boolean> {
     const busca = h('input', { class: 'fx-inp fj-busca', type: 'search', placeholder: 'Procurar…' }) as HTMLInputElement;
     const soLivres = h('input', { type: 'checkbox' }) as HTMLInputElement;
     const cont = h('span', { class: 'fj-cont' });
+    const aviso = h('p', { class: 'fj-dica fj-aviso-erro' });
     const lista = h('div', { class: 'fj-lista' });
     const ops = e.opcoes();
     const multi = e.qtd > 1;
-    j.corpo.append(h('div', { class: 'fj-filtros' }, busca, h('label', { class: 'fj-check' }, soLivres, 'só as liberadas'), cont), lista);
+    j.corpo.append(h('div', { class: 'fj-filtros' }, busca, h('label', { class: 'fj-check' }, soLivres, 'só as liberadas'), cont), aviso, lista);
     const desenhar = () => {
       const q = busca.value.trim().toLowerCase();
       lista.replaceChildren();
@@ -134,6 +135,7 @@ export function escolher(e: Escolher, aoGravar: () => void): Promise<boolean> {
       for (const o of vis)
         lista.append(
           linhaOpcao(o, escolhidos.has(o.id), multi, () => {
+            aviso.replaceChildren();
             if (escolhidos.has(o.id)) escolhidos.delete(o.id);
             else {
               if (!multi) escolhidos.clear();
@@ -148,6 +150,8 @@ export function escolher(e: Escolher, aoGravar: () => void): Promise<boolean> {
       gravar.disabled = multi ? escolhidos.size === 0 && !e.podeVazio : escolhidos.size !== 1 && !e.atual().length;
     };
     const gravar = botao('Gravar', 'ok', 'forte', () => {
+      const motivo = e.validar?.([...escolhidos]);
+      if (motivo) return void aviso.replaceChildren(motivo);
       e.aplicar([...escolhidos]);
       gravou = true;
       aoGravar();

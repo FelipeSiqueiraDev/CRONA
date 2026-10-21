@@ -1298,6 +1298,43 @@ export class Hotel implements HotelApi {
   }
 
   /** Põe ou tira uma modificação ou maldição (o mestre passa por cima dos limites, como na requisição). */
+  /** Várias modificações/maldições de uma vez: cada uma tem de servir ao item, e só o conjunto final confere com a patente. */
+  private mochilaMelhorias(c: Client, m: Record<string, unknown>) {
+    const f = (this.db.fichas ?? []).find((x) => x.id === m.fichaId);
+    const i = f ? f.ficha.inventario.findIndex((x) => x.uid === m.uid) : -1;
+    const lista = (v: unknown) =>
+      Array.isArray(v) ? v.filter((x): x is { tipo: 'modificacao' | 'maldicao'; id: string } => !!x && (x.tipo === 'modificacao' || x.tipo === 'maldicao') && typeof x.id === 'string').slice(0, 40) : [];
+    const poe = lista(m.poe);
+    const tira = lista(m.tira);
+    if (!f || i < 0) return c.send({ t: 'error', msg: 'Item não encontrado.' });
+    if (c.role !== 'gm' && f.id !== c.fichaId) return c.send({ t: 'error', msg: 'Você só pode mexer na sua mochila.' });
+    const ops = regras.opcoesDeMelhoria(f.ficha, i);
+    for (const t of poe) {
+      const op = ops.find((o) => o.tipo === t.tipo && o.id === t.id);
+      if (!op) return c.send({ t: 'error', msg: 'Isso não vai neste item.' });
+      if (c.role !== 'gm' && !op.ok) return c.send({ t: 'error', msg: `${op.nome}: ${op.motivos[0] ?? 'a regra não deixa.'} Peça ao mestre.` });
+    }
+    if (c.role !== 'gm') {
+      const erro = regras.erroDeLimiteMelhorias(f.ficha, i, poe, tira);
+      if (erro) return c.send({ t: 'error', msg: `${erro} Peça ao mestre.` });
+    }
+    const it = f.ficha.inventario[i];
+    const novo: regras.ItemFicha = { ...it, modificacoes: [...(it.modificacoes ?? [])], maldicoes: [...(it.maldicoes ?? [])] };
+    for (const t of tira) {
+      const campo = t.tipo === 'modificacao' ? 'modificacoes' : 'maldicoes';
+      novo[campo] = (novo[campo] ?? []).filter((x) => x !== t.id);
+    }
+    for (const t of poe) {
+      const campo = t.tipo === 'modificacao' ? 'modificacoes' : 'maldicoes';
+      if (!(novo[campo] ?? []).includes(t.id)) (novo[campo] ??= []).push(t.id);
+    }
+    if (!novo.modificacoes?.length) delete novo.modificacoes;
+    if (!novo.maldicoes?.length) delete novo.maldicoes;
+    this.trocarMochila(f, f.ficha.inventario.map((x, j) => (j === i ? novo : x)));
+    if (c.role !== 'gm' && (poe.length || tira.length)) this.logDoPersonagem(f, 'user', `${f.nome} mexeu nas melhorias de ${regras.nomeDoItem(it)}.`, c.room);
+    this.fichaMudou(f);
+  }
+
   private mochilaMelhorar(c: Client, m: Record<string, unknown>) {
     const f = (this.db.fichas ?? []).find((x) => x.id === m.fichaId);
     const i = f ? f.ficha.inventario.findIndex((x) => x.uid === m.uid) : -1;
@@ -1308,6 +1345,10 @@ export class Hotel implements HotelApi {
     if (c.role !== 'gm') {
       if (f.id !== c.fichaId) return c.send({ t: 'error', msg: 'Você só pode mexer na sua mochila.' });
       if (!op.ok) return c.send({ t: 'error', msg: `${op.motivos[0] ?? 'A regra não deixa.'} Peça ao mestre.` });
+      if (m.por === true) {
+        const erro = regras.erroDeLimiteMelhorias(f.ficha, i, [{ tipo: m.tipo, id: m.id }]);
+        if (erro) return c.send({ t: 'error', msg: `${erro} Peça ao mestre.` });
+      }
     }
     const it = f.ficha.inventario[i];
     const campo = m.tipo === 'modificacao' ? 'modificacoes' : 'maldicoes';
@@ -2372,6 +2413,9 @@ export class Hotel implements HotelApi {
         return;
       case 'mochilaMelhorar':
         this.mochilaMelhorar(c, m);
+        return;
+      case 'mochilaMelhorias':
+        this.mochilaMelhorias(c, m);
         return;
       case 'interludio':
         this.interludio(c, m);

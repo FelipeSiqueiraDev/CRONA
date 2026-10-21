@@ -184,6 +184,8 @@ export interface Escolher {
   qtd: number;
   opcoes: () => Opcao[];
   atual: () => string[];
+  /** confere o conjunto escolhido antes de gravar: devolve o motivo de não poder, ou null (a janela fica aberta) */
+  validar?: (ids: string[]) => string | null;
   /** grava na ficha (o chamador salva e redesenha) */
   aplicar: (ids: string[]) => void;
   /** escolha livre em texto (a profissão, por exemplo) */

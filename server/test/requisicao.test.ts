@@ -128,6 +128,33 @@ describe('requisição no servidor', () => {
   });
 });
 
+describe('modificações de uma vez, pela jogadora (limite da patente)', () => {
+  test('uma sozinha estoura a categoria I cheia e é recusada; duas juntas cabem e entram', () => {
+    const db = seedDb();
+    upgradeDb(db);
+    const hotel = new Hotel({ db, persist: false, timers: false });
+    const gm = new Peer(hotel, true);
+    gm.send({ t: 'login', name: 'Mestre', look });
+    const agora = new Date().toISOString();
+    const f = ficha();
+    f.pp = 20; // Operador: 3 de categoria I, 1 de categoria II
+    gm.send({ t: 'fichaSalvar', ficha: { id: 0, nome: 'Teste', ficha: f, criadaEm: agora, atualizadaEm: agora } as FichaSalva });
+    const id = gm.last('fichas')!.nova!;
+    const salva = () => hotel.db.fichas!.find((x) => x.id === id)!;
+    gm.send({ t: 'mochilaNova', fichaId: id, tipo: 'arma', id: 'faca' });
+    for (let k = 0; k < 3; k++) gm.send({ t: 'mochilaNova', fichaId: id, tipo: 'equipamento', id: 'balas-longas' });
+    const uid = salva().ficha.inventario.find((x) => x.id === 'faca')!.uid!;
+    gm.send({ t: 'fichaLink', id });
+    const jog = new Peer(hotel);
+    jog.send({ t: 'login', name: 'Jogadora', look, fichaKey: salva().chave! });
+    jog.send({ t: 'mochilaMelhorias', fichaId: id, uid, poe: [{ tipo: 'modificacao', id: 'tatica' }], tira: [] });
+    assert.match(jog.last('error')?.msg ?? '', /limite/);
+    assert.equal(salva().ficha.inventario.find((x) => x.uid === uid)?.modificacoes, undefined);
+    jog.send({ t: 'mochilaMelhorias', fichaId: id, uid, poe: [{ tipo: 'modificacao', id: 'tatica' }, { tipo: 'modificacao', id: 'certeira' }], tira: [] });
+    assert.deepEqual(salva().ficha.inventario.find((x) => x.uid === uid)?.modificacoes, ['tatica', 'certeira'], jog.last('error')?.msg ?? '');
+  });
+});
+
 describe('interlúdio (LR p. 92–93)', () => {
   test('as contas: dormir pelo limite de PE e o lugar, o prato, o relaxar em grupo e os bônus guardados', () => {
     const no = (id: number, acoes: regras.AcaoInterludio[], prato?: regras.Prato): regras.NoInterludio => ({

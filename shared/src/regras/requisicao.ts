@@ -166,6 +166,11 @@ export interface OpcaoMelhoria {
   avisos: string[];
   /** a categoria do item com ela */
   categoria: number;
+  /**
+   * sozinha, ela estoura o limite da patente (o resto vale): quem confere o limite é o conjunto escolhido
+   * (`erroDeLimiteMelhorias`), porque duas modificações juntas podem caber onde a primeira, sozinha, não cabe
+   */
+  limite?: boolean;
 }
 
 /** Requisitos das modificações que vêm escritos (LR p. 60–64): os que o jogo sabe conferir; o resto, o mestre. */
@@ -209,7 +214,10 @@ export function opcoesDeMelhoria(f: Ficha, i: number): OpcaoMelhoria[] {
     if (!it.achado)
       for (const l of c1.itens) {
         const antes = c0.itens.find((x) => x.categoria === l.categoria)?.usados ?? 0;
-        if (l.usados > antes && l.usados > l.limite) o.motivos.push(`A patente leva ${l.limite} itens de categoria ${romano(l.categoria)} e você já tem ${antes}: com ela o item passa a ocupar uma vaga a mais (LR p. 52). Libere uma vaga antes.`);
+        if (l.usados > antes && l.usados > l.limite) {
+          o.limite = true;
+          o.avisos.push(`Sozinha, passa do limite da patente (${l.limite} de categoria ${romano(l.categoria)}); vale se o conjunto que você escolher couber (LR p. 52).`);
+        }
       }
     const e0 = c0.carga.usados;
     if (c1.carga.usados !== e0) o.avisos.push(`Espaços: ${num(e0)} → ${num(c1.carga.usados)}.`);
@@ -243,3 +251,32 @@ export function opcoesDeMelhoria(f: Ficha, i: number): OpcaoMelhoria[] {
 }
 
 const NOME_PRECO: Partial<Record<Elemento, string>> = { conhecimento: 'Intelecto', energia: 'Agilidade', morte: 'Presença', sangue: 'Força ou Vigor' };
+
+/**
+ * O limite da patente para o conjunto de modificações e maldições escolhido de uma vez (LR p. 52 e 60): cada uma sobe a
+ * categoria do item, mas só o resultado final precisa caber (duas modificações numa arma de categoria I fazem categoria
+ * III, e a primeira, sozinha, poderia passar do limite sem que o conjunto passe). Devolve o motivo, ou null se cabe.
+ */
+export function erroDeLimiteMelhorias(f: Ficha, i: number, poe: { tipo: 'modificacao' | 'maldicao'; id: string }[], tira: { tipo: 'modificacao' | 'maldicao'; id: string }[] = []): string | null {
+  const it = f.inventario[i];
+  if (!it || it.achado) return null;
+  const novo: ItemFicha = { ...it, modificacoes: [...(it.modificacoes ?? [])], maldicoes: [...(it.maldicoes ?? [])] };
+  for (const t of tira) {
+    const campo = t.tipo === 'modificacao' ? 'modificacoes' : 'maldicoes';
+    novo[campo] = (novo[campo] ?? []).filter((x) => x !== t.id);
+  }
+  for (const t of poe) {
+    const campo = t.tipo === 'modificacao' ? 'modificacoes' : 'maldicoes';
+    if (!(novo[campo] ?? []).includes(t.id)) (novo[campo] ??= []).push(t.id);
+  }
+  const inv = [...f.inventario];
+  inv[i] = novo;
+  const c0 = calcular(f);
+  const c1 = calcular({ ...f, inventario: inv });
+  for (const l of c1.itens) {
+    const antes = c0.itens.find((x) => x.categoria === l.categoria)?.usados ?? 0;
+    if (l.usados > antes && l.usados > l.limite)
+      return `Com essas modificações a patente passa do limite: ${l.limite} itens de categoria ${romano(l.categoria)}, e você teria ${l.usados} (LR p. 52). Tire alguma modificação ou libere uma vaga.`;
+  }
+  return null;
+}

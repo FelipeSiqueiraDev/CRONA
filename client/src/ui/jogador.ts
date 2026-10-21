@@ -602,17 +602,27 @@ export class TelaJogador {
         podeVazio: true,
         opcoes: () => opcoesMelhoria(fs.ficha, i, 'todas', false),
         atual: () => tem,
+        // só o conjunto final precisa caber na patente: duas modificações juntas podem caber onde a primeira sozinha não cabe
+        validar: (ids) => {
+          const { poe, tira } = this.mudancasDeMelhoria(tem, ids);
+          return regras.erroDeLimiteMelhorias(fs.ficha, i, poe, tira);
+        },
         aplicar: (ids) => {
-          for (const id of new Set([...tem, ...ids])) {
-            const por = ids.includes(id);
-            if (por === tem.includes(id)) continue;
-            const [tipo, mid] = id.split(':') as ['modificacao' | 'maldicao', string];
-            this.app.net.send({ t: 'mochilaMelhorar', fichaId: fs.id, uid, tipo, id: mid, por });
-          }
+          const { poe, tira } = this.mudancasDeMelhoria(tem, ids);
+          if (poe.length || tira.length) this.app.net.send({ t: 'mochilaMelhorias', fichaId: fs.id, uid, poe, tira });
         },
       },
       () => {},
     );
+  }
+
+  /** O que o jogador pôs e tirou na janela de modificar, a partir do que o item já tinha. */
+  private mudancasDeMelhoria(tem: string[], ids: string[]) {
+    const par = (id: string) => {
+      const [tipo, mid] = id.split(':') as ['modificacao' | 'maldicao', string];
+      return { tipo, id: mid };
+    };
+    return { poe: ids.filter((x) => !tem.includes(x)).map(par), tira: tem.filter((x) => !ids.includes(x)).map(par) };
   }
 
   private entregar(it: regras.ItemFicha, nome: string) {
