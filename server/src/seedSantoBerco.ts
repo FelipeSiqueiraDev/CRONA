@@ -702,7 +702,7 @@ const CENAS: Cena[] = [
       ["rack_medieval", 0, 2, 2],
       ["armadura_medieval", 10, 7, 6],
       ["armadura_medieval", 0, 7, 2],
-      ["table_tools", 2, 5, 2],
+      ["mesa_rustica", 2, 5, 2],
       ["barril_madeira", 0, 4, 0],
       ["crate_wood", 3, 7, 0],
       ["lenha", 0, 5, 0],

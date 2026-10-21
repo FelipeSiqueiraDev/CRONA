@@ -130,8 +130,7 @@ function cidadePiso(): FloorSeed[] {
   // os postes de ferro: nas quinas do largo, na Rua Direita e na Rua de Cima
   f.push(...de("poste_ferro", [22, 13], [33, 13], [22, 22], [33, 22], [8, 28], [26, 28], [36, 28], [46, 28], [17, 21], [39, 22], [19, 12], [36, 12]));
   // a calçada da Venda e do Boteco: o banco, o caixote e o barril
-  f.push(["barrel", 8, 23, 0], ["crate_wood", 39, 23, 0]);
-  // os quintais do sul: as hortas e o varal de mandioca
+    // os quintais do sul: as hortas e o varal de mandioca
   for (const [x0, y0] of [[2, 36], [10, 36], [42, 36]] as [number, number][])
     for (let y = y0; y < y0 + 2; y++) for (let x = x0; x < x0 + 4; x++) f.push([x % 2 ? "horta~b" : "horta", x, y, 4]);
   const ocupado = new Set<string>();
@@ -166,9 +165,9 @@ function cidadePiso(): FloorSeed[] {
 /** As paredes da casa de Tiradentes: o oratório em cima da cômoda, o retrato da família, a janela de cortina e o crucifixo. */
 const paredesDaCasa = (y0: number, Y: (y: number) => number): WallSeed[] => [
   ["oratorio", "r", y0, 6.0, 2.1],
-  ["quadro_fazenda~03", "r", y0, 7.6, 2.6],
+  ["painting", "r", y0, 7.6, 2.6],
   ["janela_cozinha", "l", 0, Y(3.6), 1.6],
-  ["quadro_fazenda~10", "l", 0, Y(5.9), 2.5],
+  ["painting", "l", 0, Y(5.9), 2.5],
 ];
 
 const CENAS: CenaSpec[] = [
@@ -213,9 +212,7 @@ const CENAS: CenaSpec[] = [
       ["candles", 2, 1, 0],
       ["candles", 9, 1, 0],
       // o tapete do corredor e os bancos (virados para o altar)
-      ["rug_worn", 5, 3, 0],
       ["rug_worn", 5, 6, 0],
-      ["rug_worn", 5, 9, 0],
       ...[4, 6, 8, 10].flatMap((y): FloorSeed[] => [["banco_igreja", 2, y, 0], ["banco_igreja", 7, y, 0]]),
       ["books_stack", 10, 12, 0, hint("Missais", "Os livrinhos de missa, gastos nas pontas. Num deles, alguém sublinhou a lápis a mesma frase em todas as páginas.")],
       ["plant", 11, 12, 0],
@@ -260,7 +257,7 @@ const CENAS: CenaSpec[] = [
     ],
     wall: [
       ["oratorio", "r", 0, 3.3, 2.1],
-      ["quadro_fazenda~10", "l", 0, 2.1, 2.5],
+      ["painting", "l", 0, 2.1, 2.5],
     ],
     links: [[5, 2, "igreja"]],
     plan: { x: 0, y: 1 },
@@ -296,10 +293,10 @@ const CENAS: CenaSpec[] = [
       ...lampadas([3, 1], [7, 4]),
     ],
     wall: [
-      ["shelf_wall", "r", 0, 7.4, 2.5],
+      ["wall_shelf", "r", 0, 7.4, 2.5],
       ["janela_cozinha", "r", 0, 4.0, 1.6],
       ["clock", "l", 0, 1.4, 3.4],
-      ["quadro_fazenda~03", "l", 0, 5.4, 2.6],
+      ["painting", "l", 0, 5.4, 2.6],
     ],
     links: [
       [5, 6, "cidade"],
@@ -343,7 +340,7 @@ const CENAS: CenaSpec[] = [
     wall: [
       ["janela_cozinha", "r", 0, 1.0, 1.6],
       ["clock", "l", 0, 1.5, 3.4],
-      ["quadro_fazenda~07", "l", 0, 3.0, 2.5],
+      ["painting", "l", 0, 3.0, 2.5],
     ],
     links: [[7, 3, "pousada"]],
     plan: { x: 0, y: 0 },
@@ -374,8 +371,8 @@ const CENAS: CenaSpec[] = [
       ...lampadas([6, 2], [11, 2]),
     ],
     wall: [
-      ["quadro_fazenda~05", "r", 0, 2.2, 2.6],
-      ["quadro_fazenda~10", "r", 0, 14.0, 2.6],
+      ["painting", "r", 0, 2.2, 2.6],
+      ["painting", "r", 0, 14.0, 2.6],
       ["clock", "l", 0, 2.0, 3.4],
     ],
     links: [
@@ -414,7 +411,7 @@ const CENAS: CenaSpec[] = [
     wall: [
       ["janela_cozinha", "r", 0, 4.4, 1.6],
       ["oratorio", "l", 0, 3.9, 2.1],
-      ["quadro_fazenda~11", "l", 0, 1.3, 2.6],
+      ["painting", "l", 0, 1.3, 2.6],
     ],
     links: [[4, 5, "corredor"]],
     plan: { x: 0, y: 0 },
@@ -446,7 +443,7 @@ const CENAS: CenaSpec[] = [
     ],
     wall: [
       ["janela_cozinha", "r", 0, 2.3, 1.6],
-      ["quadro_fazenda~03", "l", 0, 1.5, 2.6],
+      ["painting", "l", 0, 1.5, 2.6],
     ],
     links: [[4, 5, "corredor"]],
     plan: { x: 8, y: 0 },
@@ -472,7 +469,7 @@ const CENAS: CenaSpec[] = [
       ["rug_worn", 3, 3, 0],
       ...lampadas([4, 4]),
     ],
-    wall: [["quadro_fazenda~07", "r", 1, 6.0, 2.6]],
+    wall: [["painting", "r", 1, 6.0, 2.6]],
     links: [[4, 1, "corredor"]],
     plan: { x: 0, y: 10 },
   },
@@ -575,7 +572,7 @@ const CENAS: CenaSpec[] = [
     wall: [
       ["tv_wall", "r", 0, 2.4, 3.0],
       ["clock", "l", 0, 3.6, 3.4],
-      ["quadro_fazenda~07", "l", 0, 6.4, 2.5],
+      ["painting", "l", 0, 6.4, 2.5],
     ],
     links: [[4, 7, "cidade"]],
     plan: { x: 0, y: 0 },

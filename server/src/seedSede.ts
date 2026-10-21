@@ -169,7 +169,6 @@ const ROOMS: RoomSpec[] = [
       ['bar_counter', 11, 3, 4],
       ['beer_glass', 4, 3, 0],
       ['beer_glass', 8, 3, 0],
-      ['beer_crate', 11, 3, 0],
       ['stool_bar', 3, 4, 0],
       ['stool_bar', 5, 4, 0],
       ['stool_bar', 7, 4, 0],
@@ -377,7 +376,7 @@ const ROOMS: RoomSpec[] = [
       ['clock', 'r', 0, 18.2, 3.54],
       ['pipes', 'r', 0, 26.0, 3.81],
       ['sconce', 'l', 1, 11.6, 2.9],
-      ['emergency_light', 'l', 8, 3.6, 3.27],
+      ['emergency_light', 'l', 1, 3.6, 3.27],
     ],
     links: [
       [1, 9, 'bar'],
@@ -508,7 +507,6 @@ const ROOMS: RoomSpec[] = [
       ['food_tray', 1, 11, 2],
       ['drain', 8, 7, 0],
       ['drain', 17, 12, 0],
-      ['ceiling_lamp', 11, 9, 0],
       ...lamps([7, 6], [17, 6], [7, 13], [18, 12]),
       // ---- adensado (15/10): sóbrio, mas com sinal de uso ----
       // o posto do carcereiro (a caneca esfriando e os papéis) e o armário
@@ -851,12 +849,12 @@ const ROOMS: RoomSpec[] = [
       ['counter_wood', 2, 6, 4],
       ['counter_wood', 4, 6, 4],
       ['counter_wood', 6, 6, 4],
-      ['flasks', 2, 6, 0],
+      ['candles', 2, 6, 0],
       ['velas_cristal', 3, 6, 0],
       ['books_stack', 4, 6, 0],
       ['velas_cristal', 5, 6, 0],
       ['frascos_boticario', 6, 6, 0],
-      ['flasks', 7, 6, 0],
+      ['books_stack', 7, 6, 0],
       // o lado de cá do balcão, de quem compra: o tapete gasto, o candelabro e os crânios no canto
       ['rug_worn', 4, 8, 0],
       ['candelabra', 9, 8, 0],

@@ -177,7 +177,7 @@ function cidadePiso(): FloorSeed[] {
 /** As paredes da casa de Igarapé: a janela de cortina em cima da pia, o quadro, o relógio e a prateleira do santo. */
 const paredesDaCasa = (y0: number, Y: (y: number) => number): WallSeed[] => [
   ["janela_cozinha", "r", y0, 1.0, 1.75],
-  ["quadro_fazenda~05", "r", y0, 6.0, 2.54],
+  ["painting", "r", y0, 6.0, 2.54],
   ["clock", "r", y0, 8.0, 2.9],
   // a prateleira com arte (a "wall_shelf" é chapada, desenhada por código, e parecia um quadro, 17/10)
   ["shelf_wall", "l", 0, Y(3), 2.2],
@@ -230,11 +230,8 @@ const CENAS: CenaSpec[] = [
       ["candles", 4, 0, 0],
       ["candelabra", 2, 0, 0],
       ["candelabra", 6, 0, 0],
-      ["igarape_santa", 0, 0, 4],
-      ["igarape_santa", 8, 0, 4, hint("A imagem da santa", "Nossa Senhora de manto azul. Alguém virou o rosto dela para a parede e depois desvirou: a poeira da peanha está mexida.")],
+      ["igarape_santa", 0, 0, 4, hint("A imagem da santa", "Nossa Senhora de manto azul. Alguém virou o rosto dela para a parede e depois desvirou: a poeira da peanha está mexida.")],
       ["rug_ornate", 3, 5, 0],
-      ["candles", 1, 0, 0],
-      ["candles", 7, 0, 0],
       ["plant", 0, 10, 0],
       ["plant", 8, 10, 0],
       ...[4, 6, 8].flatMap((y): FloorSeed[] => [
@@ -333,10 +330,10 @@ const CENAS: CenaSpec[] = [
     darkness: 0.34,
     floor: [
       ["portal", 5, 1, 4],
-      ["prateleira", 7, 1, 4],
-      ["prateleira", 9, 1, 4],
-      ["prateleira", 0, 2, 2],
-      ["prateleira", 0, 5, 2],
+      ["prateleira_venda", 7, 1, 4],
+      ["prateleira_venda", 9, 1, 4],
+      ["prateleira_venda", 0, 2, 2],
+      ["prateleira_venda", 0, 5, 2],
       ["counter_wood", 2, 3, 2, hint("O balcão", "A caderneta do fiado aberta em cima do balcão. A última anotação foi feita ontem, e a letra vai ficando torta até virar um risco.")],
       ["counter_wood", 2, 5, 2],
       ["stool", 3, 3, 6],

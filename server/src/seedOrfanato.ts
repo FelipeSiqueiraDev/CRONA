@@ -113,7 +113,7 @@ function patioPiso(): FloorSeed[] {
   f.push(...de("fuligem", [PORTA_X - 1, y1 + 1], [PORTA_X + 2, y1 + 2]), ...de("cinzas", [PORTA_X - 2, y1 + 2], [PORTA_X + 3, y1 + 2]));
   // o rastro de sangue do anexo até a porta, pela estradinha, e os ganchos de carne do lado do anexo
   f.push(...de("blood_pool", [AX - 1, AY + 5]), ...de("blood_drops", [AX - 2, AY + 8], [AX - 2, 16], [AX - 2, 26], [AX - 3, 38], [PORTA_X + 4, PORTA_Y + 2], [PORTA_X + 1, PORTA_Y + 2]));
-  f.push(["gancho_carne", AX + 1, AY + 7, 2], ["trash_bin", AX - 1, AY + 1, 0], ["corpo_lencol", AX + 3, AY + 9, 2]);
+  f.push(["gancho_carne", AX + 1, AY + 7, 2], ["trash_can", AX - 1, AY + 1, 0], ["corpo_lencol", AX + 3, AY + 9, 2]);
   // a cerca de baixo, com a porteira da estradinha (tombada aqui e ali)
   for (let x = 0; x < PW; x++) if ((x < PW - 6 || x > PW - 4) && x % 7 !== 3) f.push(["cerca", x, PH - 1, 4]);
   f.push(["porteira", PW - 6, PH - 1, 4]);
@@ -164,7 +164,6 @@ const CENAS: CenaSpec[] = [
       ["catre", 0, 3, 2],
       ["catre", 0, 4, 2],
       // o que sobrou da enfermaria: o carrinho das bandagens, a bandeja, o balde, o armarinho de remédio
-      ["trolley", 3, 3, 0],
       ["med_tray", 7, 3, 0],
       ["trash_can", 11, 4, 0],
       ["medical_cabinet", 0, 1, 2],
@@ -210,7 +209,7 @@ const CENAS: CenaSpec[] = [
         ...linha("bench", 0, [1, y + 2], [3, y + 2], [7, y + 2], [9, y + 2]),
       ]),
       // o teto que caiu em cima de uma das mesas, e as vigas no chão
-      ["escombros", 8, 7, 0],
+      ["escombros", 11, 4, 0],
       ["viga_queimada", 5, 5, 0],
       // o balcão da comida no canto, na parede oposta à das frases, e a prateleira na parede do fundo
       ...linha("counter_wood", 2, [SALAO_W - 2, 11], [SALAO_W - 2, 13]),
@@ -224,11 +223,11 @@ const CENAS: CenaSpec[] = [
       ["skull", 4, 10, 2],
       ["food_tray", 7, 13, 0],
       ["viga_queimada", 8, 14, 2],
-      ["trash_bin", 10, 10, 0],
+      ["trash_can", 10, 10, 0],
       // as velas no chão, embaixo das frases (longe da parede, para não tapar a escrita)
       ...de("candles", [1, 5], [1, 12], [1, 0]),
-      ...de("blood_pool", [4, 12], [7, 12], [2, 5], [10, 4], [6, 9]),
-      ...de("blood_drops", [3, 6], [5, 4], [9, 13], [6, 14], [11, 15], [11, 6], [2, 10]),
+      ...de("blood_pool", [4, 12], [2, 5], [10, 4]),
+      ...de("blood_drops", [5, 4], [6, 14], [11, 15], [2, 10]),
       ...de("fuligem", [0, 0], [12, 0], [5, 0], [11, 8]),
       ...de("cinzas", [6, 1], [11, 2], [3, 15], [10, 12]),
     ],
@@ -329,7 +328,7 @@ const CENAS: CenaSpec[] = [
       ["portal", 1, 1, 2],
       ["guarda_roupa", 2, 0, 4, oculta("Guarda-roupa", "Arrombado POR DENTRO: as portas estão estufadas para fora. Lá dentro, um hábito de freira rasgado e uma caixa de metal com um cadeado novo.")],
       ["nightstand", 4, 0, 4],
-      ["cama_solteiro", 5, 0, 4, oculta("Cama", "O colchão está ensopado de sangue velho, endurecido. Há marcas de unha na cabeceira, de dentro para fora.")],
+      ["cama_queimada", 5, 0, 4, oculta("Cama", "O colchão está ensopado de sangue velho, endurecido. Há marcas de unha na cabeceira, de dentro para fora.")],
       ["rug_worn", 2, 1, 0],
       ["desk_wood", 2, 3, 0, oculta("Escrivaninha", "Cartas para a Ordem, datadas e assinadas, nenhuma enviada. A última termina no meio de uma frase: \"eles não estão mais doentes, estão\"")],
       ["candles", 5, 3, 0],
@@ -383,9 +382,7 @@ const CENAS: CenaSpec[] = [
       ["portal", 1, 1, 2],
       ["portal", 4, 2, 0],
       ["banheira", 2, 0, 4, oculta("Banheira", "Cheia até a borda de sangue escuro, frio. Lá no fundo, alguma coisa encosta na mão de quem procura.")],
-      ["desk_wood", 4, 0, 4],
-      ["chair_wood", 5, 1, 0],
-      ...de("blood_pool", [3, 1], [3, 2]),
+            ...de("blood_pool", [3, 1], [3, 2]),
       ...de("blood_drops", [2, 2], [5, 2]),
     ],
     wall: [["mirror", "r", 0, 3.5, 2.72]],
@@ -478,21 +475,20 @@ const CENAS: CenaSpec[] = [
       ["sigil_floor", 3, 2, 0],
       ["mesa_contencao", 4, 2, 4, oculta("Mesa de contenção", "As correias de couro estão gastas de tanto apertar. São do tamanho de um pulso de criança. Embaixo, o sangue fez uma crosta.")],
       // as macas (uma tombada), os aparelhos quebrados, o suporte do soro, o armário revirado
-      ["hospital_bed", 2, 0, 4],
-      ["hospital_bed", 7, 0, 4],
+      ["catre", 2, 0, 4],
+      ["catre", 7, 0, 4],
       ["iv_stand", 3, 0, 0],
-      ["monitor_suporte", 6, 0, 4],
       ["medical_cabinet", 1, 3, 2],
       ["table_tools", 8, 4, 2, oculta("Mesa das ferramentas", "Bisturis, serras de osso, ganchos, velas pretas e um livro de capa de couro com páginas de sangue seco.")],
       ["trolley", 5, 5, 0],
       ["drain", 6, 2, 0],
       ...de("candles", [3, 5], [8, 0], [2, 3]),
-      ...de("blood_pool", [3, 3], [6, 3], [2, 4], [7, 2], [4, 5], [6, 1], [8, 3]),
-      ...de("blood_drops", [1, 3], [1, 1], [5, 1], [7, 4], [3, 1], [8, 2]),
+      ...de("blood_pool", [3, 3], [6, 3], [2, 4], [7, 2]),
+      ...de("blood_drops", [1, 3], [7, 4], [3, 1]),
     ],
     wall: [
       ["chains_wall", "r", 0, 2.0, 2.4],
-      ["cage_lamp", "l", 1, 3.5, 3.2],
+      ["tocha_parede", "l", 1, 3.5, 3.2],
       ["sigil_scratch", "r", 0, 6.0, 2.4],
       ["estandarte_sangue", "r", 0, 4.6, 1.9],
     ],
@@ -519,7 +515,7 @@ function corredorDaAla(): FloorSeed[] {
     f.push(["blood_drops", 2 + (i % 2), y + 1, 0], ["candles", i % 2 ? 1 : W - 2, y + 1, 0]);
     if (y + 2 < ALA_H) f.push(["blood_drops", 1 + (i % 3), y + 2, 0], ["cinzas", 3 - (i % 2), y + 2, 0]);
   }
-  f.push(["colchao_chao", 3, 9, 2], ["escombros", 3, 17, 0], ["trash_bin", 4, 12, 0], ["food_tray", 2, 18, 0]);
+  f.push(["colchao_chao", 3, 9, 2], ["escombros", 3, 17, 0], ["trash_can", 4, 12, 0], ["food_tray", 2, 18, 0]);
   f.push(...de("blood_pool", [3, 2], [3, 22], [4, 7]), ...de("fuligem", [1, 23], [4, 23]));
   return f;
 }
@@ -556,7 +552,7 @@ function quartos(): CenaSpec[] {
         // um quarto de criança de orfanato pobre: duas camas de ferro, o criado-mudo entre elas e o armário; no chão, o
         // colchão do transtornado que dorme aqui agora e o baú dele
         floor.push(["cama_queimada", 2, 0, 4], ["nightstand", 3, 0, 4], ["cama_queimada", 4, 0, 4], ["guarda_roupa", 1, 2, 2]);
-        floor.push(["colchao_chao", 2, 3, 2], ["chest_army", 5, 3, 0]);
+        floor.push(["colchao_chao", 2, 3, 2], ["bau_madeira", 5, 3, 0]);
         if (i % 2) floor.push(["pilha_cranios", 4, 3, 0]);
         else floor.push(["candles", 4, 3, 0]);
         floor.push(...de("blood_pool", [3, 1], [3, 2]), ...de("blood_drops", [1, 2], [5, 2]), ...de("fuligem", [1, 3], [1, 0]), ...de("cinzas", [3, 3]));
@@ -592,7 +588,7 @@ const SAQUEADOS = new Set(["armario_cozinha", "prateleira", "comoda", "nightstan
 /** O que o fogo e o bando destruíram (FloorItem.quebrado: carbonizado e torto, não senta nem liga, tapa metade). */
 const QUEBRADOS = new Set([
   "chair_wood", "stool", "bench", "table_round", "mesa_jantar", "counter_wood", "prateleira", "armario_cozinha", "guarda_roupa",
-  "toilet", "sink", "stall_panel", "chest_army", "nightstand", "catre",
+  "toilet", "sink", "stall_panel", "chest_army", "bau_madeira", "nightstand", "catre",
   // a sala de cirurgia revirada: as macas tombadas, os aparelhos quebrados
   "hospital_bed", "trolley", "iv_stand", "monitor_suporte", "medical_cabinet",
 ]);
