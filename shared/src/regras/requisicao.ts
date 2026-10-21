@@ -199,13 +199,17 @@ export function opcoesDeMelhoria(f: Ficha, i: number): OpcaoMelhoria[] {
     inv[i] = novo;
     const c1 = calcular({ ...f, inventario: inv });
     o.categoria = categoriaDoItem(novo);
+    // a categoria que o item de fato ocupa (a arma favorita vale uma a menos): a que ganhou vaga usada com a mudança
+    const ganhou = c1.itens.filter((l) => l.usados > (c0.itens.find((x) => x.categoria === l.categoria)?.usados ?? 0));
+    if (ganhou.length === 1) o.categoria = ganhou[0].categoria;
+    else if (!ganhou.length && o.categoria >= 1) o.categoria = c1.itens.find((l) => l.usados < (c0.itens.find((x) => x.categoria === l.categoria)?.usados ?? 0))?.categoria ?? o.categoria;
     if (o.tem) return;
-    for (const p of c1.problemas) if (p.severidade === 'erro' && !erros0.has(p.texto)) o.motivos.push(p.texto);
+    for (const p of c1.problemas) if (p.severidade === 'erro' && !erros0.has(p.texto) && !(!it.achado && p.texto.startsWith('Itens de categoria'))) o.motivos.push(p.texto);
     // o limite da patente com a categoria nova (o achado na missão não conta)
     if (!it.achado)
       for (const l of c1.itens) {
         const antes = c0.itens.find((x) => x.categoria === l.categoria)?.usados ?? 0;
-        if (l.usados > antes && l.usados > l.limite) o.motivos.push(`O item vira categoria ${romano(o.categoria)}, e a patente leva ${l.limite} de categoria ${romano(l.categoria)} (LR p. 52).`);
+        if (l.usados > antes && l.usados > l.limite) o.motivos.push(`A patente leva ${l.limite} itens de categoria ${romano(l.categoria)} e você já tem ${antes}: com ela o item passa a ocupar uma vaga a mais (LR p. 52). Libere uma vaga antes.`);
       }
     const e0 = c0.carga.usados;
     if (c1.carga.usados !== e0) o.avisos.push(`Espaços: ${num(e0)} → ${num(c1.carga.usados)}.`);
