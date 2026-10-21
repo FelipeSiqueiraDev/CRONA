@@ -122,3 +122,18 @@ lampião), `mansao_estrutura` (lustre, lareira, coluna, piano, escadas nobres, r
 retratos, janela com cortina), `mansao_quartos` (quarto da Catarina e do Miguel, sala de jogos), `mansao_escritorio` (escritório,
 biblioteca), `mansao_estilos` (os dez pisos e paredes). A exportação para `client/public/arte/` é feita uma vez, no fim,
 pelo coordenador.
+
+## Como ver e o estado de hoje (21/10)
+
+- **No jogo:** a campanha "Mansão Albuquerque" aparece no mapa-múndi (posição inicial no interior de São Paulo, perto da Sede; o mestre
+  arrasta) com as telas de chegada e de saída que já existiam. O terreno (Jardim) é a cena de entrada; o minimapa mostra o térreo na planta do
+  Felipe e as abas "2º andar" e "Mezanino". São 49 cenas (`server/test/mansaoAlbuquerque.test.ts`).
+- **Arte:** os módulos estão no repositório, mas a arte exportada (`client/public/arte/mobiliario/` e `arte/texturas/px/mansao_*`) entra numa
+  exportação única, a do coordenador (comandos no `docs/EM-ABERTO.md`). Sem ela, o jogo desenha as peças novas com a caixa de reserva.
+- **TV do quarto da Catarina:** a `tv_gamer` tem o tipo próprio (`tv_gamer`) e não o de rack de parede, para ficar de frente para a cama (a
+  regra dos móveis de parede, `moveisNaParede.test.ts`, só vale para o resto).
+- **Mezanino:** cena à parte (ver acima), ligada pela parede de escalada nos dois lados.
+- **Itens achados** (pilhas no chão, todos de enfeite): cartão de visita no Saguão, tesoura de poda na Estufa, abridor de cartas no Gabinete,
+  medalha de ouro no quarto da Catarina e o caderno de anotações dela no mezanino.
+- **Pistas ocultas** (só o mestre vê até mostrar): o retrato do fundador no Gabinete, os dois retratos de Maximiliano na Galeria de Quadros, o cofre
+  do escritório do pai.
