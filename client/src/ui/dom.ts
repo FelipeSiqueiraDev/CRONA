@@ -1,3 +1,4 @@
+import { ic } from './icons';
 type Child = Node | string | number | null | undefined | false;
 type Props = Record<string, unknown> & { class?: string; style?: string };
 
@@ -146,12 +147,33 @@ export function icon(name: keyof typeof PATHS | string, size = 18): SVGSVGElemen
 
 // ---------- avisos ----------
 let toastBox: HTMLElement | null = null;
-export function toast(msg: string, kind: 'error' | 'info' = 'info') {
+
+/** O tipo do aviso: info (padrão), error, ok (deu certo) e aviso (do combate). Cada um com o título e o ícone dele. */
+export type TipoAviso = 'error' | 'info' | 'ok' | 'aviso';
+const AVISOS: Record<TipoAviso, { titulo: string; icone: string }> = {
+  info: { titulo: 'Aviso', icone: 'estrela' },
+  error: { titulo: 'Atenção', icone: 'alerta' },
+  ok: { titulo: 'Pronto', icone: 'ok' },
+  aviso: { titulo: 'Combate', icone: 'espadas' },
+};
+
+/**
+ * O aviso que pipoca na tela (21/10, o Felipe: "deixa a mensagem bonitinha"): a placa do HUD com o ícone do tipo, o título
+ * curto, o texto (até 3 linhas) e a barrinha do tempo. Empilha sem se sobrepor; o CSS está em style.css (.toast).
+ */
+export function toast(msg: string, kind: TipoAviso = 'info') {
   if (!toastBox) {
     toastBox = h('div', { class: 'toasts', role: 'status', 'aria-live': 'polite' });
     document.body.append(toastBox);
   }
-  const t = h('div', { class: `toast ${kind}` }, msg);
+  const a = AVISOS[kind];
+  const t = h(
+    'div',
+    { class: `toast ${kind}` },
+    h('span', { class: 'toast-ic', 'aria-hidden': 'true' }, ic(a.icone)),
+    h('div', { class: 'toast-txt' }, h('b', null, a.titulo), h('p', null, msg)),
+    h('i', { class: 'toast-barra', 'aria-hidden': 'true' }),
+  );
   toastBox.append(t);
   setTimeout(() => t.classList.add('out'), 3200);
   setTimeout(() => t.remove(), 3700);

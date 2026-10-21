@@ -370,35 +370,135 @@ input[type='range'] {
   margin-top: 0;
 }
 
-/* ---------- avisos ---------- */
+/* ---------- avisos (toasts): a placa do HUD, com o ícone do tipo, o título, o texto e a barrinha do tempo ---------- */
 .toasts {
+  --t: clamp(11px, 0.95vw, 19px);
   position: fixed;
-  top: 14px;
+  top: clamp(58px, 9.4vh, 100px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: calc(var(--t) * 1.1);
   align-items: center;
+  width: min(calc(var(--t) * 40), 92vw);
   pointer-events: none;
 }
 .toast {
-  background: rgba(20, 15, 20, 0.95);
-  border: 1px solid var(--line-2);
-  border-left: 3px solid var(--amber);
-  padding: 9px 14px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  transition: opacity 0.4s, transform 0.4s;
-  max-width: 80vw;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: calc(var(--t) * 0.9);
+  width: 100%;
+  padding: calc(var(--t) * 0.85) calc(var(--t) * 1.2) calc(var(--t) * 1.05);
+  overflow: hidden;
+  border: calc(var(--t) * 0.16) solid #a18873;
+  border-radius: calc(var(--t) * 0.9);
+  background:
+    radial-gradient(ellipse 70% 120% at 0% 0%, rgba(233, 169, 68, 0.14), transparent 60%),
+    linear-gradient(180deg, rgba(13, 24, 43, 0.98), rgba(5, 11, 20, 0.98));
+  box-shadow:
+    inset 0 0 0 calc(var(--t) * 0.22) rgba(5, 11, 20, 0.97),
+    inset 0 0 0 calc(var(--t) * 0.32) rgba(161, 136, 115, 0.38),
+    0 calc(var(--t) * 0.6) calc(var(--t) * 1.6) rgba(0, 0, 0, 0.6);
+  color: #f3e9d8;
+  animation: toast-entra 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  transition:
+    opacity 0.4s,
+    transform 0.4s;
+}
+.toast::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--t) * -0.45);
+  left: 50%;
+  width: calc(var(--t) * 0.8);
+  height: calc(var(--t) * 0.8);
+  transform: translateX(-50%) rotate(45deg);
+  border: calc(var(--t) * 0.14) solid #050b14;
+  background: linear-gradient(135deg, #ffd27a, #e9a944 55%, #c97f2c);
+}
+.toast-ic {
+  display: grid;
+  place-items: center;
+  width: calc(var(--t) * 2.6);
+  height: calc(var(--t) * 2.6);
+  border: calc(var(--t) * 0.14) solid var(--cor, #e9a944);
+  border-radius: 50%;
+  background: rgba(5, 11, 20, 0.85);
+  color: var(--cor, #e9a944);
+}
+.toast-ic svg {
+  width: 62%;
+  height: 62%;
+}
+.toast-txt {
+  min-width: 0;
+}
+.toast-txt b {
+  display: block;
+  font: 700 calc(var(--t) * 1.15) / 1.1 var(--r-pixel, 'Pixelify Sans', monospace);
+  letter-spacing: 0.04em;
+  color: var(--cor, #ffd27a);
+  text-shadow: 0 calc(var(--t) * 0.12) 0 #1b0d03;
+}
+.toast-txt p {
+  display: -webkit-box;
+  margin: calc(var(--t) * 0.25) 0 0;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font: 400 calc(var(--t) * 1.1) / 1.35 var(--r-corpo, 'Roboto Condensed', sans-serif);
+  color: #f3e9d8;
+}
+.toast-barra {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: calc(var(--t) * 0.22);
+  width: 100%;
+  transform-origin: left;
+  background: var(--cor, #e9a944);
+  opacity: 0.85;
+  animation: toast-tempo 3.2s linear both;
+}
+.toast.info {
+  --cor: #ffd27a;
 }
 .toast.error {
-  border-left-color: var(--red-2);
+  --cor: #ff8a73;
+}
+.toast.ok {
+  --cor: #8fe3a4;
+}
+.toast.aviso {
+  --cor: #7bd9ff;
 }
 .toast.out {
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(calc(var(--t) * -0.6));
+}
+@keyframes toast-entra {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--t) * -1.4)) scale(0.94);
+  }
+}
+@keyframes toast-tempo {
+  to {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+  .toast-barra {
+    animation: none;
+    transform: scaleX(0.5);
+  }
 }
 
 .avatar-preview {

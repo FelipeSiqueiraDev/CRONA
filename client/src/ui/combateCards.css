@@ -2283,3 +2283,59 @@ html:not(.modo-ficha) .cc-el-campo .cc-ini-num:focus {
   outline: 0.2rem solid var(--r-ouro, #e9a944);
   outline-offset: 0.1rem;
 }
+
+/* invertido (o Felipe): o dado com o campo do resultado na carta; a fórmula numa placa embaixo */
+html:not(.modo-ficha) .cc-el .cc-ini-placa .cc-ini-num {
+  width: 6.4rem;
+  height: 2.3rem;
+  font-size: 2rem;
+}
+.cc-el-formula {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-width: 11rem;
+  margin-top: 0.5rem;
+  padding: 0.4rem 1.4rem;
+  border: 0.18rem solid var(--r-ouro, #e9a944);
+  border-radius: 0.7rem;
+  background: linear-gradient(180deg, rgba(20, 36, 64, 0.96), rgba(5, 11, 20, 0.96));
+  box-shadow: inset 0 0 0 0.25rem rgba(5, 11, 20, 0.9), 0 0.3rem 0.8rem rgba(0, 0, 0, 0.5);
+  color: var(--r-ouro-hi, #ffd27a);
+}
+.cc-el-formula .ic {
+  width: 2rem;
+  height: 2rem;
+}
+.cc-el-formula b {
+  font: 700 2.1rem / 1 var(--r-pixel);
+  letter-spacing: 0.04em;
+  text-shadow: 0 0.15rem 0 #3a1c04;
+  white-space: nowrap;
+}
+.cc-el-formula.menor {
+  color: #ff9d86;
+  border-color: #e88a72;
+}
+
+/* a rolagem discreta (o Felipe: "mais discretinha, sem ícone, menorzinha, suave"): só o texto pequeno, apagado, embaixo do campo */
+.cc-el-formula {
+  min-width: 0;
+  margin-top: 0.3rem;
+  padding: 0.2rem 1rem;
+  border: 0;
+  border-radius: 99rem;
+  background: rgba(161, 190, 235, 0.08);
+  box-shadow: none;
+  color: rgba(214, 190, 140, 0.75);
+}
+.cc-el-formula b {
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-shadow: none;
+}
+.cc-el-formula.menor {
+  color: rgba(255, 157, 134, 0.8);
+  border: 0;
+}

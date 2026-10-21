@@ -3457,7 +3457,8 @@ export class CombateScreen {
         ? h('button', { class: 'cc-el-mais', type: 'button', title: 'Lado e surpresa', 'aria-label': 'Lado e surpresa', onclick: (e: Event) => (e.stopPropagation(), sfx.click(), this.menusAbertos.has(o.menuChave!) ? this.menusAbertos.delete(o.menuChave!) : this.menusAbertos.add(o.menuChave!), this.sigs.delete('mont'), this.renderMontagemCards()) }, ic('reticencias'))
         : null,
       h('b', { class: 'el-nome duas' }, h('span', null, primeiro), h('span', null, resto.join(' ') || ' ')),
-      h('div', { class: 'el-placa cc-ini-placa', title: o.dica, onclick: (e: Event) => e.stopPropagation() }, ic('dados'), h('b', { class: `cc-formula${o.formula?.menor ? ' menor' : ''}` }, o.formula ? `${o.formula.texto}${o.formula.menor ? ' ↓' : ''}` : '—')),
+      // o dado com o campo do resultado (um elemento só) dentro da carta; a fórmula numa placa embaixo
+      h('div', { class: 'el-placa cc-ini-placa', title: o.dica, onclick: (e: Event) => e.stopPropagation() }, ic('dados'), o.ini ?? h('span', { class: 'cc-ini-sem' }, '—')),
     );
     return h(
       'article',
@@ -3468,7 +3469,7 @@ export class CombateScreen {
         onkeydown: (e: KeyboardEvent) => e.key === 'Enter' && (sfx.click(), o.aoClicar()),
       },
       carta,
-      o.ini ? h('div', { class: 'cc-el-campo', onclick: (e: Event) => e.stopPropagation() }, o.ini) : h('small', { class: 'cc-el-dica' }, o.dica),
+      o.formula ? h('div', { class: `cc-el-formula${o.formula.menor ? ' menor' : ''}`, title: o.dica }, h('b', null, `${o.formula.texto}${o.formula.menor ? ' ↓' : ''}`)) : h('small', { class: 'cc-el-dica' }, o.dica),
       aberto && o.menu ? h('div', { class: 'cc-el-menu', onclick: (e: Event) => e.stopPropagation() }, o.menu) : null,
       o.extra ?? null,
     );
