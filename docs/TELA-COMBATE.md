@@ -142,3 +142,10 @@ Pedido do Felipe: "para batalhas ainda vamos usar as miniaturas". A aba COMBATE 
 - **O mapa fica livre:** com a tela nova o combate não trava peça nenhuma no MAPA e na mesa.
 - **Sem rolagem:** tudo cabe na escala (que encolhe com a janela); o excesso vira página ou seção. No tablet em pé (561 a 820 px) a tela aparece encolhida; no celular continua o aviso.
 - Código: `combate.ts` (modo `modoCards`), `combateCards.ts`, `combateCards.css`; os assistentes (`combateAtaque.ts`, `combateManobra.ts`, `combateRitual.ts`) ganharam só a opção `semMapa`, a abinha e a gaveta de situações.
+
+## Tela antiga arquivada (21/10)
+
+A tela de hoje (o tabuleiro no meio, a gaveta Alvo, Efeitos e Registro, a trava de peças) **saiu do site, mas o código ficou**, para voltar melhorada: o Felipe pediu "tira do site, mas guarda no código".
+- **Onde está:** `client/src/ui/combate.ts` (todos os ramos `modoCards ? ... : ...`, `renderAlvo`, `faixaAtor`, `montagem`, `atualizarMarcas`, `trocarTela`, `retratoDeCanvas`), e o CSS em `combateRapido.css`, `combate.css`, `hud.css` (que não foi mexido). A tela nova vive em `combateCards.ts` e `combateCards.css`, sob `.cb-modo-cards`.
+- **Como religar:** no topo do `combate.ts`, `TELA_ANTIGA_DISPONIVEL = true`. A chave "Tela de hoje / Tela nova" volta à barra de baixo e a escolha fica no `localStorage` (`crona.combate.tela`). Lembrar: a tela antiga ainda mostra o "turno do mestre" no desenho da ordem; com o turno individual (21/10) cada ser do mestre já é uma carta da ordem, então o que for revivido da faixa precisa seguir isso.
+- **Turno individual:** vale para as duas (é regra compartilhada em `shared/src/combate/turnos.ts`): cada ser do mestre tem o próprio turno, a Iniciativa pode ser igual e não há mais Iniciativa "do grupo". Combate salvo no formato antigo migra ao abrir.

@@ -2,6 +2,15 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 21/10 (noite): a tela nova é a única; turno individual; preparo em cartões
+
+- **Só a tela nova (cards) no site.** A chave "Tela de hoje / Tela nova" saiu e a escolha antiga do aparelho (`crona.combate.tela`) é apagada ao abrir. **A tela antiga está ARQUIVADA, não apagada:** o código continua em `client/src/ui/combate.ts` (ramos `modoCards ? ... : ...`), `combateRapido.css`, `combate.css` e `hud.css`, atrás da constante `TELA_ANTIGA_DISPONIVEL = false` (topo do `combate.ts`, com o comentário de como religar: trocar por `true`). Detalhes em [`TELA-COMBATE.md`](TELA-COMBATE.md), seção "Tela antiga arquivada".
+- **Turno individual (regra da mesa do Felipe):** cada ser do mestre tem o próprio turno; a Iniciativa pode ser igual, e entre iguais vale a ordem do preparo (e o `desempate`). Não existe mais "Iniciativa do grupo do mestre" nem "turno do mestre" (`shared/src/combate/turnos.ts`; `iniciativaMestre` ficou só por compatibilidade e vale para cada ser). Combate salvo no formato antigo é migrado ao abrir (`migrar`, chamada no servidor e a cada ação). Testes novos em `server/test/combate.test.ts` (seis seres de Iniciativa igual, um morre no meio, atrasar um, formato antigo).
+- **Preparo:** cartões grandes com foto (Marcados à esquerda; NPCs e ameaças agrupados por TIPO à direita, "6× Existido" com a Iniciativa do tipo e, abrindo, os seres). Os Marcados vêm da lista do jogo todo (`state.marcados`): quem não tem peça nesta campanha aparece com o botão "Trazer para a cena" (`marcadoColocar`). **Não deu para ver ao vivo com o `state.marcados` cheio:** na prévia essa lista chega vazia (o mesmo vale para `state.npcs`), então o caso "Marcado de outra campanha" só foi montado no código.
+- **A mira** agora só no estado de espera do cardzão da direita (retículo que respira e anéis que fecham); as fotos ficam limpas.
+- **Tags de ação** pequenas com ícone (punho, bota, escudo, raio; o agachar do HUD), verde = pode, cinza = gasta ou impedida (agarrado, paralisado, atordoado, inconsciente, morrendo, surpreendido, sem PE), motivo no tooltip e numa linha curta. Os cartões do menu voltaram ao visual de antes.
+- **Pedir arte depois (ícones das tags):** hoje usam os de linha do `icons.ts` (punho, bota, escudo, raio, agachar); se o Felipe quiser pintados, são 5: ação padrão, movimento, reação, PE do turno e postura.
+
 ## Feito em 21/10: a tela nova do COMBATE, em cards (ao lado da de hoje)
 
 - **O pedido do Felipe:** a batalha é nas miniaturas, então a aba COMBATE perde o mapa e vira cards. Entregue **ao lado** da de hoje: a chave "Tela de hoje / Tela nova" fica na ponta da barra de baixo da aba (guardada no aparelho do mestre, `localStorage` `crona.combate.tela`, com try/catch). **Padrão: a tela nova ligada.** A de hoje continua intacta e funcionando (conferido: o mapa, o anel, as colunas e a trava de peças voltam ao desligar a chave).

@@ -1,5 +1,8 @@
 # Combate no CRONA (mecânica)
 
+> **Decisão do Felipe (21/10, vale sobre o que está escrito abaixo sobre o "turno do mestre"):** cada ser do mestre tem o PRÓPRIO turno; a Iniciativa pode ser igual para vários (os do mesmo tipo), mas cada tipo (um Existido, um Zumbi de Sangue, um NPC) tem a sua, e não existe mais uma Iniciativa "do grupo do mestre" (LR p. 83). Entre Iniciativas iguais, vale a ordem do preparo e o desempate. Código: `entradas()` e `migrar()` em `shared/src/combate/turnos.ts`.
+
+
 Tudo o que a aba COMBATE precisa saber para uma luta andar sem travar: começo da cena de ação, surpresa, iniciativa, rodadas e turnos, cada ação do livro, ataque e dano, reações, manobras, rituais, condições, morrendo e enlouquecendo, as DTs que sobem, ameaças, aliados, itens, perigos e as regras opcionais. **Aqui é só mecânica.** O visual da tela vem depois, com a referência.
 
 - **Fontes:** livro de regras (LR, PDF 1.0) e *Sobrevivendo ao Horror* (SaH). As páginas são as impressas no rodapé. Onde o livro se contradiz ou não diz nada, a seção 22 mostra o ponto e a proposta.
