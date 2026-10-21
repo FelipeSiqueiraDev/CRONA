@@ -15,7 +15,8 @@ export type FurniCategory =
   | 'fazenda'
   | 'casa'
   | 'parede'
-  | 'vila';
+  | 'vila'
+  | 'mansao';
 
 export const CATEGORY_NAMES: Record<FurniCategory, string> = {
   estrutura: 'Estrutura',
@@ -33,6 +34,7 @@ export const CATEGORY_NAMES: Record<FurniCategory, string> = {
   casa: 'Casa',
   parede: 'Parede',
   vila: 'Santo Berço',
+  mansao: 'Mansão',
 };
 
 /**
@@ -539,6 +541,65 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'chapa_lanche', name: 'Chapa e Estufa', category: 'casa', kind: 'chapa_lanche', width: 2, depth: 1, height: 1.2, stackable: true, rotations: ALL, colors: ['#9aa0a6', '#d8a040'], desc: 'O balcão de inox com a chapa dos lanches, a panela das salsichas e a estufa de vidro com os salgados.' },
   { id: 'freezer_acai', name: 'Freezer de Açaí', category: 'casa', kind: 'freezer_acai', width: 2, depth: 1, height: 1.0, stackable: true, rotations: ALL, colors: ['#ecece6', '#5a2a6a'], desc: 'O freezer horizontal com a tampa de vidro: as cubas de açaí e os potes de granola, leite em pó e banana.' },
   { id: 'cafeteira', name: 'Garrafa de Café', category: 'decoracao', kind: 'mug', width: 1, depth: 1, height: 0.35, stackable: true, rotations: ALL, colors: ['#3a3a3e', '#c0c0c0'], desc: 'A garrafa térmica de café, os copinhos e o açucareiro.' },
+  // ---------- MANSÃO ALBUQUERQUE (21/10) ----------
+  // a mansão de pedra do Felipe (server/src/seedMansaoAlbuquerque.ts); a arte de pixel por código está em pecas_px/mansao_*.py.
+  { id: 'mansao_portico', name: 'Mansão Albuquerque', category: 'mansao', kind: 'predio_vila', width: 9, depth: 9, height: 5.0, xray: true, rotations: ALL, colors: ['#5a544c', '#b4562f', '#e6dfd0', '#6a1a24'], desc: 'O pórtico de entrada da mansão: colunas, o tapete vermelho, a porta dupla e o terraço em cima.' },
+  { id: 'mansao_central', name: 'Corpo Central da Mansão', category: 'mansao', kind: 'predio_vila', width: 13, depth: 18, height: 7.6, semNome: true, xray: true, rotations: ALL, colors: ['#5a544c', '#b4562f', '#8a8478', '#2a2420'], desc: 'O corpo central da mansão: pedra escura, telhado de telha ferrugem e o frontão com o óculo.' },
+  { id: 'mansao_ala_oeste', name: 'Ala Oeste da Mansão', category: 'mansao', kind: 'predio_vila', width: 13, depth: 24, height: 6.9, semNome: true, xray: true, rotations: ALL, colors: ['#5a544c', '#b4562f', '#8a8478', '#2a2420'], desc: 'A ala oeste da mansão, de dois andares.' },
+  { id: 'mansao_ala_leste', name: 'Ala Leste da Mansão', category: 'mansao', kind: 'predio_vila', width: 12, depth: 24, height: 6.9, semNome: true, xray: true, rotations: ALL, colors: ['#5a544c', '#b4562f', '#8a8478', '#2a2420'], desc: 'A ala leste da mansão, de dois andares.' },
+  { id: 'anexo_mansao', name: 'Anexo', category: 'mansao', kind: 'predio_vila', width: 8, depth: 6, height: 4.4, xray: true, rotations: ALL, colors: ['#5a544c', '#b4562f', '#3a2a1c', '#2a2420'], desc: 'O anexo de pedra do jardim: sala de armas e depósito.' },
+  { id: 'barracao_mansao', name: 'Barracão', category: 'mansao', kind: 'predio_vila', width: 9, depth: 9, height: 4.5, xray: true, rotations: ALL, colors: ['#6a5e50', '#b4562f', '#3a2a1c', '#2a2420'], desc: 'O barracão comprido dos empregados, de tábuas velhas e telha remendada.' },
+  { id: 'muro_mansao', name: 'Muro da Mansão', category: 'mansao', kind: 'muro_mansao', width: 1, depth: 1, height: 2.2, rotations: ALL, colors: ['#5a544c', '#8a8478'], desc: 'O muro de pedra do terreno.' },
+  { id: 'muro_pilar', name: 'Pilar do Muro', category: 'mansao', kind: 'muro_mansao', width: 1, depth: 1, height: 3.0, rotations: ALL, colors: ['#5a544c', '#8a8478'], desc: 'O pilar de pedra do muro, com a esfera em cima.' },
+  { id: 'portao_mansao', name: 'Portão da Mansão', category: 'mansao', kind: 'portao_mansao', width: 4, depth: 1, height: 3.2, states: 2, openState: 1, rotations: ALL, colors: ['#1e1c1e', '#5a544c'], desc: 'O portão de ferro forjado entre os pilares de pedra. Clique duplo abre e fecha.' },
+  { id: 'estatua_jardim', name: 'Estátua do Jardim', category: 'mansao', kind: 'estatua', width: 1, depth: 1, height: 2.5, rotations: ALL, colors: ['#d8d4c8', '#8a8478'], desc: 'Estátua de mármore no pedestal.' },
+  { id: 'topiaria', name: 'Topiária', category: 'mansao', kind: 'arbusto', width: 1, depth: 1, height: 1.7, rotations: ALL, colors: ['#2f5a2a', '#8a8478'], desc: 'Arbusto podado em bola, no vaso de pedra.' },
+  { id: 'canteiro_flores', name: 'Canteiro de Flores', category: 'mansao', kind: 'canteiro', width: 2, depth: 1, height: 0.55, rotations: ALL, colors: ['#3a6a30', '#d86a8a'], desc: 'Canteiro com borda de pedra, cheio de hortênsias e rosas.' },
+  { id: 'cipreste', name: 'Cipreste', category: 'mansao', kind: 'arvore', width: 1, depth: 1, height: 4.6, rotations: ALL, colors: ['#1f4a2a', '#3a2a1c'], desc: 'Cipreste alto e estreito.' },
+  { id: 'lampiao_jardim', name: 'Lampião do Jardim', category: 'mansao', kind: 'luz_cristal', width: 1, depth: 1, height: 3.2, states: 2, rotations: ALL, colors: ['#1e1c1e', '#ffcf70'], desc: 'Poste de ferro com lampião de vidro. Clique duplo acende e apaga.' },
+  { id: 'lustre_cristal', name: 'Lustre de Cristal', category: 'mansao', kind: 'ceiling_lamp', width: 1, depth: 1, height: 0, walkable: true, stackable: true, states: 2, rotations: [0], colors: ['#ffe9b0', '#b8902a'], desc: 'Lustre de cristal pendurado no teto; dá para andar embaixo. Clique duplo acende e apaga.' },
+  { id: 'lareira_marmore', name: 'Lareira de Mármore', category: 'mansao', kind: 'lareira', width: 3, depth: 1, height: 2.4, states: 2, rotations: ALL, colors: ['#e6dfd0', '#ff6a2a'], desc: 'A lareira de mármore com o consolo, o espelho dourado e a grade de latão. Clique duplo acende e apaga.' },
+  { id: 'coluna_marmore', name: 'Coluna de Mármore', category: 'mansao', kind: 'pillar', width: 1, depth: 1, height: 2.8, rotations: [0], colors: ['#e6dfd0', '#b8b0a0'], desc: 'Coluna redonda de mármore creme, canelada.' },
+  { id: 'piano_cauda', name: 'Piano de Cauda', category: 'mansao', kind: 'piano', width: 3, depth: 2, height: 1.05, rotations: ALL, colors: ['#141416', '#b8902a'], desc: 'Piano de cauda preto laqueado, de tampa aberta.' },
+  { id: 'banco_piano', name: 'Banco de Piano', category: 'mansao', kind: 'stool', width: 1, depth: 1, height: 0.5, sit: true, rotations: ALL, colors: ['#141416', '#b8902a'], desc: 'Banco estofado de piano.' },
+  { id: 'escada_nobre', name: 'Escada Nobre', category: 'mansao', kind: 'escada_nobre', width: 3, depth: 2, height: 0, walkable: true, portal: true, rotations: [4, 2], colors: ['#e6dfd0', '#6a1a24'], desc: 'A escada nobre de mármore com o tapete vinho e os balaústres. Pare em cima para subir.' },
+  { id: 'escada_nobre_desce', name: 'Escada Nobre (desce)', category: 'mansao', kind: 'escada_nobre', width: 3, depth: 2, height: 0, walkable: true, portal: true, rotations: [4, 2], colors: ['#e6dfd0', '#6a1a24'], desc: 'A escada nobre vista do andar de cima, com o corrimão. Pare em cima para descer.' },
+  { id: 'relogio_carrilhao', name: 'Relógio de Caixa Alta', category: 'mansao', kind: 'relogio', width: 1, depth: 1, height: 2.4, rotations: ALL, colors: ['#4a2a18', '#b8902a'], desc: 'Relógio de caixa alta de nogueira, com o pêndulo de latão.' },
+  { id: 'vaso_grande', name: 'Vaso Chinês', category: 'mansao', kind: 'plant', width: 1, depth: 1, height: 1.2, rotations: ALL, colors: ['#2f5a8a', '#e8e4dc'], desc: 'Vaso chinês de porcelana azul e branca, com galhos em flor.' },
+  { id: 'palmeira_vaso', name: 'Palmeira em Vaso', category: 'mansao', kind: 'plant', width: 1, depth: 1, height: 2.4, rotations: ALL, colors: ['#2f5a2a', '#b8902a'], desc: 'Palmeira areca no vaso de latão.' },
+  { id: 'console_dourado', name: 'Console Dourado', category: 'mansao', kind: 'table_big', width: 2, depth: 1, height: 0.88, stackable: true, rotations: ALL, colors: ['#e6dfd0', '#b8902a'], desc: 'Console com tampo de mármore e pés dourados.' },
+  { id: 'tapete_longo', name: 'Tapete Vermelho Longo', category: 'mansao', kind: 'rug', width: 2, depth: 8, height: 0.03, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#6a1a24', '#b8902a'], desc: 'O tapete vermelho comprido do pórtico.' },
+  { id: 'tapete_redondo', name: 'Tapete Redondo', category: 'mansao', kind: 'rug', width: 3, depth: 3, height: 0.03, walkable: true, stackable: true, flat: true, rotations: [0], colors: ['#6a1a24', '#b8902a'], desc: 'Tapete redondo vinho com o medalhão dourado.' },
+  { id: 'tapete_corredor', name: 'Passadeira', category: 'mansao', kind: 'rug', width: 2, depth: 6, height: 0.03, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#2f5a6a', '#e8e0d0'], desc: 'Passadeira de corredor, azul-petróleo e creme.' },
+  { id: 'cama_master', name: 'Cama do Casal', category: 'mansao', kind: 'bed', width: 3, depth: 3, height: 0.7, rotations: ALL, colors: ['#4a2a18', '#e0c898'], desc: 'Cama enorme de cabeceira entalhada e seda champanhe.' },
+  { id: 'chaise_longue', name: 'Divã', category: 'mansao', kind: 'sofa', width: 2, depth: 1, height: 0.6, sit: true, rotations: ALL, colors: ['#1f3a2a', '#4a2a18'], desc: 'Divã de veludo verde-garrafa.' },
+  { id: 'penteadeira', name: 'Penteadeira', category: 'mansao', kind: 'vanity', width: 2, depth: 1, height: 1.7, rotations: ALL, colors: ['#4a2a18', '#b8902a'], desc: 'Penteadeira com o espelho tríptico dourado.' },
+  { id: 'espelho_corpo', name: 'Espelho de Corpo Inteiro', category: 'mansao', kind: 'espelho', width: 1, depth: 1, height: 2.0, rotations: ALL, colors: ['#b8902a', '#cfe0e8'], desc: 'Espelho de chão inteiro de moldura dourada.' },
+  { id: 'banheira_luxo', name: 'Banheira de Luxo', category: 'mansao', kind: 'banheira', width: 2, depth: 3, height: 0.8, rotations: ALL, colors: ['#f0ece4', '#b8902a'], desc: 'Banheira independente com pés de garra dourados.' },
+  { id: 'pia_dupla', name: 'Pia Dupla de Mármore', category: 'mansao', kind: 'sink', width: 2, depth: 1, height: 0.95, stackable: true, rotations: ALL, colors: ['#e6dfd0', '#b8902a'], desc: 'Bancada de mármore com duas cubas e torneiras douradas.' },
+  { id: 'adega', name: 'Adega', category: 'mansao', kind: 'adega', width: 2, depth: 1, height: 2.1, states: 2, rotations: ALL, colors: ['#2a1810', '#6a1a24'], desc: 'Adega de madeira escura com portas de vidro. Clique duplo abre e fecha.' },
+  { id: 'poltrona_orelha', name: 'Poltrona de Orelha', category: 'mansao', kind: 'armchair', width: 1, depth: 1, height: 0.5, sit: true, rotations: ALL, colors: ['#8a5a2a', '#4a2a18'], desc: 'Poltrona de encosto alto, de couro caramelo.' },
+  { id: 'carrinho_bar', name: 'Carrinho de Bar', category: 'mansao', kind: 'carrinho', width: 1, depth: 1, height: 0.95, stackable: true, rotations: ALL, colors: ['#b8902a', '#cfe0e8'], desc: 'Carrinho de bar dourado, com decanters e copos de cristal.' },
+  { id: 'closet_aberto', name: 'Closet', category: 'mansao', kind: 'armario', width: 2, depth: 1, height: 2.2, states: 2, rotations: ALL, colors: ['#c8b898', '#4a2a18'], desc: 'Armário-closet de portas espelhadas. Clique duplo abre.' },
+  { id: 'cama_catarina', name: 'Cama da Catarina', category: 'mansao', kind: 'bed', width: 3, depth: 3, height: 0.65, rotations: ALL, colors: ['#c8c4bc', '#e0643a'], desc: 'Cama de casal grande, cheia de travesseiros e com dois ursos de pelúcia.' },
+  { id: 'tv_gamer', name: 'TV Gigante com Console', category: 'mansao', kind: 'rack_tv', width: 3, depth: 1, height: 1.55, states: 2, rotations: ALL, colors: ['#1a1a1e', '#6ac8ff'], desc: 'TV bem grande com o console de movimento e os controles. Clique duplo liga e desliga.' },
+  { id: 'rack_esgrima', name: 'Canto da Esgrima', category: 'mansao', kind: 'weapon_rack', width: 2, depth: 1, height: 1.75, rotations: ALL, colors: ['#d8d4c8', '#a8a8b0'], desc: 'Floretes, espadas e sabres no suporte, a máscara e a jaqueta de esgrima.' },
+  { id: 'setup_gamer', name: 'Mesa Gamer', category: 'mansao', kind: 'console', width: 3, depth: 1, height: 0.78, states: 2, vao: 'fundo', rotations: ALL, colors: ['#2a2a34', '#b05ae0'], desc: 'Dois monitores, teclado RGB e o computador potente. Clique duplo liga e desliga.' },
+  { id: 'parede_escalada', name: 'Parede de Escalada', category: 'mansao', kind: 'escalada', width: 3, depth: 1, height: 0, walkable: true, portal: true, rotations: [4, 2], colors: ['#c8a878', '#e0643a'], desc: 'A parede de escalada, com as agarras coloridas. Pare em cima para subir (ou descer).' },
+  { id: 'puff_gamer', name: 'Pufe Gamer', category: 'mansao', kind: 'pufe', width: 1, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#2f6a7a', '#1f4a5a'], desc: 'Pufe-saco grande, amassado de usar.' },
+  { id: 'mesa_carteado', name: 'Mesa de Pôquer', category: 'mansao', kind: 'table_round', width: 2, depth: 2, height: 0.78, vao: 'vazada', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#2f5a3a', '#141416'], desc: 'Mesa octogonal de feltro verde, com fichas e cartas.' },
+  { id: 'saco_pancada', name: 'Saco de Pancada', category: 'mansao', kind: 'saco', width: 1, depth: 1, height: 1.7, rotations: ALL, colors: ['#a82a22', '#3a3d42'], desc: 'Saco de pancada de couro vermelho, com as luvas penduradas.' },
+  { id: 'rack_halteres', name: 'Rack de Halteres', category: 'mansao', kind: 'rack', width: 2, depth: 1, height: 1.05, rotations: ALL, colors: ['#1a1a1e', '#8a9098'], desc: 'Rack com pares de halteres e um banco.' },
+  { id: 'tatame', name: 'Tatame', category: 'mansao', kind: 'rug', width: 3, depth: 3, height: 0.04, walkable: true, stackable: true, flat: true, rotations: ALL, colors: ['#1f2f5a', '#141416'], desc: 'Tatame azul-escuro, de placas de EVA.' },
+  { id: 'mesa_ceo', name: 'Mesa do CEO', category: 'mansao', kind: 'desk', width: 4, depth: 2, height: 0.78, vao: 'fundo', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#2e1c10', '#2f5a3a'], desc: 'Mesa enorme de nogueira com tampo de couro, o abajur verde e a plaquinha de nome.' },
+  { id: 'cadeira_ceo', name: 'Cadeira Executiva', category: 'mansao', kind: 'office_chair', width: 1, depth: 1, height: 0.52, sit: true, aumento: 1.2, rotations: ALL, colors: ['#141416', '#8a9098'], desc: 'Poltrona executiva de couro preto capitonê.' },
+  { id: 'cofre', name: 'Cofre', category: 'mansao', kind: 'cofre', width: 1, depth: 1, height: 1.25, states: 2, rotations: ALL, colors: ['#2f3a30', '#b8902a'], desc: 'Cofre de aço verde-escuro, com a roda do segredo. Clique duplo abre e fecha.' },
+  { id: 'globo', name: 'Globo Antigo', category: 'mansao', kind: 'globo', width: 1, depth: 1, height: 1.5, rotations: ALL, colors: ['#c8b48a', '#4a2a18'], desc: 'Globo terrestre antigo, no pedestal de madeira e latão.' },
+  { id: 'bar_escritorio', name: 'Aparador-Bar', category: 'mansao', kind: 'sideboard', width: 2, depth: 1, height: 1.2, states: 2, stackable: true, rotations: ALL, colors: ['#2e1c10', '#cfe0e8'], desc: 'Aparador-bar de nogueira, com decanters de cristal. Clique duplo abre e fecha.' },
+  { id: 'estante_biblioteca', name: 'Estante de Biblioteca', category: 'mansao', kind: 'bookshelf', width: 3, depth: 1, height: 2.9, rotations: ALL, colors: ['#2e1c10', '#6a1a24'], desc: 'Estante do chão ao teto, cheia de livros, com o trilho de latão.' },
+  { id: 'escada_biblioteca', name: 'Escada de Biblioteca', category: 'mansao', kind: 'escada_biblio', width: 1, depth: 1, height: 2.6, rotations: ALL, colors: ['#2e1c10', '#b8902a'], desc: 'Escada de rodízio da biblioteca, de madeira escura e latão.' },
+  { id: 'mesa_leitura', name: 'Mesa de Leitura', category: 'mansao', kind: 'table_big', width: 4, depth: 2, height: 0.78, vao: 'vazada', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#2e1c10', '#2f5a3a'], desc: 'Mesa comprida de leitura, com dois abajures de banqueiro verdes.' },
+  { id: 'touro_bronze', name: 'Touro de Bronze', category: 'mansao', kind: 'estatua', width: 1, depth: 1, height: 1.2, rotations: ALL, colors: ['#8a5a2a', '#141416'], desc: 'O touro de bronze, mascote do Frigorífico, no pedestal de mármore preto.' },
 ];
 
 export const WALL_FURNI_LIST: WallFurniDef[] = [
@@ -614,6 +675,21 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   // ---------- SANTA AMÁLIA (17/10) ----------
   { id: 'desenho_espiral_parede', name: 'Desenhos na Parede', category: 'parede', kind: 'painting', w: 40, h: 34, colors: ['#f0ece2', '#1a1a1a'], desc: 'As folhas presas com fita na parede, uma ao lado da outra, todas com a mesma espiral preta.' },
   { id: 'janela_vidro', name: 'Janela de Vidro', category: 'parede', kind: 'window', w: 56, h: 50, states: 3, colors: ['#e8e4dc', '#bfe0f0'], desc: 'A janela de alumínio e vidro, com a grade branca por fora. Clique duplo: aberta, fechada e fechada com a cortina.' },
+  // ---------- MANSÃO ALBUQUERQUE (21/10) ----------
+  { id: 'quadro_oleo_grande', name: 'Quadro a Óleo Grande', category: 'parede', kind: 'painting', w: 81, h: 60, colors: ['#b8902a', '#3a4a5a'], desc: 'Pintura a óleo em moldura dourada entalhada (paisagem, caçada ou natureza-morta).' },
+  { id: 'retrato_nobre', name: 'Retrato a Óleo', category: 'parede', kind: 'painting', w: 43, h: 63, colors: ['#b8902a', '#2a2420'], desc: 'Retrato a óleo de gente da família, em moldura dourada.' },
+  { id: 'espelho_dourado', name: 'Espelho Dourado', category: 'parede', kind: 'mirror', w: 34, h: 60, colors: ['#b8902a', '#cfe0e8'], desc: 'Espelho de moldura dourada trabalhada.' },
+  { id: 'janela_cortinas', name: 'Janela com Cortinas', category: 'parede', kind: 'janela_sol', w: 67, h: 110, states: 2, colors: ['#e8e4dc', '#6a1a24'], desc: 'Janela alta com cortinas pesadas. Clique duplo abre e fecha as cortinas.' },
+  { id: 'painel_trofeus', name: 'Painel de Troféus', category: 'parede', kind: 'painting', w: 192, h: 104, colors: ['#c8a878', '#d8b038'], desc: 'O painel de troféus e medalhas da Catarina, de todas as competições que ela disputou.' },
+  { id: 'fita_led', name: 'Fita de LED', category: 'parede', kind: 'led', w: 96, h: 10, states: 2, colors: ['#b05ae0', '#6ac8ff'], desc: 'Fita de LED na parede. Clique duplo acende e apaga.' },
+  { id: 'medalhas_cabide', name: 'Medalhas no Cabide', category: 'parede', kind: 'painting', w: 44, h: 34, colors: ['#4a2a18', '#d8b038'], desc: 'Barra de madeira com medalhas penduradas.' },
+  { id: 'poster_esgrima', name: 'Pôster de Esgrima', category: 'parede', kind: 'painting', w: 30, h: 46, colors: ['#e8e4dc', '#2a2a34'], desc: 'Pôster de esgrima.' },
+  { id: 'luvas_parede', name: 'Luvas de Boxe', category: 'parede', kind: 'painting', w: 28, h: 30, colors: ['#a82a22', '#3a3d42'], desc: 'Par de luvas de boxe penduradas, uma com espinhos de metal.' },
+  { id: 'mapa_frigorifico', name: 'Mapa das Unidades', category: 'parede', kind: 'painting', w: 84, h: 58, colors: ['#d8c8a0', '#a82a22'], desc: 'Mapa do Brasil com os alfinetes das unidades do Frigorífico Albuquerque.' },
+  { id: 'foto_unidade', name: 'Foto Aérea da Unidade', category: 'parede', kind: 'painting', w: 64, h: 42, colors: ['#4a2a18', '#c8b48a'], desc: 'Foto aérea emoldurada de uma unidade do frigorífico.' },
+  { id: 'placa_frigorifico', name: 'Placa do Frigorífico', category: 'parede', kind: 'painting', w: 60, h: 24, colors: ['#b8902a', '#2f5a3a'], desc: 'A placa de bronze e esmalte do Frigorífico Albuquerque, 1918.' },
+  { id: 'diplomas', name: 'Diplomas', category: 'parede', kind: 'painting', w: 52, h: 36, colors: ['#e8dcc0', '#a82a22'], desc: 'Três diplomas emoldurados.' },
+  { id: 'trofeus_empresa', name: 'Vitrine de Prêmios', category: 'parede', kind: 'painting', w: 90, h: 48, colors: ['#4a2a18', '#cfe0e8'], desc: 'Vitrine de parede com os prêmios da empresa.' },
 ];
 
 /** Metros → unidades de altura (duas casas). */
