@@ -20,6 +20,7 @@ import {
   iconePeloNome,
   ambienteDoDestino,
   artesDeChegada,
+  arteDeSaida,
   ILUSTRACOES_VIAGEM,
   isClimaViagem,
   sortearIlustracao,
@@ -2991,7 +2992,9 @@ export class Hotel implements HotelApi {
     // com o destino
     const ilustracao = sortearIlustracao(ambienteDoDestino(v.destino));
     sala.data.viagem = { ...sala.data.viagem!, ilustracao };
-    this.telaDaViagem('partida', ilustracao, v.destino ? `Rumo a ${v.destino}` : 'A viagem começou');
+    // saindo de um lugar que tem arte de saída, é ela que aparece (a ilustração da viagem fica de reserva)
+    const lugarDe = this.lugares().find((l) => this.sceneGroup(de.data.id).includes(l.id) || l.entrada === de.data.id);
+    this.telaDaViagem('partida', lugarDe ? arteDeSaida(lugarDe.nome) : ilustracao, v.destino ? `Rumo a ${v.destino}` : 'A viagem começou', lugarDe ? ilustracao : undefined);
     for (const x of vai) {
       const t = x.de.takeToken(x.id);
       if (t) sala.putToken({ ...t, x: x.banco.x, y: x.banco.y, dir: VAN.giroBanco }, null);

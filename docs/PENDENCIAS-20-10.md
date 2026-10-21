@@ -1,4 +1,6 @@
-# Pendências do CRONA (20/10/2026, noite)
+# Pendências do CRONA (20/10/2026, noite; atualizada em 21/10)
+
+**Feito em 21/10:** Mansão Albuquerque montada (49 cenas, `docs/MANSAO-ALBUQUERQUE.md`); Max no estilo novo em todos os estados; armado de Catarina, Cora, Alosi, Miguel e Pedro corrigido (Pedro oeste e a bota da Catarina por código, olhar no tabuleiro); erros claros e detalhes dos cenários (`server/src/retoquesCasas.ts`, sem Santo Berço nos detalhes); a tela de partida usa a arte de saída do lugar (`saida-<lugar>`, hoje só a da Mansão). Abaixo, o que continua em aberto.
 
 Estado: o jogo de verdade (8080) está na versão do último commit (`0319b516`, subiu às 16:38 de hoje); a árvore está limpa na branch `claude/tatica-codigo`; nada foi para o GitHub (sem push, sem PR). O Códex está logado na conta `dhellinhocreycrey` (Plus).
 
@@ -37,8 +39,7 @@ Estado: o jogo de verdade (8080) está na versão do último commit (`0319b516`,
 - **Mesa (tablet):** conferir ao vivo o que ela mostra (cenas, imagem solta, falso C.R.I.S não aparece na mesa).
 - **Celular do mestre:** a tela vira o desktop espremido em 3 colunas (só dá para olhar). O desktop x celular que você notou não foi redesenhado.
 - **Falso C.R.I.S:** conferir se as contas dos jogadores (`importar-cris.mts`) foram aplicadas no jogo de verdade e decidir quando desligar a opção.
-- **A tela de partida** ainda não usa a arte de saída (`saida-mansao-albuquerque.png`).
-- **Mansão Albuquerque:** não montada; o 2º andar (3 suítes etc.) a pensar junto com você.
+- **Mansão Albuquerque:** montada; falta você aprovar o 2º andar, o mezanino como cena à parte e decidir pais, cofre, salas secretas, NPCs e objetivos. Peças fracas: touro, foto aérea, diplomas, cama do casal, adega, camas dos hóspedes e fogão da cozinha; fachada limpa demais.
 - **Cela do Geraldo:** a imagem do Códex é pequena (~300 px); pedir uma maior, se der.
 
 ## 5. Casa em ordem
