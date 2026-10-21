@@ -82,7 +82,7 @@ export function findPoses(sheet: string, dir = ART_DIR): CharacterDef['poses'] {
 
 /**
  * As poses agachadas e sentadas (17/10), na mesma pasta das poses: idle-<desarmado|armado>-<agachado|sentado>-<dir>.png
- * (o sentado só nas 4 diagonais).
+ * (o sentado dos humanos só nas 4 diagonais; a Camarilla, que senta no chão, tem as 8: o código aceita as que existirem).
  */
 export function findAgachado(sheet: string, dir = ART_DIR, pose: 'agachado' | 'sentado' = 'agachado'): CharacterDef['agachado'] {
   const find = finder(sheet, dir, POSES_DIR);
