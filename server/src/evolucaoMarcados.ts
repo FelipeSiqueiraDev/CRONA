@@ -32,3 +32,28 @@ export function evolucaoMarcados2110(db: Database): boolean {
   feitas['evolucao-2110'] = n;
   return n > 0;
 }
+
+/**
+ * O aviso de "você evoluiu" passou a vir da própria ficha (`nexVisto`, o NEX que o jogador já viu): os quatro
+ * ficam marcados no NEX de antes (20%) e os avisos de texto da primeira rodada saem (diziam errado que a Catarina e a
+ * Cora ganhavam habilidade de trilha em 25%: o livro dá, nesse NEX, o Ataque Especial e o Perito mais fortes e,
+ * ao ocultista, o 2º círculo). Uma vez só.
+ */
+export function avisoDeEvolucao2110(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['evolucao-2110-aviso'] !== undefined) return false;
+  let n = 0;
+  for (const e of EVOLUIR) {
+    const f = (db.fichas ?? []).find((x) => x.nome === e.nome && !x.npc);
+    if (!f) continue;
+    if (f.ficha.nexVisto === undefined) f.ficha.nexVisto = 20;
+    // os avisos que mandavam procurar a escolha "na aba Evolução" saem: a janela de evolução já traz essas escolhas
+    const sobra = (f.ficha.avisos ?? []).filter((t) => !t.startsWith('Evoluiu para NEX') && !t.includes('na aba Evolução'));
+    if (sobra.length) f.ficha.avisos = sobra;
+    else delete f.ficha.avisos;
+    f.atualizadaEm = new Date().toISOString();
+    n++;
+  }
+  feitas['evolucao-2110-aviso'] = n;
+  return n > 0;
+}

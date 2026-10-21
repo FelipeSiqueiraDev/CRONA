@@ -3097,3 +3097,50 @@ html.modo-ficha .fj:not(.rq) .fj-chips {
   text-align: right;
   white-space: nowrap;
 }
+
+/* o aviso "você evoluiu" (21/10): um cartão por NEX subido */
+.fc-subida .fc-evo-passo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+  margin-top: var(--s2);
+  padding: var(--s2) var(--s3);
+  border: calc(var(--u) * 0.45) solid var(--c-borda-2);
+  border-radius: var(--raio);
+  background: rgba(5, 11, 20, 0.92);
+}
+.fc-subida .fc-subida-nex {
+  margin: 0;
+  font: 700 var(--t-titulo) var(--f-pixel);
+  color: var(--c-ouro-hi);
+}
+.fc-subida .fc-subida-intro {
+  margin: 0;
+  font: 400 var(--t-corpo) / 1.4 var(--f-corpo);
+  color: var(--c-texto);
+}
+.fc-evo-nums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1) var(--s3);
+  margin: 0;
+  font: 700 var(--t-rotulo) var(--f-pixel);
+  color: var(--c-texto-2);
+}
+.fc-evo-rot {
+  margin: var(--s1) 0 0;
+  font: 700 var(--t-mini) var(--f-pixel);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-texto-3);
+}
+.fc-evo-lista {
+  margin: 0;
+  padding-left: var(--s3);
+  font: 400 var(--t-corpo) / 1.4 var(--f-corpo);
+  color: var(--c-texto);
+}
+.fc-evo-lista small {
+  color: var(--c-texto-3);
+  white-space: nowrap;
+}

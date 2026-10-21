@@ -77,65 +77,116 @@ export class FichaCelular {
   /** As escolhas que o jogador faz sozinho ao subir de NEX (as da criação são com o mestre). */
   private pendenciasDaSubida(): regras.Pendencia[] {
     if (!this.fs) return [];
-    return regras.calcular(this.fs.ficha).pendencias.filter((p) => p.tipo !== 'atributos' && p.tipo !== 'pericias');
+    // a perícia que repetiu (classe e origem dão a mesma) é escolha dele; o resto das perícias da criação é com o mestre
+    return regras.calcular(this.fs.ficha).pendencias.filter((p) => p.tipo !== 'atributos' && (p.tipo !== 'pericias' || /^Escolha mais/.test(p.texto)));
+  }
+
+  /** Subiu de NEX e ainda não viu o aviso (`nexVisto` menor que o NEX da ficha). */
+  private evoluiuSemVer(): boolean {
+    const f = this.fs?.ficha;
+    return !!f && f.nexVisto !== undefined && f.nex > f.nexVisto;
   }
 
   /**
    * A subida de NEX (19/10, o Felipe: "quando eles entrarem, uma mensagem: parece que você está mais forte e precisa
-   * tomar decisões; a lista do que decidir, clica, escolhe, confirma e volta pra lista até acabar; de 20 para 30, primeiro
-   * as escolhas do 25, depois as do 30"). Mostra só o NEX mais baixo que tem escolha; acabando, passa ao seguinte.
-   * Depois de tudo, uma vez, o aviso de refazer o equipamento.
+   * tomar decisões; a lista do que decidir, clica, escolhe, confirma e volta pra lista até acabar"; 21/10: "mesmo que não
+   * tenha nada pra escolher, um aviso de que evoluiu, com o que o livro dá"). Abre no login, sozinha: para cada NEX
+   * subido, o que o livro dá (PV, PE, SAN, habilidades) e o que o jogador escolhe; acabando as escolhas, fica o resumo
+   * e o "Entendi", que marca o NEX como visto. Depois, uma vez, o aviso de refazer o equipamento.
    */
   verificarSubida() {
     if (this.subida || !this.fs) return;
-    if (!this.pendenciasDaSubida().length) return this.verificarEquipamento();
+    if (!this.pendenciasDaSubida().length && !this.evoluiuSemVer()) return this.verificarEquipamento();
     if (this.subidaFechada) return;
-    const j = janela('MAIS FORTE', 'estrela', () => {
+    const j = janela('VOCÊ EVOLUIU', 'estrela', () => {
       this.subida = null;
       if (this.escolhendo) return;
-      if (this.pendenciasDaSubida().length) this.subidaFechada = true;
+      if (this.pendenciasDaSubida().length || this.evoluiuSemVer()) this.subidaFechada = true;
       else this.verificarEquipamento();
     }, 46);
     j.el.classList.add('fc-subida');
     const pintar = () => {
+      const fs = this.fs!;
       const pend = this.pendenciasDaSubida();
-      if (!pend.length) return j.fechar();
-      const nex = Math.min(...pend.map((p) => p.nex));
-      const doNex = pend.filter((p) => p.nex === nex);
-      const outros = [...new Set(pend.filter((p) => p.nex > nex).map((p) => p.nex))];
-      const r = clone(this.fs!);
+      const de = fs.ficha.nexVisto;
+      const passos = de !== undefined && fs.ficha.nex > de ? regras.resumoEvolucao(fs.ficha, de as regras.Nex) : [];
+      if (!pend.length && !passos.length) return j.fechar();
+      const r = clone(fs);
+      const botaoPend = (p: regras.Pendencia) => {
+        const e = escolherPendencia(r.ficha, p);
+        return h(
+          'button',
+          {
+            class: 'fc-pend',
+            type: 'button',
+            disabled: !e,
+            title: e ? 'Abre as opções do livro' : 'Essa escolha é com o mestre',
+            // a lista sai da frente enquanto ele escolhe e volta depois (a escolha abria por trás dela)
+            onclick: () => {
+              if (!e) return;
+              this.escolhendo = true;
+              j.fechar();
+              void escolher(e, () => this.salvar(r)).then(() => {
+                this.escolhendo = false;
+                this.verificarSubida();
+              });
+            },
+          },
+          h('span', { class: 'fc-pend-txt' }, p.texto),
+          e ? ic('direita') : h('small', null, 'com o mestre'),
+        );
+      };
+      const soma = (n: number) => (n > 0 ? ` (+${n})` : '');
+      const cartaoPasso = (ps: regras.PassoEvolucao) => {
+        const doNex = pend.filter((p) => p.nex === ps.nex);
+        const sozinhos = ps.ganhos.filter((g) => !g.escolha);
+        const aEscolher = ps.ganhos.filter((g) => g.escolha);
+        return h(
+          'section',
+          { class: 'fc-evo-passo' },
+          h('h4', { class: 'fc-subida-nex' }, `NEX ${ps.nex}%`),
+          h(
+            'p',
+            { class: 'fc-evo-nums' },
+            h('span', null, `PV ${ps.pv.total}${soma(ps.pv.mais)}`),
+            h('span', null, `PE ${ps.pe.total}${soma(ps.pe.mais)}`),
+            h('span', null, `SAN ${ps.san.total}${soma(ps.san.mais)}`),
+            h('span', null, `${ps.limitePe} PE por turno`),
+          ),
+          ...(sozinhos.length
+            ? [
+                h('p', { class: 'fc-evo-rot' }, 'O livro dá sozinho'),
+                h('ul', { class: 'fc-evo-lista' }, ...sozinhos.map((g) => h('li', null, h('b', null, g.titulo), g.texto ? ` ${g.texto}` : '', g.ref ? h('small', null, ` ${regras.textoRef(g.ref)}`) : null))),
+              ]
+            : []),
+          ...(aEscolher.length || doNex.length
+            ? [
+                h('p', { class: 'fc-evo-rot' }, 'Você escolhe'),
+                ...(doNex.length ? [h('div', { class: 'fc-pends' }, ...doNex.map(botaoPend))] : [h('p', { class: 'fj-dica' }, 'Já escolhido.')]),
+              ]
+            : [h('p', { class: 'fj-dica' }, sozinhos.some((g) => g.mestre) ? 'Nada a escolher aqui: o que está acima entra sozinho, e a alteração do Monstruoso o mestre aplica com você.' : 'Neste NEX o livro não pede escolha: o que está acima entra sozinho.')]),
+        );
+      };
+      const avulsas = pend.filter((p) => !passos.some((ps) => ps.nex === p.nex));
+      const avulsasPorNex = [...new Set(avulsas.map((p) => p.nex))].sort((x, y) => x - y);
       j.corpo.replaceChildren(
-        h('p', { class: 'fc-subida-intro' }, 'Parece que você está mais forte e precisa tomar decisões.'),
-        h('h4', { class: 'fc-subida-nex' }, `NEX ${nex}%`),
-        h(
-          'div',
-          { class: 'fc-pends' },
-          ...doNex.map((p) => {
-            const e = escolherPendencia(r.ficha, p);
-            return h(
-              'button',
-              {
-                class: 'fc-pend',
-                type: 'button',
-                disabled: !e,
-                title: e ? 'Abre as opções do livro' : 'Essa escolha é com o mestre',
-                // a lista sai da frente enquanto ele escolhe e volta depois (a escolha abria por trás dela)
-                onclick: () => {
-                  if (!e) return;
-                  this.escolhendo = true;
-                  j.fechar();
-                  void escolher(e, () => this.salvar(r)).then(() => {
-                    this.escolhendo = false;
-                    this.verificarSubida();
-                  });
-                },
-              },
-              h('span', { class: 'fc-pend-txt' }, p.texto),
-              e ? ic('direita') : h('small', null, 'com o mestre'),
-            );
-          }),
-        ),
-        ...(outros.length ? [h('p', { class: 'fj-dica' }, `Depois: NEX ${outros.map((n) => `${n}%`).join(', ')}.`)] : []),
+        h('p', { class: 'fc-subida-intro' }, passos.length ? `Você subiu de NEX ${de}% para ${fs.ficha.nex}%.` : 'Parece que você está mais forte e precisa tomar decisões.'),
+        ...passos.map(cartaoPasso),
+        ...avulsasPorNex.map((nex) => h('section', { class: 'fc-evo-passo' }, h('h4', { class: 'fc-subida-nex' }, `NEX ${nex}% (ficou pendente)`), h('div', { class: 'fc-pends' }, ...avulsas.filter((p) => p.nex === nex).map(botaoPend)))),
+        ...(pend.length ? [h('p', { class: 'fj-dica' }, 'Escolha tudo o que está marcado. O que o livro dá sozinho já está na ficha.')] : []),
+      );
+      j.rodape.replaceChildren(
+        ...(pend.length
+          ? [botao('Depois', 'fechar', '', () => j.fechar())]
+          : [
+              botao('Entendi', 'ok', 'forte', () => {
+                const nova = clone(this.fs!);
+                nova.ficha.nexVisto = nova.ficha.nex;
+                j.fechar();
+                this.salvar(nova);
+                this.verificarEquipamento();
+              }),
+            ]),
       );
     };
     this.subida = pintar;

@@ -148,6 +148,8 @@ export interface Ficha {
   usosDia?: Record<string, number>;
   /** 19/10, uma vez: depois das escolhas do NEX, o jogador refaz o equipamento (a mochila foi zerada); some ao fazer */
   refazerEquipamento?: boolean;
+  /** o NEX em que o jogador já viu o aviso de evolução (21/10); se o NEX da ficha é maior, o aviso abre no login */
+  nexVisto?: number;
   /** perdas permanentes (rituais de Medo, Custo do Paranormal) */
   perdas?: { san?: number; pe?: number };
   regras: RegrasFicha;

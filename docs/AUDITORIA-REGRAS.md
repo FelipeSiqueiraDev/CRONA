@@ -74,3 +74,16 @@ Conferidos e certos: atributos, perícias, trilhas e requisitos, poderes (Combat
 | D8 | Forma Monstruosa: 2º ou 3º círculo? | A descrição diz 2º; a lista por círculo diz 3º | Ficou o 2º |
 | D9 | Resistir a <Elemento> em outro elemento conta como outro poder? | A regra geral é escolher cada poder paranormal uma vez | Hoje o CRONA deixa em outro elemento |
 | D10 | Cultista Arrependido que começa em NEX 0%: SAN 6 ou 8? | Depende de como a regra do treinamento conta | Decidir |
+
+## O aviso de evolução dos Marcados (21/10/2026)
+
+Conferido com o livro (LR p. 23 a 35, Tab. 1.3 a 1.5; SaH p. 17 e 98–99) o que o jogador vê ao subir de NEX (`resumoEvolucao`, `shared/src/regras/evolucao.ts`):
+
+| Quem | NEX | Entra sozinho (livro) | O jogador escolhe | Bate com o livro |
+|---|---|---|---|---|
+| Cora (combatente, Aniquilador) | 25% | Ataque Especial: 3 PE, +10 (LR p. 24/25). A habilidade de trilha só vem em 10, 40, 65 e 99%. | nada | sim |
+| Catarina (especialista, Infiltrador) | 25% | Perito: 3 PE, +1d8 (LR p. 28/29). | as 2 perícias do Perito (treinadas, exceto Luta e Pontaria; NEX 5%, pendente) | sim |
+| Alosi (ocultista, Graduado) | 25% | Escolhido pelo Outro Lado libera o 2º círculo (LR p. 32/33). | um ritual de até 2º círculo; o ritual extra do Saber Ampliado, do 2º círculo (LR p. 35); uma perícia no lugar da Vontade repetida (LR p. 22, NEX 5%, pendente) | sim |
+| D.Tepes (combatente, Monstruoso) | 25% e 30% | 25%: Ataque Especial 3 PE, +10 e a alteração do Monstruoso (SaH p. 99: Ocultismo sem treino/+2 e −5 numa de Diplomacia, Enganação ou Intimidação, com o mestre). 30%: nada. | 30%: um poder de combatente (ou geral, SaH p. 33, ou Transcender) | sim; a alteração do Monstruoso segue fora das contas |
+
+Corrigido junto: o aviso de texto da primeira rodada dizia que a Catarina e a Cora ganhavam habilidade de trilha em 25%; o livro não dá (só 10, 40, 65 e 99%). Sai do banco no próximo início do servidor.

@@ -462,12 +462,16 @@ export function escolherPendencia(f: Ficha, p: regras.Pendencia): Escolher | nul
     }
     case 'parametro':
       return p.alvo ? escolherCampo(f, nex, 'parametro', p.alvo) : null;
+    // "Escolha mais N perícias treinadas": a perícia que repete a da classe ou da origem (LR p. 22) vira outra, à escolha
+    case 'pericias':
+      return /^Escolha mais/.test(p.texto) ? escolherCampo(f, nex, 'periciaLivre') : null;
     default:
       return null;
   }
 }
 
 export type Campo =
+  | 'periciaLivre'
   | 'origem'
   | 'classe'
   | 'trilha'
@@ -485,6 +489,23 @@ export type Campo =
 /** A escolha de um campo da ficha num NEX (para escolher ou trocar). */
 export function escolherCampo(f: Ficha, nex: Nex, campo: Campo, alvo?: string): Escolher | null {
   switch (campo) {
+    case 'periciaLivre':
+      return {
+        titulo: 'Perícia treinada à escolha',
+        dica: 'A que repetiu (classe e origem dão a mesma) vira outra, à sua escolha (LR p. 22). Vale uma perícia que você ainda não treina.',
+        qtd: 1,
+        opcoes: () => {
+          const st = regras.montarEstado(f, f.nex);
+          return cat.CATALOGO.pericias.map((x) => {
+            const treinada = st.graus[x.id] !== 'destreinado';
+            return { id: x.id, nome: x.nome, ref: x.ref, ok: !treinada, motivos: treinada ? ['Você já é treinado nela.'] : [], avisos: [] };
+          });
+        },
+        atual: () => [],
+        aplicar: (ids) => {
+          for (const id of ids) if (!f.pericias.livres.includes(id as PericiaId)) f.pericias.livres.push(id as PericiaId);
+        },
+      };
     case 'origem':
       return {
         titulo: 'Origem',
