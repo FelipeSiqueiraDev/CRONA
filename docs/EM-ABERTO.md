@@ -1633,3 +1633,9 @@ Os zips que entraram ficam em `_entregas-originais/`, na pasta da arte.
 - **`scripts/3d/eixos.py`:** marca o aparador e o armarinho do Bar como "TROCADO". Os dois não são caixa, então a conta não vale; no tabuleiro estão certos.
 - **Corredor Escuro:** é bem escuro de propósito. O mestre clareia no ☀ Clima da cena se o tablet não mostrar.
 - **Passagem secreta no teste do servidor:** o teste "toda passagem tem caminho" pula a passagem escondida enquanto ela está coberta (o alçapão embaixo do feno).
+
+## Açougueiros (21/10)
+
+- Galo, Touro, Porco e Ovelha entraram no bestiário (`server/src/acougueiros.ts`, ids `*-acougueiro`) com foto e rosto em `arte/personagens/<bicho>-acougueiro/`. As referências estão em `campanha/referencias/acougueiros/`.
+- **As fichas de combate ficam para o Felipe/mestre definir:** os Açougueiros vieram só como ilustração, sem números do livro. Entram em branco (elemento Sangue, PV 20 provisório); editar no painel da ameaça.
+- Poses: só em pé e morto (regra dos monstros).
