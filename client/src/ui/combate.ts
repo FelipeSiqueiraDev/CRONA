@@ -317,6 +317,7 @@ export class CombateScreen {
   private gavetaAba: 'alvo' | 'pend' | 'reg' = 'alvo';
   // ---------- a tela nova (cards, 21/10) ----------
   /** liga a tela nova: cards no lugar do tabuleiro (a de hoje continua inteira, é só desligar a chave) */
+  private pediuElenco = false;
   private modoCards = lerTelaNova();
   private palco: HTMLElement;
   private atorCorpo: HTMLElement;
@@ -3375,6 +3376,12 @@ export class CombateScreen {
       if (this.montCorpo.childElementCount) this.montCorpo.replaceChildren();
       this.sigs.delete('mont');
       return;
+    }
+    // os Marcados e os NPCs do jogo todo só chegam quando o cliente pede (o servidor não manda sozinho): sem isso o preparo
+    // dizia "Nenhum Marcado no jogo" (21/10, print do Felipe)
+    if (!this.pediuElenco && this.app.state.role === 'gm') {
+      this.pediuElenco = true;
+      this.app.net.send({ t: 'bestiario' });
     }
     if (!this.mudou('mont', [{ ...c, registro: 0 }, this.assinaturaPecas(), this.assinaturaFichas(), this.ameacas, this.app.state.marcados])) return;
     this.trocar(this.montCorpo, this.montagemCards(c));
