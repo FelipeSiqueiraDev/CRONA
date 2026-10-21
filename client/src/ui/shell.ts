@@ -2604,7 +2604,9 @@ export class Shell {
     const now = performance.now();
     const goal = this.turnGoal.get(viewId);
     const base = goal && now - goal.at < 800 ? goal.dir : u.dir;
-    const next = turnFacing(base, cw, allowed);
+    // Q gira para a ESQUERDA e E para a DIREITA, vistos na tela (21/10, o Felipe: estavam ao contrário): a ordem das direções
+    // do boneco vai no sentido contrário ao da câmera, então o sentido é invertido aqui
+    const next = turnFacing(base, !cw, allowed);
     if (next === base) return;
     this.turnGoal.set(viewId, { dir: next, at: now });
     sfx.click();
