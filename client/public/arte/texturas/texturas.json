@@ -286,5 +286,133 @@
    "arquivo": "parede-calabouco.png"
   },
   "px": "ferraria"
+ },
+ "mansao_marmore": {
+  "piso": {
+   "arquivo": "piso-xadrez.png",
+   "casas": 8,
+   "origem": [
+    78,
+    78
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-banheiro.png"
+  },
+  "px": "mansao_marmore"
+ },
+ "mansao_nobre": {
+  "piso": {
+   "arquivo": "piso-madeira.png",
+   "casas": 4,
+   "origem": [
+    41,
+    0
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-lambri.png"
+  },
+  "px": "mansao_nobre"
+ },
+ "mansao_claro": {
+  "piso": {
+   "arquivo": "piso-taco.png",
+   "casas": 2.2
+  },
+  "parede": {
+   "arquivo": "parede-gabinete.png"
+  },
+  "px": "mansao_claro"
+ },
+ "mansao_servico": {
+  "piso": {
+   "arquivo": "piso-ladrilho.png",
+   "casas": 8,
+   "origem": [
+    2,
+    2
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-hospital.png"
+  },
+  "px": "mansao_servico"
+ },
+ "mansao_estufa": {
+  "piso": {
+   "arquivo": "piso-musgo.png",
+   "casas": 3.53
+  },
+  "parede": {
+   "arquivo": "parede-musgo.png"
+  },
+  "px": "mansao_estufa"
+ },
+ "mansao_banho": {
+  "piso": {
+   "arquivo": "piso-ladrilho.png",
+   "casas": 8,
+   "origem": [
+    2,
+    2
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-hospital.png"
+  },
+  "px": "mansao_banho"
+ },
+ "mansao_jogos": {
+  "piso": {
+   "arquivo": "piso-madeira.png",
+   "casas": 4,
+   "origem": [
+    41,
+    0
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-lambri.png"
+  },
+  "px": "mansao_jogos"
+ },
+ "mansao_caverna": {
+  "piso": {
+   "arquivo": "piso-carpete.png",
+   "casas": 3.53
+  },
+  "parede": {
+   "arquivo": "parede-tecnologia.png"
+  },
+  "px": "mansao_caverna"
+ },
+ "mansao_rustico": {
+  "piso": {
+   "arquivo": "piso-madeira.png",
+   "casas": 4,
+   "origem": [
+    41,
+    0
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-lambri.png"
+  },
+  "px": "mansao_rustico"
+ },
+ "mansao_tabuas": {
+  "piso": {
+   "arquivo": "piso-madeira.png",
+   "casas": 4,
+   "origem": [
+    41,
+    0
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-lambri.png"
+  },
+  "px": "mansao_tabuas"
  }
 }

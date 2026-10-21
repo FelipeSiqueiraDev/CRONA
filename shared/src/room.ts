@@ -57,6 +57,17 @@ export const FLOOR_STYLES = [
   { id: 'queimado_madeira', name: 'Tábuas queimadas' },
   { id: 'queimado_xadrez', name: 'Ladrilho queimado' },
   { id: 'queimado_concreto', name: 'Concreto queimado' },
+  // Mansão Albuquerque (21/10): mármore, madeira nobre e papel de parede (scripts/3d/estilo/pecas_px/mansao_estilos.py)
+  { id: 'mansao_marmore', name: 'Mármore da mansão' },
+  { id: 'mansao_nobre', name: 'Parquet e damasco' },
+  { id: 'mansao_claro', name: 'Carvalho claro e listras' },
+  { id: 'mansao_servico', name: 'Ladrilho de serviço' },
+  { id: 'mansao_estufa', name: 'Ardósia da estufa' },
+  { id: 'mansao_banho', name: 'Mármore do banheiro' },
+  { id: 'mansao_jogos', name: 'Sala de jogos' },
+  { id: 'mansao_caverna', name: 'Carpete e LED' },
+  { id: 'mansao_rustico', name: 'Pedra rústica' },
+  { id: 'mansao_tabuas', name: 'Tábuas do barracão' },
 ] as const;
 export type FloorStyle = (typeof FLOOR_STYLES)[number]['id'];
 export const isFloorStyle = (s: unknown): s is FloorStyle => FLOOR_STYLES.some((f) => f.id === s);

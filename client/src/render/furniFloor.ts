@@ -6,6 +6,7 @@ import { SEDE_BUILDERS } from './furniSede';
 import { VILA_BUILDERS } from './furniVila';
 import { FAZENDA_BUILDERS } from './furniFazenda';
 import { VAN_BUILDERS } from './furniVan';
+import { MANSAO_BUILDERS } from './furniMansao';
 
 export type { FNode, FVisual, LightDef, LightKind } from './furniKit';
 
@@ -14,6 +15,7 @@ const builders: Record<string, Builder> = {
   ...VILA_BUILDERS,
   ...FAZENDA_BUILDERS,
   ...VAN_BUILDERS,
+  ...MANSAO_BUILDERS,
   desk(def) {
     const [c0, c1, c2] = def.colors;
     const W = def.width;

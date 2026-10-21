@@ -57,7 +57,7 @@ test('nenhum item de parede fica em cima de uma porta ou passagem', () => {
   upgradeDb(db);
   const ALTURA_PORTA = 2.15 * Z_PER_M;
   /** passagens que abrem a parede em que encostam: até onde vai o vão (null = a parede inteira) */
-  const VAO_DA_PASSAGEM: Record<string, number | null> = { portal: ALTURA_PORTA, porteira: ALTURA_PORTA, stairs_up: null, escada_vertical: null };
+  const VAO_DA_PASSAGEM: Record<string, number | null> = { portal: ALTURA_PORTA, porteira: ALTURA_PORTA, stairs_up: null, escada_vertical: null, escada_nobre: null, escalada: null };
   /** o giro da peça diz em que parede ela encosta: 2 = costas para x (parede 'l'), 4 = costas para y (parede 'r') */
   const PAREDE_DO_GIRO: Record<number, 'l' | 'r'> = { 2: 'l', 4: 'r' };
   const erros: string[] = [];

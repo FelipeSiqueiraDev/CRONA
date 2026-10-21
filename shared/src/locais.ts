@@ -77,6 +77,7 @@ export function rotuloDoAndar(floor: string, predio: string, daEntrada: boolean)
 /** A altura do andar pelo rótulo (para ordenar as abas). */
 export function nivelDoAndar(rotulo: string): number | null {
   if (/t[ée]rreo/i.test(rotulo)) return 0;
+  if (/mezanino/i.test(rotulo)) return 1.5;
   if (/subsolo|por[aã]o|calabou[çc]o/i.test(rotulo)) return -1;
   if (/s[oó]t[aã]o|cobertura/i.test(rotulo)) return 50;
   const n = /(\d+)\s*[ºo°]?\s*andar/i.exec(rotulo);
