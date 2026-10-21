@@ -45,6 +45,7 @@ const GRUPO_PADRAO: Record<string, string> = {
   ivete: 'Ordo Realitas',
   samuel: 'Ordo Realitas',
   'geraldo-ribeiro': 'Igarapé',
+  'sara-ribeiro': 'Igarapé',
   'herman-arantes': 'Panacea',
   'npc-camisa-rosa': 'Novos (sem nome)',
   'npc-ruivo': 'Novos (sem nome)',
@@ -120,6 +121,7 @@ export function npcsPorLeva(): Npc[][] {
       { id: 'roberto-salles', nome: 'Roberto Salles', arte: 'roberto-salles', nota: 'chefe da segurança da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#b8845e', hair: '#1e1612', top: '#161412', pants: '#161412' } },
       { id: 'tiago-nobre', nome: 'Tiago Nobre', arte: 'tiago-nobre', nota: 'jardineiro da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#b07850', hair: '#4a2a18', top: '#4a5030', pants: '#4a3424' } },
       { id: 'arthur-albuquerque', nome: 'Arthur Albuquerque', arte: 'arthur-albuquerque', nota: 'irmão mais novo de Alexander, pai da Catarina; empresário da família no Frigorífico Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#d8a888', hair: '#a63a1e', top: '#1c1a22', pants: '#1c1a22' } },
+      { id: 'sara-ribeiro', nome: 'Sara Ribeiro', arte: 'sara-ribeiro', nota: 'mãe da Cora, esposa do Geraldo Ribeiro', grupo: 'Igarapé', look: { ...lookBase, skin: '#e0b896', hair: '#d8b070', top: '#e8dcc4', pants: '#6a4a2e', shoes: '#5a3e28' } },
     ],
   ];
 }
