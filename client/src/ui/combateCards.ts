@@ -245,7 +245,7 @@ export function cardPerfil(p: PerfilCombate): HTMLElement {
 
 /** Quando ninguém age (ou não há alvo): o convite no lugar do cardzão. */
 export function cardConvite(titulo: string, texto: string, icone: 'mira' | 'pessoa' = 'mira'): HTMLElement {
-  return h('div', { class: 'cc-convite' }, h('span', { class: 'cc-convite-ic' }, ic(icone)), h('b', null, titulo), h('small', null, texto));
+  return h('div', { class: 'cc-convite' }, h('span', { class: 'cc-convite-ic' }, h('i', { class: 'cc-anel', 'aria-hidden': 'true' }), h('i', { class: 'cc-anel a2', 'aria-hidden': 'true' }), ic(icone)), h('b', null, titulo), h('small', null, texto));
 }
 
 export interface CartaoAlvo {
@@ -283,7 +283,6 @@ export function cartaoDeAlvo(a: CartaoAlvo): HTMLElement {
       onblur: () => a.aoPassar?.(false),
     },
     a.caixa ? h('span', { class: `cc-alvo-marca${a.escolhido ? ' on' : ''}`, 'aria-hidden': 'true' }, a.escolhido ? '✓' : '') : null,
-    h('span', { class: 'cc-mira', 'aria-hidden': 'true' }),
     h('span', { class: 'cb-foto cc-alvo-foto' }, a.foto),
     h(
       'span',

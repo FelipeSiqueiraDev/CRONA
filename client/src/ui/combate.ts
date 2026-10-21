@@ -108,9 +108,29 @@ const ICONE_CONDICAO: Record<string, NomeIcone> = {
 };
 const AUTOMATICAS = ['machucado', 'morrendo', 'perturbado', 'enlouquecendo'];
 
+/**
+ * ARQUIVADO: a tela antiga do COMBATE (o tabuleiro no meio, a gaveta Alvo/Efeitos/Registro, a trava de peças) continua
+ * neste arquivo, no combateRapido.css, no combate.css e no hud.css, mas está DESLIGADA: o site só mostra a tela nova, em
+ * cards (decisão do Felipe, 21/10: "tira do site, mas guarda no código; ela volta melhorada no futuro").
+ *
+ * Para religar: troque `TELA_ANTIGA_DISPONIVEL` por `true`. A chave "Tela de hoje / Tela nova" volta à barra de baixo da aba
+ * (a escolha fica no localStorage do mestre) e os ramos `modoCards ? ... : ...` voltam a valer. Os ramos da tela antiga são
+ * os que testam `!this.modoCards`, `this.fluxo`/`renderAlvo`/`faixaAtor`/`montagem` e o tabuleiro (`atualizarMarcas`).
+ */
+export const TELA_ANTIGA_DISPONIVEL = false;
+
 /** A tela de COMBATE em cards (21/10) é o padrão; a chave guarda a escolha neste aparelho (a do mestre). */
 const CHAVE_TELA = 'crona.combate.tela';
 function lerTelaNova(): boolean {
+  if (!TELA_ANTIGA_DISPONIVEL) {
+    // a tela antiga está arquivada: apaga a escolha antiga deste aparelho para ninguém ficar preso nela
+    try {
+      localStorage.removeItem(CHAVE_TELA);
+    } catch {
+      /* sem armazenamento */
+    }
+    return true;
+  }
   try {
     return localStorage.getItem(CHAVE_TELA) !== 'hoje';
   } catch {
@@ -373,7 +393,7 @@ export class CombateScreen {
     this.gaveta = h(
       'section',
       { class: 'cb-gaveta', 'data-aba': 'alvo' },
-      h('nav', { class: 'cb-gav-abas' }, abaGaveta('alvo', 'Alvo', 'mira'), abaGaveta('pend', 'Efeitos e pendências', 'alerta'), abaGaveta('reg', 'Registro', 'livro'), h('span', { class: 'cb-gav-esp' }), this.btDesfazerGav, this.btChave),
+      h('nav', { class: 'cb-gav-abas' }, abaGaveta('alvo', 'Alvo', 'mira'), abaGaveta('pend', 'Efeitos e pendências', 'alerta'), abaGaveta('reg', 'Registro', 'livro'), h('span', { class: 'cb-gav-esp' }), this.btDesfazerGav, ...(TELA_ANTIGA_DISPONIVEL ? [this.btChave] : [])),
       pAlvo,
       pPend,
       pReg,
@@ -998,10 +1018,11 @@ export class CombateScreen {
   private arquivosDeArte: Set<string> | null = null;
 
   /** As pastas de arte de um ser, na ordem: a do NPC no Elenco, a da criatura (aparência) e a do personagem (a folha das 8 direções). */
-  private pastasDe(id: number): { pastas: string[]; def?: CharacterDef } {
+  private pastasDe(id: number, charId?: number): { pastas: string[]; def?: CharacterDef } {
     const ch = this.personagem(id);
     const u = this.app.view?.users.get(-id);
-    const def = ch?.look.charId ? this.app.state.characters.find((x) => x.id === ch.look.charId) : undefined;
+    const cid = charId ?? ch?.look.charId;
+    const def = cid ? this.app.state.characters.find((x) => x.id === cid) : undefined;
     const pastas: string[] = [];
     const npc = ch ? this.app.state.npcs.find((n) => n.nome === ch.name) : undefined;
     if (npc?.arte) pastas.push(npc.arte);
@@ -1018,16 +1039,16 @@ export class CombateScreen {
    * arte do NPC, a da criatura e a do personagem (rosto.jpg, foto-ficha.webp, foto.jpg, foto.webp); depois o retrato da
    * ameaça; sem nenhuma, um quadro neutro com as iniciais. NUNCA o sprite do tabuleiro.
    */
-  private foto(id: number, _tamanho: number): HTMLElement {
+  private foto(id: number, _tamanho: number, de?: { charId: number; nome: string }): HTMLElement {
     const caixa = h('span', { class: 'cc-fotoimg' });
-    const nome = this.personagem(id)?.name ?? '?';
+    const nome = de?.nome ?? this.personagem(id)?.name ?? '?';
     const iniciais = () => caixa.replaceChildren(h('span', { class: 'cc-fotoini' }, nome.split(/\s+/).filter(Boolean).slice(0, 2).map((x) => x[0]).join('').toUpperCase()));
     const arq = this.arquivosDeArte;
     if (!arq) {
       iniciais();
       return caixa;
     }
-    const { pastas, def } = this.pastasDe(id);
+    const { pastas, def } = this.pastasDe(id, de?.charId);
     const livro = this.ameacaDe(id)?.livro;
     const urls = [
       ...pastas.flatMap((p) => ['rosto.jpg', 'foto-ficha.webp', 'foto.jpg', 'foto.webp', 'foto.png'].map((f) => `/arte/personagens/${p}/${f}`)).filter((u) => arq.has(u)),
@@ -1813,16 +1834,7 @@ export class CombateScreen {
     }
     const linhas: HTMLElement[] = cb.entradas(c).map((e) => this.linhaIni(c, e));
     // quem ainda não tem lugar na ordem (sem Iniciativa)
-    for (const p of c.participantes.filter((x) => x.lado === 'agente' && x.iniciativa === null)) linhas.push(this.linhaSemLugar(p.nome, NOME_LADO[p.lado], [p.id]));
-    const doM = c.participantes.filter(cb.doMestre);
-    if (doM.length && c.mestre.iniciativa === null)
-      linhas.push(
-        this.linhaSemLugar(
-          'TURNO DO MESTRE',
-          doM.map((x) => x.nome).join(' · '),
-          doM.map((x) => x.id),
-        ),
-      );
+    for (const p of c.participantes.filter((x) => !x.fora && x.iniciativa === null)) linhas.push(this.linhaSemLugar(p.nome, NOME_LADO[p.lado], [p.id]));
     // pôr alguém no combate (quem chega para ajudar), sempre à vista no fim da ordem (17/10, o Felipe: "preciso de um botão
     // para incluir ou excluir pessoas do combate, caso alguém fuja ou chegue para ajudar"); tirar é o × de cada carta
     if (c.fase !== 'encerrado')
@@ -2007,7 +2019,7 @@ export class CombateScreen {
     if (!c) itens.push(item('espadas', 'neutro', 'Abra o combate na cena para montar a ordem de iniciativa.'));
     else if (c.fase === 'montando') {
       itens.push(item('pessoa', 'neutro', 'Inclua quem luta, diga o lado de cada um e marque quem não percebeu os inimigos: fica surpreendido na rodada 1.'));
-      itens.push(item('dados', 'neutro', 'Cada agente rola a própria Iniciativa. O mestre rola uma vez pelo grupo dele, com o menor bônus de Iniciativa entre os seres (LR p. 83).'));
+      itens.push(item('dados', 'neutro', 'Cada agente rola a própria Iniciativa. Cada ser do mestre tem a própria Iniciativa e o próprio turno (tipos iguais podem ter o mesmo valor).'));
       for (const g of cb.empates(c))
         itens.push(
           item(
@@ -2238,7 +2250,9 @@ export class CombateScreen {
         surpreso ? 'Surpreendido' : 'Percebeu',
       );
       let campo: HTMLElement;
-      if (p?.lado === 'agente') {
+      const livroIni = this.ameacaDe(ch.id)?.livro;
+      const iniAm = livroIni ? cb.ameacaLivro(livroIni)?.iniciativa : undefined;
+      if (p) {
         const inp = h('input', {
           class: 'cb-inp',
           type: 'text',
@@ -2256,8 +2270,8 @@ export class CombateScreen {
         };
         inp.addEventListener('change', enviar);
         inp.addEventListener('keydown', (ev) => ev.key === 'Enter' && inp.blur());
-        campo = h('label', { class: 'cb-ini-campo' }, inp, h('small', null, ini ? `rola ${textoTeste(ini.dados, ini.bonus, ini.penalidadeDados)}` : 'sem ficha'));
-      } else campo = h('span', { class: 'cb-ini-mestre' }, p ? (this.ameacaDe(ch.id) ? 'no grupo do mestre' : 'no grupo do mestre · sem ficha') : '');
+        campo = h('label', { class: 'cb-ini-campo' }, inp, h('small', null, ini ? `rola ${textoTeste(ini.dados, ini.bonus, ini.penalidadeDados)}` : iniAm ? `rola ${textoTeste(iniAm.dados, iniAm.bonus, 0)}` : 'sem ficha'));
+      } else campo = h('span', { class: 'cb-ini-mestre' }, '');
       return {
         p,
         incluir,
@@ -2267,29 +2281,6 @@ export class CombateScreen {
         ciente,
         campo,
       };
-  }
-
-  /** A caixa da Iniciativa do grupo do mestre (uma rolagem só por todos os seres dele). */
-  private campoIniMestre(c: Combate) {
-    const temMestre = c.participantes.some(cb.doMestre);
-    const inpM = h('input', {
-      class: 'cb-inp',
-      type: 'text',
-      inputmode: 'numeric',
-      maxlength: 4,
-      value: c.mestre.iniciativa === null ? '' : String(c.mestre.iniciativa),
-      placeholder: '—',
-      disabled: !temMestre,
-      'data-foco': 'ini:mestre',
-      'aria-label': 'Iniciativa do grupo do mestre',
-    });
-    inpM.addEventListener('change', () => {
-      const n = numero(inpM.value);
-      if (n === undefined) return toast('Iniciativa é um número.', 'error');
-      if (n !== c.mestre.iniciativa) this.acao({ tipo: 'iniciativaMestre', valor: n });
-    });
-    inpM.addEventListener('keydown', (ev) => ev.key === 'Enter' && inpM.blur());
-    return { temMestre, inpM };
   }
 
   /** Os avisos de empate de Iniciativa, com o botão de quem vai antes. */
@@ -2314,7 +2305,6 @@ export class CombateScreen {
       const m = this.partesMontagem(c, ch);
       return h('div', { class: `cb-mont-linha${m.p ? '' : ' fora'}` }, m.incluir, m.foto, m.nome, m.lado, m.ciente, m.campo);
     });
-    const { temMestre, inpM } = this.campoIniMestre(c);
     const empates = this.empatesDe(c);
     return h(
       'div',
@@ -2324,13 +2314,6 @@ export class CombateScreen {
       h(
         'div',
         { class: 'cb-mont-pe' },
-        h(
-          'label',
-          { class: 'cb-mont-mestre' },
-          h('span', { class: 'cb-mont-rot' }, ic('dados'), h('b', null, 'Grupo do mestre')),
-          h('small', null, temMestre ? 'Uma rolagem por todos os seres do mestre, com o menor bônus de Iniciativa entre eles (LR p. 83).' : 'Sem inimigos nem neutros no combate.'),
-          inpM,
-        ),
         ...empates,
         h('div', { class: 'cb-mont-botoes' }, botao('Cancelar', 'fechar', () => this.acao({ tipo: 'encerrar' }), 'claro'), botao('Começar combate', 'espadas', () => this.acao({ tipo: 'comecar' }), 'forte')),
       ),
@@ -3349,9 +3332,41 @@ export class CombateScreen {
   // ---------------------------------------------------------------- o preparo em dois cards
 
   /** A lista de um card do preparo, uma página por vez (sem rolagem). */
-  private paginaMont(chave: string, linhas: HTMLElement[], vazio: HTMLElement): HTMLElement[] {
-    const pg = paginar(`mont:${chave}`, linhas, 6, () => (this.sigs.delete('mont'), this.renderMontagemCards()));
-    return [h('div', { class: 'cc-mont-lista' }, ...(linhas.length ? pg.itens : [vazio])), ...(pg.pager ? [pg.pager] : [])];
+  private paginaMont(chave: string, linhas: HTMLElement[], vazio: HTMLElement, porPagina = 9): HTMLElement[] {
+    const pg = paginar(`mont:${chave}`, linhas, porPagina, () => (this.sigs.delete('mont'), this.renderMontagemCards()));
+    return [h('div', { class: `cc-mont-grade n${Math.min(9, Math.max(1, pg.itens.length))}` }, ...(linhas.length ? pg.itens : [vazio])), ...(pg.pager ? [pg.pager] : [])];
+  }
+
+  /** O tipo de um ser do mestre: a criatura, a ameaça do livro, o personagem (sem a forma entre parênteses) ou ele mesmo. */
+  private tipoDoSer(ch: Character): { chave: string; nome: string } {
+    const u = this.app.view?.users.get(-ch.id);
+    const am = this.ameacaDe(ch.id);
+    if (u?.criatura) return { chave: `cri:${u.criatura.id}`, nome: this.app.state.bestiario.find((x) => x.id === u.criatura!.id)?.nome ?? ch.name.replace(/\s+\d+$/, '') };
+    if (am?.livro) return { chave: `livro:${am.livro}`, nome: cb.ameacaLivro(am.livro)?.nome ?? ch.name };
+    const def = this.app.state.characters.find((x) => x.id === ch.look.charId);
+    if (def) {
+      const base = def.name.replace(/\s*\(.*\)\s*$/, '');
+      return { chave: `def:${base}`, nome: base };
+    }
+    return { chave: `ser:${ch.id}`, nome: ch.name };
+  }
+
+  /** os blocos de tipo que o mestre abriu no preparo (guardado entre as trocas da tela) */
+  private tiposAbertos = new Set<string>();
+
+  /**
+   * Os seres do mestre por TIPO (21/10, o Felipe): todos os Existidos juntos, cada NPC por si. Cada tipo tem a Iniciativa
+   * dele (o mesmo valor vale para todos do tipo; dá para ajustar um ser abrindo o bloco); cada ser age no próprio turno.
+   */
+  private blocosPorTipo(c: Combate, seres: Character[]): HTMLElement[] {
+    const grupos = new Map<string, { nome: string; membros: Character[] }>();
+    for (const ch of seres) {
+      const t = this.tipoDoSer(ch);
+      const g = grupos.get(t.chave) ?? { nome: t.nome, membros: [] };
+      g.membros.push(ch);
+      grupos.set(t.chave, g);
+    }
+    return [...grupos].map(([chave, g]) => (g.membros.length === 1 ? this.cartaDoPreparo(c, g.membros) : this.cartaDoPreparo(c, g.membros, { chave, nome: g.nome })));
   }
 
   private renderMontagemCards() {
@@ -3361,7 +3376,7 @@ export class CombateScreen {
       this.sigs.delete('mont');
       return;
     }
-    if (!this.mudou('mont', [{ ...c, registro: 0 }, this.assinaturaPecas(), this.assinaturaFichas(), this.ameacas])) return;
+    if (!this.mudou('mont', [{ ...c, registro: 0 }, this.assinaturaPecas(), this.assinaturaFichas(), this.ameacas, this.app.state.marcados])) return;
     this.trocar(this.montCorpo, this.montagemCards(c));
   }
 
@@ -3373,39 +3388,40 @@ export class CombateScreen {
     const chars = [...(this.sessao?.characters ?? [])];
     const dentro = new Set(c.participantes.map((p) => p.id));
     chars.sort((a, b) => Number(dentro.has(b.id)) - Number(dentro.has(a.id)) || Number(b.sceneId === c.cena) - Number(a.sceneId === c.cena) || a.id - b.id);
-    const linha = (ch: Character) => {
-      const m = this.partesMontagem(c, ch);
-      return h('div', { class: `cc-mont-linha${m.p ? '' : ' fora'}${m.p && m.p.lado !== 'agente' ? ' do-mestre' : ''}` }, m.incluir, m.foto, m.nome, m.lado, m.ciente, m.campo);
+    const cartao = (ch: Character) => this.cartaDoPreparo(c, [ch]);
+    // Marcados: sempre os do jogo todo (o Elenco); o que não tem peça nesta campanha vem para a cena com um toque
+    const marcadosJogo = this.app.state.marcados;
+    const deMarcado = (mj: (typeof marcadosJogo)[number]) => chars.find((ch) => ch.look.charId === mj.personagem);
+    const cartaMarcado = (mj: (typeof marcadosJogo)[number]) => {
+      const ch = deMarcado(mj);
+      if (ch) return this.cartaDoPreparo(c, [ch]);
+      const onde = mj.cena !== undefined ? `em ${mj.cenaNome ?? 'outra cena'}` : 'fora do tabuleiro';
+      return this.cartaEl({ nome: mj.nome, foto: this.foto(-1, 96, { charId: mj.personagem, nome: mj.nome }), marcado: false, tag: onde, aoClicar: () => this.app.net.send({ t: 'marcadoColocar', fichaId: mj.fichaId }), dica: 'Toque para trazer para a cena', ini: null });
     };
-    const marcados = chars.filter((ch) => this.fichaDe(ch.id));
+    const idsMarcados = new Set(marcadosJogo.map((mj) => deMarcado(mj)?.id).filter((x): x is number => x !== undefined));
+    const marcados = [...marcadosJogo].sort((x, y) => Number(!!deMarcado(y) && dentro.has(deMarcado(y)!.id)) - Number(!!deMarcado(x) && dentro.has(deMarcado(x)!.id)));
+    // quem tem ficha e não está na lista do jogo (agente avulso) também aparece
+    const avulsos = chars.filter((ch) => this.fichaDe(ch.id) && !idsMarcados.has(ch.id));
     const npcs = chars.filter((ch) => !this.fichaDe(ch.id));
+    const nDentroMarcados = [...marcadosJogo.map(deMarcado).filter((x): x is Character => !!x), ...avulsos].filter((ch) => dentro.has(ch.id)).length;
     const nDentro = (xs: Character[]) => xs.filter((ch) => dentro.has(ch.id)).length;
-    const { temMestre, inpM } = this.campoIniMestre(c);
-    const janelaCard = (cls: string, nome: string, contagem: string, ...filhos: (Node | null)[]) =>
-      h('section', { class: `cc-janela ${cls}` }, titulo(nome, h('span', { class: 'cc-mont-n' }, contagem)), ...filhos);
-    const cabecalho = h('div', { class: 'cc-mont-cab' }, h('span', null, ''), h('span', null, ''), h('span', null, 'Quem'), h('span', null, 'Lado'), h('span', null, 'Começo'), h('span', null, 'Iniciativa'));
+    const janelaCard = (cls: string, nome: string, contagem: string, dica: string, ...filhos: (Node | null)[]) =>
+      h('section', { class: `cc-janela ${cls}` }, titulo(nome, h('span', { class: 'cc-mont-n' }, contagem)), h('p', { class: 'cc-mont-dica' }, dica), ...filhos);
     const vazio = (t: string) => h('p', { class: 'cb-vazio' }, t);
+    const itensMarcados = [...marcados.map(cartaMarcado), ...avulsos.map(cartao)];
     const cardA = janelaCard(
       'cc-mont-marcados',
       'MARCADOS',
-      `${nDentro(marcados)} de ${marcados.length} na luta`,
-      h('p', { class: 'cc-mont-dica' }, 'Os agentes. Cada um rola a própria Iniciativa: escreva o d20 que ficou.'),
-      cabecalho,
-      ...this.paginaMont('marcados', marcados.map(linha), vazio('Nenhum agente com ficha na campanha.')),
+      `${nDentroMarcados} de ${itensMarcados.length} na luta`,
+      'Toque no cartão para pôr na luta (aceso) ou tirar. Cada agente rola a própria Iniciativa.',
+      ...this.paginaMont('marcados', itensMarcados, vazio('Nenhum Marcado no jogo.')),
     );
     const cardB = janelaCard(
       'cc-mont-npcs',
       'NPCs E AMEAÇAS',
       `${nDentro(npcs)} de ${npcs.length} na luta`,
-      h(
-        'label',
-        { class: 'cc-mont-mestre' },
-        h('span', { class: 'cb-mont-rot' }, ic('dados'), h('b', null, 'Iniciativa do grupo do mestre')),
-        h('small', null, temMestre ? 'Uma rolagem por todos os seres do mestre, com o menor bônus de Iniciativa entre eles (LR p. 83).' : 'Sem inimigos nem neutros marcados.'),
-        inpM,
-      ),
-      cabecalho.cloneNode(true),
-      ...this.paginaMont('npcs', npcs.map(linha), vazio('Nenhum NPC ou ameaça na campanha.')),
+      'Cada tipo tem a sua Iniciativa (vale para todos do tipo). Cada ser age no próprio turno.',
+      ...this.paginaMont('npcs', this.blocosPorTipo(c, npcs), vazio('Nenhum NPC ou ameaça nesta campanha.')),
     );
     const pe = h(
       'div',
@@ -3417,6 +3433,113 @@ export class CombateScreen {
       botao('Confirmar e começar', 'espadas', () => this.acao({ tipo: 'comecar' }), 'forte'),
     );
     return h('div', { class: 'cc-mont' }, h('div', { class: 'cc-mont-cards' }, cardA, cardB), pe);
+  }
+
+  /** menus discretos abertos nos cartões do preparo (guardado entre as trocas da tela) */
+  private menusAbertos = new Set<string>();
+
+  /**
+   * O cartão do preparo é o do ELENCO (a carta vertical: foto em cima, nome embaixo), e no lugar do "Usar" fica o dado da
+   * Iniciativa. Cartão aceso, de moldura dourada = vai para a luta; apagado = fora. O lado e o "Surpreendido" ficam num
+   * menu discreto no canto.
+   */
+  private cartaEl(o: { nome: string; foto: HTMLElement; marcado: boolean; tag?: string; selo?: string; aoSelo?: () => void; aoClicar: () => void; ini: HTMLElement | null; dica: string; formula?: { texto: string; menor: boolean }; menu?: HTMLElement | null; menuChave?: string; extra?: HTMLElement | null }): HTMLElement {
+    const [primeiro, ...resto] = o.nome.split(' ');
+    const aberto = !!o.menuChave && this.menusAbertos.has(o.menuChave);
+    const carta = h(
+      'span',
+      { class: 'el-carta' },
+      h('span', { class: 'el-quadro' }, o.foto),
+      o.tag ? h('span', { class: 'cc-el-tag' }, o.tag) : null,
+      o.marcado ? h('span', { class: 'cc-el-ok', title: 'Vai para a luta', 'aria-hidden': 'true' }, '✓') : null,
+      o.selo ? h('button', { class: 'cc-el-selo', type: 'button', title: 'Ver os seres', onclick: (e: Event) => (e.stopPropagation(), sfx.click(), o.aoSelo?.()) }, o.selo) : null,
+      o.menu && o.menuChave
+        ? h('button', { class: 'cc-el-mais', type: 'button', title: 'Lado e surpresa', 'aria-label': 'Lado e surpresa', onclick: (e: Event) => (e.stopPropagation(), sfx.click(), this.menusAbertos.has(o.menuChave!) ? this.menusAbertos.delete(o.menuChave!) : this.menusAbertos.add(o.menuChave!), this.sigs.delete('mont'), this.renderMontagemCards()) }, ic('reticencias'))
+        : null,
+      h('b', { class: 'el-nome duas' }, h('span', null, primeiro), h('span', null, resto.join(' ') || ' ')),
+      h('div', { class: 'el-placa cc-ini-placa', title: o.dica, onclick: (e: Event) => e.stopPropagation() }, ic('dados'), h('b', { class: `cc-formula${o.formula?.menor ? ' menor' : ''}` }, o.formula ? `${o.formula.texto}${o.formula.menor ? ' ↓' : ''}` : '—')),
+    );
+    return h(
+      'article',
+      {
+        class: `el-card cc-el${o.marcado ? ' escolhido' : ' fora'}`,
+        tabindex: '0',
+        onclick: () => (sfx.click(), o.aoClicar()),
+        onkeydown: (e: KeyboardEvent) => e.key === 'Enter' && (sfx.click(), o.aoClicar()),
+      },
+      carta,
+      o.ini ? h('div', { class: 'cc-el-campo', onclick: (e: Event) => e.stopPropagation() }, o.ini) : h('small', { class: 'cc-el-dica' }, o.dica),
+      aberto && o.menu ? h('div', { class: 'cc-el-menu', onclick: (e: Event) => e.stopPropagation() }, o.menu) : null,
+      o.extra ?? null,
+    );
+  }
+
+  /** O campo da Iniciativa de um ou de vários seres (o tipo): o mesmo valor para todos. */
+  private campoIniDe(c: Combate, ids: number[], foco: string): { inp: HTMLInputElement; dica: string; formula: { texto: string; menor: boolean } } {
+    const ps = ids.map((id) => cb.participante(c, id)).filter((p): p is Participante => !!p && !p.fora);
+    const valores = new Set(ps.map((p) => p.iniciativa));
+    const unico = valores.size === 1 ? [...valores][0] : null;
+    const inp = h('input', { class: 'cb-inp cc-ini-num', type: 'text', inputmode: 'numeric', maxlength: 4, value: unico === null ? '' : String(unico), placeholder: valores.size > 1 ? 'vários' : '—', disabled: !ps.length, 'data-foco': foco, 'aria-label': 'Iniciativa' }) as HTMLInputElement;
+    inp.addEventListener('change', () => {
+      const n = numero(inp.value);
+      if (n === undefined) return toast('Iniciativa é um número.', 'error');
+      for (const p of ps) if (p.iniciativa !== n) this.acao({ tipo: 'participante', id: p.id, iniciativa: n });
+    });
+    inp.addEventListener('keydown', (ev) => ev.key === 'Enter' && inp.blur());
+    const ch0 = ids[0];
+    const calc = this.calcDe(ch0)?.pericias.iniciativa;
+    const livro = this.ameacaDe(ch0)?.livro;
+    const am = livro ? cb.ameacaLivro(livro)?.iniciativa : undefined;
+    const t = calc ? { d: calc.dados, b: calc.bonus, p: calc.penalidadeDados } : am ? { d: am.dados, b: am.bonus, p: 0 } : null;
+    const rola = t ? cb.textoRolagem(t.d, t.b, t.p) : 'Sem ficha: role 1d20 e digite o número';
+    // só a fórmula na placa ("3D20 + 5"; ↓ quando fica o menor); o texto vai no tooltip
+    const mm = /(\d+)d20(, fique com o (maior|menor))?(, ([+-])(\d+))?/i.exec(rola);
+    const texto = mm ? `${mm[1]}D20${mm[6] ? ` ${mm[5]} ${mm[6]}` : ''}` : '1D20';
+    return { inp, dica: rola, formula: { texto, menor: mm?.[3] === 'menor' } };
+  }
+
+  /** O cartão de um ser (ou de um tipo, com os seres dentro) no preparo. */
+  private cartaDoPreparo(c: Combate, chs: Character[], tipo?: { chave: string; nome: string }): HTMLElement {
+    const primeiro = chs[0];
+    const ps = chs.map((ch) => cb.participante(c, ch.id)).filter((p): p is Participante => !!p && !p.fora);
+    const marcado = ps.length > 0;
+    const unico = chs.length === 1;
+    const { inp, dica, formula } = this.campoIniDe(c, chs.map((ch) => ch.id), unico ? `ini:${primeiro.id}` : `ini:tipo:${tipo!.chave}`);
+    const ctx = { combate: c };
+    void ctx;
+    const alternar = () => {
+      for (const ch of chs) this.acao({ tipo: 'participante', id: ch.id, incluir: !marcado });
+    };
+    // o menu discreto (lado e surpresa), só de quem está na luta
+    let menu: HTMLElement | null = null;
+    if (unico && marcado) {
+      const m = this.partesMontagem(c, primeiro);
+      menu = h('div', { class: 'cc-el-menu-corpo' }, m.ciente, m.lado);
+    }
+    const chave = unico ? `p:${primeiro.id}` : `t:${tipo!.chave}`;
+    const noutraCena = unico && primeiro.sceneId !== c.cena && this.nomeCena(primeiro.sceneId) ? `em ${this.nomeCena(primeiro.sceneId)}` : undefined;
+    const surpresos = ps.filter((p) => !p.ciente).length;
+    const extra = !unico && this.tiposAbertos.has(tipo!.chave) ? h('div', { class: 'cc-tipo-seres cc-el-seres', onclick: (e: Event) => e.stopPropagation() }, ...chs.map((ch) => this.cartaoLinha(c, ch))) : null;
+    return this.cartaEl({
+      nome: unico ? primeiro.name : tipo!.nome,
+      foto: this.foto(primeiro.id, 96),
+      marcado,
+      ...(noutraCena ? { tag: noutraCena } : surpresos && unico ? { tag: 'surpreendido' } : {}),
+      ...(!unico ? { selo: `×${chs.length}`, aoSelo: () => (this.tiposAbertos.has(tipo!.chave) ? this.tiposAbertos.delete(tipo!.chave) : this.tiposAbertos.add(tipo!.chave), this.sigs.delete('mont'), this.renderMontagemCards()) } : {}),
+      aoClicar: alternar,
+      ini: inp,
+      dica,
+      formula,
+      menu,
+      menuChave: chave,
+      extra,
+    });
+  }
+
+  /** A linha compacta de um ser dentro do tipo aberto (marcar, Iniciativa só dele). */
+  private cartaoLinha(c: Combate, ch: Character): HTMLElement {
+    const m = this.partesMontagem(c, ch);
+    return h('div', { class: `cc-pc${m.p ? '' : ' fora'}` }, h('span', { class: 'cc-pc-foto' }, m.foto, m.incluir), h('div', { class: 'cc-pc-info' }, m.nome), h('div', { class: 'cc-pc-ini' }, m.campo));
   }
 
   // ---------------------------------------------------------------- alvo
@@ -3693,9 +3816,8 @@ export class CombateScreen {
     const atualizar = () => {
       const calc = this.calcDe(escolhido)?.pericias.iniciativa;
       const agente = lado.value === 'agente';
-      const grupoTem = c.mestre.iniciativa !== null;
-      campoIni.classList.toggle('hidden', !agente && grupoTem);
-      dica.textContent = agente ? (calc ? `Rola ${textoTeste(calc.dados, calc.bonus, calc.penalidadeDados)}.` : 'Sem ficha: o mestre diz o número.') : grupoTem ? '' : 'O grupo do mestre ainda não tem Iniciativa: esta vira a do grupo.';
+      void agente;
+      dica.textContent = calc ? `Rola ${textoTeste(calc.dados, calc.bonus, calc.penalidadeDados)}.` : 'Sem ficha: o mestre diz o número.';
     };
     const desenhar = () => {
       lista.replaceChildren(
