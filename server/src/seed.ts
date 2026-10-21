@@ -762,7 +762,11 @@ function npcsIniciais(db: Database): boolean {
     for (const ap of cr.aparencias) if (cr.ficha.livro && ap.id === 'padrao' && !ap.arte) ((ap.arte = cr.ficha.livro), (renomeados = true));
   if (feitas >= levas.length) return renomeados;
   const lista = (db.npcs ??= []);
-  for (const n of levas.slice(feitas).flat()) if (!lista.some((x) => x.id === n.id)) lista.push(n);
+  for (const n of levas.slice(feitas).flat()) {
+    if (!lista.some((x) => x.id === n.id)) lista.push(n);
+    // o grupo novo do Elenco entra no banco que já guardava os grupos (21/10, a Mansão Albuquerque)
+    if (n.grupo && db.npcGrupos && !db.npcGrupos.includes(n.grupo)) db.npcGrupos.push(n.grupo);
+  }
   db.npcsRev = levas.length;
   return true;
 }

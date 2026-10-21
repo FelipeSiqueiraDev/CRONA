@@ -34,7 +34,7 @@ export interface Npc {
  * 'Sede da Ordem' vai virar 'Ordo Realitas'. E um grupo pra cada cidade que estamos criando"). Ficam guardados no banco
  * (`npcGrupos`) mesmo vazios; o mestre cria outros no Elenco.
  */
-export const GRUPOS_NPC_PADRAO = ['Ordo Realitas', 'Lotus Branca', 'Panacea', 'Tiradentes', 'Igarapé', 'Santo Berço', 'Santa Amália', 'Fazenda Olhos de Águia'];
+export const GRUPOS_NPC_PADRAO = ['Ordo Realitas', 'Lotus Branca', 'Panacea', 'Tiradentes', 'Igarapé', 'Santo Berço', 'Santa Amália', 'Fazenda Olhos de Águia', 'Mansão Albuquerque'];
 /** O grupo de quem não tem grupo (os criados à mão sem escolher). */
 export const GRUPO_SEM = 'Do mestre';
 
@@ -51,6 +51,13 @@ const GRUPO_PADRAO: Record<string, string> = {
   'npc-cabelo-rosa': 'Novos (sem nome)',
   'npc-jaleco': 'Novos (sem nome)',
   camarilla: 'Ordo Realitas',
+  'helena-duarte': 'Mansão Albuquerque',
+  'antonio-valenca': 'Mansão Albuquerque',
+  'marina-ferraz': 'Mansão Albuquerque',
+  'lucia-moreira': 'Mansão Albuquerque',
+  'roberto-salles': 'Mansão Albuquerque',
+  'tiago-nobre': 'Mansão Albuquerque',
+  'arthur-albuquerque': 'Mansão Albuquerque',
 };
 /** O grupo do NPC no Elenco: o que o mestre escreveu, o padrão dos que vieram com o jogo, ou "Do mestre". */
 export const grupoDoNpc = (n: Npc): string => n.grupo || GRUPO_PADRAO[n.id] || GRUPO_SEM;
@@ -104,6 +111,16 @@ export function npcsPorLeva(): Npc[][] {
     ],
     // 17/10: a Camarilla, a cachorra caramelo do Tepes (anda no tabuleiro como peça; em pé e sentada)
     [{ id: 'camarilla', nome: 'Camarilla', arte: 'camarilla', nota: 'a cachorra do Tepes', altura: 0.8, look: { ...lookBase, skin: '#c8924a', hair: '#c8924a', top: '#c8924a', pants: '#c8924a', shoes: '#8a5a2a' } }],
+    // 21/10: a família Albuquerque e quem trabalha na mansão (as fotos são do Felipe; no tabuleiro, só em pé, agachado, sentado e deitado)
+    [
+      { id: 'helena-duarte', nome: 'Helena Duarte', arte: 'helena-duarte', nota: 'governanta da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#c99a7a', hair: '#2a2220', top: '#1c1816', pants: '#1c1816' } },
+      { id: 'antonio-valenca', nome: 'Antônio Valença', arte: 'antonio-valenca', nota: 'mordomo da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#c08a62', hair: '#9a9894', top: '#1a1816', pants: '#1a1816' } },
+      { id: 'marina-ferraz', nome: 'Marina Ferraz', arte: 'marina-ferraz', nota: 'secretária do Arthur Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#c9926a', hair: '#3a2418', top: '#26201e', pants: '#1a1816' } },
+      { id: 'lucia-moreira', nome: 'Lúcia Moreira', arte: 'lucia-moreira', nota: 'cozinheira da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#8a5a3a', hair: '#2a2018', top: '#e8e0d0', pants: '#2e3a2a' } },
+      { id: 'roberto-salles', nome: 'Roberto Salles', arte: 'roberto-salles', nota: 'chefe da segurança da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#b8845e', hair: '#1e1612', top: '#161412', pants: '#161412' } },
+      { id: 'tiago-nobre', nome: 'Tiago Nobre', arte: 'tiago-nobre', nota: 'jardineiro da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#b07850', hair: '#4a2a18', top: '#4a5030', pants: '#4a3424' } },
+      { id: 'arthur-albuquerque', nome: 'Arthur Albuquerque', arte: 'arthur-albuquerque', nota: 'irmão mais novo de Alexander, pai da Catarina; empresário da família no Frigorífico Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#d8a888', hair: '#a63a1e', top: '#1c1a22', pants: '#1c1a22' } },
+    ],
   ];
 }
 
