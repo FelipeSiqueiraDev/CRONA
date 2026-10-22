@@ -138,19 +138,22 @@ function cidadePiso(): FloorSeed[] {
   ]);
   // o ipê amarelo do largo, na frente da capela, e outro na beira do rio do lado de lá
   f.push(["igarape_ipe", 22, 14, 0, hint("O ipê amarelo", "Florido, sem uma folha. As flores caídas fazem um tapete amarelo no chão de pedra do largo.")]);
-  f.push(["igarape_ipe", 11, 15, 0], ["igarape_ipe", 37, 16, 0]);
-  // as canoas puxadas para o barro da margem, perto dos deques e da ponte
-  f.push(["igarape_canoa", 26, 36, 4, hint("Canoa", "A canoa de um pau só, amarrada na estaca. O remo ainda está molhado.")]);
-  f.push(["igarape_canoa", 35, 23, 4], ["igarape_canoa", 34, 34, 4]);
-  // a cerca da horta atrás das casas do sul e os bancos do largo
-  for (let x = 3; x <= 9; x++) f.push(["cerca", x, 30, 4]);
+  // cada ipê vira para um lado (a silhueta muda em cada giro): os três não ficam iguais
+  f.push(["igarape_ipe", 11, 15, 4], ["igarape_ipe", 37, 16, 2]);
+  // as canoas puxadas para o barro da margem (o rio tem 4 casas de largura: a de cá a oeste, as de lá a leste)
+  f.push(["igarape_canoa", 28, 26, 4, hint("Canoa", "A canoa de um pau só, amarrada na estaca. O remo ainda está molhado.")]);
+  f.push(["igarape_canoa", 34, 22, 4], ["igarape_canoa", 33, 34, 4]);
+  // a horta atrás das casas do sul, cercada até a parede da casa 4 (portão na cerca de oeste), e os bancos do largo
+  for (let x = 2; x <= 8; x++) f.push(["cerca", x, 30, 4], ["cerca", x, 36, 4]);
+  for (let y = 31; y <= 35; y++) if (y !== 33) f.push(["cerca", 2, y, 2]);
+  f.push(["arbusto", 4, 32, 0], ["arbusto", 6, 32, 0], ["arbusto", 4, 34, 0], ["arbusto", 6, 34, 0], ["igarape_cesto", 7, 33, 0], ["igarape_cesto", 3, 35, 0]);
   f.push(["bench", 13, 13, 4], ["bench", 18, 17, 0]);
   // a vida da beira do rio: as sacas e o caixote na porta da venda, os barris
   f.push(["sacas", 18, 22, 0], ["crate_wood", 27, 23, 0], ["barrel", 26, 23, 0]);
   // as redes de pesca, os cestos de peixe e os varais com os panos secando, perto das palafitas e dos deques
   f.push(["igarape_rede_pesca", 30, 36, 0, hint("Rede de pesca", "Ainda pinga. No meio da malha, preso, um peixe de olho branco que ninguém daqui sabe dizer qual é.")]);
   f.push(["igarape_cesto", 23, 34, 0], ["igarape_varal", 23, 30, 4], ["igarape_rede_pesca", 35, 28, 2], ["igarape_cesto", 35, 27, 0], ["igarape_varal", 37, 30, 4]);
-  f.push(["igarape_rede_pesca", 36, 23, 0], ["barrel", 28, 27, 0]);
+  f.push(["igarape_rede_pesca", 36, 23, 0], ["barrel", 27, 27, 0]);
   const ocup = ocupadas(f);
   // as árvores e os arbustos na grama que sobrou (a lista pode ser generosa: só entra onde é grama livre)
   const arvores: [number, number][] = [
