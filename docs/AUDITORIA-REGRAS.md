@@ -87,3 +87,56 @@ Conferido com o livro (LR p. 23 a 35, Tab. 1.3 a 1.5; SaH p. 17 e 98–99) o que
 | D.Tepes (combatente, Monstruoso) | 25% e 30% | 25%: Ataque Especial 3 PE, +10 e a alteração do Monstruoso (SaH p. 99: Ocultismo sem treino/+2 e −5 numa de Diplomacia, Enganação ou Intimidação, com o mestre). 30%: nada. | 30%: um poder de combatente (ou geral, SaH p. 33, ou Transcender) | sim; a alteração do Monstruoso segue fora das contas |
 
 Corrigido junto: o aviso de texto da primeira rodada dizia que a Catarina e a Cora ganhavam habilidade de trilha em 25%; o livro não dá (só 10, 40, 65 e 99%). Sai do banco no próximo início do servidor.
+
+## Auditoria geral das fichas (22/10/2026)
+
+Pedido do Felipe: "conferir, de uma forma geral, as escolhas que eles fizeram e as que têm pra fazer: TEM que estar TUDO de acordo com as regras". Foram conferidas as 14 fichas do banco (os 4 Marcados e os 10 NPCs com ficha), com o script `scripts/dev/auditar-fichas.mts` (lê o JSON das fichas salvas e roda o motor):
+
+- **Escolhas feitas:** cada escolha, NEX a NEX, passa pelo motor (requisito, grau, lista de opções, círculo do ritual, limite de itens da patente). Erro do motor aparece como "ERRO"; os que dependem de decisão do mestre estão na tabela abaixo.
+- **Pendências:** as que o jogador vê na aba Evolução, com a janela de escolha real (`escolherPendencia` da interface, rodada sem navegador) e a lista de opções liberadas e travadas com o motivo.
+- **PV, PE, SAN e Defesa refeitos à parte, só pelas tabelas do livro** (LR p. 25, 29 e 33: PV 20/16/12 + Vigor e +4/+3/+2 + Vigor por NEX; PE 2/3/4 + Presença e +2/+3/+4 + Presença; SAN 12/16/20 e +3/+4/+5), com a regra da mesa de 19/10 (o aumento de Vigor ou Presença só vale do NEX do aumento em diante). **Os quatro Marcados batem com o livro, número por número:** Tepes 61/18/27, Catarina 33/25/32, Alosi 25/37/40, Cora 43/20/24. As diferenças dos NPCs são todas de poder, nunca de conta: Cicatrizes Psicológicas (+1 SAN por 5% de NEX, LR p. 21; Vítima), Transcender (não ganha SAN no NEX, LR p. 26) e Potencial Aprimorado (+1 PE por NEX, LR p. 115).
+- **Tabelas de classe reconferidas** (LR p. 22–35): progressão de NEX das três classes, Perito (Tab. 1.4), Eclético (2 PE para ter o treino; **não dá +5**), Engenhosidade, Grau de Treinamento (1, 5 ou 3 + Intelecto), Escolhido pelo Outro Lado, Saber Ampliado, 110% (Atleta, LR p. 17: +5 por 2 PE em Força ou Agilidade, fora Luta e Pontaria). Nada a corrigir.
+
+### O que mudou no motor
+
+- **Monstruoso (SaH p. 17 e 99):** a trilha recebe "todas as alterações apropriadas ao seu NEX". As gerais de **25%** e **35%** agora entram nas contas e viram escolha na aba Evolução, com as opções do livro:
+  - 25%: Ocultismo +2 (a trilha já o deixou treinado) e −5 numa perícia à escolha entre Diplomacia, Enganação e Intimidação;
+  - 35%: um atributo (menos Presença) soma no total de PE e −5 numa perícia à escolha entre Atletismo, Fortitude e Reflexos (o livro diz "soma o atributo em seu total de PE": contado uma vez, com o atributo do momento).
+  - As de 50% (afinidade, que o NEX 50% já pede) e as do elemento, a partir de 60% (SaH p. 100–103), seguem com o mestre. **O Tepes tem a de 25% para escolher.**
+- Escolha de atributo fora das opções da habilidade passa a ser erro.
+
+### Os quatro Marcados
+
+| | Já escolheu | Falta escolher (opções) | Contas |
+|---|---|---|---|
+| **D. Tepes** (combatente, Monstruoso, NEX 30, Policial) | Ser Amaldiçoado: Sangue (10%), Combate Defensivo (15%), +1 Vigor (20%) | **25%:** a perícia do −5 (Diplomacia, Enganação ou Intimidação). **30%:** um poder de combatente (39 liberados, 29 travados com o motivo; Transcender e Treinamento em Perícia entram na lista) | batem com o livro |
+| **Catarina** (especialista, Infiltrador, NEX 25, Atleta) | Ninja Urbano (15%), +1 Agilidade (20%) | **Perito:** duas perícias treinadas, fora Luta e Pontaria (10 liberadas: Acrobacia, Atletismo, Crime, Furtividade, Iniciativa, Investigação, Percepção, Reflexos, Tecnologia, Vontade) | batem |
+| **Alosi** (ocultista, Graduado, NEX 25, Religioso) | 3 rituais de 1º círculo (5%), Cicatrização e Cinerária pelo Saber Ampliado (10%), Ritual Potente e Embaralhar (15%), Espirais da Perdição e +1 Presença (20%) | uma perícia no lugar da Vontade repetida (LR p. 22); **25%:** o ritual do Saber Ampliado (só 2º círculo, 26 opções) e um ritual de qualquer círculo que já conjura (1º ou 2º, 49 opções) | batem |
+| **Cora** (combatente, Aniquilador, NEX 25, Militar) | A Favorita: fuzil de caça (10%), Tiro Certeiro (15%), +1 Vigor (20%) | nada | batem; fuzil de caça com mira laser e calibre grosso é categoria II com A Favorita (cabe no limite do Operador) |
+
+As mochilas de Tepes, Catarina e Alosi estão vazias e com a marca "refazer equipamento": na próxima entrada eles refazem o equipamento no Sede. Os três veem o aviso "você evoluiu" no login (o NEX visto de cada um é 20%).
+
+### Os NPCs com ficha (só o que o motor acusou; nada foi inventado)
+
+Tudo aqui depende do Felipe: o motor mostra o erro, mas qual escolha tirar ou pôr é decisão dele (são NPCs montados a partir de fichas do C.R.I.S, do site ou de PDF).
+
+| NPC | O que falta (pendência) | O que está fora do livro |
+|---|---|---|
+| **Miguel** (especialista, Técnico, 50) | 10 perícias da criação (7 + Int 3); as 2 do Perito; grau do 35% (8 perícias); Expansão de Conhecimento (qual poder); +1 atributo do 50%; Especialista Diletante (qual poder) | mochila com 4 itens de categoria I; o limite do Agente especial é 3 |
+| **Agatha** (ocultista, Graduado, 80) | 33: quase tudo (perícias, rituais, poderes, grau, afinidade, versatilidade e os 3+1+1 do Grimório). Só o +1 Presença do 20% está feito | 0 PP: ficha de Recruta, com 2 itens de categoria I |
+| **Ivete** (combatente, Aniquilador, 10) | nada | nada |
+| **Marcela** (especialista, 5) | nada | nada |
+| **Nico** (ocultista, Lâmina Paranormal, 65) | 1 ritual do NEX 20%; grau do 35% (faltam 3 das 6) | **11 perícias livres no NEX 5%; o livro dá 7** (3 + Int 3 + a Vontade repetida) |
+| **Veríssimo** (combatente, Aniquilador, 70) | o elemento da afinidade (50%) | nada |
+| **Ômega-99** (ocultista, Graduado, 99) | Grimório (3 + 1 + 1 rituais); poder do 90% | **17 perícias livres no NEX 5%; o livro dá 7**; grau do 35% com 9 perícias (são 3 + Int = 6); mochila com 5 itens de categoria I e 6 de II (limite 3 e 3), sobrecarregada (19 de 15) e com Proteção pesada sem proficiência |
+| **???** (combatente, Guerreiro, 65) | afinidade (50%); a arma de A Favorita (versatilidade); poder do 60% | grau do 35% com 4 perícias (são 1 + Int = 2); mochila com 4 itens de categoria I |
+| **Rosa** (especialista, Atirador de Elite, 50) | poder do 15%; afinidade e versatilidade (50%) | nada |
+| **Pedro** (combatente, Comandante de Campo, 40) | nada | nada |
+
+### Dúvidas novas para o mestre
+
+| | Dúvida | Sugestão |
+|---|---|---|
+| D11 | Tepes, alteração do Monstruoso de 25%: qual das três perícias (Diplomacia, Enganação ou Intimidação) leva o −5? | Escolha dele e do jogador; a janela já está na aba Evolução |
+| D12 | NPCs com mais perícias ou mais itens do que o livro permite (Nico, Ômega, ???, Miguel): tirar, ou deixar como exceção do enredo? | Para NPC de enredo, deixar e marcar os itens achados como "achado" (não ocupam a vaga da patente, LR p. 53); para as perícias, dizer quais saem |
+| D13 | Agatha com 0 PP (Recruta) no NEX 80%: qual a patente dela? | A de uma agente de elite (200 PP), como Ômega e Veríssimo |
