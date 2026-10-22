@@ -610,7 +610,7 @@ export function montarEstado(f: Ficha, ate: Nex = f.nex, excluir?: Exclusao): Es
           break;
         }
         case 'afinidade': {
-          if (fora(nex, 'afinidade')) break;
+          if (fora(nex, 'afinidade') || f.semAfinidade) break;
           if (!e.afinidade) falta(nex, 'afinidade', 'NEX 50%: escolha o elemento de afinidade.');
           else st.afinidade = e.afinidade;
           break;

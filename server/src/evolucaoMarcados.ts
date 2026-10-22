@@ -40,8 +40,9 @@ export function evolucaoMarcados2110(db: Database): boolean {
  * ao ocultista, o 2º círculo). Uma vez só.
  */
 export function avisoDeEvolucao2110(db: Database): boolean {
+  const veriss = verissimoSemAfinidade2210(db);
   const feitas = ((db as DbCris).fichasCris ??= {});
-  if (feitas['evolucao-2110-aviso'] !== undefined) return false;
+  if (feitas['evolucao-2110-aviso'] !== undefined) return veriss;
   let n = 0;
   for (const e of EVOLUIR) {
     const f = (db.fichas ?? []).find((x) => x.nome === e.nome && !x.npc);
@@ -55,5 +56,23 @@ export function avisoDeEvolucao2110(db: Database): boolean {
     n++;
   }
   feitas['evolucao-2110-aviso'] = n;
-  return n > 0;
+  return n > 0 || veriss;
+}
+
+/**
+ * O Veríssimo não tem afinidade com o paranormal (22/10, o Felipe: "é um caso à parte dos demais"): a ficha dele passa a
+ * ser `semAfinidade`, e o NEX 50% não cobra mais o elemento. Uma vez só (`db.fichasCris['verissimo-sem-afinidade-2210']`);
+ * roda daqui, na mesma volta das migrações de evolução.
+ */
+export function verissimoSemAfinidade2210(db: Database): boolean {
+  const feitas = ((db as DbCris).fichasCris ??= {});
+  if (feitas['verissimo-sem-afinidade-2210'] !== undefined) return false;
+  const f = (db.fichas ?? []).find((x) => x.npc === 'sr-verissimo');
+  if (f) {
+    f.ficha.semAfinidade = true;
+    delete f.ficha.progressao[50]?.afinidade;
+    f.atualizadaEm = new Date().toISOString();
+  }
+  feitas['verissimo-sem-afinidade-2210'] = f ? 1 : 0;
+  return !!f;
 }

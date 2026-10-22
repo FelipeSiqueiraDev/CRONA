@@ -100,3 +100,50 @@ describe('a Progressão de NEX do Monstruoso (SaH p. 17 e 99), nas contas', () =
     assert.ok(!regras.calcular(f).pendencias.some((p) => /alteracao/.test(p.alvo ?? '')));
   });
 });
+
+describe('o Veríssimo é caso à parte: sem afinidade (22/10)', () => {
+  const base = (semAfinidade: boolean): regras.Ficha => ({
+    ...regras.novaFicha('Veríssimo'),
+    classe: 'combatente',
+    trilha: 'aniquilador',
+    origem: 'mercenario',
+    nex: 50,
+    atributos: { agi: 2, for: 1, int: 2, pre: 2, vig: 2 },
+    pericias: { grupos: ['pontaria', 'reflexos'], livres: ['investigacao', 'percepcao', 'tatica'] },
+    semAfinidade,
+    progressao: {
+      10: { parametros: { 'a-favorita': { arma: 'espingarda' } } },
+      15: { poder: { id: 'tiro-certeiro' } },
+      20: { atributo: 'agi' },
+      30: { poder: { id: 'sentido-tatico' } },
+      35: { grau: ['pontaria', 'reflexos', 'iniciativa'] },
+      50: { atributo: 'for', versatilidade: { trilha: 'comandante-de-campo' } },
+    },
+  });
+
+  it('com a marca, o NEX 50% não pede o elemento; sem ela, pede', () => {
+    assert.ok(regras.calcular(base(false)).pendencias.some((p) => p.tipo === 'afinidade'));
+    assert.ok(!regras.calcular(base(true)).pendencias.some((p) => p.tipo === 'afinidade'));
+  });
+
+  it('as contas dele não mudam com a marca, e o aviso de evolução não lista a afinidade', () => {
+    const a = regras.calcular(base(false));
+    const b = regras.calcular(base(true));
+    assert.deepEqual([b.pv, b.pe, b.san, b.defesa, b.limitePe], [a.pv, a.pe, a.san, a.defesa, a.limitePe]);
+    const p50 = regras.resumoEvolucao(base(true), 45).find((p) => p.nex === 50)!;
+    assert.ok(!p50.ganhos.some((g) => g.titulo === 'Afinidade'));
+    assert.ok(regras.resumoEvolucao(base(false), 45).find((p) => p.nex === 50)!.ganhos.some((g) => g.titulo === 'Afinidade'));
+  });
+});
+
+describe('a migração do Veríssimo sem afinidade', () => {
+  it('marca a ficha dele uma vez só e não mexe nas outras', async () => {
+    const { verissimoSemAfinidade2210 } = await import('../src/evolucaoMarcados');
+    const f = (npc?: string) => ({ id: 1, nome: npc ?? 'x', npc, ficha: regras.novaFicha('x'), atualizadaEm: '' });
+    const db = { fichas: [f('sr-verissimo'), f('rosa')] } as never as Parameters<typeof verissimoSemAfinidade2210>[0];
+    assert.equal(verissimoSemAfinidade2210(db), true);
+    assert.equal(db.fichas![0].ficha.semAfinidade, true);
+    assert.equal(db.fichas![1].ficha.semAfinidade, undefined);
+    assert.equal(verissimoSemAfinidade2210(db), false);
+  });
+});

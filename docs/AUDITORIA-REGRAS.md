@@ -127,7 +127,7 @@ Tudo aqui depende do Felipe: o motor mostra o erro, mas qual escolha tirar ou p�
 | **Ivete** (combatente, Aniquilador, 10) | nada | nada |
 | **Marcela** (especialista, 5) | nada | nada |
 | **Nico** (ocultista, Lâmina Paranormal, 65) | 1 ritual do NEX 20%; grau do 35% (faltam 3 das 6) | **11 perícias livres no NEX 5%; o livro dá 7** (3 + Int 3 + a Vontade repetida) |
-| **Veríssimo** (combatente, Aniquilador, 70) | o elemento da afinidade (50%) | nada |
+| **Veríssimo** (combatente, Aniquilador, 70) | nada (não tem afinidade com o paranormal, caso à parte: a ficha leva `semAfinidade` e o NEX 50% não pede o elemento) | nada |
 | **Ômega-99** (ocultista, Graduado, 99) | Grimório (3 + 1 + 1 rituais); poder do 90% | **17 perícias livres no NEX 5%; o livro dá 7**; grau do 35% com 9 perícias (são 3 + Int = 6); mochila com 5 itens de categoria I e 6 de II (limite 3 e 3), sobrecarregada (19 de 15) e com Proteção pesada sem proficiência |
 | **???** (combatente, Guerreiro, 65) | afinidade (50%); a arma de A Favorita (versatilidade); poder do 60% | grau do 35% com 4 perícias (são 1 + Int = 2); mochila com 4 itens de categoria I |
 | **Rosa** (especialista, Atirador de Elite, 50) | poder do 15%; afinidade e versatilidade (50%) | nada |

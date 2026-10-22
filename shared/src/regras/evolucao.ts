@@ -68,6 +68,7 @@ export function resumoEvolucao(f: Ficha, de: Nex): PassoEvolucao[] {
           ganhos.push({ titulo: 'Versatilidade', texto: 'Um poder de classe ou o primeiro poder de outra trilha da classe.', ref: LR(23), escolha: true });
           break;
         case 'afinidade':
+          if (f.semAfinidade) break;
           ganhos.push({ titulo: 'Afinidade', texto: 'Você escolhe o elemento de afinidade.', ref: LR(23), escolha: true });
           break;
         case 'ritual':

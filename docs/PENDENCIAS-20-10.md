@@ -20,7 +20,7 @@ Estado: o jogo de verdade (8080) está na versão do último commit (`0319b516`,
 - **Alvos de olho no tabuleiro:** ver no jogo, em tamanho de verdade, em pé / agachado / sentado / deitado / armado.
 
 ## 2. Fichas e regras
-- **Pendências de escolha (C.R.I.S estava em branco):** Agatha 33, Ivete 13, Marcela 13, Miguel 6 (perícias, Perito, atributo do NEX 50, poder da Expansão de Conhecimento e do Especialista Diletante), Ômega-99 4 (rituais do Grimório, poder do NEX 90), "???" 3, Nico 2. Rosa: poder do NEX 15, versatilidade do 50 e afinidade. Veríssimo: afinidade e a regra da Jaqueta. Catarina: as 2 perícias do Perito.
+- **Pendências de escolha (C.R.I.S estava em branco):** Agatha 33, Ivete 13, Marcela 13, Miguel 6 (perícias, Perito, atributo do NEX 50, poder da Expansão de Conhecimento e do Especialista Diletante), Ômega-99 4 (rituais do Grimório, poder do NEX 90), "???" 3, Nico 2. Rosa: poder do NEX 15, versatilidade do 50 e afinidade. Veríssimo: a regra da Jaqueta (ele não tem afinidade: caso à parte, desde 22/10). Catarina: as 2 perícias do Perito.
 - **Tepes:** PV 44 no CRONA contra 48 no C.R.I.S (falta o atributo do NEX 20%, parece Vigor; dúvida D2 da auditoria, espera o jogador).
 - **Poderes que pedem teste de perícia** (110% e Eclético da Catarina, Perito): gastam PE e escrevem no registro, mas não há tela de teste; o mestre aplica à mão. O Ataque Especial e o Ataque Furtivo já aplicam sozinhos no Atacar.
 - **Decisão sua:** o alvo marcado continua marcado entre turnos (deixei como está); a manobra e o ritual agora abrem na escolha.

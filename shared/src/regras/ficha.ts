@@ -148,6 +148,11 @@ export interface Ficha {
   usosDia?: Record<string, number>;
   /** 19/10, uma vez: depois das escolhas do NEX, o jogador refaz o equipamento (a mochila foi zerada); some ao fazer */
   refazerEquipamento?: boolean;
+  /**
+   * caso à parte (22/10, o Felipe sobre o Veríssimo): não foi marcado pelo paranormal e não tem afinidade. O NEX 50% não
+   * pede o elemento de afinidade e nenhuma conta usa afinidade; o resto da ficha segue o livro.
+   */
+  semAfinidade?: boolean;
   /** o NEX em que o jogador já viu o aviso de evolução (21/10); se o NEX da ficha é maior, o aviso abre no login */
   nexVisto?: number;
   /** perdas permanentes (rituais de Medo, Custo do Paranormal) */
