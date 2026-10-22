@@ -3174,7 +3174,9 @@ export class RoomView {
               ey = hx + hy < 0 ? 1 : -1;
             }
             // o corpo deitado no comprimento da pessoa em pé (1,80 m ao longo da diagonal do piso = a altura na tela)
-            const w = H * 1.02;
+            // o bicho de quatro patas (a Camarilla, 22/10: "a caída ficou menor que em pé"): o corpo dele deitado é mais
+            // comprido que a altura em pé, então a imagem vai na mesma escala da pose em pé (221 px de arte de altura)
+            const w = cdef && cdef.height < 70 ? (H * imgDeitado.width) / 221 : H * 1.02;
             const h = (imgDeitado.height / imgDeitado.width) * w;
             ctx.save();
             ctx.translate(mx, my);
