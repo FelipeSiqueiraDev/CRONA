@@ -36,7 +36,7 @@ Testes novos em `server/test/regras.test.ts` (90 testes passando).
 
 ## O que ainda falta no motor (próximas etapas)
 
-1. **Progressão de NEX do Monstruoso** (SaH p. 98–103): as mudanças a partir de 25% ficam com o mestre (ajustes).
+1. **Progressão de NEX do Monstruoso** (SaH p. 98–103): as alterações gerais de 25% e 35% entram nas contas desde 22/10; as de 50% em diante e as do elemento (60% em diante) ficam com o mestre (ajustes).
 2. **Possuído:** os poderes de ocultista não são forçados a virar Transcender; "Ele Me Ensina" e Flashback são só texto.
 3. **Expansão de Conhecimento** não entrega o poder de outra classe.
 4. **Especialista Diletante** deixa pegar poder geral.
@@ -70,7 +70,7 @@ Conferidos e certos: atributos, perícias, trilhas e requisitos, poderes (Combat
 | D4 | O "pé de mesa" é arma improvisada ou bastão? | Improvisada: 1d6, −1d20 (LR p. 57). Bastão: 1d6/1d8, sem penalidade (LR p. 56 e 58) | Improvisada, pelo livro; o CRONA já aplica o −1d20 |
 | D5 | Qual kit da Catarina? | Ladrão (Crime) ou eletrônica (Tecnologia) | Kit de ladrão |
 | D6 | Como o Crânio Espiral chegou à Alosi? | Requisitado à Ordem: ilegal para operadora. Achado em missão: pode ficar e nem ocupa a vaga de categoria II | Decidir; o preço da maldição vale nos dois casos |
-| D7 | Tepes a partir de NEX 25% | A progressão do Monstruoso muda perícias e PE (SaH p. 98–99) | Registrar nas próximas subidas de NEX |
+| D7 | Tepes a partir de NEX 25% | A progressão do Monstruoso muda perícias e PE (SaH p. 98–99) | **Feito em 22/10** para 25% e 35% (aba Evolução); o resto, nas próximas subidas de NEX |
 | D8 | Forma Monstruosa: 2º ou 3º círculo? | A descrição diz 2º; a lista por círculo diz 3º | Ficou o 2º |
 | D9 | Resistir a <Elemento> em outro elemento conta como outro poder? | A regra geral é escolher cada poder paranormal uma vez | Hoje o CRONA deixa em outro elemento |
 | D10 | Cultista Arrependido que começa em NEX 0%: SAN 6 ou 8? | Depende de como a regra do treinamento conta | Decidir |
@@ -123,7 +123,7 @@ Tudo aqui depende do Felipe: o motor mostra o erro, mas qual escolha tirar ou p�
 | NPC | O que falta (pendência) | O que está fora do livro |
 |---|---|---|
 | **Miguel** (especialista, Técnico, 50) | 10 perícias da criação (7 + Int 3); as 2 do Perito; grau do 35% (8 perícias); Expansão de Conhecimento (qual poder); +1 atributo do 50%; Especialista Diletante (qual poder) | mochila com 4 itens de categoria I; o limite do Agente especial é 3 |
-| **Agatha** (ocultista, Graduado, 80) | 33: quase tudo (perícias, rituais, poderes, grau, afinidade, versatilidade e os 3+1+1 do Grimório). Só o +1 Presença do 20% está feito | 0 PP: ficha de Recruta, com 2 itens de categoria I |
+| **Agatha** (ocultista, Graduado, 80) | 33: quase tudo (perícias, rituais, poderes, grau, afinidade, versatilidade e os 3+1+1 do Grimório). Só o +1 Presença do 20% está feito | 0 PP: ficha de Recruta (limite de 2 itens de categoria I e nenhum de II) |
 | **Ivete** (combatente, Aniquilador, 10) | nada | nada |
 | **Marcela** (especialista, 5) | nada | nada |
 | **Nico** (ocultista, Lâmina Paranormal, 65) | 1 ritual do NEX 20%; grau do 35% (faltam 3 das 6) | **11 perícias livres no NEX 5%; o livro dá 7** (3 + Int 3 + a Vontade repetida) |
