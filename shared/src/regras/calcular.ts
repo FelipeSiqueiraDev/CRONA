@@ -329,7 +329,11 @@ export function calcular(f: Ficha): Calculado {
     return v;
   };
   let pe = agente && nexDoAgente.length ? classe.pe.inicial + pePorNex(nexDoAgente[0]) + somaPorNex(classe.pe.porNex, pePorNex) : classe.pe.inicial + atrPe + passos * (classe.pe.porNex + atrPe);
-  for (const x of doTipo('pe')) pe += escala(x.efeito, pat, atr);
+  for (const x of doTipo('pe')) {
+    pe += escala(x.efeito, pat, atr);
+    // o atributo escolhido na própria habilidade (Alteração do Monstruoso, NEX 35%)
+    if ((x.efeito as { atributoEscolhido?: boolean }).atributoEscolhido && x.origem.escolha?.atributo) pe += atr[x.origem.escolha.atributo];
+  }
   pe += (f.ajustes?.pe ?? 0) - (f.perdas?.pe ?? 0);
 
   let fatorSan = 1;
@@ -788,7 +792,7 @@ export function textoEfeito(e: Efeito): string {
   switch (e.alvo) {
     case 'pv':
     case 'pe':
-      return [e.alvo.toUpperCase(), e.fixo ? sinal(e.fixo) : '', e.porNex ? `${sinal(e.porNex)} por NEX` : ''].filter(Boolean).join(' ');
+      return [e.alvo.toUpperCase(), e.fixo ? sinal(e.fixo) : '', e.porNex ? `${sinal(e.porNex)} por NEX` : '', e.atributoEscolhido ? '+ o atributo escolhido' : ''].filter(Boolean).join(' ');
     case 'defesa':
       return `Defesa ${v(e.valor)}`;
     case 'deslocamento':

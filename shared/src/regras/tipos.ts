@@ -216,7 +216,7 @@ export type Escopo =
  */
 /** `etapa`: só vale com a etapa ritualística do dia cumprida ('com') ou sem ela ('sem') (Ser Amaldiçoado, SaH p. 17) */
 export type Efeito = { condicional?: string; afinidade?: boolean; soElemento?: Elemento; etapa?: 'com' | 'sem' } & (
-  | { alvo: 'pv' | 'pe'; fixo?: number; porNex?: number; porDezNex?: number; porNexImpar?: number; valor?: AtributoId }
+  | { alvo: 'pv' | 'pe'; fixo?: number; porNex?: number; porDezNex?: number; porNexImpar?: number; valor?: AtributoId; atributoEscolhido?: boolean }
   | { alvo: 'san'; fixo?: number; porNex?: number }
   /** multiplica a Sanidade inicial da classe (Cultista Arrependido: 0,5) */
   | { alvo: 'sanInicial'; fator: number }
@@ -325,6 +325,11 @@ export interface Trilha {
   requisitos?: Requisito[];
   /** as quatro habilidades (NEX 10, 40, 65 e 99) */
   habilidades: Habilidade[];
+  /**
+   * Alterações da Progressão de NEX que chegam sozinhas, em NEX que a trilha não dá habilidade (Monstruoso, SaH p. 17 e 99):
+   * entram nas contas a partir do NEX de cada uma, com a escolha que pedem.
+   */
+  alteracoes?: Habilidade[];
   resumo?: string;
 }
 

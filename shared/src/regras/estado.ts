@@ -264,6 +264,7 @@ export function montarEstado(f: Ficha, ate: Nex = f.nex, excluir?: Exclusao): Es
       else if (es.de && !es.de.includes(v.elemento)) erro(nex, onde, `${h.nome}: elemento fora das opções.`);
     } else if (es.tipo === 'atributo') {
       if (!v.atributo) falta(nex, 'parametro', `${h.nome}: escolha o atributo.`, h.id);
+      else if (es.de && !es.de.includes(v.atributo)) erro(nex, onde, `${h.nome}: ${NOME_ATRIBUTO[v.atributo]} não é uma das opções.`);
     } else if (es.tipo === 'arma') {
       if (!v.arma) falta(nex, 'parametro', `${h.nome}: escolha a arma.`, h.id);
       else if (!cat.arma(v.arma)) erro(nex, onde, `${h.nome}: arma desconhecida.`);
@@ -624,6 +625,8 @@ export function montarEstado(f: Ficha, ate: Nex = f.nex, excluir?: Exclusao): Es
         }
       }
     }
+    // as alterações da Progressão de NEX da trilha (Monstruoso, SaH p. 17 e 99) chegam sozinhas, no NEX delas
+    if (f.trilha && nex > 10) for (const h of cat.trilha(f.trilha)?.alteracoes ?? []) if (h.nex === nex) receberHabilidade(h, 'trilha', nex);
   }
 
   function periciaPorIntelecto(nex: Nex) {

@@ -317,7 +317,7 @@ function habilidadePorId(f: Ficha, id: string, nex: Nex): Habilidade | undefined
   const h1 = cl?.habilidades.find((h) => h.id === id);
   if (h1) return h1;
   const tr = f.trilha ? cat.trilha(f.trilha) : undefined;
-  const h2 = tr?.habilidades.find((h) => h.id === id);
+  const h2 = tr?.habilidades.find((h) => h.id === id) ?? tr?.alteracoes?.find((h) => h.id === id);
   if (h2) return h2;
   const vt = f.progressao[nex]?.versatilidade?.trilha ?? f.progressao[50]?.versatilidade?.trilha;
   const h3 = vt ? cat.trilha(vt)?.habilidades.find((h) => h.id === id) : undefined;

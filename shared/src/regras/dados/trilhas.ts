@@ -156,12 +156,40 @@ export const TRILHAS: Trilha[] = [
     nome: 'Monstruoso',
     ref: SAH(17),
     classe: 'combatente',
+    // A Progressão de NEX (SaH p. 99): o Monstruoso recebe as alterações gerais do NEX que tem (SaH p. 17). Sem trilha, sem alteração.
+    alteracoes: [
+      {
+        id: 'alteracao-nex-25', nome: 'Alteração de NEX 25%', ref: SAH(99), nex: 25,
+        escolha: { tipo: 'pericia', qtd: 1, de: ['diplomacia', 'enganacao', 'intimidacao'] },
+        efeitos: [
+          { alvo: 'treino', pericia: 'ocultismo', seJa: 2 },
+          { alvo: 'pericia', pericia: 'escolhida', valor: -5 },
+          { alvo: 'nota', texto: 'Testa Ocultismo mesmo sem treino; se treinado, +2. Em troca, −5 numa perícia à escolha entre Diplomacia, Enganação ou Intimidação (alteração física ou mental da exposição).' },
+        ],
+      },
+      {
+        id: 'alteracao-nex-35-pe', nome: 'Alteração de NEX 35% (PE)', ref: SAH(99), nex: 35,
+        escolha: { tipo: 'atributo', de: ['agi', 'for', 'int', 'vig'] },
+        efeitos: [
+          { alvo: 'pe', atributoEscolhido: true },
+          { alvo: 'nota', texto: 'Soma um atributo à escolha (menos Presença) no total de PE; o corpo resiste aos comandos do cérebro (o −5 numa perícia vem na outra alteração de NEX 35%).' },
+        ],
+      },
+      {
+        id: 'alteracao-nex-35-pericia', nome: 'Alteração de NEX 35% (perícia)', ref: SAH(99), nex: 35,
+        escolha: { tipo: 'pericia', qtd: 1, de: ['atletismo', 'fortitude', 'reflexos'] },
+        efeitos: [
+          { alvo: 'pericia', pericia: 'escolhida', valor: -5 },
+          { alvo: 'nota', texto: 'Em troca do atributo nos PE, −5 numa perícia à escolha entre Atletismo, Fortitude ou Reflexos.' },
+        ],
+      },
+    ],
     habilidades: [
       {
         id: 'ser-amaldicoado', nome: 'Ser Amaldiçoado', ref: SAH(17), nex: 10, escolha: { tipo: 'elemento', de: ['sangue', 'morte', 'conhecimento', 'energia'] },
         efeitos: [
           { alvo: 'treino', pericia: 'ocultismo', seJa: 2 },
-          { alvo: 'nota', texto: 'Especial: a trilha usa a Progressão de NEX da regra opcional Nível de Experiência (SaH p. 98; alterações nas p. 99–103), mesmo sem essa regra; essas alterações ficam com o mestre, fora das contas. Afinidade, se tiver, com o elemento escolhido.' },
+          { alvo: 'nota', texto: 'Especial: a trilha usa a Progressão de NEX da regra opcional Nível de Experiência (SaH p. 98; alterações nas p. 99–103), mesmo sem essa regra. As alterações gerais de NEX 25% e 35% entram nas contas (aba Evolução); as de 50% em diante, e as do elemento (60% em diante), ficam com o mestre. Afinidade, se tiver, com o elemento escolhido.' },
           { alvo: 'nota', texto: 'Etapa ritualística do elemento 1×/dia (o mestre marca "Cumpriu" no painel PLAYERS); sem ela, fome e sede no dia. Cumprida, vale até o fim do dia o efeito do elemento.' },
           { alvo: 'nota', etapa: 'sem', texto: 'Sem a etapa ritualística hoje: fome e sede (SaH p. 17), e nada do efeito do elemento.' },
           // com a etapa cumprida (19/10: os números entram nas contas; o resto fica escrito)

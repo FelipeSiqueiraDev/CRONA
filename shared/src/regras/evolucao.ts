@@ -85,22 +85,22 @@ export function resumoEvolucao(f: Ficha, de: Nex): PassoEvolucao[] {
         h.id === 'escolhido-pelo-outro-lado' ? `Libera o ${e.texto} de rituais.` : `${e.custoPe ?? h.custoPe ?? 0} PE: ${e.texto}.`;
       ganhos.push({ titulo: `${h.nome} cresce`, texto, ref: h.ref });
     }
-    // o Monstruoso segue a Progressão de NEX do SaH (p. 99): as alterações ficam com o mestre, mas o jogador tem de saber
+    // o Monstruoso segue a Progressão de NEX do SaH (p. 17 e 99): as alterações de 25% e 35% entram nas contas e pedem uma escolha
     if (f.trilha === 'monstruoso') {
       const SAH99: Ref = { fonte: 'SaH', pagina: 99 };
       if (nex === 25)
         ganhos.push({
           titulo: 'Alteração do Monstruoso',
-          texto: 'Faz testes de Ocultismo mesmo sem treino e, se for treinado, recebe +2. Em troca, sofre −5 numa perícia à escolha entre Diplomacia, Enganação ou Intimidação (o mestre aplica na ficha).',
+          texto: 'Faz testes de Ocultismo mesmo sem treino e, se for treinado, recebe +2 (já nas contas). Em troca, sofre −5 numa perícia à sua escolha entre Diplomacia, Enganação ou Intimidação.',
           ref: SAH99,
-          mestre: true,
+          escolha: true,
         });
       if (nex === 35)
         ganhos.push({
           titulo: 'Alteração do Monstruoso',
-          texto: 'Escolhe um atributo (menos Presença) e soma ao total de PE. Em troca, sofre −5 numa perícia à escolha entre Atletismo, Fortitude ou Reflexos (o mestre aplica na ficha).',
+          texto: 'Escolhe um atributo (menos Presença) e soma ao total de PE (já nas contas). Em troca, sofre −5 numa perícia à sua escolha entre Atletismo, Fortitude ou Reflexos.',
           ref: SAH99,
-          mestre: true,
+          escolha: true,
         });
       if (nex === 50)
         ganhos.push({ titulo: 'Alteração do Monstruoso', texto: 'Na próxima vez que Transcender, ganha afinidade com um elemento à escolha (Conhecimento, Energia, Morte ou Sangue); daí em diante recebe as alterações desse elemento (o mestre aplica).', ref: SAH99, mestre: true });
