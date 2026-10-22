@@ -2,6 +2,12 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 22/10: auditoria geral das fichas (todas pelo livro)
+
+- As 14 fichas do banco conferidas com o script `scripts/dev/auditar-fichas.mts` (escolhas feitas, pendências e opções reais da janela de escolha); PV, PE, SAN e Defesa refeitos só pelas tabelas do livro: **os quatro Marcados batem número por número**. Resultado por personagem e as dúvidas novas (D11 a D13) no fim de [`AUDITORIA-REGRAS.md`](AUDITORIA-REGRAS.md).
+- **Motor:** o Monstruoso (Tepes) recebe as alterações de NEX 25% e 35% do SaH p. 99 nas contas e na aba Evolução; escolha de atributo fora das opções da habilidade virou erro.
+- **Falta escolher (o jogador, na aba Evolução):** Tepes (a perícia do −5 do 25% e o poder do 30%), Catarina (as 2 do Perito), Alosi (1 perícia, o ritual do Saber Ampliado e o do 25%); Cora não tem nada. **Do Felipe:** os NPCs com mais perícias ou itens do que o livro dá (Nico, Ômega, ???, Miguel), a Agatha quase toda em branco, a afinidade do Veríssimo e da ???, e as mochilas vazias de Tepes, Catarina e Alosi (refazem no Sede).
+
 ## Feito em 21/10 (madrugada): a Mansão Albuquerque inteira (branch `claude/tabuleiro-pixel`)
 
 Pedido do Felipe: "Constrói a mansão inteira pra mim, o quarto da Cat como descrito no áudio, aquela texturinha pra ficar mais bonitinho... uma mansão de um MILIONÁRIO". Documento do projeto, com a lista de cômodos, as ligações e o que o mestre ainda decide: [`MANSAO-ALBUQUERQUE.md`](MANSAO-ALBUQUERQUE.md).
