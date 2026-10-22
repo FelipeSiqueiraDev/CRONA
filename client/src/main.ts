@@ -740,6 +740,11 @@ window.addEventListener('keydown', (e) => {
     shell.ferramentas.alternar(ferr[k as keyof typeof ferr]);
     return;
   }
+  // K liga ou desliga a câmera estilo Stardew (protótipo de 22/10; por enquanto só no Bar da Sede)
+  if ((e.key === 'k' || e.key === 'K') && !v.placement && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    v.camStardew = !v.camStardew;
+    return;
+  }
   // T troca a câmera do tabuleiro: isométrica ou tática (a sala de cima)
   if ((e.key === 't' || e.key === 'T') && !v.placement && !e.ctrlKey && !e.metaKey && !e.altKey) {
     shell.trocarVista();

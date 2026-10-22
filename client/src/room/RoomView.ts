@@ -54,6 +54,7 @@ import { MarcasMesa } from '../render/marcasMesa';
 import { NevoaMesa } from '../render/nevoaMesa';
 import { imagemDoMapa } from '../render/mapaImagem';
 import { desenharItemNoChao } from '../render/itemNoChao';
+import { cenaStardew, desenharStardew, type AcertoStardew } from '../render/camStardew';
 import { cameraVoo, casaNoPonto, desenharMesa, enquadrar, marcasNoChao, marcasPorCima, matrizNaAltura, passo, projetar, type CameraVoo, type Enquadre, type FundoIso, type PecaTatica } from '../render/mapaTatico';
 import { folegoDaPeca } from '../render/folego';
 import { portraitCanvas, type BreathMode } from '../render/portrait';
@@ -550,6 +551,17 @@ export class RoomView {
    * de (dx, dy) px do canvas. k = 1 é a sala inteira no quadro.
    */
   private tatZoom = { k: 1, dx: 0, dy: 0 };
+  /**
+   * Câmera estilo Stardew (protótipo, 22/10): opt-in (`?camera=stardew` ou a tecla K), só nas cenas que o camStardew aceita.
+   * Enquanto vale, o tabuleiro usa o mesmo enquadre quadrado da vista tática (this.tat.e) para a casa do mouse e andar.
+   */
+  camStardew = typeof location !== 'undefined' && /[?&]camera=stardew/.test(location.search);
+  private stardewAntes = false;
+  private stardewAcertos: AcertoStardew[] = [];
+  private stardewAtivo(): boolean {
+    return this.camStardew && !!this.map && !!this.info && cenaStardew(this.info.name);
+  }
+
   /** o retrato de cada peça para a ficha do mapa tático */
   private retratos = new Map<number, { chave: string; c: HTMLCanvasElement }>();
   /** o ponto de atenção e os desenhos do mestre (chegam do servidor) */
@@ -2057,6 +2069,21 @@ export class RoomView {
   private frame() {
     const now = performance.now();
     const tat = this.tat;
+    const sd = this.stardewAtivo();
+    if (sd) {
+      tat.t = tat.alvo = 1;
+      tat.antes = now;
+      this.frameStardew(now);
+      this.stardewAntes = true;
+      return;
+    }
+    if (this.stardewAntes) {
+      // saiu do estilo (tecla K ou outra cena): volta à vista que a cena pede
+      this.stardewAntes = false;
+      tat.alvo = tat.t = this.info?.tatico ? 1 : 0;
+      tat.e = null;
+      tat.foto = null;
+    }
     // a câmera anda até a vista pedida (1,7 s de ponta a ponta)
     const dt = Math.min(100, now - (tat.antes || now));
     tat.antes = now;
@@ -2081,6 +2108,55 @@ export class RoomView {
       tat.foto = f;
     }
     this.frameTatico(now);
+  }
+
+  /** A sala na câmera estilo Stardew (protótipo): tudo desenhado por código em camStardew.ts. */
+  private frameStardew(now: number) {
+    this.resize();
+    const ctx = this.ctx;
+    (ctx as CanvasRenderingContext2D & { reset?: () => void }).reset?.();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    if (this.fundoPontos) this.pintarFundo(ctx);
+    const map = this.map;
+    const info = this.info;
+    if (!map || !info) return;
+    const dpr = this.dpr;
+    const fr = this.frame_();
+    const esconde = this.escondeNevoa;
+    const nv = info.nevoa;
+    const sel = this.selection;
+    const recorta = this.tatZoom.k > 1;
+    if (recorta) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(fr.x * dpr, fr.y * dpr, fr.w * dpr, fr.h * dpr);
+      ctx.clip();
+    }
+    const r = desenharStardew(ctx, {
+      map,
+      nome: info.name,
+      darkness: info.darkness,
+      ambient: info.ambient,
+      piso: info.floorStyle,
+      itens: map.allItems(),
+      paredes: map.allWallItems(),
+      pecas: this.pecasTaticas(now).filter((p) => !esconde || !NevoaMesa.escondida(nv, p.x + 0.5, p.y + 0.5)),
+      now,
+      quadro: { x: fr.x * dpr, y: fr.y * dpr, w: fr.w * dpr, h: fr.h * dpr },
+      zoom: this.tatZoom,
+      mouse: this.mouse.inside ? { x: this.mouse.x * dpr, y: this.mouse.y * dpr } : null,
+      casaMouse: this.mouse.inside && !this.watchOnly ? this.hoverTile : null,
+      escolhido: sel?.kind === 'floor' ? sel.id : null,
+      mostrarItem: esconde ? (it) => !this.itemOculto(it) : undefined,
+      dpr,
+    });
+    this.stardewAcertos = r.acertos;
+    // o enquadre quadrado: a casa do mouse, andar e arrastar funcionam como na vista tática
+    this.tat.e = r.e;
+    if (recorta) ctx.restore();
+    this.vinheta(ctx);
   }
 
   /** A sala vista de cima (ou no caminho até lá), pela câmera tática. */
@@ -2268,6 +2344,7 @@ export class RoomView {
     const py = this.mouse.y * this.dpr;
     const now = performance.now();
     let perto: Hit | null = null;
+    const sd = this.stardewAtivo();
     let d0 = Infinity;
     for (const u of this.users.values()) {
       const p = this.userPos(u, now);
@@ -2278,6 +2355,18 @@ export class RoomView {
       }
     }
     if (perto) return perto;
+    if (sd) {
+      // câmera Stardew: o móvel é o que a gente vê (frente e tampo), do que está por cima para o de baixo
+      for (let i = this.stardewAcertos.length - 1; i >= 0; i--) {
+        const q = this.stardewAcertos[i];
+        if (px < q.x0 || px > q.x1 || py < q.y0 || py > q.y1) continue;
+        const it = map.getItem(q.id);
+        const def = it ? getFurni(it.defId) : undefined;
+        if (!it || !def || (def.flat && !this.info?.canBuild && !it.hint)) continue;
+        return { kind: 'floor', id: q.id, test: () => true };
+      }
+      return null;
+    }
     const x = (px - e.x) / e.casa;
     const y = (py - e.y) / e.casa;
     let topo: FloorItem | null = null;
