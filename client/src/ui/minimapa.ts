@@ -3,6 +3,10 @@ import { clear, h } from './dom';
 import { ic } from './icons';
 import { reduced, wait } from './motion';
 import { sfx } from './sfx';
+import * as Holo from './minimapaHolo';
+
+/** O minimapa holográfico (23/10). Em false, volta o desenho de antes (o pixel art no HUD). */
+const HOLO_LIGADO = true;
 
 /**
  * O minimapa da tela MAPA: a planta do lugar em níveis, Terreno › Prédio › Andar › Cômodo.
@@ -41,6 +45,11 @@ export interface MinimapaHost {
   ehAgente(charId: number | null | undefined): boolean;
   /** o mestre nomeia (ou renomeia, ou apaga com texto vazio) uma área do terreno: x e y em casas */
   nomearArea(cena: number, x: number, y: number, texto: string, id?: number): void;
+  /**
+   * Ctrl + clique (23/10, o Felipe: "se eu tiver com eles marcados e clicar Ctrl + Minimapa, o grupo vai andando pro lugar"):
+   * as peças marcadas no tabuleiro andam até a cena, pelas portas; `casa`, a casa do terreno onde param
+   */
+  rota?(roomId: number, casa?: { x: number; y: number }): void;
 }
 
 type Vista = { tipo: 'terreno'; cena: number } | { tipo: 'predio'; predio: string; andar: string };
@@ -52,6 +61,8 @@ interface Alvo extends Caixa {
   forma?: Path2D;
   /** a peça: a cena onde ela está */
   cena?: number;
+  /** a escada (no holograma): onde ela fica, para acender só ela no mouse */
+  escada?: string;
 }
 interface Anim {
   terreno: Vista;
@@ -147,6 +158,7 @@ export class Minimapa {
   private ultimaCena: number | undefined = undefined;
   private sel: { tipo: 'cena'; id: number } | null = null;
   private hover = '';
+  private hoverEscada = '';
   private alvos: Alvo[] = [];
   private anim: Anim | null = null;
   private raf = 0;
@@ -187,6 +199,8 @@ export class Minimapa {
     if (cur !== this.ultimaCena) {
       this.ultimaCena = cur;
       this.seguindo = true;
+      // o grupo mudou de cômodo: a câmera volta a abrir nele
+      this.cam = null;
       // o cartão do cômodo para onde se acabou de ir continua aberto (o Levar o grupo); o de outro fecha
       if (this.sel?.id !== cur) this.sel = null;
       this.anim = null;
@@ -339,6 +353,12 @@ export class Minimapa {
         c.setPointerCapture(e.pointerId);
         return;
       }
+      // no holograma, apertar fora de uma peça pode virar arrastar o mapa
+      if (HOLO_LIGADO && this.cam) {
+        const p = at(e);
+        this.panHolo = { sx: p.x, sy: p.y, ox: this.cam.ox, oy: this.cam.oy, moved: false };
+        c.setPointerCapture(e.pointerId);
+      }
       if (!a) {
         this.sel = null;
         return this.desenhar();
@@ -346,6 +366,17 @@ export class Minimapa {
     });
     c.addEventListener('pointermove', (e) => {
       const p = at(e);
+      const pan = this.panHolo;
+      if (pan && this.cam && (e.buttons & 1)) {
+        if (Math.hypot(p.x - pan.sx, p.y - pan.sy) > 4) pan.moved = true;
+        if (pan.moved) {
+          this.cam.ox = pan.ox + (p.x - pan.sx);
+          this.cam.oy = pan.oy + (p.y - pan.sy);
+          c.style.cursor = 'grabbing';
+          this.desenhar();
+          return;
+        }
+      }
       const ar = this.arraste;
       if (ar) {
         ar.x = p.x;
@@ -361,8 +392,10 @@ export class Minimapa {
       const a = acerta(p);
       c.style.cursor = a?.tipo === 'peca' && this.host.mestre() ? 'grab' : a ? 'pointer' : 'default';
       const k = a ? `${a.tipo}:${a.id}` : '';
-      if (k !== this.hover) {
+      const esc = a?.escada ?? '';
+      if (k !== this.hover || esc !== this.hoverEscada) {
         this.hover = k;
+        this.hoverEscada = esc;
         this.desenhar();
       }
       const titulo = a?.nome ?? '';
@@ -390,10 +423,22 @@ export class Minimapa {
         this.desenhar();
         return;
       }
+      const pan = this.panHolo;
+      this.panHolo = null;
+      if (pan?.moved) return;
       if (e.button !== 0 || this.anim) return;
       if (e.altKey) return this.nomearAqui(at(e));
       const a = acerta(at(e));
       if (!a) return;
+      // Ctrl + clique: as peças marcadas no tabuleiro andam até lá (o cômodo, a entrada do prédio, a casa do terreno)
+      if ((e.ctrlKey || e.metaKey) && this.host.mestre() && this.host.rota) {
+        const casa = HOLO_LIGADO && a.tipo === 'cena' && this.vista?.tipo === 'terreno' ? this.casaDoTerreno(at(e)) : null;
+        const para = a.tipo === 'cena' ? (a.id as number) : a.tipo === 'predio' ? this.predio(a.id as string)?.entrada : a.tipo === 'peca' ? a.cena : undefined;
+        if (para === undefined) return;
+        sfx.click();
+        this.host.rota(para, casa && casa.cena === para ? { x: Math.floor(casa.x), y: Math.floor(casa.y) } : undefined);
+        return;
+      }
       if (a.tipo === 'predio') {
         const p = this.predio(a.id as string);
         if (p) this.descer(p);
@@ -432,6 +477,10 @@ export class Minimapa {
       'wheel',
       (e) => {
         if (this.anim) return;
+        if (HOLO_LIGADO) {
+          e.preventDefault();
+          return this.zoomHolo(at(e), e.deltaY < 0 ? 1.18 : 1 / 1.18);
+        }
         if (e.deltaY > 0 && this.vista?.tipo === 'predio' && this.predio(this.vista.predio)?.terreno != null) {
           e.preventDefault();
           this.subir();
@@ -501,10 +550,10 @@ export class Minimapa {
 
   /** Alt + clique no terreno: nomeia a área (perto de um nome já posto, renomeia; vazio apaga). */
   private nomearAqui(p: { x: number; y: number }) {
-    const g = this.geoTerreno;
+    const g = HOLO_LIGADO ? (() => { const c = this.casaDoTerreno(p); return c ? { cena: c.cena, cx: c.x, cy: c.y } : null; })() : this.geoTerreno ? { cena: this.geoTerreno.cena, cx: (p.x - this.geoTerreno.ox) / this.geoTerreno.S, cy: (p.y - this.geoTerreno.oy) / this.geoTerreno.S } : null;
     if (!g || !this.host.mestre() || this.vista?.tipo !== 'terreno' || this.vista.cena !== g.cena) return;
-    const x = Math.round(((p.x - g.ox) / g.S) * 10) / 10;
-    const y = Math.round(((p.y - g.oy) / g.S) * 10) / 10;
+    const x = Math.round(g.cx * 10) / 10;
+    const y = Math.round(g.cy * 10) / 10;
     const perto = this.areasNomeadas(g.cena).find((n) => Math.hypot(n.x - x, n.y - y) < 3);
     const texto = window.prompt(perto ? 'Novo nome da área (vazio apaga):' : 'Nome da área:', perto?.texto ?? '');
     if (texto === null) return;
@@ -671,6 +720,13 @@ export class Minimapa {
    * Levar o grupo, com os agentes de fora (clicar num tira ele do grupo: fica onde está).
    */
   private renderCartao() {
+    // o minimapa holográfico não tem o cartão que subia de baixo (23/10, o Felipe: "a gente vai tirar esse menu que
+    // sobe"): o clique no cômodo leva até ele, o Ctrl + clique faz o grupo andar, e o Levar o grupo fica na lista de lugares
+    if (HOLO_LIGADO) {
+      if (!this.cartao.classList.contains('hidden')) clear(this.cartao).classList.add('hidden');
+      this.cartao.dataset.sig = '';
+      return;
+    }
     const sel = this.sel;
     const s = sel ? this.cena(sel.id) : undefined;
     const cur = this.host.cenaAtual();
@@ -876,10 +932,10 @@ export class Minimapa {
     ctx.imageSmoothingEnabled = false;
     if (v.tipo === 'terreno') {
       const s = this.cena(v.cena);
-      if (s) this.desenharTerreno(ctx, s, W, H, alvos);
+      if (s) (HOLO_LIGADO ? this.holoTerreno(ctx, s, W, H, alvos) : this.desenharTerreno(ctx, s, W, H, alvos));
     } else {
       const p = this.predio(v.predio);
-      if (p) this.desenharAndar(ctx, p, v.andar, W, H, alvos);
+      if (p) (HOLO_LIGADO ? this.holoAndar(ctx, p, v.andar, W, H, alvos) : this.desenharAndar(ctx, p, v.andar, W, H, alvos));
     }
   }
 
@@ -896,6 +952,7 @@ export class Minimapa {
   }
 
   private caixaDoPredio(terreno: number, p: LocalPredio): Caixa | null {
+    if (HOLO_LIGADO) return this.isoTerreno?.cena === terreno ? (this.caixasHolo.get(p.id) ?? null) : null;
     const s = this.cena(terreno);
     if (!s || !p.marco) return null;
     const { S, O } = this.encaixeDoTerreno(s, this.canvas.clientWidth || 220, this.altura());
@@ -1084,6 +1141,423 @@ export class Minimapa {
       ctx.textBaseline = 'middle';
       ctx.fillStyle = HUD.noite;
       ctx.fillText((q?.name || '?').trim()[0]?.toUpperCase() ?? '?', x, y + 0.5);
+      ctx.restore();
+    }
+  }
+
+
+  // ---------------------------------------------------------------- o holograma (23/10)
+
+  /**
+   * A câmera do holograma (23/10, o Felipe: "tá bem pequeno... a ideia é que fique bom e fácil pra mim"): abre já
+   * ampliada no lugar do grupo; a roda aproxima e afasta em volta do mouse, arrastar o chão move o mapa. Volta ao
+   * automático quando o nível muda (ou o painel muda de tamanho).
+   */
+  private cam: { chave: string; S: number; ox: number; oy: number } | null = null;
+  /** arrastando o mapa (o clique de soltar não vale) */
+  private panHolo: { sx: number; sy: number; ox: number; oy: number; moved: boolean } | null = null;
+
+  /** A câmera da vista: a guardada, ou a automática (o encaixe, ampliado `zoom` vezes em volta do ponto `foco`). */
+  private camera(chave: string, fit: Holo.Iso, W: number, H: number, foco: [number, number, number] | null, zoom: number, teto: number): Holo.Iso {
+    const k = `${chave}|${W}x${H}`;
+    if (this.cam?.chave === k) return { S: this.cam.S, ox: this.cam.ox, oy: this.cam.oy };
+    let iso = fit;
+    if (foco) {
+      const S = Math.min(teto, fit.S * zoom);
+      const u = foco[0] - foco[1];
+      const v = (foco[0] + foco[1]) / 2 - foco[2];
+      iso = { S, ox: W / 2 - u * S, oy: H * 0.55 - v * S };
+      // sem passar do que o encaixe já mostra: com o zoom 1, fica o encaixe
+      if (S <= fit.S) iso = fit;
+    }
+    this.cam = { chave: k, ...iso };
+    return iso;
+  }
+
+  /** A roda: aproxima ou afasta em volta do mouse. */
+  private zoomHolo(p: { x: number; y: number }, fator: number) {
+    const c = this.cam;
+    if (!c) return;
+    const S = Math.max(1.2, Math.min(40, c.S * fator));
+    const k = S / c.S;
+    c.ox = p.x - (p.x - c.ox) * k;
+    c.oy = p.y - (p.y - c.oy) * k;
+    c.S = S;
+    this.desenhar();
+  }
+
+  /** onde cada prédio ficou no desenho do terreno (o zoom de entrar parte dele) */
+  private caixasHolo = new Map<string, Caixa>();
+  /** a projeção do terreno desenhado agora (para achar a casa do clique: Alt nomeia, Ctrl leva o grupo) */
+  private isoTerreno: { cena: number; iso: Holo.Iso } | null = null;
+
+  /** A casa do terreno embaixo do ponto da tela (o inverso da projeção). */
+  private casaDoTerreno(p: { x: number; y: number }): { cena: number; x: number; y: number } | null {
+    const g = this.isoTerreno;
+    if (!g) return null;
+    const a = (p.x - g.iso.ox) / g.iso.S;
+    const b = (p.y - g.iso.oy) / (g.iso.S * 0.5);
+    return { cena: g.cena, x: (a + b) / 2, y: (b - a) / 2 };
+  }
+
+  /** Quantos andares de pé o prédio tem (para a altura do prisma): os do térreo para cima, menos o mezanino. */
+  private andaresDePe(p: LocalPredio) {
+    return Math.max(1, p.andares.filter((a) => a.nivel >= 0 && a.nivel < 50 && Number.isInteger(a.nivel)).length);
+  }
+
+  private holoTerreno(ctx: CanvasRenderingContext2D, s: SceneInfo, W: number, H: number, alvos: Alvo[]) {
+    const raw = this.hm(s);
+    const l = this.locais!;
+    const lt = l.terrenos.find((t) => t.cena === s.id);
+    const cur = this.host.cenaAtual();
+    const ondeCur = cur !== undefined ? l.onde.get(cur) : undefined;
+    Holo.fundo(ctx, W, H);
+    const predios = (lt?.predios ?? []).map((id) => this.predio(id)).filter((p): p is LocalPredio => !!p?.marco);
+    const altura = (p: LocalPredio) => Math.min(14, 3.2 * this.andaresDePe(p) + 1.4);
+    const um: Holo.Iso = { S: 1, ox: 0, oy: 0 };
+    const medidos: [number, number][] = [[0, 0], [raw.width, 0], [raw.width, raw.height], [0, raw.height]].map(([x, y]) => Holo.proj(um, x, y));
+    for (const p of predios) medidos.push(Holo.proj(um, p.marco!.x, p.marco!.y, altura(p)));
+    const fit = Holo.encaixarIso(medidos, W, H, this.opc.grande ? 30 : 12);
+    // aberto no prédio do grupo (ou na peça do grupo ao ar livre)
+    const aqui = predios.find((p) => ondeCur?.predio === p.id)?.marco;
+    const peca = cur === s.id ? s.users[0] : undefined;
+    const foco: [number, number, number] | null = aqui ? [aqui.x + aqui.w / 2, aqui.y + aqui.h / 2, 0] : peca ? [peca.x, peca.y, 0] : null;
+    const iso = this.camera(`t${s.id}`, fit, W, H, foco, this.opc.grande ? 1.3 : 1.5, this.opc.grande ? 26 : 16);
+    this.isoTerreno = { cena: s.id, iso };
+    const visitado = this.visitada(s.id);
+    Holo.chao(ctx, iso, 0, 0, raw.width, raw.height, 0, 4, visitado ? 1 : 0.5);
+    const chaoP = new Path2D();
+    [Holo.proj(iso, 0, 0), Holo.proj(iso, raw.width, 0), Holo.proj(iso, raw.width, raw.height), Holo.proj(iso, 0, raw.height)].forEach(([a, b], i) => (i ? chaoP.lineTo(a, b) : chaoP.moveTo(a, b)));
+    chaoP.closePath();
+    // as peças ao ar livre vão no chão, antes dos prédios (o prédio da frente tampa quem está atrás dele)
+    const pecas: { u: SceneInfo['users'][number]; x: number; y: number; prof: number }[] = s.users.map((u) => {
+      const [x, y] = Holo.proj(iso, u.x + 0.5, u.y + 0.5);
+      return { u, x, y, prof: u.x + u.y };
+    });
+    // os blocos: cada prédio grande (o mobi) vira um prisma; o bloco sem porta que encosta num prédio é parte dele
+    // (as alas e o corpo da mansão, com o pórtico que tem a porta): o mesmo tom, o mesmo clique, o nome uma vez
+    type Bloco = { m: { x: number; y: number; w: number; h: number }; p: LocalPredio | null; h: number };
+    const toca = (a: Bloco['m'], b: Bloco['m']) => a.x <= b.x + b.w + 1 && b.x <= a.x + a.w + 1 && a.y <= b.y + b.h + 1 && b.y <= a.y + a.h + 1;
+    const blocos: Bloco[] = (s.marcos ?? []).map((m) => ({ m, p: predios.find((q) => q.marco!.x === m.x && q.marco!.y === m.y) ?? null, h: 0 }));
+    for (let volta = 0; volta < 3; volta++)
+      for (const bl of blocos) if (!bl.p) bl.p = blocos.find((o) => o.p && o !== bl && toca(o.m, bl.m))?.p ?? null;
+    for (const bl of blocos) {
+      const area = bl.m.w * bl.m.h;
+      const maior = Math.max(...blocos.filter((o) => o.p === bl.p).map((o) => o.m.w * o.m.h));
+      // o bloco pequeno do grupo (o pórtico) fica mais baixo que o corpo
+      bl.h = bl.p ? altura(bl.p) * (area < maior * 0.45 ? 0.62 : 1) : 3;
+    }
+    const ordem = [...blocos].sort((a, b) => a.m.x + a.m.y + a.m.w + a.m.h - (b.m.x + b.m.y + b.m.w + b.m.h));
+    const rotulos: { txt: string; x: number; y: number; tom: Holo.Tom }[] = [];
+    let iPeca = 0;
+    pecas.sort((a, b) => a.prof - b.prof);
+    const pecaR = this.opc.grande ? 4.2 : 2.6;
+    const desenharPecasAte = (prof: number) => {
+      for (; iPeca < pecas.length && pecas[iPeca].prof <= prof; iPeca++) {
+        const q = pecas[iPeca];
+        if (this.arraste?.moved && this.arraste.token === q.u.id) continue;
+        Holo.ponto(ctx, q.x, q.y, this.corDe(q.u.id), pecaR);
+        alvos.push(this.alvoPeca(q.u, s.id, q.x, q.y));
+      }
+    };
+    this.caixasHolo.clear();
+    const topos = new Map<string, { x: number; y: number; z: number; w: number }>();
+    for (const bl of ordem) {
+      const { m, p } = bl;
+      desenharPecasAte(m.x + m.y);
+      const atual = !!p && ondeCur?.predio === p.id;
+      const foco = !!p && this.hover === `predio:${p.id}`;
+      const novo = !p || !p.cenas.some((id) => this.visitada(id));
+      const tom: Holo.Tom = foco ? 'foco' : atual ? 'aqui' : novo ? 'apagado' : 'normal';
+      const hh = bl.h;
+      const forma = Holo.prisma(ctx, iso, { x: m.x, y: m.y, w: m.w, d: m.h, h: hh }, tom, p ? Math.max(1, Math.round(this.andaresDePe(p) * (hh / altura(p)))) : 1);
+      if (!p) continue;
+      const cantos = [Holo.proj(iso, m.x, m.y, hh), Holo.proj(iso, m.x + m.w, m.y, 0), Holo.proj(iso, m.x + m.w, m.y + m.h, 0), Holo.proj(iso, m.x, m.y + m.h, 0), Holo.proj(iso, m.x + m.w, m.y, hh), Holo.proj(iso, m.x, m.y + m.h, hh)];
+      const bx0 = Math.min(...cantos.map((c) => c[0]));
+      const bx1 = Math.max(...cantos.map((c) => c[0]));
+      const by0 = Math.min(...cantos.map((c) => c[1]));
+      const by1 = Math.max(...cantos.map((c) => c[1]));
+      const caixa = { x: bx0, y: by0, w: bx1 - bx0, h: by1 - by0 };
+      const antes = this.caixasHolo.get(p.id);
+      this.caixasHolo.set(p.id, antes ? { x: Math.min(antes.x, caixa.x), y: Math.min(antes.y, caixa.y), w: Math.max(antes.x + antes.w, caixa.x + caixa.w) - Math.min(antes.x, caixa.x), h: Math.max(antes.y + antes.h, caixa.y + caixa.h) - Math.min(antes.y, caixa.y) } : caixa);
+      alvos.push({ tipo: 'predio', id: p.id, nome: `${p.nome || 'Casa'}: clique para ver dentro`, ...caixa, forma });
+      // o nome e as pessoas vão no telhado do bloco mais alto (o maior) do prédio
+      const t = topos.get(p.id);
+      if (!t || hh > t.z || (hh === t.z && m.w * m.h > t.w)) topos.set(p.id, { x: m.x + m.w / 2, y: m.y + m.h / 2, z: hh, w: m.w * m.h });
+    }
+    for (const p of predios) {
+      const t = topos.get(p.id);
+      if (!t) continue;
+      const atual = ondeCur?.predio === p.id;
+      const foco = this.hover === `predio:${p.id}`;
+      const [tx, ty] = Holo.proj(iso, t.x, t.y, t.z);
+      const gente = this.genteEm(p.cenas);
+      gente.slice(0, 6).forEach((cor, i) => Holo.ponto(ctx, tx + (i - (Math.min(6, gente.length) - 1) / 2) * 5, ty, cor, 2));
+      if (atual) Holo.anel(ctx, tx, ty, Math.max(6, Math.sqrt(t.w) * iso.S * 0.35));
+      // o nome só do prédio do grupo e do que está embaixo do mouse (na planta grande, de todos com nome)
+      if (p.nome && (atual || foco || this.opc.grande)) rotulos.push({ txt: p.nome, x: tx, y: ty - 4, tom: foco ? 'foco' : atual ? 'aqui' : 'normal' });
+    }
+    desenharPecasAte(Infinity);
+    // as saídas para outro terreno (a porteira para os arredores): a seta no chão e o nome ao passar o mouse
+    for (const sd of lt?.saidas ?? []) {
+      const nome = l.terrenos.find((t) => t.cena === sd.para)?.nome ?? '';
+      const [x, y] = Holo.proj(iso, sd.x + 0.5, sd.y + 0.5);
+      const foco = this.hover === `saida:${sd.para}`;
+      ctx.save();
+      ctx.shadowColor = Holo.HOLO.ciano;
+      ctx.shadowBlur = 6;
+      ctx.fillStyle = foco ? Holo.HOLO.cianoClaro : Holo.HOLO.ciano;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 5);
+      ctx.lineTo(x + 4, y);
+      ctx.lineTo(x, y + 2);
+      ctx.lineTo(x - 4, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      alvos.push({ tipo: 'saida', id: sd.para, nome: `Ver o mapa de ${nome}`, x: x - 8, y: y - 8, w: 16, h: 14 });
+      if (foco || this.opc.grande) rotulos.push({ txt: nome, x, y: y - 4, tom: 'foco' });
+    }
+    // as áreas que o mestre nomeou (Alt + clique no chão), bem fracas, só na planta grande
+    if (this.opc.grande)
+      for (const n of this.areasNomeadas(s.id)) {
+        const [x, y] = Holo.proj(iso, n.x, n.y);
+        ctx.save();
+        ctx.font = `600 ${fs(10)}px ${FONTE}`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(191,242,255,0.55)';
+        ctx.fillText(n.texto, x, y);
+        ctx.restore();
+      }
+    for (const r of rotulos) Holo.rotulo(ctx, r.txt, r.x, r.y, r.tom, FONTE, fs(10), 10);
+    alvos.unshift({ tipo: 'cena', id: s.id, nome: lt?.nome ?? nomeCurto(s.name), x: 0, y: 0, w: W, h: H, forma: chaoP });
+  }
+
+  /** A cor da peça (a do agente no grupo). */
+  private corDe(uid: number) {
+    return this.host.campanha()?.party.find((m) => m.id === uid)?.color ?? '#ffffff';
+  }
+
+  /** Os cômodos de um andar já na planta: a posição de cada um, as casas de chão e onde fica cada peça. */
+  private comodosDoAndar(p: LocalPredio, andar: string) {
+    const camp = this.host.campanha();
+    const a = p.andares.find((x) => x.nome === andar);
+    if (!camp || !a) return [];
+    const cenas = a.cenas.map((id) => this.cena(id)).filter((s): s is SceneInfo => !!s);
+    const auto = this.plantaDoAndar(p, andar, cenas);
+    // a planta do seed (o `layout` da campanha), quando todo cômodo tem e nenhum cai em cima de outro; senão, a montada sozinha
+    const usaLayout = (() => {
+      if (!cenas.every((s) => camp.layout[s.id])) return false;
+      const ocupado = new Set<string>();
+      for (const s of cenas) {
+        const q = camp.layout[s.id]!;
+        const raw = this.hm(s);
+        const hm = rotateHm(raw, q.r ?? 0);
+        const porta = s.aberto ? null : rotatePt(raw, q.r ?? 0, s.door.x, s.door.y);
+        for (let y = 0; y < hm.height; y++)
+          for (let x = 0; x < hm.width; x++) {
+            if (hm.tiles[y]?.[x] === null || hm.tiles[y]?.[x] === undefined || (porta && porta[0] === x && porta[1] === y)) continue;
+            const k = `${q.x + x},${q.y + y}`;
+            if (ocupado.has(k)) return false;
+            ocupado.add(k);
+          }
+      }
+      return true;
+    })();
+    return cenas.map((s) => {
+      const pos = (usaLayout ? camp.layout[s.id] : auto.get(s.id)) ?? camp.layout[s.id] ?? { x: 0, y: 0 };
+      const raw = this.hm(s);
+      const r = pos.r ?? 0;
+      const hm = rotateHm(raw, r);
+      const porta = s.aberto ? null : rotatePt(raw, r, s.door.x, s.door.y);
+      const casas: [number, number][] = [];
+      for (let y = 0; y < hm.height; y++)
+        for (let x = 0; x < hm.width; x++) {
+          if (hm.tiles[y]?.[x] === null || hm.tiles[y]?.[x] === undefined || (porta && porta[0] === x && porta[1] === y)) continue;
+          casas.push([pos.x + x, pos.y + y]);
+        }
+      const gente = s.users.map((u) => {
+        const [x, y] = rotatePt(raw, r, u.x, u.y);
+        return { u, x: pos.x + x + 0.5, y: pos.y + y + 0.5 };
+      });
+      // as escadas: a passagem para um cômodo de outro andar do mesmo prédio (clicar nela troca o andar do mapa)
+      const onde = this.locais?.onde;
+      const escadas: { x: number; y: number; andar: string; sobe: boolean }[] = [];
+      for (const pt of s.portals) {
+        const o = onde?.get(pt.link);
+        if (!o || o.predio !== p.id || !o.andar || o.andar === andar) continue;
+        const [x, y] = rotatePt(raw, r, pt.x, pt.y);
+        const nivel = (n: string) => p.andares.find((q) => q.nome === n)?.nivel ?? 0;
+        if (!escadas.some((e) => e.andar === o.andar && Math.abs(e.x - (pos.x + x)) < 2 && Math.abs(e.y - (pos.y + y)) < 2))
+          escadas.push({ x: pos.x + x, y: pos.y + y, andar: o.andar, sobe: nivel(o.andar) > nivel(andar) });
+      }
+      const tem = new Set(casas.map(([x, y]) => `${x},${y}`));
+      const portas: { x: number; y: number; lado: 'n' | 's' | 'o' | 'l' }[] = [];
+      for (const pt of s.portals) {
+        const o = onde?.get(pt.link);
+        if (!o || o.predio !== p.id || o.andar !== andar) continue;
+        const [rx, ry] = rotatePt(raw, r, pt.x, pt.y);
+        let px = pos.x + rx;
+        let py = pos.y + ry;
+        // a porta principal fica no vão (fora do chão): a casa de dentro é a vizinha
+        let lado: 'n' | 's' | 'o' | 'l' | null = null;
+        if (!tem.has(`${px},${py}`)) {
+          const viz = ([[1, 0], [-1, 0], [0, 1], [0, -1]] as const).find(([dx, dy]) => tem.has(`${px + dx},${py + dy}`));
+          if (!viz) continue;
+          px += viz[0];
+          py += viz[1];
+          // o vão fica do lado de onde a casa de dentro veio
+          lado = viz[0] === 1 ? 'o' : viz[0] === -1 ? 'l' : viz[1] === 1 ? 'n' : 's';
+        }
+        lado ??= !tem.has(`${px},${py - 1}`) ? 'n' : !tem.has(`${px},${py + 1}`) ? 's' : !tem.has(`${px - 1},${py}`) ? 'o' : 'l';
+        portas.push({ x: px, y: py, lado });
+      }
+      return { s, casas, gente, escadas, portas };
+    });
+  }
+
+  /**
+   * O prédio aberto: os andares empilhados como bandejas de vidro, o escolhido aceso (cada cômodo com as paredes baixas,
+   * o do grupo em ouro) e os outros só no contorno, para clicar e trocar. O nome do andar fica do lado de cada bandeja.
+   */
+  private holoAndar(ctx: CanvasRenderingContext2D, p: LocalPredio, andar: string, W: number, H: number, alvos: Alvo[]) {
+    Holo.fundo(ctx, W, H);
+    const cur = this.host.cenaAtual();
+    const PAREDE = 1.1;
+    const a = p.andares.find((x) => x.nome === andar) ?? p.andares[0];
+    if (!a) return;
+    const comodos = this.comodosDoAndar(p, a.nome);
+    // o andar aberto ocupa o painel; a lista dos andares fica no canto de cima (quando há mais de um)
+    const varios = p.andares.length > 1;
+    const topo = varios ? Math.round(6 + p.andares.length * fs(13) * 0.7) : 0;
+    const um: Holo.Iso = { S: 1, ox: 0, oy: 0 };
+    const medidos: [number, number][] = [];
+    for (const c of comodos) for (const [x, y] of c.casas) medidos.push(Holo.proj(um, x, y), Holo.proj(um, x + 1, y + 1), Holo.proj(um, x + 1, y), Holo.proj(um, x, y + 1, PAREDE));
+    if (!medidos.length) return;
+    const pad = this.opc.grande ? 30 : 12;
+    const fit = Holo.encaixarIso(medidos, W, H - topo, pad, this.opc.grande ? 22 : 12);
+    fit.oy += topo;
+    // aberto no cômodo do grupo, ampliado
+    const doGrupo = comodos.find((c) => c.s.id === cur);
+    let foco: [number, number, number] | null = null;
+    if (doGrupo?.casas.length) {
+      let fx = 0;
+      let fy = 0;
+      for (const [x, y] of doGrupo.casas) (fx += x + 0.5), (fy += y + 0.5);
+      foco = [fx / doGrupo.casas.length, fy / doGrupo.casas.length, 0];
+    }
+    const iso = this.camera(`p${p.id}/${a.nome}`, fit, W, H, foco, this.opc.grande ? 1.5 : 2, this.opc.grande ? 30 : 18);
+    this.S = iso.S;
+    // um chão de grade embaixo do andar inteiro (a bandeja), bem fraco
+    let x0 = Infinity;
+    let y0 = Infinity;
+    let x1 = -Infinity;
+    let y1 = -Infinity;
+    for (const c of comodos)
+      for (const [x, y] of c.casas) {
+        x0 = Math.min(x0, x);
+        y0 = Math.min(y0, y);
+        x1 = Math.max(x1, x + 1);
+        y1 = Math.max(y1, y + 1);
+      }
+    Holo.chao(ctx, iso, x0 - 1, y0 - 1, x1 - x0 + 2, y1 - y0 + 2, -0.05, 2, 0.55);
+    const rotulos: { txt: string; x: number; y: number; tom: Holo.Tom }[] = [];
+    const pecaR = this.opc.grande ? 4 : 2.6;
+    const ordem = [...comodos].sort((q, r) => Math.min(...q.casas.map(([x, y]) => x + y)) - Math.min(...r.casas.map(([x, y]) => x + y)));
+    for (const c of ordem) {
+      const atual = c.s.id === cur;
+      const sobre = this.hover === `cena:${c.s.id}` || this.sel?.id === c.s.id;
+      const novo = !atual && !this.visitada(c.s.id);
+      const tom: Holo.Tom = sobre ? 'foco' : atual ? 'aqui' : novo ? 'apagado' : 'normal';
+      const forma = Holo.comodo(ctx, iso, c.casas, 0, PAREDE, tom);
+      let mx = 0;
+      let my = 0;
+      for (const [x, y] of c.casas) (mx += x + 0.5), (my += y + 0.5);
+      mx /= c.casas.length || 1;
+      my /= c.casas.length || 1;
+      const [lx, ly] = Holo.proj(iso, mx, my, PAREDE);
+      const pts = c.casas.flatMap(([x, y]) => [Holo.proj(iso, x, y), Holo.proj(iso, x + 1, y + 1), Holo.proj(iso, x + 1, y), Holo.proj(iso, x, y + 1)]);
+      const bx0 = Math.min(...pts.map((q) => q[0]));
+      const by0 = Math.min(...pts.map((q) => q[1]));
+      alvos.push({ tipo: 'cena', id: c.s.id, nome: nomeCurto(c.s.name), x: bx0, y: by0, w: Math.max(...pts.map((q) => q[0])) - bx0, h: Math.max(...pts.map((q) => q[1])) - by0, forma });
+      if (atual) Holo.anel(ctx, lx, ly + PAREDE * iso.S, Math.max(5, iso.S * 1.6));
+      for (const g of c.gente) {
+        if (this.arraste?.moved && this.arraste.token === g.u.id) continue;
+        const [px, py] = Holo.proj(iso, g.x, g.y);
+        Holo.ponto(ctx, px, py, this.corDe(g.u.id), pecaR);
+        alvos.push(this.alvoPeca(g.u, c.s.id, px, py));
+      }
+      if (atual || sobre) rotulos.push({ txt: nomeCurto(c.s.name), x: lx, y: ly, tom: sobre ? 'foco' : 'aqui' });
+      else if (iso.S >= 7) {
+        // ampliado, cada cômodo leva o nome no chão, fraquinho (só se couber na largura dele)
+        const [nx, ny] = Holo.proj(iso, mx, my);
+        ctx.save();
+        ctx.font = `700 ${fs(8)}px ${FONTE}`;
+        ctx.letterSpacing = '1px';
+        const nome = nomeCurto(c.s.name).toUpperCase();
+        const larg = Math.max(...pts.map((q) => q[0])) - bx0;
+        const tw = ctx.measureText(nome).width;
+        if (tw < larg * 0.75) {
+          // o nome gravado no chão do cômodo, com o tracinho de luz embaixo (como a etiqueta de uma maquete)
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = Holo.HOLO.ciano;
+          ctx.shadowBlur = novo ? 0 : 4;
+          ctx.fillStyle = novo ? 'rgba(120,160,190,0.45)' : 'rgba(191,242,255,0.78)';
+          ctx.fillText(nome, nx, ny);
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = novo ? 'rgba(120,160,190,0.25)' : 'rgba(90,216,255,0.45)';
+          ctx.fillRect(Math.round(nx - tw / 2), Math.round(ny + fs(6)), Math.round(tw), 1);
+        }
+        ctx.restore();
+      }
+    }
+    // as escadas: os degraus acesos no lugar da escada; o clique leva o mapa para o andar dela
+    for (const c of comodos)
+      for (const e of c.escadas) {
+        const sobre = this.hover === `andar:${e.andar}` && this.hoverEscada === `${e.x},${e.y}`;
+        const caixa = Holo.escada(ctx, iso, e.x, e.y, e.sobe, sobre);
+        const rot = p.andares.find((q) => q.nome === e.andar)?.rotulo ?? e.andar;
+        alvos.push({ tipo: 'andar', id: e.andar, nome: `Escada: ${e.sobe ? 'sobe' : 'desce'} para ${rot}`, ...caixa, escada: `${e.x},${e.y}` });
+        if (sobre) rotulos.push({ txt: `${e.sobe ? '▲' : '▼'} ${rot}`, x: caixa.x + caixa.w / 2, y: caixa.y, tom: 'foco' });
+      }
+    for (const r of rotulos) Holo.rotulo(ctx, r.txt, r.x, r.y, r.tom, FONTE, fs(10), 8);
+    // os andares, do mais alto para o mais baixo: a bandejinha e o nome; o aberto aceso, o do grupo com o ponto de ouro
+    if (varios) {
+      const ondeCur = cur !== undefined ? this.locais?.onde.get(cur) : undefined;
+      ctx.save();
+      ctx.font = `700 ${fs(9)}px ${FONTE}`;
+      ctx.textBaseline = 'middle';
+      const linha = fs(13);
+      p.andares.forEach((x, i) => {
+        const y = 10 + i * linha;
+        const aberto = x.nome === a.nome;
+        const sobre = this.hover === `andar:${x.nome}`;
+        const cor = aberto ? Holo.HOLO.cianoClaro : sobre ? Holo.HOLO.ciano : 'rgba(90,216,255,0.5)';
+        // a bandejinha (um losango achatado)
+        ctx.fillStyle = aberto ? 'rgba(90,216,255,0.45)' : 'rgba(90,216,255,0.12)';
+        ctx.strokeStyle = cor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(12, y);
+        ctx.lineTo(19, y - 3);
+        ctx.lineTo(26, y);
+        ctx.lineTo(19, y + 3);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        const txt = x.rotulo.toUpperCase();
+        ctx.fillStyle = cor;
+        ctx.fillText(txt, 31, y + 0.5);
+        const w = ctx.measureText(txt).width;
+        if (ondeCur?.predio === p.id && ondeCur.andar === x.nome) {
+          ctx.fillStyle = Holo.HOLO.ouro;
+          ctx.beginPath();
+          ctx.arc(31 + w + 6, y, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        if (!aberto) alvos.push({ tipo: 'andar', id: x.nome, nome: `${x.rotulo}: clique para abrir`, x: 8, y: y - linha / 2, w: w + 30, h: linha });
+      });
       ctx.restore();
     }
   }

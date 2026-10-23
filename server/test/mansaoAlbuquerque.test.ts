@@ -13,7 +13,7 @@ describe("Mansão Albuquerque", () => {
   test("o lugar existe (a planta de 23/10): o jardim, o térreo, o 2º andar, o mezanino e o anexo, numa campanha com o nome do lugar", () => {
     const nomes = [
       "Jardim", "Salão Principal", "Biblioteca", "Escritório de Alexander", "Sala de Jantar", "Cozinha", "Despensa", "Lavanderia",
-      "Área de Serviço", "Corredor dos Funcionários", ...[1, 2, 3, 4, 5, 6].map((i) => `Quarto de Funcionário ${i}`),
+      "Corredor dos Funcionários", ...[1, 2, 3, 4, 5, 6].map((i) => `Quarto de Funcionário ${i}`),
       "Hall Superior", "Suíte do Casal", "Banheiro do Casal", "Sala de Jogos", "Quarto do Miguel", "Banheiro do Miguel",
       "Quarto da Catarina", "Banheiro da Catarina", "Quarto de Hóspedes", "Banheiro dos Hóspedes", "Mezanino da Catarina", "Anexo",
     ];

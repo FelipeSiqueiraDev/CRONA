@@ -125,6 +125,10 @@ export interface HotelApi {
   teleport(client: Client, roomId: number, fromRoomId: number): void;
   /** leva uma peça para outra cena */
   moveToken(from: RoomInstance, tokenId: number, toRoomId: number): void;
+  /** o caminho pelo minimapa (Ctrl + clique, 23/10): a peça tem cenas pela frente, segue para a próxima ou desiste */
+  temRota(tokenId: number): boolean;
+  seguirRota(room: RoomInstance, tokenId: number): void;
+  cancelarRota(tokenId: number): void;
   /** os companheiros que andam com o agente (a patinha ligada): o nome da peça dele e o personagem do agente */
   companheirosQueSeguem(): { nome: string; personagem: number }[];
   roomExists(roomId: number): boolean;
@@ -431,6 +435,48 @@ export class RoomInstance {
   }
 
   /** Tira a peça desta cena e devolve os dados dela. */
+  /**
+   * A peça anda até a passagem que leva à cena `destino` (o Ctrl + clique do minimapa, 23/10): a mais perto a pé; a porta
+   * fechada ela abre ao chegar (a trancada a faz parar). Devolve o motivo quando não dá.
+   */
+  andarParaPassagem(tokenId: number, destino: number): string | null {
+    const u = this.users.get(tokenId);
+    if (!u) return 'a peça não está na cena.';
+    const portas = this.map.allItems().filter((it) => it.link === destino && getFurni(it.defId)?.portal);
+    if (!portas.length) return 'não há passagem por aqui.';
+    const livre = (x: number, y: number) => this.occupied(x, y, u.client.id);
+    let melhor: (typeof portas)[number] | null = null;
+    let menor = Infinity;
+    for (const p of portas) {
+      const n = p.x === u.x && p.y === u.y ? 0 : (findPath(this.map, u, { x: p.x, y: p.y }, livre)?.length ?? Infinity);
+      if (n < menor) (menor = n), (melhor = p);
+    }
+    const porta = melhor ?? portas[0];
+    const daPorta = this.andarAteAPorta(u, { x: porta.x, y: porta.y });
+    if (typeof daPorta === 'string') return daPorta;
+    if (daPorta === undefined) {
+      // em cima dela (chegou por ela): a passagem vale de novo; senão, anda até ela
+      if (u.x === porta.x && u.y === porta.y) u.arrivedAt = null;
+      else u.goal = { x: porta.x, y: porta.y };
+      delete u.aoChegar;
+      delete u.encara;
+    }
+    this.ensureTimer();
+    return null;
+  }
+
+  /** A peça anda até a casa (ou a livre mais perto dela). */
+  andarPeca(tokenId: number, casa: { x: number; y: number }) {
+    const u = this.users.get(tokenId);
+    if (!u) return;
+    const alvo = this.map.walkState(casa.x, casa.y) === 'walk' && !this.occupied(casa.x, casa.y, u.client.id) ? casa : this.freeNear(casa.x, casa.y, u.client.id);
+    if (!alvo || (alvo.x === u.x && alvo.y === u.y)) return;
+    u.goal = alvo;
+    delete u.aoChegar;
+    delete u.encara;
+    this.ensureTimer();
+  }
+
   takeToken(tokenId: number): TokenData | null {
     const u = this.users.get(tokenId);
     if (!u) return null;
@@ -915,6 +961,9 @@ export class RoomInstance {
       this.broadcast({ t: 'tokenTravel', tokenId, roomId });
       this.hotel.moveToken(this, tokenId, roomId);
     }
+    // a peça a caminho pelo minimapa que ficou parada (esperando a vez na porta, que outra ocupava): tenta de novo
+    for (const u of [...this.users.values()])
+      if (!u.next && !u.goal && !travel.some(([id]) => id === u.client.id) && this.hotel.temRota(u.client.id)) this.hotel.seguirRota(this, u.client.id);
     if (!this.viewers.size && !this.users.size && this.timer) {
       clearInterval(this.timer);
       this.timer = null;
@@ -1640,6 +1689,7 @@ export class RoomInstance {
     switch (m.t) {
       case 'tokenWalk':
         if (isInt(m.x) && isInt(m.y) && this.map.floorHeight(m.x, m.y) !== null) {
+          this.hotel.cancelarRota(u.client.id);
           const antes = u.aoChegar;
           delete u.aoChegar;
           const daPorta = this.andarAteAPorta(u, { x: m.x, y: m.y });

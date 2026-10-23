@@ -10,7 +10,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
 /**
  * A Mansão Albuquerque (21/10; refeita em 23/10 pela planta ilustrada do Felipe, com menos cômodos e maiores): o lar da
  * Catarina e do Miguel. O jardim murado de fora e o anexo; o térreo (salão principal com as duas escadarias, biblioteca,
- * escritório de Alexander, sala de jantar, cozinha, despensa, a ala de serviço com os seis quartos dos funcionários); o
+ * escritório de Alexander, sala de jantar, cozinha, despensa, a ala de serviço com os seis quartos dos funcionários e a lavanderia); o
  * 2º andar (hall superior, suíte do casal, sala de jogos, os quartos do Miguel, da Catarina e de hóspedes, cada um com o
  * seu banheiro) e o mezanino da Catarina. A lista de cômodos, as ligações e o que há em cada um estão em `docs/MANSAO-ALBUQUERQUE.md`.
  *
@@ -22,7 +22,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Mudou a montagem? Suba MANSAO_REV: a mansão é refeita no lugar, mantendo as cenas, as peças e o registro.
  */
 export const MANSAO = "Mansão Albuquerque · ";
-export const MANSAO_REV = 2;
+export const MANSAO_REV = 3;
 
 const ANDAR = "Mansão Albuquerque";
 const ANDAR2 = "Mansão Albuquerque 2º";
@@ -376,26 +376,21 @@ for (let i = 0; i < 6; i++) {
 }
 {
   const s = nova("lavanderia", "Lavanderia", 8, 4, "mansao_servico", 8, 7, ANDAR, "A lavanderia: dois tanques, as máquinas de lavar, os cestos de roupa e a tábua de passar.");
-  s.porta("N", 11, "corr_func").porta("S", 11, "servico");
+  s.porta("N", 11, "corr_func");
   s.enc("N", "tanque", 0).enc("N", "tanque", 1).enc("N", "maquina_lavar", 5).enc("N", "maquina_lavar", 6);
   s.add("crate_wood", 7, 3, 0).add("trash_can", 0, 3, 0);
 }
+// a biblioteca, à esquerda do salão (23/10: cresceu para o lugar da área de serviço, que saiu)
 {
-  const s = nova("servico", "Área de Serviço", 16, 3, "mansao_servico", 0, 11, ANDAR, "A área de serviço e de acesso: por aqui entram as compras, a roupa lavada e os funcionários, sem cruzar o salão. Um banco, o aparador com as bandejas e os vasos.");
-  s.porta("N", 11, "lavanderia").porta("L", 12, "salao");
-  s.enc("N", "bench", 2).enc("N", "sideboard", 5).add("vaso_grande", 0, 2, 0).add("trash_can", 14, 0, 4);
-  s.lustres([4, 1], [12, 1]);
-}
-// a biblioteca, à esquerda do salão
-{
-  const s = nova("biblioteca", "Biblioteca", 14, 10, "mansao_nobre", 2, 14, ANDAR, "A grande biblioteca da casa, de dinheiro antigo: estantes do chão ao teto, a mesa de leitura comprida no meio, a escada de rodízio, as poltronas vermelhas para quem fica a noite inteira e o globo antigo.");
+  const s = nova("biblioteca", "Biblioteca", 16, 13, "mansao_nobre", 0, 11, ANDAR, "A grande biblioteca da casa, de dinheiro antigo: estantes do chão ao teto em duas paredes, as duas mesas de leitura compridas no meio, a escada de rodízio, o canto das poltronas vermelhas para quem fica a noite inteira e o globo antigo.");
   s.porta("L", 19, "salao");
-  s.add("rug_aubusson", 5, 3, 4);
-  s.enc("N", "estante_biblioteca", 0).enc("N", "estante_biblioteca", 3).enc("N", "estante_biblioteca", 6).enc("N", "estante_biblioteca", 9);
-  s.enc("O", "estante_biblioteca", 2).enc("O", "estante_biblioteca", 6);
+  s.add("rug_aubusson", 5, 3, 4).add("rug_aubusson", 5, 7, 4);
+  for (const x of [0, 3, 6, 9, 12]) s.enc("N", "estante_biblioteca", x);
+  for (const y of [2, 6, 10]) s.enc("O", "estante_biblioteca", y);
   s.add("mesa_leitura", 5, 4, 4).cadeiras("chair_wood", 5, 4, 4, 2, { n: [0, 1, 2, 3], s: [0, 1, 2, 3] });
-  s.add("escada_biblioteca", 12, 0, 4).add("globo", 12, 8, 0).add("armchair_red", 2, 8, 4).add("armchair_red", 4, 8, 4).add("table_small", 3, 8, 4);
-  s.lustres([3, 3], [10, 6]);
+  s.add("mesa_leitura", 5, 8, 4).cadeiras("chair_wood", 5, 8, 4, 2, { n: [0, 1, 2, 3], s: [0, 1, 2, 3] });
+  s.add("escada_biblioteca", 15, 0, 4).add("globo", 14, 5, 0).add("armchair_red", 11, 11, 4).add("armchair_red", 13, 11, 4).add("table_small", 12, 11, 4);
+  s.lustres([7, 2], [7, 10], [12, 6]);
 }
 // a cozinha, a despensa e a sala de jantar, no fundo
 {
@@ -421,8 +416,8 @@ for (let i = 0; i < 6; i++) {
 }
 // o salão principal, o hall de entrada com as duas escadarias
 {
-  const s = nova("salao", "Salão Principal", 15, 17, "mansao_marmore", 16, 7, ANDAR, "O salão principal, o hall de entrada da mansão: o mármore claro, o tapete vermelho que vem da porta, as colunas, a escultura no meio sob o grande lustre e as duas escadarias curvas que sobem ao andar de cima. Daqui se vai à biblioteca, ao escritório, à sala de jantar, à cozinha e à área de serviço.");
-  s.porta("S", 23, "jardim").porta("N", 22, "cozinha").porta("O", 12, "servico").porta("O", 19, "biblioteca").porta("L", 9, "jantar").porta("L", 17, "escritorio");
+  const s = nova("salao", "Salão Principal", 15, 17, "mansao_marmore", 16, 7, ANDAR, "O salão principal, o hall de entrada da mansão: o mármore claro, o tapete vermelho que vem da porta, as colunas, a escultura no meio sob o grande lustre e as duas escadarias curvas que sobem ao andar de cima. Daqui se vai à biblioteca, ao escritório, à sala de jantar e à cozinha.");
+  s.porta("S", 23, "jardim").porta("N", 22, "cozinha").porta("O", 19, "biblioteca").porta("L", 9, "jantar").porta("L", 17, "escritorio");
   s.escada("escada_nobre", 2, 0, 4, "hall_s").escada("escada_nobre", 10, 0, 4, "hall_s");
   s.add("tapete_redondo", 6, 5, 0).add("tapete_longo", 6, 9, 4);
   s.add("estatua_jardim", 7, 6, 4);

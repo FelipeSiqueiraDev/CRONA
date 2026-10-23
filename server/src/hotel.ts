@@ -176,6 +176,7 @@ const GM_ONLY = new Set([
   'mapaApagar',
   'viagem',
   'grupoPara',
+  'rota',
   'visitada',
   'setLink',
   'unlock',
@@ -2153,6 +2154,7 @@ export class Hotel implements HotelApi {
     if (!t) return;
     to.putToken(t, from.data.id);
     this.companheiroSegue(t.look?.charId, from, to);
+    this.seguirRota(to, tokenId);
   }
 
   /**
@@ -2349,6 +2351,9 @@ export class Hotel implements HotelApi {
         return;
       case 'grupoPara':
         this.grupoPara(c, m);
+        return;
+      case 'rota':
+        this.rota(c, m);
         return;
       case 'visitada':
         this.visitada(c, m);
@@ -2772,6 +2777,7 @@ export class Hotel implements HotelApi {
       if (!de || de === alvo) continue;
       for (const t of de.tokenList())
         if (escolhidas ? escolhidas.has(t.id) : this.ehAgente(t.look?.charId)) {
+          this.rotas.delete(t.id);
           this.moveToken(de, t.id, alvo.data.id);
           nomes.push(t.name);
         }
@@ -2782,6 +2788,85 @@ export class Hotel implements HotelApi {
     this.roomChanged();
     if (m.entrar !== false) this.enter(c, alvo);
     else this.touch();
+  }
+
+  /**
+   * As peças a caminho de outra cena pelo Ctrl + clique do minimapa (23/10): a fila das cenas que faltam e a casa onde
+   * param na última. A peça anda até a passagem da próxima; ao chegar, o `moveToken` chama `seguirRota` e ela continua.
+   */
+  private rotas = new Map<number, { cenas: number[]; casa?: { x: number; y: number } }>();
+
+  private rota(c: Client, m: Record<string, unknown>) {
+    const alvo = typeof m.roomId === 'number' ? this.rooms.get(m.roomId) : undefined;
+    if (!alvo) return c.send({ t: 'error', msg: 'Cena não encontrada.' });
+    const ids = Array.isArray(m.tokens) ? m.tokens.filter((x): x is number => typeof x === 'number').slice(0, 30) : [];
+    const casa = isInt(m.x) && isInt(m.y) ? { x: m.x, y: m.y } : undefined;
+    const grupo = new Set(this.sceneGroup(alvo.data.id));
+    let semCaminho = 0;
+    for (const id of ids) {
+      const de = [...this.rooms.values()].find((r) => grupo.has(r.data.id) && r.tokenList().some((t) => t.id === id));
+      if (!de) {
+        // a peça está em outra campanha (ou sumiu): não há porta que leve até lá
+        semCaminho++;
+        continue;
+      }
+      const cenas = this.caminhoEntreCenas(de.data.id, alvo.data.id, grupo);
+      if (!cenas) {
+        semCaminho++;
+        continue;
+      }
+      this.rotas.set(id, { cenas, casa });
+      this.seguirRota(de, id);
+    }
+    if (semCaminho) c.send({ t: 'error', msg: semCaminho === ids.length ? 'Não há caminho até lá pelas portas.' : `${semCaminho} peça(s) sem caminho até lá: ficaram onde estavam.` });
+  }
+
+  /** As cenas do caminho, sem a de partida (vazio = já está lá), pelas passagens; null = sem caminho. */
+  private caminhoEntreCenas(de: number, para: number, grupo: Set<number>): number[] | null {
+    if (de === para) return [];
+    const veio = new Map<number, number>([[de, de]]);
+    const fila = [de];
+    while (fila.length) {
+      const a = fila.shift()!;
+      for (const p of this.rooms.get(a)?.portals() ?? []) {
+        if (!grupo.has(p.link) || veio.has(p.link) || !this.rooms.has(p.link)) continue;
+        veio.set(p.link, a);
+        if (p.link === para) {
+          const out = [para];
+          for (let x = a; x !== de; x = veio.get(x)!) out.unshift(x);
+          return out;
+        }
+        fila.push(p.link);
+      }
+    }
+    return null;
+  }
+
+  /** A peça a caminho segue: na última cena, anda até a casa marcada; nas outras, até a passagem da próxima. */
+  seguirRota(room: RoomInstance, tokenId: number) {
+    const r = this.rotas.get(tokenId);
+    if (!r) return;
+    while (r.cenas[0] === room.data.id) r.cenas.shift();
+    if (!r.cenas.length) {
+      this.rotas.delete(tokenId);
+      if (r.casa) room.andarPeca(tokenId, r.casa);
+      return;
+    }
+    const erro = room.andarParaPassagem(tokenId, r.cenas[0]);
+    if (erro) {
+      this.rotas.delete(tokenId);
+      this.log(room.data.id, 'scene', `${room.tokenList().find((t) => t.id === tokenId)?.name ?? 'A peça'} parou: ${erro}`);
+    }
+  }
+
+  /** A peça tem caminho pela frente (o tick da cena insiste quando ela fica parada no meio, esperando a vez na porta). */
+  temRota(tokenId: number) {
+    return this.rotas.has(tokenId);
+  }
+
+  /** O mestre mandou a peça para outro lado (ou a levou de uma vez): o caminho pelo minimapa acaba. */
+  cancelarRota(tokenId: number) {
+    this.rotas.delete(tokenId);
   }
 
   /** O mestre marca uma cena (ou todas da campanha) como visitada ou não. */

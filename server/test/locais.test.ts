@@ -11,6 +11,7 @@ import {
 import { Hotel } from "../src/hotel";
 import { seedDb, upgradeDb } from "../src/seed";
 import { FAZENDA } from "../src/seedFazenda";
+import { MANSAO } from "../src/seedMansaoAlbuquerque";
 
 const look = {
   skin: "#e8b98f",
@@ -158,6 +159,27 @@ describe("Locais do minimapa", () => {
       cenas.find((s) => s.id === quarto.data.id)?.users.length,
       agentes.length,
     );
+  });
+
+  test("Ctrl + clique no minimapa: as peças andam de porta em porta até o cômodo e param na casa marcada", () => {
+    const corredor = hotel.rooms.get(idDe(MANSAO + "Corredor dos Funcionários"))!;
+    const escritorio = hotel.rooms.get(idDe(MANSAO + "Escritório de Alexander"))!;
+    const mansao = [...hotel.rooms.values()].filter((r) => r.data.name.startsWith(MANSAO));
+    send({ t: "join", roomId: corredor.data.id });
+    for (const name of ["Rota A", "Rota B"]) send({ t: "tokenAdd", name, look });
+    const ids = corredor.tokenList().filter((t) => t.name.startsWith("Rota")).map((t) => t.id);
+    assert.equal(ids.length, 2);
+    send({ t: "rota", roomId: escritorio.data.id, tokens: ids, x: 6, y: 8 });
+    const chegou = () => ids.every((id) => escritorio.tokenList().some((t) => t.id === id));
+    for (let i = 0; i < 2000 && !chegou(); i++) for (const r of mansao) r.step();
+    assert.ok(chegou(), "as duas chegaram ao escritório (pelo corredor, a cozinha e o salão)");
+    for (let i = 0; i < 200; i++) escritorio.step();
+    const perto = (escritorio.data.tokens ?? []).filter((t) => ids.includes(-t.id) && Math.abs(t.x - 6) + Math.abs(t.y - 8) <= 3);
+    assert.ok(perto.length >= 1, "pararam perto da casa marcada");
+    // sem caminho pelas portas (outra campanha): avisa e ninguém sai do lugar
+    inbox = [];
+    send({ t: "rota", roomId: idDe(FAZENDA + "Celeiro"), tokens: ids });
+    assert.ok(inbox.some((m) => m.t === "error"), "avisa que não há caminho");
   });
 
   test("grupo dividido: só as peças escolhidas vão, e sem entrar a cena fica", () => {

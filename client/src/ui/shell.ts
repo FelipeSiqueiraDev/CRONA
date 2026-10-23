@@ -1335,6 +1335,13 @@ export class Shell {
       marcarVisita: (roomId, visitada) => this.app.net.send(roomId === null ? { t: 'visitada', campanha: this.app.state.room?.id, visitada } : { t: 'visitada', roomId, visitada }),
       ehAgente: (charId) => !!charId && this.fichasMapa.some((f) => f.personagem === charId),
       nomearArea: (cena, x, y, texto, id) => this.app.net.send(id !== undefined ? { t: 'planNota', id, texto, x, y } : { t: 'planNota', andar: `t${cena}`, texto, x, y }),
+      // Ctrl + clique: as peças marcadas no tabuleiro (o grupo do Ctrl + arrastar, ou a comandada) vão andando até lá
+      rota: (roomId, casa) => {
+        const v = this.app.view;
+        const tokens = v.grupo.size ? [...v.grupo] : v.myId ? [v.myId] : [];
+        if (!tokens.length) return toast('Escolha a peça (ou marque o grupo com Ctrl + arrastar) antes do Ctrl + clique.', 'error');
+        this.app.net.send({ t: 'rota', roomId, tokens, ...(casa ? casa : {}) });
+      },
     };
   }
 

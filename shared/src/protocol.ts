@@ -544,6 +544,8 @@ export type ClientMsg =
    * mestre e a mesa vão junto.
    */
   | { t: 'grupoPara'; roomId: number; tokens?: number[]; entrar?: boolean }
+  /** Ctrl + clique no minimapa (23/10): as peças andam até a cena, de porta em porta; x e y, a casa onde param */
+  | { t: 'rota'; roomId: number; tokens: number[]; x?: number; y?: number }
   /** o minimapa: o mestre marca a cena como visitada ou não (`roomId` sem valor = todas da campanha) */
   | { t: 'visitada'; roomId?: number; campanha?: number; visitada: boolean }
   | { t: 'setLink'; id: number; roomId: number | null }
