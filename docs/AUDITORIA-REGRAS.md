@@ -149,4 +149,4 @@ Proposta do Claude, aprovada e ajustada pelo Felipe; gravada no jogo (backup `cr
 - **Agatha:** patente de agente de elite (200 PP, D13); afinidade **Sangue** (o Felipe); perícias, poderes (Ritual Potente, Especialista e Mestre em Elemento: Conhecimento, Mente Sã pela versatilidade, Fluxo de Poder, Criar Selo), +1 Intelecto (50%) e +1 Presença (80%) e os 25 rituais. A mochila continua vazia.
 - **Nico:** ficam 7 das 11 perícias livres (saem Atualidades, Ciências, Enganação e Sobrevivência; a Medicina fica, pelo Felipe); grau do 35% completo com Luta, Furtividade e Percepção; ritual do 20%: Consumir Manancial.
 - **Rosa:** NEX 15% Balística Avançada (o "Especialista em Matar" do site não existe nos livros), versatilidade Saque Rápido (no lugar do "Meus Bebês"), afinidade Energia.
-- **Ficam para depois (o Felipe):** Ômega-99 e ??? inteiros (perícias, itens e pendências; devem virar NPCs do mal). D12 resolvida para Nico e Miguel: perícias cortadas pelo livro.
+- **Ficam para depois (o Felipe):** Ômega-99 e ??? inteiros (perícias, itens e pendências). D12 resolvida para Nico e Miguel: perícias cortadas pelo livro.
