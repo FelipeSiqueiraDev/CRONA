@@ -2,6 +2,10 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 23/10 (noite): a ficha da Ovelha
+
+- A **Ovelha (Açougueira)** do bestiário ganhou a ficha caseira do Felipe (PDF "Ficha_Ovelha_Ordem_Paranormal_VD60"; não é do livro): Criatura de Sangue, VD 60, 85 PV, Defesa 18, Fortitude 2d20+5, Reflexos 3d20+10, Vontade 1d20+5, RD balístico 5 e Sangue 10, vulnerável a Morte, Presença Perturbadora DT 18 (2d6 mental, imune a partir de NEX 35%). Ataques: Lâminas Gêmeas (2 × 3d20+9, 1d6+3 corte) e a Dança das Lâminas como três ataques (+9, +4, −1); o resto (atributos, deslocamento, Percepção, Iniciativa, a Defesa 16 depois da Dança) nas notas da ficha. Gravada pelo canal do mestre no jogo real (backup antes) e na prévia. A ficha propõe Catarina e Alosi perto de NEX 25%; hoje estão em NEX 20%: conferir no dia.
+
 ## Feito em 23/10 (madrugada): os jogos da Sala de Jogos (o 21, o Felipe's Fight e a jukebox nova)
 
 - **O 21** (`shared/src/bar/vinteum.ts`, a tela em `client/src/ui/vinteum.ts`): a mesa de pôquer virou a `mesa_21`, a meia-lua de feltro (3 × 2) com as cinco cadeiras na curva. Jogo do bar como os outros (`jogoDoBar`): o agente vai até a cadeira livre mais perto e senta; quem chegou primeiro escolhe as fichas (100 a 5.000) e começa; quem marcar "Quero ser o dealer" fica com a banca (as fichas de todos os jogadores juntos) e, ao começar, levanta e fica em pé atrás do lado reto (`dealerEmPe`). Sem dealer, a casa joga sozinha. Pedir, parar, dobrar, dividir (uma vez), a banca compra até 16 e para no 17, blackjack 3 para 2, a banca quebrando acaba a partida. Cada celular refaz a partida pelas jogadas guardadas (o "quero" e o começar ficam guardados; "Nova partida" volta para a mesa).
