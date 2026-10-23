@@ -140,3 +140,13 @@ Tudo aqui depende do Felipe: o motor mostra o erro, mas qual escolha tirar ou p�
 | D11 | Tepes, alteração do Monstruoso de 25%: qual das três perícias (Diplomacia, Enganação ou Intimidação) leva o −5? | Escolha dele e do jogador; a janela já está na aba Evolução |
 | D12 | NPCs com mais perícias ou mais itens do que o livro permite (Nico, Ômega, ???, Miguel): tirar, ou deixar como exceção do enredo? | Para NPC de enredo, deixar e marcar os itens achados como "achado" (não ocupam a vaga da patente, LR p. 53); para as perícias, dizer quais saem |
 | D13 | Agatha com 0 PP (Recruta) no NEX 80%: qual a patente dela? | A de uma agente de elite (200 PP), como Ômega e Veríssimo |
+
+### Escolhas dos NPCs fechadas (23/10/2026)
+
+Proposta do Claude, aprovada e ajustada pelo Felipe; gravada no jogo (backup `crona_2026-10-23_13-28-52.dump`) e conferida com o `auditar-fichas.mts`: **Miguel, Agatha, Nico e Rosa sem pendência e sem erro** (sobra só o aviso informativo da Vontade repetida, que já está contado).
+
+- **Miguel:** as 10 perícias da criação (Tecnologia, Atletismo, Acrobacia, Iniciativa, Percepção, Intuição, Investigação, Ocultismo, Diplomacia, Enganação); Perito em Tecnologia e Atletismo; grau do 35% em Luta, Reflexos, Tecnologia, Atletismo, Acrobacia, Iniciativa, Percepção e Intuição; Expansão de Conhecimento → Golpe Pesado; Especialista Diletante → Reflexos Defensivos; +1 Agilidade no 50%. Sai a Mochila Militar (o limite da patente vale para ele, decisão do Felipe).
+- **Agatha:** patente de agente de elite (200 PP, D13); afinidade **Sangue** (o Felipe); perícias, poderes (Ritual Potente, Especialista e Mestre em Elemento: Conhecimento, Mente Sã pela versatilidade, Fluxo de Poder, Criar Selo), +1 Intelecto (50%) e +1 Presença (80%) e os 25 rituais. A mochila continua vazia.
+- **Nico:** ficam 7 das 11 perícias livres (saem Atualidades, Ciências, Enganação e Sobrevivência; a Medicina fica, pelo Felipe); grau do 35% completo com Luta, Furtividade e Percepção; ritual do 20%: Consumir Manancial.
+- **Rosa:** NEX 15% Balística Avançada (o "Especialista em Matar" do site não existe nos livros), versatilidade Saque Rápido (no lugar do "Meus Bebês"), afinidade Energia.
+- **Ficam para depois (o Felipe):** Ômega-99 e ??? inteiros (perícias, itens e pendências; devem virar NPCs do mal). D12 resolvida para Nico e Miguel: perícias cortadas pelo livro.

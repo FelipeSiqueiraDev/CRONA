@@ -2,6 +2,11 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 23/10: as escolhas dos NPCs que a auditoria apontou
+
+- Miguel, Agatha, Nico e Rosa com todas as escolhas feitas, pelo livro (sem pendência e sem erro), gravadas no jogo com backup. O que cada um escolheu está no fim de [`AUDITORIA-REGRAS.md`](AUDITORIA-REGRAS.md). Agatha agora é agente de elite (200 PP), com afinidade em Sangue; o Nico perdeu 4 perícias que passavam do livro; o Miguel perdeu a Mochila Militar (limite da patente).
+- **Falta:** Ômega-99 e ??? (o Felipe faz depois; devem virar NPCs do mal); a mochila vazia da Agatha; as escolhas dos jogadores (Tepes, Catarina, Alosi) na aba Evolução.
+
 ## Feito em 22/10: auditoria geral das fichas (todas pelo livro)
 
 - As 14 fichas do banco conferidas com o script `scripts/dev/auditar-fichas.mts` (escolhas feitas, pendências e opções reais da janela de escolha); PV, PE, SAN e Defesa refeitos só pelas tabelas do livro: **os quatro Marcados batem número por número**. Resultado por personagem e as dúvidas novas (D11 a D13) no fim de [`AUDITORIA-REGRAS.md`](AUDITORIA-REGRAS.md).
