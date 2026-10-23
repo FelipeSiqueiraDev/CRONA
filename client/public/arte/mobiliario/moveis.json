@@ -44501,28 +44501,28 @@
       "4": {
         "arquivo": "mansao_portico/giro-4.png",
         "ax": 298.0,
-        "ay": 563.0
+        "ay": 547.0
       },
       "2": {
         "arquivo": "mansao_portico/giro-2.png",
-        "ax": 330.0,
-        "ay": 563.0
+        "ax": 335.0,
+        "ay": 547.0
       },
       "0": {
         "arquivo": "mansao_portico/giro-0.png",
-        "ax": 330.0,
-        "ay": 549.0
+        "ax": 335.0,
+        "ay": 511.0
       },
       "6": {
         "arquivo": "mansao_portico/giro-6.png",
         "ax": 298.0,
-        "ay": 549.0
+        "ay": 511.0
       }
     },
     "real": [
-      6.89,
-      7.512,
-      5.5
+      7.056,
+      7.717,
+      5.63
     ]
   },
   "mansao_ala_oeste": {
@@ -47013,5 +47013,38 @@
         "ay": 52.4
       }
     }
+  },
+  "estante_trofeus": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "estante_trofeus/giro-4.png",
+        "ax": 25.0,
+        "ay": 131.0
+      },
+      "2": {
+        "arquivo": "estante_trofeus/giro-2.png",
+        "ax": 40.0,
+        "ay": 131.0
+      },
+      "0": {
+        "arquivo": "estante_trofeus/giro-0.png",
+        "ax": 39.0,
+        "ay": 124.0
+      },
+      "6": {
+        "arquivo": "estante_trofeus/giro-6.png",
+        "ax": 26.0,
+        "ay": 124.0
+      }
+    },
+    "real": [
+      0.72,
+      0.36,
+      1.92
+    ]
   }
 }

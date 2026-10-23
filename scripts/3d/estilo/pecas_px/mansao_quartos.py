@@ -1516,6 +1516,58 @@ def luvas_parede(xc=2.25, zc=1.5):
     PC.sombra_parede(n0, 1, 2)
 
 
+
+# =====================================================================================================================
+# a estante de troféus do canto (1 x 1, 1,9 m; 23/10, o Felipe: "mais uma prateleira no canto da parede")
+# =====================================================================================================================
+def _taca(x, y, z, k, metal):
+    """A taça redonda (pelo perfil), de k vezes o tamanho, sobre o pedestalzinho escuro."""
+    esc, mei, cla, bri = METAIS[metal]
+    cx((x - 0.05 * k, x + 0.05 * k, y - 0.04 * k, y + 0.04 * k, z, z + 0.035 * k), {'*': liso('#3a2618'), 'cima': liso('#5a3c24')}, novo(), ch=0.004)
+    z0 = z + 0.035 * k
+    perfil = [(z0, 0.035 * k), (z0 + 0.012 * k, 0.03 * k), (z0 + 0.02 * k, 0.012 * k), (z0 + 0.07 * k, 0.01 * k), (z0 + 0.08 * k, 0.024 * k),
+              (z0 + 0.12 * k, 0.045 * k), (z0 + 0.17 * k, 0.055 * k), (z0 + 0.18 * k, 0.05 * k)]
+    o = novo()
+    BE._poligono_rodado(x, y, perfil, vol(x, y, mei, brilho=0.45), o, lados=14)
+    for sx in (-1, 1):
+        cx((x + sx * 0.055 * k - 0.006, x + sx * 0.055 * k + 0.006 + sx * 0.012 * k, y - 0.006, y + 0.006, z0 + 0.1 * k, z0 + 0.16 * k), liso(esc if sx > 0 else cla), o)
+
+
+def _medalha(x, y, z, metal, fita):
+    """A medalha em pé no suportezinho, de frente, com a fita dobrada atrás."""
+    esc, mei, cla, bri = METAIS[metal]
+    f1, f2 = fita
+    cx((x - 0.03, x + 0.03, y - 0.03, y - 0.015, z, z + 0.14), {'*': liso(f1), 'frente': liso(f1)}, novo(contorno=False))
+    cx((x - 0.01, x + 0.01, y - 0.03, y - 0.013, z + 0.05, z + 0.14), liso(f2), novo(contorno=False))
+    EO.cil_eixo((x, y - 0.012, z + 0.055), (x, y + 0.002, z + 0.055), 0.05, EO.metal(mei, topo=cla, quina=1.25), novo(), lados=14, tampa_mat=EO.metal(cla, topo=bri))
+
+
+def _estante_trofeus():
+    x0, x1, y0, y1 = 0.03, 0.72, 0.04, 0.38
+    mad = '#5a3a22'
+    # as duas laterais, o fundo de tábuas e o topo com a cornija
+    for xa in (x0, x1 - 0.045):
+        cx((xa, xa + 0.045, y0, y1, 0.0, 1.88), _pau(mad, '#8a6040', quina=1.25, b=(xa, xa + 0.045, y0, y1, 0.0, 1.88)), ch=0.008)
+    cx((x0 + 0.045, x1 - 0.045, y0, y0 + 0.025, 0.0, 1.86), {'*': mad2('#7a5434', eixo=0, seed=71, passo=0.06)})
+    cx((x0 - 0.015, x1 + 0.015, y0, y1 + 0.02, 1.86, 1.92), _pau('#6a4428', '#9a7048', quina=1.3, b=(x0, x1, y0, y1, 1.86, 1.92)), ch=0.01)
+    # o rodapé e as quatro prateleiras
+    cx((x0 + 0.045, x1 - 0.045, y0, y1, 0.0, 0.1), {'*': liso('#4a2e1a'), 'frente': liso('#3a2414'), 'cima': liso('#6a4a2e')})
+    zs = (0.1, 0.55, 1.0, 1.43)
+    for z in zs[1:]:
+        cx((x0 + 0.045, x1 - 0.045, y0 + 0.025, y1, z - 0.03, z), _pau('#6a4428', '#a07a50', quina=1.25, b=(x0, x1, y0, y1, z - 0.03, z)))
+    xm = (x0 + x1) / 2
+    yc = 0.24
+    # embaixo a taça grande (o ouro), no meio duas de prata e bronze, depois as medalhas, no alto a estatueta e a copinha
+    _taca(xm, yc, zs[0], 2.2, 'ouro')
+    _taca(xm - 0.13, yc, zs[1], 1.6, 'prata')
+    _taca(xm + 0.14, yc, zs[1], 1.7, 'bronze')
+    _medalha(xm - 0.15, yc, zs[2], 'ouro', FITAS[0])
+    _medalha(xm, yc, zs[2], 'prata', FITAS[1])
+    _medalha(xm + 0.15, yc, zs[2], 'bronze', FITAS[3])
+    _taca(xm, yc, zs[3], 1.9, 'ouro')
+    peg(x0, x1, y0, y1)
+
+
 # =====================================================================================================================
 ITENS = {
     'cama_catarina': (3, 3, (0.0, 0.0), _cama_catarina, {}),
@@ -1528,6 +1580,7 @@ ITENS = {
     'saco_pancada': (1, 1, (0.0, 0.0), _saco_pancada, {}),
     'rack_halteres': (2, 1, (0.0, 0.0), _rack_halteres, {}),
     'tatame': (3, 3, (0.0, 0.0), _tatame, {}),
+    'estante_trofeus': (1, 1, (0.0, 0.0), _estante_trofeus, {}),
 }
 
 ITENS_PAREDE = {

@@ -2,6 +2,12 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 23/10: a Mansão Albuquerque refeita pela planta do Felipe
+
+- De 49 para 28 cenas (`MANSAO_REV` 2), pela planta ilustrada que o Felipe trouxe: salão principal com as duas escadarias, biblioteca, escritório de Alexander, sala de jantar, cozinha, despensa, a ala de serviço (seis quartos de funcionários, corredor, lavanderia, área de serviço); no 2º andar o hall, a suíte do casal, a sala de jogos e os quartos do Miguel, da Catarina e de hóspedes, cada um com o banheiro (cena à parte). O anexo ficou; o barracão, o terraço e as salas pequenas saíram. Lista e ligações em [`MANSAO-ALBUQUERQUE.md`](MANSAO-ALBUQUERQUE.md).
+- Peça nova: `estante_trofeus` (o canto do quarto da Catarina). O pórtico ganhou telhado com frontão no lugar do terraço.
+- As pistas ocultas (retrato do fundador, dois retratos do hall, o cofre) foram para o escritório e o hall; o texto de verdade segue em `server/data/segredos-mansao.json`.
+
 ## Feito em 23/10: as escolhas dos NPCs que a auditoria apontou
 
 - Miguel, Agatha, Nico e Rosa com todas as escolhas feitas, pelo livro (sem pendência e sem erro), gravadas no jogo com backup. O que cada um escolheu está no fim de [`AUDITORIA-REGRAS.md`](AUDITORIA-REGRAS.md). Agatha agora é agente de elite (200 PP), com afinidade em Sangue (os poderes de elemento e 14 dos 25 rituais também); o Nico perdeu 4 perícias que passavam do livro; o Miguel perdeu a Mochila Militar (limite da patente).

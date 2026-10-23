@@ -10,16 +10,15 @@ describe("Mansão Albuquerque", () => {
   const salas = db.rooms.filter((r) => r.name.startsWith(MANSAO));
   const porNome = (n: string) => salas.find((r) => r.name === MANSAO + n)!;
 
-  test("o lugar existe: o jardim, o térreo, o 2º andar, o mezanino, o anexo e o barracão, numa campanha com o nome do lugar", () => {
+  test("o lugar existe (a planta de 23/10): o jardim, o térreo, o 2º andar, o mezanino e o anexo, numa campanha com o nome do lugar", () => {
     const nomes = [
-      "Jardim", "Pórtico", "Saguão", "Grande Salão", "Suíte de Hóspedes Oeste", "Suíte de Hóspedes Leste", "Banheiro dos Hóspedes",
-      "Sala Roxa", "Estufa", "Cozinha", "Lavanderia", "Despensa", "Depósito", "Escadaria de Serviço", "Sala de Chá", "Corredor Oeste",
-      "Sala de Estar Oeste", "Sala do Café", "Sala do Tapete Vinho", "Biblioteca", "Sala de Música", "Corredor Leste", "Gabinete",
-      "Galeria", "Terraço", "Galeria de Quadros", "Suíte do Casal", "Closet", "Banheiro da Suíte", "Sala de Jogos", "Biblioteca de Cima",
-      "Quarto do Miguel", "Quarto da Catarina", "Mezanino da Catarina", "Escritório do Pai", "Quarto de Hóspedes 1", "Quarto de Hóspedes 2",
-      "Anexo", "Barracão",
+      "Jardim", "Salão Principal", "Biblioteca", "Escritório de Alexander", "Sala de Jantar", "Cozinha", "Despensa", "Lavanderia",
+      "Área de Serviço", "Corredor dos Funcionários", ...[1, 2, 3, 4, 5, 6].map((i) => `Quarto de Funcionário ${i}`),
+      "Hall Superior", "Suíte do Casal", "Banheiro do Casal", "Sala de Jogos", "Quarto do Miguel", "Banheiro do Miguel",
+      "Quarto da Catarina", "Banheiro da Catarina", "Quarto de Hóspedes", "Banheiro dos Hóspedes", "Mezanino da Catarina", "Anexo",
     ];
     for (const n of nomes) assert.ok(porNome(n), `falta ${n}`);
+    assert.equal(salas.length, nomes.length, "sobrou cena da mansão antiga");
     const camp = db.campaigns?.[String(Math.min(...salas.map((r) => r.id)))];
     assert.equal(camp?.title, "Mansão Albuquerque");
     assert.equal(salas[0].name, MANSAO + "Jardim", "a entrada do lugar é o jardim");
@@ -40,7 +39,7 @@ describe("Mansão Albuquerque", () => {
       for (const w of r.wallItems ?? []) assert.ok(getWallFurni(w.defId), `${r.name}: ${w.defId} (parede) não existe`);
     }
     const jardim = porNome("Jardim");
-    for (const id of ["mansao_central", "mansao_ala_oeste", "mansao_ala_leste", "mansao_portico", "anexo_mansao", "barracao_mansao", "portao_mansao", "fonte"])
+    for (const id of ["mansao_central", "mansao_ala_oeste", "mansao_ala_leste", "mansao_portico", "anexo_mansao", "portao_mansao", "fonte"])
       assert.equal(jardim.items.filter((i) => i.defId === id).length, 1, id);
   });
 
@@ -65,21 +64,18 @@ describe("Mansão Albuquerque", () => {
     assert.equal(vistos.size, salas.length, "alguma sala ficou sem caminho");
   });
 
-  test("as escadas ligam os andares: o Saguão sobe para a Galeria, a de serviço e o caracol, a parede de escalada leva ao mezanino", () => {
+  test("as escadas ligam os andares: as duas escadarias do Salão sobem ao Hall Superior, a parede de escalada leva ao mezanino", () => {
     const liga = (de: string, defId: string, para: string) => {
       const it = porNome(de).items.find((i) => i.defId === defId && i.link === porNome(para).id);
       assert.ok(it, `${de} não tem ${defId} para ${para}`);
     };
-    liga("Saguão", "escada_nobre", "Galeria");
-    liga("Galeria", "escada_nobre_desce", "Saguão");
-    liga("Escadaria de Serviço", "stairs_up", "Corredor Oeste (2º andar)");
-    liga("Corredor Oeste (2º andar)", "escada_desce", "Escadaria de Serviço");
-    liga("Escada Leste", "escada_espiral", "Corredor Leste (2º andar)");
-    liga("Corredor Leste (2º andar)", "escada_espiral", "Escada Leste");
+    liga("Salão Principal", "escada_nobre", "Hall Superior");
+    liga("Hall Superior", "escada_nobre_desce", "Salão Principal");
+    assert.equal(porNome("Salão Principal").items.filter((i) => i.defId === "escada_nobre").length, 2, "as duas escadarias");
     liga("Quarto da Catarina", "parede_escalada", "Mezanino da Catarina");
     liga("Mezanino da Catarina", "parede_escalada", "Quarto da Catarina");
     const andares = new Set(salas.map((r) => r.floor));
-    for (const a of ["Mansão Albuquerque", "Mansão Albuquerque 2º", "Mansão Albuquerque Mezanino", "Jardim da Mansão", "Anexo", "Barracão"]) assert.ok(andares.has(a), `falta o andar ${a}`);
+    for (const a of ["Mansão Albuquerque", "Mansão Albuquerque 2º", "Mansão Albuquerque Mezanino", "Jardim da Mansão", "Anexo"]) assert.ok(andares.has(a), `falta o andar ${a}`);
   });
 
   test("dentro de cada sala, a pé, a primeira passagem alcança todas as outras", () => {
@@ -105,9 +101,9 @@ describe("Mansão Albuquerque", () => {
     assert.deepEqual(erros, []);
   });
 
-  test("a porta de dentro fica do mesmo lado da de fora: o pórtico, o anexo e o barracão têm a porta na frente", () => {
+  test("a porta de dentro fica do mesmo lado da de fora: a entrada principal e o anexo têm a porta na frente", () => {
     const jardim = porNome("Jardim");
-    for (const [def, sala] of [["mansao_portico", "Pórtico"], ["anexo_mansao", "Anexo"], ["barracao_mansao", "Barracão"]] as const) {
+    for (const [def, sala] of [["mansao_portico", "Salão Principal"], ["anexo_mansao", "Anexo"]] as const) {
       const p = jardim.items.find((i) => i.defId === def)!;
       const d = getFurni(def)!;
       const entrada = jardim.items.find((i) => i.defId === "entrada" && i.link === porNome(sala).id && i.y === p.y + d.depth);
@@ -122,17 +118,17 @@ describe("Mansão Albuquerque", () => {
   test("o quarto da Catarina tem o que o áudio descreve, e o mezanino o cantinho dela", () => {
     const q = porNome("Quarto da Catarina");
     const ids = q.items.map((i) => i.defId);
-    for (const id of ["cama_catarina", "tv_gamer", "rack_esgrima", "parede_escalada"]) assert.ok(ids.includes(id), `falta ${id}`);
+    for (const id of ["cama_catarina", "tv_gamer", "rack_esgrima", "parede_escalada", "estante_trofeus"]) assert.ok(ids.includes(id), `falta ${id}`);
     assert.ok(q.wallItems.some((w) => w.defId === "painel_trofeus"), "falta o painel de troféus");
     const m = porNome("Mezanino da Catarina");
     for (const id of ["setup_gamer", "cadeira_gamer", "puff_gamer", "parede_escalada"]) assert.ok(m.items.some((i) => i.defId === id), `mezanino sem ${id}`);
     assert.ok(m.darkness >= 0.6, "o mezanino é escuro");
-    const pai = porNome("Escritório do Pai");
+    const pai = porNome("Escritório de Alexander");
     for (const id of ["mesa_ceo", "cadeira_ceo", "cofre", "bar_escritorio", "touro_bronze"]) assert.ok(pai.items.some((i) => i.defId === id), `escritório sem ${id}`);
   });
 
   test("a mesa do pai é virada para a cadeira, e nada fica embaixo dela", () => {
-    const pai = porNome("Escritório do Pai");
+    const pai = porNome("Escritório de Alexander");
     const mesa = pai.items.find((i) => i.defId === "mesa_ceo")!;
     const fp = footprint(getFurni("mesa_ceo")!, mesa.rot);
     const cadeira = pai.items.find((i) => i.defId === "cadeira_ceo")!;

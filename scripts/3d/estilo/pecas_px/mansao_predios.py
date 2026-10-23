@@ -58,7 +58,7 @@ def _hex(c):
 # o canvas do exportador: os blocos passam do alto que ele reserva (4,6 m): enquanto desenha um deles, a conta da caixa
 # da imagem usa o alto do bloco (o resto do exportador nao muda; a ancora continua certa)
 # =====================================================================================================================
-ALTO_CANVAS = {'mansao_central': 9.6, 'mansao_portico': 5.6, 'mansao_ala_oeste': 9.0, 'mansao_ala_leste': 9.0}
+ALTO_CANVAS = {'mansao_central': 9.6, 'mansao_portico': 6.2, 'mansao_ala_oeste': 9.0, 'mansao_ala_leste': 9.0}
 
 
 def _canvas_alto():
@@ -801,31 +801,12 @@ def _portico():
         g = (lat / (4 * PH)) % 1
         return np.where((g < 0.5)[:, None], hx(CANT[1]), hx('#9a9282'))
     caixa((-0.04, W + 0.04, YST, YLF + 0.04, ZL1 - 0.26, ZL1 - 0.13), {'*': emissivo(dent2), 'cima': liso(CANT[1])})
-    # ---- o balaustre do terraco: os pilares de canto, o corrimao e os balaustres torneados
-    ob = obj(contorno=False)
-    mb = liso('#cfc7b4')
-    mb2 = liso('#e0d8c4')
-
-    def balaustre(x, y):
-        c.caixa((x - 0.045, x + 0.045, y - 0.045, y + 0.045, ZL1, ZL1 + 0.42), mb, M, ob)
-        c.caixa((x - 0.065, x + 0.065, y - 0.065, y + 0.065, ZL1 + 0.1, ZL1 + 0.24), mb2, M, ob)
-    for x in np.arange(0.46, W - 0.4, 0.24):
-        balaustre(x, YLF - 0.12)
-    for xx in (0.14, W - 0.14):
-        for y in np.arange(YST + 0.3, YLF - 0.38, 0.24):
-            balaustre(xx, y)
-    caixa((0.05, W - 0.05, YLF - 0.2, YLF - 0.04, ZL1 + 0.42, ZTOP), {'cima': liso(CANT[0]), '*': liso(CANT[1])})
-    for xx in (0.0, W - 0.28):
-        caixa((xx + 0.02, xx + 0.28 - 0.02 + 0.0, YST + 0.1, YLF - 0.04, ZL1 + 0.42, ZTOP), {'cima': liso(CANT[0]), '*': liso(CANT[1])})
-    # os pilares de canto (com a bola de pedra em cima) e os intermediarios
-    for (px, py) in ((0.14, YLF - 0.12), (W - 0.14, YLF - 0.12)):
-        caixa((px - 0.13, px + 0.13, py - 0.13, py + 0.13, ZL1, ZTOP + 0.2), {'cima': liso(CANT[0]), '*': mat_cant(seed=31, alt=0.2, comp=0.3)})
-        caixa((px - 0.16, px + 0.16, py - 0.16, py + 0.16, ZTOP + 0.2, ZTOP + 0.27), liso(CANT[0]))
-        o = obj()
-        c.elipsoide((px, py, ZTOP + 0.4), (0.1, 0.1, 0.1), lambda Pc, N, P: FF._cru_eli(np.tile(hx('#cfc7b4'), (len(P), 1)), N), o)
-    for px in (XM,):
-        caixa((px - 0.13, px + 0.13, YLF - 0.25, YLF + 0.01, ZL1, ZTOP + 0.12), {'cima': liso(CANT[0]), '*': mat_cant(seed=32, alt=0.2, comp=0.3)})
-        caixa((px - 0.16, px + 0.16, YLF - 0.28, YLF + 0.04, ZTOP + 0.12, ZTOP + 0.19), liso(CANT[0]))
+    # ---- o telhado de duas aguas com o frontao de pedra na frente (23/10: o terraco saiu do 2o andar, e o alto do
+    # portico, que parecia uma varanda solta, virou telhado como o resto da casa)
+    zr = 5.5
+    _telhado_2(0.0, W, YST, YLF + 0.07, ZL1, zr, 0.14, 0.14, 0.16, seed=50)
+    _empena('+y', YLF + 0.07, 0.0, W, ZL1, zr, seed=51)
+    _oculo('+y', YLF + 0.07, XM, (ZL1 + zr) / 2 - 0.08, r=0.32)
     pegada(0.0, W, YST, YPF + 1.2)
 
 
