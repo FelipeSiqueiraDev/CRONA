@@ -89,7 +89,7 @@ O Felipe: "é a casa de milionários, tudo tem que ser chique". Peças novas em 
 `candelabro_prata`, `perfumes`, `porta_retratos`, `livros_couro`, `balde_champanhe`. A passada de densidade (a das
 referências de 15/10: densidade em três escalas) pôs esses objetinhos nas mesas, aparadores, cômodas e criados-mudos.
 
-**Os moradores no Hall (23/10, no jogo, não no seed):** Arthur Albuquerque, Helena Duarte, Antônio Valença, Marina Ferraz,
+**Os moradores no Hall (23/10, no jogo, não no seed):** Alexander Albuquerque (o pai), Arthur Albuquerque (o tio), Helena Duarte, Antônio Valença, Marina Ferraz,
 Lúcia Moreira, Roberto Salles e Tiago Nobre, lado a lado no Salão Principal (casas 4 a 10 da fileira 10), de frente para a câmera.
 
 ### Fora
