@@ -59,6 +59,7 @@ const GRUPO_PADRAO: Record<string, string> = {
   'roberto-salles': 'Mansão Albuquerque',
   'tiago-nobre': 'Mansão Albuquerque',
   'arthur-albuquerque': 'Mansão Albuquerque',
+  'alexander-albuquerque': 'Mansão Albuquerque',
 };
 /** O grupo do NPC no Elenco: o que o mestre escreveu, o padrão dos que vieram com o jogo, ou "Do mestre". */
 export const grupoDoNpc = (n: Npc): string => n.grupo || GRUPO_PADRAO[n.id] || GRUPO_SEM;
@@ -120,9 +121,11 @@ export function npcsPorLeva(): Npc[][] {
       { id: 'lucia-moreira', nome: 'Lúcia Moreira', arte: 'lucia-moreira', nota: 'cozinheira da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#8a5a3a', hair: '#2a2018', top: '#e8e0d0', pants: '#2e3a2a' } },
       { id: 'roberto-salles', nome: 'Roberto Salles', arte: 'roberto-salles', nota: 'chefe da segurança da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#b8845e', hair: '#1e1612', top: '#161412', pants: '#161412' } },
       { id: 'tiago-nobre', nome: 'Tiago Nobre', arte: 'tiago-nobre', nota: 'jardineiro da Mansão Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#b07850', hair: '#4a2a18', top: '#4a5030', pants: '#4a3424' } },
-      { id: 'arthur-albuquerque', nome: 'Arthur Albuquerque', arte: 'arthur-albuquerque', nota: 'irmão mais novo de Alexander, pai da Catarina; empresário da família no Frigorífico Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#d8a888', hair: '#a63a1e', top: '#1c1a22', pants: '#1c1a22' } },
+      { id: 'arthur-albuquerque', nome: 'Arthur Albuquerque', arte: 'arthur-albuquerque', nota: 'irmão mais novo do Alexander, tio da Catarina e do Miguel; empresário da família no Frigorífico Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#d8a888', hair: '#a63a1e', top: '#1c1a22', pants: '#1c1a22' } },
       { id: 'sara-ribeiro', nome: 'Sara Ribeiro', arte: 'sara-ribeiro', nota: 'mãe da Cora, esposa do Geraldo Ribeiro', grupo: 'Igarapé', look: { ...lookBase, skin: '#e0b896', hair: '#d8b070', top: '#e8dcc4', pants: '#6a4a2e', shoes: '#5a3e28' } },
     ],
+    // 23/10: o Alexander, o pai da Catarina e do Miguel (o rapaz de terno azul; a foto é do Felipe)
+    [{ id: 'alexander-albuquerque', nome: 'Alexander Albuquerque', arte: 'alexander-albuquerque', nota: 'pai da Catarina e do Miguel, irmão mais velho do Arthur; CEO do Frigorífico Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#d8a888', hair: '#a63a1e', top: '#1e2a44', pants: '#1e2a44' } }],
   ];
 }
 

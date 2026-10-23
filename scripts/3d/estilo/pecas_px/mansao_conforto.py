@@ -1317,18 +1317,18 @@ def _roupa_homem30(pl, W, H, cu, hy, rx, ry, sh):
 
 
 def _cabelo_homem30(pl, W, H, cu, hy, rx, ry):
-    c = '#2a1a12'
+    c = '#8a3418'
     m = pl.elipse(cu, hy - 1.0, rx + 0.7, ry + 0.6) & (pl.w < hy - ry * 0.35)
     pl.pin(m, c)
-    pl.pin(m & (pl.u > cu + rx * 0.4), '#1a100a')
-    pl.pin(pl.poli([(cu - 2.5, hy - ry - 0.6), (cu + 3.0, hy - ry - 0.6), (cu + 2.0, hy - ry + 2.4), (cu - 4.0, hy - ry + 1.4)]) & (pl.w < hy - ry * 0.55), '#4a3022')
-    pl.pin(pl.seg((cu - 3.2, hy - ry + 0.6), (cu + 1.4, hy - ry - 0.6), 1.0), '#5a3c2a')
+    pl.pin(m & (pl.u > cu + rx * 0.4), '#5e2410')
+    pl.pin(pl.poli([(cu - 2.5, hy - ry - 0.6), (cu + 3.0, hy - ry - 0.6), (cu + 2.0, hy - ry + 2.4), (cu - 4.0, hy - ry + 1.4)]) & (pl.w < hy - ry * 0.55), '#b04a22')
+    pl.pin(pl.seg((cu - 3.2, hy - ry + 0.6), (cu + 1.4, hy - ry - 0.6), 1.0), '#c45a2a')
     pl.pin(pl.ret(cu - rx - 0.7, hy - ry * 0.4, cu - rx + 0.8, hy + 1.2), c)
-    pl.pin(pl.ret(cu + rx - 0.8, hy - ry * 0.4, cu + rx + 0.7, hy + 1.2), '#1a100a')
+    pl.pin(pl.ret(cu + rx - 0.8, hy - ry * 0.4, cu + rx + 0.7, hy + 1.2), '#5e2410')
 
 
 def _boca_bigode(pl, W, H, cu, hy, rx, ry):
-    pl.pin(pl.poli([(cu - 4.0, hy + 3.6), (cu + 4.0, hy + 3.6), (cu + 3.0, hy + 4.8), (cu, hy + 4.2), (cu - 3.0, hy + 4.8)]), '#2a1a12')
+    pl.pin(pl.poli([(cu - 4.0, hy + 3.6), (cu + 4.0, hy + 3.6), (cu + 3.0, hy + 4.8), (cu, hy + 4.2), (cu - 3.0, hy + 4.8)]), '#8a3418')
     pl.pin(pl.ret(cu - 1.8, hy + 5.2, cu + 1.8, hy + 6.0), '#7a3028')
 
 
@@ -1351,15 +1351,15 @@ def _roupa_mulher(pl, W, H, cu, hy, rx, ry, sh):
 
 
 def _cabelo_mulher(pl, W, H, cu, hy, rx, ry):
-    c = '#5e3a24'
+    c = '#b84e1e'
     m = pl.elipse(cu, hy - 1.2, rx + 1.3, ry + 0.9) & (pl.w < hy - ry * 0.1)
     m2 = pl.ret(cu - rx - 1.4, hy - ry * 0.2, cu - rx + 0.6, hy + ry * 0.6) | pl.ret(cu + rx - 0.6, hy - ry * 0.2, cu + rx + 1.4, hy + ry * 0.6)
     pl.pin(m | m2, c)
-    pl.pin((m | m2) & (pl.u > cu + rx * 0.3), '#3e2616')
+    pl.pin((m | m2) & (pl.u > cu + rx * 0.3), '#8a3414')
     pl.pin(pl.elipse(cu, hy - ry - 2.2, 4.4, 3.2), c)
-    pl.pin(pl.elipse(cu - 1.0, hy - ry - 2.8, 2.6, 1.6), '#8a5a38')
-    pl.pin(pl.seg((cu - rx + 1.0, hy - 3), (cu - 2.0, hy - ry + 0.8), 1.0), '#8a5a38')
-    pl.pin(pl.seg((cu + 2.0, hy - ry + 1.2), (cu + rx - 1.0, hy - 3.4), 1.0), '#8a5a38')
+    pl.pin(pl.elipse(cu - 1.0, hy - ry - 2.8, 2.6, 1.6), '#d8743a')
+    pl.pin(pl.seg((cu - rx + 1.0, hy - 3), (cu - 2.0, hy - ry + 0.8), 1.0), '#d8743a')
+    pl.pin(pl.seg((cu + 2.0, hy - ry + 1.2), (cu + rx - 1.0, hy - 3.4), 1.0), '#d8743a')
 
 
 # o menino (paletó escuro, camisa e gravata)
@@ -1376,15 +1376,15 @@ def _roupa_menino(pl, W, H, cu, hy, rx, ry, sh):
 
 
 def _cabelo_menino(pl, W, H, cu, hy, rx, ry):
-    c = '#8a6234'
+    c = '#d0682a'
     m = pl.elipse(cu, hy - 0.8, rx + 0.6, ry + 0.5) & (pl.w < hy - ry * 0.45)
     pl.pin(m, c)
-    pl.pin(m & (pl.u > cu + rx * 0.35), '#6a4824')
-    pl.pin(m & (pl.u < cu - rx * 0.2) & (pl.w < hy - ry * 0.7), '#b08a52')
+    pl.pin(m & (pl.u > cu + rx * 0.35), '#a04a1e')
+    pl.pin(m & (pl.u < cu - rx * 0.2) & (pl.w < hy - ry * 0.7), '#e88a48')
     pl.pin(pl.poli([(cu - 5.5, hy - ry * 0.45), (cu - 1.0, hy - ry * 0.45), (cu - 2.0, hy - ry * 0.05), (cu - 5.0, hy - ry * 0.3)]) & (pl.w < hy - ry * 0.2), c)
-    pl.pin(pl.seg((cu - 5.0, hy - ry + 1.6), (cu + 2.0, hy - ry - 0.4), 1.0), '#c4a064')
+    pl.pin(pl.seg((cu - 5.0, hy - ry + 1.6), (cu + 2.0, hy - ry - 0.4), 1.0), '#f0a05a')
     pl.pin(pl.ret(cu - rx - 0.6, hy - ry * 0.4, cu - rx + 0.6, hy), c)
-    pl.pin(pl.ret(cu + rx - 0.6, hy - ry * 0.4, cu + rx + 0.6, hy), '#6a4824')
+    pl.pin(pl.ret(cu + rx - 0.6, hy - ry * 0.4, cu + rx + 0.6, hy), '#a04a1e')
 
 
 def _boca_menino(pl, W, H, cu, hy, rx, ry):
@@ -1413,19 +1413,19 @@ def _roupa_homem_barba(pl, W, H, cu, hy, rx, ry, sh):
 
 
 def _cabelo_homem_barba(pl, W, H, cu, hy, rx, ry):
-    c = '#aaa69e'
+    c = '#b8704a'
     m = pl.elipse(cu, hy - 0.8, rx + 0.8, ry + 0.6) & (pl.w < hy - ry * 0.3)
     pl.pin(m, c)
-    pl.pin(m & (pl.u > cu + rx * 0.4), '#7c7a74')
-    pl.pin(m & (pl.u < cu - rx * 0.3) & (pl.w < hy - ry * 0.55), '#cfccc4')
+    pl.pin(m & (pl.u > cu + rx * 0.4), '#8a4a2c')
+    pl.pin(m & (pl.u < cu - rx * 0.3) & (pl.w < hy - ry * 0.55), '#d8a07a')
     pl.pin(pl.ret(cu - rx - 0.8, hy - ry * 0.5, cu - rx + 0.9, hy + ry * 0.2), c)
-    pl.pin(pl.ret(cu + rx - 0.9, hy - ry * 0.5, cu + rx + 0.8, hy + ry * 0.2), '#7c7a74')
+    pl.pin(pl.ret(cu + rx - 0.9, hy - ry * 0.5, cu + rx + 0.8, hy + ry * 0.2), '#8a4a2c')
     # a barba cheia (do começo das costeletas até depois do queixo)
     b = pl.elipse(cu, hy + ry * 0.35, rx + 0.4, ry * 0.9) & (pl.w > hy + 1.2)
     pl.pin(b | pl.ret(cu - rx - 0.5, hy - 1.0, cu - rx + 1.8, hy + 4), c)
-    pl.pin(b & (pl.u > cu + rx * 0.3), '#8a8880')
-    pl.pin(b & (pl.u < cu - rx * 0.4) & (pl.w > hy + 3), '#cfccc4')
-    pl.pin(pl.poli([(cu - 5, hy + 3.2), (cu + 5, hy + 3.2), (cu + 3.6, hy + 4.8), (cu, hy + 4.2), (cu - 3.6, hy + 4.8)]), '#c4c0b8')
+    pl.pin(b & (pl.u > cu + rx * 0.3), '#9a5634')
+    pl.pin(b & (pl.u < cu - rx * 0.4) & (pl.w > hy + 3), '#d8a07a')
+    pl.pin(pl.poli([(cu - 5, hy + 3.2), (cu + 5, hy + 3.2), (cu + 3.6, hy + 4.8), (cu, hy + 4.2), (cu - 3.6, hy + 4.8)]), '#cc8a62')
     pl.pin(pl.ret(cu - 1.6, hy + 5.2, cu + 1.6, hy + 6.2), '#7a3a32')
 
 
@@ -1433,11 +1433,12 @@ def _boca_vazia(pl, W, H, cu, hy, rx, ry):
     pass
 
 
+# os retratos da família: todos ruivos (23/10, o Felipe: "os quadros nas paredes têm que ser todos de pessoas ruivas")
 RETRATOS = {
-    1: dict(fundo='#2c3a30', pele='#dcb490', roupa='#202430', cabelo='#2a1a12', roupa_fn=_roupa_homem30, cabelo_fn=_cabelo_homem30, boca_fn=_boca_bigode),
-    2: dict(fundo='#5a2a38', pele='#e8c4a4', roupa='#2c2a46', cabelo='#5e3a24', roupa_fn=_roupa_mulher, cabelo_fn=_cabelo_mulher, boca_fn=_boca('#a8404a', 1.8), rx=7.4),
-    3: dict(fundo='#344a60', pele='#ecc4a0', roupa='#2a3254', cabelo='#8a6234', roupa_fn=_roupa_menino, cabelo_fn=_cabelo_menino, boca_fn=_boca_menino, rx=7.8, ry=9.4),
-    4: dict(fundo='#4a3624', pele='#d4aa86', roupa='#16161c', cabelo='#aaa69e', roupa_fn=_roupa_homem_barba, cabelo_fn=_cabelo_homem_barba, boca_fn=_boca_vazia),
+    1: dict(fundo='#2c3a30', pele='#dcb490', roupa='#202430', cabelo='#8a3418', sobr='#7a2e16', roupa_fn=_roupa_homem30, cabelo_fn=_cabelo_homem30, boca_fn=_boca_bigode),
+    2: dict(fundo='#5a2a38', pele='#e8c4a4', roupa='#2c2a46', cabelo='#b84e1e', sobr='#9a4018', roupa_fn=_roupa_mulher, cabelo_fn=_cabelo_mulher, boca_fn=_boca('#a8404a', 1.8), rx=7.4),
+    3: dict(fundo='#344a60', pele='#ecc4a0', roupa='#2a3254', cabelo='#d0682a', sobr='#b05424', roupa_fn=_roupa_menino, cabelo_fn=_cabelo_menino, boca_fn=_boca_menino, rx=7.8, ry=9.4),
+    4: dict(fundo='#4a3624', pele='#d4aa86', roupa='#16161c', cabelo='#a85a36', sobr='#94502e', roupa_fn=_roupa_homem_barba, cabelo_fn=_cabelo_homem_barba, boca_fn=_boca_vazia),
 }
 
 

@@ -762,6 +762,10 @@ function npcsIniciais(db: Database): boolean {
   // a criatura do livro aponta para a pasta da arte dela (arte/personagens/<id do livro>/), como as novas
   for (const cr of db.bestiario ?? [])
     for (const ap of cr.aparencias) if (cr.ficha.livro && ap.id === 'padrao' && !ap.arte) ((ap.arte = cr.ficha.livro), (renomeados = true));
+  // o pai da Catarina é o Alexander (23/10): a nota antiga do Arthur, se o mestre não mexeu, vira a de tio
+  const arthur = (db.npcs ?? []).find((n) => n.id === 'arthur-albuquerque');
+  if (arthur?.nota === 'irmão mais novo de Alexander, pai da Catarina; empresário da família no Frigorífico Albuquerque')
+    ((arthur.nota = 'irmão mais novo do Alexander, tio da Catarina e do Miguel; empresário da família no Frigorífico Albuquerque'), (renomeados = true));
   if (feitas >= levas.length) return renomeados;
   const lista = (db.npcs ??= []);
   for (const n of levas.slice(feitas).flat()) {

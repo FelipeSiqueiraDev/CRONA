@@ -18,6 +18,7 @@ import base_estilo as BE
 import casa as CA
 import escritorio as ES
 import mansao_conforto as MC
+import mansao_quartos as MQ
 from base_estilo import hx, liso, vol, _tom, _p1_rampa, _poligono_rodado, PH
 from motor import emissivo
 
@@ -362,7 +363,89 @@ def balde_champanhe():
     peg(xc - 0.14, xc + 0.14, yc - 0.14, yc + 0.14)
 
 
+# =====================================================================================================================
+# a cadeira de jantar (1 x 1; 23/10, o Felipe: "essas cadeiras de jantar estão pobres, cadê o milionário"): o encosto
+# alto de medalhão em moldura dourada entalhada, o veludo capitonê, o assento estofado e os pés dourados torneados
+# =====================================================================================================================
+def _cadeira(R, alto=1.12, larga=False):
+    x0, x1 = (0.08, 0.67) if not larga else (0.02, 0.73)
+    y0, y1 = 0.1, 0.68
+    zs = 0.47
+    for (a, b_) in ((x0 + 0.06, y0 + 0.05), (x1 - 0.06, y0 + 0.05), (x0 + 0.06, y1 - 0.06), (x1 - 0.06, y1 - 0.06)):
+        o = novo()
+        _poligono_rodado(a, b_, [(0.0, 0.026), (0.03, 0.02), (0.12, 0.024), (0.18, 0.017), (0.3, 0.021), (zs - 0.1, 0.026)], vol(a, b_, OURO, brilho=0.8), o, lados=10)
+    # a moldura do assento, dourada, e o assento estofado
+    cx((x0, x1, y0 + 0.02, y1, zs - 0.12, zs - 0.06), ouro(), ch=0.01)
+    b = (x0 + 0.02, x1 - 0.02, y0 + 0.06, y1 - 0.01, zs - 0.07, zs)
+    ES.malha(b, (0.05, 0.05, 0.03, 0.06), ES.estofado(R, b, 2.2, 7.8, cupula=1.0, brilho=True, grad=1.0), seg=2)
+    # o encosto: a moldura dourada em arco alto (com a crista entalhada em cima) e o medalhão capitonê dentro
+    perfil = MC.arco_perfil(x0 + 0.03, x1 - 0.03, zs - 0.06, alto - 0.16, alto)
+    MC.extruda_xz(perfil, y0, y0 + 0.06, {'*': ouro(), 'frente': ouro()}, novo())
+    perfil2 = MC.arco_perfil(x0 + 0.08, x1 - 0.08, zs + 0.04, alto - 0.2, alto - 0.06)
+    capi = ES.estofado(R, (x0 + 0.08, x1 - 0.08, y0 + 0.06, y0 + 0.11, zs + 0.04, alto - 0.06), 2.2, 7.4, cupula=0.4, capi=(0.12, 0.11), grad=0.5)
+    MC.extruda_xz(perfil2, y0 + 0.06, y0 + 0.11, {'*': capi, 'frente': capi}, novo())
+    # a crista: o florão dourado no alto do encosto
+    xm = (x0 + x1) / 2
+    o = novo()
+    CZ.c.elipsoide((xm, y0 + 0.03, alto + 0.025), (0.05, 0.025, 0.035), lambda Pc, N, P: np.tile(hx(OURO_L), (len(P), 1)), o)
+    peg(x0, x1, y0, y1)
+
+
+def cadeira_jantar_luxo():
+    _cadeira(_VINHO)
+
+
+def cadeira_cabeceira():
+    """A poltrona da cabeceira (o lugar do dono da casa): mais alta e mais larga, o encosto quase um trono."""
+    _cadeira(_VINHO, alto=1.5, larga=True)
+    # os braços dourados com a almofadinha
+    for (a0, a1) in ((0.02, 0.08), (0.67, 0.73)):
+        cx((a0, a1, 0.2, 0.64, 0.47, 0.7), ouro(), ch=0.01)
+        b = (a0 - 0.005, a1 + 0.005, 0.26, 0.56, 0.7, 0.75)
+        ES.malha(b, (0.02, 0.02, 0.02, 0.02), ES.estofado(_VINHO, b, 2.0, 6.0, cupula=0.8, brilho=True), seg=1)
+
+
+# =====================================================================================================================
+# a vitrine de troféus (3 x 1, 1,9 m; 23/10, o Felipe: "esses troféus parecem pintura e não um troféu"): o móvel de
+# nogueira com o vidro na frente, quatro prateleiras com as taças, as estatuetas e as medalhas de verdade, em volume
+# =====================================================================================================================
+def vitrine_trofeus():
+    x0, x1, y0, y1 = 0.04, 3 * CASA - 0.04, 0.04, 0.46
+    mad = '#4a2c18'
+    for xa in (x0, (x0 + x1) / 2 - 0.02, x1 - 0.05):
+        cx((xa, xa + 0.05, y0, y1, 0.0, 1.86), {'*': liso(mad), 'frente': liso('#5a3820'), 'cima': liso('#6a4428')}, ch=0.008)
+    cx((x0 + 0.05, x1 - 0.05, y0, y0 + 0.025, 0.0, 1.86), {'*': liso('#2e1c10')})
+    cx((x0 - 0.02, x1 + 0.02, y0, y1 + 0.03, 1.86, 1.94), {'*': liso('#5a3820'), 'cima': liso('#7a5232'), 'frente': ouro()}, ch=0.01)
+    cx((x0, x1, y0, y1 + 0.02, 0.0, 0.12), {'*': liso('#3a2214'), 'frente': liso('#2e1a0e'), 'cima': liso('#6a4428')})
+    zs = (0.12, 0.56, 1.0, 1.42)
+    for z in zs[1:]:
+        cx((x0 + 0.05, x1 - 0.05, y0 + 0.025, y1, z - 0.03, z), {'*': liso('#6a4428'), 'cima': liso('#8a6038'), 'frente': ouro()})
+    yc = 0.25
+    metais = ['ouro', 'prata', 'bronze', 'ouro', 'prata', 'ouro']
+    for i, z in enumerate(zs):
+        n = 5 if i != 2 else 6
+        for j in range(n):
+            x = x0 + 0.14 + (x1 - x0 - 0.28) * j / (n - 1)
+            if abs(x - (x0 + x1) / 2) < 0.06:
+                continue
+            m = metais[(i + j) % len(metais)]
+            if i == 2:
+                MQ._medalha(x, yc, z, m, MQ.FITAS[(i + j) % len(MQ.FITAS)])
+            else:
+                MQ._taca(x, yc, z, 1.9 + 0.4 * ((i + j) % 3 == 0) + (0.5 if i == 0 else 0), m)
+    # o vidro: as riscas de reflexo na frente
+    of = CZ.c.novo_obj(3, contorno=False, sombra=False)
+    for (t0, t1) in ((0.12, 0.135), (0.62, 0.632)):
+        xa = x0 + (x1 - x0) * t0
+        xb = x0 + (x1 - x0) * t1
+        CZ.c.face_plana([(xa, y1 + 0.004, 0.16), (xb, y1 + 0.004, 0.16), (xb + 0.25, y1 + 0.004, 1.8), (xa + 0.25, y1 + 0.004, 1.8)], (0, 1, 0), liso('#cfe2e6'), M, of)
+    peg(x0, x1, y0, y1)
+
+
 ITENS = {
+    'cadeira_jantar_luxo': (1, 1, (0.0, 0.0), cadeira_jantar_luxo, {}),
+    'cadeira_cabeceira': (1, 1, (0.0, 0.0), cadeira_cabeceira, {}),
+    'vitrine_trofeus': (3, 1, (0.0, 0.0), vitrine_trofeus, {}),
     'sofa_luxo': (3, 1, (0.0, 0.0), sofa_luxo, {}),
     'sofa_luxo_vinho': (3, 1, (0.0, 0.0), sofa_luxo_vinho, {}),
     'poltrona_luxo': (1, 1, (0.0, 0.0), poltrona_luxo, {}),

@@ -134,6 +134,7 @@ interface TelaParede {
 
 interface Imagens {
   normal: HTMLCanvasElement;
+  /** a cópia espelhada: feita só na primeira vez que alguém precisa dela (metade da memória de desenho) */
   espelho: HTMLCanvasElement;
   /** a largura do desenho (os pixels que aparecem), em pixels da imagem */
   largura: number;
@@ -260,34 +261,101 @@ export function chaveDaArte(defId: string, seed: number, piso?: string, vazio = 
   return i === 0 ? defId : outros[i - 1];
 }
 
+/** quando cada imagem começou a carregar: a que fica presa (a carga morreu sem onload nem onerror) é pedida de novo */
+const desde = new Map<string, number>();
+/** a última vez que cada imagem foi usada num quadro (as que a sala de agora não usa são soltas) */
+const usada = new Map<string, number>();
+
+/** A tela de desenho da imagem (null quando o navegador não dá mais nenhuma: a memória de desenho acabou). */
+function telaDe(img: CanvasImageSource, w: number, h: number, espelhar = false): HTMLCanvasElement | null {
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const g = c.getContext('2d');
+  if (!g) return null;
+  if (espelhar) {
+    g.translate(w, 0);
+    g.scale(-1, 1);
+  }
+  g.drawImage(img, 0, 0);
+  return c;
+}
+
+/**
+ * Solta as imagens que nenhum quadro usou no último meio minuto (23/10, o Felipe: "talvez esteja tentando carregar a
+ * Mansão toda o tempo inteiro... carrega-se o quarto em que eu estou"): cada imagem guardada são duas telas de desenho, e
+ * passeando pela mansão inteira o navegador chegava ao limite da memória de desenho; aí a tela nova não nascia, a carga
+ * quebrava no meio e a peça ficava para sempre no desenho de reserva. Ao voltar à sala, a imagem é carregada de novo.
+ */
+function soltarAsVelhas() {
+  const agora = performance.now();
+  // os guardados à parte (a frente do fogo, os recortes, a profundidade): sem limite, cresciam para sempre
+  if (recortes.size > 40) recortes.clear();
+  if (frentes.size > 400) frentes.clear();
+  if (profs.size > 200) profs.clear();
+  // só solta quando já há muitas guardadas (a vista tática e a Stardew não usam a arte do isométrico: soltar tudo depois
+  // de meio minuto lá fazia o ISO voltar ao desenho de reserva e carregar de novo)
+  if (imagens.size < 400) return;
+  for (const [url, t] of usada) {
+    if (agora - t < 120000) continue;
+    const c = imagens.get(url);
+    if (c && c !== 'carregando' && c !== 'erro') {
+      // devolve a memória já, sem esperar o coletor
+      c.normal.width = c.normal.height = 0;
+      const e = (c as unknown as { _espelho?: HTMLCanvasElement })._espelho;
+      if (e) e.width = e.height = 0;
+    }
+    imagens.delete(url);
+    usada.delete(url);
+    desde.delete(url);
+  }
+}
+if (typeof window !== 'undefined') setInterval(soltarAsVelhas, 10000);
+
 function pronta(arquivo: string): Imagens | null {
   const url = `/arte/mobiliario/${arquivo}`;
+  const agora = performance.now();
+  usada.set(url, agora);
   const c = imagens.get(url);
   if (c && c !== 'carregando' && c !== 'erro') return c;
-  if (!c) {
+  // 23/10, o Felipe: "cadê a textura das coisas?": a carga presa em "carregando" nunca era refeita. Passados 5 s sem
+  // resposta, pede de novo
+  const presa = c === 'carregando' && agora - (desde.get(url) ?? 0) > 5000;
+  if (!c || presa) {
     imagens.set(url, 'carregando');
+    desde.set(url, agora);
     const img = new Image();
     img.decoding = 'async';
     img.onload = () => {
-      const normal = document.createElement('canvas');
-      normal.width = img.naturalWidth;
-      normal.height = img.naturalHeight;
-      normal.getContext('2d')!.drawImage(img, 0, 0);
-      const espelho = document.createElement('canvas');
-      espelho.width = normal.width;
-      espelho.height = normal.height;
-      const g = espelho.getContext('2d')!;
-      g.translate(normal.width, 0);
-      g.scale(-1, 1);
-      g.drawImage(normal, 0, 0);
-      imagens.set(url, { normal, espelho, largura: larguraDoDesenho(normal) });
+      const normal = telaDe(img, img.naturalWidth, img.naturalHeight);
+      if (!normal) {
+        // sem memória de desenho: solta o que dá e tenta de novo daqui a pouco (fica no desenho de reserva enquanto isso)
+        soltarAsVelhas();
+        imagens.set(url, 'erro');
+        setTimeout(() => imagens.get(url) === 'erro' && imagens.delete(url), 2000);
+        return;
+      }
+      let espelho: HTMLCanvasElement | null = null;
+      const pronto: Imagens & { _espelho?: HTMLCanvasElement } = {
+        normal,
+        get espelho() {
+          espelho ??= telaDe(normal, normal.width, normal.height, true) ?? normal;
+          pronto._espelho = espelho;
+          return espelho;
+        },
+        largura: larguraDoDesenho(normal),
+      };
+      imagens.set(url, pronto);
+      // chegou depois de ter sido solta? volta para a conta, para poder ser solta de novo
+      usada.set(url, performance.now());
     };
     // falhou (o servidor reiniciando, a rede piscando): tenta de novo daqui a pouco, em vez de ficar sem arte até o F5
     img.onerror = () => {
       imagens.set(url, 'erro');
       setTimeout(() => imagens.get(url) === 'erro' && imagens.delete(url), 4000);
     };
-    img.src = url;
+    // a de novo leva um carimbo, para não cair na mesma carga presa do cache
+    img.src = presa ? `${url}?r=${Date.now()}` : url;
   }
   return null;
 }

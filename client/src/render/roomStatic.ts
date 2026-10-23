@@ -805,7 +805,10 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
   }
 
   // a parede com história (umidade, mofo, sombra de encontro), por cima da textura e do rodapé
-  if (!aberto) acabarParedes(ctx, map, vao);
+  // a casa de milionário não tem desgaste (23/10, o Felipe: "o chão da casa meio sujo, cheio de manchas pretas"): sem
+  // umidade, mofo, sujeira, rachadura nem papel no chão; a sombra de encontro e a laje continuam
+  const limpa = !!style && style.startsWith('mansao_') && style !== 'mansao_rustico' && style !== 'mansao_tabuas' && style !== 'mansao_caverna';
+  if (!aberto && !limpa) acabarParedes(ctx, map, vao);
 
   // a água primeiro: as margens (a borda das casas da frente) vêm por cima
   if (linhas)
@@ -825,7 +828,7 @@ export function buildStatic(map: RoomMap, wantScale: number, style?: FloorStyle,
     drawLedges(ctx, map, tx, ty, th);
   }
   // o chão gasto (só em cômodo fechado) e a borda da laje com corpo
-  if (!aberto) acabarPiso(ctx, map, tiles);
+  if (!aberto && !limpa) acabarPiso(ctx, map, tiles);
   acabarBordas(ctx, map, tiles, minH, FLOOR_THICK);
 
   return { canvas, x, y, w, h };

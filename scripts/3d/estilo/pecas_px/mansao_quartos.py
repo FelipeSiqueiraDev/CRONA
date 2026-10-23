@@ -322,7 +322,7 @@ def manta_la(c1, c2, passo=0.1):
     return emissivo(f)
 
 
-def _cama_catarina():
+def _cama_catarina(ursos_no_canto=False):
     x0, x1 = 0.02, 2.23
     y0, y1 = 0.0, 2.25
     zt = 0.65
@@ -353,9 +353,14 @@ def _cama_catarina():
         _p1_malha((a0, a1, y0 + 0.6, y0 + 0.9, zb, zb + 0.2), (0.09, 0.09, 0.04, 0.1), CA.lencol(cor), seg=3)
     # a manta de lã dobrada no pé
     _p1_malha((x0 + 0.04, x1 - 0.04, y1 - 0.58, y1 - 0.14, zt - 0.05, zt + 0.1), (0.04, 0.05, 0.03, 0.05), manta_la('#bfb4a2', '#8e8678'), seg=2)
-    # os dois ursos (o coral e o azul-turquesa) sentados na frente dos travesseiros
-    urso(0.66, 1.0, zt - 0.03, '#f58a66', '#fcd8b8', '#fff4e6', k=1.5)
-    urso(1.56, 1.12, zt - 0.03, '#38c0c0', '#c4f4f0', '#fff4e6', k=1.4)
+    # os dois ursos (o coral e o azul-turquesa) sentados na frente dos travesseiros; com alguém deitado (estado 1, 23/10,
+    # o Felipe: "deixe os ursinhos no cantinho da cama e a pessoa deitada normal"), lado a lado no canto da cabeceira
+    if ursos_no_canto:
+        urso(1.86, 0.5, 0.74, '#f58a66', '#fcd8b8', '#fff4e6', k=1.05)
+        urso(2.06, 0.62, 0.72, '#38c0c0', '#c4f4f0', '#fff4e6', k=1.0)
+    else:
+        urso(0.66, 1.0, zt - 0.03, '#f58a66', '#fcd8b8', '#fff4e6', k=1.5)
+        urso(1.56, 1.12, zt - 0.03, '#38c0c0', '#c4f4f0', '#fff4e6', k=1.4)
     peg(x0, x1, y0, y1)
 
 
@@ -1570,7 +1575,7 @@ def _estante_trofeus():
 
 # =====================================================================================================================
 ITENS = {
-    'cama_catarina': (3, 3, (0.0, 0.0), _cama_catarina, {}),
+    'cama_catarina': (3, 3, (0.0, 0.0), _cama_catarina, {'1': lambda: _cama_catarina(True)}),
     'tv_gamer': (3, 1, (0.0, 0.0), _tv_gamer(True), {'1': _tv_gamer(False)}),
     'rack_esgrima': (2, 1, (0.0, 0.0), _rack_esgrima, {}),
     'setup_gamer': (3, 1, (0.0, 0.0), _setup_gamer(True), {'1': _setup_gamer(False)}),

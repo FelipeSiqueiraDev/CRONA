@@ -319,6 +319,10 @@ export class CombateScreen {
   /** liga a tela nova: cards no lugar do tabuleiro (a de hoje continua inteira, é só desligar a chave) */
   private pediuElenco = false;
   private modoCards = lerTelaNova();
+  /** a tela de cards não mostra o tabuleiro (o shell pausa o desenho dele) */
+  get semTabuleiro() {
+    return this.modoCards;
+  }
   private palco: HTMLElement;
   private atorCorpo: HTMLElement;
   private alvoCardCorpo: HTMLElement;

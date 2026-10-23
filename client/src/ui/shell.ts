@@ -656,7 +656,9 @@ export class Shell {
     });
     // os retratos dependem da lista de personagens: o PLAYERS se refaz quando ela chega (19/10: as fotos sumiam)
     app.on('characters', () => ((this.sigs.party = ''), this.renderParty(), this.renderRpg(true)));
-    setInterval(() => this.captureThumb(), 4000);
+    // a miniatura da sala (o polaroide do cartão e do minimapa): só com o MAPA aberto e de 15 em 15 s (antes, de 4 em 4,
+    // em qualquer aba: copiava a tela da placa de vídeo e gravava um JPEG no armazenamento toda vez)
+    setInterval(() => this.activeTab === 'MAPA' && this.captureThumb(), 15000);
     setInterval(() => this.markWalking(), 180);
     window.addEventListener('resize', () => (this.minimapa.desenhar(), this.plantaGrande?.mm.desenhar()));
   }
@@ -926,6 +928,8 @@ export class Shell {
     if (t === 'COMBATE') this.combate.show();
     else this.combate.hide();
     this.updateFrame();
+    // o tabuleiro escondido não desenha: na FICHAS e no COMBATE de cards (que não mostra o tabuleiro)
+    this.app.view.pausado = t === 'FICHAS' || (t === 'COMBATE' && this.combate.semTabuleiro);
     const o = this.tabOverlay;
     if (t === 'MAPA' || t === 'FICHAS' || t === 'COMBATE') {
       if (!o.classList.contains('hidden')) {

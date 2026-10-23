@@ -59,6 +59,8 @@ export interface FurniDef {
    * Camas de andares (beliche): a altura, em metros, de cada uma onde a peça fica deitada ou sentada, de baixo para
    * cima. Quem pisa na casa fica na primeira; o mestre põe a peça na de cima ("Na cama de cima").
    */
+  /** o estado da arte quando há alguém deitado nela (a cama da Catarina: os ursos vão para o canto, 23/10) */
+  estadoOcupada?: number;
   leitos?: number[];
   /**
    * Cama: a peça deita nela (14/10, o Felipe: "mando o personagem ir pra cama e nada acontece"). Toda cama (kind bed,
@@ -581,7 +583,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'poltrona_orelha', name: 'Poltrona de Orelha', category: 'mansao', kind: 'armchair', width: 1, depth: 1, height: 0.5, sit: true, rotations: ALL, colors: ['#8a5a2a', '#4a2a18', '#8a5a2a'], desc: 'Poltrona de encosto alto, de couro caramelo.' },
   { id: 'carrinho_bar', name: 'Carrinho de Bar', category: 'mansao', kind: 'carrinho', width: 1, depth: 1, height: 0.95, stackable: true, rotations: ALL, colors: ['#b8902a', '#cfe0e8', '#b8902a'], desc: 'Carrinho de bar dourado, com decanters e copos de cristal.' },
   { id: 'closet_aberto', name: 'Closet', category: 'mansao', kind: 'armario', width: 2, depth: 1, height: 2.2, states: 2, rotations: ALL, colors: ['#c8b898', '#4a2a18', '#c8b898'], desc: 'Armário-closet de portas espelhadas. Clique duplo abre.' },
-  { id: 'cama_catarina', name: 'Cama da Catarina', category: 'mansao', kind: 'bed', width: 3, depth: 3, height: 0.65, rotations: ALL, colors: ['#c8c4bc', '#e0643a', '#c8c4bc'], desc: 'Cama de casal grande, cheia de travesseiros e com dois ursos de pelúcia.' },
+  { id: 'cama_catarina', name: 'Cama da Catarina', category: 'mansao', kind: 'bed', width: 3, depth: 3, height: 0.65, estadoOcupada: 1, rotations: ALL, colors: ['#c8c4bc', '#e0643a', '#c8c4bc'], desc: 'Cama de casal grande, cheia de travesseiros e com dois ursos de pelúcia.' },
   { id: 'tv_gamer', name: 'TV Gigante com Console', category: 'mansao', kind: 'tv_gamer', width: 3, depth: 1, height: 1.55, states: 2, rotations: ALL, colors: ['#1a1a1e', '#6ac8ff', '#1a1a1e'], desc: 'TV bem grande com o console de movimento e os controles. Clique duplo liga e desliga.' },
   { id: 'rack_esgrima', name: 'Canto da Esgrima', category: 'mansao', kind: 'weapon_rack', width: 2, depth: 1, height: 1.75, rotations: ALL, colors: ['#d8d4c8', '#a8a8b0', '#d8d4c8'], desc: 'Floretes, espadas e sabres no suporte, a máscara e a jaqueta de esgrima.' },
   // o luxo da mansão (23/10, o Felipe: "é a casa de milionários, tudo tem que ser chique"): pecas_px/mansao_luxo.py
@@ -601,6 +603,9 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'porta_retratos', name: 'Porta-Retratos', category: 'mansao', kind: 'decor', width: 1, depth: 1, height: 0.2, rotations: ALL, colors: ['#c8ccd4', '#6a5a4a', '#c8ccd4'], desc: 'As fotos da família em molduras de prata.' },
   { id: 'livros_couro', name: 'Livros de Couro', category: 'mansao', kind: 'books', width: 1, depth: 1, height: 0.24, rotations: ALL, colors: ['#5a1818', '#1a3a28', '#5a1818'], desc: 'Os livros de couro com o título em ouro, entre os aparadores de bronze.' },
   { id: 'balde_champanhe', name: 'Balde de Champanhe', category: 'mansao', kind: 'decor', width: 1, depth: 1, height: 1.0, rotations: ALL, colors: ['#c8ccd4', '#b8902a', '#c8ccd4'], desc: 'O balde de prata no pé dourado, com a garrafa no gelo e o guardanapo.' },
+  { id: 'cadeira_jantar_luxo', name: 'Cadeira de Jantar de Medalhão', category: 'mansao', kind: 'chair', width: 1, depth: 1, height: 0.47, sit: true, rotations: ALL, colors: ['#6a1420', '#b8902a', '#6a1420'], desc: 'Cadeira de jantar Luís XVI: o encosto de medalhão em moldura dourada entalhada, veludo vinho capitonê.' },
+  { id: 'cadeira_cabeceira', name: 'Poltrona da Cabeceira', category: 'mansao', kind: 'chair', width: 1, depth: 1, height: 0.47, sit: true, rotations: ALL, colors: ['#6a1420', '#b8902a', '#6a1420'], desc: 'A poltrona do dono da casa, na cabeceira da mesa: o encosto alto quase um trono, os braços dourados.' },
+  { id: 'vitrine_trofeus', name: 'Vitrine de Troféus', category: 'mansao', kind: 'bookshelf', width: 3, depth: 1, height: 1.9, rotations: ALL, colors: ['#4a2c18', '#d09a22', '#4a2c18'], desc: 'A vitrine de nogueira com o vidro: as taças, as estatuetas e as medalhas de todas as competições.' },
   { id: 'estante_trofeus', name: 'Estante de Troféus', category: 'mansao', kind: 'bookshelf', width: 1, depth: 1, height: 1.9, rotations: ALL, colors: ['#5a3a22', '#d09a22', '#5a3a22'], desc: 'A estante estreita do canto, de madeira escura: as taças, as medalhas e a estatueta das competições.' },
   { id: 'setup_gamer', name: 'Mesa Gamer', category: 'mansao', kind: 'console', width: 3, depth: 1, height: 0.78, states: 2, vao: 'fundo', rotations: ALL, colors: ['#2a2a34', '#b05ae0', '#2a2a34'], desc: 'Dois monitores, teclado RGB e o computador potente. Clique duplo liga e desliga.' },
   { id: 'parede_escalada', name: 'Parede de Escalada', category: 'mansao', kind: 'escalada', width: 3, depth: 1, height: 0, walkable: true, portal: true, rotations: [4, 2], colors: ['#c8a878', '#e0643a', '#c8a878'], desc: 'A parede de escalada, com as agarras coloridas. Pare em cima para subir (ou descer).' },

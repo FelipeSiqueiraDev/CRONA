@@ -450,6 +450,8 @@ export class RoomView {
   myId = 0;
   /** as peças andando em grupo (Shift + clique junta e tira; 09/10, o Felipe): a comandada e as outras, e o clique no chão manda todas */
   grupo = new Set<number>();
+  /** o tabuleiro está escondido atrás de outra aba: o laço de quadros não desenha (a tela volta ao mostrar) */
+  pausado = false;
   selection: Selection = null;
   placement: Placement | null = null;
   private painter = new Painter();
@@ -598,6 +600,8 @@ export class RoomView {
     this.bindInput();
     const loop = () => {
       this.raf = requestAnimationFrame(loop);
+      // escondido (a aba FICHAS, o COMBATE de cards): não desenha (23/10, o pente-fino de desempenho)
+      if (this.pausado) return;
       try {
         this.frame();
       } catch (e) {
@@ -1253,8 +1257,10 @@ export class RoomView {
    * de fora; a cabeceira, atrás, não entra no recorte.
    */
   private desenharCoberta(ctx: CanvasRenderingContext2D, map: RoomMap, it: FloorItem, def: FurniDef) {
-    const base = furniVisual(def, it.state, it.id);
-    const vis = visualComArte(def, base, it.state, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio, it.modelo) ?? base;
+    // a coberta é a da cama ocupada (os ursos da Catarina no canto, não em cima de quem dorme)
+    const estado = def.estadoOcupada ?? it.state;
+    const base = furniVisual(def, estado, it.id);
+    const vis = visualComArte(def, base, estado, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio, it.modelo) ?? base;
     const [ax, ay] = this.ajusteDoMovel(map, it);
     const painter = this.painter;
     painter.m.set(it.rot, def.width, def.depth, it.x + ax, it.y + ay, it.z);
@@ -2578,11 +2584,18 @@ export class RoomView {
     }
     // o que cai fora da tela não é desenhado (a fazenda tem centenas de mobis); a luz deles continua valendo
     const vista = { x0: -this.cam.x / z - 120, y0: -this.cam.y / z - 200, x1: (this.vw - this.cam.x) / z + 120, y1: (this.vh - this.cam.y) / z + 120 };
+    // as camas com gente deitada (a da Catarina troca de arte: os ursos vão para o canto, 23/10)
+    const camasOcupadas = new Set<number>();
+    for (const u of this.users.values())
+      if (u.sit === 1) {
+        const c = map.sitItem(u.x, u.y);
+        if (c) camasOcupadas.add(c.id);
+      }
     const addFurni = (it: { id: number; defId: string; x: number; y: number; z: number; rot: number; state: number; escala?: number; vazio?: boolean; quebrado?: boolean; modelo?: string }, alpha: number, selected: boolean, ghost: boolean) => {
       const def = getFurni(it.defId);
       if (!def) return;
       // a vela soprada (sopro.ts): logo depois de apagar, ainda desenhada acesa enquanto a chama encolhe para o pavio
-      const estado = ghost ? it.state : estadoDoMovel(it, def);
+      const estado = ghost ? it.state : def.estadoOcupada !== undefined && camasOcupadas.has(it.id) ? def.estadoOcupada : estadoDoMovel(it, def);
       const base = furniVisual(def, estado, it.id);
       const vis = visualComArte(def, base, estado, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio, it.modelo) ?? base;
       // a Operação Pede Mesa: o item escorrega para o tampo desenhado, a cadeira entra embaixo da mesa

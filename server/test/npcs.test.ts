@@ -40,7 +40,7 @@ describe("npcs", () => {
     db.npcs = db.npcs!.filter((n) => n.id === "miguel-albuquerque");
     delete db.npcsRev;
     upgradeDb(db);
-    assert.deepEqual(db.npcs.map((n) => n.id).sort(), ["agata", "antonio-valenca", "arthur-albuquerque", "camarilla", "geraldo-ribeiro", "helena-duarte", "herman-arantes", "ivete", "lucia-moreira", "marina-ferraz", "miguel-albuquerque", "npc-cabelo-rosa", "npc-camisa-rosa", "npc-jaleco", "npc-ruivo", "roberto-salles", "samuel", "sara-ribeiro", "tiago-nobre"]);
+    assert.deepEqual(db.npcs.map((n) => n.id).sort(), ["agata", "alexander-albuquerque", "antonio-valenca", "arthur-albuquerque", "camarilla", "geraldo-ribeiro", "helena-duarte", "herman-arantes", "ivete", "lucia-moreira", "marina-ferraz", "miguel-albuquerque", "npc-cabelo-rosa", "npc-camisa-rosa", "npc-jaleco", "npc-ruivo", "roberto-salles", "samuel", "sara-ribeiro", "tiago-nobre"]);
   });
 
   test("os empregados e o Arthur Albuquerque entram no elenco, no grupo da mansão (21/10)", () => {
@@ -51,7 +51,7 @@ describe("npcs", () => {
     delete db.npcsRev;
     upgradeDb(db);
     const mansao = db.npcs!.filter((n) => n.grupo === "Mansão Albuquerque").map((n) => n.id).sort();
-    assert.deepEqual(mansao, ["antonio-valenca", "arthur-albuquerque", "helena-duarte", "lucia-moreira", "marina-ferraz", "roberto-salles", "tiago-nobre"]);
+    assert.deepEqual(mansao, ["alexander-albuquerque", "antonio-valenca", "arthur-albuquerque", "helena-duarte", "lucia-moreira", "marina-ferraz", "roberto-salles", "tiago-nobre"]);
     assert.ok(db.npcGrupos!.includes("Mansão Albuquerque"));
   });
 

@@ -119,7 +119,7 @@ describe("Mansão Albuquerque", () => {
     const q = porNome("Quarto da Catarina");
     const ids = q.items.map((i) => i.defId);
     for (const id of ["cama_catarina", "tv_gamer", "rack_esgrima", "parede_escalada", "estante_trofeus"]) assert.ok(ids.includes(id), `falta ${id}`);
-    assert.ok(q.wallItems.some((w) => w.defId === "painel_trofeus"), "falta o painel de troféus");
+    assert.equal(q.items.filter((i) => i.defId === "vitrine_trofeus").length, 2, "as duas vitrines de troféus");
     const m = porNome("Mezanino da Catarina");
     for (const id of ["setup_gamer", "cadeira_gamer", "puff_gamer", "parede_escalada"]) assert.ok(m.items.some((i) => i.defId === id), `mezanino sem ${id}`);
     assert.ok(m.darkness >= 0.6, "o mezanino é escuro");

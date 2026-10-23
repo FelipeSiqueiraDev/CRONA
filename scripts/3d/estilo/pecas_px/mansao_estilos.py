@@ -802,10 +802,110 @@ def parede_tabuas(eixo):
     return emissivo(f)
 
 
+# =====================================================================================================================
+# 11. O LUXO (23/10, o Felipe: "trocar esse piso de madeira por um porcelanato branco e as paredes com pinturas
+# perfeitas e um rodapé e a parte de cima toda cheia de detalhes... é casa de gente MILIONÁRIA"): o porcelanato branco
+# polido em placas grandes e a parede de pintura lisa com boiserie, rodapé laqueado e a sanca de gesso com ouro
+# =====================================================================================================================
+POR_P = _rampa(['#f2f0ec', '#efede8', '#f4f2ee'])
+
+
+def piso_porcelanato():
+    """O porcelanato branco polido: a placa de 2 x 2 casas (1,5 m), o veio cinza-claro bem raro, a junta fina, o reflexo."""
+    def f(L, n, P):
+        u, v = _uv_chao(P)
+        u, v = u % W, v % W
+        T = 64
+        tu, tv = u // T, v // T
+        ids = tu * 2 + tv
+        k = (_h(ids * 0.53, 2.1) * 3).astype(int) % 3
+        out = POR_P[k]
+        du = (_h(ids, 3.7) * 128).astype(int)
+        # o veio: só a linha fina e clara-acinzentada, em metade das placas (o porcelanato imita mármore, de leve)
+        v1 = _veios(u, v, 91, desl=du, per=64, gate=2, amp=22) & (_h(ids, 5.1) < 0.5)
+        out = _w(v1, hx('#dcd8d0'), out)
+        gu, gv = u % T, v % T
+        # o reflexo do polimento: a faixa diagonal larga, um degrau mais claro
+        refl = ((gu + gv) >= 30) & ((gu + gv) <= 33) & (gu >= 12) & (gu <= 24) & (_h(ids, 7.3) > 0.35)
+        out = _w(refl, hx('#fdfcfa'), out)
+        # a junta fina (1 px cinza-claro) e o volume da placa
+        out = _w((gu == 1) | (gv == 1), hx('#fdfcfa'), out)
+        out = _w((gu == T - 1) | (gv == T - 1), _tom(out, 0.97), out)
+        return _w((gu == 0) | (gv == 0), hx('#c8c4bc'), out)
+    return emissivo(f)
+
+
+def _sanca(v, uu, cor_parede):
+    """A sanca de gesso do alto (v de 116 a 145): o friso, a fileira de óvalos, os dentículos, o filete de ouro, a cornija."""
+    base = hx('#f4f0e6')
+    out = np.tile(base, (len(v), 1))
+    # de baixo para cima: a sombra no encontro com a parede, o filete de ouro, os dentículos, os óvalos, a cornija
+    out = _w(v == 116, _tom(hx(cor_parede), 0.82), out)
+    out = _w(v == 117, hx('#b8902a'), out)
+    out = _w(v == 118, hx('#e0c060'), out)
+    den = (v >= 120) & (v <= 124)
+    out = _w(den & (uu % 6 < 3), hx('#fbf8f0'), out)
+    out = _w(den & (uu % 6 >= 3), _tom(base, 0.86), out)
+    out = _w(v == 125, _tom(base, 0.8), out)
+    ov = (v >= 127) & (v <= 132)
+    cx_ = (uu % 10) - 4.5
+    cy_ = (v - 129.5)
+    dentro = (cx_ * cx_) / 12 + (cy_ * cy_) / 7 <= 1
+    out = _w(ov & dentro, hx('#fdfbf6'), out)
+    out = _w(ov & dentro & (cx_ > 1), _tom(base, 0.9), out)
+    out = _w(ov & ~dentro, _tom(base, 0.93), out)
+    out = _w(v == 133, hx('#d8b050'), out)
+    out = _w(v == 134, _tom(base, 0.84), out)
+    corn = v >= 135
+    k = np.clip(v - 135, 0, 10)
+    tons = np.array([1.08, 1.12, 1.0, 0.9, 1.05, 1.1, 1.14, 1.16, 0.95, 1.18, 1.2])
+    out = _w(corn, np.clip(base[None, :] * tons[k][:, None], 0, 255), out)
+    return out
+
+
+def _parede_luxo(cor, painel=True):
+    """A parede de pintura lisa na cor `cor`, com a boiserie (os quadros de moldura fina), o rodapé alto e a sanca."""
+    def fabrica(eixo):
+        def f(L, n, P):
+            u, v = _uv_parede(P, eixo)
+            uu = u % W
+            out = _fundo(len(P), cor)
+            if painel:
+                # a boiserie: dois painéis por 4 casas (64 texels cada), a moldura de 2 px (luz em cima/esquerda, sombra embaixo/direita)
+                a = uu % 64
+                dentro = (a >= 6) & (a <= 57) & (v >= 30) & (v <= 104)
+                borda = dentro & ((a <= 7) | (a >= 56) | (v <= 31) | (v >= 103))
+                out = _w(borda & ((a <= 7) | (v >= 103)), _tom(hx(cor), 1.1), out)
+                out = _w(borda & ((a >= 56) | (v <= 31)), _tom(hx(cor), 0.84), out)
+                # a meia-cana (chair rail) a 0,9 m e o painel baixo
+                out = _w((v >= 22) & (v <= 24), hx('#f6f2e8'), out)
+                out = _w(v == 21, _tom(hx(cor), 0.86), out)
+                out = _w(v == 25, _tom(hx(cor), 0.9), out)
+            # o rodapé laqueado branco (15 cm) com o filete de ouro e a moldura
+            rod = (v < 9)
+            out = _w(rod, hx('#f8f6f0'), out)
+            out = _w(v == 0, hx('#c8c2b4'), out)
+            out = _w((v >= 2) & (v <= 3), _tom(hx('#f8f6f0'), 0.92), out)
+            out = _w(v == 7, hx('#d8b050'), out)
+            out = _w(v == 8, hx('#fdfcf8'), out)
+            out = _w(v == 9, _tom(hx(cor), 0.8), out)
+            out = _w(v == 10, _tom(hx(cor), 0.92), out)
+            # a sanca
+            alto = v >= 116
+            return _w(alto, _sanca(v, uu, cor), out)
+        return emissivo(f)
+    return fabrica
+
+
+parede_nobre_luxo = _parede_luxo('#d8ccb2')
+parede_claro_luxo = _parede_luxo('#ece6da')
+
+
 ESTILOS = {
     'mansao_marmore': {'piso': piso_marmore, 'parede': parede_marmore, 'rodape': None, 'extra': None},
-    'mansao_nobre': {'piso': piso_nobre, 'parede': parede_nobre, 'rodape': None, 'extra': None},
-    'mansao_claro': {'piso': piso_claro, 'parede': parede_claro, 'rodape': None, 'extra': None},
+    # 23/10: o salão nobre e os quartos trocaram a madeira pelo porcelanato branco e a parede pelo luxo pintado
+    'mansao_nobre': {'piso': piso_porcelanato, 'parede': parede_nobre_luxo, 'rodape': None, 'extra': None},
+    'mansao_claro': {'piso': piso_porcelanato, 'parede': parede_claro_luxo, 'rodape': None, 'extra': None},
     'mansao_servico': {'piso': piso_servico, 'parede': parede_servico, 'rodape': None, 'extra': None},
     'mansao_estufa': {'piso': piso_estufa, 'parede': parede_estufa, 'rodape': None, 'extra': None},
     'mansao_banho': {'piso': piso_banho, 'parede': parede_banho, 'rodape': None, 'extra': None},

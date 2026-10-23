@@ -45900,7 +45900,33 @@
       2.23,
       2.28,
       1.34
-    ]
+    ],
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "cama_catarina/giro-4-1.png",
+            "ax": 106.0,
+            "ay": 165.0
+          },
+          "2": {
+            "arquivo": "cama_catarina/giro-2-1.png",
+            "ax": 105.0,
+            "ay": 165.0
+          },
+          "0": {
+            "arquivo": "cama_catarina/giro-0-1.png",
+            "ax": 106.0,
+            "ay": 129.0
+          },
+          "6": {
+            "arquivo": "cama_catarina/giro-6-1.png",
+            "ax": 105.0,
+            "ay": 129.0
+          }
+        }
+      }
+    }
   },
   "tv_gamer": {
     "escala": 1,
@@ -47573,6 +47599,105 @@
       0.264,
       0.26,
       1.04
+    ]
+  },
+  "cadeira_jantar_luxo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cadeira_jantar_luxo/giro-4.png",
+        "ax": 36.0,
+        "ay": 83.0
+      },
+      "2": {
+        "arquivo": "cadeira_jantar_luxo/giro-2.png",
+        "ax": 35.0,
+        "ay": 83.0
+      },
+      "0": {
+        "arquivo": "cadeira_jantar_luxo/giro-0.png",
+        "ax": 34.0,
+        "ay": 73.0
+      },
+      "6": {
+        "arquivo": "cadeira_jantar_luxo/giro-6.png",
+        "ax": 35.0,
+        "ay": 73.0
+      }
+    },
+    "real": [
+      0.59,
+      0.58,
+      1.18
+    ]
+  },
+  "cadeira_cabeceira": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cadeira_cabeceira/giro-4.png",
+        "ax": 38.0,
+        "ay": 103.0
+      },
+      "2": {
+        "arquivo": "cadeira_cabeceira/giro-2.png",
+        "ax": 37.0,
+        "ay": 103.0
+      },
+      "0": {
+        "arquivo": "cadeira_cabeceira/giro-0.png",
+        "ax": 38.0,
+        "ay": 93.0
+      },
+      "6": {
+        "arquivo": "cadeira_cabeceira/giro-6.png",
+        "ax": 38.0,
+        "ay": 93.0
+      }
+    },
+    "real": [
+      0.72,
+      0.58,
+      1.56
+    ]
+  },
+  "vitrine_trofeus": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "vitrine_trofeus/giro-4.png",
+        "ax": 92.0,
+        "ay": 164.0
+      },
+      "2": {
+        "arquivo": "vitrine_trofeus/giro-2.png",
+        "ax": 39.0,
+        "ay": 164.0
+      },
+      "0": {
+        "arquivo": "vitrine_trofeus/giro-0.png",
+        "ax": 103.0,
+        "ay": 159.0
+      },
+      "6": {
+        "arquivo": "vitrine_trofeus/giro-6.png",
+        "ax": 29.0,
+        "ay": 159.0
+      }
+    },
+    "real": [
+      2.238,
+      0.45,
+      1.94
     ]
   }
 }

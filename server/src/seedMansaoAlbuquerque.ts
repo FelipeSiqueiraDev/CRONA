@@ -22,7 +22,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Mudou a montagem? Suba MANSAO_REV: a mansão é refeita no lugar, mantendo as cenas, as peças e o registro.
  */
 export const MANSAO = "Mansão Albuquerque · ";
-export const MANSAO_REV = 4;
+export const MANSAO_REV = 5;
 
 const ANDAR = "Mansão Albuquerque";
 const ANDAR2 = "Mansão Albuquerque 2º";
@@ -419,7 +419,9 @@ for (let i = 0; i < 6; i++) {
   s.porta("O", 9, "salao");
   s.add("rug_aubusson", 3, 2, 2).add("rug_aubusson", 3, 6, 2);
   s.add("mesa_jantar", 4, 2, 2).add("mesa_jantar", 4, 6, 2);
-  s.cadeiras("chair_red", 4, 2, 2, 8, { n: [0, 1], s: [0, 1], o: [0, 1, 2, 3, 4, 5, 6, 7], l: [0, 1, 2, 3, 4, 5, 6, 7] });
+  // as cadeiras de medalhão dos lados; nas pontas, uma só: a poltrona do dono da casa na ponta da parede (23/10)
+  s.cadeiras("cadeira_jantar_luxo", 4, 2, 2, 8, { o: [0, 1, 2, 3, 4, 5, 6, 7], l: [0, 1, 2, 3, 4, 5, 6, 7] });
+  s.add("cadeira_cabeceira", 4, 1, 4).add("cadeira_jantar_luxo", 4, 10, 0);
   s.enc("N", "lareira_marmore", 7).enc("O", "sideboard", 1).mais("palmeira_vaso", 0, [9, 11], [0, 11]).add("armor_display", 9, 5, 6);
   s.lustres([5, 4], [5, 8]).par("N", "quadro_oleo_grande", 2.5, 1.9).par("O", "retrato_nobre", 5.5, 1.8);
   // os objetinhos (23/10): os candelabros, a fruteira e o arranjo na mesa; o serviço de chá e o uísque no aparador; o champanhe
@@ -435,7 +437,7 @@ for (let i = 0; i < 6; i++) {
   s.add("estatua_jardim", 7, 6, 4);
   s.mais("coluna_marmore", 0, [5, 13], [9, 13], [5, 16], [9, 16]);
   s.mais("palmeira_vaso", 0, [0, 0], [14, 0], [0, 16], [14, 16]).mais("vaso_grande", 0, [5, 0], [9, 0]);
-  s.add("armchair_red", 2, 13, 6).add("armchair_red", 12, 13, 2).enc("O", "console_dourado", 7).enc("N", "relogio_carrilhao", 8);
+  s.add("poltrona_luxo", 2, 13, 2).add("poltrona_luxo", 12, 13, 6).enc("O", "console_dourado", 7).enc("N", "relogio_carrilhao", 8);
   s.lustres([7, 3], [7, 11], [3, 8], [11, 8]);
   s.par("O", "quadro_oleo_grande", 2.5, 1.9).par("O", "retrato_nobre", 9.5, 1.9).par("O", "espelho_dourado", 15.0, 1.6);
   s.item(9, 10, "Cartão de Visita dos Albuquerque", 0.5);
@@ -447,7 +449,7 @@ for (let i = 0; i < 6; i++) {
   const s = nova("escritorio", "Escritório de Alexander", 10, 11, "mansao_nobre", 31, 13, ANDAR, "O escritório de Alexander Albuquerque, CEO do Frigorífico Albuquerque: a mesa enorme virada para a cadeira, as estantes, o cofre no canto, o bar de nogueira, o sofá de couro e o mapa do Brasil com as unidades. Na parede, o retrato do fundador e os prêmios da empresa.");
   s.porta("O", 17, "salao");
   s.add("rug_aubusson", 3, 3, 4).add("mesa_ceo", 3, 4, 4).add("cadeira_ceo", 4, 6, 0);
-  s.add("chair_red", 3, 3, 4).add("chair_red", 5, 3, 4);
+  s.add("cadeira_jantar_luxo", 3, 3, 4).add("cadeira_jantar_luxo", 5, 3, 4);
   s.enc("O", "cofre", 0, segredo("cofre-escritorio", "O cofre", "Um cofre de aço do tamanho de um armário pequeno. A senha e o que há dentro ficam com o mestre."));
   s.enc("O", "estante_biblioteca", 1).enc("N", "estante_biblioteca", 2).enc("N", "bar_escritorio", 6);
   s.add("globo", 9, 1, 6).add("touro_bronze", 1, 9, 4).enc("L", "sofa_verissimo", 6).add("armchair_verissimo", 6, 9, 0);
@@ -496,7 +498,7 @@ for (let i = 0; i < 6; i++) {
   s.porta("S", 26, "hall_s");
   s.add("pool_table", 6, 2, 4).enc("N", "bar_counter", 3).enc("N", "bar_shelf", 5).add("stool_bar", 3, 1, 0).add("stool_bar", 4, 1, 0);
   s.enc("N", "arcade", 10).enc("N", "arcade", 11).enc("N", "jukebox", 13);
-  s.add("mesa_carteado", 10, 4, 4).cadeiras("chair_red", 10, 4, 2, 2, { o: [0, 1], l: [0, 1] });
+  s.add("mesa_carteado", 10, 4, 4).cadeiras("cadeira_jantar_luxo", 10, 4, 2, 2, { o: [0, 1], l: [0, 1] });
   s.enc("O", "tv_gamer", 3).add("sofa_verissimo", 2, 3, 6);
   s.par("O", "dartboard", 1.5, 1.6).par("N", "neon_bar", 8.0, 2.1, undefined, 0);
   s.lustres([7, 6], [11, 2]);
@@ -524,7 +526,8 @@ for (let i = 0; i < 6; i++) {
   s.add("estante_trofeus", 0, 0, 4).enc("N", "rack_esgrima", 1).enc("N", "nightstand", 3).enc("N", "cama_catarina", 4).enc("N", "nightstand", 7);
   s.escada("parede_escalada", 10, 0, 4, "mezanino");
   s.add("rug_ornate", 4, 3, 4).enc("S", "tv_gamer", 4).add("puff_gamer", 4, 5, 0).add("puff_gamer", 6, 5, 0);
-  s.par("O", "painel_trofeus", 4.0, 1.5).par("N", "fita_led", 6.0, 2.3, undefined, 0);
+  // os troféus de verdade (23/10, o Felipe: "esses troféus parecem pintura e não um troféu"): duas vitrines na parede
+  s.enc("O", "vitrine_trofeus", 2).enc("O", "vitrine_trofeus", 5).par("N", "fita_led", 6.0, 2.3, undefined, 0);
   s.lustres([5, 4]).item(9, 5, "Medalha de Ouro de Esgrima", 0.5);
   // as fotos e a luminária nos criados-mudos (23/10)
   s.em("porta_retratos", 3, 0, 4).em("desk_lamp", 7, 0, 4);
