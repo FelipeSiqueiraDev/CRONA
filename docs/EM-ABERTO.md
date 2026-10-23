@@ -2,6 +2,14 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 23/10 (tarde): o minimapa holográfico, a caminhada pelo minimapa e a mansão chique
+
+- **Minimapa novo** (`client/src/ui/minimapaHolo.ts` + `minimapa.ts`; o Felipe: "um minimapa meio isométrico, no estilo da foto, sem muita poluição"): a maquete de vidro azul num chão de grade. No terreno, os prédios são prismas (os blocos que se tocam são um prédio só, o nome uma vez); clicar num prédio abre o interior. Dentro, **um andar por vez**, com as **escadas** desenhadas no lugar delas (clicar troca o andar), a lista dos andares no canto e o nome de cada cômodo gravado no chão quando o zoom deixa. **Abre ampliado no lugar do grupo; a roda aproxima e afasta, arrastar move.** Saiu o cartão que subia de baixo (o Levar o grupo fica na lista de lugares). As portas foram tiradas a pedido dele. O desenho antigo continua atrás de `HOLO_LIGADO` no topo do `minimapa.ts`.
+- **Ctrl + clique no minimapa** (mensagem `rota`): as peças marcadas no tabuleiro (Ctrl + arrastar, ou a comandada) andam até o cômodo, de porta em porta; no terreno, até a casa clicada. O servidor acha o caminho pelas passagens (`caminhoEntreCenas`, `seguirRota` no `hotel.ts`; `andarParaPassagem` no `roomInstance.ts`). Teste em `server/test/locais.test.ts`; visto na prévia (três peças do corredor dos funcionários até o escritório).
+- **Mansão** (`MANSAO_REV` 4, no ar): 27 cenas (saiu a área de serviço; a biblioteca cresceu), a biblioteca de milionário, as 16 peças de luxo e a passada de densidade; os sete moradores no Hall. Plantas vistas de cima em `docs/planta-mansao/`. Detalhes em [`MANSAO-ALBUQUERQUE.md`](MANSAO-ALBUQUERQUE.md).
+- **Para o Felipe decidir:** a planta diz "Escritório de Alexander", mas no Elenco o pai é **Arthur Albuquerque** (a Marina é "secretária do Arthur"). Qual nome fica?
+- **Visto na prévia:** na primeira visita a uma sala, as peças novas podem aparecer um instante no desenho de reserva até a imagem chegar; na segunda, aparecem certas.
+
 ## Feito em 23/10: a Mansão Albuquerque refeita pela planta do Felipe
 
 - De 49 para 28 cenas (`MANSAO_REV` 2), pela planta ilustrada que o Felipe trouxe: salão principal com as duas escadarias, biblioteca, escritório de Alexander, sala de jantar, cozinha, despensa, a ala de serviço (seis quartos de funcionários, corredor, lavanderia, área de serviço); no 2º andar o hall, a suíte do casal, a sala de jogos e os quartos do Miguel, da Catarina e de hóspedes, cada um com o banheiro (cena à parte). O anexo ficou; o barracão, o terraço e as salas pequenas saíram. Lista e ligações em [`MANSAO-ALBUQUERQUE.md`](MANSAO-ALBUQUERQUE.md).

@@ -34,7 +34,9 @@ frente do central). Entradas: o pórtico (porta no meio da frente, que leva ao S
 ## A planta de 23/10 (menos cômodos, maiores)
 
 O Felipe trouxe a planta ilustrada ("tem muito espacinho pequeno só cheio de porta"): a mansão passou de 49 para 28 cenas
-(`MANSAO_REV` 2). Decisões dele: os banheiros das suítes são cenas à parte, os seis quartos dos funcionários também, o
+(`MANSAO_REV` 2) e, no mesmo dia, para 27 (`MANSAO_REV` 3: sai a área de serviço, a biblioteca cresce para o lugar dela).
+A planta vista de cima de cada andar, com os móveis: [`planta-mansao/planta-terreo.png`](planta-mansao/planta-terreo.png) e
+[`planta-mansao/planta-2andar.png`](planta-mansao/planta-2andar.png). Decisões dele: os banheiros das suítes são cenas à parte, os seis quartos dos funcionários também, o
 anexo fica e o barracão saiu. A planta não precisa ser 100% igual: o lavabo pequeno entre a suíte e a sala de jogos ficou de fora.
 
 ## Térreo (andar "Mansão Albuquerque") — cenas e ligações
@@ -43,16 +45,15 @@ Tamanho em casas (largura × fundo) e a posição na planta (x, y). `→` é a l
 
 | Cena | Tam. | Planta | Liga com | O que há |
 |---|---|---|---|---|
-| Salão Principal | 15×17 | 16,7 | S: jardim (a entrada principal); N: Cozinha; O: Área de Serviço e Biblioteca; L: Sala de Jantar e Escritório; duas escadarias para o Hall Superior | mármore xadrez, tapete vermelho da porta, colunas, a escultura sob o lustre, tapete redondo, relógio, poltronas vermelhas |
-| Biblioteca | 14×10 | 2,14 | L: Salão | estantes do chão ao teto, mesa de leitura com 8 cadeiras, escada de rodízio, poltronas, globo |
+| Salão Principal | 15×17 | 16,7 | S: jardim (a entrada principal); N: Cozinha; O: Biblioteca; L: Sala de Jantar e Escritório; duas escadarias para o Hall Superior | mármore xadrez, tapete vermelho da porta, colunas, a escultura sob o lustre, tapete redondo, relógio, poltronas vermelhas |
+| Biblioteca | 16×13 | 0,11 | L: Salão | as estantes em L nas duas paredes, a vitrine do ovo de joia no canto, o tapete imperial com quatro sofás capitonê e quatro bergères nas diagonais, a mesa de mármore negro (ver abaixo) |
 | Escritório de Alexander | 10×11 | 31,13 | O: Salão | mesa do CEO virada para a cadeira, estantes, cofre (pista oculta), bar, sofá, globo, touro de bronze, retrato do fundador (pista oculta), mapa do frigorífico, prêmios |
 | Sala de Jantar | 10×12 | 31,0 | O: Salão | mesa comprida de 20 lugares, lareira, aparador, armadura, quadros |
 | Cozinha | 10×7 | 16,0 | S: Salão; O: Corredor dos Funcionários; L: Despensa | armários, fogão, pia, geladeira, a ilha no meio |
 | Despensa | 5×5 | 26,0 | O: Cozinha | prateleira, adega, barris, sacas |
 | Corredor dos Funcionários | 16×3 | 0,4 | N: quartos 1 a 4; S: quartos 5 e 6 e Lavanderia; L: Cozinha | bancos, quadro de chaves |
 | Quartos de Funcionário 1 a 6 | 4×4 | 0..12,0 e 0..4,7 | o Corredor | cama de solteiro, criado-mudo, guarda-roupa ou cadeira |
-| Lavanderia | 8×4 | 8,7 | N: Corredor; S: Área de Serviço | tanques, máquinas, cestos |
-| Área de Serviço | 16×3 | 0,11 | N: Lavanderia; L: Salão | banco, aparador, vaso |
+| Lavanderia | 8×4 | 8,7 | N: Corredor | tanques, máquinas, cestos |
 
 ## 2º andar (andar "Mansão Albuquerque 2º")
 
@@ -78,6 +79,18 @@ pufes; o **canto das espadas de esgrima** (rack); e, perto da porta, a **parede 
 O mezanino é **uma cena à parte** (como o calabouço): o motor só sobe degrau de até 0,9 m, então a "segunda altura" virou a cena
 "Mezanino" no andar de mesmo nome, mais escura, com a faixa de LED roxa/ciana, a cadeira gamer, o teclado que brilha, os dois
 monitores, o computador, os pufes e as anotações.
+
+### O luxo (23/10, MANSAO_REV 4)
+
+O Felipe: "é a casa de milionários, tudo tem que ser chique". Peças novas em `pecas_px/mansao_luxo.py`: `sofa_luxo` e
+`sofa_luxo_vinho` (veludo capitonê, pés de latão), `poltrona_luxo` e `poltrona_luxo_verde` (bergère de medalhão dourada),
+`mesa_centro_luxo` (mármore negro e ouro), `vitrine_ovo` (o ovo de joia na caixa de vidro, no pedestal de mármore),
+`tapete_imperial` (6×5) e os objetinhos de mesa: `decanter_tacas`, `fruteira_prata`, `arranjo_flores`, `servico_cha`,
+`candelabro_prata`, `perfumes`, `porta_retratos`, `livros_couro`, `balde_champanhe`. A passada de densidade (a das
+referências de 15/10: densidade em três escalas) pôs esses objetinhos nas mesas, aparadores, cômodas e criados-mudos.
+
+**Os moradores no Hall (23/10, no jogo, não no seed):** Arthur Albuquerque, Helena Duarte, Antônio Valença, Marina Ferraz,
+Lúcia Moreira, Roberto Salles e Tiago Nobre, lado a lado no Salão Principal (casas 4 a 10 da fileira 10), de frente para a câmera.
 
 ### Fora
 
