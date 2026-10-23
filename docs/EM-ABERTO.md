@@ -4,8 +4,8 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 
 ## Feito em 23/10: as escolhas dos NPCs que a auditoria apontou
 
-- Miguel, Agatha, Nico e Rosa com todas as escolhas feitas, pelo livro (sem pendência e sem erro), gravadas no jogo com backup. O que cada um escolheu está no fim de [`AUDITORIA-REGRAS.md`](AUDITORIA-REGRAS.md). Agatha agora é agente de elite (200 PP), com afinidade em Sangue; o Nico perdeu 4 perícias que passavam do livro; o Miguel perdeu a Mochila Militar (limite da patente).
-- **Falta:** Ômega-99 e ??? (o Felipe faz depois); a mochila vazia da Agatha; as escolhas dos jogadores (Tepes, Catarina, Alosi) na aba Evolução.
+- Miguel, Agatha, Nico e Rosa com todas as escolhas feitas, pelo livro (sem pendência e sem erro), gravadas no jogo com backup. O que cada um escolheu está no fim de [`AUDITORIA-REGRAS.md`](AUDITORIA-REGRAS.md). Agatha agora é agente de elite (200 PP), com afinidade em Sangue (os poderes de elemento e 14 dos 25 rituais também); o Nico perdeu 4 perícias que passavam do livro; o Miguel perdeu a Mochila Militar (limite da patente).
+- **Falta:** Ômega-99 e ??? (o Felipe faz depois); as escolhas dos jogadores (Tepes, Catarina, Alosi) na aba Evolução.
 
 ## Feito em 22/10: auditoria geral das fichas (todas pelo livro)
 
