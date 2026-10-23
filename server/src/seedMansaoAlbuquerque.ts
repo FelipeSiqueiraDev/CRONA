@@ -509,11 +509,14 @@ for (let i = 0; i < 6; i++) {
   s.lustres([2, 5]);
 }
 {
-  const s = nova("jogos", "Sala de Jogos", 14, 8, "mansao_jogos", 22, 0, ANDAR2, "A sala de jogos: a mesa de sinuca sob a luminária, os fliperamas piscando num canto, a mesa de pôquer, a TV grande com o sofá e, ao fundo, o bar com as banquetas. Alguém jogou aqui até muito tarde.");
+  const s = nova("jogos", "Sala de Jogos", 14, 8, "mansao_jogos", 22, 0, ANDAR2, "A sala de jogos: a mesa de sinuca sob a luminária, os fliperamas piscando num canto, a mesa de 21, a TV grande com o sofá e, ao fundo, o bar com as banquetas. Alguém jogou aqui até muito tarde.");
   s.porta("S", 26, "hall_s");
   s.add("pool_table", 6, 2, 4).enc("N", "bar_counter", 3).enc("N", "bar_shelf", 5).add("stool_bar", 3, 1, 0).add("stool_bar", 4, 1, 0);
-  s.enc("N", "arcade", 10).enc("N", "arcade", 11).enc("N", "jukebox", 13);
-  s.add("mesa_carteado", 10, 4, 4).cadeiras("cadeira_jantar_luxo", 10, 4, 2, 2, { o: [0, 1], l: [0, 1] });
+  // 23/10: o segundo fliperama virou o Felipe's Fight (o de luta, só em dupla) e a mesa de pôquer, a de 21 em meia-lua:
+  // os jogadores sentam na curva (as cinco cadeiras), o dealer fica em pé atrás do lado reto (a casa 11, 3)
+  s.enc("N", "arcade", 10).enc("N", "arcade_luta", 11).enc("N", "jukebox", 13);
+  s.add("mesa_21", 10, 4, 4).add("cadeira_jantar_luxo", 9, 5, 2).add("cadeira_jantar_luxo", 13, 5, 6);
+  s.cadeiras("cadeira_jantar_luxo", 10, 4, 3, 2, { s: [0, 1, 2] });
   s.enc("O", "tv_gamer", 3).add("sofa_verissimo", 2, 3, 6);
   s.par("O", "dartboard", 1.5, 1.6).par("N", "neon_bar", 8.0, 2.1, undefined, 0);
   s.lustres([7, 6], [11, 2]);

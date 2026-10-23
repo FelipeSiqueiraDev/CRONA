@@ -72,6 +72,47 @@ beforeEach(() => {
 });
 
 describe('os jogos do bar: as mesas', () => {
+  test('o 21: o jogador senta na cadeira da mesa; ao começar, o dealer levanta e fica em pé atrás do lado reto', () => {
+    // a mesa de 21 num canto livre do bar, com uma cadeira na curva (embaixo) e outra na ponta
+    let lugar: { x: number; y: number } | null = null;
+    for (let y = 1; y < salao.map.height - 4 && !lugar; y++)
+      for (let x = 1; x < salao.map.width - 4 && !lugar; x++) {
+        const ok = salao.map.canPlace('mesa_21', x, y, 4).ok && salao.map.canPlace('cadeira_jantar_luxo', x + 1, y + 2, 0).ok && salao.map.canPlace('cadeira_jantar_luxo', x + 3, y + 1, 6).ok;
+        // e o chão em volta todo livre (para o dealer dar a volta até trás da mesa)
+        let volta = true;
+        for (let dy = -1; dy <= 3; dy++) for (let dx = -1; dx <= 4; dx++) if (salao.map.walkState(x + dx, y + dy) !== 'walk') volta = false;
+        if (ok && volta) lugar = { x, y };
+      }
+    assert.ok(lugar, 'tem um canto livre');
+    const { x, y } = lugar!;
+    const add = (defId: string, cx: number, cy: number, rot: number) => salao.map.addItem({ id: hotel.nextItemId(), defId, x: cx, y: cy, z: salao.map.canPlace(defId, cx, cy, rot).z, rot, state: 0 });
+    add('mesa_21', x, y, 4);
+    add('cadeira_jantar_luxo', x + 1, y + 2, 0);
+    add('cadeira_jantar_luxo', x + 3, y + 1, 6);
+    const a = celular('D.Tepes');
+    const b = celular('Catarina Albuquerque');
+    jogar('D.Tepes', 'mesa_21');
+    andar();
+    jogar('Catarina Albuquerque', 'mesa_21');
+    andar();
+    const [t, c] = [peca('D.Tepes'), peca('Catarina Albuquerque')];
+    const cadeiras = [`${x + 1},${y + 2}`, `${x + 3},${y + 1}`];
+    assert.ok(cadeiras.includes(`${t.x},${t.y}`) && cadeiras.includes(`${c.x},${c.y}`), 'os dois sentados nas cadeiras');
+    assert.equal(t.sit, 1);
+    assert.deepEqual(b.last('bar')!.eu, [1]);
+    // a Catarina quer ser o dealer; o Tepes começa
+    const mesa = a.last('bar')!.mesa;
+    b.send({ t: 'barJogo', mesa, dados: { tipo: 'quero', dealer: true }, registrar: true });
+    a.send({ t: 'barJogo', mesa, dados: { tipo: 'comecar', fichas: 100, semente: 3 }, registrar: true });
+    andar();
+    assert.deepEqual([c.x, c.y], [x + 1, y - 1], 'a Catarina em pé atrás da mesa');
+    assert.equal(c.sit, 0);
+    assert.equal(a.last('barJogo')!.dados.tipo, 'quero', 'o começar não volta para quem mandou');
+    assert.equal(b.last('barJogo')!.dados.tipo, 'comecar');
+    // quem reconecta recebe a mesa inteira: o "quero" e o começar
+    assert.deepEqual(celular('Catarina Albuquerque').last('bar')!.log.map((x) => (x.dados as { tipo: string }).tipo), ['quero', 'comecar']);
+  });
+
   test('o fliperama: a peça vai até a frente, vira para a tela, o fliperama acende e o jogo abre no celular', () => {
     const fone = celular('D.Tepes');
     const arc = salao.map.allItems().find((i) => i.defId === 'arcade')!;

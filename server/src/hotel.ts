@@ -102,10 +102,12 @@ interface MesaBar {
   tipo: bar.TipoJogoBar;
   lugares: { tokenId: number; nome: string; fichaId?: number }[];
   log: Record<string, unknown>[];
+  /** a cena do móvel */
+  sala?: number;
 }
-const NOME_MESA: Record<bar.TipoJogoBar, string> = { fliperama: 'o Feliperama', dardos: 'os dardos', sinuca: 'a sinuca' };
+const NOME_MESA: Record<bar.TipoJogoBar, string> = { fliperama: 'o Feliperama', dardos: 'os dardos', sinuca: 'a sinuca', vinteum: 'a mesa de 21', luta: "o Felipe's Fight" };
 /** "no Feliperama", "nos dardos", "na sinuca" */
-const NOME_EM: Record<bar.TipoJogoBar, string> = { fliperama: 'no Feliperama', dardos: 'nos dardos', sinuca: 'na sinuca' };
+const NOME_EM: Record<bar.TipoJogoBar, string> = { fliperama: 'no Feliperama', dardos: 'nos dardos', sinuca: 'na sinuca', vinteum: 'na mesa de 21', luta: "no Felipe's Fight" };
 
 /** As chaves do combate que guardam o id de uma peça (as outras contas, como a rodada, ficam como estão). */
 const CHAVES_DE_PECA = new Set(['id', 'quem', 'alvo', 'ator', 'alvos', 'participantes', 'ids', 'de', 'para']);
@@ -2538,7 +2540,7 @@ export class Hotel implements HotelApi {
       let aqui = this.mesas.get(itemId);
       if (aqui && aqui.lugares.length >= bar.MAX_JOGADORES[r.tipo]) return c.send({ t: 'error', msg: `${r.nome} chegou, mas ${jogo} encheu enquanto andava.` });
       if (!aqui) {
-        aqui = { id: itemId, tipo: r.tipo, lugares: [], log: [] };
+        aqui = { id: itemId, tipo: r.tipo, lugares: [], log: [], sala: room.data.id };
         this.mesas.set(aqui.id, aqui);
       }
       aqui.lugares.push({ tokenId, nome: r.nome, ...(f ? { fichaId: f.id } : {}) });
@@ -2586,10 +2588,23 @@ export class Hotel implements HotelApi {
     const dados = m.dados as Record<string, unknown>;
     if (JSON.stringify(dados).length > 4000) return;
     if (m.registrar === true) {
-      if (dados.tipo === 'comecar') mesa.log = [];
+      // a partida nova apaga as jogadas guardadas; no 21 o começo é a volta para a mesa (o "quero ser o dealer" vem antes)
+      if (mesa.tipo === 'vinteum' ? dados.tipo === 'mesa' : dados.tipo === 'comecar') mesa.log = [];
       if (mesa.log.length < 3000) mesa.log.push({ de, dados });
     }
     for (const { c: o } of this.telasDaMesa(mesa)) if (o !== c) o.send({ t: 'barJogo', mesa: mesa.id, de, dados });
+    // o 21 começou com um dealer: a peça dele levanta e vai para trás da mesa, em pé (23/10, o Felipe)
+    if (mesa.tipo === 'vinteum' && dados.tipo === 'comecar' && de === 0) {
+      const dealer = this.dealerDoLog(mesa);
+      if (dealer !== null && mesa.sala !== undefined) this.rooms.get(mesa.sala)?.dealerEmPe(mesa.lugares[dealer].tokenId, mesa.id);
+    }
+  }
+
+  /** O dealer do 21 pela mesa guardada (o primeiro lugar que marcou "Ser o dealer" antes de começar). */
+  private dealerDoLog(mesa: MesaBar): number | null {
+    let p = bar.vinteum.nova(mesa.lugares.length);
+    for (const x of mesa.log) p = bar.vinteum.jogar(p, typeof x.de === 'number' ? x.de : -1, (x.dados ?? {}) as Record<string, unknown>);
+    return p.fase === 'mesa' ? null : p.dealer;
   }
 
   // ---------- contas (a tela de entrada) ----------

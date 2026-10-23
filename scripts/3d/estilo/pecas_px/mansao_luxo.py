@@ -19,7 +19,7 @@ import casa as CA
 import escritorio as ES
 import mansao_conforto as MC
 import mansao_quartos as MQ
-from base_estilo import hx, liso, vol, _tom, _p1_rampa, _poligono_rodado, PH
+from base_estilo import hx, liso, vol, _tom, _p1_rampa, _poligono_rodado, PH, PZ
 from motor import emissivo
 
 M = BE.M
@@ -442,7 +442,234 @@ def vitrine_trofeus():
     peg(x0, x1, y0, y1)
 
 
+# =====================================================================================================================
+# a mesa de 21 (3 x 2, 0,8 m; 23/10, o Felipe: "aquelas que têm formato de C, sabe?! que o dealer fica em pé"): a
+# meia-lua de feltro verde com o friso de couro vinho almofadado na curva (os jogadores sentam ali), o lado reto de
+# nogueira para o dealer em pé, a bandeja de fichas embutida, o sapato das cartas, os círculos de aposta e as duas
+# linhas de ouro pintadas no feltro, sobre a saia de couro com o filete de latão e o pedestal duplo
+# =====================================================================================================================
+def mesa_21():
+    xc, y0 = 1.125, 0.1                   # o meio do lado reto (o do dealer)
+    zr, zf = 0.8, 0.765                  # o alto do couro e o feltro
+    RX, RY = 1.06, 1.33                  # a curva de fora (vai a 1,43 m do lado reto)
+    BI = 0.14                            # a largura do couro
+    N = 18
+
+    def curva(rx, ry):
+        return [(xc + rx * math.cos(math.pi * i / N), y0 + ry * math.sin(math.pi * i / N)) for i in range(N + 1)]
+    O = curva(RX, RY)
+    I = curva(RX - BI, RY - BI)
+
+    def dist(P):
+        return np.sqrt(((P[:, 0] - xc) / (RX - BI)) ** 2 + ((P[:, 1] - y0) / (RY - BI)) ** 2)
+
+    def feltro(L, n, P):
+        d = dist(P)
+        a = np.arctan2((P[:, 1] - y0) / (RY - BI), (P[:, 0] - xc) / (RX - BI))
+        out = np.tile(hx('#23744a'), (len(P), 1))
+        out = np.where((d > 0.62)[:, None], hx('#206c45'), out)
+        out = np.where((d > 0.86)[:, None], hx('#1c623e'), out)
+        out = np.where((d < 0.3)[:, None], hx('#267a4e'), out)
+        # as duas linhas de ouro pintadas (o arco do seguro e o da frase)
+        for r in (0.42, 0.52):
+            out = np.where((np.abs(d - r) < 0.012)[:, None], hx('#c8a040'), out)
+        # os cinco círculos de aposta na curva, a 0,74 do raio
+        for k in range(5):
+            ak = math.pi * (0.14 + 0.18 * k)
+            cxk = xc + (RX - BI) * 0.74 * math.cos(ak)
+            cyk = y0 + (RY - BI) * 0.74 * math.sin(ak)
+            r = np.sqrt((P[:, 0] - cxk) ** 2 + (P[:, 1] - cyk) ** 2)
+            out = np.where((np.abs(r - 0.085) < 0.011)[:, None], hx('#e8dcb8'), out)
+        # a sombra do couro na beira e a da bandeja
+        out = np.where(((d > 0.95) & (a > math.pi * 0.5))[:, None], hx('#165034'), out)
+        return out
+    o = novo()
+    MQ.C().face_plana([(x, y, zf) for (x, y) in I], (0, 0, 1), emissivo(feltro), M, o)
+
+    def couro_alto(L, n, P):
+        d = np.sqrt(((P[:, 0] - xc) / RX) ** 2 + ((P[:, 1] - y0) / RY) ** 2)
+        t = (1 - d) / (BI / RX)
+        out = np.tile(hx('#5a1620'), (len(P), 1))
+        out = np.where(((t > 0.25) & (t < 0.75))[:, None], hx('#74202c'), out)
+        out = np.where(((t > 0.38) & (t < 0.56))[:, None], hx('#8a2a36'), out)
+        out = np.where((t < 0.08)[:, None], hx('#3a0c14'), out)
+        # o pesponto dourado
+        ang = np.arctan2(P[:, 1] - y0, P[:, 0] - xc)
+        pes = (np.abs(t - 0.86) < 0.06) & (np.floor(ang * 60) % 2 == 0)
+        return np.where(pes[:, None], hx('#d0a040'), out)
+    couro_lado = liso('#4a1018')
+    for k in range(N):
+        a, b = O[k], O[k + 1]
+        c_, d_ = I[k + 1], I[k]
+        am = math.pi * (k + 0.5) / N
+        nx, ny = math.cos(am) * RY, math.sin(am) * RX
+        ln = math.hypot(nx, ny)
+        nx, ny = nx / ln, ny / ln
+        MQ.C().face_plana([(a[0], a[1], zr), (b[0], b[1], zr), (c_[0], c_[1], zr), (d_[0], d_[1], zr)], (0, 0, 1), emissivo(couro_alto), M, o)
+        MQ.C().face_plana([(d_[0], d_[1], zf), (c_[0], c_[1], zf), (c_[0], c_[1], zr), (d_[0], d_[1], zr)], (-nx, -ny, 0), liso('#2a0a10'), M, o)
+        MQ.C().face_plana([(a[0], a[1], 0.6), (b[0], b[1], 0.6), (b[0], b[1], zr), (a[0], a[1], zr)], (nx, ny, 0), couro_lado, M, o)
+        # o filete de latão em volta da saia
+        MQ.C().face_plana([(a[0], a[1], 0.62), (b[0], b[1], 0.62), (b[0], b[1], 0.64), (a[0], a[1], 0.64)], (nx, ny, 0),
+                          liso('#d8b050' if k % 2 == 0 else '#c8a040'), M, o)
+    # o lado reto do dealer: a borda de nogueira com o friso de ouro (de x0 a x1, em y0)
+    x0, x1 = xc - RX, xc + RX
+    cx((x0, x1, y0 - 0.06, y0, 0.6, zr), {'*': liso('#4a2614'), 'frente': liso('#5a3018'), 'cima': liso('#6a3a1c'), 'costas': liso('#3a1e10')}, ch=0.008)
+    cx((x0, x1, y0 - 0.065, y0 - 0.06, 0.66, 0.68), ouro(), ch=0.0)
+    # a bandeja de fichas embutida no feltro, junto do dealer: as colunas de fichas deitadas, das cores do cassino
+    bx0, bx1, by0, by1 = xc - 0.42, xc + 0.42, y0 + 0.02, y0 + 0.2
+    cx((bx0, bx1, by0, by1, zf - 0.02, zf + 0.012), {'*': liso('#2a1610'), 'cima': liso('#3a1e10')}, ch=0.0)
+    cores = ['#d8402f', '#2f9a52', '#232328', '#7a3ab0', '#d8a830', '#f0ece0', '#2a4aa8', '#d8402f', '#2f9a52', '#232328']
+    lc = (bx1 - bx0 - 0.04) / len(cores)
+    for k, cor in enumerate(cores):
+        xa = bx0 + 0.02 + k * lc
+        claro = '#%02x%02x%02x' % tuple(min(255, int(int(cor[q:q + 2], 16) * 1.2)) for q in (1, 3, 5))
+        listra = emissivo(lambda L, n, P, cor=cor: np.where((np.floor(P[:, 1] / PH) % 3 == 0)[:, None], hx('#f4f0e6'), np.tile(hx(cor), (len(P), 1))))
+        cx((xa + 0.004, xa + lc - 0.004, by0 + 0.02, by1 - 0.02, zf + 0.012, zf + 0.05), {'*': listra, 'cima': listra, 'frente': liso(claro)}, ch=0.0)
+    # o sapato das cartas (à direita do dealer) e a pilha do descarte (à esquerda)
+    xs, ys = xc + 0.66, y0 + 0.16
+    cx((xs - 0.08, xs + 0.08, ys - 0.11, ys + 0.11, zf, zf + 0.09), {'*': liso('#1a1a1e'), 'cima': liso('#2a2a30'), 'frente': liso('#24242a')}, ch=0.006)
+    cx((xs - 0.065, xs + 0.065, ys + 0.09, ys + 0.115, zf + 0.02, zf + 0.075), {'*': liso('#7a1824'), 'frente': liso('#8a2030')}, ch=0.0)
+    cx((xs - 0.07, xs + 0.07, ys + 0.105, ys + 0.12, zf + 0.0, zf + 0.02), ouro(), ch=0.0)
+    xd, yd = xc - 0.66, y0 + 0.16
+    cx((xd - 0.06, xd + 0.06, yd - 0.08, yd + 0.08, zf, zf + 0.012), {'*': liso('#c8c0b0'), 'cima': liso('#7a1824')}, ch=0.0)
+    # as cartas de uma mão na mesa e as fichas apostadas em dois círculos
+    for (k, ang) in ((1, 0.2), (3, -0.15)):
+        ak = math.pi * (0.14 + 0.18 * k)
+        cxk = xc + (RX - BI) * 0.74 * math.cos(ak)
+        cyk = y0 + (RY - BI) * 0.74 * math.sin(ak)
+        MQ._ficha(cxk, cyk, zf, ['#d8402f', '#232328'][k % 2 == 1], 4 if k == 1 else 6)
+        MQ._carta(cxk + 0.03, cyk - 0.15, zf, ang)
+        MQ._carta(cxk + 0.065, cyk - 0.14, zf, ang + 0.12)
+    MQ._carta(xc - 0.03, y0 + 0.36, zf, 0.0)
+    MQ._carta(xc + 0.02, y0 + 0.37, zf, 0.05, verso=True)
+    # o pedestal: duas colunas torneadas de nogueira sob a mesa, com os pés de garra dourados
+    for lx in (xc - 0.5, xc + 0.5):
+        CA.perna_torneada(lx, y0 + 0.55, 0.0, 0.6, 0.1, '#4a2614')
+        o2 = novo()
+        MQ.elip((lx, y0 + 0.55, 0.03), (0.13, 0.13, 0.035), '#c8a040', o2)
+    peg(x0, x1, y0 - 0.06, y0 + RY)
+
+
+# =====================================================================================================================
+# a jukebox (1 x 1, 1,6 m; 23/10, o Felipe: "temos que melhorar essa jukebox aí... tá bem feia"): a clássica de arco,
+# o gabinete de nogueira com a frente toda em vidro: os tubos de luz coloridos (com as bolhas) subindo pelos lados e
+# contornando o arco, o friso cromado, a cúpula com o leque dourado, a janela dos discos (o disco no prato e a fileira
+# das etiquetas de escolher) e a grade de som dourada embaixo. Estado 0 ligada (acesa), '1' desligada.
+# =====================================================================================================================
+_ARCO = [(0.0, '#ff4a3a'), (0.2, '#ff9a2a'), (0.4, '#ffd84a'), (0.6, '#5ae070'), (0.8, '#4ab0ff'), (1.0, '#c060ff')]
+
+
+def _cor_arco(t):
+    t = np.clip(t, 0, 1)
+    out = np.zeros((len(t), 3))
+    for (a, ca), (b, cb) in zip(_ARCO, _ARCO[1:]):
+        m = (t >= a) & (t <= b)
+        k = ((t - a) / (b - a))[:, None]
+        out = np.where(m[:, None], hx(ca) * (1 - k) + hx(cb) * k, out)
+    return out
+
+
+def jukebox(ligada=True):
+    x0, x1 = 0.07, 0.68
+    y0, y1 = 0.12, 0.6
+    zc, zt = 1.12, 1.58                     # onde o arco começa e o alto dele
+    xm, rx = (x0 + x1) / 2, (x1 - x0) / 2
+    luz = 1.0 if ligada else 0.32
+
+    def apaga(c):
+        return c * luz + hx('#141018') * (1 - luz)
+
+    def frente(L, n, P):
+        X, Z = P[:, 0], P[:, 2]
+        dx = (X - xm) / rx
+        dz = np.where(Z > zc, (Z - zc) / (zt - zc), 0.0)
+        d = np.sqrt(dx * dx + dz * dz)
+        # o caminho ao longo do tubo: de baixo à esquerda, pelo arco, até embaixo à direita (0 a 1)
+        ang = np.arctan2(dz, dx)
+        ao_longo = np.where(Z > zc, 0.5 - (ang - math.pi / 2) / math.pi * 0.5, np.where(dx < 0, Z / zc * 0.25, Z / zc * 0.25))
+        out = np.tile(hx('#2a1810'), (len(P), 1))
+        # ---- o miolo (dentro dos tubos): de baixo para cima
+        dentro = d < 0.74
+        # a base cromada
+        base = Z < 0.08
+        # a grade de som: a madeira com a treliça dourada em losango e o painel de luz no meio
+        grade = dentro & (Z >= 0.08) & (Z < 0.52)
+        lu = (X - x0) / PH
+        lz = Z / PH
+        trel = ((np.floor(lu + lz) % 6 == 0) | (np.floor(lu - lz) % 6 == 0))
+        out = np.where(grade[:, None], hx('#3a2216'), out)
+        out = np.where((grade & trel)[:, None], hx('#d0a040'), out)
+        painel = grade & (np.abs(dx) < 0.32) & (Z > 0.16) & (Z < 0.44)
+        bolha = (np.floor(lu) % 3 == 1) & (np.floor(lz) % 3 == 1)
+        out = np.where(painel[:, None], apaga(_cor_arco(Z / 0.5)) * 0.75 + hx('#ffffff') * 0.0, out)
+        out = np.where((painel & bolha)[:, None], apaga(hx('#fff4d0')), out)
+        # o friso cromado no meio, com a faixa de luz
+        friso = dentro & (Z >= 0.52) & (Z < 0.6)
+        out = np.where(friso[:, None], hx('#d8dee4'), out)
+        out = np.where((friso & (Z > 0.55) & (Z < 0.57))[:, None], apaga(hx('#ff9a2a')), out)
+        out = np.where((friso & (Z < 0.53))[:, None], hx('#8a949c'), out)
+        # a janela dos discos: o vidro escuro, o disco no prato (o preto com a etiqueta vermelha) e as etiquetas creme
+        jan = dentro & (Z >= 0.6) & (Z < zc + 0.06)
+        out = np.where(jan[:, None], apaga(hx('#241a2a')) * 0.6 + hx('#0a0810') * 0.4, out)
+        # a pilha dos discos guardados (as bordas prateadas) embaixo do prato
+        pilha = jan & (np.abs(dx) < 0.5) & (Z > 0.82) & (Z < 0.88)
+        out = np.where((pilha & (np.floor(Z / PZ) % 2 == 0))[:, None], hx('#a8b0b8'), out)
+        out = np.where((pilha & (np.floor(Z / PZ) % 2 == 1))[:, None], hx('#1a1a20'), out)
+        ex, ez = (X - xm) / 0.21, (Z - 0.97) / 0.075
+        disco = jan & (ex * ex + ez * ez < 1)
+        out = np.where(disco[:, None], hx('#16161c'), out)
+        out = np.where((disco & (ex * ex + ez * ez < 0.7) & (ex * ex + ez * ez > 0.6))[:, None], hx('#4a4a56'), out)
+        out = np.where((disco & (ex * ex + ez * ez < 0.12))[:, None], apaga(hx('#e8c040')), out)
+        out = np.where((disco & (ex * ex + ez * ez < 0.015))[:, None], hx('#101014'), out)
+        # o braço do toca-discos, cromado, vindo da direita
+        braco = jan & (np.abs(Z - (1.02 - (X - xm) * 0.25)) < PZ * 0.8) & (X > xm + 0.04) & (X < xm + 0.25)
+        out = np.where(braco[:, None], hx('#d8dee4'), out)
+        out = np.where((jan & (np.abs(ez) < 1.25) & (np.abs(ex) > 1.05) & (np.abs(ex) < 1.5))[:, None], hx('#c8ccd4'), out)
+        etiq = jan & (Z > 0.64) & (Z < 0.78) & (np.abs(dx) < 0.62)
+        col = np.floor((X - (xm - 0.62 * rx)) / (0.124 * rx))
+        etq = etiq & (((Z > 0.655) & (Z < 0.705)) | ((Z > 0.72) & (Z < 0.77))) & ((X - (xm - 0.62 * rx)) % (0.124 * rx) > PH)
+        out = np.where(etq[:, None], apaga(hx('#f4ecd4')), out)
+        out = np.where((etq & (col % 2 == 0) & (np.abs(Z - 0.68) < PH * 0.6))[:, None], hx('#c83a3a'), out)
+        # a cúpula do alto: o vidro com o leque dourado
+        cup = dentro & (Z >= zc + 0.06)
+        raio = np.arctan2(Z - (zc + 0.06), X - xm)
+        leque = (np.floor(raio / (math.pi / 14)) % 2 == 0)
+        out = np.where(cup[:, None], apaga(hx('#5a2a5a')), out)
+        out = np.where((cup & leque)[:, None], apaga(hx('#d8a040')) * 0.85 + hx('#2a1830') * 0.15, out)
+        out = np.where((cup & (d > 0.66))[:, None], hx('#d8dee4'), out)
+        # ---- os tubos de luz (os pilares e o arco): o cromo por dentro, as cores e as bolhas
+        tubo = (d >= 0.74) & (d < 0.95)
+        cor = apaga(_cor_arco(ao_longo))
+        brilho = 1 + 0.35 * np.cos((d - 0.845) / 0.105 * math.pi / 2) ** 2
+        out = np.where(tubo[:, None], np.clip(cor * brilho[:, None], 0, 255), out)
+        bol = tubo & (np.floor(ao_longo * 90) % 7 == 0) & (np.abs(d - 0.845) < 0.04)
+        out = np.where(bol[:, None], apaga(hx('#fffaf0')), out)
+        out = np.where(((d >= 0.72) & (d < 0.75))[:, None], hx('#c8ccd4'), out)
+        # o cromo de fora do arco
+        out = np.where((d >= 0.95)[:, None], hx('#e4e8ec'), out)
+        out = np.where((d >= 0.985)[:, None], hx('#9aa2aa'), out)
+        out = np.where(base[:, None], hx('#c8ccd4'), out)
+        out = np.where((base & (Z < 0.02))[:, None], hx('#6a7078'), out)
+        return out
+
+    perfil = MC.arco_perfil(x0, x1, 0.0, zc, zt, n=16)
+    nog = {'*': liso('#4a2614'), 'lado': liso('#5a3018'), 'cima': liso('#6a3a1c'), 'costas': liso('#2a160c')}
+    MC.extruda_xz(perfil, y0, y1, nog, novo())
+    # a frente de vidro aceso (um objeto de luz: o jogo a deixa brilhar no escuro)
+    if ligada:
+        o = CZ.c.novo_obj(3, contorno=False, sombra=False)
+        CZ.luzes.add(o)
+    else:
+        o = novo()
+    MC.extruda_xz(perfil, y1, y1 + 0.008, {'*': emissivo(frente), 'frente': emissivo(frente)}, o)
+    # o rodapé cromado um pouco mais largo e os pezinhos
+    cx((x0 - 0.01, x1 + 0.01, y0 - 0.01, y1 + 0.02, 0.0, 0.05), {'*': liso('#c8ccd4'), 'cima': liso('#e4e8ec')}, ch=0.006)
+    peg(x0 - 0.01, x1 + 0.01, y0 - 0.01, y1 + 0.02)
+
+
 ITENS = {
+    'jukebox': (1, 1, (0.0, 0.0), lambda: jukebox(True), {'1': lambda: jukebox(False)}),
+    'mesa_21': (3, 2, (0.0, 0.0), mesa_21, {}),
     'cadeira_jantar_luxo': (1, 1, (0.0, 0.0), cadeira_jantar_luxo, {}),
     'cadeira_cabeceira': (1, 1, (0.0, 0.0), cadeira_cabeceira, {}),
     'vitrine_trofeus': (3, 1, (0.0, 0.0), vitrine_trofeus, {}),

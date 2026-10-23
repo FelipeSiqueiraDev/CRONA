@@ -7,7 +7,7 @@
  *   canto, para ele jogar pelo NPC sem perder o tabuleiro. Dois NPCs na mesma mesa: a mesma janela
  *   joga pelos dois (na vez de cada um).
  *
- * Cada jogo é uma `TelaDoBar` (fliperama.ts, dardos.ts, sinuca.ts).
+ * Cada jogo é uma `TelaDoBar` (fliperama.ts, dardos.ts, sinuca.ts, vinteum.ts).
  */
 import { bar, type ServerMsg } from '@crona/shared';
 import type { App } from './app';
@@ -16,6 +16,8 @@ import { COR } from './fliperamaJogos';
 import { Fliperama } from './fliperama';
 import { Dardos } from './dardos';
 import { Sinuca } from './sinuca';
+import { Vinteum } from './vinteum';
+import { Luta } from './luta';
 import { sfx } from './sfx';
 
 export type Dados = Record<string, unknown>;
@@ -52,7 +54,7 @@ export interface TelaDoBar {
 }
 
 const reduzido = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-const NOME: Record<bar.TipoJogoBar, string> = { fliperama: 'Feliperama', dardos: 'Dardos', sinuca: 'Sinuca' };
+const NOME: Record<bar.TipoJogoBar, string> = { fliperama: 'Feliperama', dardos: 'Dardos', sinuca: 'Sinuca', vinteum: '21', luta: "Felipe's Fight" };
 
 interface Aberta {
   tipo: bar.TipoJogoBar;
@@ -133,7 +135,7 @@ export class BarJogos {
     }
     const nova = !a;
     if (!a) {
-      const tela: TelaDoBar = m.tipo === 'fliperama' ? new Fliperama() : m.tipo === 'dardos' ? new Dardos() : new Sinuca();
+      const tela: TelaDoBar = m.tipo === 'fliperama' ? new Fliperama() : m.tipo === 'dardos' ? new Dardos() : m.tipo === 'vinteum' ? new Vinteum() : m.tipo === 'luta' ? new Luta() : new Sinuca();
       const titulo = this.modo === 'mestre' ? h('b', null, '') : null;
       const caixa =
         this.modo === 'mestre'

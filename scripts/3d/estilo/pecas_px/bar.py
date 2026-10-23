@@ -1010,8 +1010,10 @@ _FLIP_DENTRO = [(0.1, 0.0), (0.6, 0.0), (0.6, 0.86), (0.685, 0.915), (0.685, 0.9
                 (0.5, 1.78), (0.1, 1.78)]
 
 
-def arcade(ligado=True):
+def arcade(ligado=True, luta=False):
     """
+    (luta: o Felipe's Fight, 23/10: os lados pretos com as chamas, o friso dourado, o painel de dois com duas alavancas e
+    seis botões, a tela com os dois lutadores e as barras de vida, o letreiro vermelho com o raio do "contra".)
     O fliperama do bar (1,80 m): o gabinete preto com a arte de faixas nos lados e o friso vermelho, o painel com a
     alavanca e os botões, o moedeiro com as fendas acesas, a tela inclinada (ligado: o jogo de blocos colorido; desligado:
     o vidro escuro), o letreiro aceso em cima (formas coloridas, sem letra).
@@ -1028,12 +1030,19 @@ def arcade(ligado=True):
     # os lados: o preto com as faixas em diagonal (vermelho, laranja, amarelo) e o friso vermelho na borda
     def lado(L, n, P):
         Y, Z = P[:, 1], P[:, 2]
-        out = np.tile(hx('#1e1c26'), (len(P), 1))
+        out = np.tile(hx('#1e1c26' if not luta else '#141014'), (len(P), 1))
+        if luta:
+            # as chamas subindo de baixo: três línguas onduladas (vermelho, laranja, amarelo)
+            onda = np.sin(Y * 38.0) * 0.07 + np.sin(Y * 17.0 + 1.3) * 0.05
+            for (topo, cor) in ((0.95, '#b8201a'), (0.72, '#e8602a'), (0.48, '#f0c040')):
+                out = np.where((Z < topo + onda)[:, None], hx(cor), out)
+            out = np.where((Z < 0.12)[:, None], hx('#141014'), out)
+            return out
         s = (Z - 0.5) - (Y - 0.1) * 1.3
         for (a, cor) in ((0.0, '#c8302a'), (0.07, '#e8782a'), (0.14, '#e8c030')):
             out = np.where(((s > a) & (s < a + 0.045))[:, None], hx(cor), out)
         return out
-    FRISO = liso('#b8302a')
+    FRISO = liso('#b8302a' if not luta else '#d0a040')
     for (a, b) in ((x0, x0 + t), (x1 - t, x1)):
         o = novo()
         extrudar_x(FORA, a, b, [FRISO] * len(FORA), o, PED, emissivo(lado))
@@ -1071,13 +1080,16 @@ def arcade(ligado=True):
     def no_painel(f):
         return ya + (yb - ya) * f, za + (zb - za) * f
     yj, zj = no_painel(0.45)
-    _barra((mx - 0.13 - PH, mx - 0.13 + PH, yj - PH, yj + PH, zj, zj + 0.07), '#1a1a1a', quina=False)
-    o = novo()
-    C().elipsoide(np.array([mx - 0.13, yj, zj + 0.085]), np.array([0.028, 0.028, 0.026]), liso('#d0302a'), o, brilho=0.6)
-    for k, (dx, cor) in enumerate(((0.0, '#e8c030'), (0.07, '#2a8ad8'), (0.14, '#3ab84a'))):
-        yb_, zb_ = no_painel(0.5 if k != 1 else 0.35)
+    alavancas = ((mx - 0.13, '#d0302a'),) if not luta else ((mx - 0.22, '#d0302a'), (mx + 0.05, '#2a6ad8'))
+    for (xa_, cbola) in alavancas:
+        _barra((xa_ - PH, xa_ + PH, yj - PH, yj + PH, zj, zj + 0.07), '#1a1a1a', quina=False)
         o = novo()
-        C().cilindro(mx + dx, yb_, 0.022, zb_ - 0.005, zb_ + 0.018, vol(mx + dx, yb_, cor, brilho=0.4), M, o, lados=12, tampa_mat=liso(_hex(_tom(hx(cor), 1.2))))
+        C().elipsoide(np.array([xa_, yj, zj + 0.085]), np.array([0.028, 0.028, 0.026]), liso(cbola), o, brilho=0.6)
+    botoes = ((0.0, '#e8c030'), (0.07, '#2a8ad8'), (0.14, '#3ab84a')) if not luta else         ((-0.15, '#e8302a'), (-0.1, '#2a8ad8'), (-0.05, '#f0c040'), (0.12, '#e8302a'), (0.17, '#2a8ad8'), (0.22, '#f0c040'))
+    for k, (dx, cor) in enumerate(botoes):
+        yb_, zb_ = no_painel((0.5 if k % 3 != 1 else 0.35) if luta else (0.5 if k != 1 else 0.35))
+        o = novo()
+        C().cilindro(mx + dx, yb_, 0.02 if luta else 0.022, zb_ - 0.005, zb_ + 0.018, vol(mx + dx, yb_, cor, brilho=0.4), M, o, lados=12, tampa_mat=liso(_hex(_tom(hx(cor), 1.2))))
     # a tela (inclinada, recuada na moldura)
     (yf0, zf0), (yg, zg) = DENTRO[5], DENTRO[6]
     dy, dz = yg - yf0, zg - zf0
@@ -1103,6 +1115,20 @@ def arcade(ligado=True):
             out = np.tile(hx('#1e2a28'), (len(P), 1))
             ref = (np.floor(X / PH) - np.floor(s / (1 / 56.0))) % 19 < 2
             return np.where(ref[:, None], hx('#34403c'), out)
+        if luta:
+            # a luta na tela: o céu roxo, o chão, os dois lutadores (vermelho e azul) e as duas barras de vida
+            out = np.tile(hx('#34164a'), (len(P), 1))
+            nv = int(round((s1 - s0) / bloco_v))
+            out = np.where((v < 2)[:, None], hx('#3a3448'), out)
+            out = np.where(((v >= 2) & (v < 4) & ((u * 7) % 5 == 0))[:, None], hx('#140a1e'), out)
+            for (uc, cor, cp) in ((nu * 0.32, '#d84848', '#e8b98f'), (nu * 0.68, '#4a6ae0', '#d89a6a')):
+                corpo = (np.abs(u - uc) < 1.2) & (v >= 2) & (v < 5)
+                out = np.where(corpo[:, None], hx(cor), out)
+                out = np.where(((np.abs(u - uc) < 0.8) & (v >= 5) & (v < 6))[:, None], hx(cp), out)
+            out = np.where(((v == nv - 1) & (u >= 1) & (u < nu * 0.45))[:, None], hx('#ecec68'), out)
+            out = np.where(((v == nv - 1) & (u > nu * 0.55) & (u < nu - 1))[:, None], hx('#ecec68'), out)
+            ref = ((np.floor(X / PH) + np.floor(s / (1 / 56.0))) % 23) < 2
+            return np.where(ref[:, None], _tom(out, 1.35), out)
         out = np.tile(hx('#141a3a'), (len(P), 1))
         # a pilha de blocos (embaixo) e a peça caindo, cada cor um tom
         cores = np.stack([hx(x) for x in ('#e83a3a', '#3ad8e8', '#f0d040', '#5ae05a', '#b05ae8', '#f08a2a')])
@@ -1136,6 +1162,18 @@ def arcade(ligado=True):
         s = (P[:, 1] - yh) * my + (P[:, 2] - zh_) * mz
         u = (X - (x0 + t)) / (x1 - x0 - 2 * t)
         v = s / Lm
+        if ligado and luta:
+            # o vermelho com o raio amarelo no meio (o "contra") e as duas cabeças de lutador, uma de cada lado
+            out = np.tile(hx('#a81a14'), (len(P), 1))
+            out = np.where(((v < 0.14) | (v > 0.86))[:, None], hx('#f0c040'), out)
+            raio = np.abs((u - 0.5) - (v - 0.5) * 0.35 * np.sign(np.sin(v * 9.0))) < 0.05
+            out = np.where((raio & (v > 0.18) & (v < 0.82))[:, None], hx('#fff4a0'), out)
+            for (cu, cor) in ((0.22, '#d84848'), (0.78, '#4a6ae0')):
+                cab = (np.abs(u - cu) < 0.08) & (np.abs(v - 0.5) < 0.22)
+                out = np.where(cab[:, None], hx('#e8b98f'), out)
+                out = np.where((cab & (v > 0.6))[:, None], hx('#3a2414'), out)
+                out = np.where(((np.abs(u - cu) < 0.1) & (np.abs(v - 0.46) < 0.035))[:, None], hx(cor), out)
+            return out
         if ligado:
             out = np.tile(hx('#2a1a5a'), (len(P), 1))
             out = np.where((v < 0.18)[:, None], hx('#e83a8a'), out)
@@ -1275,6 +1313,7 @@ ITENS = {
     'poltrona_preta': (1, 1, (0.0, 0.0), poltrona_preta, {}),
     'sofa_booth': (2, 1, (0.0, 0.0), sofa_booth, {}),
     'arcade': (1, 1, (0.0, 0.0), lambda: arcade(True), {'1': lambda: arcade(False)}),
+    'arcade_luta': (1, 1, (0.0, 0.0), lambda: arcade(True, luta=True), {'1': lambda: arcade(False, luta=True)}),
     'floor_lamp': (1, 1, (0.0, 0.0), lambda: floor_lamp(True), {'1': lambda: floor_lamp(False)}),
     'compass_floor': (3, 3, (0.0, 0.0), compass_floor, {}),
 }

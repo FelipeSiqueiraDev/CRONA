@@ -1495,7 +1495,7 @@ export class RoomInstance {
     const wall = floor ? undefined : this.map.getWallItem(itemId);
     let alvo: Point | null = null;
     let olha: Point | null = null;
-    if (floor?.defId === 'arcade') {
+    if (floor?.defId === 'arcade' || floor?.defId === 'arcade_luta') {
       olha = { x: floor.x, y: floor.y };
       alvo = this.stairFoot(floor);
       if (alvo && this.occupied(alvo.x, alvo.y, u.client.id)) alvo = this.freeNear(alvo.x, alvo.y, u.client.id);
@@ -1505,6 +1505,13 @@ export class RoomInstance {
         this.persist();
         this.broadcastFloor('itemUpdate', aceso);
       }
+    } else if (floor?.defId === 'mesa_21') {
+      // o 21: senta na cadeira livre em volta da mesa mais perto (o dealer levanta depois, ao começar)
+      const cadeira = this.cadeiraDaMesa(floor, u);
+      const def = getFurni(floor.defId);
+      const fp = def ? footprint(def, floor.rot) : { sx: 1, sy: 1 };
+      olha = { x: floor.x + Math.floor(fp.sx / 2), y: floor.y + Math.floor(fp.sy / 2) };
+      alvo = cadeira ?? this.freeNear(olha.x, olha.y, u.client.id);
     } else if (floor) {
       const def = getFurni(floor.defId);
       const fp = def ? footprint(def, floor.rot) : { sx: 1, sy: 1 };
@@ -1527,6 +1534,47 @@ export class RoomInstance {
       u.dirty = true;
       aoChegar?.();
     }
+    this.ensureTimer();
+  }
+
+  /** A cadeira livre em volta da mesa (encostada nela, com caminho) mais perto da peça; a que ela já ocupa vale. */
+  private cadeiraDaMesa(mesa: FloorItem, u: RoomUser): Point | null {
+    const def = getFurni(mesa.defId);
+    const fp = def ? footprint(def, mesa.rot) : { sx: 1, sy: 1 };
+    let melhor: Point | null = null;
+    let menor = Infinity;
+    const livre = (x: number, y: number) => this.occupied(x, y, u.client.id);
+    for (let y = mesa.y - 1; y <= mesa.y + fp.sy; y++)
+      for (let x = mesa.x - 1; x <= mesa.x + fp.sx; x++) {
+        const dentro = x >= mesa.x && x < mesa.x + fp.sx && y >= mesa.y && y < mesa.y + fp.sy;
+        if (dentro || !this.map.sitItem(x, y) || this.occupied(x, y, u.client.id)) continue;
+        if (x === u.x && y === u.y) return { x, y };
+        const cam = findPath(this.map, u, { x, y }, livre);
+        if (cam?.length && cam.length < menor) (menor = cam.length), (melhor = { x, y });
+      }
+    return melhor;
+  }
+
+  /**
+   * O dealer do 21 (23/10, o Felipe: "o dealer fica em pé"): levanta da cadeira e vai para trás do lado reto da mesa
+   * (as costas da meia-lua), virado para os jogadores.
+   */
+  dealerEmPe(tokenId: number, itemId: number) {
+    const u = this.users.get(tokenId);
+    const mesa = this.map.getItem(itemId);
+    if (!u || !mesa) return;
+    const def = getFurni(mesa.defId);
+    const fp = def ? footprint(def, mesa.rot) : { sx: 1, sy: 1 };
+    const mx = mesa.x + Math.floor(fp.sx / 2);
+    const my = mesa.y + Math.floor(fp.sy / 2);
+    // a frente da meia-lua (a curva) olha para +y no giro 4; o dealer fica do outro lado
+    const atras: Record<number, Point> = { 4: { x: mx, y: mesa.y - 1 }, 0: { x: mx, y: mesa.y + fp.sy }, 2: { x: mesa.x - 1, y: my }, 6: { x: mesa.x + fp.sx, y: my } };
+    const lugar = atras[mesa.rot] ?? atras[4];
+    const alvo = this.map.walkState(lugar.x, lugar.y) === 'walk' && !this.occupied(lugar.x, lugar.y, u.client.id) ? lugar : this.freeNear(lugar.x, lugar.y, u.client.id);
+    if (!alvo) return;
+    u.goal = alvo;
+    u.encara = { x: mx, y: my };
+    delete u.aoChegar;
     this.ensureTimer();
   }
 

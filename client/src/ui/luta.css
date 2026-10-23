@@ -1,0 +1,172 @@
+/* =====================================================================
+   O FELIPE'S FIGHT (luta.ts): o gabinete de luta, preto com as chamas, o letreiro aceso, a tela
+   de tubo e os controles grandes de fliperama (o direcional e os três botões).
+   ===================================================================== */
+
+.bj.lu {
+  background:
+    radial-gradient(ellipse 120% 40% at 50% 100%, rgba(224, 80, 40, 0.28), transparent 70%),
+    linear-gradient(#140a10, #08040a);
+}
+.lu-letreiro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 0.6);
+  padding: calc(var(--u) * 1.6) var(--s2);
+  border: var(--borda) solid #5a1a10;
+  border-radius: var(--raio);
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0 2px, transparent 2px 4px),
+    linear-gradient(#e0503a, #a82a1a 55%, #5a1208);
+  box-shadow:
+    0 0 calc(var(--u) * 4) rgba(224, 80, 40, 0.45),
+    inset 0 calc(var(--u) * 0.6) 0 rgba(255, 220, 160, 0.45);
+  text-align: center;
+}
+.lu-letreiro b {
+  font: 700 var(--t-titulo) / 1 var(--f-pixel);
+  letter-spacing: 0.1em;
+  color: #fff4d0;
+  text-shadow:
+    0 0 calc(var(--u) * 1.4) #ffb040,
+    calc(var(--u) * 0.4) calc(var(--u) * 0.4) 0 #3a0a04;
+  animation: lu-neon 3.2s steps(1) infinite;
+}
+.lu-letreiro span {
+  font: 500 var(--t-mini) / 1 var(--f-pixel);
+  letter-spacing: 0.08em;
+  color: #ffd8a8;
+}
+@keyframes lu-neon {
+  0%,
+  92%,
+  96% {
+    opacity: 1;
+  }
+  94%,
+  98% {
+    opacity: 0.55;
+  }
+}
+
+/* a tela de tubo, na moldura funda do gabinete */
+.lu-moldura {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--u) * 1.6);
+  border-radius: calc(var(--raio) * 1.6);
+  background: #050307;
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 0.8) #2a1a20,
+    inset 0 0 calc(var(--u) * 5) rgba(0, 0, 0, 0.9);
+}
+.lu-tela {
+  width: 100%;
+  max-height: 100%;
+  aspect-ratio: 192 / 120;
+  object-fit: contain;
+  image-rendering: pixelated;
+  border-radius: calc(var(--u) * 1.2);
+  box-shadow: 0 0 calc(var(--u) * 4) rgba(106, 42, 90, 0.5);
+}
+
+/* os controles: o direcional em cruz e os três botões redondos */
+.lu-controles {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2);
+  padding: var(--s2);
+  border-radius: var(--raio);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0 3px, transparent 3px 6px),
+    linear-gradient(#24141c, #140a10);
+  box-shadow: inset 0 0 0 var(--borda) #3a2028;
+  touch-action: none;
+}
+.lu-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, calc(var(--u) * 10));
+  grid-template-rows: repeat(3, calc(var(--u) * 10));
+  grid-template-areas:
+    '. cima .'
+    'esq . dir'
+    '. baixo .';
+}
+.lu-dpad .cima {
+  grid-area: cima;
+}
+.lu-dpad .esq {
+  grid-area: esq;
+}
+.lu-dpad .dir {
+  grid-area: dir;
+}
+.lu-dpad .baixo {
+  grid-area: baixo;
+}
+.lu-bt {
+  border: none;
+  border-radius: calc(var(--u) * 1.4);
+  background: linear-gradient(#3a3440, #1e1a24);
+  color: #d8d0e0;
+  font: 700 var(--t-meta) / 1 var(--f-pixel);
+  box-shadow:
+    inset 0 calc(var(--u) * 0.5) 0 rgba(255, 255, 255, 0.18),
+    0 calc(var(--u) * 0.8) 0 #08060a;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  transition: transform 0.05s;
+}
+.lu-bt.on {
+  transform: translateY(calc(var(--u) * 0.7));
+  box-shadow:
+    inset 0 calc(var(--u) * 0.5) 0 rgba(255, 255, 255, 0.1),
+    0 calc(var(--u) * 0.1) 0 #08060a;
+}
+.lu-botoes {
+  display: grid;
+  grid-template-columns: repeat(2, calc(var(--u) * 14));
+  grid-template-rows: repeat(2, calc(var(--u) * 14));
+  gap: calc(var(--u) * 1.6);
+}
+.lu-botoes .lu-bt {
+  border-radius: 50%;
+  font-size: var(--t-mini);
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+.lu-botoes .soco {
+  background: radial-gradient(circle at 40% 35%, #ff7a6a, #d84848 55%, #8a2424);
+}
+.lu-botoes .chute {
+  background: radial-gradient(circle at 40% 35%, #8aa8ff, #4a6ae0 55%, #26357a);
+}
+.lu-botoes .especial {
+  grid-column: span 2;
+  justify-self: center;
+  width: calc(var(--u) * 14);
+  background: radial-gradient(circle at 40% 35%, #fff0a0, #e8b040 55%, #8a5a14);
+  color: #3a2004;
+  text-shadow: none;
+}
+.lu .bj-rodape {
+  align-items: center;
+}
+.lu-dica {
+  flex: 1;
+  font: 500 var(--t-mini) / 1.2 var(--f-pixel);
+  color: var(--c-texto-3);
+}
+/* no celular não tem teclado: a dica some */
+@media (pointer: coarse) {
+  .lu-dica {
+    visibility: hidden;
+  }
+}

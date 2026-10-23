@@ -1,0 +1,406 @@
+/* =====================================================================
+   O 21 DA SALA DE JOGOS (vinteum.ts): o feltro verde em meia-lua com o friso de couro e o
+   filete de ouro, as cartas em papel creme, as fichas de cassino empilhadas e os botões
+   da mesa. Na linguagem dos jogos do bar (barJogos.css).
+   ===================================================================== */
+
+.bj-21 {
+  --v21-carta: clamp(34px, calc(var(--u) * 10.5), 58px);
+}
+.v21-banca {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s2);
+  font: 600 var(--t-meta) / 1.2 var(--f-pixel);
+  color: var(--c-texto-2);
+}
+.v21-banca b {
+  color: var(--c-ouro-hi);
+}
+
+/* o feltro: a meia-lua (a curva embaixo, do lado dos jogadores), o couro e o ouro */
+.bj-palco.v21-feltro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s2) var(--s3);
+  overflow: hidden auto;
+  border-radius: var(--raio) var(--raio) 50% 50% / var(--raio) var(--raio) 22% 22%;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 30%, rgba(255, 255, 255, 0.07), transparent 70%),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.04) 0 2px, transparent 2px 4px),
+    radial-gradient(ellipse at 50% 20%, #23704a, #13442c 70%, #0c2e1e);
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 1.4) #3a1a10,
+    inset 0 0 0 calc(var(--u) * 1.8) #d0a040,
+    inset 0 calc(var(--u) * 2) calc(var(--u) * 6) rgba(0, 0, 0, 0.45);
+}
+.minha-vez .bj-palco.v21-feltro {
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 1.4) #3a1a10,
+    inset 0 0 0 calc(var(--u) * 1.8) var(--c-ouro-hi),
+    inset 0 calc(var(--u) * 2) calc(var(--u) * 6) rgba(0, 0, 0, 0.45),
+    0 0 calc(var(--u) * 4) rgba(233, 169, 68, 0.3);
+}
+
+.v21-casa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 1);
+  padding-top: calc(var(--u) * 1.5);
+}
+.v21-rotulo {
+  font: 700 var(--t-mini) / 1 var(--f-pixel);
+  letter-spacing: 0.14em;
+  color: rgba(240, 225, 180, 0.75);
+}
+.v21-meio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 0.6);
+  padding: calc(var(--u) * 1) calc(var(--u) * 4);
+  border-top: 1px solid rgba(208, 160, 64, 0.45);
+  border-bottom: 1px solid rgba(208, 160, 64, 0.45);
+  border-radius: 50%;
+  color: rgba(240, 220, 160, 0.8);
+  text-align: center;
+}
+.v21-meio span {
+  font: 700 var(--t-meta) / 1 var(--f-pixel);
+  letter-spacing: 0.16em;
+}
+.v21-meio small {
+  font: 500 var(--t-mini) / 1 var(--f-pixel);
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+}
+
+/* as cartas */
+.v21-cartas {
+  display: flex;
+  justify-content: center;
+  min-height: calc(var(--v21-carta) * 1.4);
+}
+.v21-carta {
+  position: relative;
+  flex: none;
+  width: var(--v21-carta);
+  height: calc(var(--v21-carta) * 1.4);
+  border-radius: calc(var(--v21-carta) * 0.1);
+  background: linear-gradient(160deg, #fffdf6, #efe6d2);
+  color: #1c1c22;
+  box-shadow:
+    0 0 0 1px #8a7a60,
+    0 calc(var(--u) * 0.8) calc(var(--u) * 1.4) rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  font-family: var(--f-pixel);
+}
+.v21-carta + .v21-carta {
+  margin-left: calc(var(--v21-carta) * -0.42);
+}
+.v21-carta.vermelha {
+  color: #c0282a;
+}
+.v21-carta > b {
+  font-size: calc(var(--v21-carta) * 0.6);
+  line-height: 1;
+}
+.v21-canto {
+  position: absolute;
+  left: calc(var(--v21-carta) * 0.08);
+  top: calc(var(--v21-carta) * 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font: 700 calc(var(--v21-carta) * 0.3) / 0.95 var(--f-pixel);
+}
+.v21-canto i {
+  font-style: normal;
+  font-size: 0.8em;
+}
+.v21-canto.baixo {
+  left: auto;
+  top: auto;
+  right: calc(var(--v21-carta) * 0.08);
+  bottom: calc(var(--v21-carta) * 0.06);
+  transform: rotate(180deg);
+}
+/* as costas: o vinho com o losango de ouro */
+.v21-carta.costas {
+  background:
+    repeating-linear-gradient(45deg, rgba(208, 160, 64, 0.35) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(-45deg, rgba(208, 160, 64, 0.35) 0 2px, transparent 2px 7px),
+    linear-gradient(#7a1824, #4a0c14);
+  box-shadow:
+    inset 0 0 0 calc(var(--v21-carta) * 0.06) #f3ead6,
+    0 0 0 1px #8a7a60,
+    0 calc(var(--u) * 0.8) calc(var(--u) * 1.4) rgba(0, 0, 0, 0.45);
+}
+/* a carta saindo do sapato (do alto, à direita) e girando até a mesa */
+.v21-carta.entra {
+  animation: v21-carta 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+@keyframes v21-carta {
+  from {
+    opacity: 0;
+    transform: translate(calc(var(--v21-carta) * 4), calc(var(--v21-carta) * -5)) rotate(-28deg) scale(0.8);
+  }
+}
+
+.v21-total {
+  min-width: calc(var(--u) * 6);
+  padding: calc(var(--u) * 0.5) calc(var(--u) * 1.4);
+  border-radius: 999px;
+  background: rgba(5, 11, 20, 0.85);
+  color: var(--c-texto);
+  font: 700 var(--t-meta) / 1 var(--f-pixel);
+  text-align: center;
+}
+.v21-total.estourou {
+  background: #8a1e1a;
+  color: #fff;
+}
+
+/* os lugares: um cartão por jogador, embaixo, na curva da mesa */
+.v21-lugares {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--u) * 26), 1fr));
+  gap: var(--s1);
+  width: 100%;
+  margin-top: auto;
+}
+.v21-lugar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 0.8);
+  padding: calc(var(--u) * 1) calc(var(--u) * 1.2);
+  border: 1px dashed rgba(240, 225, 180, 0.3);
+  border-radius: var(--raio);
+  background: rgba(0, 0, 0, 0.16);
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s,
+    transform 0.25s var(--ease);
+}
+.v21-lugar header {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(var(--u) * 1);
+  width: 100%;
+  font: 600 var(--t-meta) / 1.1 var(--f-pixel);
+  color: var(--c-texto);
+  white-space: nowrap;
+}
+.v21-lugar header span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v21-lugar header small {
+  color: var(--c-texto-3);
+  font-size: var(--t-mini);
+}
+.v21-lugar header b {
+  color: var(--c-ouro-hi);
+}
+.v21-lugar em {
+  font: 500 var(--t-mini) / 1.2 var(--f-pixel);
+  font-style: normal;
+  color: rgba(240, 225, 180, 0.6);
+}
+.v21-lugar em.dealer {
+  color: var(--c-ouro-hi);
+}
+.v21-lugar.eu {
+  border-style: solid;
+  border-color: rgba(240, 225, 180, 0.55);
+}
+.v21-lugar.vez {
+  border: 2px solid var(--c-ouro);
+  box-shadow: 0 0 calc(var(--u) * 3) rgba(233, 169, 68, 0.35);
+  transform: translateY(calc(var(--u) * -0.5));
+}
+.v21-lugar.fora {
+  opacity: 0.45;
+}
+.v21-maos {
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--u) * 2);
+  flex-wrap: wrap;
+}
+.v21-mao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 0.8);
+  --v21-carta: clamp(28px, calc(var(--u) * 8), 46px);
+}
+.v21-mao.ativa .v21-cartas {
+  filter: drop-shadow(0 0 calc(var(--u) * 1.2) rgba(246, 207, 106, 0.7));
+}
+.v21-pe {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 1);
+}
+.v21-res {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  padding: calc(var(--u) * 0.6) calc(var(--u) * 1.4);
+  border-radius: calc(var(--u) * 0.8);
+  font: 700 var(--t-mini) / 1 var(--f-pixel);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  color: #fff;
+  background: #555;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  box-shadow: 0 calc(var(--u) * 0.6) calc(var(--u) * 1.2) rgba(0, 0, 0, 0.5);
+  animation: v21-carimbo 0.35s var(--ease) both;
+}
+.v21-res.bj {
+  background: linear-gradient(#f6cf6a, #c97f2c);
+  color: var(--c-tinta-ouro);
+}
+.v21-res.ganhou {
+  background: #2f8a4a;
+}
+.v21-res.empate {
+  background: #4a5a6a;
+}
+.v21-res.perdeu,
+.v21-res.estourou {
+  background: #8a1e1a;
+}
+@keyframes v21-carimbo {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-8deg) scale(1.8);
+  }
+}
+
+/* a pilha de fichas da aposta */
+.v21-pilha {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  min-width: calc(var(--u) * 6);
+}
+.v21-pilha i {
+  display: block;
+  width: calc(var(--u) * 5.4);
+  height: calc(var(--u) * 1.2);
+  margin-top: calc(var(--u) * -0.4);
+  border-radius: 50%;
+  background: var(--cor);
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 0.35) rgba(255, 255, 255, 0.55),
+    0 calc(var(--u) * 0.3) 0 rgba(0, 0, 0, 0.45);
+  animation: v21-ficha 0.25s var(--ease) both;
+  animation-delay: calc(var(--i) * 0.04s);
+}
+.v21-pilha b {
+  font: 700 var(--t-mini) / 1 var(--f-pixel);
+  color: #fff;
+  text-shadow: var(--sombra-pixel);
+  margin-bottom: calc(var(--u) * 0.4);
+}
+@keyframes v21-ficha {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--u) * -3));
+  }
+}
+
+/* os controles: as fichas de apostar, os botões da vez, a mesa */
+.v21-controles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+.v21-controles:empty {
+  display: none;
+}
+.v21-linha {
+  display: flex;
+  gap: var(--s1);
+}
+.v21-fichas {
+  display: flex;
+  justify-content: center;
+  gap: var(--s1);
+}
+.v21-ficha {
+  width: calc(var(--u) * 11);
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.85) 0 12deg, transparent 12deg 45deg),
+    var(--cor);
+  color: #fff;
+  font: 700 var(--t-meta) / 1 var(--f-pixel);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 1.6) var(--cor),
+    inset 0 0 0 calc(var(--u) * 1.9) rgba(255, 255, 255, 0.7),
+    0 calc(var(--u) * 0.6) 0 rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s var(--ease);
+}
+.v21-ficha:active:not(:disabled) {
+  transform: translateY(calc(var(--u) * 0.5)) scale(0.95);
+}
+.v21-ficha:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.v21-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s1);
+}
+.v21-opcoes small {
+  flex-basis: 100%;
+  font: 500 var(--t-mini) / 1 var(--f-pixel);
+  color: var(--c-texto-2);
+}
+.v21-opcoes .bj-bt {
+  flex: 1 0 auto;
+  min-height: calc(var(--u) * 9);
+}
+.v21-opcoes .bj-bt.on {
+  border-color: var(--c-ouro);
+  color: var(--c-ouro-hi);
+  box-shadow: 0 0 calc(var(--u) * 2) rgba(233, 169, 68, 0.35);
+}
+.v21-quero {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+  font: 600 var(--t-rotulo) / 1.2 var(--f-pixel);
+  color: var(--c-texto);
+  cursor: pointer;
+}
+.v21-quero input {
+  width: calc(var(--u) * 4);
+  height: calc(var(--u) * 4);
+  accent-color: var(--c-ouro);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v21-carta.entra,
+  .v21-res,
+  .v21-pilha i {
+    animation-duration: 0.01s;
+  }
+}
