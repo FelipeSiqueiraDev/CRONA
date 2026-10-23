@@ -717,9 +717,9 @@ export class Hotel implements HotelApi {
   }
 
   /**
-   * O clique duplo do mestre numa peça (19/10, o Felipe: "se eu clico 2x ele vira o Diabo; os dois não podem estar na mesma
-   * cena ao mesmo tempo, são a mesma pessoa"): o NPC com `forma` vira a criatura, e a criatura volta a ser o NPC, no mesmo
-   * lugar. Peça sem outra forma: nada acontece.
+   * O clique duplo do mestre numa peça (19/10): o NPC com `forma` vira a criatura, e a criatura volta a ser o NPC, no mesmo
+   * lugar; os dois nunca ficam em campo juntos (são o mesmo ser). Qual NPC tem outra forma fica só no banco. Peça sem outra
+   * forma: nada acontece.
    */
   private pecaForma(c: Client, room: RoomInstance, qual: number) {
     // o tabuleiro manda o número da peça na tela (o negativo); o resto do servidor usa o da peça guardada

@@ -410,7 +410,7 @@ def _cofre(aberto=False):
             # no meio: os papéis e as pastas
             E._papeis(xm - 0.1, y0 + 0.3, 0.585, n=4, w=0.22, d=0.28, seed=11, ang=0.05)
             E._pasta(xm + 0.12, y0 + 0.4, 0.585, 0.3, '#c8a46a', alto=0.04)
-            # em cima: o livro da família (o couro com o fecho de metal) e uma pasta
+            # em cima: um livro de couro com o fecho de metal e uma pasta
             _livro_familia(xm - 0.02, y0 + 0.33, 0.965, ang=-0.12, alt=0.075)
             E._pasta(xi1 - 0.15, y0 + 0.28, 0.965, 0.2, '#b89a5e', alto=0.04)
         # os painéis em relevo nos lados e atrás, a cornija e o friso dourado

@@ -1,5 +1,8 @@
 import { footprint, getFurni, getWallFurni, RoomMap, Z_PER_M, type Door, type FloorStyle, type Hint } from "@crona/shared";
+import fs from "node:fs";
+import path from "node:path";
 import type { Database, RoomData } from "./db";
+import { DATA_DIR } from "./pastas";
 import { type FloorSeed, type WallSeed } from "./seed";
 import { planBottom, planRight } from "./seedSede";
 import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
@@ -27,6 +30,18 @@ const FORA = "Jardim da Mansão";
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
+/**
+ * As pistas da campanha não vão para o repositório (é público): o texto de verdade fica em
+ * `server/data/segredos-mansao.json` (fora do git, `{ chave: { title, text } }`). Sem o arquivo, a pista leva o texto neutro daqui.
+ */
+const SEGREDOS: Record<string, { title?: string; text?: string }> = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(DATA_DIR, "segredos-mansao.json"), "utf8"));
+  } catch {
+    return {};
+  }
+})();
+const segredo = (chave: string, title: string, text: string): Hint => oculta(SEGREDOS[chave]?.title ?? title, SEGREDOS[chave]?.text ?? text);
 
 // ------------------------------------------------------------------ o clima de cada piso
 
@@ -560,7 +575,7 @@ for (const [k, n, py, h] of [["q_emp1", "Quarto das Empregadas", 24, 4], ["q_emp
   s.add("rug_aubusson", 1, 1, 4).add("desk_verissimo", 2, 2, 4).add("chair_verissimo", 3, 4, 0);
   s.add("globo", 5, 1, 4).enc("O", "bookshelf", 3).enc("O", "bookshelf", 5);
   s.add("armchair_verissimo", 1, 4, 2).add("sofa_verissimo", 4, 6, 0).lustres([3, 3]);
-  s.par("N", "retrato_nobre", 1.5, 1.9, oculta("O retrato do fundador", "Um homem de terno claro e olhos cansados. Embaixo, a placa: Maximiliano Albuquerque, 1918. O rosto lembra alguém que a Catarina já viu."));
+  s.par("N", "retrato_nobre", 1.5, 1.9, segredo("retrato-fundador", "O retrato do fundador", "Um homem de terno claro e olhos cansados, numa moldura dourada, com a plaquinha embaixo. O que ela diz fica com o mestre."));
   s.par("N", "placa_frigorifico", 5.4, 1.9);
   s.item(2, 3, "Abridor de Cartas de Prata", 0.5);
 }
@@ -586,7 +601,7 @@ for (const [k, n, py, h] of [["q_emp1", "Quarto das Empregadas", 24, 4], ["q_emp
   s.porta("S", 24, "galeria").porta("N", 26, "suite").porta("N", 20, "banho_s");
   s.add("tapete_corredor", 1, 0, 2).add("tapete_corredor", 7, 0, 2);
   s.enc("S", "console_dourado", 1).enc("S", "console_dourado", 10).enc("S", "relogio_carrilhao", 4);
-  s.par("N", "retrato_nobre~3", 0.8, 1.8).par("N", "retrato_nobre", 4.0, 1.8, oculta("Maximiliano Albuquerque, 1918", "A plaquinha dourada diz o nome do fundador do frigorífico. O homem de terno escuro tem o rosto do retrato de 1951 ao lado.")).par("N", "retrato_nobre~4", 5.7, 1.8, oculta("Maximiliano Albuquerque, 1951", "O mesmo nome, outra época. O rosto não envelheceu.")).par("N", "retrato_nobre~2", 10.6, 1.8).par("N", "retrato_nobre~3", 12.0, 1.8);
+  s.par("N", "retrato_nobre~3", 0.8, 1.8).par("N", "retrato_nobre", 4.0, 1.8, segredo("galeria-retrato-1", "Retrato a óleo", "Um homem de terno escuro, num retrato antigo com a plaquinha dourada. O que ela diz fica com o mestre.")).par("N", "retrato_nobre~4", 5.7, 1.8, segredo("galeria-retrato-2", "Retrato a óleo", "Outro retrato de família, de outra época, com a plaquinha dourada. O que ela diz fica com o mestre.")).par("N", "retrato_nobre~2", 10.6, 1.8).par("N", "retrato_nobre~3", 12.0, 1.8);
   s.par("O", "retrato_nobre~2", 1.6, 1.8).par("O", "retrato_nobre~3", 3.4, 1.8);
   s.lustres([3, 2], [9, 2]).mais("vaso_grande", 0, [0, 4], [12, 4]);
 }
@@ -677,7 +692,7 @@ for (const [k, n, py, h] of [["q_emp1", "Quarto das Empregadas", 24, 4], ["q_emp
   s.porta("N", 39, "corr_l2");
   s.add("rug_aubusson", 2, 2, 4).add("mesa_ceo", 2, 3, 4).add("cadeira_ceo", 3, 5, 0);
   s.add("chair_red", 2, 2, 4).add("chair_red", 4, 2, 4);
-  s.enc("O", "cofre", 0, oculta("O cofre", "Um cofre de aço do tamanho de um armário pequeno. Dentro, entre pastas e dinheiro, o livro da família. A senha é com o mestre."));
+  s.enc("O", "cofre", 0, segredo("cofre-escritorio", "O cofre", "Um cofre de aço do tamanho de um armário pequeno. A senha e o que há dentro ficam com o mestre."));
   s.enc("N", "bar_escritorio", 6).enc("O", "estante_biblioteca", 2);
   s.add("touro_bronze", 2, 7, 4).add("globo", 7, 6, 6).enc("L", "sofa_verissimo", 3).add("armchair_verissimo", 5, 7, 0);
   s.par("O", "mapa_frigorifico", 6.6, 1.6).par("N", "trofeus_empresa", 2.0, 1.6).par("N", "placa_frigorifico", 6.6, 2.05);

@@ -6,16 +6,16 @@ código (`scripts/3d/estilo/pecas_px/mansao_*.py`). A planta do térreo é a do 
 (`campanha/referencias/mansao-albuquerque/mansao-primeiro-andar.webp`); o 2º andar é invenção minha, para o mestre
 aprovar; o quarto da Catarina segue o áudio dela (`WhatsApp Ptt ... 14.57.26.txt` e `15.00.19.txt`).
 
-## Quem é a família (só o que o jogo e a Bíblia da Campanha já dizem)
+## Quem é a família
 
-- **Frigorífico Albuquerque**: fundado em 1918 por Maximiliano Albuquerque; a dinastia é rica por causa dele. O pai é o
-  **CEO de hoje**. (Bíblia, seção 7: o negócio é fachada logística para transportes clandestinos; Catarina não sabe.)
+- **Frigorífico Albuquerque**, fundado em 1918: a dinastia é rica por causa dele. O pai é o **CEO de hoje**.
 - **Catarina** (atleta, esgrimista, ruiva) nasceu e cresceu aqui. **Miguel**, irmão dela (ruivo, lutador de boxe, técnico),
-  também. **Os pais dos Albuquerque estão desaparecidos** (Bíblia: ligados ao Anfitrião); a mansão pode estar vazia e em
-  silêncio. [PLANEJADO na Bíblia] o **livro da família** no escritório do pai: está no cofre do escritório, aberto à parte.
-- A Bíblia pede que o mesmo nome apareça em fotografias de épocas diferentes: a Galeria de quadros do 2º andar tem
-  retratos que o mestre pode usar para isso (as pistas ocultas estão no seed, `visible: false`).
+  também.
+- O enredo da casa (quem mora, o que as pistas dizem) fica com o mestre, fora deste repositório, que é público.
 - Nada de NPC posto no mapa e nenhum enredo inventado: só os cenários, as pistas ocultas e o que está nesta lista.
+
+**Pistas ocultas:** o texto de verdade fica em `server/data/segredos-mansao.json` (fora do git, `{ chave: { title, text } }`);
+o seed só tem um texto neutro e a chave (`segredo(...)` em `seedMansaoAlbuquerque.ts`). Sem o arquivo, a pista entra neutra.
 
 ## Escala
 
@@ -102,7 +102,7 @@ monitores, o computador, os pufes e as anotações. Decisão a confirmar com o F
 ### Escritório do Pai (CEO do Frigorífico)
 
 Mesa enorme virada para a cadeira, estante, vitrine de troféus da empresa, mapa do Brasil com as unidades, foto aérea de
-uma unidade, a placa do frigorífico (1918), diplomas, touro de bronze, cofre (com o livro da família, oculto), bar, poltronas e
+uma unidade, a placa do frigorífico (1918), diplomas, touro de bronze, cofre (pista oculta), bar, poltronas e
 sofá, globo, lareira. O primeiro andar tem o Gabinete (o escritório clássico da planta, com o retrato do fundador).
 
 ## O que o mestre ainda precisa decidir
@@ -111,7 +111,7 @@ sofá, globo, lareira. O primeiro andar tem o Gabinete (o escritório clássico 
 - O que o cofre guarda além do livro, qual a senha, e se o livro é um achado.
 - Salas secretas (sugestões: atrás da estante da Biblioteca Superior; o porão sob o barracão; a adega).
 - Itens achados (há poucos, de enfeite: o resto é com o mestre) e objetivos.
-- Se a Galeria de Quadros mostra o mesmo nome em épocas diferentes (o gancho da Bíblia sobre Maximiliano).
+- O que dizem as plaquinhas dos retratos da Galeria de Quadros.
 - Quem mora aqui (NPCs): nenhum posto; o mestre põe pelo Elenco.
 
 ## Arte nova (todas por código, módulos em `scripts/3d/estilo/pecas_px/`)
@@ -135,5 +135,5 @@ pelo coordenador.
 - **Mezanino:** cena à parte (ver acima), ligada pela parede de escalada nos dois lados.
 - **Itens achados** (pilhas no chão, todos de enfeite): cartão de visita no Saguão, tesoura de poda na Estufa, abridor de cartas no Gabinete,
   medalha de ouro no quarto da Catarina e o caderno de anotações dela no mezanino.
-- **Pistas ocultas** (só o mestre vê até mostrar): o retrato do fundador no Gabinete, os dois retratos de Maximiliano na Galeria de Quadros, o cofre
+- **Pistas ocultas** (só o mestre vê até mostrar): o retrato do fundador no Gabinete, dois retratos da Galeria de Quadros, o cofre
   do escritório do pai.
