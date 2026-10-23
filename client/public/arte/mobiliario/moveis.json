@@ -47046,5 +47046,533 @@
       0.36,
       1.92
     ]
+  },
+  "sofa_luxo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "sofa_luxo/giro-4.png",
+        "ax": 104.0,
+        "ay": 106.0
+      },
+      "2": {
+        "arquivo": "sofa_luxo/giro-2.png",
+        "ax": 39.0,
+        "ay": 106.0
+      },
+      "0": {
+        "arquivo": "sofa_luxo/giro-0.png",
+        "ax": 103.0,
+        "ay": 97.0
+      },
+      "6": {
+        "arquivo": "sofa_luxo/giro-6.png",
+        "ax": 40.0,
+        "ay": 97.0
+      }
+    },
+    "real": [
+      2.21,
+      0.67,
+      0.92
+    ]
+  },
+  "sofa_luxo_vinho": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "sofa_luxo_vinho/giro-4.png",
+        "ax": 104.0,
+        "ay": 106.0
+      },
+      "2": {
+        "arquivo": "sofa_luxo_vinho/giro-2.png",
+        "ax": 39.0,
+        "ay": 106.0
+      },
+      "0": {
+        "arquivo": "sofa_luxo_vinho/giro-0.png",
+        "ax": 103.0,
+        "ay": 97.0
+      },
+      "6": {
+        "arquivo": "sofa_luxo_vinho/giro-6.png",
+        "ax": 40.0,
+        "ay": 97.0
+      }
+    },
+    "real": [
+      2.21,
+      0.67,
+      0.92
+    ]
+  },
+  "poltrona_luxo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "poltrona_luxo/giro-4.png",
+        "ax": 38.0,
+        "ay": 82.0
+      },
+      "2": {
+        "arquivo": "poltrona_luxo/giro-2.png",
+        "ax": 37.0,
+        "ay": 82.0
+      },
+      "0": {
+        "arquivo": "poltrona_luxo/giro-0.png",
+        "ax": 38.0,
+        "ay": 69.0
+      },
+      "6": {
+        "arquivo": "poltrona_luxo/giro-6.png",
+        "ax": 38.0,
+        "ay": 69.0
+      }
+    },
+    "real": [
+      0.64,
+      0.66,
+      1.1
+    ]
+  },
+  "poltrona_luxo_verde": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "poltrona_luxo_verde/giro-4.png",
+        "ax": 38.0,
+        "ay": 82.0
+      },
+      "2": {
+        "arquivo": "poltrona_luxo_verde/giro-2.png",
+        "ax": 37.0,
+        "ay": 82.0
+      },
+      "0": {
+        "arquivo": "poltrona_luxo_verde/giro-0.png",
+        "ax": 38.0,
+        "ay": 69.0
+      },
+      "6": {
+        "arquivo": "poltrona_luxo_verde/giro-6.png",
+        "ax": 38.0,
+        "ay": 69.0
+      }
+    },
+    "real": [
+      0.64,
+      0.66,
+      1.1
+    ]
+  },
+  "mesa_centro_luxo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "mesa_centro_luxo/giro-4.png",
+        "ax": 66.0,
+        "ay": 66.0
+      },
+      "2": {
+        "arquivo": "mesa_centro_luxo/giro-2.png",
+        "ax": 35.0,
+        "ay": 66.0
+      },
+      "0": {
+        "arquivo": "mesa_centro_luxo/giro-0.png",
+        "ax": 66.0,
+        "ay": 67.0
+      },
+      "6": {
+        "arquivo": "mesa_centro_luxo/giro-6.png",
+        "ax": 35.0,
+        "ay": 67.0
+      }
+    },
+    "real": [
+      1.38,
+      0.6,
+      0.42
+    ]
+  },
+  "vitrine_ovo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "vitrine_ovo/giro-4.png",
+        "ax": 34.0,
+        "ay": 112.0
+      },
+      "2": {
+        "arquivo": "vitrine_ovo/giro-2.png",
+        "ax": 34.0,
+        "ay": 112.0
+      },
+      "0": {
+        "arquivo": "vitrine_ovo/giro-0.png",
+        "ax": 34.0,
+        "ay": 112.0
+      },
+      "6": {
+        "arquivo": "vitrine_ovo/giro-6.png",
+        "ax": 34.0,
+        "ay": 112.0
+      }
+    },
+    "real": [
+      0.55,
+      0.55,
+      1.645
+    ]
+  },
+  "tapete_imperial": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "tapete_imperial/giro-4.png",
+        "ax": 185.0,
+        "ay": 173.0
+      },
+      "2": {
+        "arquivo": "tapete_imperial/giro-2.png",
+        "ax": 153.0,
+        "ay": 173.0
+      },
+      "0": {
+        "arquivo": "tapete_imperial/giro-0.png",
+        "ax": 185.0,
+        "ay": 173.0
+      },
+      "6": {
+        "arquivo": "tapete_imperial/giro-6.png",
+        "ax": 153.0,
+        "ay": 173.0
+      }
+    },
+    "real": [
+      4.34,
+      3.55,
+      0.017
+    ]
+  },
+  "decanter_tacas": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "decanter_tacas/giro-4.png",
+        "ax": 28.0,
+        "ay": 34.0
+      },
+      "2": {
+        "arquivo": "decanter_tacas/giro-2.png",
+        "ax": 26.0,
+        "ay": 31.0
+      },
+      "0": {
+        "arquivo": "decanter_tacas/giro-0.png",
+        "ax": 27.0,
+        "ay": 29.0
+      },
+      "6": {
+        "arquivo": "decanter_tacas/giro-6.png",
+        "ax": 27.0,
+        "ay": 32.0
+      }
+    },
+    "real": [
+      0.456,
+      0.376,
+      0.301
+    ]
+  },
+  "fruteira_prata": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "fruteira_prata/giro-4.png",
+        "ax": 22.0,
+        "ay": 29.0
+      },
+      "2": {
+        "arquivo": "fruteira_prata/giro-2.png",
+        "ax": 22.0,
+        "ay": 29.0
+      },
+      "0": {
+        "arquivo": "fruteira_prata/giro-0.png",
+        "ax": 22.0,
+        "ay": 29.0
+      },
+      "6": {
+        "arquivo": "fruteira_prata/giro-6.png",
+        "ax": 22.0,
+        "ay": 29.0
+      }
+    },
+    "real": [
+      0.28,
+      0.28,
+      0.218
+    ]
+  },
+  "arranjo_flores": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "arranjo_flores/giro-4.png",
+        "ax": 21.0,
+        "ay": 34.0
+      },
+      "2": {
+        "arquivo": "arranjo_flores/giro-2.png",
+        "ax": 20.0,
+        "ay": 34.0
+      },
+      "0": {
+        "arquivo": "arranjo_flores/giro-0.png",
+        "ax": 20.0,
+        "ay": 37.0
+      },
+      "6": {
+        "arquivo": "arranjo_flores/giro-6.png",
+        "ax": 20.0,
+        "ay": 37.0
+      }
+    },
+    "real": [
+      0.28,
+      0.25,
+      0.34
+    ]
+  },
+  "servico_cha": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "servico_cha/giro-4.png",
+        "ax": 30.0,
+        "ay": 28.0
+      },
+      "2": {
+        "arquivo": "servico_cha/giro-2.png",
+        "ax": 28.0,
+        "ay": 27.0
+      },
+      "0": {
+        "arquivo": "servico_cha/giro-0.png",
+        "ax": 29.0,
+        "ay": 28.0
+      },
+      "6": {
+        "arquivo": "servico_cha/giro-6.png",
+        "ax": 31.0,
+        "ay": 28.0
+      }
+    },
+    "real": [
+      0.536,
+      0.396,
+      0.18
+    ]
+  },
+  "candelabro_prata": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "candelabro_prata/giro-4.png",
+        "ax": 18.0,
+        "ay": 38.0
+      },
+      "2": {
+        "arquivo": "candelabro_prata/giro-2.png",
+        "ax": 17.0,
+        "ay": 38.0
+      },
+      "0": {
+        "arquivo": "candelabro_prata/giro-0.png",
+        "ax": 17.0,
+        "ay": 38.0
+      },
+      "6": {
+        "arquivo": "candelabro_prata/giro-6.png",
+        "ax": 17.0,
+        "ay": 38.0
+      }
+    },
+    "real": [
+      0.2,
+      0.12,
+      0.36
+    ]
+  },
+  "perfumes": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "perfumes/giro-4.png",
+        "ax": 24.0,
+        "ay": 26.0
+      },
+      "2": {
+        "arquivo": "perfumes/giro-2.png",
+        "ax": 25.0,
+        "ay": 29.0
+      },
+      "0": {
+        "arquivo": "perfumes/giro-0.png",
+        "ax": 25.0,
+        "ay": 27.0
+      },
+      "6": {
+        "arquivo": "perfumes/giro-6.png",
+        "ax": 26.0,
+        "ay": 25.0
+      }
+    },
+    "real": [
+      0.416,
+      0.296,
+      0.193
+    ]
+  },
+  "porta_retratos": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "porta_retratos/giro-4.png",
+        "ax": 22.0,
+        "ay": 29.0
+      },
+      "2": {
+        "arquivo": "porta_retratos/giro-2.png",
+        "ax": 20.0,
+        "ay": 28.0
+      },
+      "0": {
+        "arquivo": "porta_retratos/giro-0.png",
+        "ax": 24.0,
+        "ay": 30.0
+      },
+      "6": {
+        "arquivo": "porta_retratos/giro-6.png",
+        "ax": 26.0,
+        "ay": 28.0
+      }
+    },
+    "real": [
+      0.38,
+      0.184,
+      0.18
+    ]
+  },
+  "livros_couro": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "livros_couro/giro-4.png",
+        "ax": 21.0,
+        "ay": 31.0
+      },
+      "2": {
+        "arquivo": "livros_couro/giro-2.png",
+        "ax": 22.0,
+        "ay": 31.0
+      },
+      "0": {
+        "arquivo": "livros_couro/giro-0.png",
+        "ax": 20.0,
+        "ay": 31.0
+      },
+      "6": {
+        "arquivo": "livros_couro/giro-6.png",
+        "ax": 21.0,
+        "ay": 31.0
+      }
+    },
+    "real": [
+      0.34,
+      0.162,
+      0.24
+    ]
+  },
+  "balde_champanhe": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "balde_champanhe/giro-4.png",
+        "ax": 22.0,
+        "ay": 70.0
+      },
+      "2": {
+        "arquivo": "balde_champanhe/giro-2.png",
+        "ax": 22.0,
+        "ay": 69.0
+      },
+      "0": {
+        "arquivo": "balde_champanhe/giro-0.png",
+        "ax": 22.0,
+        "ay": 70.0
+      },
+      "6": {
+        "arquivo": "balde_champanhe/giro-6.png",
+        "ax": 22.0,
+        "ay": 71.0
+      }
+    },
+    "real": [
+      0.264,
+      0.26,
+      1.04
+    ]
   }
 }

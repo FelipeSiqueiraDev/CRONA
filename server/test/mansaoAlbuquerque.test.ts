@@ -139,6 +139,8 @@ describe("Mansão Albuquerque", () => {
     for (const it of pai.items) {
       if (it === mesa || it === cadeira) continue;
       const d = getFurni(it.defId)!;
+      // o que fica em cima da mesa (os papéis, a luminária, as fotos) não conta: é embaixo dela que não pode haver nada
+      if (["decor", "papers", "books", "lamp", "desk_lamp", "candles", "mug"].includes(d.kind) || d.height <= 0.25) continue;
       const f = footprint(d, it.rot);
       const bate = it.x < mesa.x + fp.sx && it.x + f.sx > mesa.x && it.y < mesa.y + fp.sy && it.y + f.sy > mesa.y;
       assert.ok(!bate || d.flat || d.walkable, `${it.defId} embaixo da mesa`);
