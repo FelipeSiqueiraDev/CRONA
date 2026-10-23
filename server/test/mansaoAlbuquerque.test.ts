@@ -14,7 +14,7 @@ describe("Mansão Albuquerque", () => {
     const nomes = [
       "Jardim", "Salão Principal", "Biblioteca", "Escritório de Alexander", "Sala de Jantar", "Cozinha", "Despensa", "Lavanderia",
       "Corredor dos Funcionários", ...[1, 2, 3, 4, 5, 6].map((i) => `Quarto de Funcionário ${i}`),
-      "Hall Superior", "Suíte do Casal", "Banheiro do Casal", "Sala de Jogos", "Quarto do Miguel", "Banheiro do Miguel",
+      "Hall Superior", "Suíte do Casal", "Banheiro do Casal", "Closet do Casal", "Sala de Jogos", "Quarto do Miguel", "Banheiro do Miguel",
       "Quarto da Catarina", "Banheiro da Catarina", "Quarto de Hóspedes", "Banheiro dos Hóspedes", "Mezanino da Catarina", "Anexo",
     ];
     for (const n of nomes) assert.ok(porNome(n), `falta ${n}`);

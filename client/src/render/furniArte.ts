@@ -91,6 +91,11 @@ export interface MovelArte {
   /** encostado no fundo da casa (a prateleira na parede), em vez de no meio */
   encosta?: boolean;
   /**
+   * o tampo desenhado, onde as coisas pousam (scripts/3d/estilo/tampos_px.py): [u0, u1, v0, v1, z] em metros, no giro 4,
+   * a partir da quina da pegada (u ao longo da largura, v ao longo do fundo com a frente em v alto, z a altura)
+   */
+  tampo?: [number, number, number, number, number];
+  /**
    * arte feita por código (scripts/3d/codigo): o desenho já vem na medida de verdade (`real`), centrado na pegada,
    * com a sombra no chão dentro da imagem. O jogo não mede a largura do desenho (a sombra entraria na conta).
    */
@@ -513,11 +518,11 @@ export function chamineDaArte(defId: string, seed: number, modelo?: string): [nu
   return lista?.[chaveDaArte(defId, seed, undefined, false, modelo)]?.chamine ?? null;
 }
 
-export function tamanhoReal(defId: string): { real: [number, number, number]; encosta: boolean } | null {
+export function tamanhoReal(defId: string): { real: [number, number, number]; encosta: boolean; tampo: MovelArte['tampo'] | null } | null {
   const a = lista?.[defId];
   if (!a?.real) return null;
   const base = encaixes.get(defId)?.base;
-  return { real: base ? [base[0], base[1], a.real[2]] : a.real, encosta: !!a.encosta };
+  return { real: base ? [base[0], base[1], a.real[2]] : a.real, encosta: !!a.encosta, tampo: a.tampo ?? null };
 }
 
 /**

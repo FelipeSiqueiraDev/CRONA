@@ -11,7 +11,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * A Mansão Albuquerque (21/10; refeita em 23/10 pela planta ilustrada do Felipe, com menos cômodos e maiores): o lar da
  * Catarina e do Miguel. O jardim murado de fora e o anexo; o térreo (salão principal com as duas escadarias, biblioteca,
  * escritório de Alexander, sala de jantar, cozinha, despensa, a ala de serviço com os seis quartos dos funcionários e a lavanderia); o
- * 2º andar (hall superior, suíte do casal, sala de jogos, os quartos do Miguel, da Catarina e de hóspedes, cada um com o
+ * 2º andar (hall superior, suíte do casal com o closet, sala de jogos, os quartos do Miguel, da Catarina e de hóspedes, cada um com o
  * seu banheiro) e o mezanino da Catarina. A lista de cômodos, as ligações e o que há em cada um estão em `docs/MANSAO-ALBUQUERQUE.md`.
  *
  * 1 quadrado da planta = 1 casa (0,75 m). Cada cômodo é uma cena (o Felipe: "entrei na sala, mudou o cenário"), com porta
@@ -22,7 +22,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Mudou a montagem? Suba MANSAO_REV: a mansão é refeita no lugar, mantendo as cenas, as peças e o registro.
  */
 export const MANSAO = "Mansão Albuquerque · ";
-export const MANSAO_REV = 5;
+export const MANSAO_REV = 6;
 
 const ANDAR = "Mansão Albuquerque";
 const ANDAR2 = "Mansão Albuquerque 2º";
@@ -476,10 +476,10 @@ for (let i = 0; i < 6; i++) {
   s.em("arranjo_flores", 7, 0, 4).em("porta_retratos", 8, 0, 4).em("candelabro_prata", 29, 0, 4).em("arranjo_flores", 30, 0, 4);
 }
 {
-  const s = nova("suite", "Suíte do Casal", 12, 8, "mansao_nobre", 6, 0, ANDAR2, "A suíte do casal Albuquerque, a maior do andar: a cama enorme de cabeceira entalhada, a lareira de mármore, o divã e as poltronas, a penteadeira e o closet aberto. Tudo em ordem e tudo calado.");
-  s.porta("S", 12, "hall_s").porta("O", 3, "banho_casal");
+  const s = nova("suite", "Suíte do Casal", 12, 8, "mansao_nobre", 6, 0, ANDAR2, "A suíte do casal Albuquerque, a maior do andar: a cama enorme de cabeceira entalhada, a lareira de mármore, o divã e as poltronas, a penteadeira e a porta do closet. Tudo em ordem e tudo calado.");
+  s.porta("S", 12, "hall_s").porta("O", 3, "banho_casal").porta("L", 1, "closet_casal");
   s.add("rug_aubusson", 4, 3, 4).enc("N", "cama_master", 4).enc("N", "nightstand", 3).enc("N", "nightstand", 7);
-  s.enc("N", "closet_aberto", 0).enc("N", "penteadeira", 9).add("pufe", 10, 1, 4).enc("O", "lareira_marmore", 4);
+  s.add("vaso_grande", 0, 0, 4).enc("N", "penteadeira", 9).add("pufe", 10, 1, 4).enc("O", "lareira_marmore", 4);
   s.add("chaise_longue", 8, 6, 0).add("poltrona_orelha", 2, 5, 6).add("poltrona_orelha", 2, 6, 6);
   s.lustres([5, 4], [9, 4]).par("N", "janela_cortinas", 2.5, 1.72, undefined, 0);
   // os objetinhos (23/10): a luminária e as fotos nos criados-mudos, o champanhe perto do divã, a mesinha das poltronas
@@ -492,6 +492,15 @@ for (let i = 0; i < 6; i++) {
   s.par("O", "espelho_dourado", 3.0).lustres([3, 4]);
   // os perfumes na pia (23/10)
   s.em("perfumes", 0, 2, 2);
+}
+{
+  // 23/10, o Felipe: "faria mais sentido o casal Albuquerque ter um closet ao invés de um guarda-roupas né?! Metade masculino
+  // metade feminino": o cômodo entre a suíte e a sala de jogos, com a porta direta da suíte
+  const s = nova("closet_casal", "Closet do Casal", 4, 8, "mansao_claro", 18, 0, ANDAR2, "O closet do casal, ao lado da suíte: na parede comprida, metade dele, de nogueira, com os ternos, as camisas, as gravatas e os sapatos sociais, e metade dela, laqueada de marfim, com os vestidos longos, as bolsas e a parede de saltos. No meio, a ilha de vidro com os relógios dele e as joias dela; no fundo, o espelho de corpo inteiro e o pufe.");
+  s.porta("O", 1, "suite");
+  s.enc("O", "closet_masculino", 2).enc("O", "closet_feminino", 5).add("ilha_joias", 2, 3, 2);
+  s.enc("N", "espelho_corpo", 2).add("vaso_grande", 3, 0, 4).add("pufe", 2, 6, 4);
+  s.lustres([2, 5]);
 }
 {
   const s = nova("jogos", "Sala de Jogos", 14, 8, "mansao_jogos", 22, 0, ANDAR2, "A sala de jogos: a mesa de sinuca sob a luminária, os fliperamas piscando num canto, a mesa de pôquer, a TV grande com o sofá e, ao fundo, o bar com as banquetas. Alguém jogou aqui até muito tarde.");

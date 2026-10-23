@@ -903,6 +903,8 @@ export class RoomView {
    * sentada vai junto). O deslocamento é em casas, só no desenho; a casa de cada um continua a mesma.
    */
   private ajustes = new Map<number, [number, number]>();
+  /** quanto o item em cima de um móvel sobe ou desce para pousar no tampo desenhado (unidades de altura) */
+  private alturas = new Map<number, number>();
   private ajustesQuadro = -1;
 
   /** O tampo desenhado de uma mesa (centro e meia medida, em casas): menor que as casas dela ou, com `aumento`, maior. */
@@ -914,16 +916,42 @@ export class RoomView {
     const tr = tamanhoReal(s.defId);
     if (!tr || (paraCadeira && (tr.encosta || def.height > 1.75))) return null;
     const fp = footprint(def, s.rot);
+    // de uma casa só naquele sentido: o que vai em cima fica no meio do tampo (e não só para dentro dele)
+    const umaX = fp.sx === 1;
+    const umaY = fp.sy === 1;
+    // a medida longe da altura do catálogo é de outra superfície (o carrinho de bar coberto de garrafas mediu a
+    // prateleira de baixo): aí fica a conta de antes
+    if (tr.tampo && Math.abs(tr.tampo[4] * Z_PER_M - def.height) < 0.2 * Z_PER_M) {
+      // o tampo medido na arte (23/10, o Felipe: "os objetos na pontinha das mesas... tem que ficar centralizado no topo
+      // do objeto"): o desenho nem sempre fica no meio da casa (o do criado-mudo fica 7 cm para trás), e a medida de
+      // verdade inclui o que passa do tampo (a luminária, a prateleira de cima)
+      const [u0, u1, v0, v1, zt] = tr.tampo;
+      const W = def.width * M_POR_CASA;
+      const D = def.depth * M_POR_CASA;
+      // do giro 4 (a frente para +y) para o giro da peça, como o motor da arte (scripts/3d/codigo/motor.py, Peca)
+      const [x0, x1, y0, y1] =
+        s.rot === 4 ? [u0, u1, v0, v1] : s.rot === 0 ? [W - u1, W - u0, D - v1, D - v0] : s.rot === 2 ? [v0, v1, W - u1, W - u0] : [D - v1, D - v0, u0, u1];
+      const [ex, ey] = tr.encosta || !this.map ? [0, 0] : this.encostoNaParede(this.map, s);
+      return {
+        cx: s.x + (x0 + x1) / 2 / M_POR_CASA + ex,
+        cy: s.y + (y0 + y1) / 2 / M_POR_CASA + ey,
+        hx: (x1 - x0) / 2 / M_POR_CASA,
+        hy: (y1 - y0) / 2 / M_POR_CASA,
+        topo: s.z + zt * Z_PER_M,
+        umaX,
+        umaY,
+      };
+    }
     const larguraEmX = s.rot === 0 || s.rot === 4;
     const hx = (larguraEmX ? tr.real[0] : tr.real[1]) / M_POR_CASA / 2;
     const hy = (larguraEmX ? tr.real[1] : tr.real[0]) / M_POR_CASA / 2;
     if (tr.encosta) {
       // a arte encostada no fundo da casa (o frigobar, o aparador, as bancadas): o tampo fica lá, e não no meio
       const fundo = s.rot === 4 ? [0, -1] : s.rot === 0 ? [0, 1] : s.rot === 2 ? [-1, 0] : [1, 0];
-      return { cx: s.x + fp.sx / 2 + fundo[0] * (fp.sx / 2 - hx), cy: s.y + fp.sy / 2 + fundo[1] * (fp.sy / 2 - hy), hx, hy, topo: s.z + def.height };
+      return { cx: s.x + fp.sx / 2 + fundo[0] * (fp.sx / 2 - hx), cy: s.y + fp.sy / 2 + fundo[1] * (fp.sy / 2 - hy), hx, hy, topo: s.z + def.height, umaX, umaY };
     }
     const [ex, ey] = this.map ? this.encostoNaParede(this.map, s) : [0, 0];
-    return { cx: s.x + fp.sx / 2 + ex, cy: s.y + fp.sy / 2 + ey, hx, hy, topo: s.z + def.height };
+    return { cx: s.x + fp.sx / 2 + ex, cy: s.y + fp.sy / 2 + ey, hx, hy, topo: s.z + def.height, umaX, umaY };
   }
 
   /**
@@ -978,6 +1006,7 @@ export class RoomView {
     const q = Math.floor(performance.now() / 250);
     if (q !== this.ajustesQuadro) {
       this.ajustes.clear();
+      this.alturas.clear();
       this.ajustesQuadro = q;
     }
     const salvo = this.ajustes.get(it.id);
@@ -1001,10 +1030,19 @@ export class RoomView {
           // a sombrinha do desenho passam um pouco da medida; se não couber com a folga, vai para o meio do tampo
           const F = 0.07;
           const dentro = (c: number, tc: number, th: number, ih: number) => (th - ih - F > 0 ? Math.max(tc - th + ih + F, Math.min(tc + th - ih - F, c)) : tc);
-          const nx = dentro(cx, t.cx, t.hx, ihx);
-          const ny = dentro(cy, t.cy, t.hy, ihy);
+          // no móvel de uma casa (o criado-mudo, o fundo do aparador): no meio do tampo; na mesa de várias casas, cada
+          // coisa fica na casa dela, só puxada para dentro do tampo
+          const nx = t.umaX ? t.cx : dentro(cx, t.cx, t.hx, ihx);
+          const ny = t.umaY ? t.cy : dentro(cy, t.cy, t.hy, ihy);
           r = [nx - cx, ny - cy];
-        } else if (apoio) r = this.ajusteDoMovel(map, apoio, fundo + 1);
+          // e na altura do tampo desenhado (a do catálogo é a das regras)
+          const dz = t.topo - (apoio!.z + (getFurni(apoio!.defId)?.height ?? 0));
+          if (Math.abs(dz) > 0.01) this.alturas.set(it.id, dz);
+        } else if (apoio) {
+          r = this.ajusteDoMovel(map, apoio, fundo + 1);
+          const dz = this.alturas.get(apoio.id);
+          if (dz) this.alturas.set(it.id, dz);
+        }
       } else if (!def.sit || def.leitos) {
         // a cama também (a cabeceira na parede), e quem está deitado nela vai junto
         r = this.encostoNaParede(map, it);
@@ -2602,13 +2640,15 @@ export class RoomView {
       const [ax, ay] = ghost ? [0, 0] : this.ajusteDoMovel(map, it as FloorItem);
       const ix = it.x + ax;
       const iy = it.y + ay;
+      // a altura em que ele é desenhado: a do tampo desenhado do móvel embaixo
+      const iz = ghost ? it.z : it.z + (this.alturas.get(it.id) ?? 0);
       // A ordem de desenho vem da casa de verdade do móvel (a pegada no chão), nunca do desenho: a
       // cadeira que desliza para baixo do tampo e a mesa maior que a pegada (`aumento`) cruzavam as
       // caixas, e o desempate deixava a cadeira de trás por cima da mesa (12/10). Com as pegadas, peças
       // em casas diferentes sempre têm um lado que as separa, e a ordem sai certa ao montar e ao mover.
       m.set(it.rot, def.width, def.depth, it.x, it.y, it.z);
       const ordens = vis.nodes.map((node) => m.box(node.ordem ?? node.b));
-      m.set(it.rot, def.width, def.depth, ix, iy, it.z);
+      m.set(it.rot, def.width, def.depth, ix, iy, iz);
       const floorH = map.floorHeight(it.x, it.y) ?? 0;
       const flat = !!def.flat && it.z <= floorH + 0.05 && !ghost;
       let topZ = it.z + def.height;
@@ -2655,7 +2695,7 @@ export class RoomView {
           sy1: sy1 + 4,
           poly: sil,
           draw: () => {
-            painter.m.set(rot, def.width, def.depth, ix, iy, it.z);
+            painter.m.set(rot, def.width, def.depth, ix, iy, iz);
             painter.state = estado;
             painter.seed = it.id;
             ctx.globalAlpha = nodeAlpha;
@@ -2766,7 +2806,7 @@ export class RoomView {
                 ctx.closePath();
               }
               ctx.clip();
-              painter.m.set(rot, def.width, def.depth, ix, iy, it.z);
+              painter.m.set(rot, def.width, def.depth, ix, iy, iz);
               painter.state = estado;
               painter.seed = it.id;
               ctx.globalAlpha = nodeAlpha;

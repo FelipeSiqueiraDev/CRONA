@@ -236,6 +236,8 @@ def desenhar(nome, rot, desenho, forca=0.0):
     # da pegada no chão (a âncora): o exportar_frente_px.py grava, e o jogo põe na frente da chama o que está na frente
     canto = np.array([ox + fx, oy + fy, 0.0]) @ motor.VISTA
     ULTIMA['prof'] = np.where(movel, prof - canto, np.nan)[b0:b1, a0:a1]
+    # o ponto na cena de cada pixel e se ele é tampo (virado para cima): o tampos_px.py acha onde as coisas pousam
+    ULTIMA['ponto'], ULTIMA['cima'], ULTIMA['movel'], ULTIMA['quina'] = Ln, topo, movel, (ox, oy)
     qx, qy = tela(np.array([ox + fx, oy + fy, 0.0]))
     # a medida de verdade (na orientação da cena, giro 4): a caixa do que faz sombra, no ponto da cena
     pts = np.concatenate([Pw for Pw, _ in c.polis] + [np.array([C - R, C + R]) for C, R, _ in c.elips])
@@ -244,10 +246,40 @@ def desenhar(nome, rot, desenho, forca=0.0):
     return img, (qx - x0 - a0, qy - y0 - b0), real
 
 
+def tampo_da_ultima(nome):
+    """
+    O tampo do móvel no último desenho (do giro 4): a maior superfície virada para cima entre 0,2 e 1,4 m dentro da pegada,
+    [u0, u1, v0, v1, z] em metros a partir da quina da pegada (u na largura, v no fundo com a frente em v alto). O jogo
+    apoia o que vai em cima nessa altura e no meio dessa caixa (23/10, o Felipe: "os objetos na pontinha das mesas").
+    None quando não há tampo (a cadeira, o tapete).
+    """
+    W, D = ITENS[nome][:2]
+    P, cima, movel = ULTIMA['ponto'], ULTIMA['cima'], ULTIMA['movel']
+    ox, oy = ULTIMA['quina']
+    u, v, z = P[..., 0] - ox, P[..., 1] - oy, P[..., 2]
+    Wm, Dm = W * CASA, D * CASA
+    m = cima & movel & (z > 0.2) & (z < 1.4) & (u > -0.02) & (u < Wm + 0.02) & (v > -0.02) & (v < Dm + 0.02)
+    if m.sum() < 12:
+        return None
+    # a superfície com mais pixels (de 1 em 1 cm, somando o centímetro de baixo): o tampo, e não o enfeite em cima dele
+    vals, cont = np.unique(np.round(z[m] * 100).astype(int), return_counts=True)
+    soma = cont + np.concatenate([[0], cont[:-1]]) * (np.diff(np.concatenate([[vals[0] - 9], vals])) == 1)
+    zt = vals[int(np.argmax(soma))] / 100
+    no = m & (np.abs(z - zt) <= 0.015)
+    if no.sum() < 12:
+        return None
+    # as pontas soltas (o contorno, um pixel de outra coisa na mesma altura) não contam: 2% de cada lado
+    u0, u1 = np.percentile(u[no], [2, 98])
+    v0, v1 = np.percentile(v[no], [2, 98])
+    return [round(float(u0), 3), round(float(u1), 3), round(float(v0), 3), round(float(v1), 3), round(float(z[no].max()), 3)]
+
+
 def exportar(nome, destino):
     W, D, _, desenho, estados = ITENS[nome]
     pasta = os.path.join(destino, nome)
     os.makedirs(pasta, exist_ok=True)
+
+    medidas = {}
 
     def vistas(des, suf='', estado='0'):
         out = {}
@@ -255,6 +287,8 @@ def exportar(nome, destino):
         for rot in SO_GIROS.get(nome, (4, 2, 0, 6)):
             img, (ax, ay), r = desenhar(nome, rot, des, FOGO.get(nome, {}).get(estado, 0.0))
             real = real or r
+            if rot == 4 and estado == '0':
+                medidas['tampo'] = tampo_da_ultima(nome)
             arq = f'giro-{rot}{suf}.png'
             Image.fromarray(img, 'RGBA').save(os.path.join(pasta, arq), optimize=True)
             out[str(rot)] = {'arquivo': f'{nome}/{arq}', 'ax': round(float(ax), 1), 'ay': round(float(ay), 1)}
@@ -263,6 +297,8 @@ def exportar(nome, destino):
 
     giros, real = vistas(desenho)
     ent = {'escala': 1, 'pixel': True, 'exato': True, 'codigo': True, 'giros': giros, 'real': real}
+    if medidas.get('tampo'):
+        ent['tampo'] = medidas['tampo']
     if nome in SO_GIROS:
         ent['soGiros'] = True
     if estados:

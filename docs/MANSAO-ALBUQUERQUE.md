@@ -60,7 +60,8 @@ Tamanho em casas (largura × fundo) e a posição na planta (x, y). `→` é a l
 | Cena | Tam. | Planta | Liga com | O que há |
 |---|---|---|---|---|
 | Hall Superior | 36×5 | 0,8 | duas escadarias para o Salão; N: Suíte e Sala de Jogos; S: quartos do Miguel, da Catarina e de hóspedes | passadeiras, consoles, relógio, retratos de família (dois são pistas ocultas) |
-| Suíte do Casal | 12×8 | 6,0 | S: Hall; O: Banheiro do Casal | cama master, lareira, closet aberto, penteadeira, divã, poltronas |
+| Suíte do Casal | 12×8 | 6,0 | S: Hall; O: Banheiro do Casal; L: Closet do Casal | cama master, lareira, penteadeira, divã, poltronas |
+| Closet do Casal | 4×8 | 18,0 | O: Suíte | o lado dele (nogueira) e o lado dela (marfim) na parede comprida, a ilha de joias, o espelho de corpo inteiro, o pufe |
 | Banheiro do Casal | 6×7 | 0,0 | L: Suíte | banheira de pés dourados, pia dupla, box, vaso |
 | Sala de Jogos | 14×8 | 22,0 | S: Hall | sinuca, fliperamas, jukebox, pôquer, bar com banquetas, TV e sofá, dardos |
 | Quarto do Miguel | 11×8 | 0,13 | N: Hall; S: Banheiro do Miguel | cama, bancada de eletrônica, tatame, saco de pancada, halteres, luvas, mapa |
@@ -111,7 +112,7 @@ balaústres (23/10: o terraço saiu do 2º andar e o alto do pórtico parecia um
 `mansao_predios` (4 blocos), `mansao_jardim` (anexo, barracão, muro, pilar, portão, estátua, topiaria, canteiro, cipreste,
 lampião), `mansao_estrutura` (lustre, lareira, coluna, piano, escadas nobres, relógio, vasos, console, tapetes),
 `mansao_conforto` (cama master, chaise, penteadeira, espelho, banheira, pia, adega, poltrona, carrinho de bar, closet, quadros,
-retratos, janela com cortina), `mansao_quartos` (quarto da Catarina e do Miguel, sala de jogos), `mansao_escritorio` (escritório,
+retratos, janela com cortina), `mansao_quartos` (quarto da Catarina e do Miguel, sala de jogos), `mansao_closet` (os dois lados do closet do casal e a ilha de joias), `mansao_escritorio` (escritório,
 biblioteca), `mansao_estilos` (os dez pisos e paredes). A exportação para `client/public/arte/` é feita uma vez, no fim,
 pelo coordenador.
 
