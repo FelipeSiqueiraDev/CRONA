@@ -48162,5 +48162,294 @@
       0.61,
       0.92
     ]
+  },
+  "retrato_familia": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "retrato_familia/parede-r.png",
+        "ax": 25.0,
+        "ay": 42.4
+      },
+      "l": {
+        "arquivo": "retrato_familia/parede-l.png",
+        "ax": 24.0,
+        "ay": 42.4
+      }
+    }
+  },
+  "retrato_familia~2": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "retrato_familia~2/parede-r.png",
+        "ax": 25.0,
+        "ay": 42.4
+      },
+      "l": {
+        "arquivo": "retrato_familia~2/parede-l.png",
+        "ax": 24.0,
+        "ay": 42.4
+      }
+    }
+  },
+  "retrato_familia~3": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "retrato_familia~3/parede-r.png",
+        "ax": 25.0,
+        "ay": 42.4
+      },
+      "l": {
+        "arquivo": "retrato_familia~3/parede-l.png",
+        "ax": 24.0,
+        "ay": 42.4
+      }
+    }
+  },
+  "retrato_familia~4": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "retrato_familia~4/parede-r.png",
+        "ax": 25.0,
+        "ay": 42.4
+      },
+      "l": {
+        "arquivo": "retrato_familia~4/parede-l.png",
+        "ax": 24.0,
+        "ay": 42.4
+      }
+    }
+  },
+  "retrato_familia~5": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "retrato_familia~5/parede-r.png",
+        "ax": 25.0,
+        "ay": 42.4
+      },
+      "l": {
+        "arquivo": "retrato_familia~5/parede-l.png",
+        "ax": 24.0,
+        "ay": 42.4
+      }
+    }
+  },
+  "retrato_familia~6": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "retrato_familia~6/parede-r.png",
+        "ax": 25.0,
+        "ay": 42.4
+      },
+      "l": {
+        "arquivo": "retrato_familia~6/parede-l.png",
+        "ax": 24.0,
+        "ay": 42.4
+      }
+    }
+  },
+  "retrato_familia~7": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "retrato_familia~7/parede-r.png",
+        "ax": 25.0,
+        "ay": 42.4
+      },
+      "l": {
+        "arquivo": "retrato_familia~7/parede-l.png",
+        "ax": 24.0,
+        "ay": 42.4
+      }
+    }
+  },
+  "retrato_familia~8": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "retrato_familia~8/parede-r.png",
+        "ax": 25.0,
+        "ay": 42.4
+      },
+      "l": {
+        "arquivo": "retrato_familia~8/parede-l.png",
+        "ax": 24.0,
+        "ay": 42.4
+      }
+    }
+  },
+  "retrato_familia~9": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "retrato_familia~9/parede-r.png",
+        "ax": 25.0,
+        "ay": 42.4
+      },
+      "l": {
+        "arquivo": "retrato_familia~9/parede-l.png",
+        "ax": 24.0,
+        "ay": 42.4
+      }
+    }
+  },
+  "pintura_mestre": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "pintura_mestre/parede-r.png",
+        "ax": 38.0,
+        "ay": 48.4
+      },
+      "l": {
+        "arquivo": "pintura_mestre/parede-l.png",
+        "ax": 36.0,
+        "ay": 48.4
+      }
+    }
+  },
+  "pintura_mestre~2": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "pintura_mestre~2/parede-r.png",
+        "ax": 38.0,
+        "ay": 48.4
+      },
+      "l": {
+        "arquivo": "pintura_mestre~2/parede-l.png",
+        "ax": 36.0,
+        "ay": 48.4
+      }
+    }
+  },
+  "pintura_mestre~3": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "pintura_mestre~3/parede-r.png",
+        "ax": 38.0,
+        "ay": 48.4
+      },
+      "l": {
+        "arquivo": "pintura_mestre~3/parede-l.png",
+        "ax": 36.0,
+        "ay": 48.4
+      }
+    }
+  },
+  "pintura_mestre~4": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "pintura_mestre~4/parede-r.png",
+        "ax": 38.0,
+        "ay": 48.4
+      },
+      "l": {
+        "arquivo": "pintura_mestre~4/parede-l.png",
+        "ax": 36.0,
+        "ay": 48.4
+      }
+    }
+  },
+  "pintura_mestre~5": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "pintura_mestre~5/parede-r.png",
+        "ax": 38.0,
+        "ay": 48.4
+      },
+      "l": {
+        "arquivo": "pintura_mestre~5/parede-l.png",
+        "ax": 36.0,
+        "ay": 48.4
+      }
+    }
+  },
+  "tela_abstrata": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "tela_abstrata/parede-r.png",
+        "ax": 49.0,
+        "ay": 62.4
+      },
+      "l": {
+        "arquivo": "tela_abstrata/parede-l.png",
+        "ax": 49.0,
+        "ay": 62.4
+      }
+    }
+  },
+  "tela_abstrata~2": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "tela_abstrata~2/parede-r.png",
+        "ax": 49.0,
+        "ay": 62.4
+      },
+      "l": {
+        "arquivo": "tela_abstrata~2/parede-l.png",
+        "ax": 49.0,
+        "ay": 62.4
+      }
+    }
+  },
+  "tela_abstrata~3": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "tela_abstrata~3/parede-r.png",
+        "ax": 49.0,
+        "ay": 62.4
+      },
+      "l": {
+        "arquivo": "tela_abstrata~3/parede-l.png",
+        "ax": 49.0,
+        "ay": 62.4
+      }
+    }
   }
 }

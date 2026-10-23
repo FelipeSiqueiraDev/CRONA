@@ -45,7 +45,7 @@ Tamanho em casas (largura × fundo) e a posição na planta (x, y). `→` é a l
 
 | Cena | Tam. | Planta | Liga com | O que há |
 |---|---|---|---|---|
-| Salão Principal | 15×17 | 16,7 | S: jardim (a entrada principal); N: Cozinha; O: Biblioteca; L: Sala de Jantar e Escritório; duas escadarias para o Hall Superior | mármore xadrez, tapete vermelho da porta, colunas, a escultura sob o lustre, tapete redondo, relógio, poltronas vermelhas |
+| Salão Principal | 15×17 | 16,7 | S: jardim (a entrada principal); N: Cozinha; O: Biblioteca; L: Sala de Jantar e Escritório; duas escadarias para o Hall Superior | mármore xadrez, tapete vermelho da porta, colunas, a escultura sob o lustre, tapete redondo, relógio, poltronas vermelhas; nas paredes, a galeria da família (os nove retratos, do fundador aos netos) |
 | Biblioteca | 16×13 | 0,11 | L: Salão | as estantes em L nas duas paredes, a vitrine do ovo de joia no canto, o tapete imperial com quatro sofás capitonê e quatro bergères nas diagonais, a mesa de mármore negro (ver abaixo) |
 | Escritório de Alexander | 10×11 | 31,13 | O: Salão | mesa do CEO virada para a cadeira, estantes, cofre (pista oculta), bar, sofá, globo, touro de bronze, retrato do fundador (pista oculta), mapa do frigorífico, prêmios |
 | Sala de Jantar | 10×12 | 31,0 | O: Salão | mesa comprida de 20 lugares, lareira, aparador, armadura, quadros |
@@ -63,7 +63,7 @@ Tamanho em casas (largura × fundo) e a posição na planta (x, y). `→` é a l
 | Suíte do Casal | 12×8 | 6,0 | S: Hall; O: Banheiro do Casal; L: Closet do Casal | cama master, lareira, penteadeira, divã, poltronas |
 | Closet do Casal | 4×8 | 18,0 | O: Suíte | o lado dele (nogueira) e o lado dela (marfim) na parede comprida, a ilha de joias, o espelho de corpo inteiro, o pufe |
 | Banheiro do Casal | 6×7 | 0,0 | L: Suíte | banheira de pés dourados, pia dupla, box, vaso |
-| Sala de Jogos | 14×8 | 22,0 | S: Hall | sinuca, fliperamas, jukebox, pôquer, bar com banquetas, TV e sofá, dardos |
+| Sala de Jogos | 14×8 | 22,0 | S: Hall | sinuca, o Feliperama e o Felipe's Fight (luta, em dupla), jukebox, mesa de 21 em meia-lua (o dealer em pé), bar com banquetas, TV e sofá, dardos |
 | Quarto do Miguel | 11×8 | 0,13 | N: Hall; S: Banheiro do Miguel | cama, bancada de eletrônica, tatame, saco de pancada, halteres, luvas, mapa |
 | Quarto da Catarina | 13×8 | 11,13 | N: Hall; S: Banheiro da Catarina; parede de escalada para o Mezanino | ver abaixo |
 | Mezanino da Catarina (a caverna) | 6×5 | 11,13 (andar "Mezanino") | parede de escalada de volta | ver abaixo |
@@ -112,7 +112,7 @@ balaústres (23/10: o terraço saiu do 2º andar e o alto do pórtico parecia um
 `mansao_predios` (4 blocos), `mansao_jardim` (anexo, barracão, muro, pilar, portão, estátua, topiaria, canteiro, cipreste,
 lampião), `mansao_estrutura` (lustre, lareira, coluna, piano, escadas nobres, relógio, vasos, console, tapetes),
 `mansao_conforto` (cama master, chaise, penteadeira, espelho, banheira, pia, adega, poltrona, carrinho de bar, closet, quadros,
-retratos, janela com cortina), `mansao_quartos` (quarto da Catarina e do Miguel, sala de jogos), `mansao_closet` (os dois lados do closet do casal e a ilha de joias), `mansao_escritorio` (escritório,
+retratos, janela com cortina), `mansao_quartos` (quarto da Catarina e do Miguel, sala de jogos), `mansao_closet` (os dois lados do closet do casal e a ilha de joias), `mansao_galeria` (os retratos da família por época, as telas de mestre e as abstratas), `mansao_escritorio` (escritório,
 biblioteca), `mansao_estilos` (os dez pisos e paredes). A exportação para `client/public/arte/` é feita uma vez, no fim,
 pelo coordenador.
 

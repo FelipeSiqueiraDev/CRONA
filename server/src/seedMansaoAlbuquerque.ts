@@ -22,7 +22,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Mudou a montagem? Suba MANSAO_REV: a mansão é refeita no lugar, mantendo as cenas, as peças e o registro.
  */
 export const MANSAO = "Mansão Albuquerque · ";
-export const MANSAO_REV = 6;
+export const MANSAO_REV = 8;
 
 const ANDAR = "Mansão Albuquerque";
 const ANDAR2 = "Mansão Albuquerque 2º";
@@ -423,37 +423,44 @@ for (let i = 0; i < 6; i++) {
   s.cadeiras("cadeira_jantar_luxo", 4, 2, 2, 8, { o: [0, 1, 2, 3, 4, 5, 6, 7], l: [0, 1, 2, 3, 4, 5, 6, 7] });
   s.add("cadeira_cabeceira", 4, 1, 4).add("cadeira_jantar_luxo", 4, 10, 0);
   s.enc("N", "lareira_marmore", 7).enc("O", "sideboard", 1).mais("palmeira_vaso", 0, [9, 11], [0, 11]).add("armor_display", 9, 5, 6);
-  s.lustres([5, 4], [5, 8]).par("N", "quadro_oleo_grande", 2.5, 1.9).par("O", "retrato_nobre", 5.5, 1.8);
+  s.lustres([5, 4], [5, 8]).par("N", "pintura_mestre~5", 2.5, 1.9).par("O", "pintura_mestre~3", 5.5, 1.85);
   // os objetinhos (23/10): os candelabros, a fruteira e o arranjo na mesa; o serviço de chá e o uísque no aparador; o champanhe
   s.em("candelabro_prata", 4, 3, 4).em("fruteira_prata", 5, 5, 4).em("arranjo_flores", 4, 6, 4).em("candelabro_prata", 5, 8, 4);
   s.em("servico_cha", 0, 1, 2).em("decanter_tacas", 0, 2, 2).add("balde_champanhe", 9, 8, 0);
 }
 // o salão principal, o hall de entrada com as duas escadarias
 {
-  const s = nova("salao", "Salão Principal", 15, 17, "mansao_marmore", 16, 7, ANDAR, "O salão principal, o hall de entrada da mansão: o mármore claro, o tapete vermelho que vem da porta, as colunas, a escultura no meio sob o grande lustre e as duas escadarias curvas que sobem ao andar de cima. Daqui se vai à biblioteca, ao escritório, à sala de jantar e à cozinha.");
+  const s = nova("salao", "Salão Principal", 15, 17, "mansao_marmore", 16, 7, ANDAR, "O salão principal, o hall de entrada da mansão: o mármore claro, o tapete vermelho que vem da porta, as colunas, a escultura no meio sob o grande lustre e as duas escadarias curvas que sobem ao andar de cima. Nas paredes, a galeria da família: os retratos de todas as gerações, do fundador, junto da entrada, até os netos, no fundo. Daqui se vai à biblioteca, ao escritório, à sala de jantar e à cozinha.");
   s.porta("S", 23, "jardim").porta("N", 22, "cozinha").porta("O", 19, "biblioteca").porta("L", 9, "jantar").porta("L", 17, "escritorio");
   s.escada("escada_nobre", 2, 0, 4, "hall_s").escada("escada_nobre", 10, 0, 4, "hall_s");
   s.add("tapete_redondo", 6, 5, 0).add("tapete_longo", 6, 9, 4);
   s.add("estatua_jardim", 7, 6, 4);
   s.mais("coluna_marmore", 0, [5, 13], [9, 13], [5, 16], [9, 16]);
-  s.mais("palmeira_vaso", 0, [0, 0], [14, 0], [0, 16], [14, 16]).mais("vaso_grande", 0, [5, 0], [9, 0]);
-  s.add("poltrona_luxo", 2, 13, 2).add("poltrona_luxo", 12, 13, 6).enc("O", "console_dourado", 7).enc("N", "relogio_carrilhao", 8);
+  s.mais("palmeira_vaso", 0, [0, 0], [14, 0], [0, 16], [14, 16]).mais("vaso_grande", 0, [5, 0]);
+  s.add("poltrona_luxo", 2, 13, 2).add("poltrona_luxo", 12, 13, 6).enc("O", "console_dourado", 7).enc("N", "relogio_carrilhao", 9);
   s.lustres([7, 3], [7, 11], [3, 8], [11, 8]);
-  s.par("O", "quadro_oleo_grande", 2.5, 1.9).par("O", "retrato_nobre", 9.5, 1.9).par("O", "espelho_dourado", 15.0, 1.6);
+  // a galeria da família (23/10, o Felipe: "concentrasse todos os quadros da família só no Hall central, meio que começa do
+  // mais antigo e vai circulando a sala até os mais novos"): da entrada, pela parede da esquerda até o fundo, e daí pela
+  // parede do fundo; o fundador primeiro, os netos por último (retrato_familia ~1 a ~9, cada vez menos envelhecidos)
+  s.par("O", "retrato_familia", 14.6, 1.8, segredo("retrato-fundador", "O retrato do fundador", "Um homem de terno claro e olhos cansados, numa moldura dourada, com a plaquinha embaixo. O que ela diz fica com o mestre."));
+  s.par("O", "retrato_familia~2", 10.9, 1.8).par("O", "retrato_familia~3", 9.35, 1.8, segredo("galeria-retrato-1", "Retrato a óleo", "Um homem de terno escuro, num retrato antigo com a plaquinha dourada. O que ela diz fica com o mestre."));
+  s.par("O", "retrato_familia~4", 7.8, 1.8, segredo("galeria-retrato-2", "Retrato a óleo", "Outro retrato de família, de outra época, com a plaquinha dourada. O que ela diz fica com o mestre."));
+  s.par("O", "retrato_familia~5", 6.25, 1.8).par("O", "retrato_familia~6", 4.7, 1.8).par("O", "retrato_familia~7", 3.2, 1.8);
+  s.par("O", "retrato_familia~8", 1.75, 1.8).par("N", "retrato_familia~9", 8.0, 1.8);
   s.item(9, 10, "Cartão de Visita dos Albuquerque", 0.5);
   // os objetinhos (23/10): o arranjo no console, as mesinhas ao lado das poltronas com o candelabro e os porta-retratos
   s.em("arranjo_flores", 0, 7, 2).add("table_small", 3, 13, 0).em("porta_retratos", 3, 13, 0).add("table_small", 11, 13, 0).em("candelabro_prata", 11, 13, 0);
 }
 // o escritório do pai, à direita do salão
 {
-  const s = nova("escritorio", "Escritório de Alexander", 10, 11, "mansao_nobre", 31, 13, ANDAR, "O escritório de Alexander Albuquerque, CEO do Frigorífico Albuquerque: a mesa enorme virada para a cadeira, as estantes, o cofre no canto, o bar de nogueira, o sofá de couro e o mapa do Brasil com as unidades. Na parede, o retrato do fundador e os prêmios da empresa.");
+  const s = nova("escritorio", "Escritório de Alexander", 10, 11, "mansao_nobre", 31, 13, ANDAR, "O escritório de Alexander Albuquerque, CEO do Frigorífico Albuquerque: a mesa enorme virada para a cadeira, as estantes, o cofre no canto, o bar de nogueira, o sofá de couro e o mapa do Brasil com as unidades. Na parede, a marinha de mestre sob a luminária de latão e os prêmios da empresa.");
   s.porta("O", 17, "salao");
   s.add("rug_aubusson", 3, 3, 4).add("mesa_ceo", 3, 4, 4).add("cadeira_ceo", 4, 6, 0);
   s.add("cadeira_jantar_luxo", 3, 3, 4).add("cadeira_jantar_luxo", 5, 3, 4);
   s.enc("O", "cofre", 0, segredo("cofre-escritorio", "O cofre", "Um cofre de aço do tamanho de um armário pequeno. A senha e o que há dentro ficam com o mestre."));
   s.enc("O", "estante_biblioteca", 1).enc("N", "estante_biblioteca", 2).enc("N", "bar_escritorio", 6);
   s.add("globo", 9, 1, 6).add("touro_bronze", 1, 9, 4).enc("L", "sofa_verissimo", 6).add("armchair_verissimo", 6, 9, 0);
-  s.par("N", "retrato_nobre", 5.5, 1.9, segredo("retrato-fundador", "O retrato do fundador", "Um homem de terno claro e olhos cansados, numa moldura dourada, com a plaquinha embaixo. O que ela diz fica com o mestre."));
+  s.par("N", "pintura_mestre", 4.5, 1.9);
   s.par("N", "placa_frigorifico", 9.0, 2.0).par("O", "mapa_frigorifico", 6.0, 1.6).par("O", "trofeus_empresa", 8.8, 1.6);
   s.lustres([2, 6], [7, 4]).item(5, 8, "Abridor de Cartas de Prata", 0.5);
   // os objetinhos (23/10): o uísque no bar, os papéis, a luminária e as fotos na mesa, os livros de couro
@@ -462,16 +469,15 @@ for (let i = 0; i < 6; i++) {
 
 // ---------------------------------------------------------------- 2º ANDAR (área íntima e lazer)
 {
-  const s = nova("hall_s", "Hall Superior", 36, 5, "mansao_marmore", 0, 8, ANDAR2, "O hall do andar de cima, onde chegam as duas escadarias do salão: a passadeira comprida, os consoles dourados, os retratos de família de épocas diferentes. Daqui se vai à suíte do casal, à sala de jogos e aos quartos.");
+  const s = nova("hall_s", "Hall Superior", 36, 5, "mansao_marmore", 0, 8, ANDAR2, "O hall do andar de cima, onde chegam as duas escadarias do salão: a passadeira comprida, os consoles dourados e as telas de mestre, com a grande tela abstrata sob a luminária. Daqui se vai à suíte do casal, à sala de jogos e aos quartos.");
   s.porta("S", 5, "miguel").porta("S", 20, "catarina").porta("S", 27, "hospedes").porta("N", 12, "suite").porta("N", 26, "jogos");
   s.escada("escada_nobre_desce", 15, 0, 4, "salao").escada("escada_nobre_desce", 19, 0, 4, "salao");
   s.add("tapete_corredor", 3, 2, 2).add("tapete_corredor", 27, 2, 2);
   s.enc("N", "console_dourado", 7).enc("N", "console_dourado", 29).enc("N", "relogio_carrilhao", 23);
   s.mais("palmeira_vaso", 0, [0, 0], [35, 0], [0, 4], [35, 4]).mais("vaso_grande", 0, [14, 0], [22, 0]);
   s.lustres([9, 2], [18, 3], [30, 2]);
-  s.par("N", "retrato_nobre~3", 1.8, 1.8).par("N", "retrato_nobre", 4.0, 1.8, segredo("galeria-retrato-1", "Retrato a óleo", "Um homem de terno escuro, num retrato antigo com a plaquinha dourada. O que ela diz fica com o mestre."));
-  s.par("N", "retrato_nobre~4", 5.7, 1.8, segredo("galeria-retrato-2", "Retrato a óleo", "Outro retrato de família, de outra época, com a plaquinha dourada. O que ela diz fica com o mestre."));
-  s.par("N", "quadro_oleo_grande", 32.0, 1.9).par("N", "retrato_nobre~2", 34.4, 1.8).par("O", "espelho_dourado", 2.5, 1.6);
+  // as telas "de milhões" (23/10): os retratos da família foram todos para a galeria do salão
+  s.par("N", "tela_abstrata", 3.6, 1.75).par("N", "pintura_mestre~2", 9.6, 1.85).par("N", "pintura_mestre~4", 31.6, 1.85).par("O", "espelho_dourado", 2.5, 1.6);
   // os objetinhos (23/10): os arranjos, as fotos e o candelabro nos consoles
   s.em("arranjo_flores", 7, 0, 4).em("porta_retratos", 8, 0, 4).em("candelabro_prata", 29, 0, 4).em("arranjo_flores", 30, 0, 4);
 }
@@ -481,7 +487,7 @@ for (let i = 0; i < 6; i++) {
   s.add("rug_aubusson", 4, 3, 4).enc("N", "cama_master", 4).enc("N", "nightstand", 3).enc("N", "nightstand", 7);
   s.add("vaso_grande", 0, 0, 4).enc("N", "penteadeira", 9).add("pufe", 10, 1, 4).enc("O", "lareira_marmore", 4);
   s.add("chaise_longue", 8, 6, 0).add("poltrona_orelha", 2, 5, 6).add("poltrona_orelha", 2, 6, 6);
-  s.lustres([5, 4], [9, 4]).par("N", "janela_cortinas", 2.5, 1.72, undefined, 0);
+  s.lustres([5, 4], [9, 4]).par("N", "janela_cortinas", 2.5, 1.72, undefined, 0).par("O", "pintura_mestre~2", 5.0, 2.05);
   // os objetinhos (23/10): a luminária e as fotos nos criados-mudos, o champanhe perto do divã, a mesinha das poltronas
   s.em("desk_lamp", 3, 0, 4).em("porta_retratos", 7, 0, 4).add("balde_champanhe", 10, 6, 0).add("table_small", 2, 4, 0).em("servico_cha", 2, 4, 0);
 }
@@ -560,7 +566,7 @@ for (let i = 0; i < 6; i++) {
   s.porta("N", 27, "hall_s").porta("S", 30, "banho_hospedes");
   s.enc("N", "nightstand", 5).enc("N", "cama_casal", 6).enc("N", "nightstand", 8).enc("N", "comoda", 10).enc("O", "guarda_roupa", 1);
   s.add("rug_ornate", 5, 3, 4).add("desk_wood", 9, 5, 6).add("chair_wood", 8, 5, 2).add("poltrona_orelha", 1, 6, 4);
-  s.lustres([6, 4]).par("N", "janela_cortinas", 1.5, 1.72, undefined, 0);
+  s.lustres([6, 4]).par("N", "janela_cortinas", 1.5, 1.72, undefined, 0).par("O", "tela_abstrata~2", 5.0, 1.7);
   // os objetinhos (23/10): o arranjo e a luminária nos criados-mudos, os livros na cômoda, os papéis na escrivaninha
   s.em("arranjo_flores", 5, 0, 4).em("desk_lamp", 8, 0, 4).em("livros_couro", 10, 0, 4).em("papers", 9, 5, 6);
 }

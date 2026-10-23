@@ -127,6 +127,20 @@ describe("Mansão Albuquerque", () => {
     for (const id of ["mesa_ceo", "cadeira_ceo", "cofre", "bar_escritorio", "touro_bronze"]) assert.ok(pai.items.some((i) => i.defId === id), `escritório sem ${id}`);
   });
 
+  test("os retratos da família ficam todos no salão, em volta, do fundador (junto da entrada) aos netos (no fundo)", () => {
+    const geracao = (w: { modelo?: string }) => Number(w.modelo ?? 1);
+    for (const r of salas) {
+      if (r.name === MANSAO + "Salão Principal") continue;
+      assert.ok(!r.wallItems.some((w) => /^retrato_(familia|nobre)/.test(w.defId)), `retrato da família fora do salão: ${r.name}`);
+    }
+    const rs = porNome("Salão Principal").wallItems.filter((w) => w.defId.startsWith("retrato_familia"));
+    assert.equal(rs.length, 9, "as nove gerações");
+    // a volta: a parede da esquerda (l) da frente para o fundo, depois a do fundo (r) da esquerda para a direita
+    const volta = (w: (typeof rs)[number]) => (w.wall === "l" ? 100 - w.pos : 200 + w.pos);
+    assert.deepEqual([...rs].sort((a, b) => volta(a) - volta(b)).map(geracao), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    assert.ok(rs.find((w) => geracao(w) === 1)?.hint, "o fundador guarda a pista dele");
+  });
+
   test("a mesa do pai é virada para a cadeira, e nada fica embaixo dela", () => {
     const pai = porNome("Escritório de Alexander");
     const mesa = pai.items.find((i) => i.defId === "mesa_ceo")!;

@@ -704,6 +704,9 @@ export const WALL_FURNI_LIST: WallFurniDef[] = [
   // ---------- MANSÃO ALBUQUERQUE (21/10) ----------
   { id: 'quadro_oleo_grande', name: 'Quadro a Óleo Grande', category: 'parede', kind: 'painting', w: 81, h: 60, colors: ['#b8902a', '#3a4a5a'], desc: 'Pintura a óleo em moldura dourada entalhada (paisagem, caçada ou natureza-morta).' },
   { id: 'retrato_nobre', name: 'Retrato a Óleo', category: 'parede', kind: 'painting', w: 43, h: 63, colors: ['#b8902a', '#2a2420'], desc: 'Retrato a óleo de gente da família, em moldura dourada.' },
+  { id: 'retrato_familia', name: 'Retrato da Família', category: 'parede', kind: 'painting', w: 43, h: 63, colors: ['#b8902a', '#2a2420', '#c4521e'], desc: 'Retrato a óleo da família Albuquerque, de uma das gerações, em moldura dourada.' },
+  { id: 'pintura_mestre', name: 'Tela de Mestre', category: 'parede', kind: 'painting', w: 68, h: 63, colors: ['#b8902a', '#2a3a4a', '#c8962c'], desc: 'Tela a óleo de mestre em moldura de museu: a marinha, a paisagem, as flores, o lago ou o canal.' },
+  { id: 'tela_abstrata', name: 'Tela Abstrata', category: 'parede', kind: 'painting', w: 94, h: 78, colors: ['#16161a', '#14204a', '#c88a2a'], desc: 'A tela moderna grande na moldura preta de galeria.' },
   { id: 'espelho_dourado', name: 'Espelho Dourado', category: 'parede', kind: 'mirror', w: 34, h: 60, colors: ['#b8902a', '#cfe0e8'], desc: 'Espelho de moldura dourada trabalhada.' },
   { id: 'janela_cortinas', name: 'Janela com Cortinas', category: 'parede', kind: 'janela_sol', w: 67, h: 110, states: 2, colors: ['#e8e4dc', '#6a1a24'], desc: 'Janela alta com cortinas pesadas. Clique duplo abre e fecha as cortinas.' },
   { id: 'painel_trofeus', name: 'Painel de Troféus', category: 'parede', kind: 'painting', w: 192, h: 104, colors: ['#c8a878', '#d8b038'], desc: 'O painel de troféus e medalhas da Catarina, de todas as competições que ela disputou.' },
