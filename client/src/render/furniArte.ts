@@ -242,8 +242,18 @@ function carregarLista(tentativa = 0) {
 }
 carregarLista();
 
-/** O material de cada piso, para a arte de material (a porta de metal no arsenal e na prisão). */
-const MATERIAL: Record<string, string> = { metal: 'metal', cela: 'metal' };
+/** O material de cada piso, para a arte de material (a porta de metal no arsenal e na prisão, a de laca na mansão). */
+const MATERIAL: Record<string, string> = {
+  metal: 'metal',
+  cela: 'metal',
+  // a mansão moderna (23/10): a porta de laca marfim com o latão, no lugar da de madeira entalhada
+  mansao_nobre: 'laca',
+  mansao_claro: 'laca',
+  mansao_marmore: 'laca',
+  mansao_servico: 'laca',
+  mansao_banho: 'laca',
+  mansao_jogos: 'laca',
+};
 
 /**
  * Qual arte vale para esta peça: a do material do cômodo, se houver; senão um dos modelos do

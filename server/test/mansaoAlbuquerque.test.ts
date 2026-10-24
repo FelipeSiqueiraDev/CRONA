@@ -124,7 +124,8 @@ describe("Mansão Albuquerque", () => {
     for (const id of ["setup_gamer", "cadeira_gamer", "puff_gamer", "parede_escalada"]) assert.ok(m.items.some((i) => i.defId === id), `mezanino sem ${id}`);
     assert.ok(m.darkness >= 0.6, "o mezanino é escuro");
     const pai = porNome("Escritório de Alexander");
-    for (const id of ["mesa_ceo", "cadeira_ceo", "cofre", "bar_escritorio", "touro_bronze"]) assert.ok(pai.items.some((i) => i.defId === id), `escritório sem ${id}`);
+    // 23/10: a mesa e o bar viraram os modernos (a mesa de Nero Marquina e o bar de vidro e latão)
+    for (const id of ["mesa_executiva", "cadeira_ceo", "cofre", "bar_vidro", "touro_bronze"]) assert.ok(pai.items.some((i) => i.defId === id), `escritório sem ${id}`);
   });
 
   test("os retratos da família ficam todos no salão, em volta, do fundador (junto da entrada) aos netos (no fundo)", () => {
@@ -143,8 +144,8 @@ describe("Mansão Albuquerque", () => {
 
   test("a mesa do pai é virada para a cadeira, e nada fica embaixo dela", () => {
     const pai = porNome("Escritório de Alexander");
-    const mesa = pai.items.find((i) => i.defId === "mesa_ceo")!;
-    const fp = footprint(getFurni("mesa_ceo")!, mesa.rot);
+    const mesa = pai.items.find((i) => i.defId === "mesa_executiva")!;
+    const fp = footprint(getFurni("mesa_executiva")!, mesa.rot);
     const cadeira = pai.items.find((i) => i.defId === "cadeira_ceo")!;
     // a cadeira fica numa casa colada na mesa, do lado da frente dela (giro 0 aqui: olhando para a mesa)
     assert.ok(cadeira.x >= mesa.x && cadeira.x < mesa.x + fp.sx, "a cadeira fica na largura da mesa");

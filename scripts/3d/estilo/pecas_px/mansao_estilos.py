@@ -901,15 +901,51 @@ parede_nobre_luxo = _parede_luxo('#d8ccb2')
 parede_claro_luxo = _parede_luxo('#ece6da')
 
 
+# =====================================================================================================================
+# 12. O MODERNO (23/10, o Felipe: "cheio de madeira e coisas com aparência velha... é tudo mármore, coisas chiques"): a
+# área de serviço sem o ladrilho hidráulico (o porcelanato branco e a parede lisa com o rodapé e a sanca) e a sala de
+# jogos sem a madeira (o Nero Marquina com os veios dourados no chão e a parede grafite com a boiserie)
+# =====================================================================================================================
+NERO_P = _rampa(['#1c1b20', '#1f1e23', '#1a191e'])
+
+
+def piso_nero():
+    """O Nero Marquina polido: a placa de 2 x 2 casas, o preto com os veios dourados longos, a junta fina, o reflexo."""
+    def f(L, n, P):
+        u, v = _uv_chao(P)
+        u, v = u % W, v % W
+        T = 64
+        tu, tv = u // T, v // T
+        ids = tu * 2 + tv
+        k = (_h(ids * 0.41, 2.7) * 3).astype(int) % 3
+        out = NERO_P[k]
+        du = (_h(ids, 3.3) * 128).astype(int)
+        v1 = _veios(u, v, 93, desl=du, per=48, gate=2, amp=26) & (_h(ids, 5.3) < 0.8)
+        v2 = _veios2(u, v, 97, desl=du) & (_h(ids, 6.1) < 0.5)
+        out = _w(v2, hx('#5a5040'), out)
+        out = _w(v1, hx('#b89850'), out)
+        gu, gv = u % T, v % T
+        refl = ((gu + gv) % 64 >= 20) & ((gu + gv) % 64 <= 25)
+        out = _w(refl, _tom(out, 1.35), out)
+        out = _w((gu == 1) | (gv == 1), _tom(out, 1.25), out)
+        return _w((gu == 0) | (gv == 0), hx('#0c0b0e'), out)
+    return emissivo(f)
+
+
+parede_servico_luxo = _parede_luxo('#ebe7df', painel=False)
+parede_jogos_luxo = _parede_luxo('#2c2a32')
+
+
 ESTILOS = {
     'mansao_marmore': {'piso': piso_marmore, 'parede': parede_marmore, 'rodape': None, 'extra': None},
     # 23/10: o salão nobre e os quartos trocaram a madeira pelo porcelanato branco e a parede pelo luxo pintado
     'mansao_nobre': {'piso': piso_porcelanato, 'parede': parede_nobre_luxo, 'rodape': None, 'extra': None},
     'mansao_claro': {'piso': piso_porcelanato, 'parede': parede_claro_luxo, 'rodape': None, 'extra': None},
-    'mansao_servico': {'piso': piso_servico, 'parede': parede_servico, 'rodape': None, 'extra': None},
+    # 23/10: a cozinha, a despensa, a lavanderia e o corredor dos funcionários sem o ladrilho hidráulico; a sala de jogos sem a madeira
+    'mansao_servico': {'piso': piso_porcelanato, 'parede': parede_servico_luxo, 'rodape': None, 'extra': None},
     'mansao_estufa': {'piso': piso_estufa, 'parede': parede_estufa, 'rodape': None, 'extra': None},
     'mansao_banho': {'piso': piso_banho, 'parede': parede_banho, 'rodape': None, 'extra': None},
-    'mansao_jogos': {'piso': piso_jogos, 'parede': parede_jogos, 'rodape': None, 'extra': None},
+    'mansao_jogos': {'piso': piso_nero, 'parede': parede_jogos_luxo, 'rodape': None, 'extra': None},
     'mansao_caverna': {'piso': piso_caverna, 'parede': parede_caverna, 'rodape': None, 'extra': None},
     'mansao_rustico': {'piso': piso_rustico, 'parede': parede_rustico, 'rodape': None, 'extra': None},
     'mansao_tabuas': {'piso': piso_rustico, 'parede': parede_tabuas, 'rodape': None, 'extra': None},

@@ -47229,5 +47229,1353 @@
         "ay": 12.4
       }
     }
+  },
+  "bancada_cooktop": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "bancada_cooktop/giro-4.png",
+        "ax": 70.0,
+        "ay": 145.0
+      },
+      "2": {
+        "arquivo": "bancada_cooktop/giro-2.png",
+        "ax": 40.0,
+        "ay": 145.0
+      },
+      "0": {
+        "arquivo": "bancada_cooktop/giro-0.png",
+        "ax": 72.0,
+        "ay": 134.0
+      },
+      "6": {
+        "arquivo": "bancada_cooktop/giro-6.png",
+        "ax": 38.0,
+        "ay": 134.0
+      }
+    },
+    "real": [
+      1.48,
+      0.66,
+      2.1
+    ],
+    "tampo": [
+      0.042,
+      1.472,
+      0.065,
+      0.663,
+      0.908
+    ]
+  },
+  "bancada_pia": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "bancada_pia/giro-4.png",
+        "ax": 70.0,
+        "ay": 128.0
+      },
+      "2": {
+        "arquivo": "bancada_pia/giro-2.png",
+        "ax": 40.0,
+        "ay": 128.0
+      },
+      "0": {
+        "arquivo": "bancada_pia/giro-0.png",
+        "ax": 72.0,
+        "ay": 113.0
+      },
+      "6": {
+        "arquivo": "bancada_pia/giro-6.png",
+        "ax": 38.0,
+        "ay": 113.0
+      }
+    },
+    "real": [
+      1.48,
+      0.66,
+      1.55
+    ],
+    "tampo": [
+      0.042,
+      1.472,
+      0.065,
+      0.674,
+      0.903
+    ]
+  },
+  "armario_cozinha_laca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "armario_cozinha_laca/giro-4.png",
+        "ax": 70.0,
+        "ay": 162.0
+      },
+      "2": {
+        "arquivo": "armario_cozinha_laca/giro-2.png",
+        "ax": 40.0,
+        "ay": 162.0
+      },
+      "0": {
+        "arquivo": "armario_cozinha_laca/giro-0.png",
+        "ax": 72.0,
+        "ay": 161.0
+      },
+      "6": {
+        "arquivo": "armario_cozinha_laca/giro-6.png",
+        "ax": 38.0,
+        "ay": 161.0
+      }
+    },
+    "real": [
+      1.46,
+      0.658,
+      2.2
+    ],
+    "tampo": [
+      0.098,
+      0.683,
+      0.683,
+      0.683,
+      1.28
+    ]
+  },
+  "ilha_marmore": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "ilha_marmore/giro-4.png",
+        "ax": 100.0,
+        "ay": 124.0
+      },
+      "2": {
+        "arquivo": "ilha_marmore/giro-2.png",
+        "ax": 67.0,
+        "ay": 124.0
+      },
+      "0": {
+        "arquivo": "ilha_marmore/giro-0.png",
+        "ax": 100.0,
+        "ay": 124.0
+      },
+      "6": {
+        "arquivo": "ilha_marmore/giro-6.png",
+        "ax": 67.0,
+        "ay": 124.0
+      }
+    },
+    "real": [
+      2.17,
+      1.26,
+      0.92
+    ],
+    "tampo": [
+      0.09,
+      2.176,
+      0.16,
+      1.355,
+      0.92
+    ]
+  },
+  "geladeira_embutida": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "geladeira_embutida/giro-4.png",
+        "ax": 71.0,
+        "ay": 161.0
+      },
+      "2": {
+        "arquivo": "geladeira_embutida/giro-2.png",
+        "ax": 40.0,
+        "ay": 161.0
+      },
+      "0": {
+        "arquivo": "geladeira_embutida/giro-0.png",
+        "ax": 71.0,
+        "ay": 161.0
+      },
+      "6": {
+        "arquivo": "geladeira_embutida/giro-6.png",
+        "ax": 39.0,
+        "ay": 161.0
+      }
+    },
+    "real": [
+      1.44,
+      0.69,
+      2.2
+    ]
+  },
+  "estante_despensa": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "estante_despensa/giro-4.png",
+        "ax": 66.0,
+        "ay": 161.0
+      },
+      "2": {
+        "arquivo": "estante_despensa/giro-2.png",
+        "ax": 40.0,
+        "ay": 161.0
+      },
+      "0": {
+        "arquivo": "estante_despensa/giro-0.png",
+        "ax": 71.0,
+        "ay": 158.0
+      },
+      "6": {
+        "arquivo": "estante_despensa/giro-6.png",
+        "ax": 34.0,
+        "ay": 158.0
+      }
+    },
+    "real": [
+      1.44,
+      0.546,
+      2.2
+    ],
+    "tampo": [
+      0.093,
+      1.323,
+      0.093,
+      0.573,
+      0.53
+    ]
+  },
+  "cesto_roupa": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cesto_roupa/giro-4.png",
+        "ax": 30.0,
+        "ay": 49.0
+      },
+      "2": {
+        "arquivo": "cesto_roupa/giro-2.png",
+        "ax": 30.0,
+        "ay": 49.0
+      },
+      "0": {
+        "arquivo": "cesto_roupa/giro-0.png",
+        "ax": 30.0,
+        "ay": 49.0
+      },
+      "6": {
+        "arquivo": "cesto_roupa/giro-6.png",
+        "ax": 30.0,
+        "ay": 49.0
+      }
+    },
+    "real": [
+      0.46,
+      0.453,
+      0.52
+    ],
+    "tampo": [
+      0.221,
+      0.526,
+      0.256,
+      0.49,
+      0.52
+    ]
+  },
+  "mesa_jantar_marmore": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "mesa_jantar_marmore/giro-4.png",
+        "ax": 132.0,
+        "ay": 132.0
+      },
+      "2": {
+        "arquivo": "mesa_jantar_marmore/giro-2.png",
+        "ax": 67.0,
+        "ay": 132.0
+      },
+      "0": {
+        "arquivo": "mesa_jantar_marmore/giro-0.png",
+        "ax": 132.0,
+        "ay": 132.0
+      },
+      "6": {
+        "arquivo": "mesa_jantar_marmore/giro-6.png",
+        "ax": 67.0,
+        "ay": 132.0
+      }
+    },
+    "real": [
+      2.88,
+      1.3,
+      0.76
+    ],
+    "tampo": [
+      0.128,
+      2.9,
+      0.14,
+      1.382,
+      0.76
+    ]
+  },
+  "aparador_marmore": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "aparador_marmore/giro-4.png",
+        "ax": 67.0,
+        "ay": 93.0
+      },
+      "2": {
+        "arquivo": "aparador_marmore/giro-2.png",
+        "ax": 38.0,
+        "ay": 93.0
+      },
+      "0": {
+        "arquivo": "aparador_marmore/giro-0.png",
+        "ax": 69.0,
+        "ay": 92.0
+      },
+      "6": {
+        "arquivo": "aparador_marmore/giro-6.png",
+        "ax": 36.0,
+        "ay": 92.0
+      }
+    },
+    "real": [
+      1.48,
+      0.57,
+      0.9
+    ],
+    "tampo": [
+      0.042,
+      1.472,
+      0.089,
+      0.633,
+      0.9
+    ]
+  },
+  "escultura_moderna": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "escultura_moderna/giro-4.png",
+        "ax": 31.0,
+        "ay": 132.0
+      },
+      "2": {
+        "arquivo": "escultura_moderna/giro-2.png",
+        "ax": 31.0,
+        "ay": 131.0
+      },
+      "0": {
+        "arquivo": "escultura_moderna/giro-0.png",
+        "ax": 31.0,
+        "ay": 130.0
+      },
+      "6": {
+        "arquivo": "escultura_moderna/giro-6.png",
+        "ax": 31.0,
+        "ay": 131.0
+      }
+    },
+    "real": [
+      0.48,
+      0.489,
+      2.19
+    ],
+    "tampo": [
+      0.151,
+      0.611,
+      0.146,
+      0.611,
+      1.09
+    ]
+  },
+  "criado_laca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "criado_laca/giro-4.png",
+        "ax": 31.0,
+        "ay": 59.0
+      },
+      "2": {
+        "arquivo": "criado_laca/giro-2.png",
+        "ax": 33.0,
+        "ay": 59.0
+      },
+      "0": {
+        "arquivo": "criado_laca/giro-0.png",
+        "ax": 33.0,
+        "ay": 58.0
+      },
+      "6": {
+        "arquivo": "criado_laca/giro-6.png",
+        "ax": 32.0,
+        "ay": 58.0
+      }
+    },
+    "real": [
+      0.57,
+      0.506,
+      0.6
+    ],
+    "tampo": [
+      0.102,
+      0.652,
+      0.12,
+      0.609,
+      0.6
+    ]
+  },
+  "armario_laca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "armario_laca/giro-4.png",
+        "ax": 70.0,
+        "ay": 151.0
+      },
+      "2": {
+        "arquivo": "armario_laca/giro-2.png",
+        "ax": 38.0,
+        "ay": 151.0
+      },
+      "0": {
+        "arquivo": "armario_laca/giro-0.png",
+        "ax": 71.0,
+        "ay": 150.0
+      },
+      "6": {
+        "arquivo": "armario_laca/giro-6.png",
+        "ax": 38.0,
+        "ay": 150.0
+      }
+    },
+    "real": [
+      1.46,
+      0.618,
+      2.0
+    ]
+  },
+  "comoda_laca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "comoda_laca/giro-4.png",
+        "ax": 67.0,
+        "ay": 92.0
+      },
+      "2": {
+        "arquivo": "comoda_laca/giro-2.png",
+        "ax": 37.0,
+        "ay": 92.0
+      },
+      "0": {
+        "arquivo": "comoda_laca/giro-0.png",
+        "ax": 68.0,
+        "ay": 91.0
+      },
+      "6": {
+        "arquivo": "comoda_laca/giro-6.png",
+        "ax": 35.0,
+        "ay": 91.0
+      }
+    },
+    "real": [
+      1.44,
+      0.546,
+      0.9
+    ],
+    "tampo": [
+      0.065,
+      1.448,
+      0.1,
+      0.627,
+      0.9
+    ]
+  },
+  "escrivaninha_vidro": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "escrivaninha_vidro/giro-4.png",
+        "ax": 66.0,
+        "ay": 85.0
+      },
+      "2": {
+        "arquivo": "escrivaninha_vidro/giro-2.png",
+        "ax": 35.0,
+        "ay": 85.0
+      },
+      "0": {
+        "arquivo": "escrivaninha_vidro/giro-0.png",
+        "ax": 68.0,
+        "ay": 84.0
+      },
+      "6": {
+        "arquivo": "escrivaninha_vidro/giro-6.png",
+        "ax": 34.0,
+        "ay": 84.0
+      }
+    },
+    "real": [
+      1.4,
+      0.54,
+      0.76
+    ],
+    "tampo": [
+      0.081,
+      1.417,
+      0.093,
+      0.62,
+      0.76
+    ]
+  },
+  "cadeira_design": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cadeira_design/giro-4.png",
+        "ax": 32.0,
+        "ay": 66.0
+      },
+      "2": {
+        "arquivo": "cadeira_design/giro-2.png",
+        "ax": 31.0,
+        "ay": 66.0
+      },
+      "0": {
+        "arquivo": "cadeira_design/giro-0.png",
+        "ax": 30.0,
+        "ay": 62.0
+      },
+      "6": {
+        "arquivo": "cadeira_design/giro-6.png",
+        "ax": 32.0,
+        "ay": 62.0
+      }
+    },
+    "real": [
+      0.54,
+      0.48,
+      0.83
+    ],
+    "tampo": [
+      0.195,
+      0.562,
+      0.288,
+      0.588,
+      0.45
+    ]
+  },
+  "cama_estofada": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cama_estofada/giro-4.png",
+        "ax": 71.0,
+        "ay": 145.0
+      },
+      "2": {
+        "arquivo": "cama_estofada/giro-2.png",
+        "ax": 104.0,
+        "ay": 145.0
+      },
+      "0": {
+        "arquivo": "cama_estofada/giro-0.png",
+        "ax": 72.0,
+        "ay": 112.0
+      },
+      "6": {
+        "arquivo": "cama_estofada/giro-6.png",
+        "ax": 104.0,
+        "ay": 112.0
+      }
+    },
+    "real": [
+      1.45,
+      2.194,
+      1.3
+    ],
+    "tampo": [
+      0.1,
+      1.43,
+      0.703,
+      2.154,
+      0.694
+    ]
+  },
+  "cama_solteiro_estofada": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cama_solteiro_estofada/giro-4.png",
+        "ax": 39.0,
+        "ay": 129.0
+      },
+      "2": {
+        "arquivo": "cama_solteiro_estofada/giro-2.png",
+        "ax": 104.0,
+        "ay": 129.0
+      },
+      "0": {
+        "arquivo": "cama_solteiro_estofada/giro-0.png",
+        "ax": 40.0,
+        "ay": 96.0
+      },
+      "6": {
+        "arquivo": "cama_solteiro_estofada/giro-6.png",
+        "ax": 104.0,
+        "ay": 96.0
+      }
+    },
+    "real": [
+      0.7,
+      2.194,
+      1.3
+    ],
+    "tampo": [
+      0.089,
+      0.695,
+      0.703,
+      2.154,
+      0.694
+    ]
+  },
+  "tapete_contemporaneo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "tapete_contemporaneo/giro-4.png",
+        "ax": 122.0,
+        "ay": 110.0
+      },
+      "2": {
+        "arquivo": "tapete_contemporaneo/giro-2.png",
+        "ax": 90.0,
+        "ay": 110.0
+      },
+      "0": {
+        "arquivo": "tapete_contemporaneo/giro-0.png",
+        "ax": 122.0,
+        "ay": 110.0
+      },
+      "6": {
+        "arquivo": "tapete_contemporaneo/giro-6.png",
+        "ax": 90.0,
+        "ay": 110.0
+      }
+    },
+    "real": [
+      2.88,
+      2.09,
+      0.017
+    ]
+  },
+  "tapete_contemporaneo_v": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "tapete_contemporaneo_v/giro-4.png",
+        "ax": 90.0,
+        "ay": 110.0
+      },
+      "2": {
+        "arquivo": "tapete_contemporaneo_v/giro-2.png",
+        "ax": 122.0,
+        "ay": 110.0
+      },
+      "0": {
+        "arquivo": "tapete_contemporaneo_v/giro-0.png",
+        "ax": 90.0,
+        "ay": 110.0
+      },
+      "6": {
+        "arquivo": "tapete_contemporaneo_v/giro-6.png",
+        "ax": 122.0,
+        "ay": 110.0
+      }
+    },
+    "real": [
+      2.13,
+      2.84,
+      0.017
+    ]
+  },
+  "tapete_contemporaneo_p": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "tapete_contemporaneo_p/giro-4.png",
+        "ax": 58.0,
+        "ay": 78.0
+      },
+      "2": {
+        "arquivo": "tapete_contemporaneo_p/giro-2.png",
+        "ax": 90.0,
+        "ay": 78.0
+      },
+      "0": {
+        "arquivo": "tapete_contemporaneo_p/giro-0.png",
+        "ax": 58.0,
+        "ay": 78.0
+      },
+      "6": {
+        "arquivo": "tapete_contemporaneo_p/giro-6.png",
+        "ax": 90.0,
+        "ay": 78.0
+      }
+    },
+    "real": [
+      1.38,
+      2.09,
+      0.017
+    ]
+  },
+  "estante_entalhada": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "estante_entalhada/giro-4.png",
+        "ax": 98.0,
+        "ay": 207.0
+      },
+      "2": {
+        "arquivo": "estante_entalhada/giro-2.png",
+        "ax": 40.0,
+        "ay": 207.0
+      },
+      "0": {
+        "arquivo": "estante_entalhada/giro-0.png",
+        "ax": 104.0,
+        "ay": 205.0
+      },
+      "6": {
+        "arquivo": "estante_entalhada/giro-6.png",
+        "ax": 33.0,
+        "ay": 205.0
+      }
+    },
+    "real": [
+      2.33,
+      0.62,
+      2.91
+    ],
+    "tampo": [
+      0.178,
+      2.0,
+      0.341,
+      0.542,
+      0.618
+    ]
+  },
+  "estante_entalhada_2": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "estante_entalhada_2/giro-4.png",
+        "ax": 66.0,
+        "ay": 154.0
+      },
+      "2": {
+        "arquivo": "estante_entalhada_2/giro-2.png",
+        "ax": 40.0,
+        "ay": 154.0
+      },
+      "0": {
+        "arquivo": "estante_entalhada_2/giro-0.png",
+        "ax": 72.0,
+        "ay": 153.0
+      },
+      "6": {
+        "arquivo": "estante_entalhada_2/giro-6.png",
+        "ax": 33.0,
+        "ay": 153.0
+      }
+    },
+    "real": [
+      1.58,
+      0.62,
+      2.21
+    ],
+    "tampo": [
+      0.157,
+      1.262,
+      0.356,
+      0.541,
+      0.56
+    ]
+  },
+  "mesa_executiva": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "mesa_executiva/giro-4.png",
+        "ax": 130.0,
+        "ay": 132.0
+      },
+      "2": {
+        "arquivo": "mesa_executiva/giro-2.png",
+        "ax": 66.0,
+        "ay": 132.0
+      },
+      "0": {
+        "arquivo": "mesa_executiva/giro-0.png",
+        "ax": 130.0,
+        "ay": 132.0
+      },
+      "6": {
+        "arquivo": "mesa_executiva/giro-6.png",
+        "ax": 66.0,
+        "ay": 132.0
+      }
+    },
+    "real": [
+      2.8,
+      1.3,
+      0.788
+    ],
+    "tampo": [
+      0.164,
+      2.848,
+      0.141,
+      1.371,
+      0.788
+    ]
+  },
+  "bar_vidro": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "bar_vidro/giro-4.png",
+        "ax": 66.0,
+        "ay": 108.0
+      },
+      "2": {
+        "arquivo": "bar_vidro/giro-2.png",
+        "ax": 37.0,
+        "ay": 108.0
+      },
+      "0": {
+        "arquivo": "bar_vidro/giro-0.png",
+        "ax": 69.0,
+        "ay": 107.0
+      },
+      "6": {
+        "arquivo": "bar_vidro/giro-6.png",
+        "ax": 34.0,
+        "ay": 107.0
+      }
+    },
+    "real": [
+      1.46,
+      0.55,
+      1.2
+    ],
+    "tampo": [
+      0.058,
+      1.452,
+      0.081,
+      0.617,
+      1.2
+    ]
+  },
+  "sofa_moderno": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "sofa_moderno/giro-4.png",
+        "ax": 104.0,
+        "ay": 97.0
+      },
+      "2": {
+        "arquivo": "sofa_moderno/giro-2.png",
+        "ax": 40.0,
+        "ay": 97.0
+      },
+      "0": {
+        "arquivo": "sofa_moderno/giro-0.png",
+        "ax": 103.0,
+        "ay": 92.0
+      },
+      "6": {
+        "arquivo": "sofa_moderno/giro-6.png",
+        "ax": 40.0,
+        "ay": 92.0
+      }
+    },
+    "real": [
+      2.19,
+      0.68,
+      0.8
+    ],
+    "tampo": [
+      0.309,
+      1.875,
+      0.309,
+      0.69,
+      0.42
+    ]
+  },
+  "bar_marmore": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "bar_marmore/giro-4.png",
+        "ax": 69.0,
+        "ay": 104.0
+      },
+      "2": {
+        "arquivo": "bar_marmore/giro-2.png",
+        "ax": 38.0,
+        "ay": 104.0
+      },
+      "0": {
+        "arquivo": "bar_marmore/giro-0.png",
+        "ax": 71.0,
+        "ay": 103.0
+      },
+      "6": {
+        "arquivo": "bar_marmore/giro-6.png",
+        "ax": 36.0,
+        "ay": 103.0
+      }
+    },
+    "real": [
+      1.5,
+      0.665,
+      1.1
+    ],
+    "tampo": [
+      0.041,
+      1.482,
+      0.064,
+      0.674,
+      1.1
+    ]
+  },
+  "adega_iluminada": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "adega_iluminada/giro-4.png",
+        "ax": 63.0,
+        "ay": 151.0
+      },
+      "2": {
+        "arquivo": "adega_iluminada/giro-2.png",
+        "ax": 40.0,
+        "ay": 151.0
+      },
+      "0": {
+        "arquivo": "adega_iluminada/giro-0.png",
+        "ax": 71.0,
+        "ay": 146.0
+      },
+      "6": {
+        "arquivo": "adega_iluminada/giro-6.png",
+        "ax": 30.0,
+        "ay": 146.0
+      }
+    },
+    "real": [
+      1.44,
+      0.46,
+      2.0
+    ],
+    "tampo": [
+      0.101,
+      1.32,
+      0.101,
+      0.5,
+      0.872
+    ]
+  },
+  "banqueta_design": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "banqueta_design/giro-4.png",
+        "ax": 27.0,
+        "ay": 72.0
+      },
+      "2": {
+        "arquivo": "banqueta_design/giro-2.png",
+        "ax": 27.0,
+        "ay": 72.0
+      },
+      "0": {
+        "arquivo": "banqueta_design/giro-0.png",
+        "ax": 27.0,
+        "ay": 64.0
+      },
+      "6": {
+        "arquivo": "banqueta_design/giro-6.png",
+        "ax": 27.0,
+        "ay": 64.0
+      }
+    },
+    "real": [
+      0.4,
+      0.4,
+      0.93
+    ],
+    "tampo": [
+      0.221,
+      0.556,
+      0.245,
+      0.556,
+      0.75
+    ]
+  },
+  "banco_moderno": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "banco_moderno/giro-4.png",
+        "ax": 62.0,
+        "ay": 64.0
+      },
+      "2": {
+        "arquivo": "banco_moderno/giro-2.png",
+        "ax": 31.0,
+        "ay": 64.0
+      },
+      "0": {
+        "arquivo": "banco_moderno/giro-0.png",
+        "ax": 63.0,
+        "ay": 64.0
+      },
+      "6": {
+        "arquivo": "banco_moderno/giro-6.png",
+        "ax": 31.0,
+        "ay": 64.0
+      }
+    },
+    "real": [
+      1.34,
+      0.38,
+      0.45
+    ],
+    "tampo": [
+      0.135,
+      1.393,
+      0.204,
+      0.541,
+      0.45
+    ]
+  },
+  "cuba_marmore": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cuba_marmore/giro-4.png",
+        "ax": 34.0,
+        "ay": 76.0
+      },
+      "2": {
+        "arquivo": "cuba_marmore/giro-2.png",
+        "ax": 38.0,
+        "ay": 76.0
+      },
+      "0": {
+        "arquivo": "cuba_marmore/giro-0.png",
+        "ax": 38.0,
+        "ay": 75.0
+      },
+      "6": {
+        "arquivo": "cuba_marmore/giro-6.png",
+        "ax": 34.0,
+        "ay": 75.0
+      }
+    },
+    "real": [
+      0.67,
+      0.54,
+      1.053
+    ],
+    "tampo": [
+      0.065,
+      0.698,
+      0.089,
+      0.598,
+      0.901
+    ]
+  },
+  "cama_master_estofada": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "cama_master_estofada/giro-4.png",
+        "ax": 103.0,
+        "ay": 161.0
+      },
+      "2": {
+        "arquivo": "cama_master_estofada/giro-2.png",
+        "ax": 104.0,
+        "ay": 161.0
+      },
+      "0": {
+        "arquivo": "cama_master_estofada/giro-0.png",
+        "ax": 104.0,
+        "ay": 128.0
+      },
+      "6": {
+        "arquivo": "cama_master_estofada/giro-6.png",
+        "ax": 104.0,
+        "ay": 128.0
+      }
+    },
+    "real": [
+      2.2,
+      2.194,
+      1.3
+    ],
+    "tampo": [
+      0.112,
+      2.173,
+      0.703,
+      2.154,
+      0.694
+    ]
+  },
+  "penteadeira_moderna": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "penteadeira_moderna/giro-4.png",
+        "ax": 64.0,
+        "ay": 119.0
+      },
+      "2": {
+        "arquivo": "penteadeira_moderna/giro-2.png",
+        "ax": 36.0,
+        "ay": 119.0
+      },
+      "0": {
+        "arquivo": "penteadeira_moderna/giro-0.png",
+        "ax": 68.0,
+        "ay": 107.0
+      },
+      "6": {
+        "arquivo": "penteadeira_moderna/giro-6.png",
+        "ax": 31.0,
+        "ay": 107.0
+      }
+    },
+    "real": [
+      1.4,
+      0.506,
+      1.652
+    ],
+    "tampo": [
+      0.08,
+      1.429,
+      0.081,
+      0.569,
+      0.76
+    ]
+  },
+  "mesa_lateral_marmore": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "mesa_lateral_marmore/giro-4.png",
+        "ax": 33.0,
+        "ay": 61.0
+      },
+      "2": {
+        "arquivo": "mesa_lateral_marmore/giro-2.png",
+        "ax": 33.0,
+        "ay": 61.0
+      },
+      "0": {
+        "arquivo": "mesa_lateral_marmore/giro-0.png",
+        "ax": 33.0,
+        "ay": 61.0
+      },
+      "6": {
+        "arquivo": "mesa_lateral_marmore/giro-6.png",
+        "ax": 33.0,
+        "ay": 61.0
+      }
+    },
+    "real": [
+      0.54,
+      0.54,
+      0.7
+    ],
+    "tampo": [
+      0.137,
+      0.617,
+      0.137,
+      0.617,
+      0.7
+    ]
+  },
+  "portal@laca": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "portal@laca/giro-4.png",
+        "ax": 35.0,
+        "ay": 150.0
+      },
+      "2": {
+        "arquivo": "portal@laca/giro-2.png",
+        "ax": 34.0,
+        "ay": 150.0
+      }
+    },
+    "real": [
+      0.78,
+      0.14,
+      2.245
+    ],
+    "soGiros": true,
+    "estados": {
+      "1": {
+        "giros": {
+          "4": {
+            "arquivo": "portal@laca/giro-4-1.png",
+            "ax": 3.0,
+            "ay": 150.0
+          },
+          "2": {
+            "arquivo": "portal@laca/giro-2-1.png",
+            "ax": 34.0,
+            "ay": 150.0
+          }
+        }
+      },
+      "2": {
+        "giros": {
+          "4": {
+            "arquivo": "portal@laca/giro-4-2.png",
+            "ax": 3.0,
+            "ay": 150.0
+          },
+          "2": {
+            "arquivo": "portal@laca/giro-2-2.png",
+            "ax": 34.0,
+            "ay": 150.0
+          }
+        }
+      }
+    },
+    "caixa": [
+      0,
+      0.24,
+      0,
+      1,
+      0,
+      2.17
+    ],
+    "encosta": true
   }
 }

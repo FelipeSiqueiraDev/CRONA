@@ -22,7 +22,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Mudou a montagem? Suba MANSAO_REV: a mansão é refeita no lugar, mantendo as cenas, as peças e o registro.
  */
 export const MANSAO = "Mansão Albuquerque · ";
-export const MANSAO_REV = 8;
+export const MANSAO_REV = 11;
 
 const ANDAR = "Mansão Albuquerque";
 const ANDAR2 = "Mansão Albuquerque 2º";
@@ -66,6 +66,61 @@ type Lado = "N" | "S" | "L" | "O";
 /** N = parede do fundo da direita (y = 0), O = parede do fundo da esquerda (x = 0), S e L = as da frente. */
 const ROT_DO_LADO: Record<Lado, number> = { N: 4, O: 2, S: 0, L: 6 };
 
+/**
+ * A mansão moderna (23/10, o Felipe: "a casa dos Albuquerque está muito feinha, cheio de madeira e coisas com aparência
+ * velha; é uma mansão no meio da grande São Paulo: é tudo mármore, coisas chiques... essas coisas atuais muito chiques que
+ * os ricos têm"): cada móvel velho vira o moderno do mesmo tamanho, no mesmo lugar (pecas_px/mansao_moderno.py). null
+ * tira (o barril, as sacas, as velas no criado-mudo). A madeira que fica é a das estantes entalhadas do século XVII. O
+ * Anexo (o depósito de pedra do jardim) fica como é.
+ */
+const MODERNO: Record<string, string | null> = {
+  fogao_lenha: "bancada_cooktop",
+  pia_cozinha: "bancada_pia",
+  armario_cozinha: "armario_cozinha_laca",
+  mesa_cozinha: "ilha_marmore",
+  geladeira: "geladeira_embutida",
+  prateleira: "estante_despensa",
+  crate_wood: "cesto_roupa",
+  barrel: null,
+  sacas: null,
+  candles: null,
+  cesta_pao: "fruteira_prata",
+  jarra_canecas: "servico_cha",
+  mesa_jantar: "mesa_jantar_marmore",
+  sideboard: "aparador_marmore",
+  armor_display: "escultura_moderna",
+  estatua_jardim: "escultura_moderna",
+  nightstand: "criado_laca",
+  guarda_roupa: "armario_laca",
+  comoda: "comoda_laca",
+  desk_wood: "escrivaninha_vidro",
+  chair_wood: "cadeira_design",
+  cama_casal: "cama_estofada",
+  cama_solteiro: "cama_solteiro_estofada",
+  rug_ornate: "tapete_contemporaneo_v",
+  rug_aubusson: "tapete_contemporaneo",
+  rug_worn: "tapete_contemporaneo_p",
+  estante_biblioteca: "estante_entalhada",
+  bookshelf: "estante_entalhada_2",
+  mesa_ceo: "mesa_executiva",
+  bar_escritorio: "bar_vidro",
+  sofa_verissimo: "sofa_moderno",
+  armchair_verissimo: "poltrona_luxo",
+  bar_counter: "bar_marmore",
+  bar_shelf: "adega_iluminada",
+  stool_bar: "banqueta_design",
+  bench: "banco_moderno",
+  sink: "cuba_marmore",
+  cama_master: "cama_master_estofada",
+  penteadeira: "penteadeira_moderna",
+  poltrona_orelha: "poltrona_luxo",
+  table_small: "mesa_lateral_marmore",
+};
+/** os itens de parede velhos que saem (os utensílios pendurados da cozinha de fazenda) */
+const MODERNO_PAREDE: Record<string, string | null> = { utensilios_parede: null };
+/** os cômodos que ficam como eram */
+const SEM_TROCA = new Set(["anexo"]);
+
 interface Porta {
   lado: Lado;
   /** a coordenada da PLANTA ao longo da parede (x para N e S, y para O e L) */
@@ -98,7 +153,9 @@ class Sala {
 
   /** um móvel nas coordenadas locais (giro 4 por padrão: a frente para +y) */
   add(id: string, x: number, y: number, rot = 4, pista?: Hint, estado?: number) {
-    this.floor.push([id, x, y, rot, pista, estado]);
+    const troca = SEM_TROCA.has(this.key) ? undefined : MODERNO[id];
+    if (troca === null) return this;
+    this.floor.push([troca ?? id, x, y, rot, pista, estado]);
     return this;
   }
   /** vários iguais */
@@ -130,6 +187,7 @@ class Sala {
   }
   /** item de parede: `pos` é o centro ao longo da parede (casas), `cm` a altura do centro (m) */
   par(lado: "N" | "O", id: string, pos: number, cm = 1.55, pista?: Hint, estado?: number) {
+    if (!SEM_TROCA.has(this.key) && MODERNO_PAREDE[id.split("~")[0]] === null) return this;
     const d = getWallFurni(id.split("~")[0]);
     if (!d) throw new Error(`item de parede desconhecido: ${id}`);
     const z = Math.round((cm * Z_PER_M - d.h / 64) * 100) / 100;
@@ -368,14 +426,14 @@ for (let i = 0; i < 6; i++) {
   else s.enc("N", "nightstand", 3).add("chair_wood", 3, 2, 6);
 }
 {
-  const s = nova("corr_func", "Corredor dos Funcionários", 16, 3, "mansao_servico", 0, 4, ANDAR, "O corredor da ala dos funcionários: as portas dos seis quartos, a da lavanderia e, no fim, a da cozinha. O quadro das chaves e um banco para tirar as botas.");
+  const s = nova("corr_func", "Corredor dos Funcionários", 16, 3, "mansao_servico", 0, 4, ANDAR, "O corredor da ala dos funcionários, claro e silencioso: as portas dos seis quartos, a da lavanderia e, no fim, a da cozinha. O quadro das chaves e os bancos estofados.");
   s.porta("N", 2, "func1").porta("N", 6, "func2").porta("N", 10, "func3").porta("N", 14, "func4");
   s.porta("S", 2, "func5").porta("S", 6, "func6").porta("S", 11, "lavanderia").porta("L", 5, "cozinha");
   s.add("tapete_corredor", 4, 0, 2).enc("N", "bench", 3).enc("N", "bench", 11);
   s.par("N", "quadro_chaves", 8.0, 1.6).lustres([5, 1], [12, 1]);
 }
 {
-  const s = nova("lavanderia", "Lavanderia", 8, 4, "mansao_servico", 8, 7, ANDAR, "A lavanderia: dois tanques, as máquinas de lavar, os cestos de roupa e a tábua de passar.");
+  const s = nova("lavanderia", "Lavanderia", 8, 4, "mansao_servico", 8, 7, ANDAR, "A lavanderia: as bancadas com os tanques, as máquinas de lavar de última geração e os cestos de palha com a roupa dobrada.");
   s.porta("N", 11, "corr_func");
   s.enc("N", "tanque", 0).enc("N", "tanque", 1).enc("N", "maquina_lavar", 5).enc("N", "maquina_lavar", 6);
   s.add("crate_wood", 7, 3, 0).add("trash_can", 0, 3, 0);
@@ -401,21 +459,21 @@ for (let i = 0; i < 6; i++) {
 }
 // a cozinha, a despensa e a sala de jantar, no fundo
 {
-  const s = nova("cozinha", "Cozinha", 10, 7, "mansao_servico", 16, 0, ANDAR, "A cozinha da mansão, ampla e reluzente: a fileira de armários, o fogão, a pia e a geladeira, a grande ilha de trabalho no meio. Dali descem as bandejas para o salão e para a sala de jantar.");
+  const s = nova("cozinha", "Cozinha", 10, 7, "mansao_servico", 16, 0, ANDAR, "A cozinha gourmet da mansão, ampla e reluzente: a coluna de fornos em laca marfim, as bancadas de mármore Calacatta com o cooktop e a cuba, a geladeira embutida de inox e, no meio, a ilha de mármore em cascata. Dali descem as bandejas para o salão e para a sala de jantar.");
   s.porta("S", 22, "salao").porta("O", 5, "corr_func").porta("L", 2, "despensa");
-  s.enc("N", "armario_cozinha", 0).enc("N", "fogao_lenha", 2).enc("N", "pia_cozinha", 4).enc("N", "geladeira", 6).enc("N", "armario_cozinha", 7);
+  s.enc("N", "armario_cozinha", 0).enc("N", "fogao_lenha", 2).enc("N", "pia_cozinha", 4).enc("N", "geladeira", 6).enc("N", "armario_cozinha", 8);
   s.enc("O", "armario_cozinha", 1).add("mesa_cozinha", 3, 3, 4).em("cesta_pao", 3, 3, 4).em("jarra_canecas", 4, 3, 4);
   s.add("barrel", 9, 6, 0).lustres([4, 2]).par("N", "utensilios_parede", 3.0, 1.9);
   // os objetinhos (23/10): a fruteira e a bandeja na ilha
   s.em("fruteira_prata", 5, 3, 4).em("food_tray", 5, 4, 4);
 }
 {
-  const s = nova("despensa", "Despensa", 5, 5, "mansao_servico", 26, 0, ANDAR, "A despensa, de prateleiras até o teto: mantimentos, barris, sacas e a adega da casa.");
+  const s = nova("despensa", "Despensa", 5, 5, "mansao_servico", 26, 0, ANDAR, "A despensa, organizada como uma loja: as prateleiras de laca até o teto com os potes de vidro de tampa de latão, as caixas de linho, os vinhos deitados e a adega climatizada.");
   s.porta("O", 2, "cozinha");
   s.enc("N", "prateleira", 1).enc("N", "adega", 3).add("barrel", 4, 4, 0).add("sacas", 3, 4, 0).add("crate_wood", 4, 3, 0);
 }
 {
-  const s = nova("jantar", "Sala de Jantar", 10, 12, "mansao_nobre", 31, 0, ANDAR, "A sala de jantar: a mesa comprida de vinte lugares sobre o tapete vinho, a lareira de mármore na cabeceira, o aparador com a prataria, os lustres de cristal e os quadros a óleo. Cabe uma festa inteira, e hoje cabe o silêncio.");
+  const s = nova("jantar", "Sala de Jantar", 10, 12, "mansao_nobre", 31, 0, ANDAR, "A sala de jantar: a mesa comprida de vinte lugares de mármore Calacatta sobre as bases de latão, o tapete contemporâneo, a lareira de mármore na cabeceira, o aparador de mármore preto com a prataria, os lustres de cristal e os quadros a óleo. Cabe uma festa inteira, e hoje cabe o silêncio.");
   s.porta("O", 9, "salao");
   s.add("rug_aubusson", 3, 2, 2).add("rug_aubusson", 3, 6, 2);
   s.add("mesa_jantar", 4, 2, 2).add("mesa_jantar", 4, 6, 2);
@@ -430,7 +488,7 @@ for (let i = 0; i < 6; i++) {
 }
 // o salão principal, o hall de entrada com as duas escadarias
 {
-  const s = nova("salao", "Salão Principal", 15, 17, "mansao_marmore", 16, 7, ANDAR, "O salão principal, o hall de entrada da mansão: o mármore claro, o tapete vermelho que vem da porta, as colunas, a escultura no meio sob o grande lustre e as duas escadarias curvas que sobem ao andar de cima. Nas paredes, a galeria da família: os retratos de todas as gerações, do fundador, junto da entrada, até os netos, no fundo. Daqui se vai à biblioteca, ao escritório, à sala de jantar e à cozinha.");
+  const s = nova("salao", "Salão Principal", 15, 17, "mansao_marmore", 16, 7, ANDAR, "O salão principal, o hall de entrada da mansão: o mármore claro, o tapete vermelho que vem da porta, as colunas, a escultura de bronze no meio sob o grande lustre e as duas escadarias curvas que sobem ao andar de cima. Nas paredes, a galeria da família: os retratos de todas as gerações, do fundador, junto da entrada, até os netos, no fundo. Daqui se vai à biblioteca, ao escritório, à sala de jantar e à cozinha.");
   s.porta("S", 23, "jardim").porta("N", 22, "cozinha").porta("O", 19, "biblioteca").porta("L", 9, "jantar").porta("L", 17, "escritorio");
   s.escada("escada_nobre", 2, 0, 4, "hall_s").escada("escada_nobre", 10, 0, 4, "hall_s");
   s.add("tapete_redondo", 6, 5, 0).add("tapete_longo", 6, 9, 4);
@@ -453,7 +511,7 @@ for (let i = 0; i < 6; i++) {
 }
 // o escritório do pai, à direita do salão
 {
-  const s = nova("escritorio", "Escritório de Alexander", 10, 11, "mansao_nobre", 31, 13, ANDAR, "O escritório de Alexander Albuquerque, CEO do Frigorífico Albuquerque: a mesa enorme virada para a cadeira, as estantes, o cofre no canto, o bar de nogueira, o sofá de couro e o mapa do Brasil com as unidades. Na parede, a marinha de mestre sob a luminária de latão e os prêmios da empresa.");
+  const s = nova("escritorio", "Escritório de Alexander", 10, 11, "mansao_nobre", 31, 13, ANDAR, "O escritório de Alexander Albuquerque, CEO do Frigorífico Albuquerque: a mesa enorme de mármore preto sobre o latão, virada para a cadeira, as duas estantes entalhadas à mão no século XVII, o cofre no canto, o bar de vidro e latão, o sofá de bouclé e o mapa do Brasil com as unidades. Na parede, a marinha de mestre sob a luminária de latão e os prêmios da empresa.");
   s.porta("O", 17, "salao");
   s.add("rug_aubusson", 3, 3, 4).add("mesa_ceo", 3, 4, 4).add("cadeira_ceo", 4, 6, 0);
   s.add("cadeira_jantar_luxo", 3, 3, 4).add("cadeira_jantar_luxo", 5, 3, 4);
@@ -509,7 +567,7 @@ for (let i = 0; i < 6; i++) {
   s.lustres([2, 5]);
 }
 {
-  const s = nova("jogos", "Sala de Jogos", 14, 8, "mansao_jogos", 22, 0, ANDAR2, "A sala de jogos: a mesa de sinuca sob a luminária, os fliperamas piscando num canto, a mesa de 21, a TV grande com o sofá e, ao fundo, o bar com as banquetas. Alguém jogou aqui até muito tarde.");
+  const s = nova("jogos", "Sala de Jogos", 14, 8, "mansao_jogos", 22, 0, ANDAR2, "A sala de jogos: a mesa de sinuca sob a luminária, os fliperamas piscando num canto, a mesa de 21, a TV grande com o sofá e, ao fundo, o bar de mármore preto com a adega iluminada e as banquetas de couro. Alguém jogou aqui até muito tarde.");
   s.porta("S", 26, "hall_s");
   s.add("pool_table", 6, 2, 4).enc("N", "bar_counter", 3).enc("N", "bar_shelf", 5).add("stool_bar", 3, 1, 0).add("stool_bar", 4, 1, 0);
   // 23/10: o segundo fliperama virou o Felipe's Fight (o de luta, só em dupla) e a mesa de pôquer, a de 21 em meia-lua:
@@ -565,7 +623,7 @@ for (let i = 0; i < 6; i++) {
   s.item(2, 1, "Caderno de Anotações da Catarina", 0.5);
 }
 {
-  const s = nova("hospedes", "Quarto de Hóspedes", 12, 8, "mansao_claro", 24, 13, ANDAR2, "O quarto de hóspedes do andar de cima: a cama de casal, o guarda-roupa, a cômoda, a escrivaninha junto da janela e a poltrona de leitura.");
+  const s = nova("hospedes", "Quarto de Hóspedes", 12, 8, "mansao_claro", 24, 13, ANDAR2, "O quarto de hóspedes do andar de cima, como uma suíte de hotel: a cama estofada de cabeceira alta, o guarda-roupa e a cômoda de laca marfim, a escrivaninha de vidro e latão junto da janela e a poltrona de leitura.");
   s.porta("N", 27, "hall_s").porta("S", 30, "banho_hospedes");
   s.enc("N", "nightstand", 5).enc("N", "cama_casal", 6).enc("N", "nightstand", 8).enc("N", "comoda", 10).enc("O", "guarda_roupa", 1);
   s.add("rug_ornate", 5, 3, 4).add("desk_wood", 9, 5, 6).add("chair_wood", 8, 5, 2).add("poltrona_orelha", 1, 6, 4);
