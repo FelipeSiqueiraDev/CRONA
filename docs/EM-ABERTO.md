@@ -2,6 +2,21 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 24/10 (fim da tarde): os documentos da campanha guardados nos móveis (no ar)
+
+- **O documento mora no móvel** (`529d6098`, `05547eda`). O Felipe: "não é pra vincular um documento a um item, é pra ter o documento lá".
+  - `Documento.guardado` guarda a cena e uma casa do móvel; a casa sobrevive à cena refeita pelo seed.
+  - `Documento.imagens` guarda uma imagem por página (os documentos vindos de PDF).
+- **Na tela do mestre**, o cartão do objeto mostra "Documentos guardados":
+  - **Achou** entrega o documento ao agente comandado;
+  - **Equipe** entrega a todos os agentes;
+  - em Configurar, dá para guardar outro documento aqui ou tirar daqui.
+- **No celular do jogador**, a aba Docs mostra a capa e lê uma página por vez. O jogador não recebe onde o documento estava.
+- **Os documentos dos PDFs do Felipe** estão instalados no jogo de verdade e na prévia:
+  - 20 documentos, nos lugares que ele escolheu: o escritório do Alexander, o galpão de Pedra Serena e o poste novo na frente dele (`PEDRA_SERENA_REV` 4, `20f2ab26`), e o quarto do casal Valença, o posto e o cartório de Santa Amália.
+  - **O conteúdo é segredo e fica fora do git**, em `server/data/documentos-campanha/`: `documentos.json` diz qual página vai em qual móvel, `paginas.json` lista as páginas renderizadas em `server/data/uploads`, e `instalar.mjs` instala pelo websocket do mestre (`node instalar.mjs 8080`, ou `3001` para a prévia). Refazer atualiza pelo título, sem perder a quem já foi entregue.
+- **Não conferido na tela:** o celular do jogador com as páginas em imagem. A aba do navegador da prévia usa o login "admin" da outra sessão e recusou a ficha.
+
 ## Feito em 24/10 (tarde): a gente de Santa Amália e o quarto da Ana (no ar)
 
 - **Os NPCs de Santa Amália** (nomes e fotos do Felipe, no grupo Santa Amália do Elenco): Augusto, Francine e Ana Valença, Sônia Nogueira (posto) e Lívia Monteiro (cartório). As 8 direções foram feitas pelo Códex (`pedir_empregado.py`). A Lívia foi limpa da franja magenta do fundo; a Ana foi refeita uma vez (o cabelo tinha saído ruivo).
