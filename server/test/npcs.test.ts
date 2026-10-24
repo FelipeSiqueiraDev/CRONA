@@ -40,7 +40,7 @@ describe("npcs", () => {
     db.npcs = db.npcs!.filter((n) => n.id === "miguel-albuquerque");
     delete db.npcsRev;
     upgradeDb(db);
-    assert.deepEqual(db.npcs.map((n) => n.id).sort(), ["agata", "alexander-albuquerque", "antonio-valenca", "arthur-albuquerque", "camarilla", "geraldo-ribeiro", "helena-duarte", "herman-arantes", "ivete", "lucia-moreira", "marina-ferraz", "miguel-albuquerque", "npc-cabelo-rosa", "npc-camisa-rosa", "npc-jaleco", "npc-ruivo", "roberto-salles", "samuel", "sara-ribeiro", "tiago-nobre"]);
+    assert.deepEqual(db.npcs.map((n) => n.id).sort(), ["agata", "alexander-albuquerque", "ana-valenca", "antonio-valenca", "arthur-albuquerque", "augusto-valenca", "camarilla", "francine-valenca", "geraldo-ribeiro", "helena-duarte", "herman-arantes", "ivete", "livia-monteiro", "lucia-moreira", "marina-ferraz", "miguel-albuquerque", "npc-cabelo-rosa", "npc-camisa-rosa", "npc-jaleco", "npc-ruivo", "roberto-salles", "samuel", "sara-ribeiro", "sonia-nogueira", "tiago-nobre"]);
   });
 
   test("os empregados e o Arthur Albuquerque entram no elenco, no grupo da mansão (21/10)", () => {
@@ -53,6 +53,14 @@ describe("npcs", () => {
     const mansao = db.npcs!.filter((n) => n.grupo === "Mansão Albuquerque").map((n) => n.id).sort();
     assert.deepEqual(mansao, ["alexander-albuquerque", "antonio-valenca", "arthur-albuquerque", "helena-duarte", "lucia-moreira", "marina-ferraz", "roberto-salles", "tiago-nobre"]);
     assert.ok(db.npcGrupos!.includes("Mansão Albuquerque"));
+  });
+
+  test("a gente de Santa Amália entra no elenco, no grupo da cidade, e a Ana é criança (24/10)", () => {
+    const db = seedDb();
+    upgradeDb(db);
+    const sa = db.npcs!.filter((n) => n.grupo === "Santa Amália");
+    assert.deepEqual(sa.map((n) => n.id).sort(), ["ana-valenca", "augusto-valenca", "francine-valenca", "livia-monteiro", "sonia-nogueira"]);
+    assert.ok((sa.find((n) => n.id === "ana-valenca")!.altura ?? 1.8) < 1.6);
   });
 
   test("os sobrenomes de 17/10 entram no banco que tem o nome antigo; o que o mestre mudou fica", () => {

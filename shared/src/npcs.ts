@@ -126,6 +126,15 @@ export function npcsPorLeva(): Npc[][] {
     ],
     // 23/10: o Alexander, o pai da Catarina e do Miguel (o rapaz de terno azul; a foto é do Felipe)
     [{ id: 'alexander-albuquerque', nome: 'Alexander Albuquerque', arte: 'alexander-albuquerque', nota: 'pai da Catarina e do Miguel, irmão mais velho do Arthur; CEO do Frigorífico Albuquerque', grupo: 'Mansão Albuquerque', look: { ...lookBase, skin: '#d8a888', hair: '#a63a1e', top: '#1e2a44', pants: '#1e2a44' } }],
+    // 24/10: a gente de Santa Amália (as fotos e os nomes são do Felipe): a família Valença, a recepcionista do posto e a
+    // escrevente do cartório
+    [
+      { id: 'augusto-valenca', nome: 'Augusto Valença', arte: 'augusto-valenca', nota: 'marido e pai; guarda os registros do que aconteceu', grupo: 'Santa Amália', look: { ...lookBase, skin: '#d2a07a', hair: '#2a1e16', top: '#5a3a22', pants: '#2e2018', shoes: '#4a2e1c' } },
+      { id: 'francine-valenca', nome: 'Francine Valença', arte: 'francine-valenca', nota: 'esposa do Augusto, mãe da Ana', grupo: 'Santa Amália', look: { ...lookBase, skin: '#d8b090', hair: '#3a2018', top: '#5a3e2c', pants: '#2a2622', shoes: '#1e1a18' } },
+      { id: 'ana-valenca', nome: 'Ana Valença', arte: 'ana-valenca', nota: 'filha do Augusto e da Francine', grupo: 'Santa Amália', altura: 1.45, look: { ...lookBase, skin: '#d8b090', hair: '#6a3a22', top: '#4a2440', pants: '#4a4030', shoes: '#1e1c1e' } },
+      { id: 'sonia-nogueira', nome: 'Sônia Nogueira', arte: 'sonia-nogueira', nota: 'recepcionista e funcionária administrativa do Posto de Saúde, uns 55 anos', grupo: 'Santa Amália', look: { ...lookBase, skin: '#c99a7a', hair: '#8a8884', top: '#2e4a2a', pants: '#2e2220', shoes: '#3a2418' } },
+      { id: 'livia-monteiro', nome: 'Lívia Monteiro', arte: 'livia-monteiro', nota: 'escrevente do Cartório de Registro de Imóveis, uns 45 anos', grupo: 'Santa Amália', look: { ...lookBase, skin: '#d8b090', hair: '#2a1a14', top: '#2e2420', pants: '#2a2220', shoes: '#141210' } },
+    ],
   ];
 }
 
