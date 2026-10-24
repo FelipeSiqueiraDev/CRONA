@@ -21,7 +21,7 @@ import { casaDeCidade } from "./casaComum";
  * prédios), e as casas, a casa padrão (`casaDeCidade`). A porta de dentro fica do mesmo lado da de fora.
  */
 export const PEDRA_SERENA = "Pedra Serena · ";
-export const PEDRA_SERENA_REV = 3;
+export const PEDRA_SERENA_REV = 4;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 
@@ -119,6 +119,8 @@ function cidadePiso(): FloorSeed[] {
   for (const [x, y] of ENTRADAS) f.push(["entrada", x, y, 0]);
   f.push(["galpao_fritz", GALPAO_FORA.x, GALPAO_FORA.y, 0]);
   for (const [x, y] of ENTRADAS_GALPAO) f.push(["entrada", x, y, 0]);
+  // o poste no pátio, entre a porta de aço e o portão (24/10, o Felipe: um papel colado "na frente do galpão, num poste")
+  f.push(["poste_ferro", GALPAO_FORA.x + 7, GALPAO_FORA.y - 1, 0]);
   // a praça: o coreto, os bancos virados para ele, os vasos e os postes
   f.push(["coreto", 24, 13, 4], ["banco_praca", 25, 11, 4], ["banco_praca", 25, 18, 0], ["banco_praca", 21, 14, 2], ["banco_praca", 30, 14, 6]);
   for (const [x, y] of [[20, 12], [30, 12], [20, 18], [30, 18]] as [number, number][]) f.push(["vaso_flores", x, y, 0]);
