@@ -2,6 +2,13 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 23/10 (fim da noite): a mansão moderna, o Anárquico Descontrolado e as peças sem arte (`MANSAO_REV` 11, no ar)
+
+- **A mansão moderna** (o Felipe: "cheio de madeira e coisas com aparência velha... é tudo mármore, coisas chiques"): 33 peças novas em `pecas_px/mansao_moderno.py`, cada uma no tamanho da que substitui; o seed troca pelo mapa `MODERNO` (no `Sala.add`; o Anexo fica como era). A cozinha gourmet (a ilha de Calacatta, as bancadas de laca grafite, a coluna de fornos, a geladeira de porta dupla), o jantar de mármore, os quartos em laca marfim com as camas estofadas, os tapetes contemporâneos, o escritório de Nero Marquina, o bar de mármore preto com a adega iluminada, a escultura de bronze; a única madeira é a das estantes entalhadas do século XVII. A área de serviço sem o ladrilho hidráulico, a Sala de Jogos com o piso de Nero, e a porta de laca (`portal@laca`, pelo `MATERIAL` do `furniArte.ts`) em todos os pisos da mansão. Visto numa bancada do `RoomView` (cozinha, jantar, jogos, suíte, hóspedes).
+- **Faltam na mansão:** a janela com as cortinas vermelhas e o relógio de carrilhão (clássicos, ficaram); a cama do Miguel e o Mezanino (o quarto gamer) não passaram pela troca de estilo.
+- **O Anárquico Descontrolado** no tabuleiro (8 direções, roxo, feito de energia, com a chama roxa em `chama.ts`). Pedido um só: o Felipe parou a fila das 64 ameaças do livro ("não é pra rebentar de produzir imagem de monstro").
+- **As peças que ainda caíam no desenho de reserva** (o sofá de couro dos apartamentos do Igarapé, a estante de metal, o carpete roxo, a prateleira de parede): pixel art em `pecas_px/reserva.py`. `scripts/dev/arte-faltando.mts` lista o que ainda falta.
+
 ## Feito em 23/10 (noite): a ficha da Ovelha
 
 - A **Ovelha (Açougueira)** do bestiário ganhou a ficha caseira do Felipe (PDF "Ficha_Ovelha_Ordem_Paranormal_VD60"; não é do livro): Criatura de Sangue, VD 60, 85 PV, Defesa 18, Fortitude 2d20+5, Reflexos 3d20+10, Vontade 1d20+5, RD balístico 5 e Sangue 10, vulnerável a Morte, Presença Perturbadora DT 18 (2d6 mental, imune a partir de NEX 35%). Ataques: Lâminas Gêmeas (2 × 3d20+9, 1d6+3 corte) e a Dança das Lâminas como três ataques (+9, +4, −1); o resto (atributos, deslocamento, Percepção, Iniciativa, a Defesa 16 depois da Dança) nas notas da ficha. Gravada pelo canal do mestre no jogo real (backup antes) e na prévia. A ficha propõe Catarina e Alosi perto de NEX 25%; hoje estão em NEX 20%: conferir no dia.
