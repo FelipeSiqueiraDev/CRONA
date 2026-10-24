@@ -3033,6 +3033,7 @@ export class Hotel implements HotelApi {
         (escolhida !== undefined && g.includes(escolhida) ? escolhida : undefined) ??
         salas.find((r) => /·\s*Bar$/.test(r.data.name))?.data.id ??
         salas.find((r) => /·\s*Olhos de [AÁaá]guia$/.test(r.data.name))?.data.id ??
+        salas.find((r) => /·\s*Cidade$/.test(r.data.name))?.data.id ??
         key;
       const pos = posicaoInicial(nome, i);
       return {

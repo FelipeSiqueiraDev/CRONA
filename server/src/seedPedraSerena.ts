@@ -1,7 +1,8 @@
 import { getFurni, RoomMap, type Door, type Hint } from "@crona/shared";
 import type { Database, RoomData } from "./db";
 import { planRight } from "./seedSede";
-import { estilo, montar, naPlanta, type CenaSpec } from "./seedFazenda";
+import { type FloorSeed } from "./seed";
+import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
 
 /**
  * Pedra Serena (23/10), a cidade onde fica o Galpão do Fritz, no desenho da planta que o Felipe mandou: o galpão
@@ -9,10 +10,13 @@ import { estilo, montar, naPlanta, type CenaSpec } from "./seedFazenda";
  * Felipe: "vai estar totalmente vazio esse galpão, exceto por uma prateleira com a documentação da sessão e a mesa do
  * escritório com a cadeira. Galpão sem luz". Nenhuma lâmpada: quem entra vê o escuro.
  *
- * A cidade de fora ainda não tem cena: o galpão é a entrada do lugar, e o portão fica sem passagem.
+ * A cidade de fora (24/10): uma cidade pequena do interior, a avenida de asfalto de oeste a leste, a praça com o coreto
+ * e a igreja no alto, as casas e o comércio dos dois lados (os prédios ainda fechados) e, na saída leste, já longe do
+ * centro, o galpão do Fritz com o pátio de concreto. Depois dele a avenida vira a estrada de terra que segue para o
+ * Jardim do Fritz (o outro lugar, de van). A van chega pelo oeste.
  */
 export const PEDRA_SERENA = "Pedra Serena · ";
-export const PEDRA_SERENA_REV = 1;
+export const PEDRA_SERENA_REV = 2;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 
@@ -34,7 +38,112 @@ function galpaoPlan(): { heightmap: string; door: Door } {
   return { heightmap: rows.join("\n"), door: { x: PORTAO_X, y: GH, dir: 0 } };
 }
 
+// ------------------------------------------------------------------ a cidade (de fora)
+
+const VW = 64;
+const VH = 48;
+/** a avenida (3 casas) e as calçadas */
+const AV_Y = 22;
+/** a avenida vira a estrada de terra para o leste (para o Jardim) */
+const TERRA_X = 54;
+/** o galpão do Fritz (18 x 9, a porta virada para a avenida) */
+const GALPAO_FORA = { x: 45, y: 28 };
+
+function terrenoCidade(): Terreno {
+  const t = new Terreno(VW, VH);
+  t.ret(0, AV_Y, TERRA_X - 1, AV_Y + 2, "c");
+  t.ret(TERRA_X, AV_Y, VW - 1, AV_Y + 2, "t");
+  t.ret(0, AV_Y - 2, TERRA_X - 1, AV_Y - 1, "q");
+  t.ret(0, AV_Y + 3, GALPAO_FORA.x - 1, AV_Y + 4, "q");
+  // a praça (o calçamento de pedra) e a rua de pedra da igreja
+  t.ret(18, 10, 32, 19, "p");
+  // o pátio de concreto do galpão, da avenida até a porta
+  t.ret(GALPAO_FORA.x - 1, AV_Y + 3, GALPAO_FORA.x + 18, GALPAO_FORA.y - 1, "c");
+  // o caminho de terra que sai do galpão para os fundos
+  t.linha([[GALPAO_FORA.x + 9, GALPAO_FORA.y + 9], [GALPAO_FORA.x + 9, VH - 1]], "d", 1);
+  return t;
+}
+const T_CIDADE = terrenoCidade();
+
+/** Os prédios da cidade (fechados): [def, x, y, giro]. Do lado de cima da avenida, virados para ela (e para a tela). */
+const PREDIOS: [string, number, number, 0 | 4][] = [
+  ["casa_moderna", 0, 12, 4],
+  ["boteco_predio", 10, 15, 4],
+  ["igreja_barroca", 19, 0, 4],
+  ["pousada_predio", 34, 14, 4],
+  ["casa_moderna~c", 44, 12, 4],
+  ["casa_moderna~b", 54, 12, 4],
+  // do lado de baixo, virados para a avenida (de costas para a tela)
+  ["casa_moderna~c", 0, 27, 0],
+  ["casa_colonial", 10, 27, 0],
+  ["venda_predio", 18, 27, 0],
+  ["casa_moderna~d", 28, 27, 0],
+  ["casa_colonial", 37, 27, 0],
+];
+/** as duas entradas do galpão (a porta de aço e o portão de enrolar), na casa do pátio na frente de cada uma */
+const ENTRADAS_GALPAO: [number, number][] = [
+  [GALPAO_FORA.x + 5, GALPAO_FORA.y - 1],
+  [GALPAO_FORA.x + 10, GALPAO_FORA.y - 1],
+];
+
+function ocupar(ocupado: Set<string>, f: FloorSeed[]) {
+  for (const [id, x, y, r] of f) {
+    const def = getFurni(id.split("~")[0]);
+    if (!def || def.flat) continue;
+    const [sx, sy] = r === 2 || r === 6 ? [def.depth, def.width] : [def.width, def.depth];
+    for (let dy = 0; dy < sy; dy++) for (let dx = 0; dx < sx; dx++) ocupado.add(`${x + dx},${y + dy}`);
+  }
+}
+
+function cidadePiso(): FloorSeed[] {
+  const f: FloorSeed[] = [];
+  for (const [id, x, y, r] of PREDIOS) f.push([id, x, y, r]);
+  f.push(["galpao_fritz", GALPAO_FORA.x, GALPAO_FORA.y, 0]);
+  for (const [x, y] of ENTRADAS_GALPAO) f.push(["entrada", x, y, 0]);
+  // a praça: o coreto, os bancos virados para ele, os vasos e os postes
+  f.push(["coreto", 24, 13, 4], ["banco_praca", 25, 11, 4], ["banco_praca", 25, 18, 0], ["banco_praca", 21, 14, 2], ["banco_praca", 30, 14, 6]);
+  for (const [x, y] of [[20, 12], [30, 12], [20, 18], [30, 18]] as [number, number][]) f.push(["vaso_flores", x, y, 0]);
+  for (const [x, y] of [[18, 10], [32, 10], [18, 19], [32, 19], [5, 21], [15, 21], [37, 21], [49, 21], [8, 25], [22, 25], [33, 25], [43, 25]] as [number, number][])
+    f.push(["poste_ferro", x, y, 0]);
+  f.push(["trash_can", 17, 21, 0], ["bench", 27, 25, 0], ["trash_can", 41, 21, 0]);
+  // a placa na saída leste, onde o asfalto acaba
+  f.push(["placa", TERRA_X, AV_Y - 1, 4, hint("Placa", "A placa de beira de estrada, desbotada: o asfalto acaba aqui, e a estrada de terra segue para o leste, longe do centro, subindo a serra.")]);
+  const ocupado = new Set<string>();
+  ocupar(ocupado, f);
+  const arvores: [number, number][] = [
+    [1, 2], [5, 6], [9, 3], [13, 8], [16, 2], [34, 3], [38, 8], [42, 2], [46, 6], [50, 3], [55, 7], [59, 3], [62, 9], [11, 11], [33, 11],
+    [2, 38], [6, 43], [11, 37], [15, 44], [20, 39], [25, 45], [30, 38], [35, 43], [40, 37], [43, 45], [48, 41], [58, 42], [62, 38], [52, 46], [61, 46],
+    [19, 20], [31, 20],
+  ];
+  arvores.forEach(([x, y], i) => {
+    if (T_CIDADE.at(x, y) !== "." || ocupado.has(`${x},${y}`)) return;
+    const a: FloorSeed = [["arvore", "arvore~b", "arvore~c"][i % 3], x, y, 0];
+    f.push(a);
+    ocupar(ocupado, [a]);
+  });
+  return f;
+}
+
 const CENAS: CenaSpec[] = [
+  {
+    key: "cidade",
+    name: PEDRA_SERENA + "Cidade",
+    description:
+      "Pedra Serena: uma cidade pequena e quieta do interior. A avenida de asfalto corta a cidade de oeste a leste; no alto, a igreja matriz virada para a praça do coreto. Dos dois lados, as casas de reboco, o boteco, a pousada e a venda. Na saída leste, já longe do centro, o galpão de bloco e chapa com o pátio de concreto; depois dele o asfalto acaba e a estrada de terra segue para a serra. A van chega pelo oeste.",
+    layout: { heightmap: T_CIDADE.planta(), door: { x: 0, y: AV_Y + 1, dir: 2 } },
+    andar: "Cidade",
+    style: "grama",
+    aberto: true,
+    terreno: T_CIDADE.texto(),
+    darkness: 0.14,
+    fog: 0,
+    ambient: "#ffe6c4",
+    particles: ["dust"],
+    floor: cidadePiso(),
+    wall: [],
+    links: ENTRADAS_GALPAO.map(([x, y]) => [x, y, "galpao"] as [number, number, string]),
+    plan: { x: 0, y: 0 },
+  },
   {
     key: "galpao",
     name: PEDRA_SERENA + "Galpão do Fritz",
@@ -51,7 +160,10 @@ const CENAS: CenaSpec[] = [
       ["pillar", 22, 5, 0],
     ],
     wall: [],
-    links: [[ESC.w, GH - ESC.h, "escritorio"]],
+    links: [
+      [ESC.w, GH - ESC.h, "escritorio"],
+      [PORTAO_X, GH - 1, "cidade"],
+    ],
     plan: { x: 0, y: 0 },
   },
   {
