@@ -340,7 +340,10 @@ export class Particles {
     const fx = (t0.c[0] + t1.c[0]) / 2;
     const fy = (t0.c[1] + t1.c[1]) / 2;
     const g = ctx.createLinearGradient(mx, my, fx, fy);
-    g.addColorStop(0, `rgba(${cr},${cg},${cb},${a})`);
+    // transparente rente à parede (24/10, o Felipe: "a cortina de novo"): somada por cima da janela, a luz desbotava a
+    // cortina e a borda do volume parecia outra cortina solta; ela só clareia já dentro do cômodo
+    g.addColorStop(0, `rgba(${cr},${cg},${cb},0)`);
+    g.addColorStop(0.3, `rgba(${cr},${cg},${cb},${a})`);
     g.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
     ctx.fillStyle = g;
     ctx.beginPath();
