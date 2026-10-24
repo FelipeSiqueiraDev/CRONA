@@ -24,7 +24,7 @@ describe("Pedra Serena (o Galpão do Fritz)", () => {
     const ids = (n: string) => porNome(n).items.map((i) => i.defId).sort();
     assert.deepEqual(ids("Galpão do Fritz"), ["pillar", "pillar", "pillar", "portal", "portal"]);
     assert.deepEqual(ids("Escritório do Galpão"), ["chair_office", "estante_vazia", "mesa_vazia", "portal"]);
-    for (const r of salas.filter((s) => !s.aberto)) {
+    for (const r of [porNome("Galpão do Fritz"), porNome("Escritório do Galpão")]) {
       assert.ok(r.items.every((i) => getFurni(i.defId)?.category !== "iluminacao"), `${r.name}: tem luz`);
       assert.ok((r.darkness ?? 0) >= 0.8, `${r.name}: não está escuro`);
     }

@@ -49490,5 +49490,32 @@
       6.731,
       0.41
     ]
+  },
+  "janela_moderna": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "janela_moderna/parede-r.png",
+        "ax": 38.0,
+        "ay": 64.0
+      },
+      "l": {
+        "arquivo": "janela_moderna/parede-l.png",
+        "ax": 37.0,
+        "ay": 64.0
+      },
+      "r-1": {
+        "arquivo": "janela_moderna/parede-r-1.png",
+        "ax": 38.0,
+        "ay": 64.0
+      },
+      "l-1": {
+        "arquivo": "janela_moderna/parede-l-1.png",
+        "ax": 37.0,
+        "ay": 64.0
+      }
+    }
   }
 }

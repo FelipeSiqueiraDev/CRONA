@@ -21,7 +21,7 @@ import { paraCena, Sala } from "./seedMansaoAlbuquerque";
  * Mudou a montagem? Suba JARDIM_FRITZ_REV.
  */
 export const JARDIM_FRITZ = "Jardim do Fritz · ";
-export const JARDIM_FRITZ_REV = 3;
+export const JARDIM_FRITZ_REV = 4;
 
 const TERREO = "Casarão";
 const PRIMEIRO = "Casarão 1º";
@@ -465,6 +465,8 @@ export function seedJardimFritz(db: Database) {
   db.campaigns[String(primeira.id)] = {
     title: "Jardim do Fritz",
     subtitle: "Pedra Serena",
+    // a planta do Felipe é noturna: o Jardim abre de noite (o mestre troca no ☀ Clima)
+    hora: "noite",
     objectives: [],
     layout: Object.fromEntries(CENAS.map((s) => [built.get(s.key)!.id, naPlanta(s)])),
     log: [],
@@ -511,6 +513,7 @@ function rebuildJardimFritz(db: Database): boolean {
   }
   const camp = db.campaigns?.[String(key)];
   if (camp) {
+    camp.hora ??= "noite";
     for (const id of Object.keys(camp.layout)) if (!ficam.has(Number(id))) delete camp.layout[Number(id)];
     for (const s of CENAS) camp.layout[built.get(s.key)!.id] = naPlanta(s);
   }

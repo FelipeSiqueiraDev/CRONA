@@ -22,7 +22,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Mudou a montagem? Suba MANSAO_REV: a mansão é refeita no lugar, mantendo as cenas, as peças e o registro.
  */
 export const MANSAO = "Mansão Albuquerque · ";
-export const MANSAO_REV = 11;
+export const MANSAO_REV = 12;
 
 const ANDAR = "Mansão Albuquerque";
 const ANDAR2 = "Mansão Albuquerque 2º";
@@ -115,9 +115,11 @@ const MODERNO: Record<string, string | null> = {
   penteadeira: "penteadeira_moderna",
   poltrona_orelha: "poltrona_luxo",
   table_small: "mesa_lateral_marmore",
+  // 24/10: o relógio de carrilhão clássico vira a escultura de bronze
+  relogio_carrilhao: "escultura_moderna",
 };
-/** os itens de parede velhos que saem (os utensílios pendurados da cozinha de fazenda) */
-const MODERNO_PAREDE: Record<string, string | null> = { utensilios_parede: null };
+/** os itens de parede velhos que saem (os utensílios pendurados da cozinha de fazenda) ou mudam (a janela de cortina vinho, 24/10) */
+const MODERNO_PAREDE: Record<string, string | null> = { utensilios_parede: null, janela_cortinas: "janela_moderna" };
 /** os cômodos que ficam como eram */
 const SEM_TROCA = new Set(["anexo"]);
 
@@ -190,7 +192,9 @@ export class Sala {
   }
   /** item de parede: `pos` é o centro ao longo da parede (casas), `cm` a altura do centro (m) */
   par(lado: "N" | "O", id: string, pos: number, cm = 1.55, pista?: Hint, estado?: number) {
-    if (!this.semTroca && !SEM_TROCA.has(this.key) && MODERNO_PAREDE[id.split("~")[0]] === null) return this;
+    const trocaP = this.semTroca || SEM_TROCA.has(this.key) ? undefined : MODERNO_PAREDE[id.split("~")[0]];
+    if (trocaP === null) return this;
+    if (trocaP) id = trocaP;
     const d = getWallFurni(id.split("~")[0]);
     if (!d) throw new Error(`item de parede desconhecido: ${id}`);
     const z = Math.round((cm * Z_PER_M - d.h / 64) * 100) / 100;

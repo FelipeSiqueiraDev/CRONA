@@ -589,6 +589,21 @@ const CENAS: CenaSpec[] = [
   ...casaMineira({ key: "casa9", prefixo: TIRADENTES, lado: "fundo", description: "Uma casa do casario, a última antes da estrada: a cozinha com o fogão a gás, a mesa com as cadeiras, a TV na sala, a cama de casal e o oratório.", style: "taco", clima: DENTRO, paredes: paredesDaCasa }),
 ];
 
+/**
+ * Os interiores de vila de Tiradentes (a igreja com a sacristia, a pousada com o café, o corredor e os quatro quartos, a
+ * venda e o boteco) para outra cidade com os mesmos prédios (24/10, Pedra Serena): uma cópia, com o nome da cidade
+ * trocado e sem a "Rua Direita". As passagens para a rua levam à cena "cidade" de lá.
+ */
+export function interioresDeVila(prefixo: string): CenaSpec[] {
+  const chaves = new Set(["igreja", "sacristia", "pousada", "cafe", "corredor", "quarto", "quarto2", "quarto3", "quarto4", "venda", "boteco"]);
+  return CENAS.filter((s) => chaves.has(s.key)).map((s) => {
+    const c = JSON.parse(JSON.stringify(s)) as CenaSpec;
+    c.name = c.name.replace(TIRADENTES, prefixo);
+    c.description = c.description.replace(/de frente para a Rua Direita/g, "de frente para a avenida").replace(/da Rua Direita/g, "da avenida");
+    return c;
+  });
+}
+
 // ------------------------------------------------------------------ montagem
 
 function ligar(built: Map<string, RoomData>) {

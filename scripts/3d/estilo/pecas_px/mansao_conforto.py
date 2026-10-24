@@ -1498,14 +1498,22 @@ def _pano(pl, m, uloc, w, cx_, Hh, larg_dobra=4.0, idx0=0.0, tie_w=None, rampa=N
     pl.rgb[m] = cores[idx][m]
     pl.nv[m] = 255
     cr = m & (k > 0.94)
-    pl.rgb[cr] = hx('#c4586a')
+    pl.rgb[cr] = hx('#c4586a') if rampa is None else hx(rampa[-1])
 
 
-def _painel_cortina(pl, W, Hh, aberta, lado):
-    """Uma folha de cortina no plano (u, w): aberta, presa ao lado por um laço dourado com borla; fechada, caída reta."""
+def _painel_cortina(pl, W, Hh, aberta, lado, rampa=None, simples=False):
+    """
+    Uma folha de cortina no plano (u, w): aberta, presa ao lado por um laço dourado com borla; fechada, caída reta.
+    simples (a moderna, 24/10): aberta, a folha cai reta no canto, sem laço; rampa: os tons do pano.
+    """
     u = pl.u if lado < 0 else (W - pl.u)
     w = pl.w
     t = pl.dentro
+    if simples:
+        inner = 9.5 if aberta else W * 0.5 + 1.6
+        bord = t & (u >= -1) & (u < inner) & (w < Hh - 1)
+        _pano(pl, bord, u, w, 0.0, Hh, larg_dobra=3.0, idx0=lado * 2, rampa=rampa)
+        return bord
     if aberta:
         tw = Hh * 0.56
         s = np.clip(w / tw, 0, 1)
@@ -1532,8 +1540,14 @@ def _painel_cortina(pl, W, Hh, aberta, lado):
     return bord
 
 
-def janela_cortinas(fechada=False, xc=1.5, zc=1.55):
+LINHO = ['#9a8e7a', '#b8ac96', '#d2c8b2', '#e6decc', '#f4eee2']
+JAN_PRETA = ('#0e0e10', '#1e1e22', '#2e2e34', '#44444a')
+
+
+def janela_cortinas(fechada=False, xc=1.5, zc=1.55, moderna=False):
     """
+    moderna (24/10, a mansão moderna): o caixilho preto fino, as cortinas de linho claro caídas retas no trilho preto do
+    teto, sem bandô, sem frontão e sem ouro.
     A janela alta de duas folhas (moldura branca, vidro com a luz do dia, o peitoril de mármore) com as cortinas pesadas de
     veludo vinho e o bandô de babados com franja de ouro, sobre o varão. Aberta: as cortinas presas dos lados pelo laço de
     ouro com borla. Fechada: caídas retas até o chão da janela, com uma fresta de luz no meio.
@@ -1566,9 +1580,10 @@ def janela_cortinas(fechada=False, xc=1.5, zc=1.55):
     gl.pin(t & (gl.w < 1), '#9ab4c8')
     gl.pin(t & (gl.u < 1), '#a8c0d0')
     gl.grava()
-    PC.moldura(xc - jx, xc + jx, wz0, wz1, 0.055, 0.05, JAN_FRAME)
+    PC.moldura(xc - jx, xc + jx, wz0, wz1, 0.055, 0.05, JAN_PRETA if moderna else JAN_FRAME)
     # o frontão de gesso em cima da janela
-    cx((xc - jx - 0.04, xc + jx + 0.04, 0.0, 0.07, wz1, wz1 + 0.04), {'*': liso('#e6dec8'), 'cima': liso('#faf6e8')}, ch=0.008)
+    if not moderna:
+        cx((xc - jx - 0.04, xc + jx + 0.04, 0.0, 0.07, wz1, wz1 + 0.04), {'*': liso('#e6dec8'), 'cima': liso('#faf6e8')}, ch=0.008)
     # as cortinas
     zb, zt_ = zc - 1.02, zc + 0.86
     cu0, cu1 = xc - 0.78, xc + 0.78
@@ -1576,9 +1591,14 @@ def janela_cortinas(fechada=False, xc=1.5, zc=1.55):
     Wc, Hc = cp.W, (zt_ - zb) * KZ
     cp.u, cp.w = cp.u - 0.0, cp.w - 0.0
     for lado in (-1, 1):
-        _painel_cortina(cp, (cu1 - cu0) * KX, Hc, not fechada, lado)
+        _painel_cortina(cp, (cu1 - cu0) * KX, Hc, not fechada, lado, rampa=LINHO if moderna else None, simples=moderna)
     cp.contorno()
     cp.grava()
+    if moderna:
+        # o trilho preto rente ao teto, no lugar do bandô
+        cx((cu0 - 0.04, cu1 + 0.04, 0.0, 0.09, zt_, zt_ + 0.04), {'*': liso('#1e1e22'), 'cima': liso('#2e2e34')}, ch=0.008)
+        PC.sombra_parede(n0, 1, 2)
+        return
     # o bandô: o babado de veludo com a franja de ouro e a tábua em cima, sobre o varão
     vz0, vz1 = zc + 0.7, zc + 1.06
     vp = PC.Pl(cu0 - 0.02, cu1 + 0.02, vz0, vz1, 0.13)
@@ -1623,6 +1643,7 @@ ITENS_PAREDE = {
     'quadro_oleo_grande~3': (lambda: quadro_oleo_grande(3), (1.5, 1.6)),
     'espelho_dourado': (lambda: espelho_dourado(1.5, 1.6), (1.5, 1.6)),
     'janela_cortinas': (lambda: janela_cortinas(False), (1.5, 1.55), {'1': lambda: janela_cortinas(True)}),
+    'janela_moderna': (lambda: janela_cortinas(False, moderna=True), (1.5, 1.55), {'1': lambda: janela_cortinas(True, moderna=True)}),
     'retrato_nobre': (lambda: retrato_nobre(1), (1.5, 1.6)),
     'retrato_nobre~2': (lambda: retrato_nobre(2), (1.5, 1.6)),
     'retrato_nobre~3': (lambda: retrato_nobre(3), (1.5, 1.6)),

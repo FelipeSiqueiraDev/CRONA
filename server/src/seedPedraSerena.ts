@@ -3,6 +3,8 @@ import type { Database, RoomData } from "./db";
 import { planRight } from "./seedSede";
 import { type FloorSeed } from "./seed";
 import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
+import { interioresDeVila } from "./seedTiradentes";
+import { casaDeCidade } from "./casaComum";
 
 /**
  * Pedra Serena (23/10), a cidade onde fica o Galpão do Fritz, no desenho da planta que o Felipe mandou: o galpão
@@ -14,13 +16,19 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * e a igreja no alto, as casas e o comércio dos dois lados (os prédios ainda fechados) e, na saída leste, já longe do
  * centro, o galpão do Fritz com o pátio de concreto. Depois dele a avenida vira a estrada de terra que segue para o
  * Jardim do Fritz (o outro lugar, de van). A van chega pelo oeste.
+ *
+ * Por dentro (24/10): a igreja, a pousada, a venda e o boteco são os de Tiradentes (`interioresDeVila`, os mesmos
+ * prédios), e as casas, a casa padrão (`casaDeCidade`). A porta de dentro fica do mesmo lado da de fora.
  */
 export const PEDRA_SERENA = "Pedra Serena · ";
-export const PEDRA_SERENA_REV = 2;
+export const PEDRA_SERENA_REV = 3;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 
 const GALPAO = "Galpão do Fritz";
+
+/** A luz de dentro das casas e do comércio. */
+const DENTRO = { darkness: 0.3, ambient: "#e8dcc4", particles: ["dust"] as CenaSpec["particles"] };
 
 /** Sem luz nenhuma: o escuro do concreto e a poeira parada. */
 const ESCURO = { darkness: 0.86, ambient: "#8a9098", particles: ["dust"] as CenaSpec["particles"] };
@@ -65,21 +73,31 @@ function terrenoCidade(): Terreno {
 }
 const T_CIDADE = terrenoCidade();
 
-/** Os prédios da cidade (fechados): [def, x, y, giro]. Do lado de cima da avenida, virados para ela (e para a tela). */
-const PREDIOS: [string, number, number, 0 | 4][] = [
-  ["casa_moderna", 0, 12, 4],
-  ["boteco_predio", 10, 15, 4],
-  ["igreja_barroca", 19, 0, 4],
-  ["pousada_predio", 34, 14, 4],
-  ["casa_moderna~c", 44, 12, 4],
-  ["casa_moderna~b", 54, 12, 4],
-  // do lado de baixo, virados para a avenida (de costas para a tela)
-  ["casa_moderna~c", 0, 27, 0],
-  ["casa_colonial", 10, 27, 0],
-  ["venda_predio", 18, 27, 0],
-  ["casa_moderna~d", 28, 27, 0],
-  ["casa_colonial", 37, 27, 0],
+/**
+ * Os prédios da cidade: [def, x, y, giro, cena de dentro]. Do lado de cima da avenida, virados para ela (e para a tela);
+ * do lado de baixo, de costas para a tela.
+ */
+const PREDIOS: [string, number, number, 0 | 4, string][] = [
+  ["casa_moderna", 0, 12, 4, "casa1"],
+  ["boteco_predio", 10, 15, 4, "boteco"],
+  ["igreja_barroca", 19, 0, 4, "igreja"],
+  ["pousada_predio", 34, 14, 4, "pousada"],
+  ["venda_predio", 44, 15, 4, "venda"],
+  ["casa_moderna~b", 54, 12, 4, "casa2"],
+  ["casa_moderna~c", 0, 27, 0, "casa3"],
+  ["casa_colonial", 10, 27, 0, "casa4"],
+  ["casa_moderna~c", 18, 27, 0, "casa5"],
+  ["casa_moderna~d", 28, 27, 0, "casa6"],
+  ["casa_colonial", 37, 27, 0, "casa7"],
 ];
+
+/** a peça "entrada" na casa logo à frente da porta de um prédio (a porta no meio da frente; giro 4 ou 0) */
+function porta(id: string, x: number, y: number, rot: 0 | 4): [number, number] {
+  const def = getFurni(id.split("~")[0])!;
+  const meio = Math.floor(def.width / 2);
+  return rot === 4 ? [x + meio, y + def.depth] : [x + def.width - 1 - meio, y - 1];
+}
+const ENTRADAS = PREDIOS.map(([id, x, y, r, cena]) => [...porta(id, x, y, r), cena] as [number, number, string]);
 /** as duas entradas do galpão (a porta de aço e o portão de enrolar), na casa do pátio na frente de cada uma */
 const ENTRADAS_GALPAO: [number, number][] = [
   [GALPAO_FORA.x + 5, GALPAO_FORA.y - 1],
@@ -98,6 +116,7 @@ function ocupar(ocupado: Set<string>, f: FloorSeed[]) {
 function cidadePiso(): FloorSeed[] {
   const f: FloorSeed[] = [];
   for (const [id, x, y, r] of PREDIOS) f.push([id, x, y, r]);
+  for (const [x, y] of ENTRADAS) f.push(["entrada", x, y, 0]);
   f.push(["galpao_fritz", GALPAO_FORA.x, GALPAO_FORA.y, 0]);
   for (const [x, y] of ENTRADAS_GALPAO) f.push(["entrada", x, y, 0]);
   // a praça: o coreto, os bancos virados para ele, os vasos e os postes
@@ -141,7 +160,7 @@ const CENAS: CenaSpec[] = [
     particles: ["dust"],
     floor: cidadePiso(),
     wall: [],
-    links: ENTRADAS_GALPAO.map(([x, y]) => [x, y, "galpao"] as [number, number, string]),
+    links: [...ENTRADAS_GALPAO.map(([x, y]) => [x, y, "galpao"] as [number, number, string]), ...ENTRADAS],
     plan: { x: 0, y: 0 },
   },
   {
@@ -184,6 +203,14 @@ const CENAS: CenaSpec[] = [
     links: [[ESC.w - 1, 0, "galpao"]],
     plan: { x: 0, y: GH - ESC.h },
   },
+  ...interioresDeVila(PEDRA_SERENA),
+  ...casaDeCidade({ key: "casa1", prefixo: PEDRA_SERENA, lado: "frente", description: "Uma casa da avenida: a cozinha e a sala juntas, o café no fogão, a TV ligada no jornal, o quarto no fundo.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa2", prefixo: PEDRA_SERENA, lado: "frente", description: "A última casa antes do asfalto acabar: o fogão a gás, a geladeira com os ímãs, a mesa da cozinha e a cama no fundo. Da janela se vê o galpão.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa3", prefixo: PEDRA_SERENA, lado: "fundo", description: "Uma casa do outro lado da avenida: a mesa com o pão e o café, o sofá de frente para a TV, o quarto no fundo.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa4", prefixo: PEDRA_SERENA, lado: "fundo", description: "Uma casa antiga da avenida, de janelas verdes: a cozinha e a sala juntas, a TV pequena, o oratório e o quarto no fundo.", style: "taco", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa5", prefixo: PEDRA_SERENA, lado: "fundo", description: "Uma casa do outro lado da avenida, perto da praça: o fogão, a mesa da cozinha, o sofá e o quarto no fundo.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa6", prefixo: PEDRA_SERENA, lado: "fundo", description: "Uma casa do outro lado da avenida: a cozinha e a sala juntas, a TV ligada alto, o quarto no fundo.", style: "ladrilho", clima: DENTRO, janela: "janela_vidro" }),
+  ...casaDeCidade({ key: "casa7", prefixo: PEDRA_SERENA, lado: "fundo", description: "A casa antiga mais perto do galpão, de janelas verdes: a cozinha, a mesa, o sofá e o quarto, a cortina sempre fechada.", style: "taco", clima: DENTRO, janela: "janela_vidro" }),
 ];
 
 function ligar(built: Map<string, RoomData>) {

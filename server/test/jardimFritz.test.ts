@@ -17,6 +17,7 @@ describe("Jardim do Fritz", () => {
     assert.ok(porNome("Jardim").aberto, "o jardim é ao ar livre");
     const camp = db.campaigns?.[String(Math.min(...salas.map((r) => r.id)))];
     assert.equal(camp?.title, "Jardim do Fritz");
+    assert.equal(camp?.hora, "noite", "o Jardim abre de noite");
   });
 
   test("toda peça existe no catálogo e fica no chão da sala; os prédios estão lá", () => {
