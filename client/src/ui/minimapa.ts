@@ -1377,9 +1377,19 @@ export class Minimapa {
           if (hm.tiles[y]?.[x] === null || hm.tiles[y]?.[x] === undefined || (porta && porta[0] === x && porta[1] === y)) continue;
           casas.push([pos.x + x, pos.y + y]);
         }
+      // quem está fora do chão do cômodo (no vão da porta: a peça levada de um cômodo sem porta para este nasce ali) vai
+      // para a casa de dentro mais perto; antes o ponto ficava no vão, tampado pelo cômodo vizinho, e "sumia" (24/10)
+      const chao = new Set(casas.map(([x, y]) => `${x},${y}`));
       const gente = s.users.map((u) => {
-        const [x, y] = rotatePt(raw, r, u.x, u.y);
-        return { u, x: pos.x + x + 0.5, y: pos.y + y + 0.5 };
+        const [rx, ry] = rotatePt(raw, r, u.x, u.y);
+        let x = pos.x + rx;
+        let y = pos.y + ry;
+        if (!chao.has(`${x},${y}`) && casas.length) {
+          let melhor = casas[0];
+          for (const c of casas) if (Math.abs(c[0] - x) + Math.abs(c[1] - y) < Math.abs(melhor[0] - x) + Math.abs(melhor[1] - y)) melhor = c;
+          [x, y] = melhor;
+        }
+        return { u, x: x + 0.5, y: y + 0.5 };
       });
       // as escadas: a passagem para um cômodo de outro andar do mesmo prédio (clicar nela troca o andar do mapa)
       const onde = this.locais?.onde;

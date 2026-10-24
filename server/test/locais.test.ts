@@ -195,6 +195,13 @@ describe("Locais do minimapa", () => {
     assert.equal(fora.tokenList().length, resto.length);
     // o mestre continua onde estava
     assert.equal(client.room, fora);
+    // e o minimapa do mestre recebe as duas no cômodo novo (24/10, o Felipe: "o pontinho some")
+    inbox = [];
+    hotel.pushNow();
+    const camp = [...inbox].reverse().find((m) => m.t === "campaign" && m.state.scenes.some((sc) => sc.id === celeiro.data.id));
+    assert.ok(camp && camp.t === "campaign", "a campanha chegou");
+    const noCeleiro = camp.state.scenes.find((sc) => sc.id === celeiro.data.id)!.users.map((u) => u.id).sort();
+    assert.deepEqual(noCeleiro, [um.id, dois.id].sort(), "as peças aparecem no celeiro");
   });
 
   test("visitadas: a cena com agente vira visitada; o mestre marca e limpa", () => {
