@@ -16,7 +16,6 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - **Pedra Serena por dentro** (`PEDRA_SERENA_REV` 3): a igreja, a pousada, a venda e o boteco são os de Tiradentes (`interioresDeVila`), e as sete casas são a casa padrão.
 - **O Jardim abre de noite** (`JARDIM_FRITZ_REV` 4).
 - **Na mansão:** a janela de cortina vinho virou a moderna (`janela_moderna`, caixilho preto e linho), e o relógio de carrilhão virou a escultura de bronze.
-- **Segredo (só do mestre, fora do repositório):** o Felipe contou que o Fritz virou o Anfitrião; ele não aparece como pessoa na sessão.
 - **Ainda em aberto, do site:**
   - os bilhetes de confirmação sem estilo;
   - a tela MAPA com parte das mensagens antigas;
