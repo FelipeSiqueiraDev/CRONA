@@ -222,12 +222,12 @@ const cache = new Map<IconeLugar, HTMLCanvasElement>();
  * casinha genérica. Enquanto carrega (ou se não existe), o desenho em código.
  */
 const PASTA_MAPA = '/arte/mapa/';
-const CENTRO_ARTE: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'tiradentes': 43, 'igarape': 43, 'santo-berco': 43, 'santa-amalia': 42, 'mansao-albuquerque': 42, 'generico-casa': 41 };
+const CENTRO_ARTE: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'tiradentes': 43, 'igarape': 43, 'santo-berco': 43, 'santa-amalia': 42, 'mansao-albuquerque': 42, 'pedra-serena': 42, 'jardim-do-fritz': 42, 'generico-casa': 41 };
 /**
  * O meio da grama de cada ilha HD (288 × 256), em pixels da escala 1 (÷ 4): os centros que o Códex mediu em
  * mapa-hd.zip (14/10). O Igarapé, o Santo Berço e Santa Amália (17/10) só existem em HD.
  */
-const CENTRO_HD: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'tiradentes': 43, 'igarape': 42, 'santo-berco': 41, 'santa-amalia': 42, 'mansao-albuquerque': 42, 'generico-casa': 41 };
+const CENTRO_HD: Record<string, number> = { 'sede-da-ordem': 43, 'fazenda-olhos-de-aguia': 40, 'orfanato-filhos-do-dragao': 41, 'tiradentes': 43, 'igarape': 42, 'santo-berco': 41, 'santa-amalia': 42, 'mansao-albuquerque': 42, 'pedra-serena': 42, 'jardim-do-fritz': 42, 'generico-casa': 41 };
 const artes = new Map<string, HTMLCanvasElement | null>();
 let existentes: Set<string> | null = null;
 void arteCarregada.then((s) => (existentes = s));
