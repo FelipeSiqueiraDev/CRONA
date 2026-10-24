@@ -1075,8 +1075,13 @@ function comPesNoChao(f: SpriteFrame): HTMLCanvasElement {
   return c;
 }
 
-/** Telas de rascunho para tingir o quadro, uma por tamanho. */
-const rascunhos = new Map<string, HTMLCanvasElement>();
+/**
+ * Os quadros já tingidos, por quadro e pela cor da tinta (24/10, o desempenho: antes cada peça era copiada, multiplicada
+ * e recortada de novo a cada quadro). A cor vai em degraus de 4 (a diferença não se vê) e cada quadro guarda as últimas
+ * TINGIDOS_POR_QUADRO cores: a vela que treme reaproveita as telas mais velhas em vez de criar outras.
+ */
+const tingidos = new WeakMap<HTMLCanvasElement, Map<string, HTMLCanvasElement>>();
+const TINGIDOS_POR_QUADRO = 6;
 
 /**
  * O quadro tingido pela luz que bate na peça (perto das velas, o branco fica
@@ -1088,17 +1093,30 @@ function comLuz(f: SpriteFrame, luz: LuzNaPeca | null | undefined): HTMLCanvasEl
   if (luz === undefined) return f.canvas;
   const base = comPesNoChao(f);
   if (!luz || luz.forca < 0.02) return base;
-  const chave = `${base.width}x${base.height}`;
-  let c = rascunhos.get(chave);
-  if (!c) {
+  const k = 0.32 * Math.min(1, luz.forca);
+  const [r, gg, b] = luz.rgb.map((v) => Math.min(255, Math.round((255 + (v - 255) * k) / 4) * 4));
+  const chave = `${r},${gg},${b}`;
+  let porCor = tingidos.get(base);
+  if (!porCor) tingidos.set(base, (porCor = new Map()));
+  const pronto = porCor.get(chave);
+  if (pronto) {
+    // a cor mais usada fica no fim da fila (a que sai é a esquecida há mais tempo)
+    porCor.delete(chave);
+    porCor.set(chave, pronto);
+    return pronto;
+  }
+  let c: HTMLCanvasElement;
+  if (porCor.size >= TINGIDOS_POR_QUADRO) {
+    const [velha, tela] = porCor.entries().next().value as [string, HTMLCanvasElement];
+    porCor.delete(velha);
+    c = tela;
+  } else {
     c = document.createElement('canvas');
     c.width = base.width;
     c.height = base.height;
-    rascunhos.set(chave, c);
   }
+  porCor.set(chave, c);
   const g = c.getContext('2d')!;
-  const k = 0.32 * Math.min(1, luz.forca);
-  const [r, gg, b] = luz.rgb.map((v) => Math.round(255 + (v - 255) * k));
   g.globalCompositeOperation = 'copy';
   g.drawImage(base, 0, 0);
   g.globalCompositeOperation = 'multiply';

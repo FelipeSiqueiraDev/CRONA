@@ -34,6 +34,10 @@ const FUMACA_MS = 2600;
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
+/** o lado da casa da grade das luzes (px de mundo) e a chave de cada casa */
+const GRADE = 96;
+const chaveCasa = (cx: number, cy: number) => (cx + 4096) * 8192 + (cy + 4096);
+
 export class Particles {
   private list: P[] = [];
   private kinds = new Set<ParticleKind>();
@@ -82,11 +86,37 @@ export class Particles {
     return this.kinds.size > 0;
   }
 
-  /** Luz no ponto (0..1): quanto ele está perto de alguma fonte. */
-  private lightAt(x: number, y: number, lights: Light[]) {
+  /**
+   * As luzes repartidas numa grade de casas de GRADE px (24/10, o desempenho): cada grão de poeira olha só as luzes que
+   * alcançam a casa dele, e não todas as da sala. Refeita uma vez por quadro (a luz que pisca muda o raio).
+   */
+  private grade = new Map<number, Light[]>();
+
+  private repartir(lights: Light[]) {
+    this.grade.clear();
+    for (const L of lights) {
+      if (L.radius <= 0 || L.intensity <= 0) continue;
+      const cx0 = Math.floor((L.x - L.radius) / GRADE);
+      const cx1 = Math.floor((L.x + L.radius) / GRADE);
+      const cy0 = Math.floor((L.y - L.radius) / GRADE);
+      const cy1 = Math.floor((L.y + L.radius) / GRADE);
+      for (let cy = cy0; cy <= cy1; cy++)
+        for (let cx = cx0; cx <= cx1; cx++) {
+          const k = chaveCasa(cx, cy);
+          const lista = this.grade.get(k);
+          if (lista) lista.push(L);
+          else this.grade.set(k, [L]);
+        }
+    }
+  }
+
+  /** Luz no ponto (0..1): quanto ele está perto de alguma fonte (só as da casa dele na grade). */
+  private lightAt(x: number, y: number) {
     let s = 0;
     let c = '#fff2d8';
     let best = 0;
+    const lights = this.grade.get(chaveCasa(Math.floor(x / GRADE), Math.floor(y / GRADE)));
+    if (!lights) return { v: 0, c };
     for (const L of lights) {
       const d = Math.hypot(x - L.x, y - L.y);
       if (d >= L.radius) continue;
@@ -161,6 +191,7 @@ export class Particles {
     if (this.list.length > 420) this.list.splice(0, this.list.length - 420);
 
     const t = now / 1000;
+    if (this.kinds.has('dust')) this.repartir(lights);
     ctx.save();
     for (let i = this.list.length - 1; i >= 0; i--) {
       const p = this.list[i];
@@ -174,7 +205,7 @@ export class Particles {
       if (p.kind === 'dust') {
         p.x += (p.vx + Math.sin(t * 0.7 + p.seed) * 2) * dt;
         p.y += (p.vy + Math.cos(t * 0.5 + p.seed) * 1.5) * dt;
-        const L = this.lightAt(p.x, p.y, lights);
+        const L = this.lightAt(p.x, p.y);
         const a = fade * (0.04 + 0.75 * L.v);
         if (a < 0.02) continue;
         ctx.globalCompositeOperation = 'lighter';

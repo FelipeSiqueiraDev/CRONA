@@ -779,12 +779,14 @@ export class RoomView {
 
   /** Tela MAPA: dentro da moldura, fundo azul-escuro com pontinhos (docs/referencias/mapa.webp). */
   fundoPontos = false;
-  private padraoPontos: CanvasPattern | null = null;
+  private pontosTela: { dpr: number; c: HTMLCanvasElement } | null = null;
+  private fundoPronto: { chave: string; c: HTMLCanvasElement } | null = null;
+  private vinhetaPronta: { chave: string; c: HTMLCanvasElement } | null = null;
 
-  private pintarFundo(ctx: CanvasRenderingContext2D) {
-    const fr = this.frame_();
+  /** o ladrilho dos pontinhos (um ponto a cada 22 px) */
+  private padraoPontosTela() {
     const dpr = this.dpr;
-    if (!this.padraoPontos) {
+    if (!this.pontosTela || this.pontosTela.dpr !== dpr) {
       const c = document.createElement('canvas');
       c.width = c.height = Math.round(22 * dpr);
       const g = c.getContext('2d')!;
@@ -792,23 +794,40 @@ export class RoomView {
       g.beginPath();
       g.arc(11 * dpr, 11 * dpr, Math.max(0.8, 1.1 * dpr), 0, Math.PI * 2);
       g.fill();
-      this.padraoPontos = ctx.createPattern(c, 'repeat');
+      this.pontosTela = { dpr, c };
     }
-    ctx.save();
+    return this.pontosTela.c;
+  }
+
+  private pintarFundo(ctx: CanvasRenderingContext2D) {
+    const fr = this.frame_();
+    const dpr = this.dpr;
     const x = fr.x * dpr;
     const y = fr.y * dpr;
     const w = fr.w * dpr;
     const h = fr.h * dpr;
-    const grad = ctx.createRadialGradient(x + w / 2, y + h * 0.45, 10, x + w / 2, y + h / 2, Math.max(w, h) * 0.7);
-    grad.addColorStop(0, '#151b28');
-    grad.addColorStop(1, '#090c12');
-    ctx.fillStyle = grad;
-    ctx.fillRect(x, y, w, h);
-    if (this.padraoPontos) {
-      ctx.fillStyle = this.padraoPontos;
-      ctx.fillRect(x, y, w, h);
+    // o fundo pintado uma vez numa tela guardada (24/10, o desempenho): refeito só quando o quadro muda de tamanho
+    const chave = `${x},${y},${w},${h}`;
+    if (!this.fundoPronto || this.fundoPronto.chave !== chave) {
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.ceil(w));
+      c.height = Math.max(1, Math.ceil(h));
+      const g = c.getContext('2d')!;
+      // os pontinhos ancorados no canto da tela, como antes (o padrão não anda quando a moldura muda)
+      g.translate(-x, -y);
+      const grad = g.createRadialGradient(x + w / 2, y + h * 0.45, 10, x + w / 2, y + h / 2, Math.max(w, h) * 0.7);
+      grad.addColorStop(0, '#151b28');
+      grad.addColorStop(1, '#090c12');
+      g.fillStyle = grad;
+      g.fillRect(x, y, w, h);
+      const pontos = g.createPattern(this.padraoPontosTela(), 'repeat');
+      if (pontos) {
+        g.fillStyle = pontos;
+        g.fillRect(x, y, w, h);
+      }
+      this.fundoPronto = { chave, c };
     }
-    ctx.restore();
+    ctx.drawImage(this.fundoPronto.c, x, y);
   }
 
   private frame_() {
@@ -1567,7 +1586,9 @@ export class RoomView {
       this.vw = w;
       this.vh = h;
       this.dpr = dpr;
-      this.padraoPontos = null;
+      // o fundo e a vinheta guardados são refeitos no tamanho novo (a chave deles também muda)
+      this.fundoPronto = null;
+      this.vinhetaPronta = null;
       // mudou o tamanho e ninguém mexeu na câmera: enquadra de novo
       if (this.autoFit || this.watchOnly) this.needFit = true;
       this.canvas.width = Math.round(w * dpr);
@@ -3870,15 +3891,29 @@ export class RoomView {
 
   /** A vinheta: as bordas do quadro escurecem. */
   private vinheta(ctx: CanvasRenderingContext2D) {
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    const dpr = this.dpr;
     const fr = this.frame_();
-    const vcx = fr.x + fr.w / 2;
-    const vcy = fr.y + fr.h / 2;
-    const vg = ctx.createRadialGradient(vcx, vcy, Math.min(fr.w, fr.h) * 0.38, vcx, vcy, Math.max(fr.w, fr.h) * 0.78);
-    vg.addColorStop(0, 'rgba(0,0,0,0)');
-    vg.addColorStop(1, 'rgba(0,0,0,0.55)');
-    ctx.fillStyle = vg;
-    ctx.fillRect(0, 0, this.vw, this.vh);
+    // pintada uma vez numa tela guardada (24/10, o desempenho): refeita só quando a tela ou o quadro mudam de tamanho
+    const chave = `${fr.x},${fr.y},${fr.w},${fr.h},${dpr},${this.vw},${this.vh}`;
+    if (!this.vinhetaPronta || this.vinhetaPronta.chave !== chave) {
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.ceil(this.vw * dpr));
+      c.height = Math.max(1, Math.ceil(this.vh * dpr));
+      const g = c.getContext('2d')!;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const vcx = fr.x + fr.w / 2;
+      const vcy = fr.y + fr.h / 2;
+      const vg = g.createRadialGradient(vcx, vcy, Math.min(fr.w, fr.h) * 0.38, vcx, vcy, Math.max(fr.w, fr.h) * 0.78);
+      vg.addColorStop(0, 'rgba(0,0,0,0)');
+      vg.addColorStop(1, 'rgba(0,0,0,0.55)');
+      g.fillStyle = vg;
+      g.fillRect(0, 0, this.vw, this.vh);
+      this.vinhetaPronta = { chave, c };
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(this.vinhetaPronta.c, 0, 0);
+    // a câmera fica como a vinheta antiga deixava (na escala da tela)
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   private nameTag(name: string, x: number, y: number, me: boolean) {
