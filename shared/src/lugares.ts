@@ -28,7 +28,7 @@ export interface LugarInfo {
 /** O ícone de um lugar pelo nome dele (enquanto o mestre não escolhe). */
 export function iconePeloNome(nome: string): IconeLugar {
   if (/fazenda|s[ií]tio|celeiro/i.test(nome)) return 'fazenda';
-  if (/orfanato|casar[aã]o|mans[aã]o|castelo/i.test(nome)) return 'casarao';
+  if (/orfanato|casar[aã]o|mans[aã]o|castelo|jardim/i.test(nome)) return 'casarao';
   if (/sede|ordem|base|pr[eé]dio|ordo/i.test(nome)) return 'predio';
   return 'casa';
 }
@@ -60,5 +60,7 @@ export function posicaoInicial(nome: string, i: number): [number, number] {
   if (/mans[aã]o albuquerque/i.test(nome)) return [0.56, 0.68];
   // Pedra Serena (23/10): a cidade do galpão do Fritz, no interior (o mestre arrasta para onde quiser)
   if (/pedra serena/i.test(nome)) return [0.54, 0.64];
+  // o Jardim do Fritz (24/10): a propriedade afastada do centro de Pedra Serena, perto do galpão
+  if (/jardim do fritz/i.test(nome)) return [0.552, 0.652];
   return POSICOES_INICIAIS[i % POSICOES_INICIAIS.length];
 }

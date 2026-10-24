@@ -33,6 +33,7 @@ import { montarTiradentes, TIRADENTES } from './seedTiradentes';
 import { montarSantaAmalia, SANTA_AMALIA } from './seedSantaAmalia';
 import { MANSAO, montarMansao } from './seedMansaoAlbuquerque';
 import { montarPedraSerena, PEDRA_SERENA } from './seedPedraSerena';
+import { JARDIM_FRITZ, montarJardimFritz } from './seedJardimFritz';
 import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgentes } from './seedSede';
 import { aplicarFichasCris } from './seedFichasCris';
 import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados, avisosDe1910, tepesECora1910, contaTesteNoMiguel, camarillaPv1910, refazerEquipamento1910, avisosSemCris1910 } from './marcadosCris';
@@ -676,7 +677,7 @@ export function limparSalasDeExemplo(db: Database): boolean {
   if (db.limpezaExemplos) return false;
   // só quando a Sede e a Fazenda existem (um banco novo ainda vai montá-las)
   if (!db.rooms.some((r) => r.name.startsWith(SEDE)) || !db.rooms.some((r) => r.name.startsWith(FAZENDA))) return false;
-  const ids = new Set(db.rooms.filter((r) => !r.name.startsWith(SEDE) && !r.name.startsWith(FAZENDA) && !r.name.startsWith(ORFANATO) && !r.name.startsWith(SANTO_BERCO) && !r.name.startsWith(IGARAPE) && !r.name.startsWith(TIRADENTES) && !r.name.startsWith(SANTA_AMALIA) && !r.name.startsWith(MANSAO) && !r.name.startsWith(PEDRA_SERENA)).map((r) => r.id));
+  const ids = new Set(db.rooms.filter((r) => !r.name.startsWith(SEDE) && !r.name.startsWith(FAZENDA) && !r.name.startsWith(ORFANATO) && !r.name.startsWith(SANTO_BERCO) && !r.name.startsWith(IGARAPE) && !r.name.startsWith(TIRADENTES) && !r.name.startsWith(SANTA_AMALIA) && !r.name.startsWith(MANSAO) && !r.name.startsWith(PEDRA_SERENA) && !r.name.startsWith(JARDIM_FRITZ)).map((r) => r.id));
   if (ids.size) {
     db.rooms = db.rooms.filter((r) => !ids.has(r.id));
     if (db.campaigns) for (const k of Object.keys(db.campaigns)) if (ids.has(Number(k))) delete db.campaigns[k];
@@ -812,6 +813,7 @@ export function upgradeDb(db: Database): boolean {
     const santaAmalia = montarSantaAmalia(db);
     const mansao = montarMansao(db);
     const pedraSerena = montarPedraSerena(db);
+    const jardimFritz = montarJardimFritz(db);
     const cores = coresDosAgentes(db);
     const temas = temasDosAgentes(db);
     const van = vanNoLugar(db);
@@ -819,7 +821,7 @@ export function upgradeDb(db: Database): boolean {
     const bestiario = bestiarioInicial(db);
     const npcs = npcsIniciais(db);
     const mesas = mesasMaisAltas(db);
-    return trancas || sede || fazenda || orfanato || santoBerco || igarape || tiradentes || santaAmalia || mansao || pedraSerena || cores || temas || van || paredes || bestiario || npcs || mesas;
+    return trancas || sede || fazenda || orfanato || santoBerco || igarape || tiradentes || santaAmalia || mansao || pedraSerena || jardimFritz || cores || temas || van || paredes || bestiario || npcs || mesas;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';
@@ -904,6 +906,8 @@ export function upgradeDb(db: Database): boolean {
   montarMansao(db);
   // Pedra Serena, o Galpão do Fritz (23/10)
   montarPedraSerena(db);
+  // o Jardim do Fritz, em Pedra Serena (24/10)
+  montarJardimFritz(db);
   coresDosAgentes(db);
   temasDosAgentes(db);
   paredesLivres(db);

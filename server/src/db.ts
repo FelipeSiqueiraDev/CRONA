@@ -161,6 +161,8 @@ export interface Database {
   santaAmaliaRev?: number;
   /** a montagem de Pedra Serena (o Galpão do Fritz) já aplicada no banco (23/10) */
   pedraSerenaRev?: number;
+  /** a montagem do Jardim do Fritz já aplicada no banco (24/10) */
+  jardimFritzRev?: number;
   mansaoRev?: number;
   /** o nome da campanha (a história inteira, em todos os lugares): "Segredos do Outro Lado" */
   nomeCampanha?: string;

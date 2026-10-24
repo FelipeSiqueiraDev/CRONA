@@ -131,7 +131,10 @@ interface Porta {
   pista?: Hint;
 }
 
-class Sala {
+export class Sala {
+  /** outro lugar que usa a mesma planta (o Jardim do Fritz): o prefixo do nome e sem a troca pelo móvel moderno */
+  prefixo?: string;
+  semTroca = false;
   floor: FloorSeed[] = [];
   wall: WallSeed[] = [];
   portas: Porta[] = [];
@@ -153,7 +156,7 @@ class Sala {
 
   /** um móvel nas coordenadas locais (giro 4 por padrão: a frente para +y) */
   add(id: string, x: number, y: number, rot = 4, pista?: Hint, estado?: number) {
-    const troca = SEM_TROCA.has(this.key) ? undefined : MODERNO[id];
+    const troca = this.semTroca || SEM_TROCA.has(this.key) ? undefined : MODERNO[id];
     if (troca === null) return this;
     this.floor.push([troca ?? id, x, y, rot, pista, estado]);
     return this;
@@ -187,7 +190,7 @@ class Sala {
   }
   /** item de parede: `pos` é o centro ao longo da parede (casas), `cm` a altura do centro (m) */
   par(lado: "N" | "O", id: string, pos: number, cm = 1.55, pista?: Hint, estado?: number) {
-    if (!SEM_TROCA.has(this.key) && MODERNO_PAREDE[id.split("~")[0]] === null) return this;
+    if (!this.semTroca && !SEM_TROCA.has(this.key) && MODERNO_PAREDE[id.split("~")[0]] === null) return this;
     const d = getWallFurni(id.split("~")[0]);
     if (!d) throw new Error(`item de parede desconhecido: ${id}`);
     const z = Math.round((cm * Z_PER_M - d.h / 64) * 100) / 100;
@@ -220,7 +223,7 @@ function principal(s: Sala): Porta | undefined {
 }
 
 /** Põe a sala no quadro da cena: o vão da porta principal, o deslocamento de tudo e as passagens. */
-function paraCena(s: Sala): CenaSpec {
+export function paraCena(s: Sala): CenaSpec {
   const pr = principal(s);
   let layout: { heightmap: string; door: Door };
   let ox = 0;
@@ -314,7 +317,7 @@ function paraCena(s: Sala): CenaSpec {
   const clima = CLIMA[s.style] ?? CLIMA.mansao_nobre;
   return {
     key: s.key,
-    name: MANSAO + s.nome,
+    name: (s.prefixo ?? MANSAO) + s.nome,
     description: s.description,
     layout,
     andar: s.andar,

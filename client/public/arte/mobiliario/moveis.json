@@ -48690,5 +48690,485 @@
       0.749,
       0.764
     ]
+  },
+  "buxo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "buxo/giro-4.png",
+        "ax": 39.0,
+        "ay": 59.0
+      },
+      "2": {
+        "arquivo": "buxo/giro-2.png",
+        "ax": 39.0,
+        "ay": 59.0
+      },
+      "0": {
+        "arquivo": "buxo/giro-0.png",
+        "ax": 39.0,
+        "ay": 59.0
+      },
+      "6": {
+        "arquivo": "buxo/giro-6.png",
+        "ax": 39.0,
+        "ay": 59.0
+      }
+    },
+    "real": [
+      0.67,
+      0.67,
+      0.55
+    ],
+    "tampo": [
+      0.058,
+      0.691,
+      0.058,
+      0.691,
+      0.55
+    ]
+  },
+  "composteira": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "composteira/giro-4.png",
+        "ax": 100.0,
+        "ay": 110.0
+      },
+      "2": {
+        "arquivo": "composteira/giro-2.png",
+        "ax": 36.0,
+        "ay": 96.0
+      },
+      "0": {
+        "arquivo": "composteira/giro-0.png",
+        "ax": 100.0,
+        "ay": 96.0
+      },
+      "6": {
+        "arquivo": "composteira/giro-6.png",
+        "ax": 36.0,
+        "ay": 110.0
+      }
+    },
+    "real": [
+      2.13,
+      0.59,
+      0.95
+    ],
+    "tampo": [
+      0.091,
+      1.451,
+      0.103,
+      0.654,
+      0.95
+    ]
+  },
+  "canteiro_elevado": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "canteiro_elevado/giro-4.png",
+        "ax": 130.0,
+        "ay": 104.0
+      },
+      "2": {
+        "arquivo": "canteiro_elevado/giro-2.png",
+        "ax": 35.0,
+        "ay": 103.0
+      },
+      "0": {
+        "arquivo": "canteiro_elevado/giro-0.png",
+        "ax": 130.0,
+        "ay": 106.0
+      },
+      "6": {
+        "arquivo": "canteiro_elevado/giro-6.png",
+        "ax": 35.0,
+        "ay": 104.0
+      }
+    },
+    "real": [
+      2.84,
+      0.55,
+      0.697
+    ],
+    "tampo": [
+      0.142,
+      2.902,
+      0.125,
+      0.641,
+      0.484
+    ]
+  },
+  "gazebo_jardim": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "gazebo_jardim/giro-4.png",
+        "ax": 100.0,
+        "ay": 254.0
+      },
+      "2": {
+        "arquivo": "gazebo_jardim/giro-2.png",
+        "ax": 100.0,
+        "ay": 254.0
+      },
+      "0": {
+        "arquivo": "gazebo_jardim/giro-0.png",
+        "ax": 100.0,
+        "ay": 254.0
+      },
+      "6": {
+        "arquivo": "gazebo_jardim/giro-6.png",
+        "ax": 100.0,
+        "ay": 254.0
+      }
+    },
+    "real": [
+      3.24,
+      3.24,
+      3.62
+    ],
+    "tampo": [
+      0.346,
+      2.736,
+      0.346,
+      2.736,
+      0.22
+    ]
+  },
+  "pergolado": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "pergolado/giro-4.png",
+        "ax": 245.0,
+        "ay": 354.0
+      },
+      "2": {
+        "arquivo": "pergolado/giro-2.png",
+        "ax": 149.0,
+        "ay": 353.0
+      },
+      "0": {
+        "arquivo": "pergolado/giro-0.png",
+        "ax": 242.0,
+        "ay": 353.0
+      },
+      "6": {
+        "arquivo": "pergolado/giro-6.png",
+        "ax": 146.0,
+        "ay": 354.0
+      }
+    },
+    "real": [
+      5.829,
+      3.65,
+      3.377
+    ],
+    "tampo": [
+      5.769,
+      5.835,
+      0.18,
+      0.286,
+      1.333
+    ]
+  },
+  "casarao_fritz": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "casarao_fritz/giro-4.png",
+        "ax": 774.0,
+        "ay": 871.0
+      },
+      "2": {
+        "arquivo": "casarao_fritz/giro-2.png",
+        "ax": 399.0,
+        "ay": 871.0
+      },
+      "0": {
+        "arquivo": "casarao_fritz/giro-0.png",
+        "ax": 783.0,
+        "ay": 871.0
+      },
+      "6": {
+        "arquivo": "casarao_fritz/giro-6.png",
+        "ax": 390.0,
+        "ay": 871.0
+      }
+    },
+    "real": [
+      18.421,
+      9.821,
+      9.47
+    ],
+    "tampo": [
+      4.737,
+      12.413,
+      6.752,
+      8.698,
+      0.6
+    ]
+  },
+  "estufa_principal": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "estufa_principal/giro-4.png",
+        "ax": 302.0,
+        "ay": 581.0
+      },
+      "2": {
+        "arquivo": "estufa_principal/giro-2.png",
+        "ax": 371.0,
+        "ay": 581.0
+      },
+      "0": {
+        "arquivo": "estufa_principal/giro-0.png",
+        "ax": 306.0,
+        "ay": 579.0
+      },
+      "6": {
+        "arquivo": "estufa_principal/giro-6.png",
+        "ax": 367.0,
+        "ay": 579.0
+      }
+    },
+    "real": [
+      7.1,
+      8.86,
+      6.45
+    ],
+    "tampo": [
+      0.635,
+      7.28,
+      0.67,
+      8.923,
+      0.625
+    ]
+  },
+  "estufa_auxiliar": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "estufa_auxiliar/giro-4.png",
+        "ax": 206.0,
+        "ay": 425.0
+      },
+      "2": {
+        "arquivo": "estufa_auxiliar/giro-2.png",
+        "ax": 307.0,
+        "ay": 425.0
+      },
+      "0": {
+        "arquivo": "estufa_auxiliar/giro-0.png",
+        "ax": 210.0,
+        "ay": 423.0
+      },
+      "6": {
+        "arquivo": "estufa_auxiliar/giro-6.png",
+        "ax": 303.0,
+        "ay": 423.0
+      }
+    },
+    "real": [
+      4.973,
+      7.04,
+      4.06
+    ],
+    "tampo": [
+      0.509,
+      5.027,
+      0.565,
+      7.125,
+      0.55
+    ]
+  },
+  "laboratorio_fritz": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "laboratorio_fritz/giro-4.png",
+        "ax": 317.0,
+        "ay": 486.0
+      },
+      "2": {
+        "arquivo": "laboratorio_fritz/giro-2.png",
+        "ax": 298.0,
+        "ay": 535.0
+      },
+      "0": {
+        "arquivo": "laboratorio_fritz/giro-0.png",
+        "ax": 330.0,
+        "ay": 479.0
+      },
+      "6": {
+        "arquivo": "laboratorio_fritz/giro-6.png",
+        "ax": 285.0,
+        "ay": 479.0
+      }
+    },
+    "real": [
+      7.804,
+      6.802,
+      5.72
+    ],
+    "tampo": [
+      2.459,
+      4.709,
+      6.198,
+      6.643,
+      0.3
+    ]
+  },
+  "alojamento_fritz": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "alojamento_fritz/giro-4.png",
+        "ax": 394.0,
+        "ay": 594.0
+      },
+      "2": {
+        "arquivo": "alojamento_fritz/giro-2.png",
+        "ax": 242.0,
+        "ay": 594.0
+      },
+      "0": {
+        "arquivo": "alojamento_fritz/giro-0.png",
+        "ax": 402.0,
+        "ay": 590.0
+      },
+      "6": {
+        "arquivo": "alojamento_fritz/giro-6.png",
+        "ax": 234.0,
+        "ay": 590.0
+      }
+    },
+    "real": [
+      9.509,
+      5.559,
+      7.09
+    ],
+    "tampo": [
+      0.957,
+      8.809,
+      1.254,
+      4.86,
+      0.93
+    ]
+  },
+  "oficina_fritz": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "oficina_fritz/giro-4.png",
+        "ax": 385.0,
+        "ay": 462.0
+      },
+      "2": {
+        "arquivo": "oficina_fritz/giro-2.png",
+        "ax": 202.0,
+        "ay": 462.0
+      },
+      "0": {
+        "arquivo": "oficina_fritz/giro-0.png",
+        "ax": 394.0,
+        "ay": 457.0
+      },
+      "6": {
+        "arquivo": "oficina_fritz/giro-6.png",
+        "ax": 193.0,
+        "ay": 457.0
+      }
+    },
+    "real": [
+      9.31,
+      4.61,
+      4.69
+    ],
+    "tampo": [
+      0.466,
+      8.723,
+      0.536,
+      4.399,
+      0.42
+    ]
+  },
+  "contencao_fritz": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "contencao_fritz/giro-4.png",
+        "ax": 360.0,
+        "ay": 539.0
+      },
+      "2": {
+        "arquivo": "contencao_fritz/giro-2.png",
+        "ax": 272.0,
+        "ay": 558.0
+      },
+      "0": {
+        "arquivo": "contencao_fritz/giro-0.png",
+        "ax": 368.0,
+        "ay": 535.0
+      },
+      "6": {
+        "arquivo": "contencao_fritz/giro-6.png",
+        "ax": 264.0,
+        "ay": 535.0
+      }
+    },
+    "real": [
+      8.48,
+      6.36,
+      5.3
+    ],
+    "tampo": [
+      1.178,
+      7.816,
+      6.255,
+      6.278,
+      0.5
+    ]
   }
 }
