@@ -680,8 +680,8 @@ def _raizes_lodo(x0, x1, y0, y1, z, seed=0):
     CZ.c.elipsoide(((x0 + x1) / 2, (y0 + y1) / 2, z), ((x1 - x0) * 0.42, (y1 - y0) * 0.38, 0.03), lodo, obj(contorno=False), corte_z=z)
     for k in range(9):
         a = (rng.random() * (x1 - x0 - 0.1) + x0 + 0.05, rng.random() * (y1 - y0 - 0.1) + y0 + 0.05, z)
-        m = (a[0] + rng.normal() * 0.12, a[1] + rng.normal() * 0.06, z + 0.15 + rng.random() * 0.2)
-        b = (np.clip(m[0] + rng.normal() * 0.15, x0 + 0.04, x1 - 0.04), np.clip(m[1] + rng.normal() * 0.08, y0 + 0.04, y1 - 0.04), z + 0.05 + rng.random() * 0.3)
+        m = (np.clip(a[0] + rng.normal() * 0.12, x0 + 0.04, x1 - 0.04), np.clip(a[1] + rng.normal() * 0.06, y0 + 0.04, y1 - 0.04), z + 0.12 + rng.random() * 0.18)
+        b = (np.clip(m[0] + rng.normal() * 0.15, x0 + 0.04, x1 - 0.04), np.clip(m[1] + rng.normal() * 0.08, y0 + 0.04, y1 - 0.04), z + 0.05 + rng.random() * 0.25)
         cor = ['#3a2a1c', '#4a3624', '#2a1e14'][k % 3]
         FF._viga(obj(contorno=False), a, m, 0.035, liso(cor))
         FF._viga(obj(contorno=False), m, b, 0.025, liso(cor))
@@ -716,38 +716,43 @@ def _tanque_dama():
     R = 0.6
     _poligono_rodado(cx, cy, [(0.0, R + 0.08), (0.3, R + 0.08)], vol(cx, cy, '#4a5056', brilho=0.3), obj(), lados=16, tampa_mat=liso('#3a1a1a'))
     # o caule central e a flor dentada
-    FF._viga(obj(contorno=False), (cx, cy, 0.3), (cx, cy + 0.05, 1.3), 0.12, liso('#7a3a2a'))
+    FF._viga(obj(contorno=False), (cx, cy, 0.3), (cx, cy, 1.3), 0.12, liso('#7a3a2a'))
     o = obj(contorno=False)
     CZ.luzes.add(o)
     for k in range(5):
         a = 2 * math.pi * k / 5 + 0.3
-        px, py = cx + math.cos(a) * 0.2, cy + 0.05 + math.sin(a) * 0.2
-        CZ.c.elipsoide((px, py, 1.38), (0.17, 0.1, 0.06), lambda Pc, N, P: FF._cru_eli(np.where((P[:, 2] > 1.4)[:, None], hx('#a8202a'), hx('#e0c8a0')), N), o)
-    CZ.c.elipsoide((cx, cy + 0.05, 1.4), (0.08, 0.08, 0.04), lambda Pc, N, P: FF._cru_eli(np.tile(hx('#1a0608'), (len(P), 1)), N), obj(contorno=False))
+        px, py = cx + math.cos(a) * 0.15, cy + math.sin(a) * 0.15
+        CZ.c.elipsoide((px, py, 1.38), (0.13, 0.08, 0.05), lambda Pc, N, P: FF._cru_eli(np.where((P[:, 2] > 1.4)[:, None], hx('#a8202a'), hx('#e0c8a0')), N), o)
+    CZ.c.elipsoide((cx, cy, 1.4), (0.07, 0.07, 0.04), lambda Pc, N, P: FF._cru_eli(np.tile(hx('#1a0608'), (len(P), 1)), N), obj(contorno=False))
     # os tentáculos com as sete flores (rosa, vermelha, amarela, roxa, azul, verde, laranja)
     cores = ['#e07aa0', '#d42a2a', '#f0c030', '#8a4ac8', '#4a7ad8', '#5a9a40', '#f08a30']
     for k, cor in enumerate(cores):
         a = 2 * math.pi * k / 7
         p0 = (cx, cy, 0.6 + 0.08 * (k % 3))
-        p1 = (cx + math.cos(a) * 0.35, cy + math.sin(a) * 0.35, 0.95 + 0.15 * (k % 2))
-        p2 = (cx + math.cos(a + 0.4) * 0.45, cy + math.sin(a + 0.4) * 0.45, 1.25 + 0.2 * ((k + 1) % 3))
+        p1 = (cx + math.cos(a) * 0.24, cy + math.sin(a) * 0.24, 0.95 + 0.15 * (k % 2))
+        p2 = (cx + math.cos(a + 0.4) * 0.34, cy + math.sin(a + 0.4) * 0.34, 1.2 + 0.2 * ((k + 1) % 3))
         FF._viga(obj(contorno=False), p0, p1, 0.05, liso('#6a2e22'))
         FF._viga(obj(contorno=False), p1, p2, 0.04, liso('#7a3626'))
         of = obj(contorno=False)
         CZ.luzes.add(of)
-        CZ.c.elipsoide(p2, (0.07, 0.07, 0.05), lambda Pc, N, P, cor=cor: FF._cru_eli(np.tile(hx(cor), (len(P), 1)), N), of)
-    # o vidro: as barras verticais e os anéis (o cilindro aberto, para ver dentro)
+        CZ.c.elipsoide(p2, (0.06, 0.06, 0.045), lambda Pc, N, P, cor=cor: FF._cru_eli(np.tile(hx(cor), (len(P), 1)), N), of)
+    # o vidro fechado em volta: as oito barras e os anéis, e o reflexo do vidro na frente (a planta fica toda dentro)
     mf = liso('#c8ccd0')
     for k in range(8):
         a = 2 * math.pi * k / 8
         x, y = cx + math.cos(a) * R, cy + math.sin(a) * R
-        if math.sin(a) > 0.3:
-            continue
         FF._viga(obj(), (x, y, 0.3), (x, y, 2.1), 0.03, mf)
     for zz in (0.32, 2.1):
         pts = [(cx + math.cos(2 * math.pi * k / 16) * R, cy + math.sin(2 * math.pi * k / 16) * R) for k in range(17)]
         for (a, b) in zip(pts[:-1], pts[1:]):
             FF._viga(obj(), (a[0], a[1], zz), (b[0], b[1], zz), 0.03, mf)
+    for k, a in enumerate((0.9, 1.15)):
+        x, y = cx + math.cos(a) * (R + 0.01), cy + math.sin(a) * (R + 0.01)
+        FF._viga(obj(contorno=False), (x, y, 0.5 + 0.1 * k), (x, y, 1.9 - 0.2 * k), PH * 0.9, liso('#dce8ec'))
+    for zz in (0.9, 1.5):
+        pts = [(cx + math.cos(2 * math.pi * k / 16) * R, cy + math.sin(2 * math.pi * k / 16) * R) for k in range(17)]
+        for (a, b) in zip(pts[:-1], pts[1:]):
+            FF._viga(obj(contorno=False), (a[0], a[1], zz), (b[0], b[1], zz), 0.012, liso('#a8b4b8'))
     _poligono_rodado(cx, cy, [(2.1, R + 0.06), (2.25, R + 0.06), (2.3, 0.2)], vol(cx, cy, '#4a5056', brilho=0.3), obj(), lados=16, tampa_mat=liso('#3a4046'))
     for dx in (-0.12, 0.12):
         CZ.c.cilindro(cx + dx, cy, 0.04, 2.3, 2.45, liso('#6a7076'), M, obj(), lados=8, tampa=True)

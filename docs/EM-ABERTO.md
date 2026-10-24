@@ -2,6 +2,28 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 24/10 (manhã): os interiores do Jardim, as plantas paranormais e a cidade de Pedra Serena (no ar)
+
+- **Os interiores do Jardim do Fritz** (`4ba7f49b`, `JARDIM_FRITZ_REV` 3). Cada prédio tem a sua entrada no jardim, na frente da porta:
+  - a estufa principal e as três pequenas;
+  - o laboratório;
+  - o alojamento (copa, sala comum, quartos e banheiro);
+  - a oficina;
+  - o prédio de concreto (antecâmara e sala de contenção).
+- **As plantas paranormais do livro de regras.** O Felipe: "a maioria controlada e estudada". Só a aparência, nada do texto do livro:
+  - a orquídea de sangue (LR p. 191, as sementes da dama de sangue), em vaso e em canteiro, na estufa principal, na Estufa 2 e no laboratório;
+  - o bravo purpulis (LR p. 190, a planta roxa que cresce nas pedras), em pedra e em canteiro, na Estufa 1;
+  - a vegetação tomada pela Morte (LR p. 214, as raízes com Lodo de onde sai o enraizado), em vitrines de vidro, na Estufa 3 e no laboratório;
+  - o tanque com o espécime da flor da dama de sangue, na sala de contenção.
+  - O Felipe pediu que a planta não saia do vidro: no tanque e nas vitrines, tudo fica dentro.
+- **A cidade de Pedra Serena** (`PEDRA_SERENA_REV` 2, `pecas_px/pedra_serena.py`). Agora é a entrada do lugar:
+  - a avenida e a praça com o coreto e a igreja;
+  - as casas, o boteco, a pousada e a venda, ainda fechados;
+  - na saída leste, o galpão de bloco e chapa, com duas entradas para o galpão por dentro (o portão de dentro agora volta à cidade);
+  - depois dele, a estrada de terra para o Jardim.
+  - A lanchonete ficou de fora: a arte dela tem o letreiro do Igarapé.
+- **Falta:** o interior dos prédios da cidade, se o Felipe quiser.
+
 ## Feito em 24/10 (madrugada): Pedra Serena, o Galpão do Fritz e o Jardim do Fritz (no ar)
 
 - **Pedra Serena** (`17e9463b`, `server/src/seedPedraSerena.ts`, `PEDRA_SERENA_REV` 1): a campanha da cidade, por enquanto só o **Galpão do Fritz**. O Felipe: vazio, sem luz, só a estante (vazia) e a mesa (sem papel) com a cadeira. O galpão tem 27 x 13 casas, três pilares e o escritório no canto. Peças novas: o estilo `galpao` (bloco cru, chapa ondulada, concreto com juntas; registrado também no `texturas.json`), o `pillar`, a `estante_vazia` e a `mesa_vazia` (a `desk_wood(vazia=True)`). A cidade de fora ainda não tem cena: o portão do galpão fica sem passagem.
