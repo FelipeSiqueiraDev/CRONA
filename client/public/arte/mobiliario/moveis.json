@@ -47099,5 +47099,135 @@
         "ay": 62.4
       }
     }
+  },
+  "sofa_leather": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "sofa_leather/giro-4.png",
+        "ax": 72.0,
+        "ay": 90.0
+      },
+      "2": {
+        "arquivo": "sofa_leather/giro-2.png",
+        "ax": 39.0,
+        "ay": 90.0
+      },
+      "0": {
+        "arquivo": "sofa_leather/giro-0.png",
+        "ax": 71.0,
+        "ay": 81.0
+      },
+      "6": {
+        "arquivo": "sofa_leather/giro-6.png",
+        "ax": 40.0,
+        "ay": 81.0
+      }
+    },
+    "real": [
+      1.46,
+      0.67,
+      0.92
+    ],
+    "tampo": [
+      0.264,
+      1.225,
+      0.307,
+      0.694,
+      0.45
+    ]
+  },
+  "shelf_metal": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "shelf_metal/giro-4.png",
+        "ax": 66.0,
+        "ay": 165.0
+      },
+      "2": {
+        "arquivo": "shelf_metal/giro-2.png",
+        "ax": 38.0,
+        "ay": 161.0
+      },
+      "0": {
+        "arquivo": "shelf_metal/giro-0.png",
+        "ax": 70.0,
+        "ay": 159.0
+      },
+      "6": {
+        "arquivo": "shelf_metal/giro-6.png",
+        "ax": 34.0,
+        "ay": 164.0
+      }
+    },
+    "real": [
+      1.42,
+      0.54,
+      2.35
+    ],
+    "tampo": [
+      0.128,
+      1.457,
+      0.069,
+      0.59,
+      1.07
+    ]
+  },
+  "rug_purple": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "rug_purple/giro-4.png",
+        "ax": 90.0,
+        "ay": 110.0
+      },
+      "2": {
+        "arquivo": "rug_purple/giro-2.png",
+        "ax": 122.0,
+        "ay": 110.0
+      },
+      "0": {
+        "arquivo": "rug_purple/giro-0.png",
+        "ax": 90.0,
+        "ay": 110.0
+      },
+      "6": {
+        "arquivo": "rug_purple/giro-6.png",
+        "ax": 122.0,
+        "ay": 110.0
+      }
+    },
+    "real": [
+      2.13,
+      2.84,
+      0.017
+    ]
+  },
+  "wall_shelf": {
+    "escala": 1,
+    "pixel": true,
+    "codigo": true,
+    "parede": {
+      "r": {
+        "arquivo": "wall_shelf/parede-r.png",
+        "ax": 24.0,
+        "ay": 12.4
+      },
+      "l": {
+        "arquivo": "wall_shelf/parede-l.png",
+        "ax": 17.0,
+        "ay": 12.4
+      }
+    }
   }
 }
