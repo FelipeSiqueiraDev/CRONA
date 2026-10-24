@@ -1967,7 +1967,8 @@ export class Shell {
         if (quem && !d.para.includes(quem.id) && !d.equipe)
           bts.append(h('button', { class: 'dbtn', title: `${quem.nome} achou: vai para a aba Docs do celular dele`, onclick: () => salvar({ ...d, para: [...d.para, quem.id] }) }, 'Achou'));
         if (!d.equipe)
-          bts.append(h('button', { class: 'dbtn', title: 'Todos os agentes da campanha recebem', onclick: () => salvar({ ...d, equipe: true, ...(d.campanha ? {} : this.campaign?.key ? { campanha: this.campaign.key } : {}) }) }, 'Equipe'));
+          // sem campanha: a ficha dos agentes é de outra campanha que a do lugar onde o documento estava (a Mansão, Santa Amália)
+          bts.append(h('button', { class: 'dbtn', title: 'Todos os agentes recebem', onclick: () => salvar({ ...d, equipe: true }) }, 'Equipe'));
       } else bts.append(h('button', { class: 'dbtn', title: 'Tirar o documento deste móvel (ele continua em Documentos)', onclick: () => salvar({ ...d, guardado: undefined }) }, 'Tirar daqui'));
       pane.append(
         h(
