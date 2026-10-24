@@ -22,7 +22,7 @@ import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda"
  * Mudou a montagem? Suba MANSAO_REV: a mansão é refeita no lugar, mantendo as cenas, as peças e o registro.
  */
 export const MANSAO = "Mansão Albuquerque · ";
-export const MANSAO_REV = 12;
+export const MANSAO_REV = 13;
 
 const ANDAR = "Mansão Albuquerque";
 const ANDAR2 = "Mansão Albuquerque 2º";
@@ -518,10 +518,11 @@ for (let i = 0; i < 6; i++) {
 }
 // o escritório do pai, à direita do salão
 {
-  const s = nova("escritorio", "Escritório de Alexander", 10, 11, "mansao_nobre", 31, 13, ANDAR, "O escritório de Alexander Albuquerque, CEO do Frigorífico Albuquerque: a mesa enorme de mármore preto sobre o latão, virada para a cadeira, as duas estantes entalhadas à mão no século XVII, o cofre no canto, o bar de vidro e latão, o sofá de bouclé e o mapa do Brasil com as unidades. Na parede, a marinha de mestre sob a luminária de latão e os prêmios da empresa.");
+  const s = nova("escritorio", "Escritório de Alexander", 10, 11, "mansao_nobre", 31, 13, ANDAR, "O escritório de Alexander Albuquerque, CEO do Frigorífico Albuquerque: a mesa enorme de mármore preto sobre o latão, com o trono atrás e as duas cadeiras vermelhas na frente, as duas estantes entalhadas à mão no século XVII, o cofre no canto, o bar de vidro e latão, o sofá de bouclé e o mapa do Brasil com as unidades. Na parede, a marinha de mestre sob a luminária de latão e os prêmios da empresa.");
   s.porta("O", 17, "salao");
-  s.add("rug_aubusson", 3, 3, 4).add("mesa_ceo", 3, 4, 4).add("cadeira_ceo", 4, 6, 0);
-  s.add("cadeira_jantar_luxo", 3, 3, 4).add("cadeira_jantar_luxo", 5, 3, 4);
+  // o trono do Alexander atrás da mesa, de costas para o fundo; as duas cadeiras vermelhas na frente, para quem vem falar com ele (24/10)
+  s.add("rug_aubusson", 3, 3, 4).add("mesa_ceo", 3, 4, 0).add("trono_alexander", 4, 3, 4);
+  s.add("cadeira_jantar_luxo", 3, 6, 0).add("cadeira_jantar_luxo", 5, 6, 0);
   s.enc("O", "cofre", 0, segredo("cofre-escritorio", "O cofre", "Um cofre de aço do tamanho de um armário pequeno. A senha e o que há dentro ficam com o mestre."));
   s.enc("O", "estante_biblioteca", 1).enc("N", "estante_biblioteca", 2).enc("N", "bar_escritorio", 6);
   s.add("globo", 9, 1, 6).add("touro_bronze", 1, 9, 4).enc("L", "sofa_verissimo", 6).add("armchair_verissimo", 6, 9, 0);
@@ -529,7 +530,7 @@ for (let i = 0; i < 6; i++) {
   s.par("N", "placa_frigorifico", 9.0, 2.0).par("O", "mapa_frigorifico", 6.0, 1.6).par("O", "trofeus_empresa", 8.8, 1.6);
   s.lustres([2, 6], [7, 4]).item(5, 8, "Abridor de Cartas de Prata", 0.5);
   // os objetinhos (23/10): o uísque no bar, os papéis, a luminária e as fotos na mesa, os livros de couro
-  s.em("decanter_tacas", 6, 0, 4).em("livros_couro", 7, 0, 4).em("papers", 3, 4, 4).em("porta_retratos", 4, 4, 4).em("desk_lamp", 6, 4, 4).add("vaso_grande", 9, 10, 0);
+  s.em("decanter_tacas", 6, 0, 4).em("livros_couro", 7, 0, 4).em("papers", 3, 4, 0).em("porta_retratos", 4, 4, 0).em("desk_lamp", 6, 4, 0).add("vaso_grande", 9, 10, 0);
 }
 
 // ---------------------------------------------------------------- 2º ANDAR (área íntima e lazer)

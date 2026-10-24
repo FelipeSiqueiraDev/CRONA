@@ -114,6 +114,52 @@ def _poltrona(R):
     peg(x0, x1, y0, y1)
 
 
+def trono_alexander():
+    """
+    O trono do Alexander (1 x 1, 2,0 m; 24/10, o Felipe: "faz um trono bonitasso, bem imponente"): o estrado e o corpo de
+    ébano com o friso de ouro, o assento fundo de veludo vinho, o encosto altíssimo em arco com a moldura dourada e o
+    capitonê, os três remates de ouro no alto e os braços largos com os pomos de ouro. Atrás da mesa do escritório.
+    """
+    R = _VINHO
+    madeira = {'*': liso('#1c1416')}
+    x0, x1 = 0.02, 0.73
+    y0, y1 = 0.04, 0.72
+    zs = 0.52
+    zt = 1.95
+    # o estrado baixo de ébano, com o friso de ouro na frente
+    cx((x0, x1, y0, y1, 0.0, 0.08), madeira)
+    cx((x0 + 0.01, x1 - 0.01, y1 - 0.02, y1 - 0.005, 0.025, 0.055), ouro(), contorno=False)
+    # o corpo do assento e a faixa de ouro na frente
+    cx((x0 + 0.03, x1 - 0.03, y0 + 0.03, y1 - 0.03, 0.08, 0.33), madeira)
+    cx((x0 + 0.05, x1 - 0.05, y1 - 0.04, y1 - 0.025, 0.12, 0.3), ouro(), ch=0.01)
+    # a almofada do assento, funda
+    b = (x0 + 0.1, x1 - 0.1, y0 + 0.2, y1 - 0.05, 0.31, zs)
+    ES.malha(b, (0.06, 0.06, 0.04, 0.07), ES.estofado(R, b, 2.2, 7.8, cupula=1.2, brilho=True, grad=1.0), seg=2)
+    # o encosto altíssimo: a moldura de ébano em arco, a borda de ouro e o painel capitonê
+    perfil = MC.arco_perfil(x0 + 0.02, x1 - 0.02, 0.3, zt - 0.38, zt)
+    MC.extruda_xz(perfil, y0, y0 + 0.1, {'*': liso('#1c1416'), 'frente': liso('#2c2226')}, novo())
+    perfil_o = MC.arco_perfil(x0 + 0.06, x1 - 0.06, 0.34, zt - 0.4, zt - 0.04)
+    MC.extruda_xz(perfil_o, y0 + 0.1, y0 + 0.12, {'*': ouro(), 'frente': ouro()}, novo())
+    perfil2 = MC.arco_perfil(x0 + 0.1, x1 - 0.1, 0.36, zt - 0.44, zt - 0.1)
+    capi = ES.estofado(R, (x0 + 0.1, x1 - 0.1, y0 + 0.12, y0 + 0.19, 0.36, zt - 0.1), 2.4, 7.6, cupula=0.4, capi=(0.12, 0.12), grad=0.5)
+    MC.extruda_xz(perfil2, y0 + 0.12, y0 + 0.19, {'*': capi, 'frente': capi}, novo())
+    # os três remates de ouro no alto: um em cada ponta do arco e o maior no meio
+    xm = (x0 + x1) / 2
+    for (xx, zz, r) in ((x0 + 0.07, zt - 0.36, 0.045), (x1 - 0.07, zt - 0.36, 0.045), (xm, zt - 0.01, 0.06)):
+        o = novo()
+        _poligono_rodado(xx, y0 + 0.05, [(zz, r * 0.5), (zz + r * 0.8, r), (zz + r * 1.6, r * 0.5), (zz + r * 2.6, 0.006)], vol(xx, y0 + 0.05, OURO, brilho=0.8), o, lados=10)
+    # os braços largos de ébano, com o estofado em cima e o pomo de ouro na ponta
+    for (a0, a1) in ((x0 + 0.02, x0 + 0.12), (x1 - 0.12, x1 - 0.02)):
+        cx((a0, a1, y0 + 0.1, y1 - 0.04, 0.3, zs + 0.24), madeira)
+        cx((a0, a1, y1 - 0.05, y1 - 0.035, 0.32, zs + 0.2), ouro(), ch=0.01)
+        b = (a0 - 0.004, a1 + 0.004, y0 + 0.16, y1 - 0.14, zs + 0.24, zs + 0.3)
+        ES.malha(b, (0.02, 0.02, 0.02, 0.02), ES.estofado(R, b, 2.0, 6.0, cupula=0.8, brilho=True), seg=1)
+        am = (a0 + a1) / 2
+        o = novo()
+        _poligono_rodado(am, y1 - 0.08, [(zs + 0.22, 0.03), (zs + 0.27, 0.055), (zs + 0.33, 0.045), (zs + 0.36, 0.01)], vol(am, y1 - 0.08, OURO, brilho=0.9), o, lados=10)
+    peg(x0, x1, y0, y1)
+
+
 def poltrona_luxo():
     _poltrona(_VINHO)
 
@@ -676,6 +722,7 @@ ITENS = {
     'sofa_luxo': (3, 1, (0.0, 0.0), sofa_luxo, {}),
     'sofa_luxo_vinho': (3, 1, (0.0, 0.0), sofa_luxo_vinho, {}),
     'poltrona_luxo': (1, 1, (0.0, 0.0), poltrona_luxo, {}),
+    'trono_alexander': (1, 1, (0.0, 0.0), trono_alexander, {}),
     'poltrona_luxo_verde': (1, 1, (0.0, 0.0), poltrona_luxo_verde, {}),
     'mesa_centro_luxo': (2, 1, (0.0, 0.0), mesa_centro_luxo, {}),
     'vitrine_ovo': (1, 1, (0.0, 0.0), vitrine_ovo, {}),

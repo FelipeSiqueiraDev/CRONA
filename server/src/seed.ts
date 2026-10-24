@@ -39,6 +39,7 @@ import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgen
 import { aplicarFichasCris } from './seedFichasCris';
 import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados, avisosDe1910, tepesECora1910, contaTesteNoMiguel, camarillaPv1910, refazerEquipamento1910, avisosSemCris1910 } from './marcadosCris';
 import { retoquesCasas2110 } from './retoquesCasas';
+import { postosMansao2410 } from './postosMansao';
 import { retoquesIgarape2210 } from './retoquesIgarape';
 import { avisoDeEvolucao2110, evolucaoMarcados2110 } from './evolucaoMarcados';
 import { acougueirosNoBestiario } from './acougueiros';
@@ -830,7 +831,8 @@ export function upgradeDb(db: Database): boolean {
     const bestiario = bestiarioInicial(db);
     const npcs = npcsIniciais(db);
     const mesas = mesasMaisAltas(db);
-    return trancas || sede || fazenda || orfanato || santoBerco || igarape || tiradentes || santaAmalia || mansao || pedraSerena || jardimFritz || cores || temas || van || paredes || bestiario || npcs || mesas;
+    const postos = postosMansao2410(db);
+    return postos || trancas || sede || fazenda || orfanato || santoBerco || igarape || tiradentes || santaAmalia || mansao || pedraSerena || jardimFritz || cores || temas || van || paredes || bestiario || npcs || mesas;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';

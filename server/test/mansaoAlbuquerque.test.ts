@@ -125,7 +125,7 @@ describe("Mansão Albuquerque", () => {
     assert.ok(m.darkness >= 0.6, "o mezanino é escuro");
     const pai = porNome("Escritório de Alexander");
     // 23/10: a mesa e o bar viraram os modernos (a mesa de Nero Marquina e o bar de vidro e latão)
-    for (const id of ["mesa_executiva", "cadeira_ceo", "cofre", "bar_vidro", "touro_bronze"]) assert.ok(pai.items.some((i) => i.defId === id), `escritório sem ${id}`);
+    for (const id of ["mesa_executiva", "trono_alexander", "cofre", "bar_vidro", "touro_bronze"]) assert.ok(pai.items.some((i) => i.defId === id), `escritório sem ${id}`);
   });
 
   test("os retratos da família ficam todos no salão, em volta, do fundador (junto da entrada) aos netos (no fundo)", () => {
@@ -142,17 +142,20 @@ describe("Mansão Albuquerque", () => {
     assert.ok(rs.find((w) => geracao(w) === 1)?.hint, "o fundador guarda a pista dele");
   });
 
-  test("a mesa do pai é virada para a cadeira, e nada fica embaixo dela", () => {
+  test("o trono do pai fica atrás da mesa, de costas para o fundo; as duas cadeiras vermelhas na frente; nada embaixo dela", () => {
     const pai = porNome("Escritório de Alexander");
     const mesa = pai.items.find((i) => i.defId === "mesa_executiva")!;
     const fp = footprint(getFurni("mesa_executiva")!, mesa.rot);
-    const cadeira = pai.items.find((i) => i.defId === "cadeira_ceo")!;
-    // a cadeira fica numa casa colada na mesa, do lado da frente dela (giro 0 aqui: olhando para a mesa)
-    assert.ok(cadeira.x >= mesa.x && cadeira.x < mesa.x + fp.sx, "a cadeira fica na largura da mesa");
-    assert.equal(cadeira.y, mesa.y + fp.sy, "a cadeira fica na frente da mesa");
-    assert.equal(cadeira.rot, 0, "a cadeira olha para a mesa");
+    const cadeira = pai.items.find((i) => i.defId === "trono_alexander")!;
+    // 24/10, o Felipe: "deixa a cadeira do Alexander de costas pra parede de trás" (giro 4: olhando para a mesa, para a frente)
+    assert.ok(cadeira.x >= mesa.x && cadeira.x < mesa.x + fp.sx, "o trono fica na largura da mesa");
+    assert.equal(cadeira.y, mesa.y - 1, "o trono fica atrás da mesa");
+    assert.equal(cadeira.rot, 4, "o trono olha para a mesa");
+    const visitas = pai.items.filter((i) => i.defId === "cadeira_jantar_luxo");
+    assert.equal(visitas.length, 2, "as duas cadeiras vermelhas");
+    for (const v of visitas) assert.ok(v.y === mesa.y + fp.sy && v.rot === 0, "as cadeiras vermelhas na frente, olhando para a mesa");
     for (const it of pai.items) {
-      if (it === mesa || it === cadeira) continue;
+      if (it === mesa || it === cadeira || visitas.includes(it)) continue;
       const d = getFurni(it.defId)!;
       // o que fica em cima da mesa (os papéis, a luminária, as fotos) não conta: é embaixo dela que não pode haver nada
       if (["decor", "papers", "books", "lamp", "desk_lamp", "candles", "mug"].includes(d.kind) || d.height <= 0.25) continue;
