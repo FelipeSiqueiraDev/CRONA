@@ -48,6 +48,7 @@ const FLOORS: Record<FloorStyle, FloorLook> = {
   mansao_caverna: { base: '#47484f', grout: 'rgba(0,0,0,0.3)', kind: 'carpet' },
   mansao_rustico: { base: '#756a57', grout: 'rgba(20,16,12,0.6)', kind: 'plank' },
   mansao_tabuas: { base: '#756a57', grout: 'rgba(20,16,12,0.6)', kind: 'plank' },
+  galpao: { base: '#7e7f7d', grout: 'rgba(30,30,28,0.35)', kind: 'stone' },
   xadrez: { base: '#cfcabd', alt: '#2a2622', grout: 'rgba(0,0,0,0.35)', kind: 'checker' },
   azulejo: { base: '#93aebb', grout: 'rgba(40,60,70,0.5)', kind: 'tile' },
   carpete: { base: '#3b2160', alt: '#7a5ab0', grout: 'rgba(0,0,0,0)', kind: 'carpet' },

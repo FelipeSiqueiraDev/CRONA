@@ -149,6 +149,7 @@ const FURNI_METERS: FurniDef[] = [
   // a mesa em U da Sala de Tecnologia, inteira (06/10): três postos no fundo, o meio e a entrada livres
   { id: 'desk_u', name: 'Mesa em U', category: 'escritorio', kind: 'desk', width: 6, depth: 4, height: 0.78, vazio: [1, 2, 3, 4].flatMap((u) => [1, 2, 3].map((v) => [u, v] as [number, number])), aberto: ['frente'], rotations: ALL, colors: ['#2a2a30', '#b05ae0'], desc: 'Três postos com três monitores cada, teclados acesos de roxo, fones, fitas e uns cristais esquisitos no meio das pastas.' },
   { id: 'desk_wood', name: 'Mesa de Escritório', category: 'escritorio', kind: 'desk', width: 2, depth: 1, height: 0.76, vao: 'fundo', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#4b3120', '#2f1f15', '#b8955a'] },
+  { id: 'mesa_vazia', name: 'Mesa de Escritório Vazia', category: 'escritorio', kind: 'desk', width: 2, depth: 1, height: 0.76, vao: 'fundo', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#4b3120', '#2f1f15', '#b8955a'] },
   { id: 'desk_metal', name: 'Mesa Metálica', category: 'escritorio', kind: 'desk', width: 2, depth: 1, height: 0.76, vao: 'fundo', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#3c4046', '#2a2d31', '#8a9098'] },
   { id: 'chair_office', name: 'Cadeira de Escritório', category: 'escritorio', kind: 'office_chair', width: 1, depth: 1, height: 0.47, aumento: 1.2, sit: true, rotations: ALL, colors: ['#242329', '#131216'] },
   { id: 'monitor', name: 'Monitor', category: 'escritorio', kind: 'monitor', width: 1, depth: 1, height: 0.45, states: 2, rotations: ALL, colors: ['#1b1d21', '#5fd3ff'], desc: 'Clique duplo liga/desliga.' },
@@ -219,6 +220,7 @@ const FURNI_METERS: FurniDef[] = [
 
   // ---------- Armazenamento ----------
   { id: 'shelf_metal', name: 'Estante de Metal', category: 'armazenamento', kind: 'shelf', width: 2, depth: 1, height: 2.2, rotations: ALL, colors: ['#3a3d42', '#23262a'] },
+  { id: 'estante_vazia', name: 'Estante Vazia', category: 'armazenamento', kind: 'shelf', width: 2, depth: 1, height: 2.2, rotations: ALL, colors: ['#5a6068', '#8a8e92'], desc: 'A estante de aço sem nada: só a poeira e as marcas limpas de onde ficavam as caixas.' },
   { id: 'locker', name: 'Armário de Metal', category: 'armazenamento', kind: 'locker', width: 1, depth: 1, height: 1.95, states: 2, rotations: ALL, colors: ['#3d4148', '#2a2d32'], desc: 'Clique duplo abre a porta.' },
   { id: 'pilha_chao', name: 'Itens no Chão', category: 'armazenamento', kind: 'pilha', width: 1, depth: 1, height: 0.12, walkable: true, interno: true, rotations: [0], colors: ['#5c4630', '#2e241a'], desc: 'O que alguém largou aqui. Quem passar pode pegar.' },
   { id: 'crate_wood', name: 'Caixote de Madeira', category: 'armazenamento', kind: 'crate', width: 1, depth: 1, height: 0.8, states: 2, stackable: true, rotations: ALL, colors: ['#6b4a2e', '#4a321f'], desc: 'Clique duplo abre e fecha.' },

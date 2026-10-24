@@ -159,6 +159,8 @@ export interface Database {
   /** versão da montagem de Tiradentes (seedTiradentes) */
   tiradentesRev?: number;
   santaAmaliaRev?: number;
+  /** a montagem de Pedra Serena (o Galpão do Fritz) já aplicada no banco (23/10) */
+  pedraSerenaRev?: number;
   mansaoRev?: number;
   /** o nome da campanha (a história inteira, em todos os lugares): "Segredos do Outro Lado" */
   nomeCampanha?: string;

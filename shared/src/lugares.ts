@@ -58,5 +58,7 @@ export function posicaoInicial(nome: string, i: number): [number, number] {
   if (/santa am[aá]lia/i.test(nome)) return [0.6, 0.6];
   // Mansão Albuquerque (21/10): o terreno murado da família, no interior de São Paulo, não longe da Sede
   if (/mans[aã]o albuquerque/i.test(nome)) return [0.56, 0.68];
+  // Pedra Serena (23/10): a cidade do galpão do Fritz, no interior (o mestre arrasta para onde quiser)
+  if (/pedra serena/i.test(nome)) return [0.54, 0.64];
   return POSICOES_INICIAIS[i % POSICOES_INICIAIS.length];
 }

@@ -93,10 +93,35 @@ def prateleira_parede_pequena(xc=1.5, zc=1.6):
     PC.sombra_parede(n0, 1, 2)
 
 
+def pillar():
+    """
+    O pilar de concreto (1 x 1, 2,75 m; 23/10, o Galpão do Fritz em Pedra Serena): a coluna quadrada de 40 cm, as
+    marcas das tábuas da fôrma, as manchas de umidade embaixo, a sapata e a viga saindo para cima.
+    """
+    xc, yc = 0.375, 0.375
+    r = 0.2
+    h = 2.75
+    base = '#8a8984'
+
+    def forma(L, n, P):
+        out = np.tile(hx(base), (len(P), 1))
+        if abs(n[2]) > 0.5:
+            return np.tile(hx('#a2a19c'), (len(P), 1))
+        # as marcas da fôrma (uma linha a cada 30 cm) e a umidade subindo do chão
+        z = P[:, 2]
+        out = np.where((np.floor(z / 0.3) != np.floor((z + PH) / 0.3))[:, None], hx('#74736e'), out)
+        out = np.where((z < 0.35)[:, None], _tom(out, 0.86), out)
+        return out
+    caixa((xc - r - 0.03, xc + r + 0.03, yc - r - 0.03, yc + r + 0.03, 0.0, 0.08), {'*': liso('#7a7974'), 'cima': liso('#9a9994')})
+    caixa((xc - r, xc + r, yc - r, yc + r, 0.08, h), emissivo(forma))
+    peg(xc - r - 0.03, xc + r + 0.03, yc - r - 0.03, yc + r + 0.03)
+
+
 ITENS = {
     'sofa_leather': (2, 1, (0.0, 0.0), sofa_leather, {}),
     'shelf_metal': (2, 1, (0.0, 0.0), shelf_metal, {}),
     'rug_purple': (3, 4, (0.0, 0.0), rug_purple, {}),
+    'pillar': (1, 1, (0.0, 0.0), pillar, {}),
 }
 
 ITENS_PAREDE = {

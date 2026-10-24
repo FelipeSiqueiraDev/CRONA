@@ -683,7 +683,7 @@ def mesa_jantar(vazio=False):
     CZ.fruteira(1.5, 0.75, h + 0.0005)
 
 
-def desk_wood():
+def desk_wood(vazia=False):
     """
     A escrivaninha (2 x 1 casas, aumento 1,2: 1,8 x 0,9 m; o tampo a 0,76 m): o tampo com o forro de couro verde, as três
     gavetas na saia, as pernas quadradas, o painel de trás (o vão é 'fundo'); o tinteiro, a pena e os papéis.
@@ -723,6 +723,8 @@ def desk_wood():
     o = novo()
     CZ.fp([(bx0, by0, h + 0.004), (bx1, by0, h + 0.004), (bx1, by1, h + 0.004), (bx0, by1, h + 0.004)], (0, 0, 1), emissivo(forro), o)
     caixa((bx0, bx1, by0, by1, h, h + 0.004), liso('#3a2014'))
+    if vazia:
+        return
     # a pilha de papéis e o tinteiro com a pena
     for k in range(3):
         caixa((x + 0.12 + 0.01 * k, x + 0.4 + 0.01 * k, y + 0.18 - 0.008 * k, y + 0.52 - 0.008 * k, h + k * PZ, h + (k + 1) * PZ),

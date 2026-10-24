@@ -120,6 +120,7 @@ const COR_PISO: Partial<Record<FloorStyle, string>> = {
   mansao_caverna: '#2a2a38',
   mansao_rustico: '#3a342c',
   mansao_tabuas: '#3a342c',
+  galpao: '#2c2e30',
   xadrez: '#2c3c52',
   azulejo: '#1d3d58',
   carpete: '#3b2456',

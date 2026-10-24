@@ -414,5 +414,19 @@
    "arquivo": "parede-lambri.png"
   },
   "px": "mansao_tabuas"
+ },
+ "galpao": {
+  "piso": {
+   "arquivo": "piso-concreto.png",
+   "casas": 4,
+   "origem": [
+    4,
+    4
+   ]
+  },
+  "parede": {
+   "arquivo": "parede-pedra.png"
+  },
+  "px": "galpao"
  }
 }

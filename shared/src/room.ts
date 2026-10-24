@@ -68,6 +68,8 @@ export const FLOOR_STYLES = [
   { id: 'mansao_caverna', name: 'Carpete e LED' },
   { id: 'mansao_rustico', name: 'Pedra rústica' },
   { id: 'mansao_tabuas', name: 'Tábuas do barracão' },
+  // 23/10: o Galpão do Fritz (Pedra Serena): concreto alisado, bloco cru e chapa ondulada
+  { id: 'galpao', name: 'Galpão' },
 ] as const;
 export type FloorStyle = (typeof FLOOR_STYLES)[number]['id'];
 export const isFloorStyle = (s: unknown): s is FloorStyle => FLOOR_STYLES.some((f) => f.id === s);

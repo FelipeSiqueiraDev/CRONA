@@ -48577,5 +48577,118 @@
       2.17
     ],
     "encosta": true
+  },
+  "pillar": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "pillar/giro-4.png",
+        "ax": 30.0,
+        "ay": 168.0
+      },
+      "2": {
+        "arquivo": "pillar/giro-2.png",
+        "ax": 30.0,
+        "ay": 168.0
+      },
+      "0": {
+        "arquivo": "pillar/giro-0.png",
+        "ax": 30.0,
+        "ay": 168.0
+      },
+      "6": {
+        "arquivo": "pillar/giro-6.png",
+        "ax": 30.0,
+        "ay": 168.0
+      }
+    },
+    "real": [
+      0.46,
+      0.46,
+      2.75
+    ]
+  },
+  "estante_vazia": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "estante_vazia/giro-4.png",
+        "ax": 66.0,
+        "ay": 161.0
+      },
+      "2": {
+        "arquivo": "estante_vazia/giro-2.png",
+        "ax": 38.0,
+        "ay": 161.0
+      },
+      "0": {
+        "arquivo": "estante_vazia/giro-0.png",
+        "ax": 70.0,
+        "ay": 159.0
+      },
+      "6": {
+        "arquivo": "estante_vazia/giro-6.png",
+        "ax": 34.0,
+        "ay": 159.0
+      }
+    },
+    "real": [
+      1.42,
+      0.54,
+      2.2
+    ],
+    "tampo": [
+      0.081,
+      1.432,
+      0.072,
+      0.6,
+      0.59
+    ]
+  },
+  "mesa_vazia": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "mesa_vazia/giro-4.png",
+        "ax": 84.0,
+        "ay": 92.0
+      },
+      "2": {
+        "arquivo": "mesa_vazia/giro-2.png",
+        "ax": 52.0,
+        "ay": 92.0
+      },
+      "0": {
+        "arquivo": "mesa_vazia/giro-0.png",
+        "ax": 84.0,
+        "ay": 92.0
+      },
+      "6": {
+        "arquivo": "mesa_vazia/giro-6.png",
+        "ax": 52.0,
+        "ay": 92.0
+      }
+    },
+    "real": [
+      1.8,
+      0.9,
+      0.764
+    ],
+    "tampo": [
+      0.011,
+      1.488,
+      -0.001,
+      0.749,
+      0.764
+    ]
   }
 }
