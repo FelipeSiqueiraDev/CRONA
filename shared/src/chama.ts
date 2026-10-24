@@ -25,6 +25,8 @@ export const CHAMAS_DAS_CRIATURAS: Record<string, ChamaCriatura> = {
   'anfitriao-liber': { cor: '#ff8a1e', acento: '#a8340c', intensidade: 1 },
   'anfitriao-silenus': { cor: '#2fd9c8', acento: '#0f6e8c', intensidade: 1 },
   'anfitriao-plautus': { cor: '#ff62ae', acento: '#9a2a86', intensidade: 1 },
+  // o Anárquico Descontrolado (23/10, o Felipe: "ele não é vermelho, é roxo, brilhante; ele é literalmente feito de energia")
+  'anarquico-descontrolado': { cor: '#a24bff', acento: '#4a1a9a', toque: '#ff7ae8', intensidade: 1.2 },
 };
 
 const limpoHex = (v: unknown): string | null => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : null);
