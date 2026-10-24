@@ -2,6 +2,27 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 24/10 (fim da manhã): o desempenho que faltava, a arte do Códex e as pendências da sessão (no ar)
+
+- **As três melhorias de desempenho da fila** (`perf:`, medidas cada uma isolada, na bancada):
+  - a poeira olha só as luzes da casa dela numa grade de 96 px (160 grãos contra 40 luzes: de 0,24 para 0,11 ms);
+  - o tingido da peça pela luz fica guardado por cor (8 peças: de 2,4 para 0,13 ms);
+  - o fundo de pontinhos e a vinheta são pintados uma vez e só colados (a vinheta: de até 9 ms para 0,4 ms por quadro).
+  - O desenho ficou igual, conferido numa captura do Bar.
+- **A arte do Códex, conferida e instalada.** As ilhas de Pedra Serena e do Jardim no mapa-múndi, as quatro chegadas (Pedra Serena de dia e à noite; o portão do Jardim no fim de tarde e à noite) e as peças da Dama de Sangue e do Enraizado (8 direções).
+  - O Enraizado saiu um pouco mais alaranjado que o retrato.
+  - A Dama acusa "rosa" no `contorno_rosa.py` por causa das flores rosa e roxa, que são dela; o contorno é marrom.
+  - Os pedidos ficam em `arte/TEXTURAS MAPA/.../_codex-trabalho/2026-10-24-pedra-serena/` e em `monstros-tabuleiro/<id>/`.
+- **Pedra Serena por dentro** (`PEDRA_SERENA_REV` 3): a igreja, a pousada, a venda e o boteco são os de Tiradentes (`interioresDeVila`), e as sete casas são a casa padrão.
+- **O Jardim abre de noite** (`JARDIM_FRITZ_REV` 4).
+- **Na mansão:** a janela de cortina vinho virou a moderna (`janela_moderna`, caixilho preto e linho), e o relógio de carrilhão virou a escultura de bronze.
+- **Segredo (só do mestre, fora do repositório):** o Felipe contou que o Fritz virou o Anfitrião; ele não aparece como pessoa na sessão.
+- **Ainda em aberto, do site:**
+  - os bilhetes de confirmação sem estilo;
+  - a tela MAPA com parte das mensagens antigas;
+  - a `main` está 474 commits atrás (falta o pull request, que só sai com o ok do Felipe);
+  - a conferência no celular do Felipe.
+
 ## Feito em 24/10 (manhã): os interiores do Jardim, as plantas paranormais e a cidade de Pedra Serena (no ar)
 
 - **Os interiores do Jardim do Fritz** (`4ba7f49b`, `JARDIM_FRITZ_REV` 3). Cada prédio tem a sua entrada no jardim, na frente da porta:
