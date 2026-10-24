@@ -1,6 +1,6 @@
 import { getFurni, RoomMap, type Door, type Hint } from "@crona/shared";
 import type { Database, RoomData } from "./db";
-import { type FloorSeed } from "./seed";
+import { type FloorSeed, type WallSeed } from "./seed";
 import { planBottom, planRight, planTop } from "./seedSede";
 import { estilo, montar, naPlanta, Terreno, type CenaSpec } from "./seedFazenda";
 import { casaDeCidade } from "./casaComum";
@@ -24,7 +24,7 @@ import { casaDeCidade } from "./casaComum";
  * para o fundo (giro 0), planTop.
  */
 export const SANTA_AMALIA = "Santa Amália · ";
-export const SANTA_AMALIA_REV = 13;
+export const SANTA_AMALIA_REV = 14;
 
 const hint = (title: string, text: string): Hint => ({ icon: "inspect", title, text, visible: true });
 const oculta = (title: string, text: string): Hint => ({ ...hint(title, text), visible: false });
@@ -350,33 +350,34 @@ const CENAS: CenaSpec[] = [
     key: "quarto_filha",
     name: SANTA_AMALIA + "Quarto da Filha",
     description:
-      "O quarto da menina: a cama de solteiro com a colcha lilás, a escrivaninha, o pufe, o tapete. Em todo lugar, folhas de papel com a mesma espiral preta, riscada até furar a folha: no chão, na cama, coladas com fita nas paredes, uma por cima da outra. Há marcas de lápis no rodapé e no batente da porta.",
+      "O quarto da menina, no escuro: a lâmpada foi tirada do bocal e a luminária do criado-mudo está sem a lâmpada. A cama de solteiro com a colcha lilás, a escrivaninha, o pufe, o tapete. E o quarto inteiro LOTADO de folhas com a mesma espiral preta, riscada até furar o papel: o chão todo coberto, a cama, e as duas paredes do rodapé ao teto, coladas com fita uma por cima da outra. Há marcas de lápis no rodapé e no batente da porta.",
     layout: planTop(4, 5, 1),
     andar: VALENCA,
     style: "taco",
     ...DENTRO,
-    darkness: 0.48,
-    ambient: "#d8c8d8",
+    // 24/10, o Felipe: "ela não gosta de luz" (com fogo, fica agressiva): nenhuma luz acesa no quarto dela
+    darkness: 0.74,
+    ambient: "#a898b8",
     floor: [
       ["portal", 1, 1, 4],
-      ["cama_solteiro", 3, 1, 4],
-      ["nightstand", 2, 1, 4],
-      ["desk_lamp", 2, 1, 0],
+      // o chão inteiro coberto de folhas (24/10, o Felipe: "LOTADO de desenhos com espirais, todo o chão, as paredes")
       ["rug_purple", 0, 2, 0],
+      ...de("desenhos_espiral", [0, 1], [2, 1], [3, 1], [0, 2], [2, 2], [3, 2], [0, 3], [1, 3], [2, 3], [3, 3], [0, 4], [1, 4], [2, 4], [3, 4], [0, 5], [1, 5], [2, 5], [3, 5]),
+      ["desenhos_espiral", 1, 2, 0, hint("Os desenhos", "Centenas de folhas, todas com a mesma espiral, desenhada do mesmo jeito: de fora para dentro, sempre no sentido do relógio. Algumas têm o centro furado de tanto passar o lápis. Não sobra um palmo de chão nem de parede.")],
+      ["cama_solteiro", 3, 1, 4],
+      ["nightstand", 2, 1, 4, hint("A luminária", "A luminária do criado-mudo está sem a lâmpada. No chão, embaixo da cama, os cacos de outra, quebrada.")],
       ["desk_wood", 0, 3, 2],
-      ["desenhos_espiral", 0, 3, 0],
       ["chair_wood", 1, 3, 6],
       ["pufe", 2, 5, 0],
-      ...de("desenhos_espiral", [2, 2], [1, 4], [3, 5], [3, 4], [0, 5]),
-      ["desenhos_espiral", 1, 2, 0, hint("Os desenhos", "Centenas de folhas, todas com a mesma espiral, desenhada do mesmo jeito: de fora para dentro, sempre no sentido do relógio. Algumas têm o centro furado de tanto passar o lápis.")],
       ["lodo_preto", 2, 3, 0, oculta("Manchas no lençol", "No travesseiro e no lençol, manchas de uma pasta preta e grossa. Saiu da boca e dos olhos dela, à noite. O Augusto troca a roupa de cama todo dia.")],
-      ...lampadas([1, 4]),
     ],
-    wall: [
-      ["desenho_espiral_parede", "r", 1, 3.1, 2.0],
-      ["desenho_espiral_parede", "l", 0, 2.0, 1.7],
-      ["desenho_espiral_parede", "l", 0, 3.4, 1.5],
-    ],
+    // as duas paredes cobertas de folhas, do rodapé ao teto (o que não couber, o jogo desloca ou deixa de fora)
+    // a parede de cima tem a porta no meio: as folhas no trecho depois dela (acima da cama); a da esquerda, inteira
+    // (atrás da cama e da escrivaninha, só acima delas)
+    wall: [1.6, 2.4].map((z) => ["desenho_espiral_parede", "r", 1, 3.0, z] as WallSeed).concat(
+      [1.0, 1.75, 2.5].map((z) => ["desenho_espiral_parede", "l", 0, 1.65, z] as WallSeed),
+      [2.95, 4.25, 5.35].flatMap((pos) => [1.75, 2.5].map((z) => ["desenho_espiral_parede", "l", 0, pos, z] as WallSeed)),
+    ),
     links: [[1, 1, "valenca"]],
     plan: { x: 0, y: 6 },
   },

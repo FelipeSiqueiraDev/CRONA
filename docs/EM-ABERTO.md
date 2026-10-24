@@ -2,6 +2,12 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 24/10 (tarde): a gente de Santa Amália e o quarto da Ana (no ar)
+
+- **Os NPCs de Santa Amália** (nomes e fotos do Felipe, no grupo Santa Amália do Elenco): Augusto, Francine e Ana Valença, Sônia Nogueira (posto) e Lívia Monteiro (cartório). As 8 direções foram feitas pelo Códex (`pedir_empregado.py`). A Lívia foi limpa da franja magenta do fundo; a Ana foi refeita uma vez (o cabelo tinha saído ruivo).
+- **A Ana tem 1,35 m no tabuleiro.** O Felipe: "tem que parecer uma criança perto dos marcados". O personagem já criado agora segue a `altura` do NPC (`hotel.ts`). A nota dela diz que não gosta de luz e que, com fogo, fica agressiva.
+- **O quarto da filha** (`SANTA_AMALIA_REV` 14): o chão inteiro coberto de desenhos de espiral e as duas paredes cheias de folhas (só acima da cama e da escrivaninha), sem nenhuma luz (escuro 0,74). A luminária está sem lâmpada (há uma pista nela).
+
 ## Feito em 24/10 (fim da manhã): o desempenho que faltava, a arte do Códex e as pendências da sessão (no ar)
 
 - **As três melhorias de desempenho da fila** (`perf:`, medidas cada uma isolada, na bancada):

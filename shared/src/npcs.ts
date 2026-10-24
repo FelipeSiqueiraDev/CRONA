@@ -83,6 +83,9 @@ export const lerGrupoNpc = (v: unknown): string => (typeof v === 'string' ? v.re
 
 const lookBase: AvatarLook = { skin: '#e8c4a8', hair: '#8a2a1e', hairStyle: 1, top: '#1e1a18', pants: '#1a1816', shoes: '#141210', outfit: 0, extra: 0, charId: null };
 
+/** A nota da Ana Valença (24/10): quem é e o jeito dela com a luz. */
+export const ANA_NOTA = 'filha do Augusto e da Francine, uns 11 anos; não gosta de luz, e com fogo fica agressiva';
+
 /** O primeiro NPC do Felipe (16/10): o Miguel Albuquerque, ruivo, de jaqueta tática preta. */
 export function miguelAlbuquerque(): Npc {
   return { id: 'miguel-albuquerque', nome: 'Miguel Albuquerque', arte: 'miguel-albuquerque', nota: 'coordena a rotina da base', look: { ...lookBase } };
@@ -131,7 +134,7 @@ export function npcsPorLeva(): Npc[][] {
     [
       { id: 'augusto-valenca', nome: 'Augusto Valença', arte: 'augusto-valenca', nota: 'marido e pai; guarda os registros do que aconteceu', grupo: 'Santa Amália', look: { ...lookBase, skin: '#d2a07a', hair: '#2a1e16', top: '#5a3a22', pants: '#2e2018', shoes: '#4a2e1c' } },
       { id: 'francine-valenca', nome: 'Francine Valença', arte: 'francine-valenca', nota: 'esposa do Augusto, mãe da Ana', grupo: 'Santa Amália', look: { ...lookBase, skin: '#d8b090', hair: '#3a2018', top: '#5a3e2c', pants: '#2a2622', shoes: '#1e1a18' } },
-      { id: 'ana-valenca', nome: 'Ana Valença', arte: 'ana-valenca', nota: 'filha do Augusto e da Francine', grupo: 'Santa Amália', altura: 1.45, look: { ...lookBase, skin: '#d8b090', hair: '#6a3a22', top: '#4a2440', pants: '#4a4030', shoes: '#1e1c1e' } },
+      { id: 'ana-valenca', nome: 'Ana Valença', arte: 'ana-valenca', nota: ANA_NOTA, grupo: 'Santa Amália', altura: 1.35, look: { ...lookBase, skin: '#d8b090', hair: '#6a3a22', top: '#4a2440', pants: '#4a4030', shoes: '#1e1c1e' } },
       { id: 'sonia-nogueira', nome: 'Sônia Nogueira', arte: 'sonia-nogueira', nota: 'recepcionista e funcionária administrativa do Posto de Saúde, uns 55 anos', grupo: 'Santa Amália', look: { ...lookBase, skin: '#c99a7a', hair: '#8a8884', top: '#2e4a2a', pants: '#2e2220', shoes: '#3a2418' } },
       { id: 'livia-monteiro', nome: 'Lívia Monteiro', arte: 'livia-monteiro', nota: 'escrevente do Cartório de Registro de Imóveis, uns 45 anos', grupo: 'Santa Amália', look: { ...lookBase, skin: '#d8b090', hair: '#2a1a14', top: '#2e2420', pants: '#2a2220', shoes: '#141210' } },
     ],

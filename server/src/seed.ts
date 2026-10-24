@@ -3,6 +3,7 @@ import {
   existidoPadrao,
   CRIATURAS_PASSO_SOMBRAS,
   npcsPorLeva,
+  ANA_NOTA,
   renomearNpcs,
   GRUPOS_NPC_PADRAO,
   footprint,
@@ -757,6 +758,14 @@ function npcsIniciais(db: Database): boolean {
   if (!db.npcGrupos) ((db.npcGrupos = [...GRUPOS_NPC_PADRAO]), (renomeados = true));
   const sede = db.npcGrupos.indexOf('Sede da Ordem');
   if (sede >= 0) ((db.npcGrupos[sede] = 'Ordo Realitas'), (db.npcGrupos = [...new Set(db.npcGrupos)]), (renomeados = true));
+  // a Ana Valença (24/10, o Felipe: "tem que parecer uma criança perto dos marcados"; "ela não gosta de luz, se for fogo,
+  // fica agressiva"): mais baixa e com o jeito dela na nota, no banco que ainda tem a primeira versão
+  for (const n of db.npcs ?? [])
+    if (n.id === 'ana-valenca' && n.altura === 1.45) {
+      n.altura = 1.35;
+      if (n.nota === 'filha do Augusto e da Francine') n.nota = ANA_NOTA;
+      renomeados = true;
+    }
   // a "Máscara do Desespero" é a Magistrada (17/10): a criatura do bestiário que ainda tem o nome antigo troca
   for (const cr of db.bestiario ?? []) if (cr.ficha.livro === 'mascara-do-desespero' && cr.nome === 'Máscara do Desespero') ((cr.nome = 'Magistrada'), (renomeados = true));
   // o passo pelas sombras (Onipresença, LR p. 252) é dado da criatura: as do livro que o têm ganham o campo (18/10)

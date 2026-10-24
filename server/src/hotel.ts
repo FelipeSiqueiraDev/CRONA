@@ -582,11 +582,18 @@ export class Hotel implements HotelApi {
       }
     // os NPCs do mestre (16/10): a arte deles vira personagem do mesmo jeito
     for (const npc of this.db.npcs ?? []) {
-      if (!npc.arte || this.charDaArte(npc.arte) !== null) continue;
+      if (!npc.arte) continue;
+      // quem não tem 1,80 m (a Camarilla, a Ana) sai na escala da altura dele
+      const height = npc.altura ? Math.round((104 * npc.altura) / 1.8) : 104;
+      const ja = this.charDaArte(npc.arte);
+      if (ja !== null) {
+        // a altura mudou depois que o personagem já existia (24/10, a Ana: "tem que parecer uma criança")
+        const ch = this.db.characters.find((c) => c.id === ja);
+        if (npc.altura && ch && ch.height !== height) ((ch.height = height), (mudou = true));
+        continue;
+      }
       const sheet = folhaDaPasta(npc.arte);
       if (!sheet) continue;
-      // quem não tem 1,80 m (a Camarilla) sai na escala da altura dele
-      const height = npc.altura ? Math.round((104 * npc.altura) / 1.8) : 104;
       this.db.characters.push({ id: this.db.nextCharId++, name: npc.nome, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height, fps: 4, sequence: [0], removeBg: false });
       mudou = true;
     }

@@ -60,7 +60,7 @@ describe("npcs", () => {
     upgradeDb(db);
     const sa = db.npcs!.filter((n) => n.grupo === "Santa Amália");
     assert.deepEqual(sa.map((n) => n.id).sort(), ["ana-valenca", "augusto-valenca", "francine-valenca", "livia-monteiro", "sonia-nogueira"]);
-    assert.ok((sa.find((n) => n.id === "ana-valenca")!.altura ?? 1.8) < 1.6);
+    assert.ok((sa.find((n) => n.id === "ana-valenca")!.altura ?? 1.8) <= 1.4);
   });
 
   test("os sobrenomes de 17/10 entram no banco que tem o nome antigo; o que o mestre mudou fica", () => {
