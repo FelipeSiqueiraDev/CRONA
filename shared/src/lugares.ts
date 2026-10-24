@@ -23,6 +23,22 @@ export interface LugarInfo {
   salas: number;
   /** a cena que o mestre está vendo é deste lugar */
   aqui: boolean;
+  /** a região do mapa-múndi (a cidade): os lugares da mesma região ficam na mesma ilha (`regiaoDoLugar`) */
+  regiao: string;
+}
+
+/**
+ * A região de cada lugar (24/10, o Felipe: "a Fazenda Olhos de Águia fica em Igarapé, o Jardim do Fritz é em Pedra
+ * Serena, Santo Berço em Santa Amália, o Frigorífico... meio que no mesmo mapa da Mansão"): o mapa-múndi mostra uma ilha
+ * por região, e os lugares de dentro dela na lista. O lugar que não está em nenhuma é a região dele mesmo.
+ */
+export function regiaoDoLugar(nome: string): string {
+  if (/fazenda olhos|igarap[eé]/i.test(nome)) return 'Igarapé';
+  if (/santo ber[cç]o|santa am[aá]lia/i.test(nome)) return 'Santa Amália';
+  if (/pedra serena|jardim do fritz/i.test(nome)) return 'Pedra Serena';
+  if (/albuquerque|frigor[ií]fico/i.test(nome)) return 'Mansão Albuquerque';
+  if (/^sede|ordem|ordo/i.test(nome)) return 'Sede da Ordem';
+  return nome;
 }
 
 /** O ícone de um lugar pelo nome dele (enquanto o mestre não escolhe). */

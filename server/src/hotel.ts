@@ -27,6 +27,7 @@ import {
   isClimaViagem,
   sortearIlustracao,
   posicaoInicial,
+  regiaoDoLugar,
   isHoraViagem,
   moveisDaVan,
   VAN,
@@ -3052,6 +3053,7 @@ export class Hotel implements HotelApi {
         entrada,
         salas: salas.length,
         aqui: key === aqui,
+        regiao: regiaoDoLugar(nome),
       };
     });
   }

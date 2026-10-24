@@ -26,9 +26,9 @@
 .mm-pino {
   pointer-events: auto;
   position: absolute;
-  /* a ilha na tela de 288 × 162: 72 × 64 pixels */
-  width: 25%;
-  height: 38%;
+  /* a ilha na tela de 480 × 270: 72 × 64 pixels */
+  width: 15%;
+  height: 23.7%;
   transform: translate(-50%, -62%);
   background: transparent;
   border: 0;
@@ -59,36 +59,108 @@
   outline: 0.25rem solid #fff6d8;
   outline-radius: 0.5rem;
 }
-.mm-info {
-  position: absolute;
-  z-index: 1;
-  left: 1.2rem;
-  bottom: 1.2rem;
+/* 24/10: a tela inteira, o mapa à esquerda e a lista das regiões à direita */
+.mundi-janela .fj {
+  width: min(150rem, 96vw) !important;
+}
+.mm-grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30rem;
+  gap: 1.4rem;
+  align-items: start;
+}
+.mm-lado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: min(70vh, 62rem);
+  overflow-y: auto;
+  padding-right: 0.4rem;
+}
+.mm-lado-tit {
+  margin: 0 0 0.2rem;
+  font: 700 1.5rem / 1.2 var(--r-pixel, monospace);
+  color: #3a2a20;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.mm-reg-bloco {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 1rem 1.3rem;
-  border-radius: 0.7rem;
-  background: rgba(42, 29, 46, 0.92);
-  border: 0.2rem solid rgba(255, 246, 216, 0.55);
+  border-radius: 0.6rem;
+}
+.mm-reg-bloco.on {
+  padding: 0.5rem;
+  background: rgba(42, 29, 46, 0.08);
+  border: 0.15rem solid rgba(42, 29, 46, 0.25);
+}
+.mm-reg {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.8rem 1.1rem;
+  border-radius: 0.5rem;
+  border: 0.15rem solid rgba(42, 29, 46, 0.35);
+  background: rgba(255, 250, 238, 0.55);
+  color: #2a1d2e;
+  cursor: pointer;
+  text-align: left;
+}
+.mm-reg b {
+  font: 700 1.5rem / 1.15 var(--r-pixel, monospace);
+}
+.mm-reg small {
+  font: 500 1.15rem / 1.2 var(--r-corpo, sans-serif);
+  opacity: 0.75;
+}
+.mm-reg:hover,
+.mm-reg.on {
+  background: #e9a844;
+  border-color: #2a1d2e;
+}
+.mm-reg.aqui b::before {
+  content: '⚑ ';
+  color: #b8541e;
+}
+.mm-lugar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.5rem;
+  background: rgba(42, 29, 46, 0.9);
   color: #fff6d8;
-  max-width: 34%;
 }
-.mm-info.hidden {
-  display: none;
+.mm-lugar.marcado {
+  outline: 0.2rem solid #e9a844;
 }
-.mm-nome-grande {
-  font: 700 1.8rem / 1.15 var(--r-pixel, monospace);
+.mm-lugar-nome {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
-.mm-info small {
-  font: 500 1.2rem / 1.2 var(--r-corpo, sans-serif);
-  opacity: 0.85;
+.mm-lugar-nome b {
+  font: 700 1.4rem / 1.2 var(--r-pixel, monospace);
+}
+.mm-lugar-nome small {
+  font: 500 1.15rem / 1.2 var(--r-corpo, sans-serif);
+  opacity: 0.8;
 }
 .mm-bts {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
-  margin-top: 0.3rem;
+}
+@media (max-width: 900px) {
+  .mm-grade {
+    grid-template-columns: 1fr;
+  }
+  .mm-lado {
+    max-height: none;
+  }
 }
 
 /* a tela da viagem (partida e chegada): a pintura cobrindo tudo, aproximando devagar, com a legenda embaixo */
