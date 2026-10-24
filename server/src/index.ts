@@ -93,7 +93,7 @@ function serveFile(res: http.ServerResponse, file: string, cache = false, req?: 
       res.end();
       return;
     }
-    const gz = COMPRIME.has(ext) && /gzip/.test(String(req?.headers['accept-encoding'] ?? ''));
+    const gz = COMPRIME.has(ext) && /\bgzip\b/.test(String(req?.headers['accept-encoding'] ?? ''));
     if (gz) {
       let c = gzCache.get(file);
       if (!c || c.mtime !== st.mtimeMs) {
@@ -241,7 +241,7 @@ function enviarArte(req: http.IncomingMessage, res: http.ServerResponse) {
     const json = JSON.stringify({ arquivos: lista });
     arteJson = { lista, json, gz: zlib.gzipSync(json) };
   }
-  if (/gzip/.test(String(req.headers['accept-encoding'] ?? ''))) {
+  if (/\bgzip\b/.test(String(req.headers['accept-encoding'] ?? ''))) {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Encoding': 'gzip', Vary: 'Accept-Encoding' });
     return res.end(arteJson.gz);
   }

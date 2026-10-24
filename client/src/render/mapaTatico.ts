@@ -741,7 +741,7 @@ function detalheDeCima(ctx: CanvasRenderingContext2D, r: { x: number; y: number;
   ctx.lineWidth = lw;
   // o lado da cabeceira/do fundo, pelo giro (giro 4: o fundo no y menor)
   const fundo = it.rot === 4 ? 'y-' : it.rot === 0 ? 'y+' : it.rot === 2 ? 'x-' : 'x+';
-  if (/bed|cama|beliche|rede|maca|colchao|hammock|berco/.test(tipo)) {
+  if (/bed|cama|beliche|rede\b|maca|colchao|hammock|berco/.test(tipo)) {
     const comp = Math.max(r.w, r.h);
     const larg = Math.min(r.w, r.h);
     const vert = r.h >= r.w;
@@ -784,7 +784,7 @@ function detalheDeCima(ctx: CanvasRenderingContext2D, r: { x: number; y: number;
     ctx.fillRect(cx - 0.03, cy - 0.03, 0.06, 0.06);
     return true;
   }
-  if (/crate|caixote|engradado|caixa|cx_/.test(tipo)) {
+  if (/crate|caixote|engradado|caixa\b|cx_/.test(tipo)) {
     ctx.strokeStyle = 'rgba(0,0,0,0.4)';
     ctx.strokeRect(r.x + r.w * 0.1, r.y + r.h * 0.1, r.w * 0.8, r.h * 0.8);
     ctx.beginPath();
@@ -824,7 +824,7 @@ function detalheDeCima(ctx: CanvasRenderingContext2D, r: { x: number; y: number;
     ctx.fillRect(r.x, r.y, r.w, r.h);
     return true;
   }
-  if (/sink|pia|banheira|tub|bacia|basin|lavat/.test(tipo)) {
+  if (/sink|pia\b|banheira|tub\b|bacia|basin|lavat/.test(tipo)) {
     ctx.fillStyle = 'rgba(200,225,235,0.75)';
     ctx.fillRect(r.x + r.w * 0.14, r.y + r.h * 0.14, r.w * 0.72, r.h * 0.72);
     ctx.strokeStyle = 'rgba(0,0,0,0.3)';
