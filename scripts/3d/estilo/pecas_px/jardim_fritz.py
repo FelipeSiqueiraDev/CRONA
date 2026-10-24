@@ -551,7 +551,217 @@ def _buxo():
     pegada(x0, x1, y0, y1)
 
 
+def _bancada_mudas():
+    """A bancada de mudas (2 x 1, 0,9 m): o tampo de grade de ferro, as bandejas pretas com os brotinhos, os vasinhos
+    de barro e o regador embaixo."""
+    x0, x1, y0, y1 = 0.06, 2 * CASA - 0.06, 0.1, CASA - 0.1
+    h = 0.82
+    mf = {'*': liso('#4a4e50'), 'cima': liso('#6a6e70')}
+    for (x, y) in ((x0, y0), (x1 - 0.05, y0), (x0, y1 - 0.05), (x1 - 0.05, y1 - 0.05)):
+        caixa((x, x + 0.05, y, y + 0.05, 0.0, h), mf)
+    caixa((x0, x1, y0, y1, h - 0.04, h), {'*': liso('#4a4e50'), 'cima': emissivo(lambda L, n, P: np.where(
+        ((((P[:, 0] + 50) / 0.06) % 1) < 0.3)[:, None], hx('#2a2e30'), hx('#6a6e70')))})
+    caixa((x0 + 0.05, x1 - 0.05, y0 + 0.05, y1 - 0.05, 0.25, 0.28), mf)
+    # as bandejas de mudas: a terra escura com os brotos verdes em grade
+    for k, xa in enumerate((x0 + 0.06, x0 + 0.56)):
+        def broto(L, n, P, xa=xa):
+            g = ((((P[:, 0] - xa) / 0.07) % 1) < 0.45) & ((((P[:, 1] - y0) / 0.07) % 1) < 0.45)
+            return np.where(g[:, None], hx('#6ea444'), hx('#2a1e16'))
+        caixa((xa, xa + 0.46, y0 + 0.06, y1 - 0.06, h, h + 0.06), {'*': liso('#1e1e20'), 'cima': emissivo(broto)})
+    for k, xx in enumerate((x1 - 0.32, x1 - 0.14)):
+        TD._vaso(xx, (y0 + y1) / 2, h, r=0.07, h=0.12, flores=None if k else ('#f07ab0', '#f8e070'), seed=40 + k)
+    CZ.c.cilindro(x0 + 0.4, (y0 + y1) / 2, 0.1, 0.28, 0.5, vol(x0 + 0.4, (y0 + y1) / 2, '#4a7a5a', brilho=0.3), M, obj(), lados=12, tampa=True)
+    pegada(x0, x1, y0, y1)
+
+
+# =====================================================================================================================
+# as plantas paranormais do livro de regras (24/10, o Felipe: "no livro de regras tem umas plantas paranormais... elas
+# que eu quero ali"; "a maioria controlada e estudada"): a orquídea de sangue (as sementes da dama de sangue, LR p. 191),
+# o bravo purpulis (a planta roxa que cresce em algumas pedras, LR p. 190) e a vegetação infestada pela Morte (as raízes
+# com Lodo de onde sai o enraizado, LR p. 214). Só a aparência: nada de texto do livro.
+# =====================================================================================================================
+SANGUE = ['#7a0c18', '#a8142a', '#d42a3a']
+FOLHA_ESCURA = [hx(x) for x in ('#0e140c', '#16201a', '#1e2c1e', '#2a3a26', '#3a4a2e', '#4a5a34')]
+
+
+def _flor_sangue(x, y, z, r=0.05, seed=0):
+    """A flor da orquídea de sangue: as pétalas carmim em cruz, o miolo claro e a gota que escorre."""
+    o = obj(contorno=False)
+    CZ.luzes.add(o)
+    for (dx, dy, dz) in ((r, 0, 0), (-r, 0, 0), (0, 0, r * 0.9), (0, 0, -r * 0.7)):
+        CZ.c.elipsoide((x + dx * 0.8, y + dy, z + dz * 0.8), (r * 0.75, r * 0.4, r * 0.55),
+                       lambda Pc, N, P: FF._cru_eli(np.tile(hx(SANGUE[1]), (len(P), 1)), N), o)
+    CZ.c.elipsoide((x, y + r * 0.2, z), (r * 0.35, r * 0.3, r * 0.35), lambda Pc, N, P: FF._cru_eli(np.tile(hx('#ffb0a0'), (len(P), 1)), N), o)
+    caixa((x - PH * 0.5, x + PH * 0.5, y, y + PH, z - r * 2.2, z - r * 0.7), liso(SANGUE[0]), contorno=False)
+
+
+def _touceira_sangue(cx, cy, z, alto=0.6, n=3, seed=0):
+    """A touceira: as folhas largas quase pretas embaixo e as hastes arqueadas com as flores carmim."""
+    rng = np.random.default_rng(seed)
+    m = FF.mat_folha((cx, cy, z + 0.1), (0.16, 0.16, 0.1), FOLHA_ESCURA, q=0.05, seed=seed)
+    FF._cachos(obj(), cx, cy, z + 0.08, 0.15, 0.09, 6, 0.05, 0.08, rng, m, corte=z)
+    for k in range(n):
+        a = 2 * math.pi * (k + rng.random() * 0.4) / n
+        p0 = (cx, cy, z + 0.1)
+        p1 = (cx + math.cos(a) * 0.08, cy + math.sin(a) * 0.08, z + alto * 0.7)
+        p2 = (cx + math.cos(a) * 0.18, cy + math.sin(a) * 0.18, z + alto * 0.85)
+        FF._viga(obj(contorno=False), p0, p1, 0.02, liso('#3a1a14'))
+        FF._viga(obj(contorno=False), p1, p2, 0.018, liso('#4a1e18'))
+        for j in range(3):
+            t = 0.35 + 0.3 * j
+            fx = p1[0] + (p2[0] - p1[0]) * t
+            fy = p1[1] + (p2[1] - p1[1]) * t
+            _flor_sangue(fx, fy, p1[2] + (p2[2] - p1[2]) * t - 0.04 * j, r=0.045, seed=seed + j)
+
+
+def _orquidea_sangue():
+    """A orquídea de sangue no vaso (1 x 1, 0,9 m): o vaso preto de cerâmica, a touceira escura e as hastes carmim."""
+    cx, cy = 0.375, 0.375
+    _poligono_rodado(cx, cy, [(0.0, 0.11), (0.26, 0.15), (0.3, 0.16)], vol(cx, cy, '#1e1c1e', brilho=0.4), obj(), lados=14)
+    _disco(cx, cy, 0.3, 0.15, liso('#2a1a12'), obj(contorno=False), lados=14)
+    _touceira_sangue(cx, cy, 0.3, alto=0.6, n=4, seed=3)
+    FF.pegada_redonda(cx, cy, 0.17)
+
+
+def _caixa_canteiro(x0, x1, y0, y1, z):
+    caixa((x0, x1, y0, y1, 0.0, z), {'*': tab2(['#3a2a20', '#33251c', '#42302a'], 0.12, '#160e0a', eixo=2, seed=7), 'cima': liso('#4a3a2c')})
+    CZ.c.caixa((x0 + 0.06, x1 - 0.06, y0 + 0.06, y1 - 0.06, z - 0.03, z + 0.004), FF.mat_terra(seed=9), M, obj(contorno=False))
+
+
+def _canteiro_orquideas():
+    """O canteiro de orquídeas de sangue (4 x 1, 1,0 m): a caixa de madeira escura e as touceiras em fila."""
+    x0, x1, y0, y1 = 0.08, 4 * CASA - 0.08, 0.1, CASA - 0.1
+    z = 0.48
+    _caixa_canteiro(x0, x1, y0, y1, z)
+    for i, x in enumerate(np.linspace(x0 + 0.3, x1 - 0.3, 5)):
+        _touceira_sangue(x, (y0 + y1) / 2, z, alto=0.5, n=3, seed=10 + i)
+    pegada(x0, x1, y0, y1)
+
+
+def _pedra_purpulis(cx, cy, z, r=0.2, seed=0):
+    """A pedra cinza com os bulbos roxos brotando nas frestas e as folhinhas finas."""
+    pedra = lambda Pc, N, P: FF._cru_eli(np.where((suave(P[:, 0] * 4, P[:, 1] * 4 + P[:, 2] * 3, 0.4, 51 + seed) > 0.6)[:, None],
+                                                  hx('#8a8680'), hx('#6e6a64')), N)
+    CZ.c.elipsoide((cx, cy, z + r * 0.45), (r, r * 0.85, r * 0.6), pedra, obj(), corte_z=z)
+    rng = np.random.default_rng(seed)
+    for k in range(5):
+        a = rng.random() * 2 * math.pi
+        d = r * (0.3 + 0.5 * rng.random())
+        bx_, by_ = cx + math.cos(a) * d, cy + math.sin(a) * d
+        bz = z + r * 0.6 + rng.random() * r * 0.35
+        rb = 0.055 + rng.random() * 0.025
+        CZ.c.elipsoide((bx_, by_, bz), (rb, rb, rb * 1.25), lambda Pc, N, P: FF._cru_eli(np.tile(hx('#7a3aa8'), (len(P), 1)), N), obj(contorno=False))
+        CZ.c.elipsoide((bx_ - rb * 0.3, by_ + rb * 0.3, bz + rb * 0.4), (rb * 0.35, rb * 0.35, rb * 0.35),
+                       lambda Pc, N, P: FF._cru_eli(np.tile(hx('#c08ae0'), (len(P), 1)), N), obj(contorno=False))
+        FF._viga(obj(contorno=False), (bx_, by_, bz + rb), (bx_ + 0.02, by_, bz + rb + 0.09), 0.012, liso('#5a7a3a'))
+
+
+def _bravo_purpulis():
+    """O bravo purpulis (1 x 1, 0,6 m): a pedra com os bulbos roxos."""
+    _pedra_purpulis(0.375, 0.375, 0.0, r=0.26, seed=5)
+    FF.pegada_redonda(0.375, 0.375, 0.26)
+
+
+def _canteiro_purpulis():
+    """O canteiro de pedras de bravo purpulis (2 x 1, 0,7 m): a mureta baixa de pedra, o cascalho e três pedras."""
+    x0, x1, y0, y1 = 0.06, 2 * CASA - 0.06, 0.08, CASA - 0.08
+    z = 0.2
+    caixa((x0, x1, y0, y1, 0.0, z), {'*': MP.mat_pedra(seed=3, alt=0.1, comp=0.2), 'cima': liso('#8a8478')})
+    CZ.c.caixa((x0 + 0.06, x1 - 0.06, y0 + 0.06, y1 - 0.06, z - 0.02, z + 0.004), liso('#9a968c'), M, obj(contorno=False))
+    for i, x in enumerate((x0 + 0.3, x0 + 0.72, x1 - 0.3)):
+        _pedra_purpulis(x, (y0 + y1) / 2 + (0.05 if i % 2 else -0.05), z, r=0.17, seed=20 + i)
+    pegada(x0, x1, y0, y1)
+
+
+def _raizes_lodo(x0, x1, y0, y1, z, seed=0):
+    """As raízes grossas tomadas pela Morte: o emaranhado marrom-escuro e o Lodo preto e brilhante escorrendo."""
+    rng = np.random.default_rng(seed)
+    lodo = lambda Pc, N, P: FF._cru_eli(np.where((suave(P[:, 0] * 6, P[:, 1] * 6, 0.3, 61 + seed) > 0.7)[:, None], hx('#3a3436'), hx('#0e0c0e')), N)
+    CZ.c.elipsoide(((x0 + x1) / 2, (y0 + y1) / 2, z), ((x1 - x0) * 0.42, (y1 - y0) * 0.38, 0.03), lodo, obj(contorno=False), corte_z=z)
+    for k in range(9):
+        a = (rng.random() * (x1 - x0 - 0.1) + x0 + 0.05, rng.random() * (y1 - y0 - 0.1) + y0 + 0.05, z)
+        m = (a[0] + rng.normal() * 0.12, a[1] + rng.normal() * 0.06, z + 0.15 + rng.random() * 0.2)
+        b = (np.clip(m[0] + rng.normal() * 0.15, x0 + 0.04, x1 - 0.04), np.clip(m[1] + rng.normal() * 0.08, y0 + 0.04, y1 - 0.04), z + 0.05 + rng.random() * 0.3)
+        cor = ['#3a2a1c', '#4a3624', '#2a1e14'][k % 3]
+        FF._viga(obj(contorno=False), a, m, 0.035, liso(cor))
+        FF._viga(obj(contorno=False), m, b, 0.025, liso(cor))
+        if k % 3 == 0:
+            caixa((b[0] - PH, b[0] + PH, b[1], b[1] + PH, z, b[2]), liso('#0e0c0e'), contorno=False)
+
+
+def _vitrine_lodo():
+    """A vitrine de contenção da vegetação da Morte (2 x 1, 1,4 m): o armário de aço embaixo, a caixa de vidro em cima
+    (só o caixilho aparece) com as raízes e o Lodo dentro, a etiqueta em branco."""
+    x0, x1, y0, y1 = 0.06, 2 * CASA - 0.06, 0.1, CASA - 0.1
+    zb, zt = 0.72, 1.36
+    caixa((x0, x1, y0, y1, 0.0, zb), {'*': liso('#5a6066'), 'cima': liso('#7a8086')})
+    caixa((x0 + 0.1, x1 - 0.1, y1, y1 + 0.01, 0.4, 0.5), liso('#e8e8e2'), contorno=False)
+    caixa((x0 + 0.03, x1 - 0.03, y0 + 0.03, y1 - 0.03, zb, zb + 0.02), liso('#2a2a2a'), contorno=False)
+    _raizes_lodo(x0 + 0.05, x1 - 0.05, y0 + 0.05, y1 - 0.05, zb + 0.02, seed=4)
+    mf = liso('#c8ccd0')
+    for (a, b) in (((x0, y0), (x1, y0)), ((x0, y1), (x1, y1)), ((x0, y0), (x0, y1)), ((x1, y0), (x1, y1))):
+        FF._viga(obj(), (a[0], a[1], zt), (b[0], b[1], zt), 0.025, mf)
+    for (x, y) in ((x0, y0), (x1, y0), (x0, y1), (x1, y1)):
+        FF._viga(obj(), (x, y, zb), (x, y, zt), 0.025, mf)
+    # o reflexo no vidro da frente (duas riscas claras em diagonal)
+    for k, xa in enumerate((x0 + 0.2, x0 + 0.32)):
+        FF._viga(obj(contorno=False), (xa, y1 + 0.005, zb + 0.08), (xa + 0.18, y1 + 0.005, zt - 0.08), PH * 0.8, liso('#dce8ec'))
+    pegada(x0, x1, y0, y1)
+
+
+def _tanque_dama():
+    """O tanque com o espécime da flor da dama de sangue (2 x 2, 2,4 m): a base de aço, o cilindro de vidro (o caixilho,
+    o líquido avermelhado embaixo), a grande flor dentada no meio, os tentáculos com as sete flores, a tampa com os canos."""
+    cx, cy = 0.75, 0.75
+    R = 0.6
+    _poligono_rodado(cx, cy, [(0.0, R + 0.08), (0.3, R + 0.08)], vol(cx, cy, '#4a5056', brilho=0.3), obj(), lados=16, tampa_mat=liso('#3a1a1a'))
+    # o caule central e a flor dentada
+    FF._viga(obj(contorno=False), (cx, cy, 0.3), (cx, cy + 0.05, 1.3), 0.12, liso('#7a3a2a'))
+    o = obj(contorno=False)
+    CZ.luzes.add(o)
+    for k in range(5):
+        a = 2 * math.pi * k / 5 + 0.3
+        px, py = cx + math.cos(a) * 0.2, cy + 0.05 + math.sin(a) * 0.2
+        CZ.c.elipsoide((px, py, 1.38), (0.17, 0.1, 0.06), lambda Pc, N, P: FF._cru_eli(np.where((P[:, 2] > 1.4)[:, None], hx('#a8202a'), hx('#e0c8a0')), N), o)
+    CZ.c.elipsoide((cx, cy + 0.05, 1.4), (0.08, 0.08, 0.04), lambda Pc, N, P: FF._cru_eli(np.tile(hx('#1a0608'), (len(P), 1)), N), obj(contorno=False))
+    # os tentáculos com as sete flores (rosa, vermelha, amarela, roxa, azul, verde, laranja)
+    cores = ['#e07aa0', '#d42a2a', '#f0c030', '#8a4ac8', '#4a7ad8', '#5a9a40', '#f08a30']
+    for k, cor in enumerate(cores):
+        a = 2 * math.pi * k / 7
+        p0 = (cx, cy, 0.6 + 0.08 * (k % 3))
+        p1 = (cx + math.cos(a) * 0.35, cy + math.sin(a) * 0.35, 0.95 + 0.15 * (k % 2))
+        p2 = (cx + math.cos(a + 0.4) * 0.45, cy + math.sin(a + 0.4) * 0.45, 1.25 + 0.2 * ((k + 1) % 3))
+        FF._viga(obj(contorno=False), p0, p1, 0.05, liso('#6a2e22'))
+        FF._viga(obj(contorno=False), p1, p2, 0.04, liso('#7a3626'))
+        of = obj(contorno=False)
+        CZ.luzes.add(of)
+        CZ.c.elipsoide(p2, (0.07, 0.07, 0.05), lambda Pc, N, P, cor=cor: FF._cru_eli(np.tile(hx(cor), (len(P), 1)), N), of)
+    # o vidro: as barras verticais e os anéis (o cilindro aberto, para ver dentro)
+    mf = liso('#c8ccd0')
+    for k in range(8):
+        a = 2 * math.pi * k / 8
+        x, y = cx + math.cos(a) * R, cy + math.sin(a) * R
+        if math.sin(a) > 0.3:
+            continue
+        FF._viga(obj(), (x, y, 0.3), (x, y, 2.1), 0.03, mf)
+    for zz in (0.32, 2.1):
+        pts = [(cx + math.cos(2 * math.pi * k / 16) * R, cy + math.sin(2 * math.pi * k / 16) * R) for k in range(17)]
+        for (a, b) in zip(pts[:-1], pts[1:]):
+            FF._viga(obj(), (a[0], a[1], zz), (b[0], b[1], zz), 0.03, mf)
+    _poligono_rodado(cx, cy, [(2.1, R + 0.06), (2.25, R + 0.06), (2.3, 0.2)], vol(cx, cy, '#4a5056', brilho=0.3), obj(), lados=16, tampa_mat=liso('#3a4046'))
+    for dx in (-0.12, 0.12):
+        CZ.c.cilindro(cx + dx, cy, 0.04, 2.3, 2.45, liso('#6a7076'), M, obj(), lados=8, tampa=True)
+    FF.pegada_redonda(cx, cy, R + 0.08)
+
+
 ITENS = {
+    'orquidea_sangue': (1, 1, (0.0, 0.0), _orquidea_sangue, {}),
+    'canteiro_orquideas': (4, 1, (0.0, 0.0), _canteiro_orquideas, {}),
+    'bravo_purpulis': (1, 1, (0.0, 0.0), _bravo_purpulis, {}),
+    'canteiro_purpulis': (2, 1, (0.0, 0.0), _canteiro_purpulis, {}),
+    'vitrine_lodo': (2, 1, (0.0, 0.0), _vitrine_lodo, {}),
+    'tanque_dama': (2, 2, (0.0, 0.0), _tanque_dama, {}),
+    'bancada_mudas': (2, 1, (0.0, 0.0), _bancada_mudas, {}),
     'casarao_fritz': (24, 12, (0.0, 0.0), _casarao, {}),
     'estufa_principal': (10, 12, (0.0, 0.0), _estufa_principal, {}),
     'estufa_auxiliar': (7, 10, (0.0, 0.0), _estufa_auxiliar, {}),

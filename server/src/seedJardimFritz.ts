@@ -16,12 +16,12 @@ import { paraCena, Sala } from "./seedMansaoAlbuquerque";
  * O terreno é a planta encolhida pela metade (a de verdade tem uns 110 x 100 m); os cômodos, no tamanho de verdade.
  *
  * Dentro: o casarão (térreo, 1º andar e subsolo), na planta do Felipe, com a `Sala` da mansão (coordenadas da planta,
- * as portas nos dois lados). Os outros prédios ainda são fechados.
+ * as portas nos dois lados), e os outros prédios, cada um com a sua entrada na frente da porta (24/10).
  *
  * Mudou a montagem? Suba JARDIM_FRITZ_REV.
  */
 export const JARDIM_FRITZ = "Jardim do Fritz · ";
-export const JARDIM_FRITZ_REV = 1;
+export const JARDIM_FRITZ_REV = 3;
 
 const TERREO = "Casarão";
 const PRIMEIRO = "Casarão 1º";
@@ -30,6 +30,27 @@ const FORA = "Jardim";
 
 const DENTRO: Partial<CenaSpec> = { darkness: 0.34, ambient: "#e8d4b0", particles: ["dust"] };
 const PORAO: Partial<CenaSpec> = { darkness: 0.62, ambient: "#a89878", particles: ["dust"] };
+const ESTUFA: Partial<CenaSpec> = { darkness: 0.18, ambient: "#d4e4c4", particles: ["dust"] };
+const LAB: Partial<CenaSpec> = { darkness: 0.3, ambient: "#dce8ec", particles: [] };
+const CONCRETO: Partial<CenaSpec> = { darkness: 0.5, ambient: "#9ab0c0", particles: ["dust"] };
+
+/** as entradas dos prédios no jardim (a casa na frente da porta) e a chave da cena de dentro */
+const ENTRADAS: [number, number, string][] = [
+  [35, 25, "estufa_p"],
+  [36, 25, "estufa_p"],
+  [24, 25, "estufa_1"],
+  [47, 25, "estufa_2"],
+  [11, 41, "estufa_3"],
+  [16, 18, "laboratorio"],
+  [16, 19, "laboratorio"],
+  [59, 13, "antecamara"],
+  [60, 13, "antecamara"],
+  [57, 22, "aloj_copa"],
+  [62, 22, "aloj_sala"],
+  [56, 29, "oficina"],
+  [57, 29, "oficina"],
+  [63, 29, "oficina"],
+];
 
 // ------------------------------------------------------------------ o terreno (de fora)
 
@@ -89,6 +110,7 @@ function jardimPiso(): FloorSeed[] {
   // os prédios
   f.push(["casarao_fritz", CASARAO.x, CASARAO.y, 4]);
   f.push(["entrada", 35, ENTRADA_Y, 0], ["entrada", 36, ENTRADA_Y, 0]);
+  for (const [x, y] of ENTRADAS) f.push(["entrada", x, y, 0]);
   f.push(["estufa_principal", 31, 13, 4], ["estufa_auxiliar", 21, 15, 4], ["estufa_auxiliar", 44, 15, 4], ["estufa_auxiliar", 8, 31, 4]);
   f.push(["laboratorio_fritz", 7, 14, 2], ["contencao_fritz", 54, 4, 4], ["alojamento_fritz", 54, 15, 4], ["oficina_fritz", 54, 23, 4]);
   // o muro de pedra (os pilares nos cantos e a cada 6 casas), o portão da rua e o de serviço
@@ -305,6 +327,85 @@ const nova = (key: string, nome: string, w: number, h: number, style: string, px
   s.add("tank", 1, 1, 4).add("tank", 7, 1, 4).enc("N", "shelf_metal", 10).add("ceiling_lamp", 5, 1, 0);
 }
 
+// ---------------------------------------------------------------- OS OUTROS PRÉDIOS (24/10): cada um a sua cena, a porta
+// virada para a entrada do jardim
+{
+  const s = nova("estufa_p", "Estufa Principal", 10, 12, "mansao_estufa", 0, 0, "Estufa Principal", "A estufa grande por dentro: a abóbada de vidro lá em cima, o ar quente e úmido, as palmeiras em vaso e, no meio das plantas comuns, as fileiras de orquídeas de flores carmim que parecem pingar. No fundo, a bancada das mudas.", ESTUFA);
+  s.porta("S", 5, "jardim");
+  s.enc("N", "palmeira_vaso", 0).enc("N", "orquidea_sangue", 2).enc("N", "bancada_mudas", 4).enc("N", "orquidea_sangue", 7).enc("N", "palmeira_vaso", 9);
+  s.add("canteiro_orquideas", 0, 2, 4).add("canteiro_orquideas", 6, 2, 4).add("canteiro_orquideas", 0, 5, 4).add("canteiro_elevado", 6, 5, 4);
+  s.add("canteiro_elevado", 0, 8, 4).add("canteiro_elevado", 6, 8, 4);
+  s.add("vaso_flores", 0, 11, 0).add("vaso_flores", 9, 11, 0).add("plant", 4, 11, 0);
+}
+for (let i = 1; i <= 3; i++) {
+  const s = nova(`estufa_${i}`, `Estufa ${i}`, 7, 10, "mansao_estufa", 0, 0, `Estufa ${i}`, [
+    "Uma das estufas pequenas: os canteiros de pedra cheios de pedras cinzentas com bulbos roxos brotando nas frestas, as bancadas de mudas do outro lado e o cheiro de terra molhada.",
+    "Outra estufa pequena: os canteiros de orquídeas de flores carmim, as bancadas de mudas e um regador esquecido no corredor.",
+    "A estufa do canto oeste, mais afastada e trancada por fora: os canteiros comuns de um lado e, do outro, as vitrines de vidro com as raízes escuras e o líquido preto que escorre delas.",
+  ][i - 1], ESTUFA);
+  s.porta("S", 3, "jardim");
+  if (i === 1) {
+    for (const y of [1, 4, 7]) s.add("canteiro_purpulis", 0, y, 4).add("canteiro_purpulis", 2, y, 4);
+    s.add("bravo_purpulis", 0, 9, 0);
+  } else if (i === 2) {
+    for (const y of [1, 4, 7]) s.add("canteiro_orquideas", 0, y, 4);
+    s.add("orquidea_sangue", 0, 9, 0);
+  } else for (const y of [1, 4, 7]) s.add("canteiro_elevado", 0, y, 4);
+  for (const y of [1, 4, 7]) s.add(i === 3 ? "vitrine_lodo" : "bancada_mudas", 5, y, 4);
+  s.add(i === 2 ? "plant" : "palmeira_vaso", 0, 0, 0).add("vaso_flores", 6, 9, 0);
+}
+{
+  const s = nova("laboratorio", "Laboratório", 10, 9, "azulejo", 0, 0, "Laboratório", "O laboratório: as bancadas de azulejo branco com os microscópios e os frascos, a ilha no meio com as banquetas, a mesa de vidro, a estante de remédios, a pia, uma vitrine com raízes escuras e um vaso de orquídea carmim. Tudo limpo demais.", LAB);
+  s.porta("L", 4, "jardim");
+  s.enc("N", "bancada_lab_parede", 0).enc("N", "bancada_lab_parede", 4).enc("N", "sink", 8);
+  s.em("microscope", 1, 0, 4).em("flasks", 3, 0, 4).em("microscope", 6, 0, 4).em("flasks", 5, 0, 4);
+  s.add("bancada_lab_ilha", 3, 4, 4).add("stool_lab", 3, 5, 0).add("stool_lab", 5, 5, 0).add("stool_lab", 4, 3, 4);
+  s.add("mesa_vidro_lab", 0, 3, 4).add("trolley", 8, 6, 0).enc("O", "estante_remedios", 6).enc("O", "locker", 8).add("vitrine_lodo", 6, 6, 4).add("orquidea_sangue", 9, 5, 0);
+  s.mais("ceiling_lamp", 0, [3, 2], [6, 2], [4, 6]);
+}
+{
+  const s = nova("antecamara", "Antecâmara", 12, 3, "metal", 0, 5, "Prédio de Concreto", "A entrada do prédio de concreto: o corredor estreito e frio, os armários de metal, a bancada com as telas das câmeras e a segunda porta de aço, pesada, no fundo.", CONCRETO);
+  s.porta("S", 6, "jardim").porta("N", 6, "contencao");
+  s.enc("N", "locker_row", 0).enc("N", "locker_row", 2).enc("N", "console", 9).add("stool_metal", 9, 1, 4).add("ceiling_lamp", 6, 1, 0);
+}
+{
+  const s = nova("contencao", "Sala de Contenção", 12, 5, "metal", 0, 0, "Prédio de Concreto", "A sala do fundo do prédio de concreto: os tanques de vidro iluminados por dentro (num deles, uma flor enorme e dentada no meio de tentáculos com sete flores coloridas), a mesa de contenção com as correias, os monitores e os racks zumbindo. O ar é gelado.", CONCRETO);
+  s.porta("S", 6, "antecamara");
+  s.add("tank", 1, 1, 4).add("tanque_dama", 4, 1, 4).add("mesa_contencao", 8, 1, 4).add("vitals_monitor", 10, 1, 0).add("monitor_suporte", 10, 2, 0);
+  s.enc("N", "server_rack", 0).enc("N", "server_rack", 11).mais("ceiling_lamp", 0, [3, 3], [6, 3]);
+}
+{
+  const s = nova("aloj_copa", "Copa do Alojamento", 6, 6, "ladrilho", 0, 0, "Alojamento", "A copa do alojamento: o fogão a gás, a pia, a geladeira, a mesa com as cadeiras e as canecas de quem trabalha aqui.", DENTRO);
+  s.porta("S", 3, "jardim").porta("L", 3, "aloj_sala");
+  s.enc("N", "fogao_gas", 0).enc("N", "pia_cozinha", 1).enc("N", "geladeira", 3).add("mesa_cozinha", 1, 3, 4).cadeiras("chair_wood", 1, 3, 3, 2, { n: [0, 2] }).add("ceiling_lamp", 5, 4, 0);
+}
+{
+  const s = nova("aloj_sala", "Sala Comum do Alojamento", 6, 6, "taco", 6, 0, "Alojamento", "A sala comum do alojamento: o sofá de frente para a TV, a mesinha, a estante e a escada que sobe para os quartos.", DENTRO);
+  s.porta("S", 8, "jardim").porta("O", 3, "aloj_copa");
+  s.escada("stairs_up", 4, 0, 4, "aloj_quartos");
+  s.enc("N", "rack_tv", 1).add("sofa_leather", 1, 3, 0).add("table_small", 2, 2, 4).enc("O", "bookshelf", 4).add("ceiling_lamp", 3, 2, 0);
+}
+{
+  const s = nova("aloj_quartos", "Quartos do Alojamento", 9, 6, "taco", 0, 0, "Alojamento 1º", "O andar dos quartos: as quatro camas de solteiro em fila, os criados-mudos, o guarda-roupa, a mesa de estudo e a porta do banheiro.", DENTRO);
+  s.porta("L", 2, "aloj_banho");
+  s.escada("escada_desce", 8, 0, 4, "aloj_sala");
+  for (const x of [0, 2, 4, 6]) s.enc("N", "cama_solteiro", x);
+  for (const x of [1, 3, 5]) s.enc("N", "nightstand", x);
+  s.enc("O", "guarda_roupa", 3).add("desk_wood", 2, 4, 4).add("chair_wood", 2, 3, 4).mais("ceiling_lamp", 0, [4, 3], [6, 3]);
+}
+{
+  const s = nova("aloj_banho", "Banheiro do Alojamento", 3, 6, "azulejo", 9, 0, "Alojamento 1º", "O banheiro do alojamento: o vaso, a pia e o box, as toalhas nos ganchos.", DENTRO);
+  s.porta("O", 2, "aloj_quartos");
+  s.enc("N", "toilet", 0).enc("N", "sink", 1).enc("N", "box_chuveiro", 2);
+}
+{
+  const s = nova("oficina", "Oficina", 12, 5, "concreto", 0, 0, "Oficina", "A oficina da manutenção: o portão de aço de enrolar, as bancadas de ferramentas, o painel com as chaves penduradas, as estantes com as peças, os galões e os armários de metal.", PORAO);
+  s.porta("S", 2, "jardim").porta("S", 9, "jardim");
+  s.enc("N", "table_tools", 0).enc("N", "table_tools", 3).enc("N", "shelf_metal", 6).enc("N", "locker", 10).enc("N", "locker", 11);
+  s.add("barrel", 11, 4, 0).add("barrel", 11, 3, 0).add("crate_wood", 6, 3, 0).add("crate_wood", 7, 3, 0);
+  s.par("N", "tool_board", 2.0, 1.7).mais("ceiling_lamp", 0, [3, 2], [8, 2]);
+}
+
 const CENAS: CenaSpec[] = [
   {
     key: "jardim",
@@ -324,6 +425,7 @@ const CENAS: CenaSpec[] = [
     links: [
       [35, ENTRADA_Y, "salao"],
       [36, ENTRADA_Y, "salao"],
+      ...ENTRADAS,
     ],
     plan: { x: 0, y: 0 },
   },

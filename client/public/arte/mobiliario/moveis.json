@@ -49170,5 +49170,325 @@
       6.278,
       0.5
     ]
+  },
+  "bancada_mudas": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "bancada_mudas/giro-4.png",
+        "ax": 68.0,
+        "ay": 88.0
+      },
+      "2": {
+        "arquivo": "bancada_mudas/giro-2.png",
+        "ax": 35.0,
+        "ay": 93.0
+      },
+      "0": {
+        "arquivo": "bancada_mudas/giro-0.png",
+        "ax": 68.0,
+        "ay": 93.0
+      },
+      "6": {
+        "arquivo": "bancada_mudas/giro-6.png",
+        "ax": 35.0,
+        "ay": 88.0
+      }
+    },
+    "real": [
+      1.38,
+      0.55,
+      1.083
+    ],
+    "tampo": [
+      0.126,
+      1.357,
+      0.161,
+      0.595,
+      0.28
+    ]
+  },
+  "orquidea_sangue": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "orquidea_sangue/giro-4.png",
+        "ax": 21.0,
+        "ay": 64.0
+      },
+      "2": {
+        "arquivo": "orquidea_sangue/giro-2.png",
+        "ax": 21.0,
+        "ay": 64.0
+      },
+      "0": {
+        "arquivo": "orquidea_sangue/giro-0.png",
+        "ax": 21.0,
+        "ay": 63.0
+      },
+      "6": {
+        "arquivo": "orquidea_sangue/giro-6.png",
+        "ax": 21.0,
+        "ay": 63.0
+      }
+    },
+    "real": [
+      0.47,
+      0.379,
+      0.817
+    ],
+    "tampo": [
+      0.302,
+      0.514,
+      0.256,
+      0.514,
+      0.3
+    ]
+  },
+  "canteiro_orquideas": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "canteiro_orquideas/giro-4.png",
+        "ax": 130.0,
+        "ay": 114.0
+      },
+      "2": {
+        "arquivo": "canteiro_orquideas/giro-2.png",
+        "ax": 35.0,
+        "ay": 116.0
+      },
+      "0": {
+        "arquivo": "canteiro_orquideas/giro-0.png",
+        "ax": 130.0,
+        "ay": 117.0
+      },
+      "6": {
+        "arquivo": "canteiro_orquideas/giro-6.png",
+        "ax": 35.0,
+        "ay": 117.0
+      }
+    },
+    "real": [
+      2.84,
+      0.55,
+      0.913
+    ],
+    "tampo": [
+      0.149,
+      2.879,
+      0.113,
+      0.641,
+      0.484
+    ]
+  },
+  "bravo_purpulis": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "bravo_purpulis/giro-4.png",
+        "ax": 27.0,
+        "ay": 39.0
+      },
+      "2": {
+        "arquivo": "bravo_purpulis/giro-2.png",
+        "ax": 27.0,
+        "ay": 40.0
+      },
+      "0": {
+        "arquivo": "bravo_purpulis/giro-0.png",
+        "ax": 27.0,
+        "ay": 41.0
+      },
+      "6": {
+        "arquivo": "bravo_purpulis/giro-6.png",
+        "ax": 27.0,
+        "ay": 43.0
+      }
+    },
+    "real": [
+      0.524,
+      0.455,
+      0.405
+    ],
+    "tampo": [
+      0.267,
+      0.606,
+      0.203,
+      0.49,
+      0.285
+    ]
+  },
+  "canteiro_purpulis": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "canteiro_purpulis/giro-4.png",
+        "ax": 68.0,
+        "ay": 61.0
+      },
+      "2": {
+        "arquivo": "canteiro_purpulis/giro-2.png",
+        "ax": 36.0,
+        "ay": 61.0
+      },
+      "0": {
+        "arquivo": "canteiro_purpulis/giro-0.png",
+        "ax": 68.0,
+        "ay": 60.0
+      },
+      "6": {
+        "arquivo": "canteiro_purpulis/giro-6.png",
+        "ax": 36.0,
+        "ay": 58.0
+      }
+    },
+    "real": [
+      1.38,
+      0.59,
+      0.52
+    ],
+    "tampo": [
+      0.139,
+      1.357,
+      0.174,
+      0.607,
+      0.204
+    ]
+  },
+  "vitrine_lodo": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "vitrine_lodo/giro-4.png",
+        "ax": 68.0,
+        "ay": 116.0
+      },
+      "2": {
+        "arquivo": "vitrine_lodo/giro-2.png",
+        "ax": 35.0,
+        "ay": 116.0
+      },
+      "0": {
+        "arquivo": "vitrine_lodo/giro-0.png",
+        "ax": 68.0,
+        "ay": 116.0
+      },
+      "6": {
+        "arquivo": "vitrine_lodo/giro-6.png",
+        "ax": 35.0,
+        "ay": 116.0
+      }
+    },
+    "real": [
+      1.442,
+      0.577,
+      1.373
+    ],
+    "tampo": [
+      0.104,
+      1.393,
+      0.151,
+      0.619,
+      0.765
+    ]
+  },
+  "tanque_dama": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "tanque_dama/giro-4.png",
+        "ax": 53.0,
+        "ay": 169.0
+      },
+      "2": {
+        "arquivo": "tanque_dama/giro-2.png",
+        "ax": 53.0,
+        "ay": 169.0
+      },
+      "0": {
+        "arquivo": "tanque_dama/giro-0.png",
+        "ax": 53.0,
+        "ay": 169.0
+      },
+      "6": {
+        "arquivo": "tanque_dama/giro-6.png",
+        "ax": 53.0,
+        "ay": 169.0
+      }
+    },
+    "real": [
+      1.36,
+      1.36,
+      2.45
+    ],
+    "tampo": [
+      0.189,
+      1.358,
+      0.201,
+      1.358,
+      0.3
+    ]
+  },
+  "galpao_fritz": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "galpao_fritz/giro-4.png",
+        "ax": 570.0,
+        "ay": 688.0
+      },
+      "2": {
+        "arquivo": "galpao_fritz/giro-2.png",
+        "ax": 289.0,
+        "ay": 688.0
+      },
+      "0": {
+        "arquivo": "galpao_fritz/giro-0.png",
+        "ax": 578.0,
+        "ay": 675.0
+      },
+      "6": {
+        "arquivo": "galpao_fritz/giro-6.png",
+        "ax": 282.0,
+        "ay": 675.0
+      }
+    },
+    "real": [
+      13.6,
+      6.75,
+      6.1
+    ],
+    "tampo": [
+      0.485,
+      1.621,
+      5.969,
+      6.731,
+      0.41
+    ]
   }
 }
