@@ -1,6 +1,9 @@
 import { CODEX_NO_TABULEIRO } from '../render/arteCodex';
 import {
   DEFAULT_PARTICLE_LEVEL,
+  escuroDaHora,
+  JEITO_DA_HORA,
+  type JeitoDaHora,
   footprint,
   getFurni,
   ocupa,
@@ -44,7 +47,7 @@ import {
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
-import { artePodeGuardar, chamineDaArte, desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
+import { artePodeGuardar, type CeuDaJanela, chamineDaArte, desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
 import type { FVisual } from '../render/furniKit';
 import { furniVisual } from '../render/furniFloor';
 import { estadoDaParede, estadoDoMovel } from '../render/soproMovel';
@@ -2101,7 +2104,7 @@ export class RoomView {
     }
     // a vela soprada (sopro.ts): logo depois de apagar, ainda desenhada acesa enquanto a chama encolhe
     const estado = estadoDaParede(it, def);
-    const comArte = desenharParedeComArte(ctx, def.id, it.wall, estado, px, py, it.id, it.vazio, it.modelo);
+    const comArte = desenharParedeComArte(ctx, def.id, it.wall, estado, px, py, it.id, it.vazio, it.modelo, this.ceuDaJanela(def));
     ctx.transform(1, k, 0, 1, ox, oy);
     if (!comArte) drawWallFurni(ctx, def, estado, it.id, t, it.modelo);
     if (outline) {
@@ -2116,11 +2119,15 @@ export class RoomView {
       const alt = it.z + (def.h - L.y) / 32;
       const mundo: [number, number, number] = it.wall === 'l' ? [it.plane + 0.2, it.pos - ao, alt] : [it.pos + ao, it.plane + 0.2, alt];
       // a janela: o feixe de luz entrando no cômodo e caindo no chão (particles.ts desenha)
+      const jh = L.kind === 'natural' ? this.jeitoDaHora() : null;
       const feixe =
-        L.kind === 'natural'
+        L.kind === 'natural' && (!jh || jh.janela.feixe)
           ? { wall: it.wall, plane: it.plane, pos: it.pos, larg: (def.w / 32) * 0.86, z0: it.z + 0.08, z1: it.z + def.h / 32 - 0.08, chao: this.map?.floorHeight(it.wall === 'l' ? it.plane : Math.floor(it.pos), it.wall === 'l' ? Math.floor(it.pos) : it.plane) ?? 0 }
           : undefined;
-      lights.push({ x: ox + L.x, y: oy + k * L.x + L.y, radius: L.radius, color: L.color, intensity: L.intensity * alpha, flicker: L.flicker, pulse: L.pulse, kind: L.kind, seed: it.id, mundo, feixe, ...this.semFogo(L) });
+      // a luz que entra pela janela na hora do dia: a cor e a força da hora (de noite, a lua fraca e azul)
+      const cor = jh?.janela.cor || L.color;
+      const forca = jh ? jh.janela.forca : 1;
+      lights.push({ x: ox + L.x, y: oy + k * L.x + L.y, radius: L.radius, color: cor, intensity: L.intensity * alpha * forca, flicker: L.flicker, pulse: L.pulse, kind: L.kind, seed: it.id, mundo, feixe, ...this.semFogo(L) });
     }
     return { ox, oy, k, px, py, e };
   }
@@ -2197,8 +2204,8 @@ export class RoomView {
     const r = desenharStardew(ctx, {
       map,
       nome: info.name,
-      darkness: info.darkness,
-      ambient: info.ambient,
+      darkness: escuroDaHora(info.darkness, info.hora, !!info.aberto),
+      ambient: this.arDaHora(),
       piso: info.floorStyle,
       itens: map.allItems(),
       paredes: map.allWallItems(),
@@ -2460,6 +2467,31 @@ export class RoomView {
       this.staticBase = base;
     }
     return this.staticLayer!;
+  }
+
+  /** O jeito da hora do dia da cena (null de dia, que é o jogo como sempre foi). */
+  private jeitoDaHora(): JeitoDaHora | null {
+    const h = this.info?.hora;
+    return h && h !== 'dia' ? JEITO_DA_HORA[h] : null;
+  }
+
+  /** A cor do ar na hora do dia: a da cena puxada para a da hora (metade), ou só a da hora. */
+  private arDaHora(): string | undefined {
+    const j = this.jeitoDaHora();
+    const base = this.info?.ambient;
+    if (!j?.ambiente) return base;
+    if (!base) return j.ambiente;
+    const a = parseInt(base.slice(1), 16);
+    const b = parseInt(j.ambiente.slice(1), 16);
+    const m = (s: number) => Math.round((((a >> s) & 255) + ((b >> s) & 255)) / 2);
+    return `#${((m(16) << 16) | (m(8) << 8) | m(0)).toString(16).padStart(6, '0')}`;
+  }
+
+  /** O céu desenhado no vidro da janela, na hora do dia (só as janelas; de dia, o da arte). */
+  private ceuDaJanela(def: WallFurniDef): CeuDaJanela | undefined {
+    const j = this.jeitoDaHora();
+    if (!j || (def.kind !== 'window' && def.kind !== 'janela_sol')) return undefined;
+    return { chave: this.info!.hora!, cima: j.ceu[0], baixo: j.ceu[1], estrelas: j.estrelas, escuroFora: Math.min(0.85, j.escuroFora * 1.4), tom: j.ambiente ?? '#000000' };
   }
 
   /**
@@ -3637,7 +3669,8 @@ export class RoomView {
     // luz, conforme o clima do mestre
     const mode = this.info.lightMode ?? 'normal';
     const surge = mode === 'flicker' ? flickerLevel(t) : 1;
-    let darkness = this.info.darkness;
+    // a hora do dia (hora.ts): escurece mais, e mais ainda ao ar livre
+    let darkness = escuroDaHora(this.info.darkness, this.info.hora, !!this.info.aberto);
     if (mode === 'blackout') darkness = Math.max(darkness, 0.9);
     if (mode === 'flicker') darkness = Math.min(0.95, darkness + (1 - surge) * 0.3);
     const active: Light[] = [];
@@ -3657,7 +3690,7 @@ export class RoomView {
       escuro: darkness > 0.01 ? darkness : 0,
     };
     if (darkness > 0.01)
-      this.lighting.render(ctx, active, darkness, (x, y) => [(x * z + this.cam.x) * dpr, (y * z + this.cam.y) * dpr], scale, t, this.info.ambient);
+      this.lighting.render(ctx, active, darkness, (x, y) => [(x * z + this.cam.x) * dpr, (y * z + this.cam.y) * dpr], scale, t, this.arDaHora());
 
     if (sombrasAcesas) {
       ctx.setTransform(scale, 0, 0, scale, this.cam.x * dpr, this.cam.y * dpr);

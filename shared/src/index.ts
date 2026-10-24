@@ -1,4 +1,5 @@
 export * from './constants';
+export * from './hora';
 export * from './heightmap';
 export * from './furni';
 export * from './walls';

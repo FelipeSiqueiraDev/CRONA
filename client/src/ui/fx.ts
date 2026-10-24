@@ -1,4 +1,4 @@
-import { DEFAULT_PARTICLE_LEVEL, type LightMode } from '@crona/shared';
+import { DEFAULT_PARTICLE_LEVEL, HORAS, NOME_HORA, type HoraDoDia, type LightMode } from '@crona/shared';
 import { fontesDeLuz } from '../room/fontesDeLuz';
 import type { App } from './app';
 import { clear, h, Win } from './dom';
@@ -32,7 +32,7 @@ export class FxWin {
     const r = this.app.state.room;
     const b = clear(this.win.body);
     if (!r) return;
-    const send = (p: { lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number }) => this.app.net.send({ t: 'roomFx', ...p });
+    const send = (p: { lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; hora?: HoraDoDia }) => this.app.net.send({ t: 'roomFx', ...p });
     const modes = h('div', { class: 'fx-modes' });
     for (const [id, label, desc] of MODES)
       modes.append(
@@ -71,7 +71,16 @@ export class FxWin {
           ),
         )
       : null;
+    // a hora do dia (23/10): vale para a campanha inteira, dentro e fora
+    const horaAgora = r.hora ?? 'dia';
+    const horas = h(
+      'div',
+      { class: 'fx-modes fx-horas' },
+      ...HORAS.map((id) => h('button', { class: `fx-mode ${id}${horaAgora === id ? ' on' : ''}`, title: 'Muda a hora em todas as cenas da campanha', onclick: () => send({ hora: id }) }, h('b', null, NOME_HORA[id]))),
+    );
     b.append(
+      h('label', { class: 'field-label' }, 'Hora do dia (a campanha inteira)'),
+      horas,
       h('label', { class: 'field-label' }, 'Luz ambiente'),
       modes,
       ...(luzes ? [luzes] : []),

@@ -18,6 +18,7 @@ import type { TipoItemCatalogo } from './regras/ficha';
 import type { VitalKey } from './vitals';
 import type { Door } from './walls';
 import type { TipoJogoBar } from './bar';
+import type { HoraDoDia } from './hora';
 
 /**
  * Para onde a linha da folha de sprite está virada, na tela. As diagonais são
@@ -335,6 +336,8 @@ export interface RoomInfo {
   particles?: ParticleKind[];
   /** quantidade de partículas 0..1 (clima da cena; sem valor = DEFAULT_PARTICLE_LEVEL) */
   particleLevel?: number;
+  /** a hora do dia da campanha (hora.ts): sem nada, dia */
+  hora?: HoraDoDia;
   /** vista tática: a câmera do tabuleiro em cima, como um mapa de batalha (o mestre liga; a mesa acompanha) */
   tatico?: boolean;
   /** as sombras que o mestre marcou à mão (além das casas escuras de luz): o passo pelas sombras (sombras.ts) */
@@ -508,7 +511,7 @@ export type ClientMsg =
   /** o mestre exclui um grupo que ele criou (17/10); os NPCs dele voltam para o grupo de antes (ou "Do mestre") */
   | { t: 'npcGrupoApagar'; nome: string }
   | { t: 'npcColocar'; npcId: string }
-  | { t: 'roomFx'; lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; tatico?: boolean }
+  | { t: 'roomFx'; lightMode?: LightMode; fog?: number; darkness?: number; particleLevel?: number; tatico?: boolean; hora?: HoraDoDia }
   /** ponto de atenção ou desenho rápido para a mesa (só o mestre; some sozinho) */
   | { t: 'marca'; marca: MarcaMesa }
   /** a câmera do mestre (o centro e o pedaço do mundo que ele vê, em pixels do iso): a mesa enquadra igual (18/10) */

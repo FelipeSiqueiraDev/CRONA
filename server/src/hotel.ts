@@ -2,6 +2,8 @@ import crypto from 'node:crypto';
 import type { WebSocket } from 'ws';
 import {
   BANCOS_VAN,
+  NOME_HORA,
+  type HoraDoDia,
   CENA_MAX_CENAS,
   COR_DO_ELEMENTO,
   lerCena,
@@ -301,6 +303,25 @@ export class Hotel implements HotelApi {
     const queue = [roomId];
     while (queue.length) for (const n of adj.get(queue.shift()!) ?? []) if (!seen.has(n)) (seen.add(n), queue.push(n));
     return [...seen];
+  }
+
+  // ---------- a hora do dia (hora.ts) ----------
+  /** A hora do dia da campanha da cena (sem nada = dia). */
+  horaDaCena(roomId: number): HoraDoDia | undefined {
+    if (!this.rooms.has(roomId)) return undefined;
+    return this.campaignFor(Math.min(...this.sceneGroup(roomId))).hora;
+  }
+
+  /** Troca a hora do dia da campanha inteira e manda a todas as cenas dela (anoitece em todo lugar junto). */
+  mudarHora(roomId: number, hora: HoraDoDia) {
+    const grupo = this.sceneGroup(roomId);
+    const camp = this.campaignFor(Math.min(...grupo));
+    if ((camp.hora ?? 'dia') === hora) return;
+    if (hora === 'dia') delete camp.hora;
+    else camp.hora = hora;
+    this.save();
+    for (const id of grupo) this.rooms.get(id)?.reenviarInfo();
+    this.log(roomId, 'scene', `A hora mudou: ${NOME_HORA[hora].toLowerCase()}.`);
   }
 
   // ---------- campanha (tela MAPA) ----------

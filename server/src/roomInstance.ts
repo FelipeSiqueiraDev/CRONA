@@ -1,6 +1,8 @@
 import crypto from 'node:crypto';
 import {
   HORAS_VIAGEM,
+  lerHora,
+  type HoraDoDia,
   type ViagemInfo,
   type PecaCriatura,
   directionTo,
@@ -121,6 +123,9 @@ export interface HotelApi {
   roomChanged(): void;
   /** a criatura do bestiário se move pelas sombras (Onipresença da Magistrada)? */
   criaturaPassoSombras(id?: string): boolean;
+  /** a hora do dia da campanha desta cena, e a troca dela (vale para todas as cenas da campanha) */
+  horaDaCena(roomId: number): HoraDoDia | undefined;
+  mudarHora(roomId: number, hora: HoraDoDia): void;
   /** leva o cliente para outro quarto (Passagem) */
   teleport(client: Client, roomId: number, fromRoomId: number): void;
   /** leva uma peça para outra cena */
@@ -697,6 +702,7 @@ export class RoomInstance {
       ambient: this.data.ambient,
       particles: this.data.particles,
       particleLevel: this.data.particleLevel,
+      hora: this.hotel.horaDaCena(this.data.id),
       tatico: this.data.tatico,
       ...(this.data.sombras?.length ? { sombras: this.data.sombras } : {}),
       descanso: this.data.descanso,
@@ -2071,7 +2077,15 @@ export class RoomInstance {
       if (m.tatico) this.data.tatico = true;
       else delete this.data.tatico;
     }
+    // a hora do dia vale para a campanha inteira: o hotel guarda e manda para todas as cenas dela
+    const hora = lerHora(m.hora);
+    if (hora) this.hotel.mudarHora(this.data.id, hora);
     this.hotel.save();
+    this.enviarInfo();
+  }
+
+  /** Manda de novo a informação da cena a quem olha (a hora do dia da campanha mudou). */
+  reenviarInfo() {
     this.enviarInfo();
   }
 

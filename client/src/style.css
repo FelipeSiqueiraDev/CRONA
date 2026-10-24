@@ -1423,6 +1423,25 @@ input[type='range'] {
   border-color: var(--amber);
   background: #2a2019;
 }
+/* a hora do dia: quatro botões, cada um na cor do céu dela */
+.fx-modes.fx-horas {
+  grid-template-columns: repeat(4, 1fr);
+}
+.fx-mode.amanhecer.on {
+  border-color: #ffb490;
+  background: linear-gradient(#3a3a5a, #5a3a3a);
+}
+.fx-mode.dia.on {
+  border-color: #ffd98a;
+}
+.fx-mode.anoitecer.on {
+  border-color: #ff8a4a;
+  background: linear-gradient(#3a2240, #4a2a1a);
+}
+.fx-mode.noite.on {
+  border-color: #7a90d0;
+  background: linear-gradient(#070b1c, #18284c);
+}
 .fx-mode.flicker.on {
   animation: fxflick 1.3s steps(1) infinite;
 }

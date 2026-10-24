@@ -544,11 +544,87 @@ export function tamanhoReal(defId: string): { real: [number, number, number]; en
   return { real: base ? [base[0], base[1], a.real[2]] : a.real, encosta: !!a.encosta, tampo: a.tampo ?? null };
 }
 
+/** O céu da janela numa hora do dia (hora.ts): o degradê do céu, as estrelas e o quanto a paisagem lá fora escurece. */
+export interface CeuDaJanela {
+  chave: string;
+  cima: string;
+  baixo: string;
+  estrelas: boolean;
+  /** 0 a 1: o quanto a paisagem (o verde lá fora) escurece */
+  escuroFora: number;
+  /** a cor que a paisagem pega */
+  tom: string;
+}
+
+const janelasNaHora = new WeakMap<HTMLCanvasElement, Map<string, HTMLCanvasElement>>();
+const hexRgb = (h: string): [number, number, number] => {
+  const n = parseInt(h.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+
+/**
+ * A janela pintada na hora do dia (23/10): o azul do céu da arte vira o céu da hora (o degradê de cima para baixo e,
+ * à noite, as estrelas de um pixel) e o verde da paisagem escurece e pega o tom da hora. A moldura, a cortina e o
+ * peitoril não mudam. Feita uma vez por imagem e por hora.
+ */
+function janelaNaHora(src: HTMLCanvasElement, ceu: CeuDaJanela): HTMLCanvasElement {
+  let porHora = janelasNaHora.get(src);
+  if (!porHora) janelasNaHora.set(src, (porHora = new Map()));
+  const pronta_ = porHora.get(ceu.chave);
+  if (pronta_) return pronta_;
+  const c = telaDe(src, src.width, src.height);
+  if (!c) return src;
+  const g = c.getContext('2d')!;
+  const d = g.getImageData(0, 0, c.width, c.height);
+  const p = d.data;
+  const w = c.width;
+  const ehCeu = (i: number) => p[i + 3] > 0 && p[i + 2] > p[i] + 18 && p[i + 2] > 80;
+  // a altura do céu (para o degradê ir do alto do vidro até embaixo)
+  let y0 = c.height;
+  let y1 = 0;
+  for (let i = 0; i < p.length; i += 4)
+    if (ehCeu(i)) {
+      const y = Math.floor(i / 4 / w);
+      if (y < y0) y0 = y;
+      if (y > y1) y1 = y;
+    }
+  const [ar, ag, ab] = hexRgb(ceu.cima);
+  const [br, bg, bb] = hexRgb(ceu.baixo);
+  const [tr, tg, tb] = hexRgb(ceu.tom);
+  const k = 1 - ceu.escuroFora;
+  for (let i = 0; i < p.length; i += 4) {
+    if (!p[i + 3]) continue;
+    const r = p[i];
+    const gg = p[i + 1];
+    const b = p[i + 2];
+    if (ehCeu(i)) {
+      const px = (i / 4) % w;
+      const y = Math.floor(i / 4 / w);
+      const f = y1 > y0 ? (y - y0) / (y1 - y0) : 0.5;
+      // o veio da arte (as nuvens, o reflexo) continua de leve
+      const luz = 0.86 + 0.14 * ((r + gg + b) / 3 / 210);
+      p[i] = Math.min(255, (ar + (br - ar) * f) * luz);
+      p[i + 1] = Math.min(255, (ag + (bg - ag) * f) * luz);
+      p[i + 2] = Math.min(255, (ab + (bb - ab) * f) * luz);
+      const sorte = ((px * 73856093) ^ (y * 19349663)) >>> 0;
+      if (ceu.estrelas && f < 0.75 && sorte % 61 === 0) (p[i] = 232), (p[i + 1] = 236), (p[i + 2] = 255);
+    } else if (gg > r + 8 && gg >= b) {
+      // a paisagem lá fora (a grama, as árvores)
+      p[i] = r * k * 0.7 + tr * 0.3 * k;
+      p[i + 1] = gg * k * 0.7 + tg * 0.3 * k;
+      p[i + 2] = b * k * 0.7 + tb * 0.3 * k;
+    }
+  }
+  g.putImageData(d, 0, 0);
+  porHora.set(ceu.chave, c);
+  return c;
+}
+
 /**
  * Item de parede com arte: a vista daquela parede (e do estado), com o ponto onde ele
  * encosta na parede em (x, y). false se ele não tem arte (ou ela ainda não chegou).
  */
-export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: string, parede: 'l' | 'r', state: number, x: number, y: number, seed = 0, vazio = false, modelo?: string): boolean {
+export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: string, parede: 'l' | 'r', state: number, x: number, y: number, seed = 0, vazio = false, modelo?: string, ceu?: CeuDaJanela): boolean {
   const a = lista?.[chaveDaArte(defId, seed, undefined, vazio, modelo)];
   if (!a?.parede) return false;
   let vista = (state ? a.parede[`${parede}-${state}`] : undefined) ?? a.parede[parede];
@@ -570,8 +646,10 @@ export function desenharParedeComArte(ctx: CanvasRenderingContext2D, defId: stri
   if (torto) ctx.transform(1, torto, 0, 1, 0, -torto * x);
   ctx.imageSmoothingEnabled = !a.pixel;
   ctx.imageSmoothingQuality = 'high';
-  if (a.pixel) ctx.drawImage(img.normal, Math.round(x - vista.ax), Math.round(y - vista.ay));
-  else ctx.drawImage(img.normal, x - vista.ax * k, y - vista.ay * k, img.normal.width * k, img.normal.height * k);
+  // a janela na hora do dia: o céu e a paisagem do vidro trocados (a moldura e a cortina ficam)
+  const fonte = ceu ? janelaNaHora(img.normal, ceu) : img.normal;
+  if (a.pixel) ctx.drawImage(fonte, Math.round(x - vista.ax), Math.round(y - vista.ay));
+  else ctx.drawImage(fonte, x - vista.ax * k, y - vista.ay * k, img.normal.width * k, img.normal.height * k);
   const tela = (a as MovelArte & { tela?: TelaParede }).tela as TelaParede | undefined;
   const spot = tela?.paredes?.[parede];
   if (tela && spot && !state) telaDeTv(ctx, tela, spot, x - vista.ax * k, y - vista.ay * k, k, seed);

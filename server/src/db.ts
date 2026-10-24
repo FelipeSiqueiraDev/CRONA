@@ -1,4 +1,4 @@
-import type { CenaMomento, ChamaCriatura, Criatura, Npc, PecaCriatura, regras } from '@crona/shared';
+import type { CenaMomento, ChamaCriatura, Criatura, HoraDoDia, Npc, PecaCriatura, regras } from '@crona/shared';
 import type { ViagemInfo, IconeLugar, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
@@ -99,6 +99,8 @@ export interface CampaignData {
   subtitle: string;
   /** nome da operação em andamento (topo da tela) */
   operacao?: string;
+  /** a hora do dia da campanha inteira (hora.ts; sem nada = dia) */
+  hora?: HoraDoDia;
   objectives: Objective[];
   layout: Record<number, { x: number; y: number; r?: number }>;
   log: LogEntry[];
