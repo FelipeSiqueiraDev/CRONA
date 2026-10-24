@@ -254,6 +254,10 @@ function hashTexto(t: string): string {
   return `${t.length}:${h}`;
 }
 
+/** o número de cada objeto que o relógio do combate já viu (tiqueDoTabuleiro) */
+const idDoObjeto = new WeakMap<object, number>();
+let proximoId = 0;
+
 export class CombateScreen {
   readonly el: HTMLElement;
   /** onde o tabuleiro aparece (a tela MAPA usa este retângulo como janela do canvas) */
@@ -291,6 +295,7 @@ export class CombateScreen {
   private medida: { a: Casa; b: Casa | null } | null = null;
   private area: { forma: FormaArea; metros: number; alvo: Casa | null; fixa: boolean } | null = null;
   private relogio = 0;
+  private ultimoTique = '';
   private fundo: HTMLElement;
   private sigs = new Map<string, string>();
   private ultimaVez: string | null = null;
@@ -883,6 +888,7 @@ export class CombateScreen {
     this.visivel = true;
     this.el.classList.remove('hidden');
     this.sigs.clear();
+    this.ultimoTique = '';
     const v = this.app.view;
     v.aoClicarPeca = (id) => this.cliquePeca(id);
     this.render();
@@ -890,6 +896,11 @@ export class CombateScreen {
     // as peças andam: distância, cobertura e marcações acompanham
     this.relogio = window.setInterval(() => {
       if (!this.visivel) return;
+      // nada se mexeu desde o último tique (as peças, o mouse no tabuleiro, a área do ritual): não refaz as contas
+      // (23/10, o pente-fino de desempenho: o painel inteiro ia para JSON quatro vezes por segundo, parado)
+      const tique = this.tiqueDoTabuleiro();
+      if (tique === this.ultimoTique) return;
+      this.ultimoTique = tique;
       this.renderRes();
       this.atualizarMarcas();
     }, 250);
@@ -1785,6 +1796,26 @@ export class CombateScreen {
    * refazer o painel a cada ponto de vida piscava a tela inteira. Entram só o que muda o desenho: as condições
    * (machucado, morrendo…), o PE (limita ritual e habilidade), os máximos e PV zerado.
    */
+  /** O que o relógio do combate acompanha no tabuleiro, numa linha curta: onde cada peça está, o mouse e a área. */
+  private tiqueDoTabuleiro(): string {
+    const v = this.app.view;
+    // o combate, a sessão e as fichas que chegam do servidor são objetos novos: cada um ganha um número
+    const n = (o: object | null | undefined) => {
+      if (!o) return 0;
+      let k = idDoObjeto.get(o);
+      if (!k) idDoObjeto.set(o, (k = ++proximoId));
+      return k;
+    };
+    const partes: (string | number)[] = [n(this.combate), n(this.sessao), n(this.fichas), n(this.ameacas), this.aba, this.fluxo, this.atorId ?? '', this.alvoId ?? ''];
+    if (v) {
+      for (const u of v.users.values()) partes.push(u.id, Math.round(u.x * 100), Math.round(u.y * 100), Math.round(u.z * 10), u.dir);
+      const m = v.casaDoMouse;
+      partes.push(m ? `${m.x},${m.y}` : '-');
+    }
+    partes.push(this.area ? JSON.stringify(this.area) : '-');
+    return partes.join('|');
+  }
+
   private assinaturaPecas() {
     return (this.sessao?.characters ?? []).map((c) => {
       const v = c.vitals;

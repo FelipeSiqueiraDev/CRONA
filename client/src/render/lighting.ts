@@ -42,6 +42,9 @@ export function fogoVivo(tMs: number, seed = 0): { f: number; dx: number } {
   return { f: Math.max(0, Math.min(1, 1 - 0.55 * n - 0.35 * engasga)), dx: 0.65 * lento + 0.35 * medio };
 }
 
+/** o tamanho do mapa do escuro em relação ao tabuleiro */
+const MEIA = 0.5;
+
 /** Mapa de luz: escurece a cena e "fura" a escuridão onde há luz, depois soma um brilho colorido. */
 export class Lighting {
   private canvas = document.createElement('canvas');
@@ -58,14 +61,18 @@ export class Lighting {
   ) {
     const W = main.canvas.width;
     const H = main.canvas.height;
-    if (this.canvas.width !== W || this.canvas.height !== H) {
-      this.canvas.width = W;
-      this.canvas.height = H;
+    // o mapa do escuro na metade da resolução (23/10, o pente-fino de desempenho): é só degradê suave, ampliado fica igual
+    const w = Math.max(1, Math.ceil(W * MEIA));
+    const h = Math.max(1, Math.ceil(H * MEIA));
+    if (this.canvas.width !== w || this.canvas.height !== h) {
+      this.canvas.width = w;
+      this.canvas.height = h;
     }
     const l = this.ctx;
     l.setTransform(1, 0, 0, 1, 0, 0);
     l.globalCompositeOperation = 'source-over';
-    l.clearRect(0, 0, W, H);
+    l.clearRect(0, 0, w, h);
+    l.setTransform(MEIA, 0, 0, MEIA, 0, 0);
     // o escuro puxa para a cor do cômodo (roxo na tecnologia, vermelho nos rituais...)
     // (e sempre com um fundo azul-violeta: a sombra fria contra a luz quente é o que dá o contraste de cor das cenas bonitas)
     l.fillStyle = ambient ? rgba(esfriar(shade(ambient, -0.86)), darkness) : `rgba(14,11,34,${darkness})`;
@@ -107,7 +114,8 @@ export class Lighting {
     }
     main.save();
     main.setTransform(1, 0, 0, 1, 0, 0);
-    main.drawImage(this.canvas, 0, 0);
+    main.imageSmoothingEnabled = true;
+    main.drawImage(this.canvas, 0, 0, W, H);
     main.globalCompositeOperation = 'lighter';
     // um véu bem leve da cor do ambiente no ar
     if (ambient) {

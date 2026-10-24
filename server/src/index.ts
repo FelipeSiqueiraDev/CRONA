@@ -233,6 +233,22 @@ function listarArte(): string[] {
   return lista;
 }
 
+/** A lista da arte já em JSON e comprimida, refeita só quando a lista muda (são ~500 kB de texto, ~60 kB em gzip). */
+let arteJson: { lista: string[]; json: string; gz: Buffer } | null = null;
+function enviarArte(req: http.IncomingMessage, res: http.ServerResponse) {
+  const lista = listarArte();
+  if (arteJson?.lista !== lista) {
+    const json = JSON.stringify({ arquivos: lista });
+    arteJson = { lista, json, gz: zlib.gzipSync(json) };
+  }
+  if (/gzip/.test(String(req.headers['accept-encoding'] ?? ''))) {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Encoding': 'gzip', Vary: 'Accept-Encoding' });
+    return res.end(arteJson.gz);
+  }
+  res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(arteJson.json);
+}
+
 function atender(req: http.IncomingMessage, res: http.ServerResponse) {
   try {
     route(req, res);
@@ -254,7 +270,7 @@ function route(req: http.IncomingMessage, res: http.ServerResponse) {
     return serveFile(res, file, true, req);
   }
   if (url.pathname === '/api/health') return sendJson(res, 200, { ok: true });
-  if (url.pathname === '/api/arte') return sendJson(res, 200, { arquivos: listarArte() });
+  if (url.pathname === '/api/arte') return enviarArte(req, res);
   // a tela de entrada pergunta se mostra o falso C.R.I.S (só para quem vem de fora: o link, a rede)
   if (url.pathname === '/api/entrada') return sendJson(res, 200, { falsoCris: hotel.falsoCrisLigado() && !pedidoLocal(req) });
 

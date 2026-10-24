@@ -705,8 +705,20 @@ export class Shell {
     this.placeBar.textContent = text ?? '';
   }
 
+  /** a última campanha sem a posição das peças (setCampaign) */
+  private campanhaSemPosicao = '';
+
   setCampaign(s: CampaignState) {
+    // só as peças andaram (a campanha traz a posição de cada uma para o minimapa): só o minimapa muda (23/10, o
+    // pente-fino de desempenho: cada passo de cada peça refazia os nove painéis da tela)
+    const semPosicao = JSON.stringify({ ...s, scenes: s.scenes.map((sc) => ({ ...sc, users: sc.users.map((u) => ({ id: u.id, name: u.name })) })) });
+    const soAndou = !!this.campaign && semPosicao === this.campanhaSemPosicao;
     this.campaign = s;
+    this.campanhaSemPosicao = semPosicao;
+    if (soAndou) {
+      this.atualizarMinimapa();
+      return;
+    }
     this.fichas.setCampanha(s);
     this.renderSala();
     this.renderRpg();

@@ -381,6 +381,15 @@ function pronta(arquivo: string): Imagens | null {
  * As luzes continuam as do desenho por código. state: o estado do móvel (0 = aceso).
  */
 /**
+ * O desenho com arte deste móvel pode ser guardado por um instante (23/10, o pente-fino de desempenho): não tem nada
+ * que mude com o tempo na hora de montar (o quadro da animação, a cor da tela, o tubo que falha, a lâmpada que balança).
+ */
+export function artePodeGuardar(defId: string, seed: number, piso?: string, vazio = false, modelo?: string): boolean {
+  const a = lista?.[chaveDaArte(defId, seed, piso, vazio, modelo)];
+  return !!a && !a.quadrosGiros && !a.tela && !a.falha && !a.pendulo;
+}
+
+/**
  * O parapeito do lado da câmera (`FurniDef.parapeito`): o mesmo desenho, recortado na caixa da beira da frente, numa
  * caixa própria na ordem de desenho. Quem anda em cima da peça fica entre a peça (antes) e o parapeito (depois), e a
  * mureta cobre os pés de quem passa rente a ela. A beira da frente é a de u maior nos giros 4 e 2 e a de u menor nos

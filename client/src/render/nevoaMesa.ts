@@ -100,10 +100,17 @@ interface Forma {
   paredes: { wall: 'l' | 'r'; plane: number; at: number; base: number }[];
 }
 
+/** o tamanho da tela de fora da névoa da mesa, em relação ao tabuleiro (a névoa é borrada: pequena fica igual) */
+const REDUZ = 1 / 3;
+
 export class NevoaMesa {
   private forma: Forma | null = null;
   private fumos: Fumo[] = [];
   private fora: HTMLCanvasElement | null = null;
+  /** a névoa já desfocada, na tela pequena (a que vai ampliada para o tabuleiro) */
+  private foraBorrada: HTMLCanvasElement | null = null;
+  /** os contornos do escondido no isométrico, refeitos só quando a névoa (ou a sala) muda */
+  private caminhos: { forma: Forma; top: number; chao: Path2D; paredes: Path2D } | null = null;
   private antes = 0;
 
   /** A casa está escondida da mesa? */
@@ -157,16 +164,44 @@ export class NevoaMesa {
     }
   }
 
+  /**
+   * A tela de fora da névoa da mesa, a um terço do tamanho do tabuleiro (23/10, o pente-fino de desempenho): a névoa é
+   * toda borrada, então desenhar e desfocar pequeno e ampliar no fim fica igual e custa nove vezes menos que desfocar o
+   * canvas inteiro a cada quadro.
+   */
   private telaFora(ctx: CanvasRenderingContext2D) {
     const c = (this.fora ??= document.createElement('canvas'));
-    if (c.width !== ctx.canvas.width || c.height !== ctx.canvas.height) {
-      c.width = ctx.canvas.width;
-      c.height = ctx.canvas.height;
+    const w = Math.max(1, Math.ceil(ctx.canvas.width * REDUZ));
+    const h = Math.max(1, Math.ceil(ctx.canvas.height * REDUZ));
+    if (c.width !== w || c.height !== h) {
+      c.width = w;
+      c.height = h;
     }
     const g = c.getContext('2d')!;
     g.setTransform(1, 0, 0, 1, 0, 0);
     g.clearRect(0, 0, c.width, c.height);
     return g;
+  }
+
+  /** Desfoca a tela pequena (o raio também reduzido) e amplia por cima do tabuleiro inteiro. */
+  private ampliarBorrado(ctx: CanvasRenderingContext2D, raio: number) {
+    const src = this.fora!;
+    const b = (this.foraBorrada ??= document.createElement('canvas'));
+    if (b.width !== src.width || b.height !== src.height) {
+      b.width = src.width;
+      b.height = src.height;
+    }
+    const g = b.getContext('2d')!;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.clearRect(0, 0, b.width, b.height);
+    g.filter = `blur(${Math.max(0.8, raio * REDUZ).toFixed(2)}px)`;
+    g.drawImage(src, 0, 0);
+    g.filter = 'none';
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(b, 0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.restore();
   }
 
   /**
@@ -177,24 +212,28 @@ export class NevoaMesa {
     const f = this.montar(map, n, chaveMapa);
     if (!f.casas.length) return;
     const top = map.walls.top;
-    const chao = new Path2D();
-    for (const [x, y, h] of f.casas) {
-      const p = [iso(x, y, h), iso(x + 1, y, h), iso(x + 1, y + 1, h), iso(x, y + 1, h)];
-      chao.moveTo(p[0][0], p[0][1]);
-      for (const q of p.slice(1)) chao.lineTo(q[0], q[1]);
-      chao.closePath();
+    if (this.caminhos?.forma !== f || this.caminhos.top !== top) {
+      const chao = new Path2D();
+      for (const [x, y, h] of f.casas) {
+        const p = [iso(x, y, h), iso(x + 1, y, h), iso(x + 1, y + 1, h), iso(x, y + 1, h)];
+        chao.moveTo(p[0][0], p[0][1]);
+        for (const q of p.slice(1)) chao.lineTo(q[0], q[1]);
+        chao.closePath();
+      }
+      const paredes = new Path2D();
+      for (const s of f.paredes) {
+        const q = s.wall === 'l' ? [iso(s.plane, s.at, s.base), iso(s.plane, s.at + 1, s.base), iso(s.plane, s.at + 1, top), iso(s.plane, s.at, top)] : [iso(s.at, s.plane, s.base), iso(s.at + 1, s.plane, s.base), iso(s.at + 1, s.plane, top), iso(s.at, s.plane, top)];
+        paredes.moveTo(q[0][0], q[0][1]);
+        for (const p of q.slice(1)) paredes.lineTo(p[0], p[1]);
+        paredes.closePath();
+      }
+      this.caminhos = { forma: f, top, chao, paredes };
     }
-    const paredes = new Path2D();
-    for (const s of f.paredes) {
-      const q = s.wall === 'l' ? [iso(s.plane, s.at, s.base), iso(s.plane, s.at + 1, s.base), iso(s.plane, s.at + 1, top), iso(s.plane, s.at, top)] : [iso(s.at, s.plane, s.base), iso(s.at + 1, s.plane, s.base), iso(s.at + 1, s.plane, top), iso(s.at, s.plane, top)];
-      paredes.moveTo(q[0][0], q[0][1]);
-      for (const p of q.slice(1)) paredes.lineTo(p[0], p[1]);
-      paredes.closePath();
-    }
+    const { chao, paredes } = this.caminhos;
     if (mesa) {
       this.andar(map, now);
       const g = this.telaFora(ctx);
-      g.setTransform(mundo);
+      g.setTransform(new DOMMatrix().scale(REDUZ).multiply(mundo));
       g.fillStyle = '#060509';
       g.fill(chao);
       g.fill(paredes);
@@ -210,12 +249,7 @@ export class NevoaMesa {
         const r = fu.r * 36;
         g.drawImage(s, cx - r * 1.2, cy - r * 0.6, r * 2.4, r * 1.2);
       });
-      ctx.save();
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.filter = `blur(${Math.max(2, 7 * (px || 1)).toFixed(1)}px)`;
-      ctx.drawImage(this.fora!, 0, 0);
-      ctx.filter = 'none';
-      ctx.restore();
+      this.ampliarBorrado(ctx, Math.max(2, 7 * (px || 1)));
       return;
     }
     // o mestre: escurecido e riscado, com a borda tracejada
@@ -259,7 +293,7 @@ export class NevoaMesa {
     if (mesa) {
       this.andar(map, now);
       const g = this.telaFora(ctx);
-      g.setTransform(M);
+      g.setTransform(new DOMMatrix().scale(REDUZ).multiply(M));
       g.fillStyle = '#060509';
       g.fill(chao);
       g.lineWidth = 0.18;
@@ -267,12 +301,7 @@ export class NevoaMesa {
       g.stroke(chao);
       const s = fumoSprite();
       pintarFumaca(g, this.fumos, now, (fu) => g.drawImage(s, fu.x - fu.r, fu.y - fu.r, fu.r * 2, fu.r * 2));
-      ctx.save();
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.filter = `blur(${Math.max(2, casa * 0.12).toFixed(1)}px)`;
-      ctx.drawImage(this.fora!, 0, 0);
-      ctx.filter = 'none';
-      ctx.restore();
+      this.ampliarBorrado(ctx, Math.max(2, casa * 0.12));
       return;
     }
     ctx.save();

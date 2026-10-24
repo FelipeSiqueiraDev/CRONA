@@ -5,6 +5,8 @@
  * o meio de cada banco (x da van 0, 2, 4 e y 0, 1, 2), para os botões ficarem em cima.
  */
 
+import { arteCarregada } from '../ui/icons';
+
 export const VAN_W = 176;
 export const VAN_H = 92;
 
@@ -100,10 +102,9 @@ export function desenhoDaVan(): HTMLCanvasElement {
     }
   // a van pintada do Códex (arte/viagem/pixel/van-de-cima.png, em escala 4, os bancos nos mesmos pontos): quando
   // carrega, toma o lugar do desenho na mesma tela
-  void fetch('/api/arte')
-    .then((r) => r.json() as Promise<{ arquivos: string[] }>)
-    .then((j) => {
-      if (!j.arquivos.includes(VAN_ARTE)) return;
+  // a lista da arte é a mesma do resto do jogo (icons.ts): um pedido só ao abrir (23/10)
+  void arteCarregada.then((lista) => {
+      if (!lista.has(VAN_ARTE)) return;
       const img = new Image();
       img.onload = () => {
         ctx.clearRect(0, 0, VAN_W, VAN_H);

@@ -68,15 +68,27 @@ function polysOverlap(p: [number, number][], q: [number, number][]): boolean {
   return true;
 }
 
-/** Ordenação topológica (pintor) só entre objetos que realmente se sobrepõem na tela. */
+/**
+ * Ordenação topológica (pintor) só entre objetos que realmente se sobrepõem na tela. Os pares vêm por uma varredura
+ * no eixo x da tela (23/10, o pente-fino de desempenho: antes, cada objeto contra todos os outros a cada quadro, e o
+ * jardim da mansão tem mais de cem árvores): ordenados pela borda esquerda, cada um só encontra os que começam antes
+ * de ele acabar.
+ */
 export function sortDrawables(list: Drawable[]): Drawable[] {
   const n = list.length;
   for (const d of list) d.depth = (d.box.x0 + d.box.x1 + d.box.y0 + d.box.y1) / 2 + d.box.z0 * 0.001;
   const out: number[][] = Array.from({ length: n }, () => []);
   const indeg = new Int32Array(n);
-  for (let i = 0; i < n; i++) {
-    const a = list[i];
-    for (let j = i + 1; j < n; j++) {
+  const porX = Array.from({ length: n }, (_, k) => k).sort((p, q) => list[p].sx0 - list[q].sx0);
+  for (let u = 0; u < n; u++) {
+    for (let v = u + 1; v < n; v++) {
+      // o par na ordem original (o desempate do cmp fica o mesmo de antes)
+      const pu = porX[u];
+      const pv = porX[v];
+      if (list[pv].sx0 >= list[pu].sx1) break;
+      const i = pu < pv ? pu : pv;
+      const j = pu < pv ? pv : pu;
+      const a = list[i];
       const b = list[j];
       if (a.sx1 <= b.sx0 || b.sx1 <= a.sx0 || a.sy1 <= b.sy0 || b.sy1 <= a.sy0) continue;
       if (a.poly && b.poly && !polysOverlap(a.poly, b.poly)) continue;
@@ -94,17 +106,40 @@ export function sortDrawables(list: Drawable[]): Drawable[] {
     }
   }
   const done = new Uint8Array(n);
+  // os prontos numa fila de prioridade pela profundidade (o mais ao fundo primeiro)
   const ready: number[] = [];
-  for (let i = 0; i < n; i++) if (!indeg[i]) ready.push(i);
-  const result: Drawable[] = [];
+  const menor = (x: number, y: number) => list[ready[x]].depth! < list[ready[y]].depth!;
+  const push = (v: number) => {
+    ready.push(v);
+    let k = ready.length - 1;
+    while (k > 0) {
+      const pai = (k - 1) >> 1;
+      if (!menor(k, pai)) break;
+      [ready[k], ready[pai]] = [ready[pai], ready[k]];
+      k = pai;
+    }
+  };
   const popMin = () => {
-    let bi = 0;
-    for (let k = 1; k < ready.length; k++) if (list[ready[k]].depth! < list[ready[bi]].depth!) bi = k;
-    const v = ready[bi];
-    ready[bi] = ready[ready.length - 1];
-    ready.pop();
+    const v = ready[0];
+    const fim = ready.pop()!;
+    if (ready.length) {
+      ready[0] = fim;
+      let k = 0;
+      for (;;) {
+        const e = 2 * k + 1;
+        const d = e + 1;
+        let m = k;
+        if (e < ready.length && menor(e, m)) m = e;
+        if (d < ready.length && menor(d, m)) m = d;
+        if (m === k) break;
+        [ready[k], ready[m]] = [ready[m], ready[k]];
+        k = m;
+      }
+    }
     return v;
   };
+  for (let i = 0; i < n; i++) if (!indeg[i]) push(i);
+  const result: Drawable[] = [];
   while (result.length < n) {
     let i: number;
     if (ready.length) i = popMin();
@@ -119,7 +154,7 @@ export function sortDrawables(list: Drawable[]): Drawable[] {
     if (done[i]) continue;
     done[i] = 1;
     result.push(list[i]);
-    for (const j of out[i]) if (--indeg[j] === 0 && !done[j]) ready.push(j);
+    for (const j of out[i]) if (--indeg[j] === 0 && !done[j]) push(j);
   }
   return result;
 }

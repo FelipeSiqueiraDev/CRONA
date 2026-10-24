@@ -1,5 +1,6 @@
 import type { ViagemInfo } from '@crona/shared';
 import type { SpriteFrame } from './sprites';
+import { arteCarregada } from '../ui/icons';
 
 /**
  * O dioraminha da viagem (07/10), em pixel art, no estilo das referências do Felipe: uma ilha flutuando no céu, de
@@ -66,10 +67,8 @@ const ILHA: Pt[] = (() => {
 const PASTA_PIXEL = '/arte/viagem/pixel/';
 const pixelArte = new Map<string, HTMLCanvasElement | null>();
 let existentes: Set<string> | null = null;
-fetch('/api/arte')
-  .then((r) => r.json() as Promise<{ arquivos: string[] }>)
-  .then((j) => (existentes = new Set(j.arquivos)))
-  .catch(() => (existentes = new Set()));
+// a lista da arte é a mesma do resto do jogo (icons.ts): um pedido só ao abrir (23/10, o pente-fino de desempenho)
+void arteCarregada.then((l) => (existentes = l));
 function pixel(nome: string): HTMLCanvasElement | null {
   if (pixelArte.has(nome)) return pixelArte.get(nome)!;
   if (!existentes) return null;

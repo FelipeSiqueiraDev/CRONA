@@ -41,8 +41,8 @@ export interface EntradaStardew {
   nome: string;
   darkness: number;
   ambient?: string;
-  itens: FloorItem[];
-  paredes: WallItem[];
+  itens: readonly FloorItem[];
+  paredes: readonly WallItem[];
   pecas: PecaTatica[];
   now: number;
   /** o quadro onde cabe a sala, em px do canvas */

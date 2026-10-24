@@ -964,7 +964,11 @@ export class RoomInstance {
     // a peça a caminho pelo minimapa que ficou parada (esperando a vez na porta, que outra ocupava): tenta de novo
     for (const u of [...this.users.values()])
       if (!u.next && !u.goal && !travel.some(([id]) => id === u.client.id) && this.hotel.temRota(u.client.id)) this.hotel.seguirRota(this, u.client.id);
-    if (!this.viewers.size && !this.users.size && this.timer) {
+    // ninguém olhando e nada por fazer (ninguém andando, nenhuma cabeça para voltar, nenhuma rota esperando a vez, a
+    // posição já guardada): o relógio da cena para (23/10, o pente-fino de desempenho: as cenas com NPC parado ficavam
+    // tiquetaqueando para sempre); a próxima ordem (andar, entrar alguém) liga de novo pelo ensureTimer
+    const parada = !this.viewers.size && !moving && !this.tokensDirty && ![...this.users.values()].some((u) => u.headResetAt || this.hotel.temRota(u.client.id));
+    if (this.timer && ((!this.viewers.size && !this.users.size) || parada)) {
       clearInterval(this.timer);
       this.timer = null;
     }
@@ -1746,6 +1750,8 @@ export class RoomInstance {
             u.aoChegar = antes;
             this.err(c, daPorta);
           } else if (daPorta === undefined) (u.goal = this.casaDaCama(u, m.x, m.y)), delete u.encara;
+          // o relógio da cena pode ter parado (ninguém olhando, nada andando): liga de novo
+          this.ensureTimer();
         }
         break;
       case 'tokenFace':
@@ -2274,8 +2280,8 @@ export class RoomInstance {
   }
 
   private persist() {
-    this.data.items = this.map.allItems();
-    this.data.wallItems = this.map.allWallItems();
+    this.data.items = [...this.map.allItems()];
+    this.data.wallItems = [...this.map.allWallItems()];
     this.hotel.save();
     this.hotel.touch();
   }

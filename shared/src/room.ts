@@ -209,6 +209,9 @@ export class RoomMap {
   private items = new Map<number, FloorItem>();
   private wallItems = new Map<number, WallItem>();
   private grid: FloorItem[][][] = [];
+  /** as listas prontas de allItems e allWallItems (null = refazer na próxima chamada) */
+  private listaItens: FloorItem[] | null = null;
+  private listaParede: WallItem[] | null = null;
 
   constructor(heightmap: string | Heightmap, door: Door, items: FloorItem[] = [], wallItems: WallItem[] = []) {
     this.hm = typeof heightmap === 'string' ? parseHeightmap(heightmap) : heightmap;
@@ -239,8 +242,12 @@ export class RoomMap {
   }
 
   // ---------- itens de chão ----------
-  allItems(): FloorItem[] {
-    return [...this.items.values()];
+  /**
+   * Todos os itens de chão. A lista é guardada e só refeita quando um item muda (23/10, o pente-fino de desempenho: o
+   * tabuleiro pedia a cópia umas sete vezes por quadro). Quem recebe não mexe nela (copie antes, se for preciso).
+   */
+  allItems(): readonly FloorItem[] {
+    return (this.listaItens ??= [...this.items.values()]);
   }
   getItem(id: number) {
     return this.items.get(id);
@@ -260,20 +267,23 @@ export class RoomMap {
   }
 
   // ---------- itens de parede ----------
-  allWallItems(): WallItem[] {
-    return [...this.wallItems.values()];
+  allWallItems(): readonly WallItem[] {
+    return (this.listaParede ??= [...this.wallItems.values()]);
   }
   getWallItem(id: number) {
     return this.wallItems.get(id);
   }
   setWallItem(it: WallItem) {
     this.wallItems.set(it.id, it);
+    this.listaParede = null;
   }
   removeWallItem(id: number) {
+    this.listaParede = null;
     return this.wallItems.delete(id);
   }
 
   private rebuild() {
+    this.listaItens = null;
     const { width: w, height: h } = this.hm;
     this.grid = Array.from({ length: h }, () => Array.from({ length: w }, () => [] as FloorItem[]));
     for (const it of this.items.values()) {

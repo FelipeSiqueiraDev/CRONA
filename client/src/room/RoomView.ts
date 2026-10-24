@@ -44,7 +44,8 @@ import {
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
-import { chamineDaArte, desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
+import { artePodeGuardar, chamineDaArte, desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
+import type { FVisual } from '../render/furniKit';
 import { furniVisual } from '../render/furniFloor';
 import { estadoDaParede, estadoDoMovel } from '../render/soproMovel';
 import { drawWallFurni, wallLights } from '../render/furniWall';
@@ -472,6 +473,14 @@ export class RoomView {
   private followAt = 0;
   private bubbles = new Bubbles();
   private staticLayer: StaticLayer | null = null;
+  /** o tamanho do canvas na página, avisado pelo ResizeObserver (null até a primeira medida) */
+  private medido: { w: number; h: number } | null = null;
+  /** os desenhos de móvel guardados por um instante (visualDoMovel) */
+  private visGuardados = new Map<string, { vis: FVisual; ate: number }>();
+  /** a chave da camada estática sem a escala, e quando a escala mudou por último (o zoom em andamento) */
+  private staticBase = '';
+  private escalaVista = 0;
+  private escalaMudouEm = 0;
   /** a Viagem: o mundo passando por fora da van (só nas cenas de viagem) */
   private mundoViagem = new MundoViagem();
   private staticKey = '';
@@ -598,6 +607,11 @@ export class RoomView {
     this.painter.ctx = this.ctx;
     if (!live) return;
     this.bindInput();
+    if (typeof ResizeObserver !== 'undefined')
+      new ResizeObserver((es) => {
+        const r = es[es.length - 1]?.contentRect;
+        if (r) this.medido = { w: Math.round(r.width), h: Math.round(r.height) };
+      }).observe(canvas);
     const loop = () => {
       this.raf = requestAnimationFrame(loop);
       // escondido (a aba FICHAS, o COMBATE de cards): não desenha (23/10, o pente-fino de desempenho)
@@ -617,6 +631,7 @@ export class RoomView {
 
   // ---------- estado ----------
   enter(info: RoomInfo, items: FloorItem[], wallItems: WallItem[], users: UserInfo[], myId: number) {
+    this.visGuardados.clear();
     this.info = info;
     // a cena nova já abre na vista dela (sem a câmera voar na entrada)
     this.tat.alvo = this.tat.t = info.tatico ? 1 : 0;
@@ -1536,8 +1551,9 @@ export class RoomView {
   // ---------- câmera ----------
   resize() {
     const dpr = this.fixed ? 1 : Math.min(2, window.devicePixelRatio || 1);
-    const w = this.fixed ? this.fixed.w : this.canvas.clientWidth;
-    const h = this.fixed ? this.fixed.h : this.canvas.clientHeight;
+    // o tamanho medido pelo ResizeObserver (ler clientWidth a cada quadro obrigava o navegador a recalcular a página)
+    const w = this.fixed ? this.fixed.w : (this.medido?.w ?? this.canvas.clientWidth);
+    const h = this.fixed ? this.fixed.h : (this.medido?.h ?? this.canvas.clientHeight);
     if (w !== this.vw || h !== this.vh || dpr !== this.dpr) {
       const dx = (w - this.vw) / 2;
       const dy = (h - this.vh) / 2;
@@ -2423,14 +2439,46 @@ export class RoomView {
     return topo ? { kind: 'floor', id: topo.id, test: () => true } : null;
   }
 
-  /** O chão e as paredes do isométrico (buildStatic), refeitos só quando a sala, a escala ou o piso mudam. */
+  /**
+   * O chão e as paredes do isométrico (buildStatic), refeitos só quando a sala, a escala ou o piso mudam. No meio do
+   * zoom (23/10, o pente-fino de desempenho: a roda refazia a sala inteira a cada quadro), a camada de antes vale
+   * esticada; ela é refeita uma vez quando a escala para de mudar.
+   */
   private camadaEstatica(map: RoomMap, info: RoomInfo, scale: number): StaticLayer {
-    const key = `${info.id}|${info.heightmap}|${map.door.x},${map.door.y}|${scale}|${info.floorStyle ?? ''}|${versaoTexturas()}|${info.aberto ? 'a' : ''}|${info.terreno ?? ''}`;
+    const base = `${info.id}|${info.heightmap}|${map.door.x},${map.door.y}|${info.floorStyle ?? ''}|${versaoTexturas()}|${info.aberto ? 'a' : ''}|${info.terreno ?? ''}`;
+    const key = `${base}|${scale}`;
+    const agora = performance.now();
+    if (scale !== this.escalaVista) {
+      this.escalaVista = scale;
+      this.escalaMudouEm = agora;
+    }
     if (key !== this.staticKey || !this.staticLayer) {
+      const soAEscala = !!this.staticLayer && this.staticBase === base;
+      if (soAEscala && agora - this.escalaMudouEm < 160) return this.staticLayer!;
       this.staticLayer = buildStatic(map, scale, info.floorStyle, info.terreno, !!info.aberto);
       this.staticKey = key;
+      this.staticBase = base;
     }
-    return this.staticLayer;
+    return this.staticLayer!;
+  }
+
+  /**
+   * O desenho do móvel (com a arte, ou o de código enquanto ela não chega). O que tem arte parada fica guardado por
+   * um segundo (23/10, o pente-fino de desempenho: cada móvel montava o desenho de novo a cada quadro); um segundo é
+   * pouco para alguém ver diferença e muito menos que os 2 min em que a imagem sem uso é solta da memória.
+   */
+  private visualDoMovel(def: FurniDef, it: { id: number; defId: string; rot: number; escala?: number; vazio?: boolean; modelo?: string }, estado: number, ghost: boolean, now: number): FVisual {
+    const piso = this.info?.floorStyle;
+    const chave = `${it.id}|${it.defId}|${estado}|${it.rot}|${piso ?? ''}|${it.escala ?? 1}|${it.vazio ? 1 : 0}|${it.modelo ?? ''}`;
+    const guardado = ghost ? undefined : this.visGuardados.get(chave);
+    if (guardado && guardado.ate > now) return guardado.vis;
+    const base = furniVisual(def, estado, it.id);
+    const comArte = visualComArte(def, base, estado, it.id, it.rot, piso, it.escala ?? 1, it.vazio, it.modelo);
+    if (comArte && !ghost && artePodeGuardar(it.defId, it.id, piso, it.vazio, it.modelo)) {
+      if (this.visGuardados.size > 3000) this.visGuardados.clear();
+      this.visGuardados.set(chave, { vis: comArte, ate: now + 1000 });
+    }
+    return comArte ?? base;
   }
 
   /**
@@ -2634,8 +2682,7 @@ export class RoomView {
       if (!def) return;
       // a vela soprada (sopro.ts): logo depois de apagar, ainda desenhada acesa enquanto a chama encolhe para o pavio
       const estado = ghost ? it.state : def.estadoOcupada !== undefined && camasOcupadas.has(it.id) ? def.estadoOcupada : estadoDoMovel(it, def);
-      const base = furniVisual(def, estado, it.id);
-      const vis = visualComArte(def, base, estado, it.id, it.rot, this.info?.floorStyle, it.escala ?? 1, it.vazio, it.modelo) ?? base;
+      const vis = this.visualDoMovel(def, it, estado, ghost, now);
       // a Operação Pede Mesa: o item escorrega para o tampo desenhado, a cadeira entra embaixo da mesa
       const [ax, ay] = ghost ? [0, 0] : this.ajusteDoMovel(map, it as FloorItem);
       const ix = it.x + ax;
