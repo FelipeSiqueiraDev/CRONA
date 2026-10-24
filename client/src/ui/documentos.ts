@@ -3,7 +3,7 @@
  * relatório, a foto ou a pista, com imagem e páginas de texto, e entrega a um agente ou à
  * equipe. O jogador vê na aba Docs do celular (docs/TELA-DO-JOGADOR.md).
  */
-import { GRUPOS_DOCUMENTO, TIPOS_DOCUMENTO, nomeTipoDocumento, type Documento, type FichaSalva, type GrupoDocumento, type TipoDocumento } from '@crona/shared';
+import { GRUPOS_DOCUMENTO, TIPOS_DOCUMENTO, capaDoDocumento, nomeTipoDocumento, type Documento, type FichaSalva, type GrupoDocumento, type TipoDocumento } from '@crona/shared';
 import type { App } from './app';
 import { h, toast } from './dom';
 import { botao, confirmar, janela } from './fichaModal';
@@ -68,8 +68,8 @@ export function abrirDocumentos(app: App, fonte: FonteDocumentos) {
             h(
               'button',
               { class: `doc-item${rascunho?.id === d.id ? ' on' : ''}`, type: 'button', onclick: () => void abrir(d) },
-              h('span', { class: 'doc-mini' }, d.imagem ? h('img', { src: d.imagem, alt: '', loading: 'lazy' }) : ic('documento')),
-              h('span', { class: 'doc-item-txt' }, h('b', null, d.titulo), h('small', null, `${nomeTipoDocumento(d.tipo)} · ${quem(d)}${d.marcadoPor?.length ? ` · marcado por ${d.marcadoPor.map(nomeFicha).join(', ')}` : ''}`)),
+              h('span', { class: 'doc-mini' }, capaDoDocumento(d) ? h('img', { src: capaDoDocumento(d)!, alt: '', loading: 'lazy' }) : ic('documento')),
+              h('span', { class: 'doc-item-txt' }, h('b', null, d.titulo), h('small', null, `${nomeTipoDocumento(d.tipo)} · ${quem(d)}${d.guardado ? ' · guardado num móvel' : ''}${d.marcadoPor?.length ? ` · marcado por ${d.marcadoPor.map(nomeFicha).join(', ')}` : ''}`)),
             ),
           )
         : [h('p', { class: 'doc-vazio' }, 'Nenhum documento ainda.')]),
@@ -169,6 +169,13 @@ export function abrirDocumentos(app: App, fonte: FonteDocumentos) {
           d.imagem ? botao('Tirar a imagem', 'lixo', '', () => ((d.imagem = undefined), marcar(), desenharEditor())) : null,
         ),
       ),
+      // as páginas em imagem (os documentos dos PDFs) e o móvel onde o documento está guardado
+      d.imagens?.length
+        ? h('div', { class: 'doc-linha' }, ...d.imagens.slice(0, 6).map((src, i) => h('div', { class: 'doc-img' }, h('img', { src, alt: `Página ${i + 1}`, loading: 'lazy' }))), h('p', { class: 'doc-dica' }, `${d.imagens.length} página${d.imagens.length > 1 ? 's' : ''} em imagem.`))
+        : h('span'),
+      d.guardado
+        ? h('div', { class: 'doc-linha' }, h('p', { class: 'doc-dica' }, 'Guardado num móvel do cenário: quem procurar lá acha (o cartão do objeto entrega).'), botao('Tirar do móvel', 'lixo', '', () => ((d.guardado = undefined), marcar(), desenharEditor())))
+        : h('p', { class: 'doc-dica' }, 'Para guardar num móvel: selecione o móvel no tabuleiro, Configurar, "Documentos guardados".'),
       paginas,
       h('div', { class: 'doc-para' }, h('h4', null, 'Entregar para'), h('label', { class: 'doc-check forte' }, equipe, 'Toda a equipe'), h('div', { class: 'doc-checks' }, ...agentes)),
       h(

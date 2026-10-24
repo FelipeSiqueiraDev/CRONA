@@ -32,6 +32,17 @@ export interface Documento {
   origem?: string;
   /** a imagem (upload do mestre, /uploads/...) */
   imagem?: string;
+  /**
+   * As páginas em imagem (24/10, os documentos da campanha vindos dos PDFs do Felipe: cada página é uma imagem pronta),
+   * uma por página, /uploads/...; a página i mostra a imagem i e, embaixo, o texto i (se houver).
+   */
+  imagens?: string[];
+  /**
+   * Onde o documento fica guardado no cenário (24/10, o Felipe: "não é pra vincular um documento a um item, é pra ter
+   * o documento lá"): a cena e uma casa do móvel. Quem procura ali acha; o mestre entrega pelo cartão do objeto. A casa
+   * (e não o id do móvel) sobrevive à cena refeita pelo seed.
+   */
+  guardado?: LugarDoDocumento;
   /** o texto, uma entrada por página */
   paginas: string[];
   /** as fichas que têm o documento */
@@ -46,8 +57,28 @@ export interface Documento {
   atualizadoEm: string;
 }
 
+/** A cena e a casa do móvel onde o documento está guardado. */
+export interface LugarDoDocumento {
+  cena: number;
+  x: number;
+  y: number;
+}
+
 export const MAX_DOCUMENTOS = 500;
 const MAX_PAGINAS = 30;
+const IMAGEM_UPLOAD = /^\/uploads\/[a-f0-9]{8,40}\.(png|jpe?g|webp)$/;
+
+/** Quantas páginas o documento tem (o texto ou as imagens, o que tiver mais). */
+export const paginasDoDocumento = (d: Pick<Documento, 'paginas' | 'imagens'>) => Math.max(d.paginas.length, d.imagens?.length ?? 0, 1);
+
+/** A capa do documento (a miniatura): a imagem dele ou a primeira página em imagem. */
+export const capaDoDocumento = (d: Pick<Documento, 'imagem' | 'imagens'>) => d.imagem ?? d.imagens?.[0];
+
+/** O documento está guardado neste móvel: na cena dele e numa das casas que o móvel ocupa. */
+export function documentoNoMovel(d: Pick<Documento, 'guardado'>, cena: number, casas: { x: number; y: number }[]): boolean {
+  const g = d.guardado;
+  return !!g && g.cena === cena && casas.some((c) => c.x === g.x && c.y === g.y);
+}
 
 const texto = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : undefined);
 const inteiro = (v: unknown, min: number, max: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(min, Math.min(max, Math.round(v))) : undefined);
@@ -75,7 +106,14 @@ export function sanitizarDocumento(raw: unknown): Documento | null {
   };
   const origem = texto(o.origem, 40)?.trim();
   if (origem) d.origem = origem;
-  if (imagem && /^\/uploads\/[a-f0-9]{8,40}\.(png|jpe?g|webp)$/.test(imagem)) d.imagem = imagem;
+  if (imagem && IMAGEM_UPLOAD.test(imagem)) d.imagem = imagem;
+  const imagens = Array.isArray(o.imagens) ? o.imagens.slice(0, MAX_PAGINAS).filter((x): x is string => typeof x === 'string' && IMAGEM_UPLOAD.test(x)) : [];
+  if (imagens.length) d.imagens = imagens;
+  const g = o.guardado as Record<string, unknown> | undefined;
+  const cena = g && typeof g === 'object' ? inteiro(g.cena, 1, 1e9) : undefined;
+  const gx = g && typeof g === 'object' ? inteiro(g.x, 0, 999) : undefined;
+  const gy = g && typeof g === 'object' ? inteiro(g.y, 0, 999) : undefined;
+  if (cena !== undefined && gx !== undefined && gy !== undefined) d.guardado = { cena, x: gx, y: gy };
   const campanha = inteiro(o.campanha, 0, 1e9);
   if (campanha) d.campanha = campanha;
   const marcados = ids(o.marcadoPor);
@@ -92,7 +130,8 @@ export function documentoDaFicha(d: Documento, fichaId: number, campanha?: numbe
 /** O que o jogador recebe: sem as marcas dos outros. */
 export function documentoParaJogador(d: Documento, fichaId: number): Documento {
   const marcado = d.marcadoPor?.includes(fichaId);
-  const { marcadoPor: _m, ...resto } = d;
+  // onde o documento estava guardado é do mestre
+  const { marcadoPor: _m, guardado: _g, ...resto } = d;
   return { ...resto, ...(marcado ? { marcadoPor: [fichaId] } : {}) };
 }
 

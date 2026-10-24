@@ -11,6 +11,8 @@
 import {
   documentoParaJogador,
   nomeTipoDocumento,
+  paginasDoDocumento,
+  capaDoDocumento,
   regras,
   vitalConditions,
   type AcaoMochila,
@@ -1015,12 +1017,15 @@ export class TelaJogador {
       // as notas do jogador (antes uma aba só delas, 19/10)
       { id: 'notas', rotulo: 'Notas', icone: 'pena', pintado: 'titulo-anotacoes' },
     ];
-    const meta = (d: Documento) => [nomeTipoDocumento(d.tipo), d.origem, `${d.paginas.length} página${d.paginas.length > 1 ? 's' : ''}`].filter(Boolean).join(' · ');
+    const meta = (d: Documento) => {
+      const n = paginasDoDocumento(d);
+      return [nomeTipoDocumento(d.tipo), d.origem, `${n} página${n > 1 ? 's' : ''}`].filter(Boolean).join(' · ');
+    };
     const linhas = lista.map((d) =>
       h(
         'button',
         { class: `jg-doc${this.docSel === d.id ? ' on' : ''}`, type: 'button', onclick: () => ((this.docSel = this.docSel === d.id ? null : d.id), (this.focarDetalhe = true), sfx.paper(), this.renderConteudo()) },
-        h('span', { class: 'jg-doc-mini' }, d.imagem ? h('img', { src: d.imagem, alt: '', loading: 'lazy', decoding: 'async' }) : ic(ICONE_DOC[d.tipo])),
+        h('span', { class: 'jg-doc-mini' }, capaDoDocumento(d) ? h('img', { src: capaDoDocumento(d)!, alt: '', loading: 'lazy', decoding: 'async' }) : ic(ICONE_DOC[d.tipo])),
         h('span', { class: 'jg-linha-txt' }, h('span', { class: 'jg-linha-n' }, d.titulo, d.marcadoPor?.includes(fs.id) ? h('em', { class: 'jg-marca' }, ic('pino')) : null), h('small', null, meta(d))),
         ic('direita'),
       ),
@@ -1050,7 +1055,7 @@ export class TelaJogador {
     return h(
       'article',
       { class: 'jg-det jg-det-doc' },
-      d.imagem ? h('button', { class: 'jg-det-arte', type: 'button', title: 'Ler', onclick: () => this.lerDoc(d) }, h('img', { src: d.imagem, alt: '' })) : h('div', { class: 'jg-det-arte' }, ic(ICONE_DOC[d.tipo])),
+      capaDoDocumento(d) ? h('button', { class: 'jg-det-arte', type: 'button', title: 'Ler', onclick: () => this.lerDoc(d) }, h('img', { src: capaDoDocumento(d)!, alt: '' })) : h('div', { class: 'jg-det-arte' }, ic(ICONE_DOC[d.tipo])),
       h('div', { class: 'jg-det-txt' }, h('h3', null, d.titulo), h('p', { class: 'jg-det-meta' }, meta), previa ? h('p', { class: 'jg-doc-previa' }, previa.length > 320 ? `${previa.slice(0, 320)}…` : previa) : null),
       h(
         'div',
@@ -1076,19 +1081,24 @@ export class TelaJogador {
     const cont = h('span', { class: 'jg-pag-n' });
     const ant = botao('Anterior', 'esquerda', '', () => ir(-1));
     const prox = botao('Próxima', 'direita', 'forte', () => ir(1));
+    // as páginas em imagem (os documentos dos PDFs) ou o texto, o que tiver mais
+    const total = paginasDoDocumento(d);
     const ir = (n: number) => {
-      pag = Math.max(0, Math.min(d.paginas.length - 1, pag + n));
+      pag = Math.max(0, Math.min(total - 1, pag + n));
       sfx.paper();
       desenhar();
     };
     const desenhar = () => {
-      pagina.replaceChildren(...(pag === 0 && d.imagem ? [h('img', { class: 'jg-pagina-img', src: d.imagem, alt: '' })] : []), ...d.paginas[pag].split(/\n{2,}/).map((p) => h('p', null, p)));
-      cont.textContent = d.paginas.length > 1 ? `Página ${pag + 1} de ${d.paginas.length}` : '';
+      const img = d.imagens?.[pag] ?? (pag === 0 ? d.imagem : undefined);
+      const texto = d.paginas[pag] ?? '';
+      pagina.replaceChildren(...(img ? [h('img', { class: 'jg-pagina-img', src: img, alt: `Página ${pag + 1}` })] : []), ...(texto.trim() ? texto.split(/\n{2,}/).map((p) => h('p', null, p)) : []));
+      pagina.scrollTop = 0;
+      cont.textContent = total > 1 ? `Página ${pag + 1} de ${total}` : '';
       ant.disabled = pag === 0;
-      prox.disabled = pag >= d.paginas.length - 1;
+      prox.disabled = pag >= total - 1;
     };
     j.corpo.append(pagina);
-    if (d.paginas.length > 1) j.rodape.append(ant, cont, prox);
+    if (total > 1) j.rodape.append(ant, cont, prox);
     else j.rodape.append(h('span', { class: 'fj-esp' }), botao('Fechar', 'ok', 'forte', () => j.fechar()));
     desenhar();
   }

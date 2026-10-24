@@ -3,6 +3,9 @@ import {
   distinctFacings,
   bar,
   getFurni,
+  footprint,
+  documentoNoMovel,
+  capaDoDocumento,
   getWallFurni,
   LOOT_KINDS,
   lootKindLabel,
@@ -1679,12 +1682,18 @@ export class Shell {
       this.paneItems(lista, s, loot, 'jogar');
       pane.append(this.secao(`Contém (${loot.length})`, lista));
     }
+    const docsAqui = this.docsNoMovel(s);
+    if (docsAqui.length) {
+      const lista = h('div', { class: 'obj-lista' });
+      this.paneDocs(lista, s, docsAqui, 'jogar');
+      pane.append(this.secao(`Documentos guardados (${docsAqui.length})`, lista));
+    }
     if (actions.length) {
       const lista = h('div', { class: 'obj-lista' });
       this.paneInter(lista, s, actions, 'jogar');
       pane.append(this.secao('Testes', lista));
     }
-    if (!usos.childElementCount && !loot.length && !actions.length && !trancado)
+    if (!usos.childElementCount && !loot.length && !actions.length && !trancado && !docsAqui.length)
       pane.append(h('p', { class: 'empty' }, this.gm ? 'Nada para fazer aqui. Em Configurar, ponha itens, uma pista ou testes.' : 'Nada de especial aqui.'));
   }
 
@@ -1702,6 +1711,12 @@ export class Shell {
     const itens = h('div', { class: 'obj-lista' });
     this.paneItems(itens, s, loot, 'config');
     pane.append(this.secao(`Itens dentro (${loot.length})`, itens));
+    if (kind === 'floor' && this.gm) {
+      const docs = h('div', { class: 'obj-lista' });
+      const aqui = this.docsNoMovel(s);
+      this.paneDocs(docs, s, aqui, 'config');
+      pane.append(this.secao(`Documentos guardados (${aqui.length})`, docs));
+    }
     const testes = h('div', { class: 'obj-lista' });
     this.paneInter(testes, s, actions, 'config');
     pane.append(this.secao('Testes', testes));
@@ -1916,6 +1931,82 @@ export class Shell {
       );
       pane.append(form);
     }
+  }
+
+  /**
+   * Os documentos guardados neste móvel (24/10, o Felipe: "é pra ter o documento lá"): os que têm `guardado` na cena
+   * aberta e numa casa que o móvel ocupa. Só o mestre vê (os jogadores recebem o documento quando acham).
+   */
+  private docsNoMovel(s: NonNullable<Sel>): Documento[] {
+    const cena = this.app.state.room?.id;
+    if (!this.gm || !cena || s.kind !== 'floor') return [];
+    const it = s.item as FloorItem;
+    const def = getFurni(it.defId);
+    if (!def) return [];
+    const { sx, sy } = footprint(def, it.rot);
+    const casas: { x: number; y: number }[] = [];
+    for (let dy = 0; dy < sy; dy++) for (let dx = 0; dx < sx; dx++) casas.push({ x: it.x + dx, y: it.y + dy });
+    return this.docs.filter((d) => documentoNoMovel(d, cena, casas));
+  }
+
+  /**
+   * Os documentos do móvel: quem achou (o agente comandado, ou a equipe) recebe na aba Docs do celular. Em Configurar,
+   * tirar daqui e guardar outro documento neste móvel.
+   */
+  private paneDocs(pane: HTMLElement, s: NonNullable<Sel>, docs: Documento[], modo: 'jogar' | 'config') {
+    const net = this.app.net;
+    const salvar = (d: Documento) => (sfx.paper(), net.send({ t: 'docSalvar', doc: d }));
+    const ativo = this.app.view.users.get(this.app.view.myId ?? 0);
+    const quem = ativo ? this.fichasMapa.find((f) => f.personagem && f.personagem === ativo.look.charId) : undefined;
+    const nome = (id: number) => this.fichasMapa.find((f) => f.id === id)?.nome ?? `#${id}`;
+    for (const d of docs) {
+      const achado = d.equipe ? 'Com a equipe' : d.para.length ? `Com ${d.para.map(nome).join(', ')}` : 'Ainda não achado';
+      const capa = capaDoDocumento(d);
+      const bts = h('div', { class: 'ic-bts' });
+      if (modo === 'jogar') {
+        if (quem && !d.para.includes(quem.id) && !d.equipe)
+          bts.append(h('button', { class: 'dbtn', title: `${quem.nome} achou: vai para a aba Docs do celular dele`, onclick: () => salvar({ ...d, para: [...d.para, quem.id] }) }, 'Achou'));
+        if (!d.equipe)
+          bts.append(h('button', { class: 'dbtn', title: 'Todos os agentes da campanha recebem', onclick: () => salvar({ ...d, equipe: true, ...(d.campanha ? {} : this.campaign?.key ? { campanha: this.campaign.key } : {}) }) }, 'Equipe'));
+      } else bts.append(h('button', { class: 'dbtn', title: 'Tirar o documento deste móvel (ele continua em Documentos)', onclick: () => salvar({ ...d, guardado: undefined }) }, 'Tirar daqui'));
+      pane.append(
+        h(
+          'div',
+          { class: 'icard' },
+          h('div', { class: 'ic-icon' }, capa ? h('img', { src: capa, alt: '', loading: 'lazy', style: 'width:52px;height:52px;object-fit:cover;border-radius:4px' }) : lootIcon('document', 52)),
+          h('div', { class: 'ic-text' }, h('b', null, d.titulo), h('small', null, achado)),
+          bts,
+        ),
+      );
+    }
+    if (modo === 'jogar') {
+      if (!quem && docs.some((d) => !d.equipe)) pane.append(h('p', { class: 'obj-nota' }, 'Comande o agente que procurou (clique no retrato dele) para entregar a ele, ou entregue à equipe.'));
+      return;
+    }
+    // guardar aqui um documento que ainda não está em nenhum móvel
+    const cena = this.app.state.room?.id;
+    const livres = this.docs.filter((d) => !d.guardado);
+    if (!cena || !livres.length) {
+      if (!livres.length) pane.append(h('p', { class: 'obj-nota' }, 'Todos os documentos já estão guardados em algum lugar (crie mais em Documentos).'));
+      return;
+    }
+    const sel = h('select', { class: 'mini grow', 'aria-label': 'Documento' }, ...livres.map((d) => h('option', { value: String(d.id) }, d.titulo))) as HTMLSelectElement;
+    const it = s.item as FloorItem;
+    pane.append(
+      h(
+        'form',
+        {
+          class: 'add-row',
+          onsubmit: (e: Event) => {
+            e.preventDefault();
+            const d = livres.find((x) => x.id === Number(sel.value));
+            if (d) salvar({ ...d, guardado: { cena, x: it.x, y: it.y } });
+          },
+        },
+        sel,
+        h('button', { class: 'dbtn', type: 'submit' }, 'Guardar aqui'),
+      ),
+    );
   }
 
   private paneItems(pane: HTMLElement, s: NonNullable<Sel>, loot: Loot[], modo: 'jogar' | 'config' = 'jogar') {
