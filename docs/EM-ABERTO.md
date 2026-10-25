@@ -6,7 +6,7 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 
 - **O escritório do Alexander:** a mesa virou (giro 0), o `trono_alexander` novo (pixel em `pecas_px/mansao_luxo.py`: ébano, veludo vinho capitonê, encosto alto em arco, remates de ouro) fica atrás dela, de costas para a parede do fundo; as duas cadeiras vermelhas de medalhão na frente. Saiu a `cadeira_ceo`.
 - **Cada um no seu posto** (`server/src/postosMansao.ts`, roda uma vez, `postosMansao2410`): os oito estavam numa fileira no Salão. Antônio na entrada do Salão, Helena no corredor dos funcionários, Lúcia na cozinha, Roberto no portão e Tiago nos canteiros do Jardim, Alexander sentado no trono, Arthur e Marina na biblioteca. Teste: `server/test/postosMansao.test.ts`.
-- **Ainda sem peça no tabuleiro:** os NPCs de Santa Amália (Augusto, Francine, Ana, Sônia, Lívia e o Herman) estão só no Elenco; Pedra Serena e o Jardim não têm peça nenhuma.
+- **Santa Amália no tabuleiro (25/10, `postosSantaAmalia2510`, mesmo arquivo, agora `server/src/postos.ts`):** Augusto e Francine na sala dos Valença, a Ana no quarto dela, a Sônia na recepção do posto, o Herman no consultório e a Lívia no atendimento do cartório, cada um com a arte dele. Pedra Serena e o Jardim continuam sem peça (o Fritz não aparece).
 
 ## Feito em 24/10 (fim da tarde): os documentos da campanha guardados nos móveis (no ar)
 

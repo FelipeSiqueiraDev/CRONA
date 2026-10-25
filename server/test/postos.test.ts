@@ -3,10 +3,12 @@ import { describe, test } from "node:test";
 import { RoomMap } from "@crona/shared";
 import { seedDb, upgradeDb } from "../src/seed";
 import { MANSAO } from "../src/seedMansaoAlbuquerque";
+import { SANTA_AMALIA } from "../src/seedSantaAmalia";
 
 describe("Mansão Albuquerque: cada um no seu posto", () => {
   const db = seedDb();
   upgradeDb(db);
+  upgradeDb(db); // a segunda passada é a do servidor que sobe com o banco já na versão
   const ondeEsta = (nome: string) => db.rooms.find((r) => r.tokens?.some((t) => t.name === nome));
 
   test("os empregados e a família saem do Salão para o cômodo deles", () => {
@@ -40,5 +42,28 @@ describe("Mansão Albuquerque: cada um no seu posto", () => {
     const esc = db.rooms.find((r) => r.name === MANSAO + "Escritório de Alexander")!;
     const alex = esc.tokens?.find((t) => t.name === "Alexander Albuquerque");
     if (alex) assert.ok(esc.items.some((i) => i.defId === "trono_alexander" && i.x === alex.x && i.y === alex.y), "o Alexander no trono");
+  });
+});
+
+describe("Santa Amália: a gente no tabuleiro", () => {
+  const db = seedDb();
+  upgradeDb(db);
+  upgradeDb(db); // a segunda passada é a do servidor que sobe com o banco já na versão
+  test("cada um no cômodo dele, numa casa livre", () => {
+    const esperado: [string, string][] = [
+      ["Augusto Valença", "Sala dos Valença"],
+      ["Francine Valença", "Sala dos Valença"],
+      ["Ana Valença", "Quarto da Filha"],
+      ["Sônia Nogueira", "Recepção do Posto"],
+      ["Herman Arantes", "Consultório"],
+      ["Lívia Monteiro", "Atendimento do Cartório"],
+    ];
+    for (const [nome, sala] of esperado) {
+      const r = db.rooms.find((q) => q.tokens?.some((t) => t.name === nome));
+      assert.equal(r?.name, SANTA_AMALIA + sala, `${nome} devia estar em ${sala}`);
+      const t = r!.tokens!.find((q) => q.name === nome)!;
+      const map = new RoomMap(r!.heightmap, r!.door, r!.items, r!.wallItems);
+      assert.equal(map.walkState(t.x, t.y), "walk", `${nome} em casa tapada`);
+    }
   });
 });
