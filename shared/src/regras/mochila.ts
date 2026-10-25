@@ -33,7 +33,7 @@ export function nomeDoItem(it: ItemFicha): string {
   let nome = b?.nome ?? it.id;
   // o que se escolheu ao requisitar: "Amarras de Sangue", "Utensílio (Investigação)"
   const el = it.escolha?.elemento;
-  if (el) nome = /\(Elemento\)/.test(nome) ? nome.replace('(Elemento)', NOME_ELEMENTO[el]) : `${nome} (${NOME_ELEMENTO[el]})`;
+  if (el) nome = /\(elemento\)/i.test(nome) ? nome.replace(/\(elemento\)/i, NOME_ELEMENTO[el]) : `${nome} (${NOME_ELEMENTO[el]})`;
   if (it.escolha?.pericia) nome = `${nome} (${cat.pericia(it.escolha.pericia).nome})`;
   return nome;
 }

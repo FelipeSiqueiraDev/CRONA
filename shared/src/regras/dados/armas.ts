@@ -167,6 +167,6 @@ export const ARMAS: Arma[] = [
     especial: ['cada shuriken é um pacote para 2 cenas', 'com a contagem de munição (LR p. 174), cada shuriken vale 10', 'veterano em Pontaria: 1x/rodada, 1 PE para outro ataque de shuriken no mesmo alvo'] },
   { id: 'pistola-pesada', nome: 'Pistola pesada', ref: SAH(38), categoria: 1, proficiencia: 'tatica', tipo: 'fogo', empunhadura: 'umaMao', dano: '2d8', critico: crit(18, 2), alcance: 'curto', tipoDano: ['balistico'], espacos: 1, municao: 'balas-curtas', penalidadeAtaque: -1,
     especial: ['−1d20 no ataque, anulado empunhando com as duas mãos', 'capacidade 10 (contagem de munição, LR p. 174)'] },
-  { id: 'espingarda-cano-duplo', nome: 'Espingarda cano duplo', ref: SAH(38), categoria: 2, proficiencia: 'tatica', tipo: 'fogo', empunhadura: 'duasMaos', dano: '4d6', critico: crit(20, 3), alcance: 'curto', tipoDano: ['balistico'], espacos: 2, municao: 'cartuchos',
+  { id: 'espingarda-cano-duplo', nome: 'Espingarda de cano duplo', ref: SAH(38), categoria: 2, proficiencia: 'tatica', tipo: 'fogo', empunhadura: 'duasMaos', dano: '4d6', critico: crit(20, 3), alcance: 'curto', tipoDano: ['balistico'], espacos: 2, municao: 'cartuchos',
     especial: ['1 cartucho por cano; recarregar os dois: ação de movimento', 'os dois canos no mesmo alvo: −1d20 no ataque e dano 6d6', 'capacidade 2 (contagem de munição, LR p. 174)'] },
 ];

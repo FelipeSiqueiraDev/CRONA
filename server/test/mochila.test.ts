@@ -151,7 +151,7 @@ describe('mochila: um inventário só', () => {
     gm.send({ t: 'mochila', fichaId: id, uid: g.id, acao: 'usar' });
     assert.equal(ficha('Catarina Albuquerque').ficha.inventario.find((x) => x.uid === g.id)?.qtd, undefined, 'sobra 1 (sem qtd)');
     hotel.pushNow();
-    assert.ok(gm.last('campaign')!.state.log.some((e) => e.text === 'Catarina Albuquerque usou Granada de Fumaça (sobra 1).'));
+    assert.ok(gm.last('campaign')!.state.log.some((e) => e.text === 'Catarina Albuquerque usou Granada de fumaça (sobra 1).'));
     gm.send({ t: 'mochila', fichaId: id, uid: g.id, acao: 'usar' });
     assert.ok(!ficha('Catarina Albuquerque').ficha.inventario.some((x) => x.uid === g.id));
   });

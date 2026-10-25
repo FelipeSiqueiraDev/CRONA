@@ -700,8 +700,8 @@ describe('requisição de equipamento (a janela de escolher itens)', () => {
   test('arma de fogo: diz a munição e se a mochila tem (LR p. 59)', () => {
     const f = combatente();
     const sem = op(f, 'pistola');
-    assert.deepEqual(sem.municao, { id: 'balas-curtas', nome: 'Balas Curtas', tem: false });
-    assert.ok(sem.avisos.some((a) => a.startsWith('Usa Balas Curtas')));
+    assert.deepEqual(sem.municao, { id: 'balas-curtas', nome: 'Balas curtas', tem: false });
+    assert.ok(sem.avisos.some((a) => a.startsWith('Usa Balas curtas')));
     f.inventario = [{ id: 'balas-curtas', tipo: 'equipamento' }];
     assert.equal(op(f, 'pistola').municao!.tem, true);
     assert.ok(!op(f, 'pistola').avisos.some((a) => a.startsWith('Usa')));

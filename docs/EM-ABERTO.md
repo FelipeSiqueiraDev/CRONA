@@ -2,6 +2,13 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Feito em 25/10: os nomes dos equipamentos como no livro (no ar)
+
+- O Felipe: "alguns nomes estão diferentes do livro em equipamentos, podíamos igualar pra ficar fácil de achar". Os 228 itens do catálogo (armas, equipamentos, proteções, modificações, amaldiçoados) foram conferidos com as tabelas do livro de regras (3.3 a 3.10) e do *Sobrevivendo ao Horror* (1.4 e 1.5).
+- Trocados 66 nomes, para ficarem como na tabela do livro. Os que mudavam de palavra: **Espingarda de cano duplo** (era "Espingarda cano duplo") e **Pendrive selado** (era "Pen Drive Selado"). Os outros só mudaram as maiúsculas: "Granada de fumaça", "Pé de cabra", "Kit de medicina", "Mira Laser" (nas modificações o livro usa maiúsculas).
+- As fichas guardam o item pelo id, então nada se perdeu. O nome com elemento ("Amarras de Sangue") passou a aceitar o "(elemento)" minúsculo (`shared/src/regras/mochila.ts`).
+- Não rodei o `/verissimo`: só mudaram nomes, conferidos à mão nas páginas dos livros.
+
 ## Feito em 24/10 (noite): o trono do Alexander e a gente da mansão nos postos (no ar, `MANSAO_REV` 13)
 
 - **O escritório do Alexander:** a mesa virou (giro 0), o `trono_alexander` novo (pixel em `pecas_px/mansao_luxo.py`: ébano, veludo vinho capitonê, encosto alto em arco, remates de ouro) fica atrás dela, de costas para a parede do fundo; as duas cadeiras vermelhas de medalhão na frente. Saiu a `cadeira_ceo`.
