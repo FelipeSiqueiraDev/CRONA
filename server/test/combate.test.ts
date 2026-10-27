@@ -989,6 +989,47 @@ describe('ataque no servidor', () => {
     assert.equal(gm.last('combate')!.combate!.ultimo, undefined);
   });
 
+  test('o desfazer devolve só o que o ataque tirou; o dano de fora do combate fica (27/10)', () => {
+    const [a, b] = pecas();
+    gm.send({ t: 'vitals', tokenId: -b.id, key: 'pv', max: 30 });
+    gm.send({ t: 'vitals', tokenId: -b.id, key: 'pv', value: 30 });
+    gm.combate({ tipo: 'abrir' });
+    gm.combate({ tipo: 'participante', id: a.id, lado: 'agente', iniciativa: 15 });
+    gm.combate({ tipo: 'participante', id: b.id, lado: 'inimigo' });
+    gm.combate({ tipo: 'iniciativaMestre', valor: 10 });
+    gm.combate({ tipo: 'comecar' });
+    gm.combate({
+      tipo: 'ataque',
+      ataque: {
+        quem: a.id,
+        alvo: b.id,
+        arma: 'Revólver',
+        qual: 'padrao',
+        teste: { dados: 2, bonus: 3, d20: 19, total: 22, defesa: 15 },
+        situacoes: [],
+        resultado: 'acerto',
+        multiplicador: 1,
+        dano: { formula: '2d6', soma: 8, total: 8, tipo: 'balistico', conta: '8', final: 8 },
+      },
+    });
+    gm.send({ t: 'vitals', tokenId: -b.id, key: 'pv', delta: -3 });
+    hotel.pushNow();
+    const pv = () => pecas().find((p) => p.id === b.id)!.vitals!.pv;
+    assert.equal(pv(), 19);
+    gm.combate({ tipo: 'desfazer' });
+    hotel.pushNow();
+    assert.equal(pv(), 27);
+  });
+
+  test('combate novo: o desfazer não volta para o combate que acabou', () => {
+    gm.combate({ tipo: 'abrir' });
+    gm.combate({ tipo: 'fechar' });
+    gm.combate({ tipo: 'abrir' });
+    gm.combate({ tipo: 'desfazer' });
+    gm.combate({ tipo: 'desfazer' });
+    assert.equal(gm.last('denied')?.reason, 'Nada para desfazer.');
+  });
+
   test('a ficha da ameaça fica na campanha e só o mestre recebe', () => {
     const [, b] = pecas();
     gm.send({ t: 'ameaca', tokenId: b.id, ficha: { ...combate.fichaAmeacaVazia(), tipo: 'Pessoa', vd: 40, defesa: 15, rd: { balistico: 10, voar: 3 } } as unknown as combate.FichaAmeaca });
@@ -1264,5 +1305,51 @@ describe('metade e empate (20/10)', () => {
     assert.equal(combate.passouResistencia(10, 15, 15), true);
     assert.equal(combate.passouResistencia(10, 14, 15), false);
     assert.equal(combate.passouResistencia(20, 5, 15), true);
+  });
+});
+
+describe('combate: auditoria de 27/10', () => {
+  test('todos saíram: quem entra faz a rodada andar (antes a vez ficava parada)', () => {
+    let c = aplicar(montado(), { tipo: 'comecar' });
+    for (const id of [1, 2, 3, 10, 11]) c = aplicar(c, { tipo: 'sair', id, motivo: 'saiu' });
+    assert.equal(c.vez, null);
+    c = aplicar(c, { tipo: 'entrar', id: 4, lado: 'agente', iniciativa: 10 });
+    assert.equal(vez(c), 'Alosi');
+    c = aplicar(c, { tipo: 'passar' });
+    assert.equal(vez(c), 'Alosi');
+  });
+
+  test('atrasar empatado com o próximo: a mesma Iniciativa vale e fica logo depois dele', () => {
+    let c = aplicar(montado(), { tipo: 'comecar' });
+    c = aplicar(c, { tipo: 'passar' });
+    c = aplicar(c, { tipo: 'passar' });
+    assert.equal(vez(c), 'Ocultista');
+    c = aplicar(c, { tipo: 'atrasar', valor: 14 });
+    assert.equal(vez(c), 'Acólito');
+    c = aplicar(c, { tipo: 'passar' });
+    assert.equal(vez(c), 'Ocultista');
+    assert.match(recusa(c, { tipo: 'atrasar', valor: 15 }), /menor que 14/);
+  });
+
+  test('lote: levantar sem a ação de movimento não tira o caído', () => {
+    let c = aplicar(montado(), { tipo: 'comecar' });
+    c = aplicar(c, { tipo: 'condicao', id: 1, condicao: 'caido', ativa: true });
+    c = aplicar(c, { tipo: 'declarar', qual: 'movimento', texto: 'anda', quem: 1 });
+    c = aplicar(c, { tipo: 'declarar', qual: 'movimento', texto: 'anda de novo', quem: 1 });
+    const levantar: Acao = { tipo: 'lote', acoes: [{ tipo: 'declarar', qual: 'movimento', texto: 'levanta-se', quem: 1 }, { tipo: 'condicao', id: 1, condicao: 'caido', ativa: false }] };
+    recusa(c, levantar);
+    assert.ok(combate.participante(c, 1)!.condicoes?.includes('caido'), 'continua caída');
+    c = aplicar(c, { tipo: 'passar' });
+    for (let i = 0; i < 4; i++) c = aplicar(c, { tipo: 'passar' });
+    assert.equal(vez(c), 'Cora');
+    c = aplicar(c, levantar);
+    assert.ok(!combate.participante(c, 1)!.condicoes?.includes('caido'), 'levantou');
+  });
+
+  test('o lote não aceita lote dentro, abrir nem desfazer', () => {
+    assert.equal(combate.lerAcao({ tipo: 'lote', acoes: [{ tipo: 'lote', acoes: [{ tipo: 'passar' }] }] }), null);
+    assert.equal(combate.lerAcao({ tipo: 'lote', acoes: [{ tipo: 'abrir' }] }), null);
+    assert.equal(combate.lerAcao({ tipo: 'lote', acoes: [] }), null);
+    assert.ok(combate.lerAcao({ tipo: 'lote', acoes: [{ tipo: 'passar' }] }));
   });
 });

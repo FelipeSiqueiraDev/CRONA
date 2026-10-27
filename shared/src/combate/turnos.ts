@@ -753,6 +753,21 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
     return { ok: true, combate: c };
   }
   if (!atual) return erro('Não há combate aberto.');
+  if (a.tipo === 'lote') {
+    let agora: Combate | null = atual;
+    const vitais: MudancaVitais[] = [];
+    for (const x of a.acoes) {
+      const r = aplicar(agora, x, ctx);
+      if (!r.ok) return r;
+      agora = r.combate;
+      for (const v of r.vitais ?? []) {
+        const ja = vitais.find((m) => m.id === v.id);
+        if (ja) Object.assign(ja, v);
+        else vitais.push({ ...v });
+      }
+    }
+    return { ok: true, combate: agora, ...(vitais.length ? { vitais } : {}) };
+  }
   const c = migrar(clone(atual));
   const ok = (): Resultado => ({ ok: true, combate: c });
   const naVez = () => (c.fase === 'andamento' && c.vez ? entrada(c, c.vez) : undefined);
@@ -852,10 +867,11 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       if (agiu) return erro('Já houve ação neste turno: atrasar é agir mais tarde, antes de usar a ação padrão, a de movimento ou a completa (LR p. 87).');
       const v = inteiro(a.valor, -99, 999);
       if (v === undefined) return erro('Iniciativa inválida.');
-      if (v >= e.valor) return erro(`Para atrasar, a Iniciativa nova precisa ser menor que ${e.valor}.`);
       const depois = entradas(c).filter((x) => x.id !== e.id && !c.agiram.includes(x.id) && ativosDa(c, x).length > 0);
       if (!depois.length) return erro('Ninguém mais age nesta rodada: não há como atrasar.');
       const prox = depois[0];
+      // empatado com o próximo, a mesma Iniciativa vale: fica logo depois dele, pelo desempate (auditoria de 27/10)
+      if (v > e.valor || (v === e.valor && v !== prox.valor)) return erro(`Para atrasar, a Iniciativa nova precisa ser menor que ${e.valor}.`);
       if (v > prox.valor) return erro(`Para agir depois de ${nomeEntrada(c, prox)}, a Iniciativa nova precisa ser ${prox.valor} ou menos.`);
       porIniciativa(c, e, v, v === prox.valor ? prox.desempate - 1 : 0);
       registrar(c, ctx.agora, 'turno', `${nomeEntrada(c, e)} atrasa a vez: Iniciativa ${e.valor} → ${v}.`);
@@ -984,6 +1000,8 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       p.iniciativa = v!;
       registrar(c, ctx.agora, 'estado', `${p.nome} entra no combate e age a partir da rodada ${c.rodada + 1}, com Iniciativa ${v}.`);
       if (lado !== 'agente') lembrarPresenca(c, ctx, p);
+      // ninguém mais podia agir (a vez estava parada): quem chega faz a rodada andar (auditoria de 27/10)
+      if (c.vez === null) proximo(c, ctx);
       return ok();
     }
 
@@ -1147,6 +1165,7 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
 }
 
 const TIPOS = new Set<AcaoCombate['tipo']>([
+  'lote',
   'ataque',
   'massivo',
   'manobra',
@@ -1181,6 +1200,13 @@ export function lerAcao(raw: unknown): AcaoCombate | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
   if (typeof o.tipo !== 'string' || !TIPOS.has(o.tipo as AcaoCombate['tipo'])) return null;
+  if (o.tipo === 'lote') {
+    // um lote curto, sem lote dentro, sem abrir nem desfazer
+    if (!Array.isArray(o.acoes) || !o.acoes.length || o.acoes.length > 4) return null;
+    const acoes = o.acoes.map(lerAcao);
+    if (acoes.some((x) => !x || x.tipo === 'lote' || x.tipo === 'abrir' || x.tipo === 'desfazer')) return null;
+    return { tipo: 'lote', acoes: acoes as AcaoCombate[] };
+  }
   return o as unknown as AcaoCombate;
 }
 

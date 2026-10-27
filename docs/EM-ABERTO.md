@@ -4,7 +4,7 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 
 ## Auditoria de 27/10: o que existe e não funciona
 
-- 35 defeitos achados no código (só leitura), em [`AUDITORIA-FUNCIONAMENTO.md`](AUDITORIA-FUNCIONAMENTO.md). Os mais graves: a ficha inteira mandada por cima (o celular e as janelas da FICHAS apagam dano e duplicam itens), o `campaign` do mestre (notas, segredos, ameaças) indo para a mesa e os jogadores, o combate que trava depois de "Pôr no combate" e o registro preso em 400 linhas. **Consertados em 27/10 (branch `claude/ficha-segura`, no ar desde 27/10, 18h27, com backup antes em `server/data/backups/crona_2026-10-27_18-26-30.dump`):** o grupo A (a ficha por cima: mescla de três vias) e o B (o segredo do mestre). Faltam os grupos C (COMBATE), D (MAPA), E (FICHAS) e F (celular).
+- 35 defeitos achados no código (só leitura), em [`AUDITORIA-FUNCIONAMENTO.md`](AUDITORIA-FUNCIONAMENTO.md). Os mais graves: a ficha inteira mandada por cima (o celular e as janelas da FICHAS apagam dano e duplicam itens), o `campaign` do mestre (notas, segredos, ameaças) indo para a mesa e os jogadores, o combate que trava depois de "Pôr no combate" e o registro preso em 400 linhas. **Consertados em 27/10 (branch `claude/ficha-segura`, no ar desde 27/10, 18h27, com backup antes em `server/data/backups/crona_2026-10-27_18-26-30.dump`):** o grupo A (a ficha por cima: mescla de três vias) e o B (o segredo do mestre). **O grupo C (COMBATE) foi consertado em 27/10, na branch `claude/combate-auditoria`; ainda não está no jogo de verdade.** Faltam os grupos D (MAPA), E (FICHAS) e F (celular).
 
 ## Feito em 25/10: os nomes dos equipamentos como no livro (no ar)
 

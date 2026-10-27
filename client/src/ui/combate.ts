@@ -275,7 +275,8 @@ export class CombateScreen {
   private aba: Aba = 'atacar';
   private fluxo: Fluxo = 'menu';
   /** o tamanho do registro (confirmar uma ação escreve nele: a tela volta ao menu da vez) */
-  private regTam = -1;
+  /** A última linha do registro já vista (o registro para em 400 linhas: contar não serve; auditoria de 27/10). */
+  private regUltima: string | null = null;
   /** o movimento escolhido: as casas aonde a peça chega (acesas no mapa) */
   private movimento: { ator: number; casas: Casa[] } | null = null;
   /** passo a passo da resolução: a página que o mestre abriu pelos números (null = a do passo de agora) */
@@ -847,7 +848,7 @@ export class CombateScreen {
           h('h5', null, 'Na mão'),
           ...(naMao.length
             ? naMao.map((it) =>
-                linha(regras.nomeDoItem(it), 'empunhado', bt('Guardar', () => (mochila('guardar', it.uid!), gastar(`guarda ${regras.nomeDoItem(it)}`))), bt('Largar no chão', () => (mochila('largar', it.uid!), this.acao({ tipo: 'declarar', qual: 'livre', texto: `larga ${regras.nomeDoItem(it)}`, quem: ator.id })))),
+                linha(regras.nomeDoItem(it), 'empunhado', bt('Guardar', () => this.acao({ tipo: 'declarar', qual, texto: `guarda ${regras.nomeDoItem(it)}`, quem: ator.id, guardar: it.uid! })), bt('Largar no chão', () => (mochila('largar', it.uid!), this.acao({ tipo: 'declarar', qual: 'livre', texto: `larga ${regras.nomeDoItem(it)}`, quem: ator.id })))),
               )
             : [h('p', { class: 'vez-vazio' }, 'As duas mãos livres.')]),
         ),
@@ -856,7 +857,7 @@ export class CombateScreen {
           { class: 'vez-grupo' },
           h('h5', null, 'Na mochila'),
           ...(naMochila.length
-            ? naMochila.map((it) => linha(regras.nomeDoItem(it), it.qtd && it.qtd > 1 ? `${it.qtd} unidades` : 'guardado', it.uid !== undefined ? bt('Sacar', () => (mochila('empunhar', it.uid!), gastar(`saca ${regras.nomeDoItem(it)}`)), true) : null))
+            ? naMochila.map((it) => linha(regras.nomeDoItem(it), it.qtd && it.qtd > 1 ? `${it.qtd} unidades` : 'guardado', it.uid !== undefined ? bt('Sacar', () => this.acao({ tipo: 'declarar', qual, texto: `saca ${regras.nomeDoItem(it)}`, quem: ator.id, sacar: it.uid! }), true) : null))
             : [h('p', { class: 'vez-vazio' }, 'Mochila vazia.')]),
         ),
       );
@@ -955,12 +956,20 @@ export class CombateScreen {
       this.fecharInfo();
     }
     // uma ação foi confirmada (entrou uma linha de ação no registro): volta ao menu da vez
-    const n = c?.registro.length ?? 0;
-    const novas = this.regTam >= 0 && n > this.regTam ? (c?.registro.slice(this.regTam) ?? []) : [];
+    const reg = c?.registro ?? [];
+    const chaveReg = (l: (typeof reg)[number]) => `${l.em}|${l.texto}`;
+    let novas: typeof reg = [];
+    if (this.regUltima === '') novas = reg;
+    else if (this.regUltima !== null) {
+      let i = reg.length - 1;
+      while (i >= 0 && chaveReg(reg[i]) !== this.regUltima) i--;
+      // sem a linha de antes (o Desfazer tirou), nada é novo
+      if (i >= 0) novas = reg.slice(i + 1);
+    }
     if (novas.some((l) => l.tipo === 'acao') && this.fluxo !== 'menu') (this.fluxo = 'menu'), this.desligarMovimento();
     // tela nova: confirmada uma ação, o alvo some
     if (this.modoCards && novas.some((l) => l.tipo === 'acao')) this.alvoId = null;
-    this.regTam = n;
+    this.regUltima = reg.length ? chaveReg(reg[reg.length - 1]) : '';
     this.render();
   }
 
@@ -2135,8 +2144,8 @@ export class CombateScreen {
   }
 
   private levantar(p: Participante) {
-    this.acao({ tipo: 'declarar', qual: 'movimento', texto: 'levanta-se', quem: p.id });
-    this.acao({ tipo: 'condicao', id: p.id, condicao: 'caido', ativa: false });
+    // numa ação só: sem a ação de movimento, continua caído (auditoria de 27/10)
+    this.acao({ tipo: 'lote', acoes: [{ tipo: 'declarar', qual: 'movimento', texto: 'levanta-se', quem: p.id }, { tipo: 'condicao', id: p.id, condicao: 'caido', ativa: false }] });
   }
 
   // ---------------------------------------------------------------- tabuleiro (moldura)
@@ -2745,7 +2754,8 @@ export class CombateScreen {
   /** Ações da lista do livro que mexem em algo além do registro. */
   private acaoDoLivro(c: Combate, ator: Participante, o: OpcaoAcao, alvo: Participante | undefined) {
     const contra = o.alvo && alvo ? ` contra ${alvo.nome}` : '';
-    const declarar = () => this.acao({ tipo: 'declarar', qual: o.qual, texto: `${o.nome.toLowerCase()}${contra}`, quem: ator.id });
+    const decl: cb.AcaoCombate = { tipo: 'declarar', qual: o.qual, texto: `${o.nome.toLowerCase()}${contra}`, quem: ator.id };
+    const declarar = () => this.acao(decl);
     if (o.id === 'levantar') return this.levantar(ator);
     if (o.id === 'esconder') {
       // esconder-se: a peça fica agachada (o Felipe, 17/10); levantar-se ou o botão Agachado do painel desfaz
@@ -2753,14 +2763,8 @@ export class CombateScreen {
       this.app.net.send({ t: 'tokenEdit', tokenId: -ator.id, agachado: true });
       return;
     }
-    if (o.id === 'chao') {
-      declarar();
-      return this.acao({ tipo: 'condicao', id: ator.id, condicao: 'caido', ativa: true });
-    }
-    if (o.id === 'apagar') {
-      declarar();
-      return this.acao({ tipo: 'condicao', id: ator.id, condicao: 'em-chamas', ativa: false });
-    }
+    if (o.id === 'chao') return this.acao({ tipo: 'lote', acoes: [decl, { tipo: 'condicao', id: ator.id, condicao: 'caido', ativa: true }] });
+    if (o.id === 'apagar') return this.acao({ tipo: 'lote', acoes: [decl, { tipo: 'condicao', id: ator.id, condicao: 'em-chamas', ativa: false }] });
     if ((o.id === 'socorros' || o.id === 'acalmar') && alvo) {
       const v = this.vitais(alvo.id);
       const socorro = o.id === 'socorros';
@@ -2784,8 +2788,13 @@ export class CombateScreen {
           j.fechar();
         }),
         botaoJanela('Passou', 'ok', 'forte', () => {
-          this.acao({ tipo: 'declarar', qual: 'padrao', texto: `${o.nome.toLowerCase()} em ${alvo.nome}: passou`, quem: ator.id });
-          this.acao({ tipo: 'vitais', id: alvo.id, ...(socorro ? { pv: 1 } : { san: 1 }), motivo: o.nome.toLowerCase() });
+          this.acao({
+            tipo: 'lote',
+            acoes: [
+              { tipo: 'declarar', qual: 'padrao', texto: `${o.nome.toLowerCase()} em ${alvo.nome}: passou`, quem: ator.id },
+              { tipo: 'vitais', id: alvo.id, ...(socorro ? { pv: 1 } : { san: 1 }), motivo: o.nome.toLowerCase() },
+            ],
+          });
           j.fechar();
         }),
       );
@@ -2803,8 +2812,7 @@ export class CombateScreen {
       'Usar',
     ).then((ok) => {
       if (!ok) return;
-      this.acao({ tipo: 'gastarPe', quem: ator.id, pe: custo, motivo: nome });
-      this.acao({ tipo: 'declarar', qual: 'livre', texto: `usa ${nome}${contra}`, quem: ator.id });
+      this.acao({ tipo: 'lote', acoes: [{ tipo: 'gastarPe', quem: ator.id, pe: custo, motivo: nome }, { tipo: 'declarar', qual: 'livre', texto: `usa ${nome}${contra}`, quem: ator.id }] });
     });
   }
 

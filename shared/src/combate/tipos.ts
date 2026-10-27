@@ -287,9 +287,15 @@ export type AcaoCombate =
    * Declara uma ação: vai para o registro e gasta o que ela custa. `quem` = qual
    * ser age (no turno do mestre); `especial` = reação de defesa especial
    * (bloqueio, esquiva, contra-ataque: uma por rodada). `sacar` = o item da
-   * mochila do ser que vai para a mão junto (sacar é ação de movimento, LR p. 54).
+   * mochila do ser que vai para a mão junto (sacar é ação de movimento, LR p. 54); `guardar` = o item da mão que
+   * volta para a mochila.
    */
-  | { tipo: 'declarar'; qual: TipoAcao; texto: string; quem?: number; especial?: boolean; sacar?: number }
+  | { tipo: 'declarar'; qual: TipoAcao; texto: string; quem?: number; especial?: boolean; sacar?: number; guardar?: number }
+  /**
+   * Várias ações que andam juntas (levantar-se = a ação de movimento e o fim do caído; primeiros socorros = a ação
+   * padrão e o 1 PV): passam todas ou nenhuma, e o Desfazer volta todas (auditoria de 27/10).
+   */
+  | { tipo: 'lote'; acoes: AcaoCombate[] }
   | { tipo: 'reacao'; id: number; usada: boolean }
   /** alguém chega no meio: age a partir da rodada seguinte */
   | { tipo: 'entrar'; id: number; lado: Lado; iniciativa?: number | null }

@@ -358,7 +358,7 @@ export class Hotel implements HotelApi {
   /** estados anteriores do combate de cada campanha, para o "Desfazer" (só na memória), com os PV/PE/SAN que cada passo mudou */
   /** as mesas do bar (o fliperama, o alvo, a sinuca), pelo id do móvel: quem joga em cada lugar e as jogadas guardadas */
   private mesas = new Map<number, MesaBar>();
-  private desfazeres = new Map<number, { combate: string; vitais: { id: number; antes: Vitals }[]; mochilas?: { fichaId: number; inventario: regras.ItemFicha[] }[]; largados?: number[] }[]>();
+  private desfazeres = new Map<number, { combate: string; vitais: { id: number; antes: Vitals; depois?: Vitals }[]; mochilas?: { fichaId: number; inventario: regras.ItemFicha[] }[]; largados?: number[] }[]>();
 
   /** Peças da campanha e os PV/SAN delas, para as regras do combate. */
   private contextoCombate(group: number[], cena: number): cmb.Contexto {
@@ -815,8 +815,17 @@ export class Hotel implements HotelApi {
       const volta = JSON.parse(passo.combate) as cmb.Combate | null;
       if (volta) camp.combate = volta;
       else delete camp.combate;
-      // o que o passo mudou nas peças volta também: PV, o item que caiu no chão e a mochila
-      for (const x of passo.vitais) this.mudarVitaisPeca(group, x.id, x.antes);
+      // o que o passo mudou nas peças volta também: PV, o item que caiu no chão e a mochila. Os PV voltam pela
+      // diferença: a cura ou o dano de depois, fora do combate, continuam (auditoria de 27/10)
+      for (const x of passo.vitais) {
+        const agora = x.depois && this.vitaisDaPecaAgora(group, x.id);
+        if (!agora || !x.depois) {
+          this.mudarVitaisPeca(group, x.id, x.antes);
+          continue;
+        }
+        const volta = (k: 'pv' | 'pe' | 'san') => agora[k] + (x.antes[k] - x.depois![k]);
+        this.mudarVitaisPeca(group, x.id, { pv: volta('pv'), pe: volta('pe'), san: volta('san') });
+      }
       for (const uid of passo.largados ?? []) for (const id of group) if (this.rooms.get(id)?.retirarLoot(uid)) break;
       for (const x of passo.mochilas ?? []) {
         const f = (this.db.fichas ?? []).find((y) => y.id === x.fichaId);
@@ -829,12 +838,22 @@ export class Hotel implements HotelApi {
       return;
     }
     const antes = camp.combate ?? null;
+    // combate novo: o Desfazer não volta para o combate que acabou (nem os PV de lá; auditoria de 27/10)
+    if (a.tipo === 'abrir') pilha.length = 0;
     // sacar: confere a mão antes de gastar a ação de movimento
     let sacar: { f: FichaSalva; inventario: regras.ItemFicha[] } | null = null;
     if (a.tipo === 'declarar' && typeof a.sacar === 'number') {
       const f = this.fichaDaPeca(group, a.quem);
       if (!f) return c.send({ t: 'denied', action: 'combate', reason: 'Sem ficha: não há mochila para sacar.' });
       const e = regras.empunhar(f.ficha.inventario, a.sacar, true);
+      if (!e.ok) return c.send({ t: 'denied', action: 'combate', reason: e.motivo });
+      sacar = { f, inventario: e.inventario };
+    }
+    // guardar: o item da mão volta para a mochila, junto com a ação (e o Desfazer devolve à mão; 27/10)
+    if (a.tipo === 'declarar' && typeof a.guardar === 'number') {
+      const f = this.fichaDaPeca(group, a.quem);
+      if (!f) return c.send({ t: 'denied', action: 'combate', reason: 'Sem ficha: não há mochila.' });
+      const e = regras.guardar(f.ficha.inventario, a.guardar);
       if (!e.ok) return c.send({ t: 'denied', action: 'combate', reason: e.motivo });
       sacar = { f, inventario: e.inventario };
     }
@@ -863,10 +882,11 @@ export class Hotel implements HotelApi {
         largados.push(caiu.uid);
       }
     }
-    const mudou: { id: number; antes: Vitals }[] = [];
+    const mudou: { id: number; antes: Vitals; depois?: Vitals }[] = [];
     for (const m of r.vitais ?? []) {
       const velho = this.mudarVitaisPeca(group, m.id, m);
-      if (velho) mudou.push({ id: m.id, antes: velho });
+      const depois = velho ? this.vitaisDaPecaAgora(group, m.id) : null;
+      if (velho) mudou.push({ id: m.id, antes: velho, ...(depois ? { depois: { ...depois } } : {}) });
     }
     pilha.push({ combate: JSON.stringify(antes), vitais: mudou, ...(mochilas.length ? { mochilas } : {}), ...(largados.length ? { largados } : {}) });
     if (pilha.length > MAX_DESFAZER) pilha.splice(0, pilha.length - MAX_DESFAZER);
@@ -924,6 +944,15 @@ export class Hotel implements HotelApi {
   }
 
   /** PV, PE ou SAN de uma peça da campanha (procura a cena em que ela está). Devolve os de antes. */
+  /** Os PV, PE e SAN de agora de uma peça da campanha. */
+  private vitaisDaPecaAgora(group: number[], tokenId: number): Vitals | null {
+    for (const id of group) {
+      const t = this.rooms.get(id)?.tokensLive().find((x) => x.token.id === tokenId);
+      if (t) return t.vitals ?? null;
+    }
+    return null;
+  }
+
   private mudarVitaisPeca(group: number[], tokenId: number, m: { pv?: number; pe?: number; san?: number }): Vitals | null {
     for (const id of group) {
       const antes = this.rooms.get(id)?.mudarVitais(tokenId, m);

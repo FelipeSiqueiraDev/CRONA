@@ -26,7 +26,9 @@ O `fichaSalvar` troca a ficha inteira pela que o cliente mandou (`hotel.ts:1493`
 9. **O jogador passa por cima do mestre pelo `fichaSalvar`** (mensagem montada à mão): `bonus` do interlúdio, tirar condições que o mestre marcou, `achado: true` para fugir da patente, trocar faca por fuzil fora da base, modificações sem checagem (`hotel.ts:1457-1486`).
 10. **Móveis e combate:** os testes com DT, `trancado` e as peças dentro da névoa vão para o cliente da mesa (`roomInstance.ts:719-735`); a visão de combate da mesa leva nomes de ameaças ainda escondidas e quem será surpreendido (`turnos.ts:1188`); `peek` sem checagem de papel (`hotel.ts:2398`).
 
-## Grupo C — COMBATE
+## Grupo C — COMBATE — **consertado em 27/10** (menos o 17)
+
+**O conserto:** quem entra com a vez parada faz a rodada andar; a tela acha a ação nova pela última linha do registro, não pela contagem; atrasar empatado com o próximo aceita a mesma Iniciativa; a ação nova `lote` junta as que andam juntas (Levantar, Deitar, Apagar as chamas, Primeiros socorros, Acalmar, usar habilidade): passam todas ou nenhuma, e o Desfazer volta todas; Sacar e Guardar pela tela de Item vão pelo `declarar` (`sacar`, `guardar`), e o Desfazer devolve a mochila; a Investida pede o turno inteiro livre, como o servidor; o Desfazer devolve os PV pela diferença e a pilha zera ao abrir um combate novo; o texto do Desarmar não manda mais tirar o item à mão. **Ficou como está, o 17:** as fichas de NPC são da Ordem (Miguel, Agatha, Rosa...), que lutam do lado dos agentes; tratar como inimigo erraria mais vezes.
 
 11. ✔ **Combate trava:** todos fora → "Pôr no combate" não chama `proximo()`; a vez fica nula e passar/atacar recusam para sempre (`turnos.ts:965-988`).
 12. ✔ **Registro preso em 400 linhas:** depois disso, confirmar um ataque não volta ao menu nem limpa o alvo (`combate.ts:957-962`, `turnos.ts:28`).

@@ -652,7 +652,8 @@ export class ResolucaoAtaque {
       h('span', null, 'Desfazer'),
     );
     // o "×2" da ameaça deixa mais ataques na mesma ação padrão
-    const semAcao = x.acoes.completa || (x.acoes.padrao && !k.ids.includes('investida') && !x.acoes.golpes);
+    // a investida é ação completa: precisa do turno inteiro livre, como o servidor confere (auditoria de 27/10)
+    const semAcao = x.acoes.completa || (k.ids.includes('investida') ? x.acoes.padrao || x.acoes.movimento : x.acoes.padrao && !x.acoes.golpes);
     const confirmar = h(
       'button',
       {

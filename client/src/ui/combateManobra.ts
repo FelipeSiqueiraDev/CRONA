@@ -447,7 +447,8 @@ export class ResolucaoManobra {
           linhas.push(h('b', null, `${nome} fica caído${k.empurrao ? ` e é empurrado ${metros}` : ''}.`));
           break;
         case 'desarmar':
-          linhas.push(h('b', null, cb.empurraUmQuadrado(op.diferenca) ? `O item de ${nome} vai 1 quadrado adiante.` : `O item de ${nome} cai na casa dele.`), h('span', null, 'Tire o item da mão na ficha.'));
+          // o jogo já tira o item da mão e larga na casa do alvo (auditoria de 27/10: o texto mandava tirar de novo)
+          linhas.push(h('b', null, `O item de ${nome} sai da mão dele e cai no chão, na casa dele.`), h('span', null, cb.empurraUmQuadrado(op.diferenca) ? 'Pelo livro, vai 1 quadrado adiante: leve a pilha, se quiser.' : 'Não precisa mexer na ficha.'));
           break;
         case 'empurrar':
           linhas.push(h('b', null, `${nome} é empurrado ${metros}.`), h('span', null, `${x.ator.nome} pode gastar uma ação de movimento para ir junto.`));
