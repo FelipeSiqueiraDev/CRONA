@@ -1187,5 +1187,8 @@ export function lerAcao(raw: unknown): AcaoCombate | null {
 /** O que a mesa (tablet) recebe: a ordem, a rodada e a vez, sem o registro nem o texto das ações preparadas. */
 export function visaoMesa(c: Combate | null): Combate | null {
   if (!c) return null;
-  return { ...clone(c), registro: [], preparadas: c.preparadas.map((p) => ({ ...p, texto: '' })) };
+  // quem vai ser surpreendido e o dano massivo (com a DT) são do mestre (27/10)
+  const v = clone(c);
+  for (const p of v.participantes) p.ciente = true;
+  return { ...v, registro: [], massivos: [], preparadas: c.preparadas.map((p) => ({ ...p, texto: '' })) };
 }

@@ -96,6 +96,9 @@ Este guia é para o Claude que pega o CRONA do zero, numa conversa nova ou noutr
 - Troque o texto de um nó só se ele mudou (`if (el.textContent !== t) el.textContent = t`): trocar à toa recria o nó.
 - Para conferir: um `MutationObserver` no `document.body` durante um clique em "+ Vida" não pode ver nós criados nos painéis (só trocas de texto).
 
+**Gravar uma ficha (27/10)**
+- Nunca mande `fichaSalvar` com uma cópia feita à mão: a cópia sai de `clonarFicha` e se grava com `gravarFicha` (`client/src/fichaOrigem.ts`). Assim vai a base, e o servidor não apaga o dano, o item entregue ou a condição que mudaram enquanto a janela estava aberta.
+
 ## Rodar e conferir
 
 O básico está no `AGENTS.md`. Além dele:

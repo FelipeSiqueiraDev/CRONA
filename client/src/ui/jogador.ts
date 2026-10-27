@@ -8,6 +8,7 @@
  * Tudo que muda a ficha vai pelo `fichaSalvar` (o servidor confere o que o jogador pode); a
  * mochila e o Armado, pelo `mochila`; os documentos, por `docMarcar` e `docEquipe`.
  */
+import { clonarFicha, gravarFicha, rebasearFicha } from '../fichaOrigem';
 import {
   documentoParaJogador,
   nomeTipoDocumento,
@@ -201,9 +202,10 @@ export class TelaJogador {
   }
 
   setFicha(fs: FichaSalva | null) {
-    // a mudança que o jogador ainda não mandou vale mais que a cópia do servidor
-    if (this.timer && this.fs && fs && fs.id === this.fs.id) return;
-    this.fs = fs ? clone(fs) : null;
+    // a mudança que o jogador ainda não mandou fica por cima da cópia do servidor, sem apagar o que mudou lá
+    // (o dano do combate, o item que o colega entregou: antes a cópia velha voltava inteira; 27/10)
+    if (this.timer && this.fs && fs && fs.id === this.fs.id) this.fs = rebasearFicha(this.fs, fs);
+    else this.fs = fs ? clonarFicha(fs) : null;
     // escrevendo uma nota: o resto da tela atualiza, o campo fica como está
     const foco = document.activeElement;
     this.render(!(foco && this.conteudo.contains(foco) && /^(INPUT|TEXTAREA)$/.test(foco.tagName)));
@@ -230,7 +232,7 @@ export class TelaJogador {
     clearTimeout(this.timer);
     this.timer = window.setTimeout(() => {
       this.timer = 0;
-      this.app.net.send({ t: 'fichaSalvar', ficha: fs });
+      this.app.net.send(gravarFicha(fs));
     }, 450);
   }
 
@@ -532,15 +534,17 @@ export class TelaJogador {
       this.fs?.naBase
         ? botao('Pedir itens à Ordem', 'mais', 'forte', () => {
             const r: FichaSalva = JSON.parse(JSON.stringify(this.fs));
-            const antes = r.ficha.inventario.length;
+            const pedidos: regras.ItemFicha[] = [];
             abrirRequisicao({
               ficha: r.ficha,
               nome: r.nome,
               tema: r.tema,
               mestre: false,
-              aoAdicionar: () => {},
+              aoAdicionar: (it) => pedidos.push(it),
+              // só o que se pediu agora, por cima da mochila de agora (a de quando abriu pode estar velha: o colega
+              // entregou um item; 27/10); a munição vai para a pilha, como na requisição
               aoFechar: () => {
-                if (r.ficha.inventario.length !== antes) this.mudar((fs) => (fs.ficha = { ...fs.ficha, inventario: r.ficha.inventario }));
+                if (pedidos.length) this.mudar((fs) => pedidos.forEach((it) => regras.porNaMochila(fs.ficha, it)));
               },
             });
           })

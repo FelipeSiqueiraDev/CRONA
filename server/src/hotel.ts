@@ -70,6 +70,7 @@ import {
   bar,
   combate as cmb,
   sanitizarFicha,
+  mesclarFicha,
   sanitizarDocumento,
   documentoDaFicha,
   documentoParaJogador,
@@ -1450,13 +1451,22 @@ export class Hotel implements HotelApi {
   }
 
   private fichaSalvar(c: Client, m: Record<string, unknown>) {
-    const f = sanitizarFicha(m.ficha);
+    let f = sanitizarFicha(m.ficha);
     if (!f) return c.send({ t: 'error', msg: 'Ficha inválida.' });
     const lista = (this.db.fichas ??= []);
-    const antiga = f.id ? lista.find((x) => x.id === f.id) : undefined;
+    const antiga = f.id ? lista.find((x) => x.id === f!.id) : undefined;
+    // a cópia de onde a edição partiu: fica só o que mudou nela, sem apagar o que mudou aqui no meio do caminho
+    // (o dano do combate, o item entregue, a condição marcada; auditoria de 27/10)
+    const base = antiga && m.base ? sanitizarFicha(m.base) : null;
+    if (antiga && base && base.id === antiga.id) f = structuredClone(mesclarFicha(base, f, antiga));
+    // recusado: a tela de quem pediu volta para a ficha de verdade (senão cada toque seguinte é recusado de novo)
+    const recusa = (msg: string) => {
+      c.send({ t: 'error', msg });
+      this.enviarFichas(c);
+    };
     if (c.role !== 'gm') {
       // o jogador mexe só na própria ficha; NEX, patente, ligação e link são do mestre
-      if (!c.fichaId || !antiga || antiga.id !== c.fichaId) return c.send({ t: 'error', msg: 'Você só pode mexer na sua ficha.' });
+      if (!c.fichaId || !antiga || antiga.id !== c.fichaId) return recusa('Você só pode mexer na sua ficha.');
       f.ficha.nex = antiga.ficha.nex;
       f.ficha.pp = antiga.ficha.pp;
       f.ficha.regras = antiga.ficha.regras;
@@ -1468,22 +1478,47 @@ export class Hotel implements HotelApi {
       if (antiga.npc) f.npc = antiga.npc;
       else delete f.npc;
       delete f.naBase;
+      // o que o mestre marca: as condições e os bônus do interlúdio (27/10)
+      if (antiga.condicoes) f.condicoes = antiga.condicoes;
+      else delete f.condicoes;
+      if (antiga.bonus) f.bonus = antiga.bonus;
+      else delete f.bonus;
+      // o item que já estava na mochila guarda o "achado" e as melhorias (estas só pelo mochilaMelhorias);
+      // o que entra pela requisição nunca é achado
+      const antes = new Map(antiga.ficha.inventario.filter((i) => i.uid !== undefined).map((i) => [i.uid, i]));
+      for (const it of f.ficha.inventario) {
+        const era = it.uid !== undefined ? antes.get(it.uid) : undefined;
+        if (era && era.tipo === it.tipo && era.id === it.id) {
+          if (era.achado) it.achado = true;
+          else delete it.achado;
+          for (const k of ['modificacoes', 'maldicoes'] as const) {
+            if (era[k]) it[k] = era[k];
+            else delete it[k];
+          }
+        } else if (it.tipo !== 'cena') {
+          delete it.achado;
+          delete it.modificacoes;
+          delete it.maldicoes;
+        }
+      }
       // a requisição do jogador respeita a patente: nenhuma categoria acima do limite a mais que antes (LR p. 52)
       try {
         const antes = regras.calcular(antiga.ficha).itens;
         const depois = regras.calcular(f.ficha).itens;
         const passou = depois.find((l) => l.usados > l.limite && l.usados > (antes.find((x) => x.categoria === l.categoria)?.usados ?? 0));
-        if (passou) return c.send({ t: 'error', msg: `Limite da patente: categoria ${'I'.repeat(passou.categoria === 4 ? 0 : passou.categoria) || 'IV'} já tem ${passou.limite} (LR p. 52). Peça ao mestre.` });
+        if (passou) return recusa(`Limite da patente: categoria ${'I'.repeat(passou.categoria === 4 ? 0 : passou.categoria) || 'IV'} já tem ${passou.limite} (LR p. 52). Peça ao mestre.`);
         // e nenhum erro de regra novo (atributo fora dos pontos, escolha travada...): o jogador não passa por cima do livro
         const errosAntes = new Set(regras.calcular(antiga.ficha).problemas.filter((p) => p.severidade === 'erro').map((p) => `${p.onde}|${p.texto}`));
         const novo = regras.calcular(f.ficha).problemas.find((p) => p.severidade === 'erro' && !errosAntes.has(`${p.onde}|${p.texto}`));
-        if (novo) return c.send({ t: 'error', msg: `${novo.onde}: ${novo.texto} Peça ao mestre.` });
+        if (novo) return recusa(`${novo.onde}: ${novo.texto} Peça ao mestre.`);
       } catch {
         /* ficha que o motor não fecha: o mestre confere */
       }
       // pedir itens do catálogo só na base da Ordem (19/10, o Felipe): fora dela, a mochila só ganha o que o mestre dá
-      const doCatalogo = (x: regras.Ficha) => x.inventario.filter((i) => i.tipo !== 'cena').length;
-      if (doCatalogo(f.ficha) > doCatalogo(antiga.ficha) && !this.naBase(antiga)) return c.send({ t: 'error', msg: 'Itens da Ordem só se pedem na base (a Sede). Peça ao mestre.' });
+      // (item do catálogo que não estava na mochila: trocar a faca por um fuzil também é pedir)
+      const ja = new Set(antiga.ficha.inventario.map((i) => i.uid).filter((u) => u !== undefined));
+      const pediu = f.ficha.inventario.some((i) => i.tipo !== 'cena' && (i.uid === undefined || !ja.has(i.uid)));
+      if (pediu && !this.naBase(antiga)) return recusa('Itens da Ordem só se pedem na base (a Sede). Peça ao mestre.');
     }
     if (antiga) f.chave = antiga.chave;
     else delete f.chave;
@@ -1762,10 +1797,13 @@ export class Hotel implements HotelApi {
         vitals: t.vitals,
       };
     };
+    // as ameaças (a mesa e o jogador não recebem as que estão em sala sem agente)
+    const ameacas = new Set<number>();
     for (const r of rooms)
       for (const t of r.tokensLive()) {
         tokens.push(t.token);
         characters.push(personagemDe(r, t));
+        if (t.criatura) ameacas.add(t.token.id);
       }
     // quem está no combate e foi para outra cena (o mestre trocou de cena no meio da luta, ou o combate abriu em outro
     // grupo de cenas): o mestre continua vendo a foto, os PV e a ficha dele na aba COMBATE (17/10, "as fotos todas
@@ -1788,6 +1826,26 @@ export class Hotel implements HotelApi {
     const cur = camp.currentSceneId;
     const home = this.db.home;
     const currentSceneId = cur !== undefined && group.includes(cur) ? cur : home !== undefined && group.includes(home) ? home : key;
+    if (role !== 'gm') {
+      // a mesa e o jogador: sem as descrições das cenas (o que se esconde nos móveis já sai no sessionObjects)
+      // e sem as ameaças das salas onde não há ninguém do grupo (a Ovelha na Sala de Sangue antes de alguém chegar); 27/10
+      const abertas = new Set(rooms.filter((r) => r.data.id === currentSceneId || r.tokenList().some((t) => this.ehAgente(t.look?.charId))).map((r) => r.data.id));
+      const visiveis = new Set(characters.filter((ch) => abertas.has(ch.sceneId) || !ameacas.has(ch.id)).map((ch) => ch.id));
+      return {
+        id: key,
+        title: camp.title,
+        subtitle: camp.subtitle,
+        currentSceneId,
+        scenes: scenes.map((sc) => ({ ...sc, description: '' })),
+        objects,
+        characters: characters.filter((ch) => visiveis.has(ch.id)),
+        tokens: tokens.filter((t) => visiveis.has(t.id)),
+        items: items.filter((it) => it.holderId === null || visiveis.has(it.holderId)),
+        objectives: camp.objectives,
+        events: camp.log.slice(-30),
+        layout: camp.layout,
+      };
+    }
     return {
       id: key,
       title: camp.title,
@@ -1810,7 +1868,7 @@ export class Hotel implements HotelApi {
   }
 
   private pushScenes() {
-    const cache = new Map<number, string>();
+    const cache = new Map<string, string>();
     const groups = new Map<number, number[]>();
     const snaps = new Map<string, Omit<Session, 'me'>>();
     const combates = new Map<string, string>();
@@ -1822,10 +1880,15 @@ export class Hotel implements HotelApi {
         group = this.sceneGroup(rid);
         for (const id of group) groups.set(id, group);
       }
-      let json = cache.get(rid);
+      // o mestre recebe a campanha inteira; a mesa e o jogador, só o nome dela (a mesa usa o subtítulo). As anotações
+      // da planta, as descrições das cenas, o registro e as peças das salas não visitadas são do mestre (27/10)
+      const papel = c.role === 'gm' ? 'gm' : 'player';
+      let json = cache.get(`${rid}:${papel}`);
       if (json === undefined) {
-        json = JSON.stringify(this.campaignState(group));
-        for (const id of group) cache.set(id, json);
+        const cheio = cache.get(`${rid}:gm`) ?? JSON.stringify(this.campaignState(group));
+        for (const id of group) cache.set(`${id}:gm`, cheio);
+        json = papel === 'gm' ? cheio : JSON.stringify(campanhaPublica(JSON.parse(cheio) as CampaignState));
+        for (const id of group) cache.set(`${id}:${papel}`, json);
       }
       if (json !== c.lastScenes) {
         c.lastScenes = json;
@@ -2160,7 +2223,7 @@ export class Hotel implements HotelApi {
     this.listTimer = setTimeout(() => {
       this.listTimer = null;
       const msg: ServerMsg = { t: 'roomList', rooms: this.roomList() };
-      for (const c of this.clients.values()) if (c.name) c.send(msg);
+      for (const c of this.clients.values()) if (c.name) c.send(c.role === 'gm' ? msg : { t: 'roomList', rooms: this.roomListPara(c) });
     }, 300);
   }
 
@@ -2308,6 +2371,16 @@ export class Hotel implements HotelApi {
     ws.on('close', () => this.detach(c));
   }
 
+  /**
+   * A lista de salas de quem entra: o mestre vê todas; a mesa e o jogador, só a cena de agora (quem escolhe a cena é o
+   * mestre, e o nome das salas de todas as campanhas entregaria o que vem pela frente; 27/10).
+   */
+  private roomListPara(c: Client): RoomSummary[] {
+    if (c.role === 'gm') return this.roomList();
+    const r = (this.db.liveScene !== undefined ? this.rooms.get(this.db.liveScene) : undefined) ?? c.room ?? this.rooms.values().next().value;
+    return r ? [{ id: r.data.id, name: r.data.name, description: '', owner: '', users: 0 }] : [];
+  }
+
   private roomList(): RoomSummary[] {
     return [...this.rooms.values()]
       .map((r) => ({
@@ -2339,7 +2412,7 @@ export class Hotel implements HotelApi {
         this.act(c, m.a);
         return;
       case 'rooms':
-        c.send({ t: 'roomList', rooms: this.roomList() });
+        c.send({ t: 'roomList', rooms: this.roomListPara(c) });
         return;
       case 'falsoCris':
         this.falsoCris(c, m);
@@ -2396,6 +2469,8 @@ export class Hotel implements HotelApi {
         return;
       }
       case 'peek': {
+        // só o mestre espia outra cena (a planta e os móveis de uma sala não visitada são dele; 27/10)
+        if (c.role !== 'gm') return;
         // só cenas da mesma campanha da cena atual
         const cur = c.room?.data.id;
         if (typeof m.roomId !== 'number' || cur === undefined || !this.sceneGroup(cur).includes(m.roomId)) return;
@@ -2760,7 +2835,7 @@ export class Hotel implements HotelApi {
     if (isNew) for (const defId of STARTER) ud.inventory.push({ id: this.nextItemId(), defId });
     this.save();
     c.send({ t: 'welcome', id: c.id, name, look: c.look, token: c.token, inventory: ud.inventory, home: this.db.home, role });
-    c.send({ t: 'roomList', rooms: this.roomList() });
+    c.send({ t: 'roomList', rooms: this.roomListPara(c) });
     c.send({ t: 'dia', dia: this.db.dia ?? 1 });
     if (role === 'gm' || c.fichaId) {
       this.enviarFichas(c);
@@ -3271,4 +3346,23 @@ export class Hotel implements HotelApi {
         o.room?.updateLook(o);
       }
   }
+}
+
+/** A campanha que a mesa e o jogador recebem: o nome, sem nada do mestre (27/10). */
+function campanhaPublica(c: CampaignState): CampaignState {
+  return {
+    key: c.key,
+    title: c.title,
+    subtitle: c.subtitle,
+    ...(c.operacao ? { operacao: c.operacao } : {}),
+    ...(c.nomeCampanha ? { nomeCampanha: c.nomeCampanha } : {}),
+    objectives: [],
+    layout: {},
+    log: [],
+    party: [],
+    agentes: [],
+    scenes: [],
+    notas: [],
+    visitadas: [],
+  };
 }

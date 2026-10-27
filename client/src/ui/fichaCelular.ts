@@ -10,6 +10,7 @@
  * - o servidor ainda recusa a ficha do jogador que traga mais erros de regra do que tinha.
  * Cada janela mexe numa cópia; Salvar manda, fechar descarta.
  */
+import { clonarFicha, gravarFicha } from '../fichaOrigem';
 import { NOME_TEMA, TEMAS, regras, type FichaSalva, type Tema } from '@crona/shared';
 import { portraitCanvas } from '../render/portrait';
 import { sprites } from '../render/sprites';
@@ -62,7 +63,7 @@ export class FichaCelular {
   }
 
   setFicha(fs: FichaSalva | null) {
-    this.fs = fs ? clone(fs) : null;
+    this.fs = fs ? clonarFicha(fs) : null;
     this.render();
     this.subida?.();
   }
@@ -111,7 +112,7 @@ export class FichaCelular {
       const de = fs.ficha.nexVisto;
       const passos = de !== undefined && fs.ficha.nex > de ? regras.resumoEvolucao(fs.ficha, de as regras.Nex) : [];
       if (!pend.length && !passos.length) return j.fechar();
-      const r = clone(fs);
+      const r = clonarFicha(fs);
       const botaoPend = (p: regras.Pendencia) => {
         const e = escolherPendencia(r.ficha, p);
         return h(
@@ -180,7 +181,7 @@ export class FichaCelular {
           ? [botao('Depois', 'fechar', '', () => j.fechar())]
           : [
               botao('Entendi', 'ok', 'forte', () => {
-                const nova = clone(this.fs!);
+                const nova = clonarFicha(this.fs!);
                 nova.ficha.nexVisto = nova.ficha.nex;
                 j.fechar();
                 this.salvar(nova);
@@ -202,7 +203,7 @@ export class FichaCelular {
       botao('Agora não', 'fechar', '', () => j.fechar()),
       botao('Vamos lá', 'mochila', 'forte', () => {
         j.fechar();
-        const r = clone(this.fs!);
+        const r = clonarFicha(this.fs!);
         abrirRequisicao({
           ficha: r.ficha,
           nome: r.nome,
@@ -223,8 +224,8 @@ export class FichaCelular {
     r.nome = (r.ficha.nome || r.nome || 'Sem nome').trim();
     r.ficha.nome = r.nome;
     r.atualizadaEm = new Date().toISOString();
-    this.app.net.send({ t: 'fichaSalvar', ficha: r });
-    this.fs = clone(r);
+    this.app.net.send(gravarFicha(r));
+    this.fs = clonarFicha(r);
     sfx.stamp();
     toast('Ficha salva.');
     this.render();
@@ -284,7 +285,7 @@ export class FichaCelular {
   }
 
   private editarIdent() {
-    const r = clone(this.fs!);
+    const r = clonarFicha(this.fs!);
     const j = janela('IDENTIFICAÇÃO', 'ficha', () => {}, 50);
     j.el.classList.add('tela-toda', 'fc-janela');
     const nome = h('input', { class: 'fx-inp', value: r.nome, maxlength: 60 }) as HTMLInputElement;
@@ -378,7 +379,7 @@ export class FichaCelular {
 
   /** Os atributos grandes: −/+ só nos pontos que faltam (LR p. 21), e os aumentos do NEX pela evolução. */
   private editarAtributos() {
-    const r = clone(this.fs!);
+    const r = clonarFicha(this.fs!);
     const original = { ...r.ficha.atributos };
     const j = janela('ATRIBUTOS', 'pulso', () => {}, 50);
     j.el.classList.add('tela-toda', 'fc-janela');
@@ -451,7 +452,7 @@ export class FichaCelular {
     const pend = c.pendencias;
     const erros = c.problemas.filter((p) => p.severidade === 'erro');
     if (!pend.length && !erros.length) return h('span', { class: 'hidden' });
-    const r = clone(this.fs!);
+    const r = clonarFicha(this.fs!);
     return this.cartao(
       'EVOLUÇÃO',
       'titulo-poderes',
@@ -471,7 +472,7 @@ export class FichaCelular {
    * só completa o que falta; o que já foi escolhido fica (trocar é com o mestre).
    */
   private editarPericiasCriacao() {
-    const r = clone(this.fs!);
+    const r = clonarFicha(this.fs!);
     const f = r.ficha;
     const antes = { origem: [...(f.pericias.origem ?? [])], grupos: [...f.pericias.grupos], livres: [...f.pericias.livres] };
     const j = janela('PERÍCIAS DA CRIAÇÃO', 'livro', () => {}, 56);
@@ -560,7 +561,7 @@ export class FichaCelular {
     const j = janela('PERÍCIAS', 'livro', () => {}, 56);
     j.el.classList.add('tela-toda', 'fc-janela');
     const per = c.pendencias.filter((p) => p.tipo === 'pericias' || p.tipo === 'periciaIntelecto' || p.tipo === 'grau');
-    if (per.length) j.corpo.append(h('div', { class: 'fc-pends' }, ...per.map((p) => this.botaoPendencia(clone(fs), p, () => j.fechar()))));
+    if (per.length) j.corpo.append(h('div', { class: 'fc-pends' }, ...per.map((p) => this.botaoPendencia(clonarFicha(fs), p, () => j.fechar()))));
     j.corpo.append(
       h('p', { class: 'fj-dica' }, 'O treino das perícias vem da origem, da classe e da evolução (as pendências acima).'),
       h(
@@ -602,7 +603,7 @@ export class FichaCelular {
       ),
       h('p', { class: 'fc-nota' }, `${numero(c.carga.usados)}/${c.carga.espacos} espaços · ${vagas.map((l) => `cat. ${['0', 'I', 'II', 'III', 'IV'][l.categoria]} ${l.usados}/${l.limite}`).join(' · ') || 'patente sem limite de categoria'}`),
       botao('Pedir itens à Ordem', 'mais', 'forte', () => {
-        const r = clone(fs);
+        const r = clonarFicha(fs);
         const antes = r.ficha.inventario.length;
         abrirRequisicao({
           ficha: r.ficha,

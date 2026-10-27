@@ -3,6 +3,11 @@ import type { ClientMsg, ServerMsg } from '@crona/shared';
 export class Net {
   private ws: WebSocket | null = null;
   private queue: ClientMsg[] = [];
+  /**
+   * Entrou (chegou o `welcome`): antes disso o servidor joga fora tudo que não é entrar. O que se fez com a conexão
+   * caída (o celular dormiu) espera na fila até a entrada, em vez de se perder (auditoria de 27/10).
+   */
+  private dentro = false;
   onMessage: (m: ServerMsg) => void = () => {};
   onOpen: () => void = () => {};
   onClose: (code: number) => void = () => {};
@@ -12,7 +17,7 @@ export class Net {
     const ws = new WebSocket(`${proto}://${location.host}/ws`);
     this.ws = ws;
     ws.onopen = () => {
-      for (const m of this.queue.splice(0)) ws.send(JSON.stringify(m));
+      this.dentro = false;
       this.onOpen();
     };
     ws.onmessage = (e) => {
@@ -24,6 +29,7 @@ export class Net {
     };
     ws.onclose = (e) => {
       if (this.ws === ws) this.ws = null;
+      this.dentro = false;
       this.onClose(e.code);
     };
   }
@@ -38,8 +44,16 @@ export class Net {
     return this.ws?.readyState === WebSocket.OPEN;
   }
 
+  /** O servidor aceitou a entrada: manda o que ficou na fila. */
+  entrou() {
+    this.dentro = true;
+    if (this.ws?.readyState !== WebSocket.OPEN) return;
+    for (const m of this.queue.splice(0)) this.ws.send(JSON.stringify(m));
+  }
+
   send(m: ClientMsg) {
-    if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(m));
+    const abre = m.t === 'login' || m.t === 'contaCriar' || m.t === 'contaEntrar' || m.t === 'contaSair';
+    if (this.ws?.readyState === WebSocket.OPEN && (this.dentro || abre)) this.ws.send(JSON.stringify(m));
     else this.queue.push(m);
   }
 }

@@ -8,6 +8,7 @@
  * salvos sozinhos) e editar (um rascunho da ficha inteira; Salvar grava,
  * Cancelar descarta). NEX e pontos de prestígio só o mestre muda.
  */
+import { clonarFicha, gravarFicha } from '../fichaOrigem';
 import { combate, NOME_TEMA, TEMAS, regras, vitalConditions, type AvatarLook, type CampaignState, type CharacterDef, type FichaSalva, type Npc, type Vitals } from '@crona/shared';
 import { portraitCanvas } from '../render/portrait';
 import type { App } from './app';
@@ -337,7 +338,7 @@ export class FichasScreen {
       fs.id,
       window.setTimeout(() => {
         this.timers.delete(fs.id);
-        this.app.net.send({ t: 'fichaSalvar', ficha: fs });
+        this.app.net.send(gravarFicha(fs));
       }, 450),
     );
   }
@@ -349,7 +350,7 @@ export class FichasScreen {
     let soJogo = false;
     if (this.editando) fn(fs);
     else {
-      const c = clone(fs);
+      const c = clonarFicha(fs);
       const antes = this.semJogo(c);
       fn(c);
       soJogo = this.semJogo(c) === antes;
@@ -370,7 +371,7 @@ export class FichasScreen {
     if (this.editando) return true;
     const fs = this.atual();
     if (!fs) return false;
-    this.rascunho = clone(fs);
+    this.rascunho = clonarFicha(fs);
     this.modo = 'editar';
     this.direto = { base: JSON.stringify(this.rascunho) };
     quandoFecharTodas(() => this.fecharDireto());
@@ -392,11 +393,11 @@ export class FichasScreen {
       fs.nome = (fs.ficha.nome || fs.nome || 'Sem nome').trim();
       fs.ficha.nome = fs.nome;
       fs.atualizadaEm = agora();
-      this.app.net.send({ t: 'fichaSalvar', ficha: fs });
+      this.app.net.send(gravarFicha(fs));
       const npc = fs.npc ? this.app.state.npcs.find((n) => n.id === fs.npc) : undefined;
       if (npc && npc.nome !== fs.nome) this.app.net.send({ t: 'npcSalvar', npc: { ...npc, nome: fs.nome } });
       const i = this.lista.findIndex((x) => x.id === fs.id);
-      if (i >= 0) this.lista[i] = clone(fs);
+      if (i >= 0) this.lista[i] = clonarFicha(fs);
       sfx.stamp();
       toast('Ficha salva.');
     }
@@ -422,7 +423,7 @@ export class FichasScreen {
   private entrarEdicao(passos = true) {
     const fs = this.atual();
     if (!fs || this.editando) return;
-    this.rascunho = clone(fs);
+    this.rascunho = clonarFicha(fs);
     this.modo = 'editar';
     sfx.paper();
     this.render();
@@ -465,13 +466,13 @@ export class FichasScreen {
     fs.nome = (fs.ficha.nome || fs.nome || 'Sem nome').trim();
     fs.ficha.nome = fs.nome;
     fs.atualizadaEm = agora();
-    this.app.net.send({ t: 'fichaSalvar', ficha: fs });
+    this.app.net.send(gravarFicha(fs));
     const npc = fs.npc ? this.app.state.npcs.find((n) => n.id === fs.npc) : undefined;
     if (npc && npc.nome !== fs.nome) this.app.net.send({ t: 'npcSalvar', npc: { ...npc, nome: fs.nome } });
     sfx.stamp();
     if (fs.id) {
       const i = this.lista.findIndex((x) => x.id === fs.id);
-      if (i >= 0) this.lista[i] = clone(fs);
+      if (i >= 0) this.lista[i] = clonarFicha(fs);
       this.rascunho = null;
       this.modo = 'jogo';
       toast('Ficha salva.');
@@ -787,12 +788,12 @@ export class FichasScreen {
     this.editarTexto('Nome do NPC', 'Nome', n.nome, (v) => {
       if (!v || v === n.nome) return;
       this.app.net.send({ t: 'npcSalvar', npc: { ...n, nome: v } });
-      const fs = this.lista.find((f) => f.npc === n.id);
-      if (fs && !this.editando) {
+      const achada = this.lista.find((f) => f.npc === n.id);
+      if (achada && !this.editando) {
+        const fs = clonarFicha(achada);
         fs.nome = v;
         fs.ficha.nome = v;
-        fs.atualizadaEm = agora();
-        this.app.net.send({ t: 'fichaSalvar', ficha: fs });
+        this.salvarJogo(fs);
       }
     });
   }
@@ -1021,7 +1022,7 @@ export class FichasScreen {
     // personagem do tabuleiro
     const sel = h('select', { class: 'fx-inp' }, h('option', { value: '' }, '— nenhum —'), ...chars.map((ch) => h('option', { value: String(ch.id), selected: ch.id === fs.personagem }, ch.name))) as HTMLSelectElement;
     sel.addEventListener('change', () => {
-      const c = clone(fs);
+      const c = clonarFicha(this.lista.find((x) => x.id === fs.id) ?? fs);
       c.personagem = sel.value ? Number(sel.value) : undefined;
       this.salvarJogo(c);
       this.render();

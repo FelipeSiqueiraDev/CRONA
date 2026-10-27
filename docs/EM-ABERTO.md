@@ -2,6 +2,10 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Auditoria de 27/10: o que existe e não funciona
+
+- 35 defeitos achados no código (só leitura), em [`AUDITORIA-FUNCIONAMENTO.md`](AUDITORIA-FUNCIONAMENTO.md). Os mais graves: a ficha inteira mandada por cima (o celular e as janelas da FICHAS apagam dano e duplicam itens), o `campaign` do mestre (notas, segredos, ameaças) indo para a mesa e os jogadores, o combate que trava depois de "Pôr no combate" e o registro preso em 400 linhas. **Consertados em 27/10 (branch `claude/ficha-segura`, ainda não no jogo de verdade: falta `npm run crona`):** o grupo A (a ficha por cima: mescla de três vias) e o B (o segredo do mestre). Faltam os grupos C (COMBATE), D (MAPA), E (FICHAS) e F (celular).
+
 ## Feito em 25/10: os nomes dos equipamentos como no livro (no ar)
 
 - O Felipe: "alguns nomes estão diferentes do livro em equipamentos, podíamos igualar pra ficar fácil de achar". Os 228 itens do catálogo (armas, equipamentos, proteções, modificações, amaldiçoados) foram conferidos com as tabelas do livro de regras (3.3 a 3.10) e do *Sobrevivendo ao Horror* (1.4 e 1.5).

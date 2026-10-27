@@ -12,6 +12,7 @@ export * from './protocol';
 export * from './session';
 export * from './vitals';
 export * from './fichas';
+export * from './mesclarFicha';
 export * from './itens';
 export * from './mesa';
 export * from './documentos';

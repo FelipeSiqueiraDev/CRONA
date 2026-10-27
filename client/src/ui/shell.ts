@@ -1,3 +1,4 @@
+import { clonarFicha, gravarFicha } from '../fichaOrigem';
 import {
   anyFurniName,
   distinctFacings,
@@ -2495,11 +2496,11 @@ export class Shell {
     const ficha = this.fichasMapa.find((f) => f.personagem !== undefined && f.personagem === p.look?.charId && !f.npc);
     if (!ficha) return null;
     const salvar = (fn: (f: FichaSalva) => void) => {
-      const nova: FichaSalva = JSON.parse(JSON.stringify(ficha));
+      const nova = clonarFicha(ficha);
       fn(nova);
       nova.atualizadaEm = new Date().toISOString();
       sfx.click();
-      this.app.net.send({ t: 'fichaSalvar', ficha: nova });
+      this.app.net.send(gravarFicha(nova));
     };
     const bts: HTMLElement[] = [];
     if (regras.calcular(ficha.ficha).poderes.some((x) => x.id === 'ser-amaldicoado')) {
@@ -2568,9 +2569,11 @@ export class Shell {
           })),
         atual: () => ficha.condicoes ?? [],
         aplicar: (ids) => {
-          const nova: FichaSalva = { ...ficha, condicoes: ids.filter((i) => !AUTO.includes(i)), atualizadaEm: new Date().toISOString() };
-          if (!nova.condicoes?.length) delete nova.condicoes;
-          this.app.net.send({ t: 'fichaSalvar', ficha: nova });
+          const nova = clonarFicha(ficha);
+          nova.condicoes = ids.filter((i) => !AUTO.includes(i));
+          nova.atualizadaEm = new Date().toISOString();
+          if (!nova.condicoes.length) delete nova.condicoes;
+          this.app.net.send(gravarFicha(nova));
         },
       },
       () => this.renderRpg(true),

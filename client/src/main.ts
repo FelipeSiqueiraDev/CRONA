@@ -450,6 +450,7 @@ net.onMessage = (m: ServerMsg) => {
       else toast(m.erro, 'error');
       break;
     case 'welcome': {
+      net.entrou();
       app.state.me = { id: m.id, name: m.name, look: m.look, token: m.token };
       app.state.inventory = m.inventory;
       app.state.role = m.role;

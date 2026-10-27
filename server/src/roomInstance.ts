@@ -724,6 +724,9 @@ export class RoomInstance {
     // a senha só vai para o mestre
     const fl = out as FloorItem;
     if (fl.lock) fl.lock = { open: fl.lock.open, slide: fl.lock.slide, ...(fl.lock.semSenha ? { semSenha: true } : {}) };
+    // os testes do móvel (com a DT) e se a porta está trancada também são do mestre (27/10)
+    delete out.actions;
+    delete fl.trancado;
     if (out.loot) {
       const me = (c.name ?? '').toLowerCase();
       out.loot = out.loot.filter((l) => l.revealed || l.holder?.toLowerCase() === me);

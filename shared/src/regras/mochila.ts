@@ -189,3 +189,11 @@ export function numerarItens(inv: ItemFicha[], proximo: () => number): boolean {
     }
   return mudou;
 }
+
+/** Um item pedido entra na mochila: a munição vai para a pilha que já está lá (sem modificação), o resto entra novo. */
+export function porNaMochila(f: { inventario: ItemFicha[] }, it: ItemFicha) {
+  const municao = it.tipo === 'equipamento' && cat.equipamento(it.id)?.grupo === 'municao';
+  const pilha = municao ? f.inventario.find((x) => x.tipo === 'equipamento' && x.id === it.id && !x.achado && !x.modificacoes?.length) : undefined;
+  if (pilha) pilha.qtd = (pilha.qtd ?? 1) + 1;
+  else f.inventario.push({ ...it });
+}

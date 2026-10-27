@@ -468,8 +468,11 @@ export type ClientMsg =
   | { t: 'unlock'; id: number; code: string }
   /** fecha a passagem de novo (o mobi volta para o lugar) */
   | { t: 'relock'; id: number }
-  /** cria (id 0) ou atualiza uma ficha (só o mestre) */
-  | { t: 'fichaSalvar'; ficha: FichaSalva }
+  /**
+   * cria (id 0) ou atualiza uma ficha; `base` é a cópia de onde a edição partiu: o servidor fica só com o que mudou
+   * nela (mesclarFicha), sem apagar o que mudou no meio do caminho (27/10)
+   */
+  | { t: 'fichaSalvar'; ficha: FichaSalva; base?: FichaSalva }
   /** mexe num item da mochila (só o mestre): mão, roupa, usar, entregar a outra ficha ou largar no chão */
   | { t: 'mochila'; fichaId: number; uid: number; acao: AcaoMochila; para?: number; trocar?: boolean }
   /** item do catálogo novo na mochila (só o mestre): requisitado à Ordem, conta na patente */
