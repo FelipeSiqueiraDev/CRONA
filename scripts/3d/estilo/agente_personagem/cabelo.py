@@ -44,6 +44,7 @@ def pintar(im, centro, cabelo_ate_y, mascara_rosto, protegidos=(), passo=0.2, y_
         for x in range(W):
             if cor_orig[(x, y)][3] >= 128 and (x, y) not in face and (x, y) not in prot:
                 conj.append((x, y))
+    topo = min((y for _, y in conj), default=0)
     for (x, y) in conj:
         r, g, b, a = cor_orig[(x, y)]
         verm = classe_vermelha(r, g, b)
@@ -65,10 +66,11 @@ def pintar(im, centro, cabelo_ate_y, mascara_rosto, protegidos=(), passo=0.2, y_
             # a luz no meio da mecha, na parte de cima e à esquerda
             if 0.3 < f < 0.62 and raio > 5 and (x - cx) < 6 and tom >= 2:
                 tom = min(4, tom + 1)
-            # as pontas (longe do centro) e a parte de baixo ficam na sombra
-            if raio > 17 and tom > 1:
+            # as pontas (longe do centro) e a parte de baixo ficam na sombra; com o centro acima da cabeça (de costas),
+            # conta a altura dentro do cabelo
+            if cy >= 0 and raio > 17 and tom > 1:
                 tom -= 1
-            if y > cy + 16 and tom > 1:
+            if y > (cy + 16 if cy >= 0 else topo + 18) and tom > 1:
                 tom -= 1
         p[x, y] = pal[tom]
     return im
