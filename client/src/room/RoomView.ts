@@ -656,6 +656,13 @@ export class RoomView {
       this.ultimoQuadroMs = performance.now() - t0;
     };
     this.raf = requestAnimationFrame(loop);
+    // a aba ou a janela voltou: começa de novo na qualidade cheia (escondida, o ritmo lento era o navegador poupando)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return;
+      this.qualidade = 1;
+      this.ritmo = 16.7;
+      this.qualidadeMudouEm = performance.now();
+    });
   }
 
   destroy() {
@@ -2295,7 +2302,7 @@ export class RoomView {
     const minimo = Math.min(1, 0.6 / base);
     let q = this.qualidade;
     if (this.ritmo > 24 && espera > 1500 && q > minimo) q = Math.max(minimo, q - 0.15);
-    else if (this.ritmo < 15 && espera > 8000 && q < 1) q = Math.min(1, q + 0.15);
+    else if (this.ritmo < 15 && espera > 3000 && q < 1) q = Math.min(1, q + 0.15);
     if (q === this.qualidade) return;
     this.qualidade = q;
     this.qualidadeMudouEm = agora;
