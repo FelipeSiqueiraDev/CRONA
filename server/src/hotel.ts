@@ -1470,6 +1470,13 @@ export class Hotel implements HotelApi {
    * A peça do agente trocou de cena: o celular dele recebe a ficha de novo, com o "na base" de agora (28/10, auditoria: o
    * "Pedir itens à Ordem" só mudava quando a ficha mudava por outro motivo).
    */
+  /** Bicho de quatro patas: o personagem mais baixo que uma pessoa (o cliente usa a mesma conta, `deQuatroPatas` em sprites.ts). */
+  deQuatroPatas(personagem: number | null | undefined): boolean {
+    if (personagem == null) return false;
+    const def = this.db.characters.find((c) => c.id === personagem);
+    return !!def && def.height < 70;
+  }
+
   pecaMudouDeCena(personagem: number | null | undefined) {
     const f = this.fichaDoPersonagem(personagem);
     if (!f) return;

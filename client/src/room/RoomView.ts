@@ -175,6 +175,10 @@ const PES_A_FRENTE_SENTADO = 0.3;
 /** Assentos sem encosto (pelo tipo, ou o móvel de um tipo que costuma ter): o assento não é redesenhado por cima de quem senta. */
 const TIPOS_SEM_ENCOSTO = new Set(['pufe', 'stool', 'stool_high']);
 const MOVEIS_SEM_ENCOSTO = new Set(['banco_rustico', 'banco_moderno']);
+/** Quanto o quadril de quem senta fica para trás do meio do assento, em casas (as costas no encosto). */
+const RECUO_SENTADO = 0.14;
+/** Assentos com braços: o braço do lado da câmera é redesenhado por cima de quem senta. */
+const TIPOS_COM_BRACOS = new Set(['armchair', 'sofa']);
 
 /** Sombras de contato prontas, por tamanho. */
 const sombrasPes = new Map<string, HTMLCanvasElement>();
@@ -3018,12 +3022,25 @@ export class RoomView {
         // depois desenha outro encosto neles"; antes a pessoa saía na frente do encosto, fora da cadeira)
         // Sem encosto (banqueta, pufe, banco reto), não: o assento redesenhado subia pelo corpo de quem senta e parecia
         // que ela estava em pé atrás do banco (28/10)
-        if (def.sit && !def.deita && !flat && !ghost && (rot === 0 || rot === 6) && !TIPOS_SEM_ENCOSTO.has(def.kind) && !MOVEIS_SEM_ENCOSTO.has(def.id)) {
-          const fp = footprint(def, rot);
-          const fatia = rot === 0 ? { x0: it.x, x1: it.x + fp.sx, y0: it.y + fp.sy - 0.24, y1: it.y + fp.sy } : { x0: it.x + fp.sx - 0.24, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy };
-          const caixa = { ...fatia, z0: it.z, z1: it.z + 1.4 * Z_PER_M };
+        // E o braço do lado da câmera, na poltrona e no sofá (28/10, o Felipe: a Cora, desenhada inteira por cima da
+        // poltrona, parecia sentada em cima dos braços): só até a altura do braço, para não trazer a quina do encosto
+        const fp = footprint(def, rot);
+        const fatias: { x0: number; x1: number; y0: number; y1: number; alto: number }[] = [];
+        if (def.sit && !def.deita && !flat && !ghost && (rot === 0 || rot === 6) && !TIPOS_SEM_ENCOSTO.has(def.kind) && !MOVEIS_SEM_ENCOSTO.has(def.id))
+          fatias.push(rot === 0 ? { x0: it.x, x1: it.x + fp.sx, y0: it.y + fp.sy - 0.24, y1: it.y + fp.sy, alto: 1.4 } : { x0: it.x + fp.sx - 0.24, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy, alto: 1.4 });
+        if (def.sit && !def.deita && !flat && !ghost && TIPOS_COM_BRACOS.has(def.kind))
+          // o lado de quem senta que a câmera vê: +y quando ela olha ao longo de x (giros 2 e 6), +x nos giros 0 e 4
+          // sem a frente do assento (giros 2 e 4, a frente do lado da câmera): a quina da frente, redesenhada, cobria as
+          // pernas que passam dela (28/10, a Cora tapada até os joelhos)
+          fatias.push(
+            rot === 2 || rot === 6
+              ? { x0: it.x, x1: it.x + fp.sx - (rot === 2 ? 0.3 : 0), y0: it.y + fp.sy - 0.22, y1: it.y + fp.sy, alto: 0.72 }
+              : { x0: it.x + fp.sx - 0.22, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy - (rot === 4 ? 0.3 : 0), alto: 0.72 },
+          );
+        for (const fatia of fatias) {
+          const caixa = { x0: fatia.x0, x1: fatia.x1, y0: fatia.y0, y1: fatia.y1, z0: it.z, z1: it.z + fatia.alto * Z_PER_M };
           // a ordem fica na casa de verdade; o recorte acompanha a cadeira deslizada para a mesa, onde o encosto é desenhado
-          const recorte = boxSilhouette({ x0: fatia.x0 + ax, x1: fatia.x1 + ax, y0: fatia.y0 + ay, y1: fatia.y1 + ay, z0: iz, z1: iz + 1.4 * Z_PER_M });
+          const recorte = boxSilhouette({ x0: fatia.x0 + ax, x1: fatia.x1 + ax, y0: fatia.y0 + ay, y1: fatia.y1 + ay, z0: iz, z1: iz + fatia.alto * Z_PER_M });
           drawables.push({
             box: caixa,
             sx0: d.sx0,
@@ -3345,8 +3362,13 @@ export class RoomView {
       // Só na altura da tela: na largura, a âncora da pose sentada já é o meio do quadril (sprites.ts), e o empurrão
       // tirava o quadril de cima do assento, para o lado do olhar (28/10, a Alosi de costas saía para fora do encosto)
       const [fdx, fdy] = pfSentado && !noQuadril ? (DIRS[u.dir] ?? [0, 0]) : [0, 0];
-      const sx = iso(cx, cy, baseZ)[0];
-      const sy = iso(cx + fdx * PES_A_FRENTE_SENTADO, cy + fdy * PES_A_FRENTE_SENTADO, baseZ)[1];
+      // presa pelo quadril: no fundo do assento, com as costas no encosto, e não no meio dele (28/10, o Felipe: a Alosi
+      // aparecia ao lado do encosto e a Catarina parecia sentada em cima dele)
+      const defSentado = noQuadril && itSentado ? getFurni(itSentado.defId) : undefined;
+      const recuo = defSentado && !TIPOS_SEM_ENCOSTO.has(defSentado.kind) && !MOVEIS_SEM_ENCOSTO.has(defSentado.id) ? RECUO_SENTADO : 0;
+      const [rdx, rdy] = recuo ? (DIRS[u.dir] ?? [0, 0]) : [0, 0];
+      const sx = iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[0];
+      const sy = noQuadril ? iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[1] : iso(cx + fdx * PES_A_FRENTE_SENTADO, cy + fdy * PES_A_FRENTE_SENTADO, baseZ)[1];
       // H: a altura na arte; HE: na tela (a arte vem na escala antiga e o tabuleiro reduz)
       const H = bq ? bq.ay : sp ? sp.def.height : pf ? pf.h : PIXEL_AVATAR_HEIGHT;
       const HE = H * ESCALA_ARTE_PESSOA;

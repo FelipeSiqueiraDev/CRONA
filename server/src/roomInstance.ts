@@ -122,6 +122,8 @@ export interface HotelApi {
   sendInventory(client: Client): void;
   /** a peça chegou numa cena: o celular do agente fica sabendo se está na base (o "Pedir itens à Ordem") */
   pecaMudouDeCena(personagem: number | null | undefined): void;
+  /** o personagem é bicho de quatro patas (o cachorro): não senta em cadeira, banco nem sofá */
+  deQuatroPatas(personagem: number | null | undefined): boolean;
   /** a tela da mesa escondida atrás do carregamento do C.R.I.S (vale em qualquer cena, e para quem recarrega) */
   telaEscondida: boolean;
   roomChanged(): void;
@@ -867,15 +869,42 @@ export class RoomInstance {
     return melhor ?? { x, y };
   }
 
+  /**
+   * O bicho de quatro patas mandado para um assento (28/10, o Felipe: "deixa o cachorro de fora dos bancos"): para na
+   * casa livre mais perto, fora de assento e de cama, a que dá para alcançar.
+   */
+  private casaDoBicho(u: RoomUser, alvo: { x: number; y: number }): { x: number; y: number } {
+    if (!this.map.sitItem(alvo.x, alvo.y) || !this.hotel.deQuatroPatas(u.client.look?.charId)) return alvo;
+    const livre = (cx: number, cy: number) => this.occupied(cx, cy, u.client.id);
+    let melhor: { x: number; y: number } | null = null;
+    let menor = Infinity;
+    for (let r = 1; r <= 3 && !melhor; r++)
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const c = { x: alvo.x + dx, y: alvo.y + dy };
+          if (this.map.walkState(c.x, c.y) !== 'walk' || this.map.sitItem(c.x, c.y) || livre(c.x, c.y)) continue;
+          const cam = c.x === u.x && c.y === u.y ? [] : findPath(this.map, u, c, livre);
+          if (cam && (cam.length || (c.x === u.x && c.y === u.y)) && cam.length < menor) {
+            menor = cam.length;
+            melhor = c;
+          }
+        }
+    return melhor ?? { x: u.x, y: u.y };
+  }
+
   private settle(u: RoomUser) {
     // fora do beliche, ninguém fica "na cama de cima"
     if (u.meta?.alto && !this.map.leitoItem(u.x, u.y)) u.meta.alto = false;
-    const z = this.map.standHeight(u.x, u.y, !!u.meta?.alto);
+    const bicho = this.hotel.deQuatroPatas(u.client.look?.charId);
+    // o bicho que ficou numa casa de assento (salvo de antes) fica no chão, e não em pé em cima da cadeira
+    const z = bicho && this.map.sitItem(u.x, u.y) ? (this.map.floorHeight(u.x, u.y) ?? 0) : this.map.standHeight(u.x, u.y, !!u.meta?.alto);
     if (z !== u.z) {
       u.z = z;
       u.dirty = true;
     }
-    const seat = this.map.sitItem(u.x, u.y);
+    // o bicho de quatro patas não senta: em cima do assento (passando por ele), fica de pé
+    const seat = bicho ? undefined : this.map.sitItem(u.x, u.y);
     if (seat) {
       if (u.sit !== 1 || u.dir !== seat.rot) {
         u.sit = 1;
@@ -1783,7 +1812,7 @@ export class RoomInstance {
             // a porta recusou (trancada, quebrada, sem caminho): a peça segue o que fazia
             u.aoChegar = antes;
             this.err(c, daPorta);
-          } else if (daPorta === undefined) (u.goal = this.casaDaCama(u, m.x, m.y)), delete u.encara;
+          } else if (daPorta === undefined) (u.goal = this.casaDoBicho(u, this.casaDaCama(u, m.x, m.y))), delete u.encara;
           // o relógio da cena pode ter parado (ninguém olhando, nada andando): liga de novo
           this.ensureTimer();
         }
