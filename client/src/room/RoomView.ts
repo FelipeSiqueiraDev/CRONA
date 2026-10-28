@@ -172,6 +172,9 @@ function piscando(u: ClientUser, now: number): boolean {
 const TURN_MS = 240;
 /** quanto os pés da pose sentada ficam à frente do quadril, em casas (uns 22 cm) */
 const PES_A_FRENTE_SENTADO = 0.3;
+/** Assentos sem encosto (pelo tipo, ou o móvel de um tipo que costuma ter): o assento não é redesenhado por cima de quem senta. */
+const TIPOS_SEM_ENCOSTO = new Set(['pufe', 'stool', 'stool_high']);
+const MOVEIS_SEM_ENCOSTO = new Set(['bench', 'banco_rustico', 'banco_moderno']);
 
 /** Sombras de contato prontas, por tamanho. */
 const sombrasPes = new Map<string, HTMLCanvasElement>();
@@ -1499,11 +1502,21 @@ export class RoomView {
       const [x, y] = this.vis(fxs.de.x, fxs.de.y);
       return { x, y, z: this.map?.standHeight(fxs.de.x, fxs.de.y) ?? u.z, moving: false };
     }
+    // o passo que já acabou e chegou na casa da peça sai: com ele a peça ficava na casa crua, sem o deslize da cadeira
+    // para a mesa, e quem sentava ficava atrás do assento (28/10, a Alosi de costas: "Tá erradasso isso né")
+    if (u.anim && now - u.anim.start >= u.anim.ms * 1.1 && u.anim.tx === u.x && u.anim.ty === u.y) u.anim = null;
     if (u.anim) {
       const t = (now - u.anim.start) / u.anim.ms;
       const k = Math.min(1, Math.max(0, t));
       const [fx, fy] = this.vis(u.anim.fx, u.anim.fy);
-      const [tx, ty] = this.vis(u.anim.tx, u.anim.ty);
+      let [tx, ty] = this.vis(u.anim.tx, u.anim.ty);
+      // sentando: o passo termina já no assento deslizado
+      const assento = u.sit === 1 && this.map && u.anim.tx === u.x && u.anim.ty === u.y ? this.map.sitItem(u.x, u.y) : undefined;
+      if (assento && this.map) {
+        const [ax, ay] = this.ajusteDoMovel(this.map, assento);
+        tx += ax;
+        ty += ay;
+      }
       // a altura muda perto da borda entre as casas, onde fica o degrau: em linha reta de um meio de casa ao outro, a
       // peça subia antes de chegar à escadinha da ponte e parecia voar (17/10)
       const s = Math.min(1, Math.max(0, (k - 0.3) / 0.4));
@@ -3003,11 +3016,14 @@ export class RoomView {
         // o encosto do lado da câmera (a cadeira virada para o fundo, rot 0 ou 6): quem senta fica entre o assento e o
         // encosto, então o encosto é redesenhado por cima dela, como na cama (18/10, o Felipe: "coloca esse sentado e
         // depois desenha outro encosto neles"; antes a pessoa saía na frente do encosto, fora da cadeira)
-        if (def.sit && !def.deita && !flat && !ghost && (rot === 0 || rot === 6)) {
+        // Sem encosto (banqueta, pufe, banco reto), não: o assento redesenhado subia pelo corpo de quem senta e parecia
+        // que ela estava em pé atrás do banco (28/10)
+        if (def.sit && !def.deita && !flat && !ghost && (rot === 0 || rot === 6) && !TIPOS_SEM_ENCOSTO.has(def.kind) && !MOVEIS_SEM_ENCOSTO.has(def.id)) {
           const fp = footprint(def, rot);
           const fatia = rot === 0 ? { x0: it.x, x1: it.x + fp.sx, y0: it.y + fp.sy - 0.24, y1: it.y + fp.sy } : { x0: it.x + fp.sx - 0.24, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy };
           const caixa = { ...fatia, z0: it.z, z1: it.z + 1.4 * Z_PER_M };
-          const recorte = boxSilhouette(caixa);
+          // a ordem fica na casa de verdade; o recorte acompanha a cadeira deslizada para a mesa, onde o encosto é desenhado
+          const recorte = boxSilhouette({ x0: fatia.x0 + ax, x1: fatia.x1 + ax, y0: fatia.y0 + ay, y1: fatia.y1 + ay, z0: iz, z1: iz + 1.4 * Z_PER_M });
           drawables.push({
             box: caixa,
             sx0: d.sx0,
@@ -3321,8 +3337,11 @@ export class RoomView {
       // sentada, os pés ficam à frente do quadril: a âncora (os pés) vai um tanto para a frente, para o quadril cair no
       // meio do assento (18/10, o Felipe: "eles ainda estão posicionados errados na cadeira"; de costas, o quadril
       // ficava na frente do assento, e de frente, atrás dele)
+      // Só na altura da tela: na largura, a âncora da pose sentada já é o meio do quadril (sprites.ts), e o empurrão
+      // tirava o quadril de cima do assento, para o lado do olhar (28/10, a Alosi de costas saía para fora do encosto)
       const [fdx, fdy] = pfSentado ? (DIRS[u.dir] ?? [0, 0]) : [0, 0];
-      const [sx, sy] = iso(cx + fdx * PES_A_FRENTE_SENTADO, cy + fdy * PES_A_FRENTE_SENTADO, baseZ);
+      const sx = iso(cx, cy, baseZ)[0];
+      const sy = iso(cx + fdx * PES_A_FRENTE_SENTADO, cy + fdy * PES_A_FRENTE_SENTADO, baseZ)[1];
       // H: a altura na arte; HE: na tela (a arte vem na escala antiga e o tabuleiro reduz)
       const H = bq ? bq.ay : sp ? sp.def.height : pf ? pf.h : PIXEL_AVATAR_HEIGHT;
       const HE = H * ESCALA_ARTE_PESSOA;
@@ -3334,9 +3353,18 @@ export class RoomView {
       // desenho e ela some atrás da cabeceira ou embaixo do colchão)
       const fpCama = naCama ? footprint(naCama.def, naCama.it.rot) : null;
       const topoCama = naCama ? naCama.it.z + naCama.def.height : 0;
+      // sentada: a peça vem logo depois do próprio assento, com a pegada dele e em cima dele (28/10: no banco de duas
+      // casas, o meio do banco ficava mais perto da câmera que ela e o banco saía por cima; na cadeira puxada para a
+      // mesa, idem). O encosto do lado da câmera é redesenhado por cima dela à parte (addFurni)
+      const assento = !naCama && !standBy && u.sit === 1 && !p.moving ? map.sitItem(u.x, u.y) : undefined;
+      const defAssento = assento ? getFurni(assento.defId) : undefined;
+      const fpAssento = assento && defAssento ? footprint(defAssento, assento.rot) : null;
+      const topoAssento = assento && defAssento ? assento.z + defAssento.height : 0;
       const box: WBox = naCama && fpCama
         ? { x0: naCama.it.x, x1: naCama.it.x + fpCama.sx, y0: naCama.it.y, y1: naCama.it.y + fpCama.sy, z0: topoCama, z1: topoCama + 0.5 }
-        : { x0: cx - half, x1: cx + half, y0: cy - half, y1: cy + half, z0: baseZ, z1: baseZ + ALTURA_PESSOA };
+        : assento && fpAssento
+          ? { x0: assento.x, x1: assento.x + fpAssento.sx, y0: assento.y, y1: assento.y + fpAssento.sy, z0: topoAssento, z1: topoAssento + ALTURA_PESSOA }
+          : { x0: cx - half, x1: cx + half, y0: cy - half, y1: cy + half, z0: baseZ, z1: baseZ + ALTURA_PESSOA };
       const deitada = !!marcas?.deitadas.has(u.id) || !!naCama;
       // embaixo da mesa vazada: abaixada, escondida atrás dela (a mesa vem por cima na ordem de desenho)
       const sob = !deitada && map.sobMesa(Math.round(p.x), Math.round(p.y));
