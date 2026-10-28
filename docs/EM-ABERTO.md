@@ -2,6 +2,16 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Desempenho do tabuleiro (28/10, em andamento)
+
+- O Felipe: "movimentar a tela trava tudo, lentão", no PC e no notebook, nas cenas grandes (Mansão Albuquerque, Jardim do Fritz, cidades, Santo Berço).
+- Feito e no ar (28/10, 10h52, backup `crona_2026-10-28_10-52-18.dump`): o pedaço de móvel parado é desenhado uma vez e guardado (`RoomView.desenharNo`/`prepararNo`; o Painter avisa quando o desenho lê o tempo ou a energia). Ajuda nos móveis feitos por código e enquanto a arte carrega; com a arte carregada, o desenho já era razoável na prévia.
+- O medidor: `?fps` no endereço mostra quadros por segundo, desenho, travadas e mudanças da interface (`client/src/ui/medidorFps.ts`). **Próximo passo:** a foto do medidor no PC do Felipe, com a câmera andando na Mansão, para ver se o peso é o desenho ou a interface em volta.
+- Já sabido: a névoa rasteira da Santo Berço · Vila desenha 1.032 tufos por quadro (`Fog.drawCasa`).
+- Na prévia com o painel escondido, o tempo da placa de vídeo varia demais: medir com o painel à vista ou com o `?fps`.
+- Também no ar: o login preso desde 27/10 (o login mandado antes de a conexão abrir esperava o welcome) consertado em `net.ts`.
+- Falta conferir: sentar sem objeto atravessando o corpo, deitar, portas e objetos interagindo certo.
+
 ## Auditoria de 27/10: o que existe e não funciona
 
 - 35 defeitos achados no código (só leitura), em [`AUDITORIA-FUNCIONAMENTO.md`](AUDITORIA-FUNCIONAMENTO.md). Os mais graves: a ficha inteira mandada por cima (o celular e as janelas da FICHAS apagam dano e duplicam itens), o `campaign` do mestre (notas, segredos, ameaças) indo para a mesa e os jogadores, o combate que trava depois de "Pôr no combate" e o registro preso em 400 linhas. **Consertados em 27/10 (branch `claude/ficha-segura`, no ar desde 27/10, 18h27, com backup antes em `server/data/backups/crona_2026-10-27_18-26-30.dump`):** o grupo A (a ficha por cima: mescla de três vias) e o B (o segredo do mestre). **O grupo C (COMBATE) foi consertado em 27/10, na branch `claude/combate-auditoria`; ainda não está no jogo de verdade.** O grupo C subiu em 28/10 às 9h20 (backup `crona_2026-10-28_09-21-50.dump`). O D (MAPA) subiu em 28/10 às 9h36 (backup `crona_2026-10-28_09-36-07.dump`). O E (FICHAS), com a mochila do pedido de itens, subiu em 28/10 às 9h58 (backup `crona_2026-10-28_09-57-49.dump`). O F (celular) subiu em 28/10 às 10h05 (backup `crona_2026-10-28_10-05-21.dump`). Os seis grupos da auditoria estão feitos; sobra o código morto e a Identificação da FICHAS do mestre refeita a cada `fichas`. A auditoria de itens e rituais contra os livros (28/10) está em `docs/AUDITORIA-ITENS-RITUAIS.md`: nada consertado ainda; o mestre escolhe a ordem.
