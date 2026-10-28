@@ -323,16 +323,16 @@ function meioDoQuadril(c: HTMLCanvasElement, b: Caixa): number {
 }
 
 /**
- * Onde a pose sentada encosta no assento (28/10), [x, y] na imagem. Na largura, o meio do tronco (do peito à cintura):
- * o quadril fica embaixo dele, e as coxas, o livro ou o casaco pendurados não puxam para o lado. Na altura, um tanto
- * acima da sola (a medida das poses dos agentes: o bumbum fica a ~1/5 da altura sentada).
+ * Onde a pose sentada encosta no assento (28/10), [x, y] na imagem. Na largura, o meio da faixa do quadril e das coxas
+ * (o que fica em cima do assento; a do tronco pegava o cabelo grande da Catarina e da Cora e a tirava do lugar). Na
+ * altura, um tanto acima da sola (a medida das poses dos agentes: o bumbum fica a ~1/5 da altura sentada).
  */
 function quadrilSentado(c: HTMLCanvasElement, b: Caixa): [number, number] {
   const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
   const alto = b.y1 - b.y0 + 1;
   let soma = 0;
   let n = 0;
-  for (let y = Math.round(b.y0 + alto * 0.3); y <= Math.round(b.y0 + alto * 0.5); y++)
+  for (let y = Math.round(b.y0 + alto * 0.55); y <= Math.round(b.y0 + alto * 0.72); y++)
     for (let x = b.x0; x <= b.x1; x++)
       if (d[(y * c.width + x) * 4 + 3] > 96) (soma += x + 0.5), n++;
   return [n ? soma / n : (b.x0 + b.x1 + 1) / 2, b.y1 + 1 - alto * QUADRIL_SENTADO];
