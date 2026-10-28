@@ -3045,9 +3045,13 @@ export class RoomView {
         // poltrona, parecia sentada em cima dos braços): só até um pouco acima do assento, porque o braço de quem senta
         // fica apoiado em cima do braço da poltrona (até o braço todo, ela ficava "sem braço", 28/10)
         const fp = footprint(def, rot);
-        const fatias: { x0: number; x1: number; y0: number; y1: number; alto: number }[] = [];
-        if (def.sit && !def.deita && !flat && !ghost && (rot === 0 || rot === 6) && !TIPOS_SEM_ENCOSTO.has(def.kind) && !MOVEIS_SEM_ENCOSTO.has(def.id))
+        const fatias: { x0: number; x1: number; y0: number; y1: number; alto: number; saia?: boolean }[] = [];
+        if (def.sit && !def.deita && !flat && !ghost && (rot === 0 || rot === 6) && !TIPOS_SEM_ENCOSTO.has(def.kind) && !MOVEIS_SEM_ENCOSTO.has(def.id)) {
           fatias.push(rot === 0 ? { x0: it.x, x1: it.x + fp.sx, y0: it.y + fp.sy - 0.24, y1: it.y + fp.sy, alto: 1.4 } : { x0: it.x + fp.sx - 0.24, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy, alto: 1.4 });
+          // e, de costas, o corpo do assento abaixo do assento (as faces da frente da câmera): as botas e o pano de quem
+          // senta ficam do outro lado do móvel e apareciam por cima dele (28/10, a poltrona de costas)
+          fatias.push({ x0: it.x, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy, alto: 1.4, saia: true });
+        }
         if (def.sit && !def.deita && !flat && !ghost && TIPOS_COM_BRACOS.has(def.kind))
           // o lado de quem senta que a câmera vê: +y quando ela olha ao longo de x (giros 2 e 6), +x nos giros 0 e 4
           // sem a frente do assento (giros 2 e 4, a frente do lado da câmera): a quina da frente, redesenhada, cobria as
@@ -3057,13 +3061,23 @@ export class RoomView {
               ? { x0: it.x, x1: it.x + fp.sx - (rot === 2 ? 0.3 : 0), y0: it.y + fp.sy - 0.22, y1: it.y + fp.sy, alto: 0.64 }
               : { x0: it.x + fp.sx - 0.22, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy - (rot === 4 ? 0.3 : 0), alto: 0.64 },
           );
+        const ordemEncosto = fatias[0];
         for (const fatia of fatias) {
-          const caixa = { x0: fatia.x0, x1: fatia.x1, y0: fatia.y0, y1: fatia.y1, z0: it.z, z1: it.z + fatia.alto * Z_PER_M };
+          // a saia vai na ordem do encosto (logo depois de quem senta); a caixa inteira cairia antes dela
+          const o = fatia.saia ? ordemEncosto : fatia;
+          const caixa = { x0: o.x0, x1: o.x1, y0: o.y0, y1: o.y1, z0: it.z, z1: it.z + o.alto * Z_PER_M };
           // a ordem fica na casa de verdade; o recorte acompanha a cadeira deslizada para a mesa, onde o encosto é desenhado
           // o recorte começa um pouco acima do assento: no isométrico, o assento atrás do encosto cai dentro da coluna da
           // faixa, e redesenhado ele cobria o bumbum de quem senta (28/10, o Felipe: "cortado, a bunda dela sumiu")
-          const acima = Math.max(0, (map.standHeight(it.x, it.y) ?? it.z) - it.z) + 0.1 * Z_PER_M;
-          const recorte = boxSilhouette({ x0: fatia.x0 + ax, x1: fatia.x1 + ax, y0: fatia.y0 + ay, y1: fatia.y1 + ay, z0: iz + acima, z1: iz + fatia.alto * Z_PER_M });
+          // (na poltrona e no sofá o encosto é estofado e fechado até o assento: cobre tudo, inclusive o pano da cintura)
+          const acima = TIPOS_COM_BRACOS.has(def.kind) ? 0 : Math.max(0, (map.standHeight(it.x, it.y) ?? it.z) - it.z) + 0.1 * Z_PER_M;
+          const assentoZ = Math.max(0, (map.standHeight(it.x, it.y) ?? it.z) - it.z);
+          const X0 = fatia.x0 + ax, X1 = fatia.x1 + ax, Y0 = fatia.y0 + ay, Y1 = fatia.y1 + ay;
+          const recorte = fatia.saia
+            ? // só as duas faces de pé que a câmera vê (+x e +y), do chão até um pouco abaixo do assento: o tampo fica de fora,
+              // senão o assento redesenhado cobria o bumbum
+              [iso(X1, Y0, iz + assentoZ - 0.03 * Z_PER_M), iso(X1, Y0, iz), iso(X1, Y1, iz), iso(X0, Y1, iz), iso(X0, Y1, iz + assentoZ - 0.03 * Z_PER_M), iso(X1, Y1, iz + assentoZ - 0.03 * Z_PER_M)]
+            : boxSilhouette({ x0: X0, x1: X1, y0: Y0, y1: Y1, z0: iz + acima, z1: iz + fatia.alto * Z_PER_M });
           drawables.push({
             box: caixa,
             sx0: d.sx0,
@@ -3395,7 +3409,10 @@ export class RoomView {
       const ajuste = pfSentado ? cdef?.sentadoAjuste?.[dirPose] : undefined;
       // e o do tipo de assento, para todo personagem (Ctrl + setas; arte/mobiliario/sentar.json)
       const ajusteAssento = pfSentado && itSentado ? ajusteAssentos.mapa[`${itSentado.defId}:${dirPose}`] : undefined;
-      const sx = iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[0] + (ajuste?.[0] ?? 0) + (ajusteAssento?.[0] ?? 0);
+      // de costas, a medida do quadril cai uns 5 px para fora do assento (as pernas vão para longe da câmera e puxam a
+      // faixa do quadril): a mesma correção vale para todo assento e todo personagem (28/10, medido na bancada)
+      const costas = pfSentado ? (dirPose === 'ne' ? 5 : dirPose === 'nw' ? -5 : 0) : 0;
+      const sx = iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[0] + costas + (ajuste?.[0] ?? 0) + (ajusteAssento?.[0] ?? 0);
       // na altura, os pés no chão um tanto à frente do quadril
       const sy = iso(cx - rdx * recuo + fdx * PES_A_FRENTE_SENTADO, cy - rdy * recuo + fdy * PES_A_FRENTE_SENTADO, baseZ)[1] + (ajuste?.[1] ?? 0) + (ajusteAssento?.[1] ?? 0);
       // H: a altura na arte; HE: na tela (a arte vem na escala antiga e o tabuleiro reduz)
