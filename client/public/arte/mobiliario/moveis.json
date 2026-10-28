@@ -22919,45 +22919,114 @@
       "4": {
         "arquivo": "poltrona_preta/giro-4.png",
         "ax": 40.0,
-        "ay": 77.0
+        "ay": 73.0
       },
       "2": {
         "arquivo": "poltrona_preta/giro-2.png",
         "ax": 40.0,
-        "ay": 77.0
+        "ay": 73.0
       },
       "0": {
         "arquivo": "poltrona_preta/giro-0.png",
         "ax": 40.0,
-        "ay": 67.0
+        "ay": 63.0
       },
       "6": {
         "arquivo": "poltrona_preta/giro-6.png",
         "ax": 40.0,
-        "ay": 67.0
+        "ay": 63.0
       }
     },
     "real": [
-      0.71,
-      0.69,
-      0.949
+      0.726,
+      0.68,
+      0.88
     ],
     "tampo": [
-      0.199,
-      0.534,
-      0.382,
-      0.691,
+      0.165,
+      0.576,
+      0.269,
+      0.694,
       0.45
     ],
     "cima": {
       "arquivo": "poltrona_preta/cima.png",
       "caixa": [
         14,
-        14,
+        15,
         44,
         44
       ]
-    }
+    },
+    "voo": {
+      "25": {
+        "4": {
+          "arquivo": "poltrona_preta/voo-25-giro-4.png",
+          "ax": 31.0,
+          "ay": 41.7
+        },
+        "2": {
+          "arquivo": "poltrona_preta/voo-25-giro-2.png",
+          "ax": 30.0,
+          "ay": 41.7
+        },
+        "0": {
+          "arquivo": "poltrona_preta/voo-25-giro-0.png",
+          "ax": 30.0,
+          "ay": 34.7
+        },
+        "6": {
+          "arquivo": "poltrona_preta/voo-25-giro-6.png",
+          "ax": 30.0,
+          "ay": 35.7
+        }
+      },
+      "50": {
+        "4": {
+          "arquivo": "poltrona_preta/voo-50-giro-4.png",
+          "ax": 27.7,
+          "ay": 36.4
+        },
+        "2": {
+          "arquivo": "poltrona_preta/voo-50-giro-2.png",
+          "ax": 26.7,
+          "ay": 35.4
+        },
+        "0": {
+          "arquivo": "poltrona_preta/voo-50-giro-0.png",
+          "ax": 27.7,
+          "ay": 31.4
+        },
+        "6": {
+          "arquivo": "poltrona_preta/voo-50-giro-6.png",
+          "ax": 27.7,
+          "ay": 32.4
+        }
+      },
+      "75": {
+        "4": {
+          "arquivo": "poltrona_preta/voo-75-giro-4.png",
+          "ax": 24.1,
+          "ay": 26.4
+        },
+        "2": {
+          "arquivo": "poltrona_preta/voo-75-giro-2.png",
+          "ax": 23.1,
+          "ay": 26.4
+        },
+        "0": {
+          "arquivo": "poltrona_preta/voo-75-giro-0.png",
+          "ax": 24.1,
+          "ay": 25.4
+        },
+        "6": {
+          "arquivo": "poltrona_preta/voo-75-giro-6.png",
+          "ax": 24.1,
+          "ay": 25.4
+        }
+      }
+    },
+    "vooKv": 48.0
   },
   "scanner_digital": {
     "escala": 1,

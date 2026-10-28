@@ -966,9 +966,40 @@ def armchair_red():
     poltrona(_VERMELHO, 0.73 / UN, 0.98)
 
 
+def _poltrona_capitone(R, br=0.1, zs=0.45, zt=0.88, zb=0.6):
+    """
+    A poltrona clube (1 x 1, 28/10): o encosto capitonê em losango, os braços em rolo finos e baixos (para quem senta
+    caber entre eles: os de antes, caixas de 15 cm mais altas, apertavam o boneco), a almofada do assento à mostra, os
+    pés de latão. br: a largura do braço; zb: o alto do rolo; zs e zt: o assento e o alto do encosto (m).
+    """
+    import escritorio as ES
+    import mansao_luxo as ML
+    x0, x1 = 0.02, 0.73
+    y0, y1 = 0.04, 0.72
+    for xa in (x0 + 0.06, x1 - 0.06):
+        for ya in (y0 + 0.06, y1 - 0.06):
+            ML._pe_dourado(xa, ya, 0.1)
+    # o corpo, a saia
+    b = (x0 + 0.03, x1 - 0.03, y0 + 0.04, y1 - 0.02, 0.09, zs - 0.11)
+    ES.malha(b, (0.03, 0.03, 0.02, 0.03), ES.estofado(R, b, 1.4, 4.8, cupula=0, grad=0.8), seg=2)
+    # o encosto capitonê
+    b = (x0 + 0.03, x1 - 0.03, y0, y0 + 0.2, zs - 0.15, zt)
+    ES.malha(b, (0.11, 0.08, 0.03, 0.12), ES.estofado(R, b, 2.2, 7.4, cupula=0.6, capi=(0.13, 0.12), grad=0.5), seg=3)
+    # a almofada do assento, entre os braços
+    b = (x0 + br + 0.004, x1 - br - 0.004, y0 + 0.19, y1, zs - 0.13, zs)
+    ES.malha(b, (0.05, 0.05, 0.03, 0.06), ES.estofado(R, b, 2.2, 7.8, cupula=1.1, brilho=True, grad=1.0), seg=2)
+    # os braços em rolo
+    for (a0, a1) in ((x0, x0 + br), (x1 - br, x1)):
+        b = (a0 + 0.015, a1 - 0.015, y0 + 0.15, y1 - 0.02, 0.09, zb - 0.1)
+        ES.malha(b, (0.03, 0.04, 0.02, 0.03), ES.estofado(R, b, 1.8, 5.8, cupula=0, grad=1.0), seg=2)
+        b = (a0 - 0.008, a1 + 0.008, y0 + 0.13, y1, zb - 0.12, zb)
+        ES.malha(b, (0.05, 0.05, 0.06, 0.07), ES.estofado(R, b, 2.4, 7.8, cupula=0.9, brilho=True), seg=2)
+    peg(x0, x1, y0, y1)
+
+
 def poltrona_preta():
-    """A poltrona preta da sala (o encosto a 0,95 m): couro preto com o capitonê no encosto e os pés de metal."""
-    poltrona(_PRETO, 0.45, 1.55 / UN, pes='metal', botoes=True)
+    """A poltrona preta da sala (28/10): a poltrona clube em couro preto, capitonê no encosto, pés de latão."""
+    _poltrona_capitone(_PRETO)
 
 
 def sofa_booth():
