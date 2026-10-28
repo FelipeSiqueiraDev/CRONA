@@ -47,6 +47,7 @@ import { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha, TelaFicha } from 
 import { Entrada } from './ui/entrada';
 import { FalsoCris } from './ui/falsoCris';
 import { mostrarTelaEscondida } from './ui/telaEscondida';
+import { ligarMedidor } from './ui/medidorFps';
 import { mostrarTelaViagem } from './ui/viagemTela';
 import { mostrarCena } from './ui/cenaTela';
 import { iniciarSugestaoDeCenas } from './ui/cenaSugestao';
@@ -259,6 +260,8 @@ const shell = tableMode || fichaMode
       logout: () => sairDaConta(),
     });
 const params = new URLSearchParams(location.search);
+// o medidor de desempenho (?fps): quadros por segundo, desenho, travadas e mudanças da interface
+if (params.has('fps')) ligarMedidor(view, canvas, () => app.state.room?.name ?? '');
 const table = tableMode ? new TableScreen(app) : null;
 const telaFicha = fichaMode
   ? new TelaFicha(app, () => sairDaConta())

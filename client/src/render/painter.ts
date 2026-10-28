@@ -135,12 +135,31 @@ export function pointInPoly(x: number, y: number, pts: [number, number][]) {
 export class Painter {
   ctx!: CanvasRenderingContext2D;
   m = new Mapper();
-  /** tempo em ms */
-  t = 0;
   state = 0;
   seed = 0;
+  /**
+   * O desenho leu o tempo ou a energia (28/10, o desempenho): mexe sozinho, então não dá para guardar pronto. O
+   * tabuleiro zera antes de desenhar um móvel e confere depois.
+   */
+  leu = false;
+  private _t = 0;
+  private _power = 1;
+  /** tempo em ms */
+  get t() {
+    this.leu = true;
+    return this._t;
+  }
+  set t(v: number) {
+    this._t = v;
+  }
   /** energia elétrica da cena: 1 normal, 0 apagão (mobis elétricos desenham apagados) */
-  power = 1;
+  get power() {
+    this.leu = true;
+    return this._power;
+  }
+  set power(v: number) {
+    this._power = v;
+  }
 
   // ---------- caixas ----------
   box(b: LBox, color: string, o: BoxOpts = {}) {

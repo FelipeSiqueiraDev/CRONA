@@ -68,6 +68,7 @@ import { Lighting, type Light } from '../render/lighting';
 import { Particles } from '../render/particles';
 import { ChamasDasPecas, desenharBrilhoChama, desenharCamadaChama } from '../render/chamaPeca';
 import { boxSilhouette, Mapper, Painter, pointInPoly, type WBox } from '../render/painter';
+import { forcandoAgora } from '../render/forcar';
 import { buildStatic, doorClipPath, roomBounds, type StaticLayer } from '../render/roomStatic';
 import { versaoTexturas } from '../render/texturas';
 import { MundoViagem } from '../render/viagemMundo';
@@ -459,6 +460,18 @@ export class RoomView {
   selection: Selection = null;
   placement: Placement | null = null;
   private painter = new Painter();
+  /** quanto o último quadro levou para desenhar (o medidor do ?fps) */
+  ultimoQuadroMs = 0;
+  /**
+   * O desenho pronto de cada pedaço de móvel parado (28/10, o desempenho: os móveis feitos por código, como os arbustos e
+   * as caixas, eram refeitos do zero a cada quadro; no Jardim do Fritz, 2.300 degradês por quadro). `null`: esse pedaço
+   * mexe sozinho (lê o tempo ou a energia, usa imagem ou mistura de cor) e é desenhado ao vivo.
+   */
+  private nosProntos = new Map<string, { c: HTMLCanvasElement; ox: number; oy: number } | null>();
+  private nosEscala = '';
+  private nosSala = -1;
+  /** quanto tempo (ms) este quadro já gastou guardando pedaços novos: até 4 ms, para a entrada na cena não engasgar */
+  private nosGasto = 0;
   private mapper = new Mapper();
   private lighting = new Lighting();
   /** as celas da cena (porta de cela): fechadas no escuro, abertas acesas */
@@ -619,11 +632,13 @@ export class RoomView {
       this.raf = requestAnimationFrame(loop);
       // escondido (a aba FICHAS, o COMBATE de cards): não desenha (23/10, o pente-fino de desempenho)
       if (this.pausado) return;
+      const t0 = performance.now();
       try {
         this.frame();
       } catch (e) {
         console.error(e);
       }
+      this.ultimoQuadroMs = performance.now() - t0;
     };
     this.raf = requestAnimationFrame(loop);
   }
@@ -2161,7 +2176,98 @@ export class RoomView {
   }
 
   // ---------- quadro ----------
+  /**
+   * Desenha um pedaço de móvel: do desenho pronto, se ele é parado; senão ao vivo. A chave diz tudo o que muda o desenho
+   * (o móvel, o pedaço, o giro, o estado, o lugar); a escala entra aqui. `x0..y1`: onde ele fica no mundo (a silhueta).
+   */
+  private desenharNo(ctx: CanvasRenderingContext2D, draw: (p: Painter) => void, painter: Painter, chave: string, x0: number, y0: number, x1: number, y1: number) {
+    const T = ctx.getTransform();
+    // dando zoom (a escala mudando), alguém forçando a tranca, ou a tela girada: ao vivo
+    if (T.b || T.c || performance.now() - this.escalaMudouEm < 160 || forcandoAgora(painter.seed)) return draw(painter);
+    const k = T.a;
+    const escala = k.toFixed(4);
+    const sala = this.info?.id ?? -1;
+    if (escala !== this.nosEscala || sala !== this.nosSala) {
+      this.nosProntos.clear();
+      this.nosEscala = escala;
+      this.nosSala = sala;
+    }
+    let p = this.nosProntos.get(chave);
+    if (p === undefined) {
+      if (this.nosGasto > 4) return draw(painter);
+      const t0 = performance.now();
+      p = this.prepararNo(draw, painter, k, x0, y0, x1, y1);
+      this.nosGasto += performance.now() - t0;
+      this.nosProntos.set(chave, p);
+    }
+    if (!p) return draw(painter);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(p.c, Math.round(T.e + p.ox * k), Math.round(T.f + p.oy * k));
+    ctx.restore();
+  }
+
+  /** O desenho pronto de um pedaço de móvel, recortado no que tem pixel; `null` se ele mexe sozinho. */
+  private prepararNo(draw: (p: Painter) => void, painter: Painter, k: number, x0: number, y0: number, x1: number, y1: number) {
+    // a folga em volta da silhueta: copa, sombra, contorno que passam da caixa
+    const M = 48;
+    const wx = x0 - M;
+    const wy = y0 - M;
+    const W = Math.ceil((x1 - x0 + M * 2) * k);
+    const H = Math.ceil((y1 - y0 + M * 2) * k);
+    if (W < 1 || H < 1 || W * H > 4_000_000) return null;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const g = c.getContext('2d', { willReadFrequently: true })!;
+    // usa imagem (a arte, que pode ser animada) ou mistura de cor com o que está atrás: não dá para guardar
+    let vivo = false;
+    const imagem = g.drawImage.bind(g) as (...a: unknown[]) => void;
+    (g as unknown as { drawImage: (...a: unknown[]) => void }).drawImage = (...a: unknown[]) => {
+      vivo = true;
+      imagem(...a);
+    };
+    const mistura = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'globalCompositeOperation')!;
+    Object.defineProperty(g, 'globalCompositeOperation', {
+      get: () => mistura.get!.call(g),
+      set: (v: GlobalCompositeOperation) => {
+        if (v !== 'source-over') vivo = true;
+        mistura.set!.call(g, v);
+      },
+    });
+    g.setTransform(k, 0, 0, k, -wx * k, -wy * k);
+    const antes = painter.ctx;
+    painter.ctx = g;
+    painter.leu = false;
+    try {
+      draw(painter);
+    } finally {
+      painter.ctx = antes;
+    }
+    if (vivo || painter.leu) return null;
+    // recorta no que tem pixel (menos memória e menos para copiar a cada quadro)
+    const d = g.getImageData(0, 0, W, H).data;
+    let bx0 = W;
+    let by0 = H;
+    let bx1 = -1;
+    let by1 = -1;
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++)
+        if (d[(y * W + x) * 4 + 3]) {
+          if (x < bx0) bx0 = x;
+          if (x > bx1) bx1 = x;
+          if (y < by0) by0 = y;
+          if (y > by1) by1 = y;
+        }
+    const r = document.createElement('canvas');
+    r.width = Math.max(1, bx1 - bx0 + 1);
+    r.height = Math.max(1, by1 - by0 + 1);
+    if (bx1 >= 0) r.getContext('2d')!.drawImage(c, -bx0, -by0);
+    return { c: r, ox: wx + Math.max(0, bx0) / k, oy: wy + Math.max(0, by0) / k };
+  }
+
   private frame() {
+    this.nosGasto = 0;
     const now = performance.now();
     const tat = this.tat;
     const sd = this.stardewAtivo();
@@ -2817,7 +2923,7 @@ export class RoomView {
               ctx.filter = 'brightness(0.42) sepia(0.6) saturate(0.55) contrast(1.15)';
               node.draw(painter);
               ctx.restore();
-            } else node.draw(painter);
+            } else this.desenharNo(ctx, node.draw, painter, `${it.id}|${n}|${def.id}|${rot}|${estado}|${it.modelo ?? ''}|${it.vazio ? 1 : 0}|${it.escala ?? 1}|${ix},${iy},${iz}`, sx0 - pad, sy0 - pad, sx1 + pad, sy1 + pad);
             if (cela) escurecerForma(ctx, sil, cela.escuro);
             ctx.globalAlpha = 1;
             if (selected) {

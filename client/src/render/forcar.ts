@@ -13,6 +13,11 @@ const EMPURROES: [number, number, number][] = [
   [0.3, 0.1, 1.3],
 ];
 
+/** Alguém está forçando a tranca deste móvel agora (ele se mexe: desenhado ao vivo). */
+export function forcandoAgora(id: number): boolean {
+  return forcando.has(id);
+}
+
 export function forcarMovel(id: number) {
   forcando.set(id, performance.now());
 }
