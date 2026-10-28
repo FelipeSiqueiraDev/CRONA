@@ -3352,23 +3352,24 @@ export class RoomView {
       // a altura do assento sai do mapa, e não da peça: a do servidor só se refaz quando ela anda (a poltrona preta, com
       // a altura errada no catálogo até 28/10, deixava quem já estava sentado meio metro acima do assento)
       const zAssento = pfSentado ? map.standHeight(u.x, u.y) : p.z;
-      // a pose presa pelo quadril (sprites.ts, 28/10): o quadril no meio do assento, na altura dele, e as pernas penduradas
+      // a pose sentada com o meio do quadril na largura (sprites.ts, 28/10): vai para o fundo do assento
       const noQuadril = !!pfSentado?.noQuadril;
-      const baseZ = standBy ? pisoSentado : noQuadril ? zAssento : pfSentado ? pisoSentado + Math.max(0, zAssento - pisoSentado - 0.45 * Z_PER_M) : p.z;
+      const baseZ = standBy ? pisoSentado : pfSentado ? pisoSentado + Math.max(0, zAssento - pisoSentado - 0.45 * Z_PER_M) : p.z;
       const half = seated ? 0.25 : 0.3;
       // sentada, os pés ficam à frente do quadril: a âncora (os pés) vai um tanto para a frente, para o quadril cair no
       // meio do assento (18/10, o Felipe: "eles ainda estão posicionados errados na cadeira"; de costas, o quadril
       // ficava na frente do assento, e de frente, atrás dele)
       // Só na altura da tela: na largura, a âncora da pose sentada já é o meio do quadril (sprites.ts), e o empurrão
       // tirava o quadril de cima do assento, para o lado do olhar (28/10, a Alosi de costas saía para fora do encosto)
-      const [fdx, fdy] = pfSentado && !noQuadril ? (DIRS[u.dir] ?? [0, 0]) : [0, 0];
+      const [fdx, fdy] = pfSentado ? (DIRS[u.dir] ?? [0, 0]) : [0, 0];
       // presa pelo quadril: no fundo do assento, com as costas no encosto, e não no meio dele (28/10, o Felipe: a Alosi
       // aparecia ao lado do encosto e a Catarina parecia sentada em cima dele)
       const defSentado = noQuadril && itSentado ? getFurni(itSentado.defId) : undefined;
       const recuo = defSentado && !TIPOS_SEM_ENCOSTO.has(defSentado.kind) && !MOVEIS_SEM_ENCOSTO.has(defSentado.id) ? RECUO_SENTADO : 0;
       const [rdx, rdy] = recuo ? (DIRS[u.dir] ?? [0, 0]) : [0, 0];
       const sx = iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[0];
-      const sy = noQuadril ? iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[1] : iso(cx + fdx * PES_A_FRENTE_SENTADO, cy + fdy * PES_A_FRENTE_SENTADO, baseZ)[1];
+      // na altura, os pés no chão um tanto à frente do quadril
+      const sy = iso(cx - rdx * recuo + fdx * PES_A_FRENTE_SENTADO, cy - rdy * recuo + fdy * PES_A_FRENTE_SENTADO, baseZ)[1];
       // H: a altura na arte; HE: na tela (a arte vem na escala antiga e o tabuleiro reduz)
       const H = bq ? bq.ay : sp ? sp.def.height : pf ? pf.h : PIXEL_AVATAR_HEIGHT;
       const HE = H * ESCALA_ARTE_PESSOA;

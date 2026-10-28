@@ -35,11 +35,7 @@ export interface SpriteFrame {
    * casa, com um pé de cada lado do anel.
    */
   noMeioDosPes?: boolean;
-  /**
-   * Pose sentada: a âncora é o ponto de baixo do quadril (onde ele encosta no assento), e não os pés. O tabuleiro põe
-   * esse ponto no meio do assento, na altura dele; as pernas ficam penduradas (a perna do chibi é mais curta que o
-   * assento de 0,45 m, e com os pés no chão o quadril afundava no móvel, 28/10).
-   */
+  /** Pose sentada: a âncora é o meio do quadril na largura e a sola na altura (quadrilSentado). */
   noQuadril?: boolean;
 }
 
@@ -323,9 +319,9 @@ function meioDoQuadril(c: HTMLCanvasElement, b: Caixa): number {
 }
 
 /**
- * Onde a pose sentada encosta no assento (28/10), [x, y] na imagem. Na largura, o meio da faixa do quadril e das coxas
- * (o que fica em cima do assento; a do tronco pegava o cabelo grande da Catarina e da Cora e a tirava do lugar). Na
- * altura, um tanto acima da sola (a medida das poses dos agentes: o bumbum fica a ~1/5 da altura sentada).
+ * A âncora da pose sentada (28/10), [x, y] na imagem: na largura, o meio da faixa do quadril e das coxas (o que fica em
+ * cima do assento; a do tronco pegava o cabelo grande da Catarina e da Cora); na altura, a sola, porque a pose cabe com
+ * o pé no chão (do quadril à sola dá ~0,6 m nos desenhos) e é assim que ela fica certa no assento (o Felipe, 28/10).
  */
 function quadrilSentado(c: HTMLCanvasElement, b: Caixa): [number, number] {
   const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
@@ -335,11 +331,8 @@ function quadrilSentado(c: HTMLCanvasElement, b: Caixa): [number, number] {
   for (let y = Math.round(b.y0 + alto * 0.55); y <= Math.round(b.y0 + alto * 0.72); y++)
     for (let x = b.x0; x <= b.x1; x++)
       if (d[(y * c.width + x) * 4 + 3] > 96) (soma += x + 0.5), n++;
-  return [n ? soma / n : (b.x0 + b.x1 + 1) / 2, b.y1 + 1 - alto * QUADRIL_SENTADO];
+  return [n ? soma / n : (b.x0 + b.x1 + 1) / 2, b.y1 + 1];
 }
-
-/** A altura do quadril na pose sentada, em fração da altura dela (a partir da sola). */
-const QUADRIL_SENTADO = 0.19;
 
 /**
  * Os pés na imagem: em cada coluna, o pixel mais baixo do corpo na faixa de baixo (as botas); as
