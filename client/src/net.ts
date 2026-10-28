@@ -1,5 +1,8 @@
 import type { ClientMsg, ServerMsg } from '@crona/shared';
 
+/** As mensagens de entrar: passam antes do `welcome` (as outras o servidor jogaria fora). */
+const ehEntrada = (m: ClientMsg) => m.t === 'login' || m.t === 'contaCriar' || m.t === 'contaEntrar' || m.t === 'contaSair';
+
 export class Net {
   private ws: WebSocket | null = null;
   private queue: ClientMsg[] = [];
@@ -18,6 +21,13 @@ export class Net {
     this.ws = ws;
     ws.onopen = () => {
       this.dentro = false;
+      // o que é para entrar (o login que a página mandou antes de a conexão abrir) sai já; o resto espera o welcome.
+      // Sem isso o login ficava na fila esperando o welcome, que só vem depois do login (28/10)
+      const fila = this.queue.splice(0);
+      for (const m of fila) {
+        if (ehEntrada(m)) ws.send(JSON.stringify(m));
+        else this.queue.push(m);
+      }
       this.onOpen();
     };
     ws.onmessage = (e) => {
@@ -52,8 +62,7 @@ export class Net {
   }
 
   send(m: ClientMsg) {
-    const abre = m.t === 'login' || m.t === 'contaCriar' || m.t === 'contaEntrar' || m.t === 'contaSair';
-    if (this.ws?.readyState === WebSocket.OPEN && (this.dentro || abre)) this.ws.send(JSON.stringify(m));
+    if (this.ws?.readyState === WebSocket.OPEN && (this.dentro || ehEntrada(m))) this.ws.send(JSON.stringify(m));
     else this.queue.push(m);
   }
 }
