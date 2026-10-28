@@ -34,6 +34,9 @@ import { App } from './ui/app';
 import { CatalogWin, InventoryWin } from './ui/catalog';
 import { CharactersWin } from './ui/characters';
 import { closeTopWindow, fecharJanelas, h, manterRolagem, toast } from './ui/dom';
+import { ligarBancadaSentar } from './ui/bancadaSentar';
+/** a bancada de sentar (?sentar): undefined = ainda não decidiu; null = desligada */
+let bancadaSentar: (() => void) | null | undefined;
 
 // a rolagem dos painéis não volta para o topo quando eles são refeitos (ui/dom.ts)
 manterRolagem();
@@ -591,6 +594,9 @@ net.onMessage = (m: ServerMsg) => {
       app.emit('room');
       app.emit('selection');
       table?.onRoom();
+      // ?sentar: a bancada de acertar a pose sentada (só o mestre), montada na primeira cena
+      if (bancadaSentar === undefined) bancadaSentar = new URLSearchParams(location.search).has('sentar') && !table && m.room.canBuild ? ligarBancadaSentar(view) : null;
+      if (bancadaSentar) setTimeout(bancadaSentar, 2500);
       break;
     case 'roomUpdate':
       app.state.room = m.room;
@@ -739,6 +745,22 @@ window.addEventListener('keydown', (e) => {
     const target = v.selection?.kind === 'user' ? v.selection.id : v.myId;
     if (target) shell.turnToken(target, e.key.toLowerCase() === 'e');
     return;
+  }
+  // Alt + setas, com uma peça sentada escolhida: o mestre acerta a pose sentada daquele personagem naquela direção
+  // (28/10); Shift anda 4 de uma vez, Alt + Backspace volta ao da conta. Fica salvo junto da arte (sentado.json)
+  const seta = ({ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] } as Record<string, [number, number]>)[e.key];
+  if (e.altKey && (seta || e.key === 'Backspace') && app.canBuild && v.selection?.kind === 'user') {
+    const aj = v.ajusteSentado(v.selection.id);
+    if (aj) {
+      e.preventDefault();
+      const passo = e.shiftKey ? 4 : 1;
+      const novo: [number, number] = seta ? [aj.atual[0] + seta[0] * passo, aj.atual[1] + seta[1] * passo] : [0, 0];
+      // na hora aqui; o servidor grava e manda para todos
+      aj.def.sentadoAjuste = { ...aj.def.sentadoAjuste, [aj.dir]: novo };
+      net.send({ t: 'sentadoAjuste', charId: aj.def.id, dir: aj.dir, dx: novo[0], dy: novo[1] });
+      toast(`${aj.def.name} sentado (${aj.dir}): ${novo[0]}, ${novo[1]}`);
+      return;
+    }
   }
   // P, D e N: as ferramentas da mesa (apontar, desenhar, névoa)
   const ferr = { p: 'ponto', d: 'traco', n: 'nevoa' } as const;

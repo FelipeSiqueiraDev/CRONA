@@ -99,6 +99,42 @@ export function findAgachado(sheet: string, dir = ART_DIR, pose: 'agachado' | 's
   return Object.keys(out).length ? out : undefined;
 }
 
+/** A pasta das poses do personagem da folha `sheet` (null = a folha não é de uma pasta de arte). */
+function pastaDasPoses(sheet: string, dir = ART_DIR): string | null {
+  const m = /^\/arte\/personagens\/([a-z0-9-]+)\//.exec(sheet);
+  return m ? path.join(dir, m[1], POSES_DIR) : null;
+}
+
+/** O ajuste da pose sentada (tabuleiro-32bits/sentado.json), por direção. */
+export function findSentadoAjuste(sheet: string, dir = ART_DIR): CharacterDef['sentadoAjuste'] {
+  const pasta = pastaDasPoses(sheet, dir);
+  if (!pasta) return undefined;
+  try {
+    const bruto = JSON.parse(fs.readFileSync(path.join(pasta, 'sentado.json'), 'utf8')) as Record<string, unknown>;
+    const out: NonNullable<CharacterDef['sentadoAjuste']> = {};
+    for (const k of DIR_KEYS) {
+      const v = bruto[k];
+      if (Array.isArray(v) && v.length === 2 && v.every((n) => typeof n === 'number' && Number.isFinite(n))) out[k] = [v[0], v[1]];
+    }
+    return Object.keys(out).length ? out : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Grava o ajuste de uma direção (null = tira) e devolve o ajuste inteiro; false = o personagem não tem pasta de arte. */
+export function gravarSentadoAjuste(sheet: string, k: DirKey, v: [number, number] | null, dir = ART_DIR): CharacterDef['sentadoAjuste'] | false {
+  const pasta = pastaDasPoses(sheet, dir);
+  if (!pasta || !fs.existsSync(pasta)) return false;
+  const atual = { ...(findSentadoAjuste(sheet, dir) ?? {}) };
+  if (v && (v[0] || v[1])) atual[k] = [Math.round(v[0] * 2) / 2, Math.round(v[1] * 2) / 2];
+  else delete atual[k];
+  const arquivo = path.join(pasta, 'sentado.json');
+  if (Object.keys(atual).length) fs.writeFileSync(arquivo, JSON.stringify(atual, null, 2) + '\n');
+  else fs.rmSync(arquivo, { force: true });
+  return Object.keys(atual).length ? atual : undefined;
+}
+
 /** As poses deitadas (dormindo e caído), na mesma pasta das poses: deitado-dormindo.png e deitado-caido.png. */
 export function findDeitado(sheet: string, dir = ART_DIR): CharacterDef['deitado'] {
   const find = finder(sheet, dir, POSES_DIR);
@@ -282,7 +318,10 @@ export function refreshPortraits(list: CharacterDef[], dir = ART_DIR): boolean {
     const deitado = findDeitado(def.sheet, dir);
     const agachado = findAgachado(def.sheet, dir);
     const sentado = findAgachado(def.sheet, dir, 'sentado');
-    if (JSON.stringify([portraits, poses, passos, anim, boneco, deitado, agachado, sentado]) === JSON.stringify([def.portraits, def.poses, def.passos, def.anim, def.boneco, def.deitado, def.agachado, def.sentado])) continue;
+    const sentadoAjuste = findSentadoAjuste(def.sheet, dir);
+    if (JSON.stringify([portraits, poses, passos, anim, boneco, deitado, agachado, sentado, sentadoAjuste]) === JSON.stringify([def.portraits, def.poses, def.passos, def.anim, def.boneco, def.deitado, def.agachado, def.sentado, def.sentadoAjuste])) continue;
+    if (sentadoAjuste) def.sentadoAjuste = sentadoAjuste;
+    else delete def.sentadoAjuste;
     if (agachado) def.agachado = agachado;
     else delete def.agachado;
     if (sentado) def.sentado = sentado;

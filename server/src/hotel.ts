@@ -40,6 +40,7 @@ import {
   sanitizeCharPatch,
   sanitizeLook,
   type CharacterDef,
+  type DirKey,
   type InvItem,
   DEFAULT_CAPACITY,
   parseHeightmap,
@@ -93,7 +94,7 @@ import {
 import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSessao, SENHA_MIN, senhaAntiga, type Conta } from './contas';
 import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type TokenData, type UserData } from './db';
 import { RoomInstance, type Client, type HotelApi } from './roomInstance';
-import { folhaDaPasta, refreshPortraits } from './portraits';
+import { folhaDaPasta, gravarSentadoAjuste, refreshPortraits } from './portraits';
 import { limparSalasDeExemplo, seedDb, SYSTEM_OWNER, upgradeDb } from './seed';
 
 const NAME_RE = /^[\p{L}\p{N}_\-. ]+$/u;
@@ -2541,6 +2542,9 @@ export class Hotel implements HotelApi {
       case 'charDelete':
         this.charDelete(c, m);
         return;
+      case 'sentadoAjuste':
+        this.sentadoAjuste(c, m);
+        return;
       case 'sendTo':
         this.sendTo(c, m);
         return;
@@ -3379,6 +3383,22 @@ export class Hotel implements HotelApi {
     ch.anims = Array.from({ length: ch.rows }, (_, i) => anims[i] ?? 'idle');
     ch.sequence = ch.sequence.filter((n) => n < ch.cols);
     if (!ch.sequence.length) ch.sequence = [0];
+    this.save();
+    this.broadcastCharacters();
+  }
+
+  /** O ajuste da pose sentada (28/10): grava em tabuleiro-32bits/sentado.json, junto da arte, e manda a lista nova. */
+  private sentadoAjuste(c: Client, m: Record<string, unknown>) {
+    const ch = this.db.characters.find((x) => x.id === m.charId);
+    if (!ch) return;
+    if (!this.canEditChar(c, ch)) return c.send({ t: 'error', msg: 'Só o mestre acerta a pose sentada.' });
+    if (!(DIR_KEYS as readonly unknown[]).includes(m.dir) || typeof m.dx !== 'number' || typeof m.dy !== 'number') return;
+    const dx = Math.max(-60, Math.min(60, m.dx));
+    const dy = Math.max(-60, Math.min(60, m.dy));
+    const novo = gravarSentadoAjuste(ch.sheet, m.dir as DirKey, Number.isFinite(dx) && Number.isFinite(dy) ? [dx, dy] : null);
+    if (novo === false) return c.send({ t: 'error', msg: 'Esse personagem não tem pasta de arte para guardar o ajuste.' });
+    if (novo) ch.sentadoAjuste = novo;
+    else delete ch.sentadoAjuste;
     this.save();
     this.broadcastCharacters();
   }

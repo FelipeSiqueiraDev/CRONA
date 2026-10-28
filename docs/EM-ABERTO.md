@@ -10,7 +10,15 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - Depois (28/10, à tarde): a **qualidade automática** (`RoomView.qualidade`: abaixo de ~40 quadros por segundo o tabuleiro desenha em resolução menor, até 60% dos pixels; com folga volta à cheia); **parado há 3 s, 30 quadros por segundo** (`descansando`); a névoa rasteira guardada por casa (`Fog.montarCasa`: na Vila, de 1.247 para 430 imagens por quadro); a classe `map-hover` só quando muda. O `?fps` mostra a qualidade.
 - Na prévia com o painel escondido, o tempo da placa de vídeo varia demais: medir com o painel à vista ou com o `?fps`.
 - Também no ar: o login preso desde 27/10 (o login mandado antes de a conexão abrir esperava o welcome) consertado em `net.ts`.
-- Falta conferir: sentar sem objeto atravessando o corpo, deitar, portas e objetos interagindo certo.
+- Falta conferir: deitar, portas e objetos interagindo certo.
+
+## Sentar (28/10, em andamento, nada no ar)
+
+- O Felipe: "todo mundo sentado em qualquer lugar pra qualquer direção não parece certo". A referência que ele mandou: bumbum no fundo do assento, costas no encosto, canela descendo da frente, pé no chão; na poltrona, o braço do lado de cá na frente do quadril.
+- Corrigido (commits de 28/10 na `claude/combate-auditoria`): o passo que acabou não segura mais a peça fora da cadeira puxada para a mesa; a ordem de desenho põe quem senta logo depois do próprio assento; o encosto redesenhado acompanha a cadeira deslizada e não vale para banqueta, pufe e banco reto; o braço da poltrona e do sofá passa na frente do quadril; a poltrona preta tinha 0,95 m no catálogo (é 0,45); o cachorro (bicho de quatro patas, altura < 70) não senta, para do lado (`casaDoBicho`, teste `bichoNaoSenta`).
+- A pose sentada: âncora = meio da faixa do quadril e das coxas na largura e a sola na altura (`quadrilSentado`, sprites.ts), no fundo do assento (`RECUO_SENTADO`). A conta não acerta todo mundo (casaco, cabelo, livro pendurado enganam).
+- **A bancada de ajuste:** `?sentar` no endereço (só o mestre) troca a cena, só naquele navegador, por 8 assentos × 4 direções com um personagem sentado; `[` e `]` trocam o personagem. Clicar numa peça e **Alt + setas** (Shift = 4 px) empurra a pose; **Alt + Backspace** volta à conta. Vale também no jogo, com qualquer peça sentada. O ajuste fica em `arte/personagens/<nome>/tabuleiro-32bits/sentado.json` (por direção, em pixels do tabuleiro): entra no git. **Próximo passo:** o Felipe passa pelos personagens na bancada.
+- Na prévia, a aba do painel às vezes para de carregar imagens pela rede (o `fetch` carrega, o `<img>` não): a arte some e ficam os desenhos de reserva. A arte presa agora é cancelada antes de pedir de novo, com a espera dobrando (`furniArte.ts`).
 
 ## Auditoria de 27/10: o que existe e não funciona
 

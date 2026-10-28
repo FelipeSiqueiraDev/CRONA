@@ -16,6 +16,8 @@ import {
   Z_PER_M,
   M_POR_CASA,
   type AvatarLook,
+  type CharacterDef,
+  type DirKey,
   type ChatKind,
   type FloorItem,
   type FurniDef,
@@ -43,6 +45,7 @@ import {
   chaveCasa,
   type LuzDeCasa,
   DIRS,
+  DIR_TO_SHEET,
 } from '@crona/shared';
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { Bubbles, UI_FONT } from '../render/bubbles';
@@ -1497,6 +1500,21 @@ export class RoomView {
     e.aoEscolher(tile.x, tile.y);
     e.aoFim();
     return true;
+  }
+
+  /**
+   * A peça sentada com pose sentada desenhada, para o mestre acertar a pose no olho (28/10): o personagem, a direção
+   * da pose e o ajuste de agora. null = a peça não está sentada numa cadeira (ou não tem a pose).
+   */
+  ajusteSentado(id: number): { def: CharacterDef; dir: DirKey; atual: [number, number] } | null {
+    const u = this.users.get(id);
+    if (!u || u.sit !== 1 || !this.map) return null;
+    const it = this.map.sitItem(u.x, u.y);
+    if (!it || getFurni(it.defId)?.deita) return null;
+    const def = sprites.def(u.look?.charId);
+    if (!def?.sentado) return null;
+    const dir = DIR_TO_SHEET[((u.dir % 8) + 8) % 8];
+    return { def, dir, atual: def.sentadoAjuste?.[dir] ?? [0, 0] };
   }
 
   private userPos(u: ClientUser, now: number) {
@@ -3367,9 +3385,11 @@ export class RoomView {
       const defSentado = noQuadril && itSentado ? getFurni(itSentado.defId) : undefined;
       const recuo = defSentado && !TIPOS_SEM_ENCOSTO.has(defSentado.kind) && !MOVEIS_SEM_ENCOSTO.has(defSentado.id) ? RECUO_SENTADO : 0;
       const [rdx, rdy] = recuo ? (DIRS[u.dir] ?? [0, 0]) : [0, 0];
-      const sx = iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[0];
+      // e o ajuste que o mestre acertou no olho para essa pose (Alt + setas, a bancada ?sentar; sentado.json)
+      const ajuste = pfSentado ? cdef?.sentadoAjuste?.[DIR_TO_SHEET[((u.dir % 8) + 8) % 8]] : undefined;
+      const sx = iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[0] + (ajuste?.[0] ?? 0);
       // na altura, os pés no chão um tanto à frente do quadril
-      const sy = iso(cx - rdx * recuo + fdx * PES_A_FRENTE_SENTADO, cy - rdy * recuo + fdy * PES_A_FRENTE_SENTADO, baseZ)[1];
+      const sy = iso(cx - rdx * recuo + fdx * PES_A_FRENTE_SENTADO, cy - rdy * recuo + fdy * PES_A_FRENTE_SENTADO, baseZ)[1] + (ajuste?.[1] ?? 0);
       // H: a altura na arte; HE: na tela (a arte vem na escala antiga e o tabuleiro reduz)
       const H = bq ? bq.ay : sp ? sp.def.height : pf ? pf.h : PIXEL_AVATAR_HEIGHT;
       const HE = H * ESCALA_ARTE_PESSOA;

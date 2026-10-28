@@ -160,6 +160,12 @@ export interface CharacterDef {
    */
   sentado?: Partial<Record<'desarmado' | 'armado', Partial<Record<DirKey, string>>>>;
   /**
+   * O ajuste da pose sentada (28/10), por direção: [dx, dy] em pixels do tabuleiro (zoom 1), somado à posição que a
+   * conta dá. O mestre acerta no olho (Alt + setas com a peça sentada, ou a bancada ?sentar) e fica em
+   * tabuleiro-32bits/sentado.json, junto da arte.
+   */
+  sentadoAjuste?: Partial<Record<DirKey, [number, number]>>;
+  /**
    * O boneco animado do tabuleiro (parado respirando e andando, nas 8 direções),
    * gerado por scripts/boneco.py e achado pelo servidor em tabuleiro-32bits/anim.json.
    * Quando tem, vale no lugar de `poses` e `passos`.
@@ -526,6 +532,8 @@ export type ClientMsg =
   | { t: 'camMestre'; cx: number; cy: number; w: number; h: number }
   /** o mestre esconde o tabuleiro da mesa atrás da tela de carregamento (18/10) */
   | { t: 'telaEscondida'; on: boolean }
+  /** o mestre acerta a pose sentada de um personagem numa direção (28/10): [dx, dy] em pixels do tabuleiro; 0, 0 tira */
+  | { t: 'sentadoAjuste'; charId: number; dir: DirKey; dx: number; dy: number }
   /** o passo pelas sombras (só o mestre; `tokenId` como no `tokenWalk`; Onipresença da Magistrada, LR p. 252): a peça some na sombra dela e sai na casa (x, y), livre e da mesma cena */
   | { t: 'passoSombras'; tokenId: number; x: number; y: number }
   /** marca ou desmarca uma sombra à mão na casa (só o mestre) */
