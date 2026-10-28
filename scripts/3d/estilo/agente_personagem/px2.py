@@ -22,6 +22,7 @@ from skimage.restoration import denoise_bilateral
 
 ARTE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..', 'client', 'public', 'arte', 'personagens')
 DIRS = ['s', 'se', 'e', 'ne', 'n', 'nw', 'w', 'sw']
+MODA = float(os.environ.get('MODA', '1.6'))   # o tamanho do filtro da moda, em blocos
 
 
 def abrir(png, bloco):
@@ -64,6 +65,24 @@ def indices(a, cent):
     idx = d.argmin(-1)
     idx[~m] = -1
     return idx
+
+
+def moda(idx, cent, tam, peso_escuro=1.7):
+    """O filtro da moda na imagem grande: cada pixel vira a cor que mais aparece em volta dele. Tira as manchas (o vermelho
+    salpicado no cinza da jaqueta) e mantém as bordas; as cores escuras pesam mais, para as linhas finas sobreviverem."""
+    from scipy.ndimage import uniform_filter
+    n = len(cent)
+    L = cent[:, 0]
+    peso = np.where(L <= np.percentile(L, 14), peso_escuro, 1.0)
+    melhor = np.full(idx.shape, -1.0, np.float32)
+    out = idx.copy()
+    for c in range(n):
+        f = uniform_filter((idx == c).astype(np.float32), tam) * peso[c]
+        m = f > melhor
+        out[m] = c
+        melhor[m] = f[m]
+    out[idx < 0] = -1
+    return out
 
 
 def reduzir(idx, a, cent, bloco, viés_escuro=1.7, viés_claro=1.4):
@@ -160,7 +179,7 @@ def converter(imagens_png, alto=94, n=16, bloco=None):
     cent = paleta_de(arts, n)
     saidas = []
     for a in arts:
-        idx = limpar(reduzir(indices(a, cent), a, cent, bloco))
+        idx = limpar(reduzir(moda(indices(a, cent), cent, max(3, int(bloco * MODA))), a, cent, bloco))
         saidas.append(montar(idx, cent))
     return saidas
 

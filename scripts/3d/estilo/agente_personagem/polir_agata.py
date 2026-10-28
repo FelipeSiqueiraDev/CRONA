@@ -1,9 +1,16 @@
 """
-O retoque à mão do rosto da Ágata, pixel a pixel (28/10): olhos (branco, íris, pupila), sobrancelhas, nariz, boca, rubor e
-o brinco, sobre a pixel art que o px2.py tira da arte. As posições vêm da arte original na mesma grade.
-Uso: python polir_agata.py <se.png de entrada> <saida.png>
+O rosto da Ágata, simples (28/10, o Felipe: "simplifica... faz os olhos, e boa... um risquinho na boca ali bem sutil"):
+a pele do rosto vira uma cor só (sem o ruído da conversão), com os dois olhos (2 x 3 px: o cílio escuro em cima, o
+brilho e a íris, a íris escura embaixo) e a boca num risco discreto. O brinco de ouro fica.
+
+Cada pose tem a máscara do rosto (as linhas e o intervalo de x da pele), a posição dos olhos (o canto de cima à esquerda
+de cada um), a boca e o brinco, medidos na arte original com grade_rosto.py.
+
+Uso: python polir_agata.py <pasta com as 8 pngs do px2> <pasta de saída>
 """
+import os
 import sys
+from collections import Counter
 
 from PIL import Image
 
@@ -12,86 +19,76 @@ def c(h):
     return tuple(int(h[i:i + 2], 16) for i in (1, 3, 5)) + (255,)
 
 
-BROW = c('#2a1216')
-OLHO = c('#1c0c10')
-IRIS = c('#a8222c')
-IRIS_E = c('#6e1620')
-BRANCO = c('#f6ebe6')
-NARIZ = c('#e0866a')
-RUBOR = c('#ec9484')
-BOCA = c('#8c3a3a')
+CILIO = c('#2a1216')
+IRIS = c('#9a2430')
+BRILHO = c('#fbf4ee')
+BOCA = c('#cf8272')
 OURO_C = c('#f6dc70')
 OURO = c('#d8a830')
 OURO_E = c('#9c7418')
 
-PIXELS_SE = [
-    # a sobrancelha de longe, brava (desce para o meio)
-    ((21, 22), BROW), ((22, 22), BROW), ((23, 22), BROW), ((24, 22), BROW), ((25, 23), BROW), ((26, 23), BROW),
-    # o olho de longe: branco, íris, pupila
-    ((22, 23), BRANCO), ((23, 23), BRANCO), ((24, 23), IRIS), ((25, 23), IRIS_E),
-    ((23, 24), IRIS_E), ((24, 24), OLHO), ((25, 24), IRIS),
-    # a sobrancelha de perto e o olho de perto
-    ((28, 22), BROW), ((29, 22), BROW), ((30, 22), BROW),
-    ((29, 23), IRIS), ((30, 23), OLHO), ((29, 24), BRANCO), ((30, 24), OLHO),
-    # o nariz, o rubor, a boca franzida
-    ((29, 26), NARIZ),
-    ((23, 25), RUBOR), ((24, 25), RUBOR), ((23, 26), RUBOR),
-    ((27, 28), BOCA), ((28, 28), BOCA), ((29, 28), BOCA), ((26, 27), NARIZ),
-    # o brinco de ouro: o aro e a gota
-    ((15, 26), OURO_C), ((16, 26), OURO), ((15, 27), OURO), ((16, 27), OURO), ((15, 28), OURO), ((16, 28), OURO),
-    ((15, 29), OURO), ((16, 29), OURO_E), ((15, 30), OURO_E), ((16, 30), OURO),
-]
+# a máscara: {y: (x0, x1)}
+FACES = {
+    's': {
+        'mask': {17: (26, 27), 18: (23, 29), 19: (22, 29), 20: (22, 29), 21: (22, 29), 22: (22, 29), 23: (18, 30), 24: (17, 31),
+                 25: (17, 31), 26: (17, 31), 27: (18, 30), 28: (18, 30), 29: (19, 29), 30: (20, 28), 31: (22, 26)},
+        'olhos': [(18, 24), (28, 24)],
+        'boca': [(23, 29), (24, 29), (25, 29)],
+        'brinco': [((32, 27), OURO_C), ((33, 27), OURO), ((32, 28), OURO), ((33, 28), OURO), ((32, 29), OURO), ((33, 29), OURO), ((32, 30), OURO_E), ((33, 30), OURO)],
+    },
+    'se': {
+        'mask': {17: (28, 31), 18: (27, 31), 19: (27, 31), 20: (26, 30), 21: (26, 30), 22: (23, 30), 23: (22, 30), 24: (21, 30),
+                 25: (18, 30), 26: (17, 29), 27: (18, 28), 28: (19, 28), 29: (20, 27), 30: (24, 27)},
+        'olhos': [(23, 23), (29, 23)],
+        'boca': [(26, 28), (27, 28), (28, 28)],
+        'brinco': [((15, 26), OURO_C), ((16, 26), OURO), ((15, 27), OURO), ((16, 27), OURO), ((15, 28), OURO), ((16, 28), OURO), ((15, 29), OURO), ((16, 29), OURO_E), ((15, 30), OURO_E), ((16, 30), OURO)],
+    },
+    'sw': {
+        'mask': {16: (16, 17), 17: (15, 20), 18: (14, 20), 19: (14, 20), 20: (14, 20), 21: (14, 20), 22: (14, 21), 23: (13, 26), 24: (13, 27),
+                 25: (14, 27), 26: (14, 27), 27: (14, 26), 28: (15, 25), 29: (15, 23), 30: (16, 22)},
+        'olhos': [(14, 23), (22, 23)],
+        'boca': [(17, 28), (18, 28), (19, 28)],
+        'brinco': [((30, 26), OURO_C), ((31, 26), OURO), ((30, 27), OURO), ((31, 27), OURO), ((30, 28), OURO), ((31, 28), OURO), ((30, 29), OURO), ((31, 29), OURO), ((30, 30), OURO_E), ((31, 30), OURO)],
+    },
+}
 
 
-PIXELS_SW = [
-    # as sobrancelhas, bravas
-    ((14, 22), BROW), ((15, 22), BROW), ((16, 22), BROW), ((17, 21), BROW), ((18, 21), BROW), ((19, 21), BROW),
-    ((21, 21), BROW), ((22, 21), BROW), ((23, 21), BROW), ((24, 21), BROW), ((25, 22), BROW),
-    # o olho da esquerda e o da direita
-    ((14, 23), BRANCO), ((15, 23), IRIS), ((16, 23), OLHO), ((15, 24), IRIS_E), ((16, 24), IRIS),
-    ((22, 23), BRANCO), ((23, 23), IRIS), ((24, 23), OLHO), ((22, 24), BRANCO), ((23, 24), IRIS_E), ((24, 24), IRIS),
-    # o nariz, o rubor, a boca franzida
-    ((16, 26), NARIZ), ((14, 25), RUBOR), ((15, 25), RUBOR), ((22, 25), RUBOR), ((23, 25), RUBOR), ((22, 26), RUBOR),
-    ((17, 28), BOCA), ((18, 28), BOCA), ((19, 28), BOCA), ((20, 28), BOCA),
-    # o brinco de ouro, do outro lado
-    ((30, 26), OURO_C), ((31, 26), OURO), ((30, 27), OURO), ((31, 27), OURO), ((30, 28), OURO), ((31, 28), OURO),
-    ((30, 29), OURO), ((31, 29), OURO), ((30, 30), OURO_E), ((31, 30), OURO),
-]
-
-PIXELS_S = [
-    # as sobrancelhas bravas, descendo para o meio
-    ((17, 23), BROW), ((18, 23), BROW), ((19, 23), BROW), ((20, 24), BROW), ((21, 24), BROW),
-    ((26, 24), BROW), ((27, 24), BROW), ((28, 23), BROW), ((29, 23), BROW), ((30, 23), BROW),
-    # os olhos: branco, íris, pupila (o da esquerda e o da direita)
-    ((18, 24), BRANCO), ((19, 25), IRIS), ((20, 25), OLHO), ((21, 25), IRIS_E), ((18, 25), BRANCO),
-    ((27, 25), IRIS_E), ((28, 25), OLHO), ((29, 25), IRIS), ((30, 25), BRANCO), ((30, 24), BRANCO),
-    # o nariz, o rubor e a boca franzida
-    ((24, 27), NARIZ), ((17, 26), RUBOR), ((18, 26), RUBOR), ((30, 26), RUBOR), ((31, 26), RUBOR),
-    ((22, 29), BOCA), ((23, 29), BOCA), ((24, 29), BOCA), ((25, 29), BOCA), ((26, 29), BOCA),
-    # o brinco de ouro (do lado direito dela)
-    ((32, 27), OURO_C), ((33, 27), OURO), ((32, 28), OURO), ((33, 28), OURO), ((32, 29), OURO), ((33, 29), OURO),
-    ((32, 30), OURO_E), ((33, 30), OURO),
-]
-
-# (pixel a pintar, pixel de onde copiar a cor): a pele clara da testa
-ESPACOS = {'sw': [((20, 21), (18, 19)), ((20, 22), (18, 19)), ((19, 22), (18, 19)), ((20, 23), (18, 19)), ((19, 23), (18, 19))]}
-POR_DIRECAO = {'s': PIXELS_S, 'se': PIXELS_SE, 'sw': PIXELS_SW}
+def pele_base(p, mask):
+    """A cor de pele clara que mais aparece dentro da máscara."""
+    cont = Counter()
+    for y, (x0, x1) in mask.items():
+        for x in range(x0, x1 + 1):
+            r, g, b, a = p[x, y]
+            if a and r > 230 and g > 180 and b > 140 and r > g > b:
+                cont[(r, g, b, a)] += 1
+    return cont.most_common(1)[0][0]
 
 
 def polir(im, direcao):
+    f = FACES.get(direcao)
     im = im.convert('RGBA').copy()
+    if not f:
+        return im
     p = im.load()
-    for (x, y), cor in POR_DIRECAO.get(direcao, []):
+    pele = pele_base(p, f['mask'])
+    for y, (x0, x1) in f['mask'].items():
+        for x in range(x0, x1 + 1):
+            p[x, y] = pele
+    for (x, y) in f['olhos']:
+        p[x, y] = CILIO
+        p[x + 1, y] = CILIO
+        p[x, y + 1] = BRILHO
+        p[x + 1, y + 1] = IRIS
+        p[x, y + 2] = IRIS
+        p[x + 1, y + 2] = CILIO
+    for (x, y) in f['boca']:
+        p[x, y] = BOCA
+    for (x, y), cor in f['brinco']:
         p[x, y] = cor
-    # o respiro entre as sobrancelhas e entre os olhos: o tom claro da própria pele da pose
-    for (x, y), (ox, oy) in ESPACOS.get(direcao, []):
-        p[x, y] = p[ox, oy]
     return im
 
 
 if __name__ == '__main__':
-    # python polir_agata.py <pasta com as 8 pngs do px2> <pasta de saída>
-    import os
     ent, sai = sys.argv[1], sys.argv[2]
     os.makedirs(sai, exist_ok=True)
     for k in ('s', 'se', 'e', 'ne', 'n', 'nw', 'w', 'sw'):
