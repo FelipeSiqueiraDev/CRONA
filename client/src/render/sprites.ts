@@ -35,6 +35,12 @@ export interface SpriteFrame {
    * casa, com um pé de cada lado do anel.
    */
   noMeioDosPes?: boolean;
+  /**
+   * Pose sentada: a âncora é o ponto de baixo do quadril (onde ele encosta no assento), e não os pés. O tabuleiro põe
+   * esse ponto no meio do assento, na altura dele; as pernas ficam penduradas (a perna do chibi é mais curta que o
+   * assento de 0,45 m, e com os pés no chão o quadril afundava no móvel, 28/10).
+   */
+  noQuadril?: boolean;
 }
 
 export interface LoadedChar {
@@ -317,6 +323,25 @@ function meioDoQuadril(c: HTMLCanvasElement, b: Caixa): number {
 }
 
 /**
+ * Onde a pose sentada encosta no assento (28/10), [x, y] na imagem. Na largura, o meio do tronco (do peito à cintura):
+ * o quadril fica embaixo dele, e as coxas, o livro ou o casaco pendurados não puxam para o lado. Na altura, um tanto
+ * acima da sola (a medida das poses dos agentes: o bumbum fica a ~1/5 da altura sentada).
+ */
+function quadrilSentado(c: HTMLCanvasElement, b: Caixa): [number, number] {
+  const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+  const alto = b.y1 - b.y0 + 1;
+  let soma = 0;
+  let n = 0;
+  for (let y = Math.round(b.y0 + alto * 0.3); y <= Math.round(b.y0 + alto * 0.5); y++)
+    for (let x = b.x0; x <= b.x1; x++)
+      if (d[(y * c.width + x) * 4 + 3] > 96) (soma += x + 0.5), n++;
+  return [n ? soma / n : (b.x0 + b.x1 + 1) / 2, b.y1 + 1 - alto * QUADRIL_SENTADO];
+}
+
+/** A altura do quadril na pose sentada, em fração da altura dela (a partir da sola). */
+const QUADRIL_SENTADO = 0.19;
+
+/**
  * Os pés na imagem: em cada coluna, o pixel mais baixo do corpo na faixa de baixo (as botas); as
  * colunas vizinhas formam um pé. Devolve até dois pés (os mais largos): [x do meio, y da sola].
  */
@@ -460,15 +485,18 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
   if (altura <= ALTURA_PIXEL_ART) {
     // pixel art: escala inteira, a imagem inteira, a âncora da pose parada
     const s = Math.max(1, Math.round(def.height / altura));
-    const ancora = new Map<string, { ax: number; ay: number; pes: number; noMeioDosPes: boolean }>();
+    const ancora = new Map<string, { ax: number; ay: number; pes: number; noMeioDosPes: boolean; noQuadril: boolean }>();
     const ancoraDe = (p: PoseLida) => {
       // com os dois pés à vista, a âncora fica no meio deles (é ali que a peça pisa); senão, embaixo do corpo
       const pp = deQuatroPatas(def) ? pontosPatas(p.canvas, p.b) : pontosPes(p.canvas, p.b);
       const meio = pp.length === 2;
-      const sentado = p.key.startsWith('sentado-');
-      const ax = sentado ? Math.round(meioDoQuadril(p.canvas, p.b) * s) : meio ? Math.round(((pp[0][0] + pp[1][0]) / 2) * s) : (p.b.fx + 0.5) * s;
+      if (p.key.startsWith('sentado-')) {
+        const [qx, qy] = quadrilSentado(p.canvas, p.b);
+        return { ax: Math.round(qx * s), ay: Math.round(qy * s), pes: meiaLarguraPes(p.canvas, p.b) * s, noMeioDosPes: false, noQuadril: true };
+      }
+      const ax = meio ? Math.round(((pp[0][0] + pp[1][0]) / 2) * s) : (p.b.fx + 0.5) * s;
       const ay = meio ? Math.round(((pp[0][1] + pp[1][1]) / 2) * s) : (p.b.y1 + 1) * s;
-      return { ax, ay, pes: meiaLarguraPes(p.canvas, p.b) * s, noMeioDosPes: meio };
+      return { ax, ay, pes: meiaLarguraPes(p.canvas, p.b) * s, noMeioDosPes: meio, noQuadril: false };
     };
     for (const p of poses) ancora.set(p.key, ancoraDe(p));
     // os quadros de andar usam a âncora da pose parada (o corpo não escorrega); os pés, cada um os seus
@@ -493,7 +521,13 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
         f.noMeioDosPes = true;
       }
       // sentada: o quadril é que fica em cima do assento
-      if (parada && p.key.startsWith('sentado-')) f.ax = (meioDoQuadril(p.canvas, p.b) - p.b.x0) * s;
+      if (parada && p.key.startsWith('sentado-')) {
+        const [qx, qy] = quadrilSentado(p.canvas, p.b);
+        f.ax = (qx - p.b.x0) * s;
+        f.ay = (qy - p.b.y0) * s;
+        f.noMeioDosPes = false;
+        f.noQuadril = true;
+      }
       f.pesPontos = pp.map(([x, y]): [number, number] => [x - f.ax, y - f.ay]);
       return f;
     };

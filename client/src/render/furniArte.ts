@@ -278,6 +278,12 @@ export function chaveDaArte(defId: string, seed: number, piso?: string, vazio = 
 
 /** quando cada imagem começou a carregar: a que fica presa (a carga morreu sem onload nem onerror) é pedida de novo */
 const desde = new Map<string, number>();
+/**
+ * O pedido em curso de cada imagem e quantas vezes ela já foi pedida de novo (28/10): o pedido preso era refeito a
+ * cada 5 s sem cancelar o anterior, e no servidor lento (a prévia, o túnel) a fila crescia até nenhuma imagem chegar.
+ */
+const pedido = new Map<string, HTMLImageElement>();
+const tentativas = new Map<string, number>();
 /** a última vez que cada imagem foi usada num quadro (as que a sala de agora não usa são soltas) */
 const usada = new Map<string, number>();
 
@@ -335,13 +341,24 @@ function pronta(arquivo: string): Imagens | null {
   if (c && c !== 'carregando' && c !== 'erro') return c;
   // 23/10, o Felipe: "cadê a textura das coisas?": a carga presa em "carregando" nunca era refeita. Passados 5 s sem
   // resposta, pede de novo
-  const presa = c === 'carregando' && agora - (desde.get(url) ?? 0) > 5000;
+  // a espera dobra a cada tentativa (5 s, 10 s, 20 s... até 1 min)
+  const espera = Math.min(60000, 5000 * 2 ** (tentativas.get(url) ?? 0));
+  const presa = c === 'carregando' && agora - (desde.get(url) ?? 0) > espera;
   if (!c || presa) {
     imagens.set(url, 'carregando');
     desde.set(url, agora);
+    const antes = pedido.get(url);
+    if (antes) {
+      antes.onload = antes.onerror = null;
+      antes.src = '';
+    }
+    if (presa) tentativas.set(url, (tentativas.get(url) ?? 0) + 1);
     const img = new Image();
+    pedido.set(url, img);
     img.decoding = 'async';
     img.onload = () => {
+      pedido.delete(url);
+      tentativas.delete(url);
       const normal = telaDe(img, img.naturalWidth, img.naturalHeight);
       if (!normal) {
         // sem memória de desenho: solta o que dá e tenta de novo daqui a pouco (fica no desenho de reserva enquanto isso)
@@ -366,6 +383,7 @@ function pronta(arquivo: string): Imagens | null {
     };
     // falhou (o servidor reiniciando, a rede piscando): tenta de novo daqui a pouco, em vez de ficar sem arte até o F5
     img.onerror = () => {
+      pedido.delete(url);
       imagens.set(url, 'erro');
       setTimeout(() => imagens.get(url) === 'erro' && imagens.delete(url), 4000);
     };
