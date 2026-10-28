@@ -639,6 +639,8 @@ export class RoomView {
     // a cena nova já abre na vista dela (sem a câmera voar na entrada)
     this.tat.alvo = this.tat.t = info.tatico ? 1 : 0;
     this.tatZoom = { k: 1, dx: 0, dy: 0 };
+    // o enquadramento do mestre era da cena de antes; o desta chega logo depois do roomEnter, se houver
+    this.camDoMestre = null;
     this.tat.foto = null;
     this.map = new RoomMap(info.heightmap, info.door, items, wallItems);
     // ao ar livre não tem parede: ninguém fica atrás da porta
@@ -888,7 +890,12 @@ export class RoomView {
 
   removeUser(id: number) {
     this.users.delete(id);
-    if (this.selection?.kind === 'user' && this.selection.id === id) this.select(null);
+    // agachar, subir no beliche, editar ou trocar a cara: o servidor tira e põe a peça de novo logo em seguida; o painel
+    // dela só fecha se ela não voltar (28/10, auditoria)
+    if (this.selection?.kind === 'user' && this.selection.id === id)
+      setTimeout(() => {
+        if (this.selection?.kind === 'user' && this.selection.id === id && !this.users.has(id)) this.select(null);
+      }, 150);
   }
 
   setLook(id: number, look: AvatarLook) {

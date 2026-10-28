@@ -327,6 +327,10 @@ export class Shell {
   private menu: HTMLElement;
   private soundItem: HTMLElement;
   private activeTab = 'MAPA';
+  /** a aba de cima aberta (MAPA, COMBATE ou FICHAS) */
+  get aba() {
+    return this.activeTab;
+  }
   // esquerda
   private scenesEl: HTMLElement;
   private sceneRows = new Map<number, HTMLElement>();
@@ -536,11 +540,8 @@ export class Shell {
           title: 'Esconder a tela da mesa (mostra o carregamento do C.R.I.S)',
           'aria-pressed': 'false',
           onclick: (e: MouseEvent) => {
-            const bt = e.currentTarget as HTMLElement;
-            const on = bt.getAttribute('aria-pressed') !== 'true';
-            bt.setAttribute('aria-pressed', String(on));
-            bt.classList.toggle('on', on);
-            bt.querySelector('span')!.textContent = on ? 'MOSTRAR' : 'ESCONDER';
+            const on = (e.currentTarget as HTMLElement).getAttribute('aria-pressed') !== 'true';
+            this.marcarEscondida(on);
             sfx.click();
             app.net.send({ t: 'telaEscondida', on });
           },
@@ -767,7 +768,7 @@ export class Shell {
   private marcarVista() {
     this.renderEstado();
     const tat = this.app.view.tatico;
-    for (const b of this.vistaEl.querySelectorAll<HTMLElement>('.bv')) b.classList.toggle('on', (b.dataset.tatico === 'sim') === tat);
+    for (const b of this.vistaEl.querySelectorAll<HTMLElement>('.bv[data-tatico]')) b.classList.toggle('on', (b.dataset.tatico === 'sim') === tat);
     this.vistaEl.classList.toggle('hidden', !this.app.state.room?.isOwner);
     this.combate.marcarVista(tat);
   }
@@ -1278,6 +1279,15 @@ export class Shell {
     for (const [id, c] of this.cards) c.el.dataset.tema = this.temaDe(this.campaign?.party.find((x) => x.id === id));
     // a mochila (ITENS) e as condições marcadas (PLAYERS) vêm das fichas
     this.renderRpg(true);
+  }
+
+  /** O botão ESCONDER mostra se a tela da mesa está escondida (também a que o servidor lembra, ao recarregar). */
+  marcarEscondida(on: boolean) {
+    const bt = this.vistaEl.querySelector<HTMLElement>('.bv-esconde');
+    if (!bt) return;
+    bt.setAttribute('aria-pressed', String(on));
+    bt.classList.toggle('on', on);
+    bt.querySelector('span')!.textContent = on ? 'MOSTRAR' : 'ESCONDER';
   }
 
   /** O tabuleiro na altura toda: esconde a fileira de baixo (e guarda a escolha neste navegador). */
@@ -2048,6 +2058,17 @@ export class Shell {
                 },
                 'Entregar',
               ),
+              // o item nasce escondido: só aparece para os jogadores quando o mestre mostra (28/10, auditoria)
+              h(
+                'button',
+                {
+                  class: `dbtn${l.revealed ? ' on' : ''}`,
+                  title: l.revealed ? 'Os jogadores sabem deste item: clique para esconder de novo' : 'Os jogadores ainda não sabem deste item: clique para mostrar',
+                  'aria-pressed': String(!!l.revealed),
+                  onclick: () => (sfx.click(), net.send({ t: 'lootReveal', itemId: s.item.id, lootId: l.id, revealed: !l.revealed })),
+                },
+                l.revealed ? 'Visível' : 'Mostrar',
+              ),
             )
           : null;
       const card = h(
@@ -2662,7 +2683,7 @@ export class Shell {
         ok: abrir,
         dica: porta
           ? fdef?.portal
-            ? (['Fechar a porta', 'Abrir a porta'][(it as FloorItem).state] ?? 'Abrir ou fechar')
+            ? `${(it as FloorItem).state === (fdef.openState ?? 0) ? 'Fechar' : 'Abrir'} a ${fdef.kind === 'porteira' ? 'porteira' : 'porta'}`
             : 'Abrir ou fechar'
           : lock?.semSenha
             ? lock.open

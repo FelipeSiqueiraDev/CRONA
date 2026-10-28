@@ -222,6 +222,7 @@ export class Hotel implements HotelApi {
   db: Database;
   rooms = new Map<number, RoomInstance>();
   readonly timers: boolean;
+  telaEscondida = false;
   private persist: boolean;
   private clients = new Map<number, Client>();
   private byToken = new Map<string, Client>();
@@ -1996,9 +1997,11 @@ export class Hotel implements HotelApi {
     const camp = this.campaignFor(this.groupKey(room.data.id));
     const txt = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, '').trim().slice(0, max) : '');
     switch (m.t) {
-      case 'objAdd':
-        if (this.objectiveAdd(camp, m.text)) return;
+      case 'objAdd': {
+        const erro = this.objectiveAdd(camp, m.text);
+        if (erro) return c.send({ t: 'error', msg: erro });
         break;
+      }
       case 'objToggle': {
         const o = camp.objectives.find((x) => x.id === m.id);
         if (!o) return;

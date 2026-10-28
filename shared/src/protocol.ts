@@ -391,6 +391,11 @@ export interface SceneInfo {
 export interface InvItem {
   id: number;
   defId: string;
+  /**
+   * O que o móvel guardado leva junto (28/10, auditoria: guardar apagava os itens de dentro, a pista, a senha, o destino
+   * da passagem): tudo dele menos o lugar. Volta inteiro ao ser posto de novo.
+   */
+  dados?: Record<string, unknown>;
 }
 
 export type ChatKind = 'say' | 'shout' | 'roll' | 'system';

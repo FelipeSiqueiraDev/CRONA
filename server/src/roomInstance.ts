@@ -120,6 +120,8 @@ export interface HotelApi {
   nextItemId(): number;
   inventory(client: Client): InvItem[];
   sendInventory(client: Client): void;
+  /** a tela da mesa escondida atrás do carregamento do C.R.I.S (vale em qualquer cena, e para quem recarrega) */
+  telaEscondida: boolean;
   roomChanged(): void;
   /** a criatura do bestiário se move pelas sombras (Onipresença da Magistrada)? */
   criaturaPassoSombras(id?: string): boolean;
@@ -204,6 +206,20 @@ export function sanitizeHint(h: unknown): Hint | null {
   const title = typeof o.title === 'string' ? clean(o.title, 60) : '';
   const text = typeof o.text === 'string' ? o.text.replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, '').trim().slice(0, 1200) : '';
   return { icon: o.icon as Hint['icon'], title, text, visible: o.visible !== false };
+}
+
+/** O móvel que vai para o inventário leva tudo dele menos o lugar (os itens de dentro, a pista, a senha, a passagem). */
+function guardado(it: FloorItem | WallItem): InvItem {
+  const { id, defId, ...resto } = it as FloorItem & Partial<WallItem>;
+  for (const k of ['x', 'y', 'z', 'rot', 'wall', 'plane', 'pos'] as const) delete resto[k];
+  return Object.keys(resto).length ? { id, defId, dados: resto } : { id, defId };
+}
+
+/** O que volta do inventário ao pôr o móvel de novo; a fechadura volta fechada. */
+function devolvido(inv: InvItem | undefined): Record<string, unknown> {
+  const d = { ...(inv?.dados ?? {}) };
+  if (d.lock && typeof d.lock === 'object') d.lock = { ...(d.lock as object), open: false };
+  return d;
 }
 
 /** Cliente "de mentira" que representa uma peça no tabuleiro (não recebe mensagens). */
@@ -672,7 +688,8 @@ export class RoomInstance {
 
   /** Só o mestre controla a cena (o servidor decide pelo papel da conexão). */
   /** o mestre escondeu o tabuleiro da mesa (a tela de carregamento) */
-  escondida = false;
+  /** o último enquadramento do mestre nesta cena: a mesa que entra (ou recarrega) começa nele */
+  private camMestre: { cx: number; cy: number; w: number; h: number } | null = null;
 
   isOwner(c: Client) {
     return c.role === 'gm';
@@ -797,6 +814,9 @@ export class RoomInstance {
       wallItems: this.map.allWallItems().map((it) => this.wallFor(it, c)),
       users: [...this.users.values()].map((o) => this.userInfo(o)),
     });
+    // o que não vem no roomEnter: a tela escondida (a mesa que recarrega continua escondida) e a câmera do mestre
+    c.send({ t: 'telaEscondida', on: this.hotel.telaEscondida });
+    if (this.camMestre && !this.isOwner(c)) c.send({ t: 'camMestre', ...this.camMestre });
   }
 
   leave(c: Client) {
@@ -1064,13 +1084,15 @@ export class RoomInstance {
         break;
       case 'camMestre':
         // a câmera do mestre vai para a mesa (e para quem mais estiver vendo a cena)
-        if (this.isOwner(u.client) && [m.cx, m.cy, m.w, m.h].every((v) => typeof v === 'number' && Number.isFinite(v)) && (m.w as number) > 0 && (m.h as number) > 0)
-          this.broadcast({ t: 'camMestre', cx: m.cx as number, cy: m.cy as number, w: m.w as number, h: m.h as number }, u.client.id);
+        if (this.isOwner(u.client) && [m.cx, m.cy, m.w, m.h].every((v) => typeof v === 'number' && Number.isFinite(v)) && (m.w as number) > 0 && (m.h as number) > 0) {
+          this.camMestre = { cx: m.cx as number, cy: m.cy as number, w: m.w as number, h: m.h as number };
+          this.broadcast({ t: 'camMestre', ...this.camMestre }, u.client.id);
+        }
         break;
       case 'telaEscondida':
         if (this.isOwner(u.client)) {
-          this.escondida = m.on === true;
-          this.broadcast({ t: 'telaEscondida', on: this.escondida });
+          this.hotel.telaEscondida = m.on === true;
+          this.broadcast({ t: 'telaEscondida', on: this.hotel.telaEscondida });
         }
         break;
       case 'passoSombras':
@@ -1185,7 +1207,7 @@ export class RoomInstance {
     if (!res.ok) return this.err(c, res.reason ?? 'Não dá para colocar aí.');
     if (!def.walkable && !def.sit && this.usersOn(this.map.tilesFor(defId, m.x, m.y, m.rot)))
       return this.err(c, 'Tem alguém no caminho.');
-    const item: FloorItem = { id: inv ? inv.id : this.hotel.nextItemId(), defId, x: m.x, y: m.y, z: res.z, rot: m.rot, state: 0 };
+    const item: FloorItem = { state: 0, ...devolvido(inv), id: inv ? inv.id : this.hotel.nextItemId(), defId, x: m.x, y: m.y, z: res.z, rot: m.rot };
     if (inv) this.removeFromInventory(c, inv.id);
     this.map.addItem(item);
     this.persist();
@@ -1205,7 +1227,7 @@ export class RoomInstance {
     const z = Math.round(m.z * 64) / 64;
     const res = this.map.canPlaceWall(defId, m.wall, m.plane, pos, z);
     if (!res.ok) return this.err(c, res.reason ?? 'Não dá para colocar aí.');
-    const item: WallItem = { id: inv ? inv.id : this.hotel.nextItemId(), defId, wall: m.wall, plane: m.plane, pos, z, state: 0 };
+    const item: WallItem = { state: 0, ...devolvido(inv), id: inv ? inv.id : this.hotel.nextItemId(), defId, wall: m.wall, plane: m.plane, pos, z };
     if (inv) this.removeFromInventory(c, inv.id);
     this.map.setWallItem(item);
     this.persist();
@@ -1358,7 +1380,7 @@ export class RoomInstance {
       this.map.removeWallItem(id);
       this.broadcast({ t: 'wallRemove', id });
     }
-    this.hotel.inventory(c).push({ id, defId: (floor ?? wall)!.defId });
+    this.hotel.inventory(c).push(guardado((floor ?? wall)!));
     this.hotel.sendInventory(c);
     this.persist();
     this.resettleAll();
@@ -2268,11 +2290,11 @@ export class RoomInstance {
     for (const it of [...this.map.allItems()].sort((a, b) => a.z - b.z)) {
       const res = next.canPlace(it.defId, it.x, it.y, it.rot);
       if (res.ok) next.addItem({ ...it, z: res.z });
-      else returned.push({ id: it.id, defId: it.defId });
+      else returned.push(guardado(it));
     }
     for (const it of this.map.allWallItems()) {
       if (next.canPlaceWall(it.defId, it.wall, it.plane, it.pos, it.z).ok) next.setWallItem(it);
-      else returned.push({ id: it.id, defId: it.defId });
+      else returned.push(guardado(it));
     }
     if (returned.length) {
       this.hotel.inventory(c).push(...returned);

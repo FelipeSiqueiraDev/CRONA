@@ -603,6 +603,7 @@ net.onMessage = (m: ServerMsg) => {
       break;
     case 'telaEscondida':
       if (app.state.role !== 'gm') mostrarTelaEscondida(m.on);
+      else shell?.marcarEscondida(m.on);
       break;
     case 'userJoin':
       view.addUser(m.user);
@@ -720,6 +721,8 @@ window.addEventListener('keydown', (e) => {
     else if (!closeTopWindow()) v.select(null);
     return;
   }
+  // na aba FICHAS o tabuleiro não aparece: Delete, T e 1-9 mexiam no que estava escolhido lá sem se ver
+  if (shell.aba === 'FICHAS') return;
   if (v.placement && (e.key === 'r' || e.key === 'R')) {
     v.rotatePlacement();
     return;

@@ -868,7 +868,8 @@ export class CombateScreen {
     const perto: HTMLElement[] = [];
     if (ondeEsta && map && !this.modoCards)
       for (const it of map.allItems()) {
-        const livres = (it.loot ?? []).filter((l) => !l.holder && (l.revealed ?? true));
+        // só o mestre vê esta tela: o item ainda escondido também se pega (o agente o achou)
+        const livres = (it.loot ?? []).filter((l) => !l.holder);
         if (!livres.length) continue;
         const def = getFurni(it.defId);
         const fp = def ? footprint(def, it.rot) : { sx: 1, sy: 1 };

@@ -39,7 +39,9 @@ O `fichaSalvar` troca a ficha inteira pela que o cliente mandou (`hotel.ts:1493`
 17. **NPC com ficha entra como Agente** (`hotel.ts:364`, não filtra `npc`).
 18. **Desarmar:** o texto manda tirar o item à mão, mas o servidor já tira (`combateManobra.ts:450`).
 
-## Grupo D — MAPA
+## Grupo D — MAPA — **consertado em 28/10**
+
+**O conserto:** o móvel guardado leva tudo dele para o inventário (`InvItem.dados`: os itens de dentro, a pista, a senha, a passagem) e volta inteiro ao ser posto de novo (a fechadura volta fechada), também quando a planta muda e ele não cabe; na aba FICHAS os atalhos do tabuleiro ficam quietos (o Esc continua); o AMPLIAR e o ESCONDER saem da conta da câmera (`.bv[data-tatico]`); a tela escondida fica no servidor (`Hotel.telaEscondida`) e vai a quem entra ou recarrega, e o botão do mestre acompanha; a última câmera do mestre em cada cena vai para a mesa que entra, e a mesa esquece a da cena anterior; o painel da peça só fecha se ela não voltar logo depois de sair (agachar, beliche, editar, aparência); o item do móvel ganha o botão **Mostrar / Visível** (o `lootReveal`), e no COMBATE o Pegar vale também para o item ainda escondido; a dica do Abrir segue o `openState` (a porteira); o objetivo recusado avisa; o mapa-múndi tira os ouvintes ao fechar. Testes em `server/test/mapaAuditoria.test.ts`.
 
 19. ✔ **Guardar móvel (Delete, sem confirmação) apaga o que ele tinha:** itens dentro, pista, senha, destino da passagem, fechadura. Volta um móvel novo (`roomInstance.ts:1345-1362`).
 20. **Atalhos do tabuleiro valem em qualquer aba:** na FICHAS, Delete guarda o móvel ainda escolhido, T troca a câmera da mesa, 1-9 troca a peça (`main.ts:708-761`).

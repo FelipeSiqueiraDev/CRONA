@@ -291,7 +291,7 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
 
   const fechado = () => !document.body.contains(j.el);
   const atualizar = () => {
-    if (fechado()) return;
+    if (fechado()) return app.off('lugares', atualizar);
     montarPinos();
     montarLado();
     pedir();
@@ -303,7 +303,9 @@ export function abrirMapaMundi(app: App, o: OpcoesMapa = {}) {
     if (fechado() || ++vezes > 12) return clearInterval(espera);
     pedir();
   }, 500);
-  window.addEventListener('resize', pedir);
+  // fechado o mapa, o ouvinte sai (antes ficava um a cada vez que abria)
+  const aoRedimensionar = () => (fechado() ? window.removeEventListener('resize', aoRedimensionar) : pedir());
+  window.addEventListener('resize', aoRedimensionar);
 
   j.corpo.append(
     h('p', { class: 'vg-dica' }, escolhendo ? 'A bandeirinha marca onde vocês estão. Escolha a região e o lugar.' : eu() ? 'Clique numa região para ver os lugares dela. Arraste as ilhas para arrumar o mapa.' : 'O mundo da campanha.'),
