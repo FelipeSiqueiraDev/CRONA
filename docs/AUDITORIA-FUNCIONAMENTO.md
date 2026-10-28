@@ -61,7 +61,9 @@ O `fichaSalvar` troca a ficha inteira pela que o cliente mandou (`hotel.ts:1493`
 29. **Ficha nova duplicada** com dois cliques em Salvar (`fichas.ts:462-478`); criar ficha num aparelho de mestre apaga o rascunho de ficha nova do outro.
 30. **Item largado antes de 25/10** volta com o nome antigo como apelido (`itens.ts:53`, comparação sensível a maiúsculas).
 
-## Grupo F — celular do jogador (tela)
+## Grupo F — celular do jogador (tela) — **consertado em 28/10** (o 35 não é defeito)
+
+**O conserto:** a janela EQUIPAMENTO abre uma vez por visita; a ficha do celular não se refaz quando chega igual, e os cartões de PV, PE e SAN só se refazem quando os números mudam; a peça que troca de cena reenvia a ficha ao celular (`pecaMudouDeCena`), com o "na base" de agora; a página em imagem sem texto ocupa 70% da tela, e um toque abre grande (no tamanho de verdade com outro toque). Falta o mesmo cuidado na Identificação da FICHAS do mestre (`fichas.ts`).
 
 31. **A janela EQUIPAMENTO reabre e se empilha** a cada `fichas` (no combate, a cada 300 ms) enquanto `refazerEquipamento` estiver ligado (`fichaCelular.ts:197-218`).
 32. **Não-piscar:** PV, PE, SAN e a ficha inteira do celular são refeitos a cada `fichas` (`jogador.ts:342-389`, `fichaCelular.ts:234`); o toque pode se perder. A Identificação da FICHAS do mestre também (`fichas.ts:297`).

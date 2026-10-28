@@ -63,11 +63,17 @@ export class FichaCelular {
   }
 
   setFicha(fs: FichaSalva | null) {
+    // a mesma ficha de novo (no combate chega a cada 300 ms): nada se refaz, e o toque não cai num botão que sumiu (28/10)
+    const json = fs ? JSON.stringify(fs) : '';
+    if (json === this.ultimaJson && this.fs) return;
+    this.ultimaJson = json;
     this.fs = fs ? clonarFicha(fs) : null;
     this.render();
     this.subida?.();
   }
 
+  /** a ficha que chegou por último, como veio do servidor */
+  private ultimaJson = '';
   /** a janela da subida de NEX aberta: redesenha quando a ficha volta do servidor */
   private subida: (() => void) | null = null;
   /** o jogador fechou a janela nesta visita (volta na próxima vez que entrar) */
@@ -194,9 +200,14 @@ export class FichaCelular {
     pintar();
   }
 
+  /** o aviso de refazer o equipamento já abriu nesta visita ("Agora não" vale até recarregar) */
+  private avisouEquipamento = false;
+
   /** O aviso único de refazer o equipamento (19/10): abre a requisição da Ordem, pelas regras. */
   private verificarEquipamento() {
-    if (!this.fs?.ficha.refazerEquipamento || this.subida) return;
+    // abre uma vez: a cada `fichas` que chegava (no combate, a cada 300 ms) abria outra por cima (28/10, auditoria)
+    if (!this.fs?.ficha.refazerEquipamento || this.subida || this.avisouEquipamento) return;
+    this.avisouEquipamento = true;
     const j = janela('EQUIPAMENTO', 'mochila', () => {}, 42);
     j.corpo.append(h('p', { class: 'fc-subida-intro' }, 'Ops, parece que não sobrou quase nada por aí, né?! Vamos refazer nossos equipamentos.'), h('p', { class: 'fj-dica' }, 'Peça à Ordem o que vai levar: a patente limita as categorias, e a carga a mais só avisa. As modificações ficam em cada item da mochila.'));
     j.rodape.append(

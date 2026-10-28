@@ -341,9 +341,17 @@ export class TelaJogador {
     );
   }
 
+  /** os números da última vez que os cartões de PV, PE e SAN foram feitos */
+  private sigVitais = '';
+
   private renderVitais() {
-    if (!this.calc) return this.vitais.replaceChildren(h('p', { class: 'jg-vazio' }, 'A ficha tem um problema: peça ao mestre para conferir.'));
+    if (!this.calc) return (this.sigVitais = ''), this.vitais.replaceChildren(h('p', { class: 'jg-vazio' }, 'A ficha tem um problema: peça ao mestre para conferir.'));
     const v = this.vit();
+    // sem mudança nos números, os cartões ficam: refeitos a cada `fichas` (no combate, a cada 300 ms), o toque no − ou no +
+    // podia cair no botão que acabou de sair da tela (28/10, auditoria)
+    const sig = [v.pv, v.pvMax, v.pe, v.peMax, v.san, v.sanMax].join(',');
+    if (sig === this.sigVitais && this.vitais.childElementCount) return;
+    this.sigVitais = sig;
     const card = (k: 'pv' | 'pe' | 'san', rotulo: string) => {
       const atual = v[k];
       const max = v[`${k}Max` as const];
@@ -1095,7 +1103,9 @@ export class TelaJogador {
     const desenhar = () => {
       const img = d.imagens?.[pag] ?? (pag === 0 ? d.imagem : undefined);
       const texto = d.paginas[pag] ?? '';
-      pagina.replaceChildren(...(img ? [h('img', { class: 'jg-pagina-img', src: img, alt: `Página ${pag + 1}` })] : []), ...(texto.trim() ? texto.split(/\n{2,}/).map((p) => h('p', null, p)) : []));
+      // a página em imagem: sem texto, ocupa a tela; um toque abre grande, para ler (28/10, auditoria: 40% da tela e sem ampliar)
+      const foto = img ? h('img', { class: `jg-pagina-img${texto.trim() ? '' : ' so'}`, src: img, alt: `Página ${pag + 1}`, title: 'Toque para ampliar', onclick: () => ampliarPagina(img, `Página ${pag + 1}`) }) : null;
+      pagina.replaceChildren(...(foto ? [foto] : []), ...(texto.trim() ? texto.split(/\n{2,}/).map((p) => h('p', null, p)) : []));
       pagina.scrollTop = 0;
       cont.textContent = total > 1 ? `Página ${pag + 1} de ${total}` : '';
       ant.disabled = pag === 0;
@@ -1358,4 +1368,12 @@ function melhoriasDoItem(it: regras.ItemFicha): HTMLElement[] {
   ];
   if (!linhas.length) return [];
   return [h('div', { class: 'jg-mi-mods' }, ...linhas.map((l) => h('p', { class: `jg-mi-mod ${l.cls}` }, l.icone ? h('span', { class: 'jg-mi-mod-ic' }, pintado([l.icone, 'combate-habilidade'], 'engrenagem')) : null, h('b', null, l.nome), l.texto ? ` · ${l.texto}` : '')))];
+}
+
+/** A página do documento em tela cheia: cabe na tela; um toque mostra no tamanho de verdade (rola com o dedo); fechar no X. */
+function ampliarPagina(src: string, alt: string) {
+  const foto = h('img', { class: 'jg-amplia-img', src, alt });
+  const caixa = h('div', { class: 'jg-amplia', role: 'dialog', 'aria-label': alt }, foto, h('button', { class: 'jg-amplia-x', type: 'button', 'aria-label': 'Fechar', onclick: () => caixa.remove() }, ic('fechar')));
+  foto.addEventListener('click', () => caixa.classList.toggle('real'));
+  document.body.append(caixa);
 }

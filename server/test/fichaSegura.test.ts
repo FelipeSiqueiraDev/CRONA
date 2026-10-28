@@ -194,3 +194,16 @@ describe('a campanha da mesa e do jogador', () => {
     assert.equal(mesa.last('peek'), undefined);
   });
 });
+
+describe('o celular e a cena da peça (auditoria de 27/10, grupo F)', () => {
+  test('a peça troca de cena: o celular recebe a ficha de novo', () => {
+    const charId = ficha('Catarina Albuquerque').personagem!;
+    const de = [...hotel.rooms.values()].find((r) => r.tokenList().some((t) => t.look?.charId === charId));
+    assert.ok(de, 'a peça da Catarina está numa cena');
+    const tok = de!.tokenList().find((t) => t.look?.charId === charId)!;
+    const outra = hotel.db.rooms.find((x) => x.id !== de!.data.id && hotel.rooms.has(x.id))!.id;
+    const antes = jog.inbox.length;
+    hotel.moveToken(de!, tok.id, outra);
+    assert.ok(jog.inbox.slice(antes).some((m) => m.t === 'fichas'));
+  });
+});

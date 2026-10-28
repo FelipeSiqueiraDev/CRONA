@@ -120,6 +120,8 @@ export interface HotelApi {
   nextItemId(): number;
   inventory(client: Client): InvItem[];
   sendInventory(client: Client): void;
+  /** a peça chegou numa cena: o celular do agente fica sabendo se está na base (o "Pedir itens à Ordem") */
+  pecaMudouDeCena(personagem: number | null | undefined): void;
   /** a tela da mesa escondida atrás do carregamento do C.R.I.S (vale em qualquer cena, e para quem recarrega) */
   telaEscondida: boolean;
   roomChanged(): void;
@@ -389,6 +391,7 @@ export class RoomInstance {
     this.nevoaAutomatica([u]);
     this.broadcast({ t: 'userJoin', user: this.userInfo(u) });
     this.saveTokens();
+    this.hotel.pecaMudouDeCena(t.look?.charId);
   }
 
   /** PV/PE/SAN vindos da ficha para as peças deste personagem (folha). Devolve se mudou algo. */

@@ -1466,6 +1466,16 @@ export class Hotel implements HotelApi {
     return !!sala && this.campaignFor(Math.min(...this.sceneGroup(sala.data.id))).title === 'Sede da Ordem';
   }
 
+  /**
+   * A peça do agente trocou de cena: o celular dele recebe a ficha de novo, com o "na base" de agora (28/10, auditoria: o
+   * "Pedir itens à Ordem" só mudava quando a ficha mudava por outro motivo).
+   */
+  pecaMudouDeCena(personagem: number | null | undefined) {
+    const f = this.fichaDoPersonagem(personagem);
+    if (!f) return;
+    for (const c of this.clients.values()) if (c.fichaId === f.id) this.enviarFichas(c);
+  }
+
   /** `nova` vai só para quem criou (`criou`): o outro aparelho de mestre não perde o rascunho de ficha nova dele. */
   private enviarFichas(so?: Client, nova?: number, criou?: Client) {
     const todas = this.db.fichas ?? [];
