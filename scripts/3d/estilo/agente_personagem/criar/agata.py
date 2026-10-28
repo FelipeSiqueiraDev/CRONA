@@ -27,7 +27,7 @@ def pecas():
     P = []
     a = P.append
     # --- o cabelo de trás: o volume bagunçado, com as pontas para fora
-    a(Peca('cabelo_fundo', ('poli', [(5, 20), (4, 14), (8, 12), (7, 6), (13, 6), (14, 1), (19, 4), (24, 0), (29, 4), (34, 1), (35, 6), (41, 6), (40, 12), (44, 14), (43, 20), (45, 27), (41, 31), (42, 37), (36, 33), (12, 33), (6, 37), (7, 31), (3, 27)]), MARROM, 1, faixa=6))
+    a(Peca('cabelo_fundo', ('poli', [(5, 20), (4, 14), (8, 12), (7, 6), (13, 6), (14, 1), (19, 4), (24, 0), (29, 4), (34, 1), (35, 6), (41, 6), (40, 12), (44, 14), (43, 20), (45, 27), (41, 31), (42, 37), (36, 33), (12, 33), (6, 37), (7, 31), (3, 27)]), MARROM, 1, faixa=2.6))
     a(Peca('pescoco', ('ret', 21, 32, 27, 39), PELE, 2))
     # --- o tronco: a camisa vermelha e a jaqueta aberta por cima
     a(Peca('camisa', ('poli', [(16, 37), (32, 37), (33, 62), (15, 62)]), CAMISA, 3))
@@ -59,18 +59,18 @@ def pecas():
     a(Peca('ponta_2', ('poli', [(16, 67), (21, 67), (22, 75), (18, 77)]), PANO, 14))
     a(Peca('no', ('elipse', 14, 62.5, 3.8, 3.2), PANO, 15))
     # --- a cabeça: o rosto, as orelhas
-    a(Peca('orelha_e', ('elipse', 13.5, 26, 2.2, 2.6), PELE, 16))
-    a(Peca('orelha_d', ('elipse', 34.5, 26, 2.2, 2.6), PELE, 16))
-    a(Peca('rosto', ('poli', [(14, 20), (18, 15), (30, 15), (34, 20), (34, 28), (31, 33), (24, 35), (17, 33), (14, 28)]), PELE, 17))
+    a(Peca('orelha_e', ('elipse', 13.5, 26, 2.2, 2.6), PELE, 16, volume=False))
+    a(Peca('orelha_d', ('elipse', 34.5, 26, 2.2, 2.6), PELE, 16, volume=False))
+    a(Peca('rosto', ('poli', [(14, 20), (18, 15), (30, 15), (34, 20), (34, 28), (31, 33), (24, 35), (17, 33), (14, 28)]), PELE, 17, volume=False))
     # --- o cabelo da frente: a franja repartida e as asas ao lado do rosto, com as pontas
-    a(Peca('franja_e', ('poli', [(11, 17), (10, 11), (14, 8), (13, 3), (19, 6), (26, 5), (26, 13), (23, 20), (19, 17), (16, 23), (13, 24)]), MARROM, 18, faixa=3))
-    a(Peca('franja_d', ('poli', [(25, 5), (31, 4), (34, 8), (38, 10), (37, 17), (37, 27), (34, 22), (31, 17), (28, 21), (26, 14)]), MARROM, 18, faixa=3))
-    a(Peca('asa_e', ('poli', [(8, 18), (14, 20), (14, 30), (12, 36), (6, 38), (4, 31), (6, 24)]), MARROM, 17))
-    a(Peca('asa_d', ('poli', [(40, 18), (34, 20), (34, 30), (36, 36), (42, 38), (44, 31), (42, 24)]), MARROM, 17))
+    a(Peca('franja_e', ('poli', [(11, 17), (10, 11), (14, 8), (13, 3), (19, 6), (26, 5), (26, 13), (23, 20), (19, 17), (16, 23), (13, 24)]), MARROM, 18, faixa=1.8))
+    a(Peca('franja_d', ('poli', [(25, 5), (31, 4), (34, 8), (38, 10), (37, 17), (37, 27), (34, 22), (31, 17), (28, 21), (26, 14)]), MARROM, 18, faixa=1.8))
+    a(Peca('asa_e', ('poli', [(8, 18), (14, 20), (14, 30), (12, 36), (6, 38), (4, 31), (6, 24)]), MARROM, 17, faixa=1.6))
+    a(Peca('asa_d', ('poli', [(40, 18), (34, 20), (34, 30), (36, 36), (42, 38), (44, 31), (42, 24)]), MARROM, 17, faixa=1.6))
     # --- a mecha vermelha: três mechas em leque, saindo do repartido para baixo e para a esquerda
-    a(Peca('mecha1', ('poli', [(12, 8), (17, 5), (19, 7), (17, 16), (13, 25), (9, 33), (6, 37), (5, 31), (8, 22), (10, 14)]), VERM, 19, faixa=1))
-    a(Peca('mecha2', ('poli', [(18, 6), (22, 6), (22, 14), (19, 21), (16, 27), (16, 21), (18, 14)]), VERM, 20, faixa=0))
-    a(Peca('mecha3', ('poli', [(35, 9), (37, 11), (38, 19), (36, 25), (35, 17)]), VERM, 19, faixa=0))
+    a(Peca('mecha1', ('poli', [(12, 8), (17, 5), (19, 7), (17, 16), (13, 25), (9, 33), (6, 37), (5, 31), (8, 22), (10, 14)]), VERM, 19, faixa=1.3))
+    a(Peca('mecha2', ('poli', [(18, 6), (22, 6), (22, 14), (19, 21), (16, 27), (16, 21), (18, 14)]), VERM, 20, faixa=1.0))
+    a(Peca('mecha3', ('poli', [(35, 9), (37, 11), (38, 19), (36, 25), (35, 17)]), VERM, 19, faixa=1.0))
     a(Peca('brinco', ('elipse', 36.5, 31, 1.6, 2.8), OURO, 21))
     return P
 
@@ -132,6 +132,17 @@ def acabamento(im):
     traco(p, [(8, 93), (23, 93)], c('#140a06'))
     traco(p, [(25, 93), (40, 93)], c('#140a06'))
     traco(p, [(12, 61), (16, 59)], c('#d2ac6e'))
+    # o rosto, em 2 tons: a sombra quente embaixo da franja, na lateral e no queixo
+    SOMBRA = c('#eea480')
+    for y, (x0, x1) in {16: (19, 30), 17: (17, 31), 18: (16, 32), 19: (15, 33), 20: (15, 33)}.items():
+        for x in range(x0, x1 + 1):
+            pt(p, x, y, SOMBRA)
+    for y in range(21, 31):
+        pt(p, 14 if y < 28 else 15, y, SOMBRA)
+        pt(p, 33 if y < 28 else 32, y, SOMBRA)
+    for y, (x0, x1) in {32: (18, 30), 33: (19, 29), 34: (21, 27)}.items():
+        for x in range(x0, x1 + 1):
+            pt(p, x, y, SOMBRA)
     # o rosto: olhos pequenos (2 x 2), a sobrancelha brava, a bochecha, o risquinho da boca
     for (x, y) in ((18, 26), (28, 26)):
         p[x, y] = OLHO + (255,)

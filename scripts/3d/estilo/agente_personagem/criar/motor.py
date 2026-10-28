@@ -21,10 +21,13 @@ def c(h):
 
 
 class Material:
-    """sombra2 (a mais escura), sombra, base, luz, linha (o contorno)."""
-    def __init__(self, sombra2, sombra, base, luz, linha=None):
+    """Cinco tons, do mais escuro ao brilho: sombra2, sombra, base, luz, brilho; linha = o contorno. Os tons de luz e de
+    sombra mudam de matiz (a luz esquenta, a sombra esfria), como na pixel art de verdade."""
+    def __init__(self, sombra2, sombra, base, luz, linha=None, brilho=None):
         self.cores = [c(sombra2), c(sombra), c(base), c(luz)]
-        self.linha = c(linha) if linha else tuple(int(v * 0.35) for v in c(sombra2))
+        self.brilho = c(brilho) if brilho else tuple(min(255, int(v * 1.12 + 18)) for v in c(luz))
+        self.linha = c(linha) if linha else tuple(int(v * 0.32) for v in c(sombra2))
+        self.tons = [c(sombra2), c(sombra), c(base), c(luz), self.brilho]
 
 
 class Peca:
@@ -59,6 +62,28 @@ def desloca(m, dx, dy):
     return out
 
 
+LUZ = np.array([-0.55, -0.62, 0.56])
+LUZ = LUZ / np.linalg.norm(LUZ)
+
+
+def tons_por_volume(m, p):
+    """O tom (0 a 4) de cada pixel da peça: a peça é um relevo (a máscara borrada), a normal sai do gradiente e o tom é
+    a luz de cima e da esquerda em degraus. `faixa` = o quanto a peça é redonda (o borrão, em px; 0 usa o tamanho da peça)."""
+    from scipy.ndimage import gaussian_filter
+    ys, xs = np.nonzero(m)
+    tam = max(xs.max() - xs.min(), ys.max() - ys.min()) + 1
+    sig = p.faixa if p.faixa else max(1.2, tam / 7.0)
+    h = gaussian_filter(m.astype(np.float64), sig, mode='constant')
+    gy, gx = np.gradient(h)
+    esc = 5.5 * sig                       # quanto mais borrado, mais a normal tomba na borda
+    n = np.stack([-gx * esc, -gy * esc, np.ones_like(h)], -1)
+    n /= np.linalg.norm(n, axis=-1, keepdims=True)
+    lum = n @ LUZ
+    lum = (lum - 0.5) * 1.6 + 0.5
+    t = np.digitize(lum, [0.18, 0.42, 0.66, 0.86])
+    return np.where(m, t, 0)
+
+
 def renderizar(pecas, W, H, contorno=True):
     ordem = sorted(pecas, key=lambda p: p.camada)
     img = np.zeros((H, W, 3), np.uint8)
@@ -73,22 +98,25 @@ def renderizar(pecas, W, H, contorno=True):
         col = np.zeros((H, W, 3), np.uint8)
         col[:] = base
         if p.volume:
-            sup = ~desloca(m, 1, 1)          # o vizinho de cima e da esquerda fora da peça: borda iluminada
-            inf = ~desloca(m, -1, -1)        # o de baixo e da direita fora da peça: borda na sombra
-            inf2 = ~desloca(m, -2, -2)
-            if p.luz:
-                col[m & sup] = luz_
-            col[m & inf2] = sombra
-            col[m & inf] = sombra2 if p.faixa == 0 else sombra
-            if p.faixa:
-                # a faixa de sombra larga (as peças grandes: a jaqueta, a calça): tudo à direita de x = centro + faixa
-                ys, xs = np.nonzero(m)
-                cx = (xs.min() + xs.max()) / 2
-                col[m & (np.arange(W)[None, :] > cx + p.faixa)] = sombra
-                col[m & inf] = sombra2
+            tom = tons_por_volume(m, p)
+            for t in range(5):
+                col[m & (tom == t)] = p.mat.tons[t]
         img[m] = col[m]
         dono[m] = i
         cam[m] = p.camada
+    # a sombra de contato: a peça de trás escurece 1 tom até 2 px da borda de uma peça da frente (à direita e embaixo dela)
+    from scipy.ndimage import binary_dilation
+    for i, p in enumerate(ordem):
+        if not p.volume:
+            continue
+        frente = np.zeros((H, W), bool)
+        for j, q in enumerate(ordem):
+            if q.camada > p.camada:
+                frente |= masks[j]
+        proj = desloca(binary_dilation(frente, iterations=1), 1, 1) & masks[i] & ~frente
+        tt = tons_por_volume(masks[i], p)
+        for y, x in zip(*np.nonzero(proj)):
+            img[y, x] = p.mat.tons[max(0, min(tt[y, x], 3) - 1)]
     saida = np.zeros((H, W, 4), np.uint8)
     saida[..., :3] = img
     saida[..., 3] = (dono >= 0) * 255
