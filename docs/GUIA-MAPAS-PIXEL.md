@@ -87,6 +87,23 @@ vídeo, ffmpeg.
 12. **Coisa que não tem onde apoiar** (a lâmpada do teto, que não existe no desenho) tem o fio subindo e sumindo aos poucos antes da viga.
 13. **Não termine o que sai da casa.** A chaminé continua para cima, sumindo em 5 degraus. Ela não ganha tampa nem fica "cortada".
 
+### As referências de pixel art do Felipe (28/10)
+
+Nove tutoriais de outros artistas, guardados **fora do git** (o repositório é público e a arte não é nossa) em
+`F:\Dhellow\CRONA\arte\referencias-pixel\`. Abra antes de desenhar algo do tipo. O que cada um ensina, com as nossas palavras:
+
+| Arquivo | A lição |
+|---|---|
+| `01-arco-de-pedra` | Arco ou anel: um oval; o mesmo oval um pouco abaixo dá a espessura; o oval de dentro; corta a parte de baixo e fecha; cor chapada; depois os blocos; por último musgo, rachadura e mato. Forma primeiro, detalhe no fim. |
+| `02-ruina-forma-luz-polimento` | Qualquer construção em quatro passos: a forma básica, tirar e pôr (janelas, quebras), a luz (o volume) e o polimento (pedras, contorno, sujeira). |
+| `03-isometria-basica-moveis` | Móvel isométrico do contorno à cor (sofá, tapete, mesa, quadro), um objeto por camada; um pouco de bagunça deixa o cômodo vivido, nada de tudo novo e perfeito. |
+| `04-personagem-na-caixa-iso` | A pessoa dentro de uma caixa isométrica, com as linhas do quadril e dos ombros no ângulo da caixa: é assim que se confere se ela está "de pé" no ângulo do chão (vale para conferir as poses sentadas contra o assento). |
+| `05-gente-isometrica` | Toda linha "horizontal" sobe 1 px a cada 2 (a 2:1), inclusive em gente: pés, ombros, quadril, roupa. Toda peça mostra três planos (cima, esquerda, direita), gente também: o topo da cabeça, dos ombros e dos pés. Um esqueleto de linhas com o ângulo dos ombros, do quadril e dos pés evita o boneco chapado. |
+| `06-chibis-exemplo` | Chibis em três quartos, contorno escuro, poucas cores por material: o alvo de leitura dos nossos personagens. |
+| `07-primeiro-predio` | Prédio: o bloco básico; tudo alinhado nos dois lados; os acessórios (caixa-d'água, ar-condicionado, toldo); cada lado com uma luz. |
+| `08-circulos-isometricos` | Círculo numa face isométrica: divide a face ao meio nos dois sentidos, liga as quinas, marca os pontos das diagonais, esboça a elipse por eles e limpa até ficar com 1 px de espessura. |
+| `09-aco-viga` | Metal: a forma bruta, o contorno, a sombra e o polimento (o brilho fino na quina). |
+
 ---
 
 ## 5. Passo a passo: um cômodo do jogo no estilo novo
