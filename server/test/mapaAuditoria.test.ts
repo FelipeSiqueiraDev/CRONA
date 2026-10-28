@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import type { ClientMsg, ServerMsg } from '@crona/shared';
+import { lootParaItem, regras, type ClientMsg, type Loot, type ServerMsg } from '@crona/shared';
 import { Hotel } from '../src/hotel';
 import { seedDb, upgradeDb } from '../src/seed';
 
@@ -72,5 +72,24 @@ describe('objetivos', () => {
   test('o objetivo vazio é recusado com aviso', () => {
     gm.send({ t: 'objAdd', text: '   ' });
     assert.match(gm.last('error')?.msg ?? '', /objetivo/i);
+  });
+});
+
+describe('FICHAS (auditoria de 27/10, grupo E)', () => {
+  test('os componentes ritualísticos pedem o elemento', () => {
+    assert.equal(regras.escolhaDoItem('equipamento', 'componentes-ritualisticos-de-elemento'), 'elemento');
+  });
+
+  test('as faixas de carga existem no catálogo (o jogador não as vê ao pedir; a mochila é a Mochila militar)', () => {
+    const ids = new Set(regras.opcoesDeItens(regras.novaFicha('X')).map((o) => o.id));
+    for (const id of regras.FAIXAS_DE_CARGA) assert.ok(ids.has(id), id);
+    assert.ok(ids.has('mochila-militar'));
+  });
+
+  test('o item largado com o nome antigo (outra caixa) não ganha apelido', () => {
+    const it = lootParaItem({ id: 9, name: 'Componentes Ritualísticos de (Elemento)', espacos: 1, kind: 'item', revealed: true, item: { tipo: 'equipamento', id: 'componentes-ritualisticos-de-elemento' } } as unknown as Loot);
+    assert.equal(it.apelido, undefined);
+    const outro = lootParaItem({ id: 10, name: 'Faca de Cozinha', espacos: 1, kind: 'item', revealed: true, item: { tipo: 'arma', id: 'faca' } } as unknown as Loot);
+    assert.equal(outro.apelido, 'Faca de Cozinha');
   });
 });

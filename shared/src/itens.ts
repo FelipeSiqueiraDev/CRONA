@@ -50,7 +50,9 @@ export function lootParaItem(l: Loot): ItemFicha {
   if (l.item && noCatalogo(l.item.tipo, l.item.id)) {
     const it: ItemFicha = { ...l.item, ...extra };
     // o nome que o mestre deu no cenário ("Faca de Cozinha") fica como apelido
-    if (l.name && l.name !== nomeDoItem({ id: l.item.id, tipo: l.item.tipo })) it.apelido = l.name;
+    // (sem contar maiúsculas e acentos: o item largado antes da troca de nomes de 25/10 tem o nome antigo, só com outra caixa)
+    const plano = (x: string) => x.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+    if (l.name && !it.apelido && plano(l.name) !== plano(nomeDoItem({ id: l.item.id, tipo: l.item.tipo }))) it.apelido = l.name;
     if (vestivel(it)) it.vestido = false;
     return it;
   }

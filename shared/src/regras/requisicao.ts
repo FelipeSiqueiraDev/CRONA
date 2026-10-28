@@ -43,6 +43,13 @@ const SECAO_DO_GRUPO: Record<GrupoItem, SecaoItem> = {
   outro: 'outro',
 };
 
+/**
+ * As faixas de espaço da regra de carga (LR p. 53) viraram entradas do catálogo, mas não são itens da Ordem: o jogador
+ * não as vê ao pedir itens (28/10: a Alosi e a Catarina procuravam a mochila e achavam o "Recipiente simples", que não
+ * dá carga). A mochila que se pede é a Mochila militar. O mestre continua vendo todas.
+ */
+export const FAIXAS_DE_CARGA = new Set(['item-desprezivel', 'recipiente-simples', 'item-volumoso', 'item-muito-volumoso', 'item-extremamente-volumoso']);
+
 /** As armas do catálogo que não são um item para levar: o golpe com a coronha e o ataque desarmado. */
 const NAO_E_ITEM = new Set(['coronhada', 'ataque-desarmado']);
 
@@ -139,7 +146,7 @@ export function escolhaDoItem(tipo: TipoItemCatalogo, id: string): 'pericia' | '
   const e = cat.equipamento(id);
   if (!e) return null;
   if (e.efeitos?.some((x) => (x.alvo === 'pericia' || x.alvo === 'treino') && x.pericia === 'escolhida')) return 'pericia';
-  if (/\(Elemento\)/.test(e.nome) || e.especial?.some((s) => /elemento à escolha/.test(s))) return 'elemento';
+  if (/\(elemento\)/i.test(e.nome) || e.especial?.some((s) => /elemento à escolha/.test(s))) return 'elemento';
   return null;
 }
 

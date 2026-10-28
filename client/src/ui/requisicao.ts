@@ -141,22 +141,29 @@ export function abrirRequisicao(r: Requisicao) {
 
   const recalcular = () => {
     calc = regras.calcular(f);
-    opcoes = regras.opcoesDeItens(f, calc);
+    opcoes = regras.opcoesDeItens(f, calc).filter((o) => r.mestre || !(o.tipo === 'equipamento' && regras.FAIXAS_DE_CARGA.has(o.id)));
     if (sel) sel = opcoes.find((o) => o.tipo === sel!.tipo && o.id === sel!.id) ?? null;
   };
 
   const visiveis = () => {
-    const q = plano(busca.value.trim());
+    // cada palavra da busca em qualquer ordem ("militar mochila"); o item cujo NOME tem as palavras vem antes do que só
+    // as cita na descrição (28/10: "mochila" mostrava antes o Equipamento de sobrevivência, "mochila com saco de dormir")
+    const palavras = plano(busca.value.trim()).split(/\s+/).filter(Boolean);
+    const noNome = new Set<regras.OpcaoItem>();
     const lista = opcoes.filter((o) => {
       if (secao !== 'todas' && o.secao !== secao) return false;
       if (soPosso && !o.ok) return false;
       if (filtroCat !== null && o.categoria !== filtroCat) return false;
-      if (!q) return true;
+      if (!palavras.length) return true;
+      const nome = plano(o.nome);
+      if (palavras.every((p) => nome.includes(p))) return noNome.add(o), true;
       const base = regras.baseDoItem({ id: o.id, tipo: o.tipo }) as { resumo?: string } | undefined;
-      return plano(`${o.nome} ${base?.resumo ?? ''} ${numerosDoItem(o)}`).includes(q);
+      const tudo = plano(`${o.nome} ${base?.resumo ?? ''} ${numerosDoItem(o)}`);
+      return palavras.every((p) => tudo.includes(p));
     });
     const porNome = (a: regras.OpcaoItem, b: regras.OpcaoItem) => a.nome.localeCompare(b.nome, 'pt-BR');
-    lista.sort(ordem === 'nome' ? porNome : ordem === 'espacos' ? (a, b) => a.espacos - b.espacos || porNome(a, b) : (a, b) => a.categoria - b.categoria || porNome(a, b));
+    const pela = ordem === 'nome' ? porNome : ordem === 'espacos' ? (a: regras.OpcaoItem, b: regras.OpcaoItem) => a.espacos - b.espacos || porNome(a, b) : (a: regras.OpcaoItem, b: regras.OpcaoItem) => a.categoria - b.categoria || porNome(a, b);
+    lista.sort((a, b) => Number(noNome.has(b)) - Number(noNome.has(a)) || pela(a, b));
     return lista;
   };
 

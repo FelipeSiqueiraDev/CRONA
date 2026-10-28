@@ -275,11 +275,15 @@ export class FichasScreen {
   }
 
   /** Lista que chega do servidor (todas para o mestre; só a própria para o jogador). */
+  /** a ficha nova foi mandada e o servidor ainda não respondeu */
+  private criando = false;
+
   setFichas(lista: FichaSalva[], nova?: number) {
     const antes = this.lista;
     // ficha com gravação a caminho: fica a versão da tela (a do servidor está um passo atrás)
     this.lista = lista.map((f) => (this.timers.has(f.id) ? (this.lista.find((x) => x.id === f.id) ?? f) : f)).sort((a, b) => a.id - b.id);
     if (nova) {
+      this.criando = false;
       this.selId = nova;
       if (this.rascunho?.id === 0) {
         this.rascunho = null;
@@ -466,6 +470,12 @@ export class FichasScreen {
     fs.nome = (fs.ficha.nome || fs.nome || 'Sem nome').trim();
     fs.ficha.nome = fs.nome;
     fs.atualizadaEm = agora();
+    // a ficha nova sai uma vez só: o segundo clique em Salvar, antes de o servidor responder, criava outra (28/10, auditoria)
+    if (!fs.id) {
+      if (this.criando) return;
+      this.criando = true;
+      setTimeout(() => (this.criando = false), 5000);
+    }
     this.app.net.send(gravarFicha(fs));
     const npc = fs.npc ? this.app.state.npcs.find((n) => n.id === fs.npc) : undefined;
     if (npc && npc.nome !== fs.nome) this.app.net.send({ t: 'npcSalvar', npc: { ...npc, nome: fs.nome } });
@@ -1877,7 +1887,14 @@ export class FichasScreen {
     j.corpo.append(h('label', { class: 'fj-campo' }, h('span', null, 'Apelido'), apelido), h('label', { class: 'fj-campo' }, h('span', null, 'Quantidade'), qtd));
     // na mão: armas, escudo e o que se empunha (duas mãos no máximo, LR p. 53)
     if (regras.maosDoItem(it)) {
-      const cb = h('input', { type: 'checkbox', checked: regras.lugarDoItem(it) === 'mao', onchange: (e: Event) => (it.empunhado = (e.target as HTMLInputElement).checked || undefined) });
+      // pôr na mão guarda o que não cabe mais nas duas mãos (a arma troca com a arma), como o Empunhar da mochila (28/10, auditoria)
+      const naMao = (on: boolean) => {
+        const inv = fs.ficha.inventario;
+        const r = on && it.uid !== undefined ? regras.empunhar(inv, it.uid, true) : null;
+        if (r?.ok) r.inventario.forEach((x, k) => (inv[k].empunhado = x.empunhado || undefined));
+        else it.empunhado = on || undefined;
+      };
+      const cb = h('input', { type: 'checkbox', checked: regras.lugarDoItem(it) === 'mao', onchange: (e: Event) => naMao((e.target as HTMLInputElement).checked) });
       j.corpo.append(h('label', { class: 'fj-check' }, cb, regras.maosDoItem(it) === 2 ? 'Na mão (as duas)' : 'Na mão'));
     }
     if (regras.vestivel(it)) {

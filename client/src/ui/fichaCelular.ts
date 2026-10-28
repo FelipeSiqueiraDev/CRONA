@@ -602,7 +602,10 @@ export class FichaCelular {
         ),
       ),
       h('p', { class: 'fc-nota' }, `${numero(c.carga.usados)}/${c.carga.espacos} espaços · ${vagas.map((l) => `cat. ${['0', 'I', 'II', 'III', 'IV'][l.categoria]} ${l.usados}/${l.limite}`).join(' · ') || 'patente sem limite de categoria'}`),
-      botao('Pedir itens à Ordem', 'mais', 'forte', () => {
+      // fora da Sede o servidor recusa: o botão nem aparece (28/10; antes o item pedido sumia sem explicação)
+      !fs.naBase
+        ? h('p', { class: 'fc-nota' }, 'Itens da Ordem só se pedem na base (a Sede).')
+        : botao('Pedir itens à Ordem', 'mais', 'forte', () => {
         const r = clonarFicha(fs);
         const antes = r.ficha.inventario.length;
         abrirRequisicao({

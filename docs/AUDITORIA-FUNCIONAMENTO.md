@@ -51,7 +51,9 @@ O `fichaSalvar` troca a ficha inteira pela que o cliente mandou (`hotel.ts:1493`
 24. ✔ **Item posto num móvel nunca é revelado:** nasce escondido e nenhuma tela manda `lootReveal` (o servidor trata); no COMBATE o "Pegar" também não aparece.
 25. Menores: a dica do Abrir invertida na porteira (`shell.ts:2662`); objetivo recusado sem aviso (`hotel.ts:1908`); o mapa-múndi deixa um ouvinte a cada vez que abre (`mapaMundi.ts:299`).
 
-## Grupo E — FICHAS
+## Grupo E — FICHAS — **consertado em 28/10**
+
+**O conserto:** o nome dos componentes se compara sem maiúsculas (`/\(elemento\)/i`), e eles voltam a pedir o elemento; o "Adicionar mesmo assim" do mestre passa da carga (o servidor não recusa mais: a decisão de 19/10); o "Na mão" da ficha guarda o que não cabe nas duas mãos (`regras.empunhar` com troca); a ficha nova sai uma vez só (o segundo Salvar espera a resposta) e o `nova` vai só a quem criou; o item largado com o nome antigo não ganha apelido (comparação sem maiúsculas e acentos). Junto (28/10, a Alosi e a Catarina não acharam a mochila na Sede): as faixas de carga da LR p. 53 (o "Recipiente simples" e os "Item ... volumoso") saem da requisição do jogador (`FAIXAS_DE_CARGA`); a busca aceita as palavras em qualquer ordem e põe antes o item com a palavra no nome; o "Pedir itens à Ordem" da ficha do celular só aparece na Sede. Testes em `server/test/mapaAuditoria.test.ts`. A auditoria dos itens e rituais contra os livros está em `docs/AUDITORIA-ITENS-RITUAIS.md`.
 
 26. ✔ **Componentes ritualísticos sem escolha de elemento** desde a troca de nomes de 25/10: `/\(Elemento\)/` não tem `i` (`requisicao.ts:142`). O item entra sem elemento.
 27. **"Adicionar mesmo assim" por carga:** o servidor recusa (`naoCabe`), a janela mostra como adicionado (`hotel.ts:1243`).

@@ -1271,8 +1271,8 @@ export class Hotel implements HotelApi {
     const esc = (m.escolha ?? {}) as Record<string, unknown>;
     if (qual === 'pericia' && regras.periciasDoItem().some((p) => p.id === esc.pericia)) it.escolha = { pericia: esc.pericia as regras.PericiaId };
     if (qual === 'elemento' && ['sangue', 'morte', 'conhecimento', 'energia'].includes(esc.elemento as string)) it.escolha = { elemento: esc.elemento as regras.Elemento };
-    const erro = this.naoCabe(f, it);
-    if (erro) return c.send({ t: 'error', msg: erro });
+    // a carga acima do dobro não trava o mestre (19/10: entra com o aviso, e o mestre decide); a janela já mostrou o aviso e
+    // o "Adicionar mesmo assim" (28/10, auditoria: o servidor recusava e a janela mostrava como adicionado)
     // munição: mais um pacote na pilha que já está na mochila (o mesmo, sem modificação)
     const pilha = regras.catalogo.equipamento(it.id)?.grupo === 'municao' && it.tipo === 'equipamento'
       ? f.ficha.inventario.find((x) => x.tipo === 'equipamento' && x.id === it.id && !x.achado && !x.modificacoes?.length)
@@ -1466,10 +1466,11 @@ export class Hotel implements HotelApi {
     return !!sala && this.campaignFor(Math.min(...this.sceneGroup(sala.data.id))).title === 'Sede da Ordem';
   }
 
-  private enviarFichas(so?: Client, nova?: number) {
+  /** `nova` vai só para quem criou (`criou`): o outro aparelho de mestre não perde o rascunho de ficha nova dele. */
+  private enviarFichas(so?: Client, nova?: number, criou?: Client) {
     const todas = this.db.fichas ?? [];
     const para = (c: Client) => {
-      if (c.role === 'gm') return c.send({ t: 'fichas', fichas: todas, nova });
+      if (c.role === 'gm') return c.send({ t: 'fichas', fichas: todas, nova: !criou || c === criou ? nova : undefined });
       if (!c.fichaId) return;
       const minha = todas.find((f) => f.id === c.fichaId);
       // a equipe (para entregar um item): os outros agentes da mesma campanha, só o nome
@@ -1574,7 +1575,7 @@ export class Hotel implements HotelApi {
       this.sincronizarArmado(f);
     }
     this.save();
-    this.enviarFichas(undefined, nova);
+    this.enviarFichas(undefined, nova, c);
     // a patinha acabou de ligar: o companheiro vem para perto do agente
     const salva = (this.db.fichas ?? []).find((x) => x.id === f.id);
     if (salva?.companheiro?.segue && !antiga?.companheiro?.segue) this.companheiroJunto(salva);
