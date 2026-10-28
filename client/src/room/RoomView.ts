@@ -48,6 +48,7 @@ import {
   DIR_TO_SHEET,
 } from '@crona/shared';
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
+import { ajusteAssentos } from '../render/assentos';
 import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
 import { artePodeGuardar, type CeuDaJanela, chamineDaArte, desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
@@ -1506,7 +1507,7 @@ export class RoomView {
    * A peça sentada com pose sentada desenhada, para o mestre acertar a pose no olho (28/10): o personagem, a direção
    * da pose e o ajuste de agora. null = a peça não está sentada numa cadeira (ou não tem a pose).
    */
-  ajusteSentado(id: number): { def: CharacterDef; dir: DirKey; atual: [number, number] } | null {
+  ajusteSentado(id: number): { def: CharacterDef; dir: DirKey; atual: [number, number]; assento: string; atualAssento: [number, number] } | null {
     const u = this.users.get(id);
     if (!u || u.sit !== 1 || !this.map) return null;
     const it = this.map.sitItem(u.x, u.y);
@@ -1514,7 +1515,7 @@ export class RoomView {
     const def = sprites.def(u.look?.charId);
     if (!def?.sentado) return null;
     const dir = DIR_TO_SHEET[((u.dir % 8) + 8) % 8];
-    return { def, dir, atual: def.sentadoAjuste?.[dir] ?? [0, 0] };
+    return { def, dir, atual: def.sentadoAjuste?.[dir] ?? [0, 0], assento: it.defId, atualAssento: ajusteAssentos.mapa[`${it.defId}:${dir}`] ?? [0, 0] };
   }
 
   private userPos(u: ClientUser, now: number) {
@@ -3386,10 +3387,13 @@ export class RoomView {
       const recuo = defSentado && !TIPOS_SEM_ENCOSTO.has(defSentado.kind) && !MOVEIS_SEM_ENCOSTO.has(defSentado.id) ? RECUO_SENTADO : 0;
       const [rdx, rdy] = recuo ? (DIRS[u.dir] ?? [0, 0]) : [0, 0];
       // e o ajuste que o mestre acertou no olho para essa pose (Alt + setas, a bancada ?sentar; sentado.json)
-      const ajuste = pfSentado ? cdef?.sentadoAjuste?.[DIR_TO_SHEET[((u.dir % 8) + 8) % 8]] : undefined;
-      const sx = iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[0] + (ajuste?.[0] ?? 0);
+      const dirPose = DIR_TO_SHEET[((u.dir % 8) + 8) % 8];
+      const ajuste = pfSentado ? cdef?.sentadoAjuste?.[dirPose] : undefined;
+      // e o do tipo de assento, para todo personagem (Ctrl + setas; arte/mobiliario/sentar.json)
+      const ajusteAssento = pfSentado && itSentado ? ajusteAssentos.mapa[`${itSentado.defId}:${dirPose}`] : undefined;
+      const sx = iso(cx - rdx * recuo, cy - rdy * recuo, baseZ)[0] + (ajuste?.[0] ?? 0) + (ajusteAssento?.[0] ?? 0);
       // na altura, os pés no chão um tanto à frente do quadril
-      const sy = iso(cx - rdx * recuo + fdx * PES_A_FRENTE_SENTADO, cy - rdy * recuo + fdy * PES_A_FRENTE_SENTADO, baseZ)[1] + (ajuste?.[1] ?? 0);
+      const sy = iso(cx - rdx * recuo + fdx * PES_A_FRENTE_SENTADO, cy - rdy * recuo + fdy * PES_A_FRENTE_SENTADO, baseZ)[1] + (ajuste?.[1] ?? 0) + (ajusteAssento?.[1] ?? 0);
       // H: a altura na arte; HE: na tela (a arte vem na escala antiga e o tabuleiro reduz)
       const H = bq ? bq.ay : sp ? sp.def.height : pf ? pf.h : PIXEL_AVATAR_HEIGHT;
       const HE = H * ESCALA_ARTE_PESSOA;

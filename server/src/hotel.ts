@@ -95,6 +95,7 @@ import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSes
 import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type TokenData, type UserData } from './db';
 import { RoomInstance, type Client, type HotelApi } from './roomInstance';
 import { folhaDaPasta, gravarSentadoAjuste, refreshPortraits } from './portraits';
+import { gravarAssento, lerAssentos, type AjusteAssentos } from './assentos';
 import { limparSalasDeExemplo, seedDb, SYSTEM_OWNER, upgradeDb } from './seed';
 
 const NAME_RE = /^[\p{L}\p{N}_\-. ]+$/u;
@@ -224,6 +225,8 @@ export class Hotel implements HotelApi {
   rooms = new Map<number, RoomInstance>();
   readonly timers: boolean;
   telaEscondida = false;
+  /** o ajuste de quem senta em cada tipo de assento (arte/mobiliario/sentar.json, 28/10) */
+  assentos: AjusteAssentos = lerAssentos();
   private persist: boolean;
   private clients = new Map<number, Client>();
   private byToken = new Map<string, Client>();
@@ -2381,6 +2384,7 @@ export class Hotel implements HotelApi {
     this.clients.set(c.id, c);
     this.byToken.set(c.token, c);
     c.send({ t: 'hello', characters: this.db.characters });
+    c.send({ t: 'assentosAjuste', mapa: this.assentos });
     return c;
   }
 
@@ -2545,6 +2549,14 @@ export class Hotel implements HotelApi {
       case 'sentadoAjuste':
         this.sentadoAjuste(c, m);
         return;
+      case 'assentoAjuste': {
+        if (c.role !== 'gm') return c.send({ t: 'error', msg: 'Só o mestre acerta os assentos.' });
+        if (typeof m.defId !== 'string' || typeof m.dir !== 'string' || typeof m.dx !== 'number' || typeof m.dy !== 'number') return;
+        this.assentos = gravarAssento(this.assentos, m.defId, m.dir as DirKey, m.dx, m.dy);
+        const msg: ServerMsg = { t: 'assentosAjuste', mapa: this.assentos };
+        for (const o of this.clients.values()) o.send(msg);
+        return;
+      }
       case 'sendTo':
         this.sendTo(c, m);
         return;

@@ -35,6 +35,7 @@ import { CatalogWin, InventoryWin } from './ui/catalog';
 import { CharactersWin } from './ui/characters';
 import { closeTopWindow, fecharJanelas, h, manterRolagem, toast } from './ui/dom';
 import { ligarBancadaSentar } from './ui/bancadaSentar';
+import { ajusteAssentos } from './render/assentos';
 /** a bancada de sentar (?sentar): undefined = ainda não decidiu; null = desligada */
 let bancadaSentar: (() => void) | null | undefined;
 
@@ -685,6 +686,9 @@ net.onMessage = (m: ServerMsg) => {
     case 'lockResult':
       shell?.onLockResult(m);
       break;
+    case 'assentosAjuste':
+      ajusteAssentos.mapa = m.mapa;
+      break;
     case 'characters':
       app.state.characters = m.list;
       sprites.setDefs(m.list);
@@ -746,18 +750,25 @@ window.addEventListener('keydown', (e) => {
     if (target) shell.turnToken(target, e.key.toLowerCase() === 'e');
     return;
   }
-  // Alt + setas, com uma peça sentada escolhida: o mestre acerta a pose sentada daquele personagem naquela direção
-  // (28/10); Shift anda 4 de uma vez, Alt + Backspace volta ao da conta. Fica salvo junto da arte (sentado.json)
+  // Com uma peça sentada escolhida, o mestre acerta a pose sentada no olho (28/10): Alt + setas, a daquele personagem
+  // naquela direção (sentado.json, junto da arte dele); Ctrl + setas, a de todo mundo naquele tipo de assento naquela
+  // direção (arte/mobiliario/sentar.json). Shift anda 4 de uma vez; Alt/Ctrl + Backspace volta ao da conta
   const seta = ({ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] } as Record<string, [number, number]>)[e.key];
-  if (e.altKey && (seta || e.key === 'Backspace') && app.canBuild && v.selection?.kind === 'user') {
+  if ((e.altKey || e.ctrlKey) && !(e.altKey && e.ctrlKey) && (seta || e.key === 'Backspace') && app.canBuild && v.selection?.kind === 'user') {
     const aj = v.ajusteSentado(v.selection.id);
     if (aj) {
       e.preventDefault();
       const passo = e.shiftKey ? 4 : 1;
-      const novo: [number, number] = seta ? [aj.atual[0] + seta[0] * passo, aj.atual[1] + seta[1] * passo] : [0, 0];
+      const de = e.altKey ? aj.atual : aj.atualAssento;
+      const novo: [number, number] = seta ? [de[0] + seta[0] * passo, de[1] + seta[1] * passo] : [0, 0];
       // na hora aqui; o servidor grava e manda para todos
-      aj.def.sentadoAjuste = { ...aj.def.sentadoAjuste, [aj.dir]: novo };
-      net.send({ t: 'sentadoAjuste', charId: aj.def.id, dir: aj.dir, dx: novo[0], dy: novo[1] });
+      if (e.altKey) {
+        aj.def.sentadoAjuste = { ...aj.def.sentadoAjuste, [aj.dir]: novo };
+        net.send({ t: 'sentadoAjuste', charId: aj.def.id, dir: aj.dir, dx: novo[0], dy: novo[1] });
+      } else {
+        ajusteAssentos.mapa = { ...ajusteAssentos.mapa, [`${aj.assento}:${aj.dir}`]: novo };
+        net.send({ t: 'assentoAjuste', defId: aj.assento, dir: aj.dir, dx: novo[0], dy: novo[1] });
+      }
       return;
     }
   }

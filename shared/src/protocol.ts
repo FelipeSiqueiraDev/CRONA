@@ -534,6 +534,8 @@ export type ClientMsg =
   | { t: 'telaEscondida'; on: boolean }
   /** o mestre acerta a pose sentada de um personagem numa direção (28/10): [dx, dy] em pixels do tabuleiro; 0, 0 tira */
   | { t: 'sentadoAjuste'; charId: number; dir: DirKey; dx: number; dy: number }
+  /** o mestre acerta quem senta num tipo de assento numa direção, para todo personagem (28/10); 0, 0 tira */
+  | { t: 'assentoAjuste'; defId: string; dir: DirKey; dx: number; dy: number }
   /** o passo pelas sombras (só o mestre; `tokenId` como no `tokenWalk`; Onipresença da Magistrada, LR p. 252): a peça some na sombra dela e sai na casa (x, y), livre e da mesma cena */
   | { t: 'passoSombras'; tokenId: number; x: number; y: number }
   /** marca ou desmarca uma sombra à mão na casa (só o mestre) */
@@ -614,6 +616,8 @@ export type ServerMsg =
   /** a tela da viagem: a pintura que aparece para todos na partida e na chegada (com o som do carro) */
   | { t: 'viagemTela'; fase: 'partida' | 'chegada'; ilustracao: string; texto: string; reserva?: string }
   | { t: 'hello'; characters: CharacterDef[] }
+  /** o ajuste de quem senta em cada tipo de assento, por direção ("chair_office:ne"), em pixels do tabuleiro (28/10) */
+  | { t: 'assentosAjuste'; mapa: Record<string, [number, number]> }
   | { t: 'welcome'; id: number; name: string; look: AvatarLook; token: string; inventory: InvItem[]; home?: number; role: Role }
   /**
    * Resposta da conta. ok: a sessão (guardada no aparelho e mandada no login), o nome, o papel e,
