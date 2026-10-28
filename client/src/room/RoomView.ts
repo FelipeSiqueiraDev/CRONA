@@ -3054,13 +3054,16 @@ export class RoomView {
           // pernas que passam dela (28/10, a Cora tapada até os joelhos)
           fatias.push(
             rot === 2 || rot === 6
-              ? { x0: it.x, x1: it.x + fp.sx - (rot === 2 ? 0.3 : 0), y0: it.y + fp.sy - 0.22, y1: it.y + fp.sy, alto: 0.52 }
-              : { x0: it.x + fp.sx - 0.22, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy - (rot === 4 ? 0.3 : 0), alto: 0.52 },
+              ? { x0: it.x, x1: it.x + fp.sx - (rot === 2 ? 0.3 : 0), y0: it.y + fp.sy - 0.22, y1: it.y + fp.sy, alto: 0.64 }
+              : { x0: it.x + fp.sx - 0.22, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy - (rot === 4 ? 0.3 : 0), alto: 0.64 },
           );
         for (const fatia of fatias) {
           const caixa = { x0: fatia.x0, x1: fatia.x1, y0: fatia.y0, y1: fatia.y1, z0: it.z, z1: it.z + fatia.alto * Z_PER_M };
           // a ordem fica na casa de verdade; o recorte acompanha a cadeira deslizada para a mesa, onde o encosto é desenhado
-          const recorte = boxSilhouette({ x0: fatia.x0 + ax, x1: fatia.x1 + ax, y0: fatia.y0 + ay, y1: fatia.y1 + ay, z0: iz, z1: iz + fatia.alto * Z_PER_M });
+          // o recorte começa um pouco acima do assento: no isométrico, o assento atrás do encosto cai dentro da coluna da
+          // faixa, e redesenhado ele cobria o bumbum de quem senta (28/10, o Felipe: "cortado, a bunda dela sumiu")
+          const acima = Math.max(0, (map.standHeight(it.x, it.y) ?? it.z) - it.z) + 0.1 * Z_PER_M;
+          const recorte = boxSilhouette({ x0: fatia.x0 + ax, x1: fatia.x1 + ax, y0: fatia.y0 + ay, y1: fatia.y1 + ay, z0: iz + acima, z1: iz + fatia.alto * Z_PER_M });
           drawables.push({
             box: caixa,
             sx0: d.sx0,
