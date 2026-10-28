@@ -758,7 +758,6 @@ window.addEventListener('keydown', (e) => {
       // na hora aqui; o servidor grava e manda para todos
       aj.def.sentadoAjuste = { ...aj.def.sentadoAjuste, [aj.dir]: novo };
       net.send({ t: 'sentadoAjuste', charId: aj.def.id, dir: aj.dir, dx: novo[0], dy: novo[1] });
-      toast(`${aj.def.name} sentado (${aj.dir}): ${novo[0]}, ${novo[1]}`);
       return;
     }
   }

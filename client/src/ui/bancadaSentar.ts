@@ -56,7 +56,8 @@ export function ligarBancadaSentar(view: RoomView) {
         });
       }),
     );
-    toast(`Bancada de sentar: ${def.name} (${(((i % lista.length) + lista.length) % lista.length) + 1} de ${lista.length}). [ ] troca; clique e Alt + setas acerta.`);
+    // sem aviso na tela (o Felipe, 28/10: "tá atrapalhando de ver"): o nome fica no título da aba
+    document.title = `Sentar: ${def.name} (${(((i % lista.length) + lista.length) % lista.length) + 1}/${lista.length})`;
   };
   window.addEventListener('keydown', (e) => {
     const tgt = e.target as HTMLElement;
