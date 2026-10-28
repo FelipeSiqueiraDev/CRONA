@@ -174,7 +174,7 @@ const TURN_MS = 240;
 const PES_A_FRENTE_SENTADO = 0.3;
 /** Assentos sem encosto (pelo tipo, ou o móvel de um tipo que costuma ter): o assento não é redesenhado por cima de quem senta. */
 const TIPOS_SEM_ENCOSTO = new Set(['pufe', 'stool', 'stool_high']);
-const MOVEIS_SEM_ENCOSTO = new Set(['bench', 'banco_rustico', 'banco_moderno']);
+const MOVEIS_SEM_ENCOSTO = new Set(['banco_rustico', 'banco_moderno']);
 
 /** Sombras de contato prontas, por tamanho. */
 const sombrasPes = new Map<string, HTMLCanvasElement>();
@@ -3332,7 +3332,10 @@ export class RoomView {
       // (em banco alto, o do balcão com 0,75 m ou o de laboratório com 0,70 m, o quadril da pose, feito para o assento de
       // 0,45 m, afundava no banco: sobe o que passa disso; o Felipe, 17/10: "a Agatha tá sentada toda errada")
       const pisoSentado = map.floorHeight(u.x, u.y) ?? p.z;
-      const baseZ = standBy ? pisoSentado : pfSentado ? pisoSentado + Math.max(0, p.z - pisoSentado - 0.45 * Z_PER_M) : p.z;
+      // a altura do assento sai do mapa, e não da peça: a do servidor só se refaz quando ela anda (a poltrona preta, com
+      // a altura errada no catálogo até 28/10, deixava quem já estava sentado meio metro acima do assento)
+      const zAssento = pfSentado ? map.standHeight(u.x, u.y) : p.z;
+      const baseZ = standBy ? pisoSentado : pfSentado ? pisoSentado + Math.max(0, zAssento - pisoSentado - 0.45 * Z_PER_M) : p.z;
       const half = seated ? 0.25 : 0.3;
       // sentada, os pés ficam à frente do quadril: a âncora (os pés) vai um tanto para a frente, para o quadril cair no
       // meio do assento (18/10, o Felipe: "eles ainda estão posicionados errados na cadeira"; de costas, o quadril
@@ -3359,7 +3362,7 @@ export class RoomView {
       const assento = !naCama && !standBy && u.sit === 1 && !p.moving ? map.sitItem(u.x, u.y) : undefined;
       const defAssento = assento ? getFurni(assento.defId) : undefined;
       const fpAssento = assento && defAssento ? footprint(defAssento, assento.rot) : null;
-      const topoAssento = assento && defAssento ? assento.z + defAssento.height : 0;
+      const topoAssento = assento ? map.standHeight(u.x, u.y) : 0;
       const box: WBox = naCama && fpCama
         ? { x0: naCama.it.x, x1: naCama.it.x + fpCama.sx, y0: naCama.it.y, y1: naCama.it.y + fpCama.sy, z0: topoCama, z1: topoCama + 0.5 }
         : assento && fpAssento

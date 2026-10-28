@@ -181,7 +181,7 @@ const FURNI_METERS: FurniDef[] = [
   { id: 'mesa_vidro_lab', name: 'Mesa de Vidro do Laboratório', category: 'laboratorio', kind: 'mesa_vidro_lab', width: 1, depth: 3, height: 0.9, vao: 'fundo', aumento: 1.2, rotations: ALL, colors: ['#a8d0e0', '#3a3d42'], desc: 'Tubos de ensaio em duas fileiras, frascos coloridos e um bico de Bunsen.' },
   { id: 'impressora_3d', name: 'Impressora 3D', category: 'laboratorio', kind: 'impressora_3d', width: 1, depth: 1, height: 1.3, rotations: ALL, colors: ['#2a2d33', '#ff8a3a'] },
   { id: 'mesa_arsenal', name: 'Mesa Grande do Arsenal', category: 'arsenal', kind: 'table_big', width: 4, depth: 2, height: 0.9, vao: 'fundo', aumento: 1.2, stackable: true, rotations: ALL, colors: ['#2a3a2a', '#1f2219'] },
-  { id: 'poltrona_preta', name: 'Poltrona Preta', category: 'mobilia', kind: 'armchair', width: 1, depth: 1, height: 0.95, sit: true, rotations: ALL, colors: ['#1a1a1e', '#3a3a42'] },
+  { id: 'poltrona_preta', name: 'Poltrona Preta', category: 'mobilia', kind: 'armchair', width: 1, depth: 1, height: 0.45, sit: true, rotations: ALL, colors: ['#1a1a1e', '#3a3a42'] },
   { id: 'tank', name: 'Tanque de Contenção', category: 'laboratorio', kind: 'tank', width: 2, depth: 2, height: 2.2, states: 2, rotations: ALL, colors: ['#2b2f33', '#3fe0c0'], desc: 'Clique duplo alterna a luz do tanque.' },
   { id: 'trolley', name: 'Carrinho de Laboratório', category: 'laboratorio', kind: 'trolley', width: 1, depth: 1, height: 0.95, rotations: ALL, colors: ['#7d848c', '#8a1414'] },
   { id: 'microscope', name: 'Microscópio', category: 'laboratorio', kind: 'microscope', width: 1, depth: 1, height: 0.42, rotations: ALL, colors: ['#d6d2c6', '#2a2a2a'] },
