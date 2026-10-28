@@ -675,13 +675,10 @@ class SpriteStore {
   onLoad: (() => void) | null = null;
 
   setDefs(list: CharacterDef[]) {
+    // As poses e o boneco de cada personagem carregam quando ele aparece no tabuleiro. Antes, todos os 39 do elenco
+    // começavam a carregar ao abrir (milhares de imagens): no servidor lento a fila passava de 100 s e a arte dos
+    // móveis esperava atrás de tudo (28/10, a bancada de sentar com os móveis no desenho de reserva)
     this.defs = new Map(list.map((d) => [d.id, d]));
-    // as poses e o boneco do tabuleiro começam a carregar antes de a cena pedir
-    for (const d of list) {
-      this.poses(d);
-      this.anim(d);
-      this.boneco(d);
-    }
   }
 
   def(id: number | null | undefined) {
