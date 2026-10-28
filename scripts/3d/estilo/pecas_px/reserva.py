@@ -27,6 +27,18 @@ def sofa_leather():
     ML._sofa(_COURO, 2)
 
 
+# o veludo lilás do sofá da Sede (do escuro ao reflexo, em volta da cor do catálogo, #8a74c0)
+_VELUDO_ROXO = _p1_rampa(['#1a1228', '#241834', '#2e2042', '#3a2852', '#463262', '#543e74', '#634c88', '#735c9c', '#846eb0', '#9a86c4'])
+
+
+def sofa_velvet():
+    """
+    O sofá de veludo da Sede (2 x 1, o assento a 0,45 m), 28/10: estava no desenho de reserva, e de costas o encosto saía
+    fino e quem sentava parecia atrás do sofá (o Felipe: "pede a arte"). O mesmo capitonê de braços em rolo, em lilás.
+    """
+    ML._sofa(_VELUDO_ROXO, 2)
+
+
 def shelf_metal():
     """
     A estante de aço (2 x 1, 2,2 m): os quatro montantes de cantoneira furada, cinco prateleiras de chapa, as caixas de
@@ -119,6 +131,7 @@ def pillar():
 
 ITENS = {
     'sofa_leather': (2, 1, (0.0, 0.0), sofa_leather, {}),
+    'sofa_velvet': (2, 1, (0.0, 0.0), sofa_velvet, {}),
     'shelf_metal': (2, 1, (0.0, 0.0), shelf_metal, {}),
     'rug_purple': (3, 4, (0.0, 0.0), rug_purple, {}),
     'pillar': (1, 1, (0.0, 0.0), pillar, {}),

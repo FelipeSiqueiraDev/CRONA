@@ -3042,7 +3042,8 @@ export class RoomView {
         // Sem encosto (banqueta, pufe, banco reto), não: o assento redesenhado subia pelo corpo de quem senta e parecia
         // que ela estava em pé atrás do banco (28/10)
         // E o braço do lado da câmera, na poltrona e no sofá (28/10, o Felipe: a Cora, desenhada inteira por cima da
-        // poltrona, parecia sentada em cima dos braços): só até a altura do braço, para não trazer a quina do encosto
+        // poltrona, parecia sentada em cima dos braços): só até um pouco acima do assento, porque o braço de quem senta
+        // fica apoiado em cima do braço da poltrona (até o braço todo, ela ficava "sem braço", 28/10)
         const fp = footprint(def, rot);
         const fatias: { x0: number; x1: number; y0: number; y1: number; alto: number }[] = [];
         if (def.sit && !def.deita && !flat && !ghost && (rot === 0 || rot === 6) && !TIPOS_SEM_ENCOSTO.has(def.kind) && !MOVEIS_SEM_ENCOSTO.has(def.id))
@@ -3053,8 +3054,8 @@ export class RoomView {
           // pernas que passam dela (28/10, a Cora tapada até os joelhos)
           fatias.push(
             rot === 2 || rot === 6
-              ? { x0: it.x, x1: it.x + fp.sx - (rot === 2 ? 0.3 : 0), y0: it.y + fp.sy - 0.22, y1: it.y + fp.sy, alto: 0.72 }
-              : { x0: it.x + fp.sx - 0.22, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy - (rot === 4 ? 0.3 : 0), alto: 0.72 },
+              ? { x0: it.x, x1: it.x + fp.sx - (rot === 2 ? 0.3 : 0), y0: it.y + fp.sy - 0.22, y1: it.y + fp.sy, alto: 0.52 }
+              : { x0: it.x + fp.sx - 0.22, x1: it.x + fp.sx, y0: it.y, y1: it.y + fp.sy - (rot === 4 ? 0.3 : 0), alto: 0.52 },
           );
         for (const fatia of fatias) {
           const caixa = { x0: fatia.x0, x1: fatia.x1, y0: fatia.y0, y1: fatia.y1, z0: it.z, z1: it.z + fatia.alto * Z_PER_M };

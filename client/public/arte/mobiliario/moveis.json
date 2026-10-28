@@ -49655,5 +49655,123 @@
       0.638,
       0.52
     ]
+  },
+  "sofa_velvet": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "sofa_velvet/giro-4.png",
+        "ax": 72.0,
+        "ay": 90.0
+      },
+      "2": {
+        "arquivo": "sofa_velvet/giro-2.png",
+        "ax": 39.0,
+        "ay": 90.0
+      },
+      "0": {
+        "arquivo": "sofa_velvet/giro-0.png",
+        "ax": 71.0,
+        "ay": 81.0
+      },
+      "6": {
+        "arquivo": "sofa_velvet/giro-6.png",
+        "ax": 40.0,
+        "ay": 81.0
+      }
+    },
+    "real": [
+      1.46,
+      0.67,
+      0.92
+    ],
+    "tampo": [
+      0.264,
+      1.225,
+      0.307,
+      0.694,
+      0.45
+    ],
+    "cima": {
+      "arquivo": "sofa_velvet/cima.png",
+      "caixa": [
+        14,
+        15,
+        76,
+        44
+      ]
+    },
+    "voo": {
+      "25": {
+        "4": {
+          "arquivo": "sofa_velvet/voo-25-giro-4.png",
+          "ax": 44.9,
+          "ay": 49.7
+        },
+        "2": {
+          "arquivo": "sofa_velvet/voo-25-giro-2.png",
+          "ax": 39.0,
+          "ay": 53.2
+        },
+        "0": {
+          "arquivo": "sofa_velvet/voo-25-giro-0.png",
+          "ax": 43.9,
+          "ay": 44.7
+        },
+        "6": {
+          "arquivo": "sofa_velvet/voo-25-giro-6.png",
+          "ax": 40.0,
+          "ay": 48.2
+        }
+      },
+      "50": {
+        "4": {
+          "arquivo": "sofa_velvet/voo-50-giro-4.png",
+          "ax": 44.4,
+          "ay": 42.3
+        },
+        "2": {
+          "arquivo": "sofa_velvet/voo-50-giro-2.png",
+          "ax": 32.9,
+          "ay": 49.8
+        },
+        "0": {
+          "arquivo": "sofa_velvet/voo-50-giro-0.png",
+          "ax": 43.4,
+          "ay": 39.3
+        },
+        "6": {
+          "arquivo": "sofa_velvet/voo-50-giro-6.png",
+          "ax": 33.9,
+          "ay": 47.8
+        }
+      },
+      "75": {
+        "4": {
+          "arquivo": "sofa_velvet/voo-75-giro-4.png",
+          "ax": 41.8,
+          "ay": 29.8
+        },
+        "2": {
+          "arquivo": "sofa_velvet/voo-75-giro-2.png",
+          "ax": 26.6,
+          "ay": 43.5
+        },
+        "0": {
+          "arquivo": "sofa_velvet/voo-75-giro-0.png",
+          "ax": 40.8,
+          "ay": 28.8
+        },
+        "6": {
+          "arquivo": "sofa_velvet/voo-75-giro-6.png",
+          "ax": 27.6,
+          "ay": 43.5
+        }
+      }
+    },
+    "vooKv": 48.0
   }
 }
