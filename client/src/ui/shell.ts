@@ -680,7 +680,8 @@ export class Shell {
     ro.observe(this.combate.quadro);
     window.addEventListener('resize', upd);
     canvas.addEventListener('pointermove', () => {
-      this.el.classList.add('map-hover');
+      // só quando muda: pôr a classe na raiz a cada movimento fazia o navegador reconferir o estilo da página toda (28/10)
+      if (!this.el.classList.contains('map-hover')) this.el.classList.add('map-hover');
       clearTimeout(this.hoverTimer);
       this.hoverTimer = window.setTimeout(() => this.el.classList.remove('map-hover'), 2200);
     });

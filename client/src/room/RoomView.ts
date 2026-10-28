@@ -463,6 +463,19 @@ export class RoomView {
   /** quanto o último quadro levou para desenhar (o medidor do ?fps) */
   ultimoQuadroMs = 0;
   /**
+   * A qualidade automática (28/10, o Felipe: "movimentar a tela trava tudo", no PC e no notebook): a fração da
+   * resolução da tela em que o tabuleiro é desenhado. Se o ritmo cai abaixo de ~40 quadros por segundo, desenha menor
+   * (o navegador amplia); com folga, volta à cheia. Em máquina forte fica em 1.
+   */
+  qualidade = 1;
+  private ritmo = 16.7;
+  private ultimoRaf = 0;
+  private qualidadeMudouEm = 0;
+  /** a última vez que algo mexeu (mouse, câmera, peça andando): parado há 3 s, o tabuleiro desenha um quadro sim, um não */
+  private mexeuEm = 0;
+  private camAntes = '';
+  private pulou = false;
+  /**
    * O desenho pronto de cada pedaço de móvel parado (28/10, o desempenho: os móveis feitos por código, como os arbustos e
    * as caixas, eram refeitos do zero a cada quadro; no Jardim do Fritz, 2.300 degradês por quadro). `null`: esse pedaço
    * mexe sozinho (lê o tempo ou a energia, usa imagem ou mistura de cor) e é desenhado ao vivo.
@@ -633,6 +646,8 @@ export class RoomView {
       // escondido (a aba FICHAS, o COMBATE de cards): não desenha (23/10, o pente-fino de desempenho)
       if (this.pausado) return;
       const t0 = performance.now();
+      this.ajustarQualidade(t0);
+      if (this.descansando(t0)) return;
       try {
         this.frame();
       } catch (e) {
@@ -1594,7 +1609,7 @@ export class RoomView {
 
   // ---------- câmera ----------
   resize() {
-    const dpr = this.fixed ? 1 : Math.min(2, window.devicePixelRatio || 1);
+    const dpr = this.fixed ? 1 : Math.min(2, window.devicePixelRatio || 1) * this.qualidade;
     // o tamanho medido pelo ResizeObserver (ler clientWidth a cada quadro obrigava o navegador a recalcular a página)
     const w = this.fixed ? this.fixed.w : (this.medido?.w ?? this.canvas.clientWidth);
     const h = this.fixed ? this.fixed.h : (this.medido?.h ?? this.canvas.clientHeight);
@@ -1694,6 +1709,7 @@ export class RoomView {
     });
     c.addEventListener('pointermove', (e) => {
       if (this.watchOnly) return;
+      this.mexeuEm = performance.now();
       this.mouse = { x: e.offsetX, y: e.offsetY, inside: true };
       if (this.caixaSel) {
         this.caixaSel.x1 = e.offsetX;
@@ -2264,6 +2280,44 @@ export class RoomView {
     r.height = Math.max(1, by1 - by0 + 1);
     if (bx1 >= 0) r.getContext('2d')!.drawImage(c, -bx0, -by0);
     return { c: r, ox: wx + Math.max(0, bx0) / k, oy: wy + Math.max(0, by0) / k };
+  }
+
+  /** Mede o ritmo dos quadros e muda a resolução quando ele cai ou sobra (a cada troca, espera para medir de novo). */
+  private ajustarQualidade(agora: number) {
+    const dt = agora - this.ultimoRaf;
+    this.ultimoRaf = agora;
+    // quadro pulado de propósito (o descanso) ou a aba voltando de escondida: não conta
+    if (dt > 250 || this.fixed || this.pulou) return;
+    this.ritmo = this.ritmo * 0.9 + dt * 0.1;
+    const espera = agora - this.qualidadeMudouEm;
+    const base = Math.min(2, window.devicePixelRatio || 1);
+    // o menor: 60% dos pixels da tela (abaixo disso o desenho fica borrado demais)
+    const minimo = Math.min(1, 0.6 / base);
+    let q = this.qualidade;
+    if (this.ritmo > 24 && espera > 1500 && q > minimo) q = Math.max(minimo, q - 0.15);
+    else if (this.ritmo < 15 && espera > 8000 && q < 1) q = Math.min(1, q + 0.15);
+    if (q === this.qualidade) return;
+    this.qualidade = q;
+    this.qualidadeMudouEm = agora;
+    this.ritmo = 16.7;
+  }
+
+  /** Nada mexendo há 3 s: pula um quadro sim, um não (30 por segundo; a placa de vídeo descansa). */
+  private descansando(agora: number): boolean {
+    const cam = `${this.cam.x},${this.cam.y},${this.zoom},${this.tat.t}`;
+    let mexe = cam !== this.camAntes || !!this.drag || !!this.camAnim || !!this.placement;
+    this.camAntes = cam;
+    // a peça andando (o passo dura `ms`; depois a animação fica lá, parada no fim)
+    if (!mexe)
+      for (const u of this.users.values())
+        if (u.anim && agora - u.anim.start < u.anim.ms + 200) {
+          mexe = true;
+          break;
+        }
+    if (mexe) this.mexeuEm = agora;
+    if (agora - this.mexeuEm < 3000) return (this.pulou = false);
+    this.pulou = !this.pulou;
+    return this.pulou;
   }
 
   private frame() {

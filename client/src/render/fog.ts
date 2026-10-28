@@ -56,6 +56,8 @@ export interface CasaNeblina {
   /** 0 no meio do banco, 1 na beira: na beira a neblina é mais rala */
   beira: number;
   tufos: Tufo[];
+  /** os tufos da casa já desenhados juntos, na escala da tela (`k`): uma imagem por casa em vez de um desenho por tufo */
+  pronta?: { k: number; c: HTMLCanvasElement; ox: number; oy: number };
 }
 
 /**
@@ -101,19 +103,47 @@ export class Fog {
     return { x0: c.x, x1: c.x + 1, y0: c.y, y1: c.y + 1, z0: c.h, z1: c.h + ALTO_NEBLINA };
   }
 
-  /** Os tufos de uma casa: sobem e descem devagar e balançam, mais ralos na beira do banco. */
+  /**
+   * Os tufos de uma casa: sobem e descem devagar e balançam, mais ralos na beira do banco. Desde 28/10 (o desempenho:
+   * 1.032 tufos por quadro na Vila de Santo Berço), os tufos da casa ficam juntos numa imagem pronta, e a casa inteira
+   * ondula e respira (cada casa na fase dela).
+   */
   drawCasa(ctx: CanvasRenderingContext2D, c: CasaNeblina, now: number) {
+    if (!c.tufos.length) return;
+    const k = Math.abs(ctx.getTransform().a) || 1;
+    if (!c.pronta || Math.abs(c.pronta.k - k) > 1e-3) c.pronta = this.montarCasa(c, k);
+    const p = c.pronta;
+    const fase = c.tufos[0].phase;
+    const ondula = Math.sin(now / 2400 + fase);
+    const [ax, ay] = iso(0, 0, 0);
+    const [bx, by] = iso(0.12 * ondula, -0.08 * ondula, 0);
+    ctx.globalAlpha = 0.85 + 0.15 * Math.sin(now / 1900 + fase * 2);
+    ctx.drawImage(p.c, p.ox + bx - ax, p.oy + by - ay, p.c.width / k, p.c.height / k);
+    ctx.globalAlpha = 1;
+  }
+
+  /** Os tufos da casa, parados no meio do balanço, numa imagem na escala `k` da tela. */
+  private montarCasa(c: CasaNeblina, k: number) {
     const s = puffSprite();
     const rala = c.beira > 0.75 ? 1 - (c.beira - 0.75) / 0.25 : 1;
-    for (const t of c.tufos) {
-      const ondula = Math.sin(now / 2400 + t.phase);
-      const [px, py] = iso(c.x + t.u + 0.12 * ondula, c.y + t.v - 0.08 * ondula, c.h + t.z * ALTO_NEBLINA);
-      ctx.globalAlpha = Math.min(1, t.a * (0.85 + 0.15 * Math.sin(now / 1900 + t.phase * 2)) * (0.25 + 0.75 * rala) * (0.75 + 0.5 * (1 - c.beira)));
-      const w = t.r * 2.6;
-      const hh = t.r * 1.5;
-      ctx.drawImage(s, px - w / 2, py - hh / 2, w, hh);
+    const tufos = c.tufos.map((t) => {
+      const [px, py] = iso(c.x + t.u, c.y + t.v, c.h + t.z * ALTO_NEBLINA);
+      return { px, py, w: t.r * 2.6, hh: t.r * 1.5, a: Math.min(1, t.a * (0.25 + 0.75 * rala) * (0.75 + 0.5 * (1 - c.beira))) };
+    });
+    const x0 = Math.min(...tufos.map((t) => t.px - t.w / 2));
+    const y0 = Math.min(...tufos.map((t) => t.py - t.hh / 2));
+    const x1 = Math.max(...tufos.map((t) => t.px + t.w / 2));
+    const y1 = Math.max(...tufos.map((t) => t.py + t.hh / 2));
+    const cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.ceil((x1 - x0) * k));
+    cv.height = Math.max(1, Math.ceil((y1 - y0) * k));
+    const g = cv.getContext('2d')!;
+    g.setTransform(k, 0, 0, k, -x0 * k, -y0 * k);
+    for (const t of tufos) {
+      g.globalAlpha = t.a;
+      g.drawImage(s, t.px - t.w / 2, t.py - t.hh / 2, t.w, t.hh);
     }
-    ctx.globalAlpha = 1;
+    return { k, c: cv, ox: x0, oy: y0 };
   }
 
   setMap(map: RoomMap) {

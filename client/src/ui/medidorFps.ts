@@ -44,7 +44,7 @@ export function ligarMedidor(view: RoomView, tela: HTMLCanvasElement, cena: () =
       `${cena()}`,
       `FPS ${(quadros / s).toFixed(0)}   desenho ${(desenho / Math.max(1, quadros)).toFixed(1)} ms (pior ${pior.toFixed(0)})`,
       `travadas ${travadas} (${travadoMs.toFixed(0)} ms)   interface ${Math.round(mudancas / s)}/s`,
-      `tela ${tela.width}x${tela.height}   dpr ${devicePixelRatio}`,
+      `tela ${tela.width}x${tela.height}   dpr ${devicePixelRatio}   qualidade ${Math.round(view.qualidade * 100)}%`,
     ].join('\n');
     quadros = 0;
     desenho = 0;

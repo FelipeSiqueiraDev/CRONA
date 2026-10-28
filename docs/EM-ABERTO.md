@@ -7,7 +7,7 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - O Felipe: "movimentar a tela trava tudo, lentão", no PC e no notebook, nas cenas grandes (Mansão Albuquerque, Jardim do Fritz, cidades, Santo Berço).
 - Feito e no ar (28/10, 10h52, backup `crona_2026-10-28_10-52-18.dump`): o pedaço de móvel parado é desenhado uma vez e guardado (`RoomView.desenharNo`/`prepararNo`; o Painter avisa quando o desenho lê o tempo ou a energia). Ajuda nos móveis feitos por código e enquanto a arte carrega; com a arte carregada, o desenho já era razoável na prévia.
 - O medidor: `?fps` no endereço mostra quadros por segundo, desenho, travadas e mudanças da interface (`client/src/ui/medidorFps.ts`). **Próximo passo:** a foto do medidor no PC do Felipe, com a câmera andando na Mansão, para ver se o peso é o desenho ou a interface em volta.
-- Já sabido: a névoa rasteira da Santo Berço · Vila desenha 1.032 tufos por quadro (`Fog.drawCasa`).
+- Depois (28/10, à tarde): a **qualidade automática** (`RoomView.qualidade`: abaixo de ~40 quadros por segundo o tabuleiro desenha em resolução menor, até 60% dos pixels; com folga volta à cheia); **parado há 3 s, 30 quadros por segundo** (`descansando`); a névoa rasteira guardada por casa (`Fog.montarCasa`: na Vila, de 1.247 para 430 imagens por quadro); a classe `map-hover` só quando muda. O `?fps` mostra a qualidade.
 - Na prévia com o painel escondido, o tempo da placa de vídeo varia demais: medir com o painel à vista ou com o `?fps`.
 - Também no ar: o login preso desde 27/10 (o login mandado antes de a conexão abrir esperava o welcome) consertado em `net.ts`.
 - Falta conferir: sentar sem objeto atravessando o corpo, deitar, portas e objetos interagindo certo.
