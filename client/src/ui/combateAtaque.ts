@@ -53,6 +53,8 @@ export interface ArmaOpcao {
 export interface AlvoAtaque {
   p: cb.Participante;
   agente: boolean;
+  /** pessoa (agente ou ameaça do tipo Pessoa): só ela faz o teste de dano massivo (cb.ehPessoa) */
+  pessoa: boolean;
   /** Defesa da ficha (agente) ou da ficha rápida (ameaça), com o que vale até o turno dele; null = sem ficha */
   defesa: number | null;
   /** o que mexe na Defesa até o próximo turno dele (investida, combate defensivo) */
@@ -349,7 +351,7 @@ export class ResolucaoAtaque {
     type Dano = { partes: cb.PartesDano; conta: cb.ContaDano; previa: ReturnType<typeof cb.previaDano> };
     let dano: Dano | null = null;
     // o que o dano faz no alvo: PV, o dano não letal à parte ou a SAN (LR p. 82, 88)
-    const previa = (final: number, tipo: TipoDano, nl: boolean) => (alvo ? cb.previaDano(alvo.vitais, final, { tipo, naoLetal: nl, naoLetalAntes: alvo.p.naoLetal, agente: alvo.agente }) : null);
+    const previa = (final: number, tipo: TipoDano, nl: boolean) => (alvo ? cb.previaDano(alvo.vitais, final, { tipo, naoLetal: nl, naoLetalAntes: alvo.p.naoLetal, agente: alvo.agente, pessoa: alvo.pessoa }) : null);
     if (arma && acertou && this.e.soma !== null && alvo) {
       const partes = cb.danoCritico(arma.dano, mult);
       const conta = cb.contaDano({ soma: this.e.soma, fixo: partes.fixo, tipo: arma.tipo, rd: alvo.rd, imunidades: alvo.imunidades, vulnerabilidades: alvo.vulnerabilidades });

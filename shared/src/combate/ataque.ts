@@ -438,9 +438,10 @@ export function consequenciaMental(v: { san: number; sanMax: number }, dano: num
 export function previaDano(
   v: { pv: number; pvMax: number; san: number; sanMax: number } | undefined,
   final: number,
-  o: { tipo: string; naoLetal?: boolean; naoLetalAntes?: number; agente?: boolean },
+  o: { tipo: string; naoLetal?: boolean; naoLetalAntes?: number; agente?: boolean; pessoa?: boolean },
 ): { texto: string; massivo: number | null } | null {
   if (!v) return null;
+  const pessoa = o.pessoa !== false;
   if (o.tipo === 'mental') {
     const q = consequenciaMental(v, final);
     return { texto: `SAN ${v.san} → ${q.san}${q.zerou ? ' (enlouquecendo)' : q.perturbado ? ' (perturbado)' : ''}`, massivo: null };
@@ -448,9 +449,20 @@ export function previaDano(
   const antes = o.naoLetalAntes ?? 0;
   if (o.naoLetal) {
     const q = consequenciaNaoLetal(v, antes, final);
-    return { texto: `não letal ${antes} → ${q.naoLetal} (PV ${v.pv})${q.desmaiou ? ': desmaia, sem morrendo' : ''}`, massivo: q.massivo };
+    return { texto: `não letal ${antes} → ${q.naoLetal} (PV ${v.pv})${q.desmaiou ? ': desmaia, sem morrendo' : ''}`, massivo: pessoa ? q.massivo : null };
   }
   const q = consequencia(v, final, antes);
   const estado = q.zerou ? (o.agente ? ' (inconsciente e morrendo)' : ' (0 PV)') : q.desmaiou ? ' (desmaia, sem morrendo)' : q.machucado ? ' (machucado)' : '';
-  return { texto: `PV ${v.pv} → ${q.pv}${estado}`, massivo: q.massivo };
+  return { texto: `PV ${v.pv} → ${q.pv}${estado}`, massivo: pessoa ? q.massivo : null };
+}
+
+/**
+ * O dano massivo (LR p. 88) é só para pessoas (29/10, o Felipe: "só serve para pessoas, seres humanos"): os agentes e
+ * as ameaças do tipo Pessoa (o cultista, o açougueiro). Criatura, animal, enxame, relíquia e o companheiro do agente
+ * (a Camarilla) não fazem o teste. Ficha rápida sem tipo conta como pessoa (a ficha em branco nasce Pessoa).
+ */
+export function ehPessoa(ficha: { tipo?: string } | null | undefined, companheiro = false): boolean {
+  if (companheiro) return false;
+  const tipo = ficha?.tipo?.trim() ?? '';
+  return !tipo || /pessoa|human/i.test(tipo);
 }

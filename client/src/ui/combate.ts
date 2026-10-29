@@ -1240,6 +1240,7 @@ export class CombateScreen {
     return {
       p,
       agente: p.lado === 'agente',
+      pessoa: cb.ehPessoa(f, !!p.companheiroDe),
       // a investida (−5) e o combate defensivo (+5) mexem na Defesa até o próximo turno dele
       defesa: (calc?.defesa ?? f?.defesa ?? null) === null ? null : (calc?.defesa ?? f?.defesa)! + (p.defesaTurno ?? []).reduce((t, d) => t + d.valor, 0),
       defesaTurno: p.defesaTurno ?? [],

@@ -4,7 +4,7 @@
  * e devolvem uma cópia mudada, ou o motivo da recusa.
  */
 import { condicao as condicaoDoCatalogo } from '../regras/dados';
-import { consequencia, consequenciaMental, consequenciaNaoLetal, dadoDaFalha, METROS_POR_CASA, textoMetros } from './ataque';
+import { consequencia, consequenciaMental, consequenciaNaoLetal, dadoDaFalha, ehPessoa, METROS_POR_CASA, textoMetros } from './ataque';
 import { casasEmpurrao, empurraUmQuadrado, manobra as defManobra, type ManobraId } from './manobra';
 import {
   LADOS,
@@ -437,6 +437,7 @@ function aplicarDano(c: Combate, alvo: Participante, d: Record<string, unknown>,
     return;
   }
   const ja = vitais.find((m) => m.id === alvo.id);
+  const pessoa = ehPessoa(ctx.ameaca?.(alvo.id), !!alvo.companheiroDe);
   if (mental) {
     // danos seguidos na mesma ação partem dos valores já mudados
     const antes = ja?.san ?? v.san;
@@ -453,7 +454,7 @@ function aplicarDano(c: Combate, alvo: Participante, d: Record<string, unknown>,
     const q = consequenciaNaoLetal({ pv, pvMax: v.pvMax }, antes, final);
     alvo.naoLetal = q.naoLetal;
     registrar(c, ctx.agora, 'acao', `${nome} ${formula}: ${conta}. ${alvo.nome}: não letal ${antes} → ${q.naoLetal} (PV ${pv}${q.desmaiou ? ', inconsciente' : ''}).`, q.desmaiou ? ['inconsciente'] : undefined);
-    if (q.massivo) {
+    if (q.massivo && pessoa) {
       registrar(c, ctx.agora, 'estado', `Dano massivo: ${alvo.nome} faz Fortitude DT ${q.massivo}; se falhar, cai inconsciente, sem morrendo (o não letal não deixa morrendo; LR p. 88).`);
       pedirMassivo(c, { alvo: alvo.id, dt: q.massivo, dano: final, naoLetal: true });
     }
@@ -468,7 +469,7 @@ function aplicarDano(c: Combate, alvo: Participante, d: Record<string, unknown>,
   const estado = q.zerou ? '0 PV' : q.desmaiou ? 'inconsciente' : q.machucado ? 'machucado' : '';
   registrar(c, ctx.agora, 'acao', `${nome} ${formula}: ${conta}. ${alvo.nome}: PV ${pv} → ${q.pv}${estado ? ` (${estado})` : ''}.`, estado ? [estado] : undefined);
   if (q.pv !== pv) mudar(vitais, alvo.id, 'pv', q.pv);
-  if (q.massivo) {
+  if (q.massivo && pessoa) {
     registrar(c, ctx.agora, 'estado', `Dano massivo: ${alvo.nome} faz Fortitude DT ${q.massivo}; se falhar, vai a 0 PV (LR p. 88).`);
     pedirMassivo(c, { alvo: alvo.id, dt: q.massivo, dano: final });
   }

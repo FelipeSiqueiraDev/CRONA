@@ -619,6 +619,30 @@ describe('combate: ataque, PE, condições e ritual', () => {
     assert.equal(recusa(falhou.combate!, { tipo: 'massivo', alvo: 11, total: 30 }), 'Não há teste de dano massivo pendente para esse ser.');
   });
 
+  test('dano massivo só em pessoa: criatura e companheiro não fazem o teste (29/10, o Felipe)', () => {
+    assert.equal(combate.ehPessoa(null), true);
+    assert.equal(combate.ehPessoa({ tipo: 'Pessoa' }), true);
+    assert.equal(combate.ehPessoa({ tipo: '' }), true);
+    assert.equal(combate.ehPessoa({ tipo: 'Criatura de Sangue' }), false);
+    assert.equal(combate.ehPessoa({ tipo: 'Animal' }), false);
+    assert.equal(combate.ehPessoa(null, true), false);
+    const v = { pv: 40, pvMax: 40, san: 0, sanMax: 0 };
+    assert.equal(combate.previaDano(v, 20, { tipo: 'impacto' })?.massivo, 19);
+    assert.equal(combate.previaDano(v, 20, { tipo: 'impacto', pessoa: false })?.massivo, null);
+    vitais.set(11, { pv: 40, pvMax: 40 });
+    const criatura = (): combate.Contexto => ({ ...ctx(), ameaca: (id) => (id === 11 ? { ...combate.fichaAmeacaVazia(), tipo: 'Criatura' } : null) });
+    const ap = (c: combate.Combate, a: combate.AcaoCombate) => {
+      const r = combate.aplicar(c, a, criatura());
+      if (!r.ok) throw new Error(r.motivo);
+      return r;
+    };
+    const c = ap(ap(ap(montado(), { tipo: 'comecar' }).combate!, { tipo: 'passar' }).combate!, { tipo: 'passar' }).combate!;
+    const r = ap(c, golpe(10, 11, { dano: { formula: '4d8', soma: 20, total: 20, tipo: 'impacto', conta: '20', final: 20 } }));
+    assert.deepEqual(r.vitais, [{ id: 11, pv: 20 }]);
+    assert.equal(r.combate!.massivos, undefined);
+    assert.ok(!r.combate!.registro.some((l) => l.texto.startsWith('Dano massivo')));
+  });
+
   test('defesa especial: só agentes, uma por rodada; erro no corpo a corpo lembra o contra-ataque', () => {
     let c = aplicar(montado(), { tipo: 'comecar' });
     assert.equal(recusa(c, golpe(1, 10, { reacao: 'esquiva' })), 'Ameaças não usam defesas especiais (LR p. 179).');

@@ -541,6 +541,7 @@ O livro não diz em que ordem as coisas do começo do turno acontecem. Proposta 
 
 - Um único dano maior ou igual à metade dos PV totais, que não zera os PV, pede Fortitude DT 15 + 2 a cada 10 pontos de dano (ex.: 23 de dano, DT 19).
 - Falhou: vai a 0 PV (inconsciente e morrendo).
+- **Só pessoas (decidido pelo Felipe em 29/10):** os agentes e as ameaças do tipo Pessoa. Criatura, animal, enxame, relíquia e o companheiro do agente (a Camarilla) não fazem o teste (`ehPessoa`, em `shared/src/combate/ataque.ts`).
 - Opção `ferimentosDebilitantes` (SaH p. 105): em vez de ir a 0 PV, sofre um ferimento debilitante (21.2).
 
 **No CRONA:** o teste aparece sozinho logo depois do dano.

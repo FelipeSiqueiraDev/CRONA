@@ -225,7 +225,7 @@ export class ResolucaoRitual {
       // cada dano tem a sua conta; "ignora as resistências" tira a RD (Lâmina do Medo, LR p. 135)
       const contar = (p: cb.PartesDano, soma: number, t: TipoDano) => {
         const conta = cb.contaDano({ soma, fixo: p.fixo, tipo: t, rd: ignoraRd ? {} : a.rd, imunidades: a.imunidades, vulnerabilidades: el?.vulneravel ? [...a.vulnerabilidades, t] : a.vulnerabilidades, metade });
-        return { conta, previa: cb.previaDano(a.vitais, conta.final, { tipo: t, naoLetalAntes: a.p.naoLetal, agente: a.agente }) };
+        return { conta, previa: cb.previaDano(a.vitais, conta.final, { tipo: t, naoLetalAntes: a.p.naoLetal, agente: a.agente, pessoa: a.pessoa }) };
       };
       const dano = partes && this.e.soma !== null && !anulou && !imune ? contar(partes, this.e.soma, tipo) : null;
       const extra = partes2 && this.e.soma2 !== null && !anulou && !imune ? contar(partes2, this.e.soma2, tipo2) : null;

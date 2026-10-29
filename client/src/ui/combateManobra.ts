@@ -208,7 +208,7 @@ export class ResolucaoManobra {
       if (def.id === 'esmagar') {
         const conta = cb.contaDano({ soma: this.e.soma, fixo: partes.fixo, tipo: arma.tipo, rd: alvo.rd, imunidades: alvo.imunidades, vulnerabilidades: alvo.vulnerabilidades });
         const naoLetal = arma.notas.some((n) => /não letal/i.test(n));
-        dano = { partes, conta, previa: cb.previaDano(alvo.vitais, conta.final, { tipo: arma.tipo, naoLetal, naoLetalAntes: alvo.p.naoLetal, agente: alvo.agente }), naoLetal };
+        dano = { partes, conta, previa: cb.previaDano(alvo.vitais, conta.final, { tipo: arma.tipo, naoLetal, naoLetalAntes: alvo.p.naoLetal, agente: alvo.agente, pessoa: alvo.pessoa }), naoLetal };
       } else {
         const o = cb.objeto(this.e.objeto) ?? cb.OBJETOS[0];
         const total = Math.max(0, this.e.soma + partes.fixo);
