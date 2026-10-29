@@ -68,6 +68,25 @@ class MinHeap {
 }
 
 /**
+ * Um passo de `de` para a casa vizinha `para` vale pelas mesmas regras do A* (findPath)? Serve para seguir uma rota já
+ * achada sem refazer a busca a cada passo (29/10: nas plantas grandes, de 1 a 25 ms por peça a cada passo).
+ */
+export function passoValido(map: RoomMap, de: Point, para: Point, goal: Point, blocked: (x: number, y: number) => boolean): boolean {
+  const dx = para.x - de.x;
+  const dy = para.y - de.y;
+  if ((!dx && !dy) || Math.abs(dx) > 1 || Math.abs(dy) > 1) return false;
+  const isGoal = para.x === goal.x && para.y === goal.y;
+  const st = map.walkState(para.x, para.y);
+  if (st === 'blocked') return false;
+  if (st === 'sit' && !isGoal) return false;
+  if (blocked(para.x, para.y)) return false;
+  if (dx && dy && (map.walkState(de.x + dx, de.y) === 'blocked' || map.walkState(de.x, de.y + dy) === 'blocked')) return false;
+  const cz = map.standHeight(de.x, de.y);
+  const nz = map.standHeight(para.x, para.y);
+  return !(nz - cz > MAX_STEP_UP || cz - nz > MAX_STEP_DOWN);
+}
+
+/**
  * A* em 8 direções. Retorna o caminho sem o ponto inicial, ou null.
  * `blocked(x,y)` indica ocupação dinâmica (outros avatares).
  *

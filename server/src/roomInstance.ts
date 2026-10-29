@@ -8,6 +8,7 @@ import {
   directionTo,
   evalRoll,
   findPath,
+  passoValido,
   footprint,
   getFurni,
   getWallFurni,
@@ -183,6 +184,8 @@ interface RoomUser {
   aoChegar?: () => void;
   /** quantos passos a peça já esperou porque outra peça tapava o caminho (o grupo andando junto) */
   esperando?: number;
+  /** o resto do caminho achado para `goal` (sem refazer o A* a cada passo; refeito quando o próximo passo não vale) */
+  rota?: { gx: number; gy: number; passos: Point[] };
   next: Point | null;
   /** quantas batidas do relógio (meio passo) faltam para chegar em `next` */
   falta?: number;
@@ -953,7 +956,13 @@ export class RoomInstance {
           delete u.aoChegar;
           chegou?.();
         } else {
-          const path = findPath(this.map, u, u.goal, (x, y) => this.occupied(x, y, u.client.id), u.dir);
+          const ocupada = (x: number, y: number) => this.occupied(x, y, u.client.id);
+          // a rota de antes, se o próximo passo dela ainda vale; senão a busca de novo (29/10)
+          const r = u.rota;
+          const seguir = r && r.gx === u.goal.x && r.gy === u.goal.y && r.passos.length > 0 && passoValido(this.map, u, r.passos[0], u.goal, ocupada);
+          const path = seguir ? r.passos : findPath(this.map, u, u.goal, ocupada, u.dir);
+          if (path?.length) u.rota = { gx: u.goal.x, gy: u.goal.y, passos: path.slice(1) };
+          else delete u.rota;
           // só outra peça no caminho (o grupo andando junto, alguém parado na porta): espera uns passos e tenta de novo
           const soPecas = (!path || !path.length) && (u.esperando ?? 0) < 8 && !!findPath(this.map, u, u.goal, () => false)?.length;
           if (soPecas) u.esperando = (u.esperando ?? 0) + (meio ? 0.5 : 1);

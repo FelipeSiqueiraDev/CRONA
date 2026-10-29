@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import { BATIDAS_DIAGONAL, BATIDAS_RETO, findPath, MEIO_PASSO_MS, RoomMap, type ClientMsg, type ServerMsg } from '@crona/shared';
+import { BATIDAS_DIAGONAL, BATIDAS_RETO, findPath, MEIO_PASSO_MS, passoValido, RoomMap, type ClientMsg, type ServerMsg } from '@crona/shared';
 import { Hotel } from '../src/hotel';
 import { seedDb, upgradeDb } from '../src/seed';
 import { SEDE } from '../src/seedSede';
@@ -97,5 +97,47 @@ describe('o tempo do passo', () => {
     assert.deepEqual([pos().x, pos().y], [p0.x, p0.y], 'ainda no meio do passo');
     r.step(true);
     assert.deepEqual([pos().x, pos().y], [alvo.x, alvo.y], 'chegou na terceira batida');
+  });
+});
+
+describe('a rota guardada (29/10)', () => {
+  test('o passo da rota vale pelas regras do A*', () => {
+    const m = new RoomMap(['0000', '0x00', '0000'].join('\n'), { x: 0, y: 0, dir: 4 }, []);
+    const livre = () => false;
+    const alvo = { x: 3, y: 2 };
+    assert.equal(passoValido(m, { x: 0, y: 0 }, { x: 1, y: 0 }, alvo, livre), true, 'reto');
+    assert.equal(passoValido(m, { x: 0, y: 0 }, { x: 1, y: 1 }, alvo, livre), false, 'casa vazia');
+    assert.equal(passoValido(m, { x: 0, y: 0 }, { x: 2, y: 0 }, alvo, livre), false, 'não é vizinha');
+    assert.equal(passoValido(m, { x: 2, y: 0 }, { x: 1, y: 1 }, alvo, livre), false, 'diagonal para a casa vazia');
+    assert.equal(passoValido(m, { x: 0, y: 0 }, { x: 1, y: 0 }, alvo, (x, y) => x === 1 && y === 0), false, 'ocupada');
+    // cada passo de um caminho achado vale
+    const c = findPath(m, { x: 0, y: 0 }, alvo, livre)!;
+    let p = { x: 0, y: 0 };
+    for (const q of c) {
+      assert.ok(passoValido(m, p, q, alvo, livre), `${p.x},${p.y} → ${q.x},${q.y}`);
+      p = q;
+    }
+  });
+
+  test('a peça chega pela rota guardada', () => {
+    const db = seedDb();
+    upgradeDb(db);
+    const hotel = new Hotel({ db, persist: false, timers: false });
+    const client = hotel.attach(() => {}, undefined, true);
+    const bar = [...hotel.rooms.values()].find((r) => r.data.name === SEDE + 'Bar')!;
+    hotel.receive(client, { t: 'login', name: 'Mestre', look });
+    hotel.receive(client, { t: 'join', roomId: bar.data.id });
+    const [t] = bar.tokenList();
+    const pos = (id: number) => bar.userPositions().find((p) => p.id === id)!;
+    const p0 = pos(t.id);
+    // a casa andável mais longe
+    let alvo = { x: p0.x, y: p0.y };
+    for (let y = 0; y < bar.map.height; y++)
+      for (let x = 0; x < bar.map.width; x++)
+        if (bar.map.walkState(x, y) === 'walk' && !bar.userPositions().some((p) => p.x === x && p.y === y) && Math.hypot(x - p0.x, y - p0.y) > Math.hypot(alvo.x - p0.x, alvo.y - p0.y))
+          if (findPath(bar.map, p0, { x, y }, () => false)) alvo = { x, y };
+    hotel.receive(client, { t: 'tokenWalk', tokenId: t.id, x: alvo.x, y: alvo.y });
+    for (let i = 0; i < 400 && (pos(t.id).x !== alvo.x || pos(t.id).y !== alvo.y); i++) bar.step(true);
+    assert.deepEqual([pos(t.id).x, pos(t.id).y], [alvo.x, alvo.y], 'chegou');
   });
 });
