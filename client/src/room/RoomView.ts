@@ -521,6 +521,10 @@ export class RoomView {
   private staticBase = '';
   private escalaVista = 0;
   private escalaMudouEm = 0;
+  /** a versão das texturas que a camada estática viu por último, e quando ela mudou (as texturas chegando) */
+  private versaoVista = -1;
+  private versaoMudouEm = 0;
+  private staticFeitaEm = 0;
   /** a Viagem: o mundo passando por fora da van (só nas cenas de viagem) */
   private mundoViagem = new MundoViagem();
   private staticKey = '';
@@ -2683,16 +2687,27 @@ export class RoomView {
    * esticada; ela é refeita uma vez quando a escala para de mudar.
    */
   private camadaEstatica(map: RoomMap, info: RoomInfo, scale: number): StaticLayer {
-    const base = `${info.id}|${info.heightmap}|${map.door.x},${map.door.y}|${info.floorStyle ?? ''}|${versaoTexturas()}|${info.aberto ? 'a' : ''}|${info.terreno ?? ''}`;
+    const versao = versaoTexturas();
+    const semVersao = `${info.id}|${info.heightmap}|${map.door.x},${map.door.y}|${info.floorStyle ?? ''}|${info.aberto ? 'a' : ''}|${info.terreno ?? ''}`;
+    const base = `${semVersao}|${versao}`;
     const key = `${base}|${scale}`;
     const agora = performance.now();
     if (scale !== this.escalaVista) {
       this.escalaVista = scale;
       this.escalaMudouEm = agora;
     }
+    if (versao !== this.versaoVista) {
+      this.versaoVista = versao;
+      this.versaoMudouEm = agora;
+    }
     if (key !== this.staticKey || !this.staticLayer) {
       const soAEscala = !!this.staticLayer && this.staticBase === base;
       if (soAEscala && agora - this.escalaMudouEm < 160) return this.staticLayer!;
+      // as texturas chegando uma a uma (29/10: ao entrar na cena, cada uma refazia a camada inteira, até 200 ms cada):
+      // espera elas pararem de chegar e refaz uma vez só
+      const soAsTexturas = !!this.staticLayer && this.staticBase.startsWith(`${semVersao}|`) && this.staticKey.endsWith(`|${scale}`);
+      if (soAsTexturas && agora - this.versaoMudouEm < 250 && agora - this.staticFeitaEm < 1000) return this.staticLayer!;
+      this.staticFeitaEm = agora;
       this.staticLayer = buildStatic(map, scale, info.floorStyle, info.terreno, !!info.aberto);
       this.staticKey = key;
       this.staticBase = base;
