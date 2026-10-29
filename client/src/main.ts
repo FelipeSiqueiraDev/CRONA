@@ -729,9 +729,15 @@ net.onClose = (code) => {
 };
 net.connect();
 
+// cada arte de personagem que chega (poses, boneco, deitado...) avisava a interface na hora, e cada aviso refazia os
+// painéis: os que chegam juntos (em 50 ms) viram um aviso só (29/10)
+let avisoDeArte: ReturnType<typeof setTimeout> | null = null;
 sprites.onLoad = () => {
-  clearIconCache();
-  app.emit('characters');
+  avisoDeArte ??= setTimeout(() => {
+    avisoDeArte = null;
+    clearIconCache();
+    app.emit('characters');
+  }, 50);
 };
 
 // ---------- teclado ----------

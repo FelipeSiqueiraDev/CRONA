@@ -277,6 +277,15 @@ function limparAlfa(d: Uint8ClampedArray) {
   }
 }
 
+/**
+ * Os pixels de cada pose lida, guardados só enquanto as poses do personagem são processadas (29/10): a âncora, os pés e
+ * o quadril liam a imagem inteira de novo cada um (~120 ms por personagem ao aparecer). Soltos no fim do processamento.
+ */
+const lidos = new WeakMap<HTMLCanvasElement, Uint8ClampedArray>();
+function pixels(c: HTMLCanvasElement): Uint8ClampedArray {
+  return lidos.get(c) ?? c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+}
+
 interface PoseLida {
   key: string;
   /** -1 = a pose parada; 0, 1, 2... = quadro de andar */
@@ -297,6 +306,7 @@ async function lerPose(p: { key: string; n: number; url: string; machucado: bool
   const data = x.getImageData(0, 0, canvas.width, canvas.height);
   limparAlfa(data.data);
   x.putImageData(data, 0, 0);
+  lidos.set(canvas, data.data);
   const b = caixa(data.data, canvas.width, 0, 0, canvas.width, canvas.height);
   if (!b) throw new Error('Pose vazia: ' + p.url);
   return { key: p.key, n: p.n, machucado: p.machucado, canvas, b };
@@ -308,7 +318,7 @@ async function lerPose(p: { key: string; n: number; url: string; machucado: bool
  * botas jogadas para a frente puxavam o corpo para o lado do banco.
  */
 function meioDoQuadril(c: HTMLCanvasElement, b: Caixa): number {
-  const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+  const d = pixels(c);
   const alto = b.y1 - b.y0 + 1;
   let soma = 0;
   let n = 0;
@@ -324,7 +334,7 @@ function meioDoQuadril(c: HTMLCanvasElement, b: Caixa): number {
  * o pé no chão (do quadril à sola dá ~0,6 m nos desenhos) e é assim que ela fica certa no assento (o Felipe, 28/10).
  */
 function quadrilSentado(c: HTMLCanvasElement, b: Caixa): [number, number] {
-  const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+  const d = pixels(c);
   const alto = b.y1 - b.y0 + 1;
   let soma = 0;
   let n = 0;
@@ -339,7 +349,7 @@ function quadrilSentado(c: HTMLCanvasElement, b: Caixa): [number, number] {
  * colunas vizinhas formam um pé. Devolve até dois pés (os mais largos): [x do meio, y da sola].
  */
 function pontosPes(c: HTMLCanvasElement, b: Caixa): [number, number][] {
-  const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+  const d = pixels(c);
   const band = Math.max(3, Math.round((b.y1 - b.y0) * 0.14));
   const baixo: number[] = [];
   for (let x = b.x0; x <= b.x1; x++) {
@@ -379,7 +389,7 @@ function pontosPes(c: HTMLCanvasElement, b: Caixa): [number, number][] {
  * baixa, e a de trás). Devolve o meio de cada fileira: [x, y da sola]; de frente (uma fileira só), os dois lados.
  */
 function pontosPatas(c: HTMLCanvasElement, b: Caixa): [number, number][] {
-  const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+  const d = pixels(c);
   const alto = b.y1 - b.y0;
   const band = Math.max(4, Math.round(alto * 0.45));
   const patas: { x0: number; x1: number; y: number }[] = [];
@@ -425,7 +435,7 @@ const deQuatroPatas = (def: CharacterDef) => def.height < 70;
 
 /** Meia largura dos pés (a faixa de baixo do corpo), em pixels da imagem. */
 function meiaLarguraPes(c: HTMLCanvasElement, b: Caixa): number {
-  const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+  const d = pixels(c);
   const band = Math.max(2, Math.round((b.y1 - b.y0) * 0.06));
   let x0 = Infinity;
   let x1 = -1;
@@ -466,6 +476,14 @@ async function processPoses(def: CharacterDef): Promise<LoadedPoses> {
     if (r.status === 'fulfilled') todas.push(r.value);
     else console.warn('[sprites]', r.reason);
   }
+  try {
+    return medirPoses(def, todas);
+  } finally {
+    for (const p of todas) lidos.delete(p.canvas);
+  }
+}
+
+function medirPoses(def: CharacterDef, todas: PoseLida[]): LoadedPoses {
   const poses = todas.filter((p) => p.n < 0);
   if (!poses.length) throw new Error('Nenhuma pose carregou');
   // o tamanho do personagem sai das poses desarmadas de pé (17/10): a armada (em prontidão, mais baixa) e a machucada
@@ -669,6 +687,17 @@ export function spriteKey(def: CharacterDef) {
   return [def.sheet, def.cols, def.rows, def.height, def.removeBg, def.dirs.join(''), (def.anims ?? []).join('')].join('|');
 }
 
+/**
+ * A chave de cada carga do personagem, guardada por definição (29/10): era um JSON.stringify das poses inteiras por peça e
+ * por quadro. A definição nova (o elenco mudou) é outro objeto e ganha a chave dela.
+ */
+const chaves = new WeakMap<CharacterDef, Record<string, string>>();
+function chaveDe(def: CharacterDef, tipo: string, fazer: () => string): string {
+  let c = chaves.get(def);
+  if (!c) chaves.set(def, (c = {}));
+  return (c[tipo] ??= fazer());
+}
+
 class SpriteStore {
   private defs = new Map<number, CharacterDef>();
   private cache = new Map<string, LoadedChar | 'loading' | 'error'>();
@@ -715,7 +744,7 @@ class SpriteStore {
   /** O boneco filmado em 3D do personagem; null enquanto carrega (ou se ele não tem). */
   boneco(def: CharacterDef): BonecoCarregado | null {
     if (!def.boneco) return null;
-    const key = JSON.stringify(def.boneco);
+    const key = chaveDe(def, 'boneco', () => JSON.stringify(def.boneco));
     const c = this.bonecoCache.get(key);
     if (c && c !== 'loading' && c !== 'error') return c;
     if (!c) {
@@ -738,7 +767,7 @@ class SpriteStore {
   /** O boneco animado do personagem; null enquanto carrega (ou se ele não tem). */
   anim(def: CharacterDef): LoadedAnim | null {
     if (!def.anim) return null;
-    const key = JSON.stringify(def.anim);
+    const key = chaveDe(def, 'anim', () => JSON.stringify(def.anim));
     const c = this.animCache.get(key);
     if (c && c !== 'loading' && c !== 'error') return c;
     if (!c) {
@@ -761,7 +790,7 @@ class SpriteStore {
   /** Poses do tabuleiro do personagem; null enquanto carregam (ou se ele não tem). */
   poses(def: CharacterDef): LoadedPoses | null {
     if (!def.poses) return null;
-    const key = JSON.stringify([def.poses, def.passos ?? null, def.agachado ?? null, def.sentado ?? null, def.height]);
+    const key = chaveDe(def, 'poses', () => JSON.stringify([def.poses, def.passos ?? null, def.agachado ?? null, def.sentado ?? null, def.height]));
     const c = this.poseCache.get(key);
     if (c && c !== 'loading' && c !== 'error') return c;
     if (!c) {
