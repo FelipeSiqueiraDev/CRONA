@@ -40,32 +40,42 @@ export function cmp(a: WBox, b: WBox): number {
 
 /** Teste de eixo separador entre dois polígonos convexos. */
 function polysOverlap(p: [number, number][], q: [number, number][]): boolean {
-  for (const poly of [p, q]) {
-    for (let i = 0; i < poly.length; i++) {
-      const [x1, y1] = poly[i];
-      const [x2, y2] = poly[(i + 1) % poly.length];
-      const nx = y1 - y2;
-      const ny = x2 - x1;
-      if (!nx && !ny) continue;
-      let minP = Infinity;
-      let maxP = -Infinity;
-      for (const [x, y] of p) {
-        const d = x * nx + y * ny;
-        if (d < minP) minP = d;
-        if (d > maxP) maxP = d;
-      }
-      let minQ = Infinity;
-      let maxQ = -Infinity;
-      for (const [x, y] of q) {
-        const d = x * nx + y * ny;
-        if (d < minQ) minQ = d;
-        if (d > maxQ) maxQ = d;
-      }
-      const tol = Math.hypot(nx, ny) * 0.5;
-      if (maxP <= minQ + tol || maxQ <= minP + tol) return false;
+  return !separa(p, p, q) && !separa(q, p, q);
+}
+
+/** Alguma aresta de `poly` separa p de q? (sem criar arrays: roda por par de objetos a cada quadro) */
+function separa(poly: [number, number][], p: [number, number][], q: [number, number][]): boolean {
+  // por índice, sem desestruturar: cada [x, y] desestruturado criava um iterador (29/10: ~90 KB de lixo por quadro)
+  const n = poly.length;
+  for (let i = 0; i < n; i++) {
+    const a = poly[i];
+    const b = poly[(i + 1) % n];
+    const nx = a[1] - b[1];
+    const ny = b[0] - a[0];
+    if (!nx && !ny) continue;
+    let minP = Infinity;
+    let maxP = -Infinity;
+    for (let k = 0; k < p.length; k++) {
+      const d = p[k][0] * nx + p[k][1] * ny;
+      if (d < minP) minP = d;
+      if (d > maxP) maxP = d;
     }
+    let minQ = Infinity;
+    let maxQ = -Infinity;
+    for (let k = 0; k < q.length; k++) {
+      const d = q[k][0] * nx + q[k][1] * ny;
+      if (d < minQ) minQ = d;
+      if (d > maxQ) maxQ = d;
+    }
+    const tol = Math.hypot(nx, ny) * 0.5;
+    if (maxP <= minQ + tol || maxQ <= minP + tol) return true;
   }
-  return true;
+  return false;
+}
+
+/** A caixa de s fica embaixo da de o (o meio dentro dela, vista de cima, ou o o todo acima de s). */
+function cobre(s: Drawable, o: Drawable) {
+  return dentro(s.box, o.box) || o.box.z0 >= s.box.z1 - EPS;
 }
 
 /**
@@ -94,7 +104,6 @@ export function sortDrawables(list: Drawable[]): Drawable[] {
       if (a.poly && b.poly && !polysOverlap(a.poly, b.poly)) continue;
       // embaixo da mesa: a mesa cobre quem está embaixo, e o que está acima do tampo vem depois dele
       // também (senão a caneca na mesa, a mesa e a cadeira encaixada fecham um círculo)
-      const cobre = (s: Drawable, o: Drawable) => dentro(s.box, o.box) || o.box.z0 >= s.box.z1 - EPS;
       const sob = a.sob && !b.sob && cobre(a, b) ? -1 : b.sob && !a.sob && cobre(b, a) ? 1 : 0;
       if (sob ? sob < 0 : cmp(a.box, b.box) < 0) {
         out[i].push(j);
@@ -115,7 +124,9 @@ export function sortDrawables(list: Drawable[]): Drawable[] {
     while (k > 0) {
       const pai = (k - 1) >> 1;
       if (!menor(k, pai)) break;
-      [ready[k], ready[pai]] = [ready[pai], ready[k]];
+      const tp = ready[k];
+      ready[k] = ready[pai];
+      ready[pai] = tp;
       k = pai;
     }
   };
@@ -132,7 +143,9 @@ export function sortDrawables(list: Drawable[]): Drawable[] {
         if (e < ready.length && menor(e, m)) m = e;
         if (d < ready.length && menor(d, m)) m = d;
         if (m === k) break;
-        [ready[k], ready[m]] = [ready[m], ready[k]];
+        const tm = ready[k];
+        ready[k] = ready[m];
+        ready[m] = tm;
         k = m;
       }
     }

@@ -173,6 +173,35 @@ function piscando(u: ClientUser, now: number): boolean {
 }
 
 /** Duração do efeito de giro da peça parada. */
+/** Um pedaço do móvel pronto para o quadro (prepDoNo). */
+interface PrepNo {
+  box: WBox;
+  sil: [number, number][];
+  sx0: number;
+  sy0: number;
+  sx1: number;
+  sy1: number;
+  chave?: string;
+}
+/** O móvel pronto para o quadro e o que ele era quando foi preparado (prepDoMovel). */
+interface PrepMovel {
+  vis: FVisual;
+  def: FurniDef;
+  x: number;
+  y: number;
+  z: number;
+  rot: number;
+  estado: number;
+  ix: number;
+  iy: number;
+  iz: number;
+  escala?: number;
+  vazio?: boolean;
+  modelo?: string;
+  ordens: WBox[];
+  nos: PrepNo[];
+}
+
 const TURN_MS = 240;
 /** quanto os pés da pose sentada ficam à frente do quadril, em casas (uns 22 cm) */
 const PES_A_FRENTE_SENTADO = 0.3;
@@ -521,6 +550,8 @@ export class RoomView {
   private staticLayer: StaticLayer | null = null;
   /** o tamanho do canvas na página, avisado pelo ResizeObserver (null até a primeira medida) */
   private medido: { w: number; h: number } | null = null;
+  /** o que não muda entre quadros em cada móvel parado (prepDoMovel), pelo id dele */
+  private preps = new Map<number, PrepMovel>();
   /** os desenhos de móvel guardados por um instante (visualDoMovel) */
   private visGuardados = new Map<string, { vis: FVisual; ate: number }>();
   /** a chave da camada estática sem a escala, e quando a escala mudou por último (o zoom em andamento) */
@@ -693,6 +724,7 @@ export class RoomView {
   // ---------- estado ----------
   enter(info: RoomInfo, items: FloorItem[], wallItems: WallItem[], users: UserInfo[], myId: number) {
     this.visGuardados.clear();
+    this.preps.clear();
     this.info = info;
     this.entrouEm = performance.now();
     // a cena nova já abre na vista dela (sem a câmera voar na entrada)
@@ -2755,6 +2787,53 @@ export class RoomView {
   }
 
   /**
+   * O que não muda entre quadros num móvel parado (29/10): as caixas da ordem de desenho, e de cada pedaço a caixa, o
+   * contorno na tela, os limites dele e a chave do desenho pronto. Conferido campo a campo (sem montar texto) e refeito
+   * quando o móvel, o desenho dele (`vis`) ou o lugar mudam.
+   */
+  private prepDoMovel(it: { id: number; x: number; y: number; z: number; rot: number; escala?: number; vazio?: boolean; modelo?: string }, def: FurniDef, vis: FVisual, estado: number, ix: number, iy: number, iz: number): PrepMovel {
+    const g = this.preps.get(it.id);
+    if (g && g.vis === vis && g.def === def && g.x === it.x && g.y === it.y && g.z === it.z && g.rot === it.rot && g.estado === estado && g.ix === ix && g.iy === iy && g.iz === iz && g.escala === it.escala && g.vazio === it.vazio && g.modelo === it.modelo)
+      return g;
+    const m = this.mapper;
+    m.set(it.rot, def.width, def.depth, it.x, it.y, it.z);
+    const ordens = vis.nodes.map((node) => m.box(node.ordem ?? node.b));
+    m.set(it.rot, def.width, def.depth, ix, iy, iz);
+    const nos = vis.nodes.map((node, n) => this.prepDoNo(m, def, node, `${it.id}|${n}|${def.id}|${it.rot}|${estado}|${it.modelo ?? ''}|${it.vazio ? 1 : 0}|${it.escala ?? 1}|${ix},${iy},${iz}`));
+    const p: PrepMovel = { vis, def, x: it.x, y: it.y, z: it.z, rot: it.rot, estado, ix, iy, iz, escala: it.escala, vazio: it.vazio, modelo: it.modelo, ordens, nos };
+    if (this.preps.size > 5000) this.preps.clear();
+    this.preps.set(it.id, p);
+    return p;
+  }
+
+  /** Um pedaço do móvel com o mapeador já no lugar dele: a caixa (com o `aumento` da mesa), o contorno e os limites. */
+  private prepDoNo(m: Mapper, def: FurniDef, node: FVisual['nodes'][number], chave?: string): PrepNo {
+    const box = m.box(node.b);
+    if (def.aumento && def.aumento !== 1) {
+      // a mesa maior que a pegada: o contorno (clique e quem se cruza na tela) cresce junto com a arte
+      const cx = (box.x0 + box.x1) / 2;
+      const cy = (box.y0 + box.y1) / 2;
+      const k = def.aumento;
+      box.x0 = cx + (box.x0 - cx) * k;
+      box.x1 = cx + (box.x1 - cx) * k;
+      box.y0 = cy + (box.y0 - cy) * k;
+      box.y1 = cy + (box.y1 - cy) * k;
+    }
+    const sil = boxSilhouette(box);
+    let sx0 = Infinity;
+    let sy0 = Infinity;
+    let sx1 = -Infinity;
+    let sy1 = -Infinity;
+    for (const [px, py] of sil) {
+      if (px < sx0) sx0 = px;
+      if (px > sx1) sx1 = px;
+      if (py < sy0) sy0 = py;
+      if (py > sy1) sy1 = py;
+    }
+    return { box, sil, sx0, sy0, sx1, sy1, chave };
+  }
+
+  /**
    * O desenho do móvel (com a arte, ou o de código enquanto ela não chega). O que tem arte parada fica guardado por
    * um segundo (23/10, o pente-fino de desempenho: cada móvel montava o desenho de novo a cada quadro); um segundo é
    * pouco para alguém ver diferença e muito menos que os 2 min em que a imagem sem uso é solta da memória.
@@ -2985,38 +3064,26 @@ export class RoomView {
       // cadeira que desliza para baixo do tampo e a mesa maior que a pegada (`aumento`) cruzavam as
       // caixas, e o desempate deixava a cadeira de trás por cima da mesa (12/10). Com as pegadas, peças
       // em casas diferentes sempre têm um lado que as separa, e a ordem sai certa ao montar e ao mover.
-      m.set(it.rot, def.width, def.depth, it.x, it.y, it.z);
-      const ordens = vis.nodes.map((node) => m.box(node.ordem ?? node.b));
+      // as caixas, os contornos e as chaves de cada pedaço só mudam quando o móvel muda (29/10: refeitos a cada quadro,
+      // ~10 KB por móvel por quadro de objetos jogados fora; o coletor de lixo travava o quadro)
+      const prep = ghost ? null : this.prepDoMovel(it, def, vis, estado, ix, iy, iz);
+      let ordens: WBox[];
+      if (prep) ordens = prep.ordens;
+      else {
+        m.set(it.rot, def.width, def.depth, it.x, it.y, it.z);
+        ordens = vis.nodes.map((node) => m.box(node.ordem ?? node.b));
+      }
       m.set(it.rot, def.width, def.depth, ix, iy, iz);
       const floorH = map.floorHeight(it.x, it.y) ?? 0;
       const flat = !!def.flat && it.z <= floorH + 0.05 && !ghost;
       let topZ = it.z + def.height;
       // a cadeira (ou banqueta) encaixada embaixo da mesa, no chão: a mesa vem por cima dela
       const encaixada = !!def.sit && it.z <= floorH + 0.01 && !!map.mesaDaCasa(it.x, it.y) && !ghost;
-      for (const [n, node] of vis.nodes.entries()) {
-        const box = m.box(node.b);
-        if (def.aumento && def.aumento !== 1) {
-          // a mesa maior que a pegada: o contorno (clique e quem se cruza na tela) cresce junto com a arte
-          const cx = (box.x0 + box.x1) / 2;
-          const cy = (box.y0 + box.y1) / 2;
-          const k = def.aumento;
-          box.x0 = cx + (box.x0 - cx) * k;
-          box.x1 = cx + (box.x1 - cx) * k;
-          box.y0 = cy + (box.y0 - cy) * k;
-          box.y1 = cy + (box.y1 - cy) * k;
-        }
+      for (let n = 0; n < vis.nodes.length; n++) {
+        const node = vis.nodes[n];
+        const pn = prep ? prep.nos[n] : this.prepDoNo(m, def, node);
+        const { box, sil, sx0, sy0, sx1, sy1 } = pn;
         if (box.z1 > topZ) topZ = box.z1;
-        const sil = boxSilhouette(box);
-        let sx0 = Infinity;
-        let sy0 = Infinity;
-        let sx1 = -Infinity;
-        let sy1 = -Infinity;
-        for (const [px, py] of sil) {
-          if (px < sx0) sx0 = px;
-          if (px > sx1) sx1 = px;
-          if (py < sy0) sy0 = py;
-          if (py > sy1) sy1 = py;
-        }
         const pad = node.pad ?? 0;
         if (sx1 + pad < vista.x0 || sx0 - pad > vista.x1 || sy1 + pad < vista.y0 || sy0 - pad > vista.y1) continue;
         const rot = it.rot;
@@ -3049,7 +3116,7 @@ export class RoomView {
               ctx.filter = 'brightness(0.42) sepia(0.6) saturate(0.55) contrast(1.15)';
               node.draw(painter);
               ctx.restore();
-            } else this.desenharNo(ctx, node.draw, painter, `${it.id}|${n}|${def.id}|${rot}|${estado}|${it.modelo ?? ''}|${it.vazio ? 1 : 0}|${it.escala ?? 1}|${ix},${iy},${iz}`, sx0 - pad, sy0 - pad, sx1 + pad, sy1 + pad);
+            } else this.desenharNo(ctx, node.draw, painter, pn.chave ?? `${it.id}|${n}|${def.id}|${rot}|${estado}|${it.modelo ?? ''}|${it.vazio ? 1 : 0}|${it.escala ?? 1}|${ix},${iy},${iz}`, sx0 - pad, sy0 - pad, sx1 + pad, sy1 + pad);
             if (cela) escurecerForma(ctx, sil, cela.escuro);
             ctx.globalAlpha = 1;
             if (selected) {
@@ -3958,7 +4025,8 @@ export class RoomView {
     }
     // embaixo das peças: as sombras e o anel, por cima do chão e por baixo de tudo que fica em pé
     for (const f of chaoPecas) f();
-    for (const d of sortDrawables(drawables)) {
+    const ordenados = sortDrawables(drawables);
+    for (const d of ordenados) {
       d.draw();
       const h = hitOf.get(d);
       if (h) hits.push(h);
