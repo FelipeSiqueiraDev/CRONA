@@ -26,6 +26,8 @@ export interface Participante {
   id: number;
   nome: string;
   lado: Lado;
+  /** companheiro animal de um agente (29/10, o Felipe: "a Camarilla pertence ao Tepes"): o nome do dono. Animal, sem SAN */
+  companheiroDe?: string;
   /** ciente dos inimigos no começo; quem não está fica surpreendido na rodada 1 (LR p. 83) */
   ciente: boolean;
   /** Iniciativa do agente (os seres do mestre usam a do grupo) */
@@ -129,6 +131,8 @@ export interface Combate {
    * mais e não foi a 0. Falhando, vai a 0 PV (o não letal: inconsciente, sem morrendo).
    */
   massivos?: { alvo: number; dt: number; dano: number; naoLetal?: boolean }[];
+  /** SAN perdida para sempre (Custo do Paranormal, rituais de Medo; LR p. 121) esperando o mestre aceitar ou negar (29/10) */
+  perdasSan?: { id: number; quanto: number; motivo: string }[];
 }
 
 /** Um lugar na ordem de iniciativa: um agente, ou o turno do mestre com todos os seres dele. */
@@ -148,6 +152,8 @@ export interface PecaCombate {
   agente: boolean;
   /** está na cena onde o combate começa */
   naCena: boolean;
+  /** o companheiro animal de um agente (a Camarilla do Tepes): o nome do dono; luta do lado dos agentes */
+  companheiroDe?: string;
 }
 
 /** Tipos de ação para declarar (o que gastam do turno). */
@@ -305,6 +311,8 @@ export type AcaoCombate =
   | { tipo: 'ataque'; ataque: AtaqueConfirmado }
   /** o resultado do teste de Fortitude do dano massivo (o total que o jogador tirou), ou `descartar` */
   | { tipo: 'massivo'; alvo: number; total?: number; d20?: number; descartar?: boolean }
+  /** a SAN perdida para sempre: aceitar baixa o máximo na ficha; negar deixa como está */
+  | { tipo: 'perdaSan'; id: number; aceitar: boolean }
   /** manobra resolvida na tela: teste oposto, condição no alvo e o dano de esmagar */
   | { tipo: 'manobra'; manobra: ManobraConfirmada }
   /** quem agarra solta o alvo (ação livre, LR p. 85) */
@@ -337,6 +345,8 @@ export interface Contexto {
   vitais: (id: number) => Vitais | null;
   /** a ficha rápida da ameaça de uma peça (presença perturbadora) */
   ameaca?: (id: number) => FichaAmeaca | null;
+  /** o limite de PE por turno do agente, o geral e o dos rituais (LR p. 23); null = sem ficha, sem limite */
+  limitePe?: (id: number) => { geral: number; rituais: number } | null;
 }
 
 /** PV, PE e SAN (igual ao `Vitals` da sessão; repetido aqui para o módulo não depender da sessão). */
@@ -357,7 +367,8 @@ export interface MudancaVitais {
   san?: number;
 }
 
-export type Resultado = { ok: true; combate: Combate | null; vitais?: MudancaVitais[] } | { ok: false; motivo: string };
+/** `perdaSan`: o servidor baixa a SAN máxima da ficha de quem perdeu (a ficha guarda em `perdas.san`) */
+export type Resultado = { ok: true; combate: Combate | null; vitais?: MudancaVitais[]; perdaSan?: { id: number; quanto: number } } | { ok: false; motivo: string };
 
 // ------------------------------------------------------------------ ameaças
 

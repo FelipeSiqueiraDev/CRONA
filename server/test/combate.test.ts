@@ -916,11 +916,43 @@ describe('combate: ritual', () => {
         'Dano 2d8+2: 10. Ocultista: PV 20 → 10.',
         'Dano massivo: Ocultista faz Fortitude DT 17; se falhar, vai a 0 PV (LR p. 88).',
         'Custo do Paranormal: Ocultismo d20 5, total 12 contra DT 18 — falhou.',
-        'Tepes sofre 3 de dano mental e perde 1 de SAN para sempre: ajuste o máximo na ficha (LR p. 121).',
+        'Tepes sofre 3 de dano mental e perde 1 de SAN para sempre (LR p. 121).',
         'Tepes: SAN 20 → 17.',
       ],
     );
     assert.equal(recusa(c, rit(2)), 'A ação padrão já foi usada neste turno.');
+  });
+
+  test('o limite de PE do turno recusa; o primeiro do turno no custo mínimo passa (LR p. 24; 29/10)', () => {
+    const lim = (): combate.Contexto => ({ ...ctx(), vitais: (id) => ({ pv: 20, pvMax: 20, pe: 20, peMax: 20, san: 20, sanMax: 20, ...vitais.get(id) }), limitePe: (id) => (id === 2 ? { geral: 2, rituais: 2 } : null) });
+    const c0 = naVezDeTepes();
+    // o primeiro do turno, na básica, passa do limite (3 PE contra 2)
+    const r = combate.aplicar(c0, rit(2, { qual: 'livre' }), lim());
+    assert.ok(r.ok);
+    // depois dele, nada mais
+    const r2 = combate.aplicar(r.combate!, { tipo: 'gastarPe', quem: 2, pe: 1, motivo: 'Ataque Especial' }, lim());
+    assert.equal(r2.ok, false);
+    assert.match((r2 as { motivo: string }).motivo, /passa do limite de 2 PE/);
+    // na forma discente, o primeiro não é o custo mínimo: recusa
+    const r3 = combate.aplicar(c0, rit(2, { forma: 'discente', pe: 5 }), lim());
+    assert.equal(r3.ok, false);
+    // dentro do limite, gasta
+    assert.ok(combate.aplicar(c0, { tipo: 'gastarPe', quem: 2, pe: 2, motivo: 'Ataque Especial' }, lim()).ok);
+  });
+
+  test('a SAN para sempre espera o mestre: aceitar baixa o máximo, negar não (29/10)', () => {
+    const r = combate.aplicar(naVezDeTepes(), rit(2, { custo: { dt: 18, d20: 2, total: 9, passou: false }, mental: 3, sanPermanente: 1 }), ctx());
+    assert.ok(r.ok);
+    assert.deepEqual(r.combate!.perdasSan, [{ id: 2, quanto: 1, motivo: 'Custo do Paranormal (Decadência)' }]);
+    const sim = combate.aplicar(r.combate!, { tipo: 'perdaSan', id: 2, aceitar: true }, ctx());
+    assert.ok(sim.ok);
+    assert.deepEqual(sim.perdaSan, { id: 2, quanto: 1 });
+    assert.equal(sim.combate!.perdasSan, undefined);
+    const nao = combate.aplicar(r.combate!, { tipo: 'perdaSan', id: 2, aceitar: false }, ctx());
+    assert.ok(nao.ok && !nao.perdaSan);
+    assert.match(nao.combate!.registro.at(-1)!.texto, /negou/);
+    // a mesa não vê
+    assert.deepEqual(combate.visaoMesa(r.combate!)!.perdasSan, []);
   });
 
   test('o Custo do Paranormal que zera a SAN deixa enlouquecendo, como o dano mental (29/10)', () => {
@@ -1384,5 +1416,19 @@ describe('o dano dos rituais pelo livro (29/10)', () => {
     assert.equal(combate.danoDoRitual('definhar', 'basica'), null);
     // todo ritual da tabela existe no catálogo
     for (const id of Object.keys(combate.DANO_DOS_RITUAIS)) assert.ok(regras.catalogo.ritual(id), id);
+  });
+});
+
+describe('o companheiro animal (29/10)', () => {
+  test('a Camarilla entra do lado dos agentes, sem SAN: não fica enlouquecendo nem segura o encerrar por isso', () => {
+    const pecas = [...PECAS, { id: 20, nome: 'Camarilla', agente: false, naCena: true, companheiroDe: 'D.Tepes' }];
+    const cx = (): combate.Contexto => ({ ...ctx(), pecas, vitais: (id) => (id === 20 ? { pv: 100, pvMax: 100, pe: 0, peMax: 0, san: 0, sanMax: 0 } : { pv: 20, pvMax: 20, pe: 5, peMax: 5, san: 20, sanMax: 20 }) });
+    let r = combate.aplicar(null, { tipo: 'abrir' }, cx());
+    r = combate.aplicar(r.ok ? r.combate : null, { tipo: 'participante', id: 20, iniciativa: 15 }, cx());
+    assert.ok(r.ok);
+    const p = combate.participante(r.combate!, 20)!;
+    assert.equal(p.lado, 'agente');
+    assert.equal(p.companheiroDe, 'D.Tepes');
+    assert.deepEqual(combate.emAberto(r.combate!, cx()), []);
   });
 });

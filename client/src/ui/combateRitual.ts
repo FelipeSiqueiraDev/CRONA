@@ -453,7 +453,11 @@ export class ResolucaoRitual {
         ),
       );
     const limite = x.limite;
-    if (x.agente && limite !== null && x.gasto + r.pe > limite) partes.push(h('small', { class: 'cb-rit-custo alerta' }, `Passa do limite de PE (${limite}; já gastos ${x.gasto}).`));
+    // atingido o limite, não conjura; o primeiro do turno na forma básica passa (LR p. 24; 29/10, o Felipe)
+    const passaLimite = x.agente && limite !== null && x.gasto + r.pe > limite;
+    const barrado = passaLimite && !(x.gasto === 0 && r.forma === 'basica');
+    if (passaLimite)
+      partes.push(h('small', { class: 'cb-rit-custo alerta' }, barrado ? `Passa do limite de PE (${limite}; já gastos ${x.gasto}): não dá para conjurar neste turno.` : `Acima do limite de PE (${limite}), mas vale: é o primeiro do turno, na forma básica (LR p. 24).`));
     const sust = this.e.sustentado ?? r.sustentavel;
     partes.push(
       h('label', { class: 'cb-dlg-check cb-man-check' }, h('input', { type: 'checkbox', class: 'cb-check', checked: sust, onchange: (ev: Event) => ((this.e.sustentado = (ev.target as HTMLInputElement).checked), x.mudou()) }), h('span', null, 'Sustentado')),
@@ -481,7 +485,7 @@ export class ResolucaoRitual {
       {
         class: 'cb-bt forte',
         type: 'button',
-        disabled: !pronto || k.semAcao,
+        disabled: !pronto || k.semAcao || barrado,
         title: k.semAcao ? 'A ação deste ritual já foi usada no turno' : 'Gasta o PE, aplica o dano e escreve no registro',
         onclick: () => {
           sfx.click();

@@ -43,7 +43,7 @@ const livre = (): AcoesTurno => ({ padrao: false, movimento: false, completa: fa
 export const doMestre = (p: Participante) => p.lado !== 'agente';
 
 function participanteNovo(p: PecaCombate, desde: number): Participante {
-  return { id: p.id, nome: p.nome, lado: p.agente ? 'agente' : 'inimigo', ciente: true, iniciativa: null, desempate: 0, desde, morrendo: 0, enlouquecendo: 0, reacao: false };
+  return { id: p.id, nome: p.nome, lado: p.agente || p.companheiroDe ? 'agente' : 'inimigo', ...(p.companheiroDe ? { companheiroDe: p.companheiroDe } : {}), ciente: true, iniciativa: null, desempate: 0, desde, morrendo: 0, enlouquecendo: 0, reacao: false };
 }
 
 /** Combate novo, montando, com as peças que estão na cena. */
@@ -197,7 +197,7 @@ function comecarTurno(c: Combate, e: Entrada, ctx: Contexto) {
       }
       registrar(c, ctx.agora, 'estado', `${p.nome} começa o turno morrendo (${p.morrendo}/3).`);
     }
-    if (v.san <= 0) {
+    if (v.san <= 0 && !p.companheiroDe) {
       p.enlouquecendo += 1;
       if (p.enlouquecendo >= 3) {
         p.fora = 'insano';
@@ -364,6 +364,8 @@ function ataque(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
     const v = ctx.vitais(quem.id);
     if (!v) return erro(`${quem.nome} não tem PE marcados na peça.`);
     if (v.pe < peJogada) return erro(`${quem.nome} só tem ${v.pe} PE; a jogada pede ${peJogada}.`);
+    const passa = passaDoLimite(ctx, quem, ac.pe ?? 0, peJogada);
+    if (passa) return erro(passa);
     ac.pe = (ac.pe ?? 0) + peJogada;
     mudar(vitais, quem.id, 'pe', v.pe - peJogada);
   }
@@ -669,6 +671,8 @@ function ritual(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
     if (ac.padrao || ac.movimento || ac.completa) return erro('A ação completa precisa do turno inteiro livre.');
     ac.completa = true;
   } else if (qual !== 'livre' && qual !== 'reacao') return erro('Execução inválida.');
+  const passa = passaDoLimite(ctx, quem, ac.pe ?? 0, pe, true, forma === 'basica');
+  if (passa) return erro(passa);
   ac.pe = (ac.pe ?? 0) + pe;
   c.acoes[String(quem.id)] = ac;
   const dt = inteiro(o.dt, 1, 99);
@@ -732,8 +736,11 @@ function ritual(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
   if (o.medo === true) registrar(c, ctx.agora, 'estado', `Ritual de Medo: ${quem.nome} sofre ${mental} de dano mental e perde ${perde} de SAN para sempre (LR p. 121).`, perde ? [`perde ${perde} de SAN para sempre`] : undefined);
   else if (custo) {
     registrar(c, ctx.agora, 'acao', `Custo do Paranormal: Ocultismo d20 ${custo.d20}, total ${custo.total}${custo.dt ? ` contra DT ${custo.dt}` : ''} — ${custo.passou ? 'passou' : 'falhou'}.`, custo.passou ? undefined : ['falhou']);
-    if (mental) registrar(c, ctx.agora, 'estado', `${quem.nome} sofre ${mental} de dano mental${perde ? ' e perde 1 de SAN para sempre: ajuste o máximo na ficha' : ''} (LR p. 121).`, perde ? ['perde 1 de SAN para sempre'] : undefined);
+    if (mental) registrar(c, ctx.agora, 'estado', `${quem.nome} sofre ${mental} de dano mental${perde ? ' e perde 1 de SAN para sempre' : ''} (LR p. 121).`, perde ? ['perde 1 de SAN para sempre'] : undefined);
   }
+  // a SAN para sempre fica esperando o mestre aceitar (baixa o máximo na ficha) ou negar (29/10, o Felipe)
+  if (perde && (o.medo === true || custo) && quem.lado === 'agente')
+    c.perdasSan = [...(c.perdasSan ?? []), { id: quem.id, quanto: perde, motivo: o.medo === true ? `ritual de Medo (${nome})` : `Custo do Paranormal (${nome})` }];
   // parte da SAN que o próprio ritual já tirou de quem conjura, se ele estava na área
   if (mental && v) {
     // as mesmas contas do dano mental (29/10, a conferência: a SAN zerava pelo Custo sem ficar enlouquecendo)
@@ -993,7 +1000,7 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       if (!id || !peca) return erro('Peça não encontrada.');
       let p = participante(c, id);
       if (p && !p.fora) return erro(`${p.nome} já está no combate.`);
-      const lado: Lado = a.lado && LADOS.includes(a.lado) ? a.lado : peca.agente ? 'agente' : 'inimigo';
+      const lado: Lado = a.lado && LADOS.includes(a.lado) ? a.lado : peca.agente || peca.companheiroDe ? 'agente' : 'inimigo';
       const v = inteiro(a.iniciativa, -99, 999);
       if (v === undefined) return erro('Diga a Iniciativa de quem chega.');
       if (!p) {
@@ -1085,6 +1092,8 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       const e = naVez();
       if (e?.participantes.includes(p.id)) {
         const ac = { ...acoesDe(c, p.id) };
+        const passa = passaDoLimite(ctx, p, ac.pe ?? 0, pe);
+        if (passa) return erro(passa);
         ac.pe = (ac.pe ?? 0) + pe;
         c.acoes[String(p.id)] = ac;
       }
@@ -1108,6 +1117,20 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
 
     case 'massivo':
       return massivo(c, a, ctx);
+
+    case 'perdaSan': {
+      const i = (c.perdasSan ?? []).findIndex((x) => x.id === a.id);
+      if (i < 0) return erro('Não há perda de SAN esperando para esse ser.');
+      const [x] = c.perdasSan!.splice(i, 1);
+      if (!c.perdasSan!.length) delete c.perdasSan;
+      const nome = participante(c, x.id)?.nome ?? 'O agente';
+      if (!a.aceitar) {
+        registrar(c, ctx.agora, 'estado', `${nome}: o mestre negou a perda de ${x.quanto} de SAN para sempre (${x.motivo}).`);
+        return ok();
+      }
+      registrar(c, ctx.agora, 'estado', `${nome} perde ${x.quanto} de SAN máxima para sempre (${x.motivo}; LR p. 121).`, [`SAN máxima −${x.quanto}`]);
+      return { ok: true, combate: c, perdaSan: { id: x.id, quanto: x.quanto } };
+    }
 
     case 'vitais': {
       const p = participante(c, inteiro(a.id, 1, 1e9) ?? 0);
@@ -1179,6 +1202,7 @@ const TIPOS = new Set<AcaoCombate['tipo']>([
   'lote',
   'ataque',
   'massivo',
+  'perdaSan',
   'manobra',
   'ritual',
   'soltar',
@@ -1206,6 +1230,19 @@ const TIPOS = new Set<AcaoCombate['tipo']>([
   'desfazer',
 ]);
 
+/**
+ * O limite de PE do turno (LR p. 24): atingido, não gasta mais (29/10, o Felipe: "se o limite foi atingido não pode usar
+ * mais"; antes a tela só avisava). O dos rituais vale para o PE do ritual (poderes que aumentam só ele). Pelo livro, a
+ * primeira habilidade do turno no custo mínimo passa sempre, mesmo acima do limite (`minimo`: o ritual na forma básica).
+ */
+function passaDoLimite(ctx: Contexto, p: Participante, gasto: number, pe: number, ritual = false, minimo = true): string | null {
+  const l = pe > 0 ? ctx.limitePe?.(p.id) : null;
+  if (!l) return null;
+  const limite = ritual ? l.rituais : l.geral;
+  if (gasto + pe <= limite || (gasto === 0 && minimo)) return null;
+  return `${p.nome} passa do limite de ${limite} PE do turno (já gastou ${gasto}, pede ${pe}; LR p. 24).`;
+}
+
 /** Os agentes ainda no combate que estão morrendo (0 PV) ou enlouquecendo (0 SAN), com o estado: "Tepes morrendo". */
 export function emAberto(c: Combate, ctx: Pick<Contexto, 'vitais'>): string[] {
   const r: string[] = [];
@@ -1213,7 +1250,7 @@ export function emAberto(c: Combate, ctx: Pick<Contexto, 'vitais'>): string[] {
     if (p.lado !== 'agente' || p.fora) continue;
     const v = ctx.vitais(p.id);
     if (v && v.pv <= 0) r.push(`${p.nome} morrendo`);
-    if (v && v.san <= 0) r.push(`${p.nome} enlouquecendo`);
+    if (v && v.san <= 0 && !p.companheiroDe) r.push(`${p.nome} enlouquecendo`);
   }
   return r;
 }
@@ -1239,5 +1276,5 @@ export function visaoMesa(c: Combate | null): Combate | null {
   // quem vai ser surpreendido e o dano massivo (com a DT) são do mestre (27/10)
   const v = clone(c);
   for (const p of v.participantes) p.ciente = true;
-  return { ...v, registro: [], massivos: [], preparadas: c.preparadas.map((p) => ({ ...p, texto: '' })) };
+  return { ...v, registro: [], massivos: [], perdasSan: [], preparadas: c.preparadas.map((p) => ({ ...p, texto: '' })) };
 }

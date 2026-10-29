@@ -1005,6 +1005,13 @@ export class CombateScreen {
     return this.fichas.find((f) => f.personagem === charId) ?? null;
   }
 
+  /** O lado de quem entra: agente com ficha e o companheiro animal de um agente (a Camarilla do Tepes) com os agentes. */
+  private ladoPadrao(id: number): cb.Lado {
+    if (this.fichaDe(id)) return 'agente';
+    const nome = this.personagem(id)?.name?.trim().toLowerCase();
+    return nome && this.fichas.some((f) => !f.npc && f.companheiro?.nome?.trim().toLowerCase() === nome) ? 'agente' : 'inimigo';
+  }
+
   private calcDe(id: number): Calc | null {
     const f = this.fichaDe(id);
     if (!f) return null;
@@ -2056,7 +2063,7 @@ export class CombateScreen {
 
   private renderPend() {
     const c = this.combate;
-    const nMassivos = c?.massivos?.length ?? 0;
+    const nMassivos = (c?.massivos?.length ?? 0) + (c?.perdasSan?.length ?? 0);
     if (nMassivos > this.massivosVistos) this.abrirGaveta('pend');
     this.massivosVistos = nMassivos;
     if (!this.mudou('pend', [c && { ...c, registro: c.registro.slice(-16) }, this.assinaturaPecas(), this.assinaturaFichas(), this.atorId])) return;
@@ -2143,6 +2150,17 @@ export class CombateScreen {
         itens.push(item('escudo', 'aviso', quem(cb.nomeEntrada(c, e), `ação preparada — ${x.texto}.`), usar));
       }
     }
+    // a SAN perdida para sempre: o mestre aceita (baixa o máximo na ficha) ou nega (29/10, o Felipe: "me deixe aceitar
+    // ou negar pra não perder sempre"); na frente de tudo, como o dano massivo
+    for (const x of c?.perdasSan ?? [])
+      itens.unshift(
+        item(
+          'alerta',
+          'ruim',
+          h('span', null, h('b', null, `${cb.participante(c!, x.id)?.nome ?? 'O agente'} perde ${x.quanto} de SAN máxima para sempre`), ` (${x.motivo}; LR p. 121).`),
+          h('span', { class: 'cb-massivo-linha' }, botao('Aceitar', null, () => this.acao({ tipo: 'perdaSan', id: x.id, aceitar: true }), 'cb-mini'), botao('Negar', null, () => this.acao({ tipo: 'perdaSan', id: x.id, aceitar: false }), 'cb-mini')),
+        ),
+      );
     this.trocar(this.pendCorpo, h('div', { class: 'cb-pend-lista cb-rola' }, ...itens));
   }
 
@@ -2809,9 +2827,11 @@ export class CombateScreen {
 
   private usarHabilidade(ator: Participante, nome: string, custo: number, limite: number, gasto: number, contra: string, resumo = '') {
     const passa = gasto + custo > limite;
+    // atingido o limite, não gasta mais; a primeira do turno no custo mínimo passa (LR p. 24; 29/10, o Felipe)
+    if (passa && gasto > 0) return toast(`${ator.nome} já gastou ${gasto} de ${limite} PE neste turno: ${nome} passa do limite (LR p. 24).`, 'error');
     void confirmar(
       `USAR ${nome.toUpperCase()}?`,
-      `${resumo ? `${resumo} ` : ''}Gasta ${custo} PE (limite ${limite} por turno, já gastos ${gasto}).${nome === 'Ataque Especial' ? ' O +5 (no teste de ataque ou no dano, à escolha) você soma à mão no d20 ou na soma do dano.' : ''}${passa ? ' Passa do limite: só vale se for o custo mínimo de uma habilidade neste turno (LR p. 23).' : ''}`,
+      `${resumo ? `${resumo} ` : ''}Gasta ${custo} PE (limite ${limite} por turno, já gastos ${gasto}).${nome === 'Ataque Especial' ? ' O +5 (no teste de ataque ou no dano, à escolha) você soma à mão no d20 ou na soma do dano.' : ''}${passa ? ' Passa do limite: vale só por ser a primeira do turno, no custo mínimo (LR p. 24).' : ''}`,
       'Usar',
     ).then((ok) => {
       if (!ok) return;
@@ -3884,7 +3904,7 @@ export class CombateScreen {
               'aria-pressed': String(ch.id === escolhido),
               onclick: () => {
                 escolhido = ch.id;
-                lado.value = this.fichaDe(ch.id) ? 'agente' : 'inimigo';
+                lado.value = this.ladoPadrao(ch.id);
                 desenhar();
               },
             },
@@ -3895,7 +3915,7 @@ export class CombateScreen {
       );
       atualizar();
     };
-    lado.value = this.fichaDe(escolhido) ? 'agente' : 'inimigo';
+    lado.value = this.ladoPadrao(escolhido);
     lado.addEventListener('change', atualizar);
     desenhar();
     const ok = () => {

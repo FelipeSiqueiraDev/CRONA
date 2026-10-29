@@ -363,23 +363,37 @@ export class Hotel implements HotelApi {
   /** estados anteriores do combate de cada campanha, para o "Desfazer" (só na memória), com os PV/PE/SAN que cada passo mudou */
   /** as mesas do bar (o fliperama, o alvo, a sinuca), pelo id do móvel: quem joga em cada lugar e as jogadas guardadas */
   private mesas = new Map<number, MesaBar>();
-  private desfazeres = new Map<number, { combate: string; vitais: { id: number; antes: Vitals; depois?: Vitals }[]; mochilas?: { fichaId: number; inventario: regras.ItemFicha[] }[]; largados?: number[] }[]>();
+  private desfazeres = new Map<number, { combate: string; vitais: { id: number; antes: Vitals; depois?: Vitals }[]; mochilas?: { fichaId: number; inventario: regras.ItemFicha[] }[]; largados?: number[]; perdaSan?: { fichaId: number; antes: number } }[]>();
 
   /** Peças da campanha e os PV/SAN delas, para as regras do combate. */
   private contextoCombate(group: number[], cena: number): cmb.Contexto {
     const agentes = new Set((this.db.fichas ?? []).map((f) => f.personagem).filter((x): x is number => !!x));
+    // o companheiro animal (a Camarilla do Tepes): a peça com o nome dele luta do lado dos agentes (29/10, o Felipe)
+    const donoDe = new Map<string, string>();
+    for (const f of this.db.fichas ?? []) if (!f.npc && f.companheiro?.nome) donoDe.set(f.companheiro.nome.trim().toLowerCase(), f.nome);
     const pecas: cmb.PecaCombate[] = [];
     const vitais = new Map<number, Vitals>();
     for (const id of group) {
       const r = this.rooms.get(id);
       if (!r) continue;
       for (const t of r.tokensLive()) {
-        pecas.push({ id: t.token.id, nome: t.name, agente: !!t.look.charId && agentes.has(t.look.charId), naCena: id === cena });
+        const dono = donoDe.get(t.name.trim().toLowerCase());
+        pecas.push({ id: t.token.id, nome: t.name, agente: !!t.look.charId && agentes.has(t.look.charId), naCena: id === cena, ...(dono ? { companheiroDe: dono } : {}) });
         if (t.vitals) vitais.set(t.token.id, { ...t.vitals });
       }
     }
     const ameacas = this.fichasDasAmeacas(group, this.campaignFor(Math.min(...group)));
-    return { agora: Date.now(), cena, pecas, vitais: (id) => vitais.get(id) ?? null, ameaca: (id) => ameacas[String(id)] ?? null };
+    // o limite de PE do turno sai da ficha do agente (o personagem da peça), calculada só quando pedem
+    const charDe = new Map<number, number>();
+    for (const id of group) for (const t of this.rooms.get(id)?.tokensLive() ?? []) if (t.look.charId) charDe.set(t.token.id, t.look.charId);
+    const limitePe = (id: number) => {
+      const ch = charDe.get(id);
+      const f = ch ? (this.db.fichas ?? []).find((x) => x.personagem === ch && !x.npc) : undefined;
+      if (!f) return null;
+      const calc = regras.calcular(f.ficha);
+      return { geral: calc.limitePe, rituais: calc.limitePeRituais ?? calc.limitePe };
+    };
+    return { agora: Date.now(), cena, pecas, vitais: (id) => vitais.get(id) ?? null, ameaca: (id) => ameacas[String(id)] ?? null, limitePe };
   }
 
   /**
@@ -802,6 +816,13 @@ export class Hotel implements HotelApi {
     return c.send({ t: 'notice', msg: `${npc.nome} virou ${cr.nome}.` });
   }
 
+  /** A SAN perdida para sempre da ficha (`perdas.san`): o máximo das peças acompanha. */
+  private perdaDeSan(f: FichaSalva, total: number) {
+    f.ficha = { ...f.ficha, perdas: { ...f.ficha.perdas, san: Math.max(0, total) } };
+    this.fichaParaPecas(f);
+    this.fichaMudou(f);
+  }
+
   /** Uma ação da tela de combate (só o mestre). */
   private combateAcao(c: Client, m: Record<string, unknown>) {
     const room = c.room;
@@ -837,6 +858,10 @@ export class Hotel implements HotelApi {
         if (!f) continue;
         this.trocarMochila(f, x.inventario);
         this.fichaMudou(f);
+      }
+      if (passo.perdaSan) {
+        const f = (this.db.fichas ?? []).find((y) => y.id === passo.perdaSan!.fichaId);
+        if (f) this.perdaDeSan(f, passo.perdaSan.antes);
       }
       this.save();
       this.touch();
@@ -893,7 +918,16 @@ export class Hotel implements HotelApi {
       const depois = velho ? this.vitaisDaPecaAgora(group, m.id) : null;
       if (velho) mudou.push({ id: m.id, antes: velho, ...(depois ? { depois: { ...depois } } : {}) });
     }
-    pilha.push({ combate: JSON.stringify(antes), vitais: mudou, ...(mochilas.length ? { mochilas } : {}), ...(largados.length ? { largados } : {}) });
+    // a SAN perdida para sempre que o mestre aceitou: o máximo baixa na ficha (perdas.san) e nas peças
+    let perdaSan: { fichaId: number; antes: number } | undefined;
+    if (r.perdaSan) {
+      const f = this.fichaDaPeca(group, r.perdaSan.id);
+      if (f) {
+        perdaSan = { fichaId: f.id, antes: f.ficha.perdas?.san ?? 0 };
+        this.perdaDeSan(f, perdaSan.antes + r.perdaSan.quanto);
+      }
+    }
+    pilha.push({ combate: JSON.stringify(antes), vitais: mudou, ...(mochilas.length ? { mochilas } : {}), ...(largados.length ? { largados } : {}), ...(perdaSan ? { perdaSan } : {}) });
     if (pilha.length > MAX_DESFAZER) pilha.splice(0, pilha.length - MAX_DESFAZER);
     if (r.combate) camp.combate = r.combate;
     else delete camp.combate;
