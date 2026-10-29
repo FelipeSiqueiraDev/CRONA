@@ -482,6 +482,8 @@ export class RoomView {
   private ritmo = 16.7;
   private ultimoRaf = 0;
   private qualidadeMudouEm = 0;
+  /** quando entrou na cena: os primeiros segundos (a arte chegando) não contam para a qualidade */
+  private entrouEm = 0;
   /** a última vez que algo mexeu (mouse, câmera, peça andando): parado há 3 s, o tabuleiro desenha um quadro sim, um não */
   private mexeuEm = 0;
   private camAntes = '';
@@ -688,6 +690,7 @@ export class RoomView {
   enter(info: RoomInfo, items: FloorItem[], wallItems: WallItem[], users: UserInfo[], myId: number) {
     this.visGuardados.clear();
     this.info = info;
+    this.entrouEm = performance.now();
     // a cena nova já abre na vista dela (sem a câmera voar na entrada)
     this.tat.alvo = this.tat.t = info.tatico ? 1 : 0;
     this.tatZoom = { k: 1, dx: 0, dy: 0 };
@@ -2335,6 +2338,12 @@ export class RoomView {
     this.ultimoRaf = agora;
     // quadro pulado de propósito (o descanso) ou a aba voltando de escondida: não conta
     if (dt > 250 || this.fixed || this.pulou) return;
+    // a cena acabou de abrir: as travadas são a arte carregando, não o desenho (29/10: derrubava para 60% e levava ~8 s
+    // para voltar, borrado logo na entrada)
+    if (agora - this.entrouEm < 3000) {
+      this.ritmo = 16.7;
+      return;
+    }
     this.ritmo = this.ritmo * 0.9 + dt * 0.1;
     const espera = agora - this.qualidadeMudouEm;
     const base = Math.min(2, window.devicePixelRatio || 1);
