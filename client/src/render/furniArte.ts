@@ -364,6 +364,7 @@ function pronta(arquivo: string): Imagens | null {
         return;
       }
       let espelho: HTMLCanvasElement | null = null;
+      let largura: number | null = null;
       const pronto: Imagens & { _espelho?: HTMLCanvasElement } = {
         normal,
         get espelho() {
@@ -371,7 +372,11 @@ function pronta(arquivo: string): Imagens | null {
           pronto._espelho = espelho;
           return espelho;
         },
-        largura: larguraDoDesenho(normal),
+        // medida só quando o encaixe pede (29/10): a pixel art nunca pede, e ler cada imagem pixel a pixel ao chegar
+        // custava ~600 ms ao abrir o Salão da Mansão
+        get largura() {
+          return (largura ??= larguraDoDesenho(normal));
+        },
       };
       imagens.set(url, pronto);
       // chegou depois de ter sido solta? volta para a conta, para poder ser solta de novo
