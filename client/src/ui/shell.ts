@@ -470,6 +470,8 @@ export class Shell {
     this.abaItens = new AbaItens(app, (o) => this.hintViewer.abrirItem(o));
     this.fichas.hide();
     this.combate = new CombateScreen(app);
+    // para conferir o combate pelo console (só no desenvolvimento)
+    if (import.meta.env.DEV) (window as unknown as { __combate: CombateScreen }).__combate = this.combate;
 
     // ================= esquerda =================
     this.scenesEl = h('div', { class: 'scene-list' });

@@ -1410,6 +1410,9 @@ describe('o dano dos rituais pelo livro (29/10)', () => {
     assert.equal(combate.danoDoRitual('decadencia', 'basica')?.dano, '2d8+2');
     assert.equal(combate.danoDoRitual('decadencia', 'verdadeira')?.dano, '8d8+8');
     assert.equal(combate.danoDoRitual('eletrocussao', 'basica')?.tipo, 'eletricidade');
+    // no parcial, quem passa na Eletrocussão sofre a metade (LR p. 131); a Decadência é "reduz à metade" pela resistência
+    assert.equal(combate.danoDoRitual('eletrocussao', 'basica')?.parcialMetade, true);
+    assert.equal(combate.danoDoRitual('decadencia', 'basica')?.parcialMetade, undefined);
     const d = combate.danoDoRitual('descarnar', 'discente')!;
     assert.deepEqual([d.dano, d.tipo, d.extra?.dano, d.extra?.tipo], ['5d8', 'corte', '5d8', 'sangue']);
     assert.equal(combate.danoDoRitual('perturbacao', 'basica'), null, 'a básica só dá ordens');

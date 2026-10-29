@@ -220,7 +220,8 @@ export class ResolucaoRitual {
       const passou = res && d20 !== null && total !== null ? cb.passouResistencia(d20, total, r.dt) : null;
       // anula: passou, nada acontece; metade: metade do dano; parcial: o mestre diz
       const anulou = !!res && passou === true && (res.efeito === 'anula' || res.efeito === 'desacredita');
-      const metade = !!res && passou === true && (res.efeito === 'metade' || (res.efeito === 'parcial' && !!this.e.metade[k]));
+      // parcial: a metade que o livro diz já vem marcada (29/10, a conferência: a Eletrocussão tirava o dano inteiro de quem passou)
+      const metade = !!res && passou === true && (res.efeito === 'metade' || (res.efeito === 'parcial' && (this.e.metade[k] ?? !!dadosLivro?.parcialMetade)));
       // cada dano tem a sua conta; "ignora as resistências" tira a RD (Lâmina do Medo, LR p. 135)
       const contar = (p: cb.PartesDano, soma: number, t: TipoDano) => {
         const conta = cb.contaDano({ soma, fixo: p.fixo, tipo: t, rd: ignoraRd ? {} : a.rd, imunidades: a.imunidades, vulnerabilidades: el?.vulneravel ? [...a.vulnerabilidades, t] : a.vulnerabilidades, metade });
@@ -360,7 +361,7 @@ export class ResolucaoRitual {
           l.passou === null ? h('span') : h('span', { class: `cb-rit-marca ${l.passou ? 'bom' : 'ruim'}` }, l.passou ? 'passou' : 'falhou'),
         );
         if (res.efeito === 'parcial' && l.passou && k.partes)
-          linha.append(h('label', { class: 'cb-rit-meia', title: 'Parcial: o ritual diz o que sobra; marque se é metade do dano' }, h('input', { type: 'checkbox', checked: !!this.e.metade[l.k], onchange: (ev: Event) => ((this.e.metade[l.k] = (ev.target as HTMLInputElement).checked), x.mudou()) }), '½'));
+          linha.append(h('label', { class: 'cb-rit-meia', title: 'Parcial: o ritual diz o que sobra; marque se é metade do dano' }, h('input', { type: 'checkbox', checked: l.metade, onchange: (ev: Event) => ((this.e.metade[l.k] = (ev.target as HTMLInputElement).checked), x.mudou()) }), '½'));
       }
       if (l.el) linha.title = l.el.texto;
       corpo.push(linha);
