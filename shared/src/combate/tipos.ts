@@ -321,7 +321,8 @@ export type AcaoCombate =
   | { tipo: 'vitais'; id: number; pv?: number; pe?: number; san?: number; motivo: string }
   /** muda o dano não letal de um ser (a cura tira primeiro ele, LR p. 88) */
   | { tipo: 'naoLetal'; id: number; valor: number; motivo?: string }
-  | { tipo: 'encerrar' }
+  /** `mesmoAssim`: o mestre decidiu encerrar com alguém morrendo ou enlouquecendo (COMBATE.md, seção 20) */
+  | { tipo: 'encerrar'; mesmoAssim?: boolean }
   | { tipo: 'fechar' }
   | { tipo: 'desfazer' };
 

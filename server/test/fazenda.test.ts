@@ -190,6 +190,16 @@ describe("Fazenda Olhos de Águia", () => {
     );
   });
 
+  test("quem chegou pela porta e clica nela de novo volta, sem precisar sair da casa antes (29/10)", () => {
+    const fora = cena("Olhos de Águia");
+    const hall = cena("Hall do Casarão");
+    const tk = fora.tokenList()[0];
+    andar(fora, tk.id, 19, 18);
+    const t = hall.tokensLive().find((x) => x.name === tk.name)!;
+    andar(hall, tk.id, t.token.tile.x, t.token.tile.y);
+    assert.ok(fora.hasToken(-tk.id), "voltou para fora pela mesma porta");
+  });
+
   test("a escada do hall sobe para o corredor de cima, e o vão da escada desce de volta", () => {
     const hall = cena("Hall do Casarão");
     const corredor = cena("Corredor de Cima");

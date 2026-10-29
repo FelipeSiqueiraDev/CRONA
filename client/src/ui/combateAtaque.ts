@@ -220,7 +220,9 @@ export function campoDado(rotulo: string, valor: number | null, max: number, fn:
     const n = numero(inp.value);
     fn(n === null ? null : Math.max(0, Math.min(max, n)));
   };
-  inp.addEventListener('change', enviar);
+  // a tela se refaz depois que o foco já foi para o próximo campo (29/10, a conferência: refeita no meio do clique, o foco
+  // voltava para este e o número do campo seguinte se perdia)
+  inp.addEventListener('change', () => setTimeout(enviar));
   inp.addEventListener('keydown', (ev) => ev.key === 'Enter' && inp.blur());
   return h('label', { class: 'cb-caixa-dado' }, h('small', null, rotulo), inp);
 }
@@ -1034,11 +1036,13 @@ export class ResolucaoAtaque {
     if (x.combateDefensivo) opcoes.push(liga('Combate defensivo', !!this.e.defensivo, '−1d20 no ataque; +5 na Defesa até o seu próximo turno (LR p. 25)', () => (this.e.defensivo = !this.e.defensivo)));
     const ajNum = (rot: string, v: number | undefined, min: number, max: number, fn: (n: number) => void) => {
       const inp = h('input', { class: 'cb-dado', type: 'text', inputmode: 'numeric', value: v ? String(v) : '', placeholder: '0', 'aria-label': rot }) as HTMLInputElement;
-      inp.addEventListener('change', () => {
-        const n = numero(inp.value.replace('−', '-')) ?? 0;
-        fn(Math.max(min, Math.min(max, n)));
-        x.mudou();
-      });
+      inp.addEventListener('change', () =>
+        setTimeout(() => {
+          const n = numero(inp.value.replace('−', '-')) ?? 0;
+          fn(Math.max(min, Math.min(max, n)));
+          x.mudou();
+        }),
+      );
       return h('label', { class: 'cb-caixa-dado' }, h('small', null, rot), inp);
     };
     const blocoMesa = (

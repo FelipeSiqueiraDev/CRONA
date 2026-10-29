@@ -664,7 +664,18 @@ export class Shell {
       if (cid && this.app.state.bestiario.some((c) => c.id === cid)) this.renderInspector(true);
     });
     // os retratos dependem da lista de personagens: o PLAYERS se refaz quando ela chega (19/10: as fotos sumiam)
-    app.on('characters', () => ((this.sigs.party = ''), this.renderParty(), this.renderRpg(true)));
+    // só quando mudam os personagens dos Marcados (29/10, a conferência: pôr uma ameaça cria o personagem dela, e o
+    // PLAYERS se refazia inteiro, com os retratos piscando vazios até redesenhar)
+    let dosMarcados = '';
+    app.on('characters', () => {
+      const ids = new Set((this.campaign?.agentes ?? []).map((p) => p.look?.charId).filter(Boolean));
+      const sig = JSON.stringify(this.app.state.characters.filter((c) => ids.has(c.id)));
+      if (sig === dosMarcados && this.campaign) return;
+      dosMarcados = sig;
+      this.sigs.party = '';
+      this.renderParty();
+      this.renderRpg(true);
+    });
     // a miniatura da sala (o polaroide do cartão e do minimapa): só com o MAPA aberto e de 15 em 15 s (antes, de 4 em 4,
     // em qualquer aba: copiava a tela da placa de vídeo e gravava um JPEG no armazenamento toda vez)
     setInterval(() => this.activeTab === 'MAPA' && this.captureThumb(), 15000);

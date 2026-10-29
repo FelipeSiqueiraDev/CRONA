@@ -687,13 +687,15 @@ export class CombateScreen {
     const corpo = armas.findIndex((a) => !a.faixa && a.naMao !== false && !a.jogada);
     const ac = cb.acoesDe(c, ator.id);
     const completaLivre = !ac.padrao && !ac.movimento && !ac.completa;
+    // caído só se arrasta 1,5 m (LR p. 87): não corre (29/10, a conferência: a investida aparecia para quem estava no chão)
+    const caido = this.condicoesDe(c, ator).includes('caido');
     poe(
       cartao(
         'investida',
         arteOu(['/arte/icones/sit-investida.png'], ic('correr')),
         'Investida',
         `corre até ${cb.textoMetros(2 * this.deslocamentoDe(ator))} e ataca${corpo >= 0 ? ` com ${armas[corpo].nome}` : ''}: +1d20 no ataque, −5 na Defesa (ação completa)`,
-        corpo >= 0 && completaLivre ? () => (this.ataque.escolher(corpo, true), this.seguirParaAlvo('atacar')) : null,
+        corpo >= 0 && completaLivre && !caido ? () => (this.ataque.escolher(corpo, true), this.seguirParaAlvo('atacar')) : null,
         corpo < 0 ? 'precisa de uma arma de corpo a corpo na mão' : 'precisa do turno inteiro (padrão e movimento livres)',
       ),
     );
@@ -701,7 +703,7 @@ export class CombateScreen {
     const rituais = this.rituaisDe(ator);
     poe(cartao('ritual', arteOu(['/arte/icones/combate-ritual.png'], ic('pentagrama')), 'Ritual', rituais.length ? `${rituais.length} ritua${rituais.length > 1 ? 'is' : 'l'} conhecido${rituais.length > 1 ? 's' : ''}` : 'nenhum ritual', rituais.length ? () => this.seguirParaAlvo('ritual') : null, 'nenhum ritual conhecido'));
     // tela nova: sem rolagem, seis cartões por página
-    const pg = this.modoCards ? paginar('arma', lista, 6, () => (this.sigs.delete('res'), this.renderRes())) : { itens: lista, pager: null };
+    const pg = this.modoCards ? paginar('arma', lista, 6, () => (this.sigs.delete('res'), this.renderRes()), `${c.rodada}|${c.vez}|${ator.id}`) : { itens: lista, pager: null };
     return h('div', { class: 'vez-menu' }, h('p', { class: 'vez-pergunta' }, 'Com o quê?'), h('div', { class: 'vez-cartoes' }, ...pg.itens), pg.pager);
   }
 
@@ -2942,7 +2944,7 @@ export class CombateScreen {
           },
         });
       });
-    const pgAlvos = paginar('alvos', cartoes, 6, () => (this.sigs.delete('res'), this.renderRes()));
+    const pgAlvos = paginar('alvos', cartoes, 6, () => (this.sigs.delete('res'), this.renderRes()), `${c.rodada}|${c.vez}|${ator.id}`);
     const modos = ritual
       ? h(
           'div',
@@ -3972,6 +3974,13 @@ export class CombateScreen {
   }
 
   private async encerrar() {
+    // morrendo ou enlouquecendo em aberto: o mestre resolve ou decide encerrar assim mesmo (COMBATE.md, seção 20; 29/10)
+    const abertos = this.combate ? cb.emAberto(this.combate, { vitais: (id) => this.vitais(id) ?? null }) : [];
+    if (abertos.length) {
+      if (await confirmar('ALGUÉM AINDA ESTÁ EM PERIGO', `${abertos.join(', ')}. Resolva antes (estabilizar, acalmar ou continuar nas rodadas), ou encerre assim mesmo. Dá para desfazer.`, 'Encerrar assim mesmo'))
+        this.acao({ tipo: 'encerrar', mesmoAssim: true });
+      return;
+    }
     if (await confirmar('ENCERRAR O COMBATE?', 'Fica o resumo até você fechar. Dá para desfazer.', 'Encerrar')) this.acao({ tipo: 'encerrar' });
   }
 }

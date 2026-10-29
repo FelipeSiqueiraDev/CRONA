@@ -71,12 +71,18 @@ export interface PerfilCombate {
 }
 
 const paginasDe = new Map<string, number>();
+const donoDe = new Map<string, string>();
 
 /**
  * Sem rolagem (21/10, o Felipe): quando há mais itens do que cabem, mostra uma página por vez, com ‹ n/N ›.
  * Devolve os itens da página e, se houver mais de uma, a barrinha da paginação; `refazer` desenha a tela de novo.
  */
-export function paginar(chave: string, itens: HTMLElement[], porPagina: number, refazer: () => void): { itens: HTMLElement[]; pager: HTMLElement | null } {
+export function paginar(chave: string, itens: HTMLElement[], porPagina: number, refazer: () => void, dono?: string): { itens: HTMLElement[]; pager: HTMLElement | null } {
+  // trocou o dono (outro turno, outra peça): volta para a primeira página (29/10, a conferência: o "Com o quê?" ficava na 2)
+  if (dono !== undefined && donoDe.get(chave) !== dono) {
+    donoDe.set(chave, dono);
+    paginasDe.delete(chave);
+  }
   const n = Math.max(1, Math.ceil(itens.length / porPagina));
   const atual = Math.min(paginasDe.get(chave) ?? 0, n - 1);
   const ir = (i: number) => () => (paginasDe.set(chave, Math.max(0, Math.min(n - 1, i))), refazer());

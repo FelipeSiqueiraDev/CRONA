@@ -4,7 +4,7 @@
  * a concentração e o Custo do Paranormal. Funções puras: a tela usa para
  * mostrar a conta, e o servidor para escrever o registro.
  */
-import type { Elemento, Ritual } from '../regras/tipos';
+import type { Elemento, Ritual, TipoDano } from '../regras/tipos';
 
 export type FormaRitual = 'basica' | 'discente' | 'verdadeira';
 export const NOME_FORMA: Record<FormaRitual, string> = { basica: 'básica', discente: 'discente', verdadeira: 'verdadeira' };
@@ -107,3 +107,38 @@ export function resultadoCusto(custo: number, d20: number, total: number): { pas
   if (passouResistencia(d20, total, dt)) return { passou: true, mental: 0, sanPermanente: 0 };
   return { passou: false, mental: custo, sanPermanente: dt - total >= 5 ? 1 : 0 };
 }
+
+/** O dano que o ritual causa ao ser conjurado, numa forma: os dados, o tipo (sem tipo = o do elemento) e o dano a mais de outro tipo. */
+export interface DanoDoRitual {
+  dano: string;
+  tipo?: TipoDano;
+  extra?: { dano: string; tipo: TipoDano };
+}
+
+/**
+ * Os dados do dano dos rituais que ferem quando são conjurados, forma a forma (LR p. 124–141; 29/10, a conferência: o
+ * ritual de dano chegava ao passo do efeito sem nada e dava para confirmar sem dano). Ficam de fora os que só ferem
+ * depois (no turno do alvo, ao sair da área, quando o algoz chega) e a forma que troca o dano por outro efeito; o
+ * mestre ainda digita à mão. Descarnar é metade corte, metade Sangue: os dados divididos em dois.
+ */
+export const DANO_DOS_RITUAIS: Record<string, Partial<Record<FormaRitual, DanoDoRitual>>> = {
+  decadencia: { basica: { dano: '2d8+2' }, discente: { dano: '3d8+3' }, verdadeira: { dano: '8d8+8' } },
+  eletrocussao: { basica: { dano: '3d6', tipo: 'eletricidade' }, discente: { dano: '6d6' }, verdadeira: { dano: '8d6' } },
+  descarnar: { basica: { dano: '3d8', tipo: 'corte', extra: { dano: '3d8', tipo: 'sangue' } }, discente: { dano: '5d8', tipo: 'corte', extra: { dano: '5d8', tipo: 'sangue' } } },
+  hemofagia: { basica: { dano: '6d6' }, discente: { dano: '6d6' }, verdadeira: { dano: '4d6' } },
+  inexistir: { basica: { dano: '10d12+10' }, discente: { dano: '15d12+15' }, verdadeira: { dano: '20d12+20' } },
+  'invadir-mente': { basica: { dano: '6d6', tipo: 'energia' }, discente: { dano: '10d6', tipo: 'energia' }, verdadeira: { dano: '10d6', tipo: 'energia' } },
+  'miasma-entropico': { basica: { dano: '4d8', tipo: 'quimico' }, discente: { dano: '6d8' }, verdadeira: { dano: '4d8', tipo: 'quimico' } },
+  paradoxo: { basica: { dano: '6d6' }, discente: { dano: '4d6' }, verdadeira: { dano: '13d6' } },
+  perturbacao: { discente: { dano: '3d8' } },
+  'poeira-da-podridao': { basica: { dano: '4d8' }, verdadeira: { dano: '4d8+16' } },
+  'ferver-sangue': { basica: { dano: '4d8' }, verdadeira: { dano: '4d8' } },
+  'chamas-do-caos': { discente: { dano: '4d6' }, verdadeira: { dano: '8d6' } },
+  'consumir-manancial': { verdadeira: { dano: '3d6' } },
+  'conhecendo-o-medo': { basica: { dano: '10d6', tipo: 'mental' } },
+  'lamina-do-medo': { basica: { dano: '10d8', tipo: 'medo' } },
+  'presenca-do-medo': { basica: { dano: '5d8', tipo: 'mental', extra: { dano: '5d8', tipo: 'medo' } } },
+};
+
+/** O dano do ritual nesta forma, pelo livro (ou nada: o mestre digita). */
+export const danoDoRitual = (id: string, forma: FormaRitual): DanoDoRitual | null => DANO_DOS_RITUAIS[id]?.[forma] ?? null;

@@ -105,10 +105,13 @@ const nomeCond = (id: string) => regras.catalogo.condicao(id)?.nome ?? id;
 /** Número com sinal digitado à mão (bônus e penalidades que a tela não conhece). */
 function campoSinal(rotulo: string, valor: number, fn: (n: number) => void, foco: string): HTMLElement {
   const inp = h('input', { class: 'cb-dado cb-mais', type: 'text', inputmode: 'numeric', maxlength: 3, value: valor ? cb.sinal(valor) : '', placeholder: '±0', 'data-foco': foco, 'aria-label': rotulo });
-  inp.addEventListener('change', () => {
-    const n = Number(inp.value.trim().replace('−', '-').replace(',', '.'));
-    fn(Number.isFinite(n) ? Math.max(-30, Math.min(30, Math.round(n))) : 0);
-  });
+  // depois que o foco passou para o próximo campo (como o campoDado, 29/10)
+  inp.addEventListener('change', () =>
+    setTimeout(() => {
+      const n = Number(inp.value.trim().replace('−', '-').replace(',', '.'));
+      fn(Number.isFinite(n) ? Math.max(-30, Math.min(30, Math.round(n))) : 0);
+    }),
+  );
   inp.addEventListener('keydown', (ev) => ev.key === 'Enter' && inp.blur());
   return h('label', { class: 'cb-caixa-dado mini' }, h('small', null, rotulo), inp);
 }
@@ -398,16 +401,21 @@ export class ResolucaoManobra {
       );
     else {
       // cada lado: o que rolar e o d20 que ficou, na mesma linha
-      const lado = (nome: string, dados: number, penalidade: number, bonus: number, valor: number | null, fn: (n: number | null) => void, foco: string) =>
+      // de onde vem cada número (29/10, a conferência: a rolagem não dizia a manobra nem a conta do bônus)
+      const lado = (nome: string, dados: number, penalidade: number, bonus: number, conta: string, valor: number | null, fn: (n: number | null) => void, foco: string) =>
         h(
           'div',
           { class: 'cb-man-rol' },
-          h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, h('b', null, nome), h('br'), cb.textoRolagem(dados, bonus, penalidade))),
+          h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, h('b', null, nome), h('br'), cb.textoRolagem(dados, bonus, penalidade), conta ? h('small', { class: 'cb-man-conta' }, ` (${conta})`) : null)),
           campoDado('d20', valor, 20, fn, foco, true),
         );
+      const mods = (ms: Mod[], outros: number) => [...ms.filter(k.on).map((m) => m.nome), ...(outros ? [`outros ${cb.sinal(outros)}`] : [])];
+      const contaA = [k.arma ? `Luta com ${k.arma.nome} ${cb.sinal(k.arma.bonus)}` : 'Luta', ...mods(k.modsA, this.e.outrosA)].join(' · ');
+      const contaB = [k.lutaUsada ? `Luta ${cb.sinal(k.lutaUsada.bonus)}${k.lutaUsada.origem ? ` (${k.lutaUsada.origem})` : ''}` : 'Luta', ...mods(k.modsB, this.e.outrosB)].join(' · ');
       corpo.push(
-        lado(x.ator.nome, k.dadosA, k.penalidadeA, k.bonusA, this.e.d20a, (n) => ((this.e.d20a = n && n >= 1 ? n : null), (this.e.soma = null), x.mudou()), 'man:a'),
-        lado(alvo.p.nome, k.dadosB, k.penalidadeB, k.bonusB, this.e.d20b, (n) => ((this.e.d20b = n && n >= 1 ? n : null), (this.e.soma = null), x.mudou()), 'man:b'),
+        h('p', { class: 'cb-man-qual' }, h('b', null, k.def.nome), ': teste oposto de Luta'),
+        lado(x.ator.nome, k.dadosA, k.penalidadeA, k.bonusA, contaA, this.e.d20a, (n) => ((this.e.d20a = n && n >= 1 ? n : null), (this.e.soma = null), x.mudou()), 'man:a'),
+        lado(alvo.p.nome, k.dadosB, k.penalidadeB, k.bonusB, contaB, this.e.d20b, (n) => ((this.e.d20b = n && n >= 1 ? n : null), (this.e.soma = null), x.mudou()), 'man:b'),
       );
       const op = k.op;
       if (op) {

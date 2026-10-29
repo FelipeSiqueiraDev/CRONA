@@ -86,11 +86,12 @@ interface Estado {
   avulso: { nome: string; pe: number; dt: number | null; resistencia: string; elemento: Elemento; qual: cb.TipoAcao };
   d20: Record<string, number | null>;
   conc: number | null;
-  formula: string;
+  /** os dados do dano; null = os do livro para o ritual e a forma (DANO_DOS_RITUAIS) */
+  formula: string | null;
   tipo: TipoDano | null;
   soma: number | null;
   /** o dano a mais de outro tipo (Presença do Medo: mental e de Medo) */
-  formula2: string;
+  formula2: string | null;
   tipo2: TipoDano | null;
   soma2: number | null;
   /** o dano ignora a RD (Lâmina do Medo); null = o que o ritual diz */
@@ -110,10 +111,10 @@ const novo = (chave: string): Estado => ({
   avulso: { nome: '', pe: 0, dt: null, resistencia: '', elemento: 'sangue', qual: 'padrao' },
   d20: {},
   conc: null,
-  formula: '',
+  formula: null,
   tipo: null,
   soma: null,
-  formula2: '',
+  formula2: null,
   tipo2: null,
   soma2: null,
   ignoraRd: null,
@@ -195,11 +196,15 @@ export class ResolucaoRitual {
     const alvos = this.alvos(x);
     const medo = r.elemento === 'medo';
     const doLivro = r.id ? DANO_RITUAL[r.id] : undefined;
-    const tipo = this.e.tipo ?? doLivro?.tipo ?? ELEMENTO_DANO[r.elemento] ?? 'paranormal';
-    const tipo2 = this.e.tipo2 ?? doLivro?.extra ?? tipo;
+    // os dados do livro já vêm preenchidos (29/10: sem eles, o ritual de dano pulava o passo do dano)
+    const dadosLivro = r.id ? cb.danoDoRitual(r.id, r.forma) : null;
+    const formula = this.e.formula ?? dadosLivro?.dano ?? '';
+    const formula2 = this.e.formula2 ?? dadosLivro?.extra?.dano ?? '';
+    const tipo = this.e.tipo ?? dadosLivro?.tipo ?? doLivro?.tipo ?? ELEMENTO_DANO[r.elemento] ?? 'paranormal';
+    const tipo2 = this.e.tipo2 ?? dadosLivro?.extra?.tipo ?? doLivro?.extra ?? tipo;
     const ignoraRd = this.e.ignoraRd ?? !!doLivro?.ignoraRd;
-    const partes = this.e.formula.trim() ? cb.lerDano(this.e.formula) : null;
-    const partes2 = this.e.formula2.trim() ? cb.lerDano(this.e.formula2) : null;
+    const partes = formula.trim() ? cb.lerDano(formula) : null;
+    const partes2 = formula2.trim() ? cb.lerDano(formula2) : null;
     const linhas = alvos.map((a) => {
       const k = String(a.p.id);
       const res = r.resist;
@@ -234,7 +239,7 @@ export class ResolucaoRitual {
       (r.qual === 'padrao' && (x.acoes.padrao || x.acoes.completa)) ||
       (r.qual === 'movimento' && (x.acoes.completa || (x.acoes.movimento && x.acoes.padrao))) ||
       (r.qual === 'completa' && (x.acoes.padrao || x.acoes.movimento || x.acoes.completa));
-    return { r, alvos, linhas, medo, tipo, tipo2, ignoraRd, partes, partes2, conc, concPassou, custo, custoRes, semAcao };
+    return { r, alvos, linhas, medo, formula, formula2, tipo, tipo2, ignoraRd, partes, partes2, conc, concPassou, custo, custoRes, semAcao };
   }
 
   passo(x: CtxRitual): number {
@@ -292,7 +297,7 @@ export class ResolucaoRitual {
                 type: 'button',
                 disabled: !!f.motivo,
                 title: f.motivo ?? `Forma ${cb.NOME_FORMA[f.forma]}: ${f.pe} PE`,
-                onclick: () => ((this.e.forma = f.forma), (this.e.custo = this.e.conc = null), x.mudou()),
+                onclick: () => ((this.e.forma = f.forma), (this.e.custo = this.e.conc = this.e.soma = this.e.soma2 = null), x.mudou()),
               },
               `${cb.NOME_FORMA[f.forma]} ${f.pe}`,
             ),
@@ -366,7 +371,7 @@ export class ResolucaoRitual {
   // ---------------------------------------------------------------- 3. efeito
 
   private colEfeito(x: CtxRitual, k: ReturnType<ResolucaoRitual['conta']>): HTMLElement {
-    const formula = h('input', { class: 'fx-inp cb-rit-formula', value: this.e.formula, maxlength: 20, placeholder: 'dano: 3d6+3', 'data-foco': 'rit:formula', 'aria-label': 'Dados do dano do ritual' });
+    const formula = h('input', { class: 'fx-inp cb-rit-formula', value: k.formula, maxlength: 20, placeholder: 'dano: 3d6+3', 'data-foco': 'rit:formula', 'aria-label': 'Dados do dano do ritual' });
     formula.addEventListener('change', () => ((this.e.formula = formula.value.replace(/[^0-9dD+\-−\s]/g, '')), (this.e.soma = null), x.mudou()));
     const tipo = h(
       'select',
@@ -374,7 +379,7 @@ export class ResolucaoRitual {
       ...cb.TIPOS_DANO.filter((t) => t !== 'todos' && t !== 'fisico').map((t) => h('option', { value: t, selected: t === k.tipo }, cb.NOME_TIPO_DANO[t])),
     );
     // o dano a mais de outro tipo, rolado à parte (Presença do Medo: mental e de Medo, LR p. 139)
-    const formula2 = h('input', { class: 'fx-inp cb-rit-formula', value: this.e.formula2, maxlength: 20, placeholder: 'e mais: 5d8', 'data-foco': 'rit:formula2', 'aria-label': 'Dano a mais, de outro tipo' });
+    const formula2 = h('input', { class: 'fx-inp cb-rit-formula', value: k.formula2, maxlength: 20, placeholder: 'e mais: 5d8', 'data-foco': 'rit:formula2', 'aria-label': 'Dano a mais, de outro tipo' });
     formula2.addEventListener('change', () => ((this.e.formula2 = formula2.value.replace(/[^0-9dD+\-−\s]/g, '')), (this.e.soma2 = null), x.mudou()));
     const tipo2 = h(
       'select',
@@ -391,8 +396,8 @@ export class ResolucaoRitual {
           h('span', null, 'Ignora a RD'),
         ),
       );
-    if (k.partes) corpo.push(h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, cb.textoDano(this.e.formula))), campoDado('soma dos dados', this.e.soma, 999, (n) => ((this.e.soma = n), x.mudou()), 'rit:soma', true));
-    if (k.partes2) corpo.push(h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, `${cb.textoDano(this.e.formula2)} (${cb.NOME_TIPO_DANO[k.tipo2]})`)), campoDado(`soma do dano a mais`, this.e.soma2, 999, (n) => ((this.e.soma2 = n), x.mudou()), 'rit:soma2'));
+    if (k.partes) corpo.push(h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, cb.textoDano(k.formula))), campoDado('soma dos dados', this.e.soma, 999, (n) => ((this.e.soma = n), x.mudou()), 'rit:soma', true));
+    if (k.partes2) corpo.push(h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, `${cb.textoDano(k.formula2)} (${cb.NOME_TIPO_DANO[k.tipo2]})`)), campoDado(`soma do dano a mais`, this.e.soma2, 999, (n) => ((this.e.soma2 = n), x.mudou()), 'rit:soma2'));
     if (k.partes || k.partes2)
       for (const l of k.linhas) {
         if (l.imune) corpo.push(h('small', { class: 'cb-rit-linha' }, `${l.a.p.nome}: imune (criatura).`));

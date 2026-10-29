@@ -2365,6 +2365,15 @@ button.cb-barra {
 .cb-man-rol .cb-instrucao b {
   font-weight: 700;
 }
+.cb-man-rol .cb-man-conta {
+  font-size: 1.12rem;
+  opacity: 0.75;
+}
+.cb-man-qual {
+  margin: 0;
+  font-size: 1.32rem;
+  flex: none;
+}
 .cb-man-rol .cb-caixa-dado {
   flex-direction: row;
   gap: 0.5rem;

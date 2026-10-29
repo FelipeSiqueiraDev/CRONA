@@ -735,7 +735,15 @@ function ritual(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
     if (mental) registrar(c, ctx.agora, 'estado', `${quem.nome} sofre ${mental} de dano mental${perde ? ' e perde 1 de SAN para sempre: ajuste o máximo na ficha' : ''} (LR p. 121).`, perde ? ['perde 1 de SAN para sempre'] : undefined);
   }
   // parte da SAN que o próprio ritual já tirou de quem conjura, se ele estava na área
-  if (mental && v) minhas.san = Math.max(0, (vitais.find((m) => m.id === quem.id)?.san ?? v.san) - mental);
+  if (mental && v) {
+    // as mesmas contas do dano mental (29/10, a conferência: a SAN zerava pelo Custo sem ficar enlouquecendo)
+    const antes = vitais.find((m) => m.id === quem.id)?.san ?? v.san;
+    const q = consequenciaMental({ san: antes, sanMax: v.sanMax }, mental);
+    minhas.san = q.san;
+    const estado = q.zerou ? 'enlouquecendo' : q.perturbado ? 'perturbado' : '';
+    registrar(c, ctx.agora, 'estado', `${quem.nome}: SAN ${antes} → ${q.san}${estado ? ` (${estado})` : ''}.`, estado ? [estado] : undefined);
+    if (q.zerou) registrar(c, ctx.agora, 'estado', `${quem.nome} fica enlouquecendo: no 3º turno começado assim nesta cena, fica insano (LR p. 88).`);
+  }
   if (minhas.pe !== undefined || minhas.san !== undefined) {
     const ja = vitais.find((m) => m.id === quem.id);
     if (ja) Object.assign(ja, minhas);
@@ -1144,6 +1152,9 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
     case 'encerrar': {
       if (c.fase === 'montando') return { ok: true, combate: null };
       if (c.fase === 'encerrado') return erro('O combate já acabou.');
+      // morrendo ou enlouquecendo em aberto: só fecha se o mestre decidir (COMBATE.md, seção 20; 29/10, a conferência)
+      const abertos = emAberto(c, ctx);
+      if (abertos.length && a.mesmoAssim !== true) return erro(`${abertos.join(', ')}: resolva antes de encerrar (estabilizar, acalmar ou continuar nas rodadas).`);
       c.fase = 'encerrado';
       c.vez = null;
       c.acoes = {};
@@ -1194,6 +1205,18 @@ const TIPOS = new Set<AcaoCombate['tipo']>([
   'fechar',
   'desfazer',
 ]);
+
+/** Os agentes ainda no combate que estão morrendo (0 PV) ou enlouquecendo (0 SAN), com o estado: "Tepes morrendo". */
+export function emAberto(c: Combate, ctx: Pick<Contexto, 'vitais'>): string[] {
+  const r: string[] = [];
+  for (const p of c.participantes) {
+    if (p.lado !== 'agente' || p.fora) continue;
+    const v = ctx.vitais(p.id);
+    if (v && v.pv <= 0) r.push(`${p.nome} morrendo`);
+    if (v && v.san <= 0) r.push(`${p.nome} enlouquecendo`);
+  }
+  return r;
+}
 
 /** Confere a forma de uma ação que veio da rede (os valores, `aplicar` confere). */
 export function lerAcao(raw: unknown): AcaoCombate | null {

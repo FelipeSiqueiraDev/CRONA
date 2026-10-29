@@ -1821,7 +1821,12 @@ export class RoomInstance {
             // a porta recusou (trancada, quebrada, sem caminho): a peça segue o que fazia
             u.aoChegar = antes;
             this.err(c, daPorta);
-          } else if (daPorta === undefined) (u.goal = this.casaDoBicho(u, this.casaDaCama(u, m.x, m.y))), delete u.encara;
+          } else if (daPorta === undefined) {
+            u.goal = this.casaDoBicho(u, this.casaDaCama(u, m.x, m.y));
+            delete u.encara;
+            // clicou na passagem em que está parada (chegou por ela): a passagem vale de novo (29/10, a conferência)
+            this.passagemValeDeNovo(u, u.goal);
+          }
           // o relógio da cena pode ter parado (ninguém olhando, nada andando): liga de novo
           this.ensureTimer();
         }
@@ -2514,6 +2519,8 @@ export class RoomInstance {
     for (const t of near) {
       if (t.x === u.x && t.y === u.y) {
         u.goal = null;
+        this.passagemValeDeNovo(u, t);
+        this.ensureTimer();
         return null;
       }
       const path = findPath(this.map, u, t, (x, y) => this.occupied(x, y, u.client.id));
@@ -2584,6 +2591,12 @@ export class RoomInstance {
     u.aoChegar = passar;
     this.ensureTimer();
     return null;
+  }
+
+  /** A peça parada na passagem por onde chegou e mandada para a mesma casa: libera a viagem (a do clique de novo). */
+  private passagemValeDeNovo(u: RoomUser, alvo: { x: number; y: number } | null) {
+    if (!alvo || !u.arrivedAt || alvo.x !== u.x || alvo.y !== u.y) return;
+    if (this.map.itemsAt(u.x, u.y).some((it) => it.link && getFurni(it.defId)?.portal)) u.arrivedAt = null;
   }
 
   /** A porta (mobi com estado aberto/fechado) fechada ou trancada nesta casa, se houver. */

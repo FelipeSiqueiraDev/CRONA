@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import { combate, type ClientMsg, type ServerMsg } from '@crona/shared';
+import { combate, regras, type ClientMsg, type ServerMsg } from '@crona/shared';
 import { Hotel } from '../src/hotel';
 import { seedDb, upgradeDb } from '../src/seed';
 
@@ -362,6 +362,15 @@ describe('combate: fim', () => {
     assert.ok(r.ok && r.combate === null);
     const cancelado = combate.aplicar(montado(), { tipo: 'encerrar' }, ctx());
     assert.ok(cancelado.ok && cancelado.combate === null);
+  });
+
+  test('com alguém morrendo ou enlouquecendo, só encerra se o mestre decidir (COMBATE.md, seção 20; 29/10)', () => {
+    const c = aplicar(montado(), { tipo: 'comecar' });
+    vitais.set(2, { pv: 0, san: 20 });
+    vitais.set(10, { pv: 0, san: 20 });
+    assert.equal(recusa(c, { tipo: 'encerrar' }), 'Tepes morrendo: resolva antes de encerrar (estabilizar, acalmar ou continuar nas rodadas).');
+    assert.equal(aplicar(c, { tipo: 'encerrar', mesmoAssim: true }).fase, 'encerrado');
+    vitais.clear();
   });
 
   test('a mesa não recebe o registro nem o texto das ações preparadas', () => {
@@ -900,7 +909,7 @@ describe('combate: ritual', () => {
     assert.deepEqual(r.vitais, [{ id: 10, pv: 10 }, { id: 2, pe: 2, san: 17 }]);
     assert.deepEqual(combate.acoesDe(c, 2), { padrao: true, movimento: false, completa: false, pe: 3 });
     assert.deepEqual(
-      c.registro.slice(-6).map((l) => l.texto),
+      c.registro.slice(-7).map((l) => l.texto),
       [
         'Tepes conjura Decadência (básica, 3 PE, DT 16).',
         'Ocultista: Vontade d20 8, total 10 contra DT 16 — falhou.',
@@ -908,9 +917,19 @@ describe('combate: ritual', () => {
         'Dano massivo: Ocultista faz Fortitude DT 17; se falhar, vai a 0 PV (LR p. 88).',
         'Custo do Paranormal: Ocultismo d20 5, total 12 contra DT 18 — falhou.',
         'Tepes sofre 3 de dano mental e perde 1 de SAN para sempre: ajuste o máximo na ficha (LR p. 121).',
+        'Tepes: SAN 20 → 17.',
       ],
     );
     assert.equal(recusa(c, rit(2)), 'A ação padrão já foi usada neste turno.');
+  });
+
+  test('o Custo do Paranormal que zera a SAN deixa enlouquecendo, como o dano mental (29/10)', () => {
+    const r = combate.aplicar(naVezDeTepes(), rit(2, { custo: { dt: 18, d20: 2, total: 9, passou: false }, mental: 30 }), ctx());
+    assert.ok(r.ok);
+    assert.equal(r.vitais?.find((v) => v.id === 2)?.san, 0);
+    const textos = r.combate!.registro.slice(-2).map((l) => l.texto);
+    assert.equal(textos[0], 'Tepes: SAN 20 → 0 (enlouquecendo).');
+    assert.match(textos[1], /fica enlouquecendo/);
   });
 
   test('concentração que falha: o ritual não sai e os PE se perdem', () => {
@@ -1351,5 +1370,19 @@ describe('combate: auditoria de 27/10', () => {
     assert.equal(combate.lerAcao({ tipo: 'lote', acoes: [{ tipo: 'abrir' }] }), null);
     assert.equal(combate.lerAcao({ tipo: 'lote', acoes: [] }), null);
     assert.ok(combate.lerAcao({ tipo: 'lote', acoes: [{ tipo: 'passar' }] }));
+  });
+});
+
+describe('o dano dos rituais pelo livro (29/10)', () => {
+  test('cada forma tem os dados do livro; Descarnar divide corte e Sangue; o ritual sem dano não traz nada', () => {
+    assert.equal(combate.danoDoRitual('decadencia', 'basica')?.dano, '2d8+2');
+    assert.equal(combate.danoDoRitual('decadencia', 'verdadeira')?.dano, '8d8+8');
+    assert.equal(combate.danoDoRitual('eletrocussao', 'basica')?.tipo, 'eletricidade');
+    const d = combate.danoDoRitual('descarnar', 'discente')!;
+    assert.deepEqual([d.dano, d.tipo, d.extra?.dano, d.extra?.tipo], ['5d8', 'corte', '5d8', 'sangue']);
+    assert.equal(combate.danoDoRitual('perturbacao', 'basica'), null, 'a básica só dá ordens');
+    assert.equal(combate.danoDoRitual('definhar', 'basica'), null);
+    // todo ritual da tabela existe no catálogo
+    for (const id of Object.keys(combate.DANO_DOS_RITUAIS)) assert.ok(regras.catalogo.ritual(id), id);
   });
 });
