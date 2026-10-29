@@ -949,7 +949,8 @@ export class Shell {
     else this.fichas.hide();
     if (t === 'COMBATE') this.combate.show();
     else this.combate.hide();
-    this.updateFrame();
+    // medida no próximo quadro: logo depois de trocar as telas, ela forçava o layout da página inteira (~30 ms, 29/10)
+    requestAnimationFrame(() => this.updateFrame());
     // o tabuleiro escondido não desenha: na FICHAS e no COMBATE de cards (que não mostra o tabuleiro)
     this.app.view.pausado = t === 'FICHAS' || (t === 'COMBATE' && this.combate.semTabuleiro);
     const o = this.tabOverlay;

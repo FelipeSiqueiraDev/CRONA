@@ -43,8 +43,12 @@ export function icAnimado(nome: string): SVGSVGElement | null {
 /** Toca a animação uma vez (a aba que acabou de abrir), sem esperar o mouse. */
 export function tocarUmaVez(el: HTMLElement, ms = 1500) {
   el.classList.remove('toca');
-  // força o recomeço da animação
-  void el.offsetWidth;
-  el.classList.add('toca');
-  window.setTimeout(() => el.classList.remove('toca'), ms);
+  // recomeça a animação dois quadros depois (o navegador vê a classe sair e voltar). Antes era `void el.offsetWidth`,
+  // que forçava o layout da página inteira no meio do clique: ~50 ms ao trocar de aba (29/10)
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      el.classList.add('toca');
+      window.setTimeout(() => el.classList.remove('toca'), ms);
+    }),
+  );
 }
