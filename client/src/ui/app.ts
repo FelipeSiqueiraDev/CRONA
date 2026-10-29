@@ -36,7 +36,7 @@ export interface AppState {
   role: Role;
 }
 
-export type AppEvent = 'cenas' | 'me' | 'inventory' | 'characters' | 'rooms' | 'lugares' | 'bestiario' | 'room' | 'selection' | 'items' | 'placement';
+export type AppEvent = 'cenas' | 'me' | 'inventory' | 'characters' | 'rooms' | 'lugares' | 'bestiario' | 'room' | 'nevoa' | 'selection' | 'items' | 'placement';
 
 export class App {
   state: AppState = { me: null, inventory: [], characters: [], rooms: [], lugares: [], bestiario: [], npcs: [], npcGrupos: [], npcsEmCampo: [], reliquiasEmCampo: [], marcados: [], cenas: [], room: null, role: 'player' };

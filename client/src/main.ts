@@ -389,6 +389,13 @@ function sairDaConta() {
   }, 250);
 }
 
+/** As duas versões da cena diferem só nas casas que a névoa mostra (o resto, igual campo a campo). */
+function soAVistaDaNevoaMudou(a: NonNullable<typeof app.state.room>, b: NonNullable<typeof app.state.room>): boolean {
+  if (!a.nevoa || !b.nevoa || a.nevoa.vista === b.nevoa.vista) return false;
+  const sem = (r: typeof a) => JSON.stringify({ ...r, nevoa: { ...r.nevoa, vista: '' } });
+  return sem(a) === sem(b);
+}
+
 const temChaveFicha = () => {
   try {
     return !!localStorage.getItem('crona.fichaKey');
@@ -599,11 +606,19 @@ net.onMessage = (m: ServerMsg) => {
       if (bancadaSentar === undefined) bancadaSentar = new URLSearchParams(location.search).has('sentar') && !table && m.room.canBuild ? ligarBancadaSentar(view) : null;
       if (bancadaSentar) setTimeout(bancadaSentar, 2500);
       break;
-    case 'roomUpdate':
+    case 'roomUpdate': {
+      const antes = app.state.room;
       app.state.room = m.room;
       view.updateInfo(m.room);
+      // só a névoa abriu em volta de quem andou (a abertura automática, a cada passo): o tabuleiro já redesenha; os
+      // painéis em volta não mudam (29/10: refazia os dez painéis, ~18 ms, e tirava a foto da sala a cada passo)
+      if (antes?.id === m.room.id && soAVistaDaNevoaMudou(antes, m.room)) {
+        app.emit('nevoa');
+        break;
+      }
       app.emit('room');
       break;
+    }
     case 'marca':
       view.receberMarca(m.marca);
       break;

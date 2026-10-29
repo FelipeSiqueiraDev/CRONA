@@ -72,7 +72,8 @@ function serveFile(res: http.ServerResponse, file: string, cache = false, req?: 
     }
     const ext = path.extname(file).toLowerCase();
     const etag = `"${st.size.toString(36)}-${Math.floor(st.mtimeMs).toString(36)}"`;
-    const arte = file.includes(`${path.sep}arte${path.sep}`);
+    // a cópia leve (arte-leve/) também é arte: antes saía com no-cache e o navegador perguntava por cada imagem (29/10)
+    const arte = file.includes(`${path.sep}arte${path.sep}`) || file.includes(`${path.sep}arte-leve${path.sep}`);
     const headers: http.OutgoingHttpHeaders = {
       'Content-Type': MIME[ext] ?? 'application/octet-stream',
       'Cache-Control': cache ? 'public, max-age=31536000, immutable' : arte ? 'public, max-age=3600' : 'no-cache',
@@ -324,7 +325,9 @@ function lanAddress() {
   return 'localhost';
 }
 
-const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 256 * 1024 });
+// as mensagens grandes (a entrada na cena, a campanha, as fichas) vão comprimidas, que pelo túnel pesa (29/10)
+const COMPRIME_WS = { threshold: 4096 };
+const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 256 * 1024, perMessageDeflate: COMPRIME_WS });
 wss.on('connection', (ws, req) => hotel.connect(ws, isLocal(req)));
 
 /**
@@ -339,7 +342,7 @@ if (PORTA_LOCAL) {
     pelaPortaLocal.add(req);
     atender(req, res);
   });
-  const wssLocal = new WebSocketServer({ server: local, path: '/ws', maxPayload: 256 * 1024 });
+  const wssLocal = new WebSocketServer({ server: local, path: '/ws', maxPayload: 256 * 1024, perMessageDeflate: COMPRIME_WS });
   wssLocal.on('connection', (ws) => hotel.connect(ws, true));
   local.listen(PORTA_LOCAL);
 }

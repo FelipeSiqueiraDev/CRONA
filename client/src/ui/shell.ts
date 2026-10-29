@@ -305,6 +305,8 @@ export class Shell {
   private mapCanvas: HTMLCanvasElement | null = null;
   private shownAt = 0;
   private sigs: Record<string, string> = {};
+  /** as cenas que já ganharam a foto da miniatura nesta visita */
+  private thumbFeita = new Set<number>();
   // topo
   private topo: TopBar;
   /** aba FICHAS (as fichas dos agentes) */
@@ -643,6 +645,8 @@ export class Shell {
     this.el = h('div', { class: 'shell hidden' }, defs, this.mapLayer, ui);
 
     app.on('room', () => this.onRoom());
+    // a névoa abrindo sozinha (só ela mudou na cena): a contagem da ferramenta Névoa
+    app.on('nevoa', () => this.ferramentas.atualizar());
     app.on('rooms', () => this.renderScenes());
     app.on('selection', () => {
       this.giveLoot = null;
@@ -979,6 +983,10 @@ export class Shell {
   private captureThumb() {
     const r = this.app.state.room;
     if (!r) return;
+    // com a câmera ou uma peça andando, a foto (leitura da placa de vídeo e JPEG) travava o movimento: fica para a
+    // próxima (a primeira de cada cena sai sempre)
+    if (this.app.view.paradoHa < 1500 && this.thumbFeita.has(r.id)) return;
+    this.thumbFeita.add(r.id);
     const url = this.app.view.snapshot(150, 98);
     if (!url) return;
     saveThumb(r.id, url);

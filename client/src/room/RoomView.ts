@@ -486,6 +486,10 @@ export class RoomView {
   private entrouEm = 0;
   /** a última vez que algo mexeu (mouse, câmera, peça andando): parado há 3 s, o tabuleiro desenha um quadro sim, um não */
   private mexeuEm = 0;
+  /** Há quanto tempo nada mexe no tabuleiro (ms). */
+  get paradoHa() {
+    return performance.now() - this.mexeuEm;
+  }
   private camAntes = '';
   private pulou = false;
   /**
@@ -1789,7 +1793,8 @@ export class RoomView {
           this.tatZoom.dy = d.ty + dy * this.dpr;
         }
       }
-      this.updateHover();
+      // arrastando a câmera, não procura o que está embaixo do mouse (varria todas as casas e alvos a cada movimento)
+      if (!d?.moved) this.updateHover();
     });
     c.addEventListener('pointerup', (e) => {
       if (this.caixaSel) {
