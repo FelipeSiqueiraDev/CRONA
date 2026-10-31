@@ -1,4 +1,4 @@
-import type { CenaMomento, ChamaCriatura, Criatura, HoraDoDia, Npc, PecaCriatura, regras } from '@crona/shared';
+import type { Campanha, CenaMomento, ChamaCriatura, Criatura, HoraDoDia, Npc, PecaCriatura, regras } from '@crona/shared';
 import type { ViagemInfo, IconeLugar, AvatarLook, CharacterDef, combate, Documento, Door, FichaSalva, FloorItem, FloorStyle, InvItem, LightMode, LogEntry, NevoaCena, NotaPlanta, Objective, ParticleKind, Vitals, WallItem } from '@crona/shared';
 import type { Banco } from './banco';
 import { BancoJson } from './banco/json';
@@ -187,6 +187,9 @@ export interface Database {
   /** contas da plataforma (a tela de entrada; ver src/contas.ts) */
   contas?: Conta[];
   nextContaId?: number;
+  /** as campanhas das contas, com os membros e o convite (29/10; src/campanhas.ts) */
+  campanhasJogo?: Campanha[];
+  nextCampanhaJogoId?: number;
   /** a tela do falso C.R.I.S para quem entra de fora (sem valor = ligada; hotel.ts, falsoCrisLigado) */
   falsoCris?: boolean;
 }

@@ -2,6 +2,23 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Minhas campanhas (29/10; branch `claude/campanhas`, nada no 8080)
+
+- **O pedido:** "logar com a minha conta normal igual todos os usuários... uma lista de campanhas separadas em campanhas que eu participo e campanhas que eu mestro... criar campanha ou entrar em uma campanha com o código de convite". Depois: "Não se preocupe com a estrutura de tabuleiro por enquanto... Só quero deixar essa parte já preparada". E o sistema da campanha tem de aceitar outros (D&D, o cyberpunk que o Felipe faz com um jogador, o que vier).
+- **Feito:**
+  - a lista no painel da entrada (`entrada.ts`, modos `campanhas`, `novaCampanha` e `codigo`): computador e celular;
+  - criar campanha com o sistema;
+  - o convite (6 letras, `K7Q-M2P`, sem 0/O/1/I/L), com copiar, trocar e desligar;
+  - entrar pelo código, com o mesmo freio das senhas erradas.
+- **A principal:** na primeira subida, a história de hoje virou a campanha principal. As contas de mestre entraram como mestres; as de jogador com ficha, como jogadores (`migrarCampanhas`). O papel na principal continua sendo o `papel` da conta (`porNaCampanha` acerta os dois), então login, ficha e mesa seguem iguais.
+- **Muda para quem usa:** com a conta guardada no aparelho, a tela abre na lista, em vez de ir direto ao tabuleiro ou à ficha. A conta de mestre escolhe a principal e entra.
+- **Falta:**
+  - o tabuleiro das outras campanhas: um mundo por campanha, que fica para quando o Felipe pedir;
+  - tirar alguém da campanha;
+  - renomear e apagar campanha.
+- **Prévia:** a conta de teste `teste` ficou mestre da campanha "Neon Sujo (teste)", com o convite ligado.
+- **Testes:** `server/test/campanhas.test.ts`.
+
 ## Desempenho do tabuleiro (28/10, em andamento)
 
 - O Felipe: "movimentar a tela trava tudo, lentão", no PC e no notebook, nas cenas grandes (Mansão Albuquerque, Jardim do Fritz, cidades, Santo Berço).

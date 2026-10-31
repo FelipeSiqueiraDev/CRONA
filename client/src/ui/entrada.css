@@ -866,6 +866,211 @@
   color: #ffd27a;
   font-size: calc(var(--u) * 22px);
 }
+/* ---------------------------------------------------------------- minhas campanhas (29/10) */
+.ent-select {
+  appearance: none;
+  cursor: pointer;
+  font-size: calc(var(--u) * 17px);
+}
+.ent-select option {
+  background: #060c16;
+  color: #f1e6d4;
+}
+.ent-codigo-input {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+.ent-lista {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 10px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: calc(var(--u) * 4px);
+  scrollbar-width: thin;
+  scrollbar-color: #6b5848 transparent;
+}
+.ent-grupo h3 {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--u) * 8px);
+  margin: 0 0 calc(var(--u) * 5px);
+  color: #c08442;
+  font-size: calc(var(--u) * 14px);
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.ent-grupo h3 small {
+  color: #6f6b67;
+  font-size: calc(var(--u) * 13px);
+}
+.ent-vazio {
+  margin: 0;
+  color: #8a8079;
+  font-size: calc(var(--u) * 14px);
+}
+.ent-camp {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0 calc(var(--u) * 8px);
+  margin-bottom: calc(var(--u) * 5px);
+  padding: calc(var(--u) * 6px) calc(var(--u) * 8px);
+  background: #060c16;
+  border: calc(var(--u) * 2px) solid #4a3c30;
+  border-radius: calc(var(--u) * 6px);
+  transition: border-color 0.2s ease;
+}
+.ent-camp:hover,
+.ent-camp:focus-within {
+  border-color: #a18873;
+}
+.ent-camp.principal {
+  border-color: #8c6a3e;
+}
+.ent-camp.principal:hover,
+.ent-camp.principal:focus-within {
+  border-color: #f0b058;
+  box-shadow: 0 0 calc(var(--u) * 12px) rgba(240, 176, 88, 0.22);
+}
+.ent-camp.nova {
+  animation: ent-camp-nova 1.6s ease-out;
+}
+@keyframes ent-camp-nova {
+  0%,
+  30% {
+    border-color: #ffd27a;
+    box-shadow: 0 0 calc(var(--u) * 18px) rgba(255, 210, 122, 0.5);
+  }
+}
+.ent-camp-abrir {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 2px);
+  min-width: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ent-camp-abrir:focus-visible {
+  outline: none;
+}
+.ent-camp-abrir b {
+  overflow: hidden;
+  color: #f1e6d4;
+  font-size: calc(var(--u) * 17px);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ent-camp.principal .ent-camp-abrir b {
+  color: #ffd27a;
+}
+.ent-camp-abrir span {
+  overflow: hidden;
+  color: #9a8f86;
+  font-size: calc(var(--u) * 13px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ent-selo {
+  padding: calc(var(--u) * 2px) calc(var(--u) * 6px);
+  color: #2b1606;
+  background: #e9a944;
+  border-radius: calc(var(--u) * 3px);
+  font-size: calc(var(--u) * 11px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ent-selo.apagado {
+  color: #9a8f86;
+  background: none;
+  border: 1px solid #47433d;
+}
+.ent-camp-convite {
+  width: calc(var(--u) * 28px);
+  height: calc(var(--u) * 28px);
+  padding: calc(var(--u) * 3px);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: calc(var(--u) * 4px);
+  color: #a99a88;
+  cursor: pointer;
+}
+.ent-camp-convite svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ent-camp-convite:hover,
+.ent-camp-convite:focus-visible,
+.ent-camp-convite.ativo {
+  color: #ffd27a;
+  border-color: #6b5848;
+  outline: none;
+}
+.ent-convite {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--u) * 4px) calc(var(--u) * 12px);
+  margin-top: calc(var(--u) * 6px);
+  padding-top: calc(var(--u) * 6px);
+  border-top: 1px dashed #47433d;
+  color: #9a8f86;
+  font-size: calc(var(--u) * 13px);
+}
+.ent-convite code {
+  color: #ffd27a;
+  font-family: inherit;
+  font-size: calc(var(--u) * 19px);
+  letter-spacing: 0.16em;
+  user-select: all;
+}
+.ent-link {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: #c9a46a;
+  font: inherit;
+  font-size: calc(var(--u) * 13px);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+.ent-link:hover,
+.ent-link:focus-visible {
+  color: #ffd27a;
+  outline: none;
+}
+.ent-conta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 10px);
+  color: #9a8f86;
+  font-size: calc(var(--u) * 14px);
+}
+.ent-conta b {
+  color: #e9dccb;
+  font-weight: 400;
+}
+.ent-painel.com-erro .ent-conta {
+  opacity: 0;
+}
+/* os dois botões lado a lado, embaixo da lista */
+.ent-painel[data-modo='campanhas'] .ent-botao {
+  padding: 0 calc(var(--u) * 8px);
+  font-size: calc(var(--u) * 15px);
+  letter-spacing: 0.06em;
+}
+
 .ent-painel.treme {
   animation: ent-treme 0.45s;
 }

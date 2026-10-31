@@ -24,7 +24,7 @@ import './ui/hud.css';
 import './ui/combateRapido.css';
 import './ui/combateCards.css';
 import './ui/cards.css';
-import { anyFurniName, getFurni, getWallFurni, portraitState, vitalConditions, type ServerMsg } from '@crona/shared';
+import { anyFurniName, getFurni, getWallFurni, portraitState, vitalConditions, type ResumoCampanha, type ServerMsg } from '@crona/shared';
 import { Net } from './net';
 import { clearIconCache } from './render/bubbles';
 import { breathMode } from './render/portrait';
@@ -319,6 +319,8 @@ function criarEntrada() {
     enviar: (m) => net.send(m),
     verMesa: () => location.replace(`${location.pathname}?mesa`),
     sairDaConta: () => sairDaConta(),
+    campanha: (p) => sessaoConta && net.send({ ...p, sessao: sessaoConta.sessao }),
+    abrirCampanha: (c) => abrirCampanha(c),
   }));
 }
 
@@ -358,18 +360,35 @@ function contaPeloCris(m: Extract<ServerMsg, { t: 'conta' }>) {
       mostrarEntrada();
       entrada!.preencher(m.nome);
     },
-    // um tempo com o CRONA à vista, e segue como a entrada de sempre
+    // um tempo com o CRONA à vista, e segue como a entrada de sempre (a lista das campanhas)
     () =>
       setTimeout(() => {
-        if (m.papel !== 'jogador') {
-          entrada?.sucesso(m.nome);
-          login();
-        } else if (m.fichaKey) {
-          entrada?.sucesso(m.nome);
-          setTimeout(() => location.replace(`${location.pathname}?ficha`), 1800);
-        } else entrada?.semFicha(m.nome);
+        entrada?.campanhas(m.nome, null);
+        pedirCampanhas();
       }, 1700),
   );
+}
+
+/** "Minhas campanhas" (29/10): depois de entrar, a lista da conta no painel da entrada (ui/entrada.ts). */
+function pedirCampanhas() {
+  if (sessaoConta) net.send({ t: 'campanhasMinhas', sessao: sessaoConta.sessao });
+}
+
+/**
+ * A campanha escolhida na lista. Por enquanto só a principal tem tabuleiro: o mestre dela entra no jogo; o jogador vai
+ * para a ficha dele (ou vê o aviso de que a conta ainda não tem ficha).
+ */
+function abrirCampanha(c: ResumoCampanha) {
+  if (!sessaoConta || !c.principal) return;
+  sessaoConta = { ...sessaoConta, papel: c.papel };
+  guardarSessao(sessaoConta);
+  if (c.papel === 'mestre') {
+    entrada?.sucesso(sessaoConta.nome);
+    login();
+  } else if (temChaveFicha()) {
+    entrada?.sucesso(sessaoConta.nome);
+    setTimeout(() => location.replace(`${location.pathname}?ficha`), 600);
+  } else entrada?.semFicha(sessaoConta.nome);
 }
 
 /**
@@ -403,13 +422,12 @@ const temChaveFicha = () => {
     return false;
   }
 };
-if (pedeConta && sessaoConta?.papel === 'jogador') {
-  // o jogador com conta: a tela dele é a ficha que a conta lembra
-  if (temChaveFicha()) location.replace(`${location.pathname}?ficha`);
-  else {
-    mostrarEntrada();
-    entrada!.semFicha(sessaoConta.nome);
-  }
+if (pedeConta && sessaoConta) {
+  // com a conta já aberta neste aparelho: a lista das campanhas (29/10; antes, o mestre ia direto ao tabuleiro e o
+  // jogador à ficha)
+  mostrarEntrada();
+  entrada!.campanhas(sessaoConta.nome, null);
+  pedirCampanhas();
 } else if (pedeConta && !sessaoConta) mostrarEntradaOuCris();
 else login();
 let loginTries = 0;
@@ -443,17 +461,10 @@ net.onMessage = (m: ServerMsg) => {
       if (m.ok) {
         sessaoConta = { sessao: m.sessao, nome: m.nome, papel: m.papel };
         guardarSessao(sessaoConta);
-        if (m.papel === 'jogador') {
-          // o jogador vai para a ficha dele; sem ficha ligada, o aviso
-          if (m.fichaKey) {
-            guardarChaveFicha(m.fichaKey);
-            entrada?.sucesso(m.nome);
-            setTimeout(() => location.replace(`${location.pathname}?ficha`), 600);
-          } else entrada?.semFicha(m.nome);
-        } else {
-          entrada?.sucesso(m.nome);
-          login();
-        }
+        if (m.papel === 'jogador' && m.fichaKey) guardarChaveFicha(m.fichaKey);
+        // daqui, a lista das campanhas (o tabuleiro ou a ficha abrem quando a pessoa escolhe a campanha)
+        entrada?.campanhas(m.nome, null);
+        pedirCampanhas();
       } else if (m.expirou) {
         esquecerSessao();
         sessaoConta = null;
@@ -462,6 +473,15 @@ net.onMessage = (m: ServerMsg) => {
         else login();
       } else if (entrada) entrada.erro(m.erro);
       else toast(m.erro, 'error');
+      break;
+    case 'campanhas':
+      if (m.ok) {
+        if (sessaoConta) entrada?.campanhas(sessaoConta.nome, m.lista, m.nova);
+      } else if (m.expirou) {
+        esquecerSessao();
+        sessaoConta = null;
+        mostrarEntrada(m.erro);
+      } else entrada?.erro(m.erro);
       break;
     case 'welcome': {
       net.entrou();

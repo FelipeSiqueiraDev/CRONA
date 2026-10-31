@@ -92,6 +92,7 @@ import {
   URL_MAPA_RE,
 } from '@crona/shared';
 import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSessao, SENHA_MIN, senhaAntiga, type Conta } from './contas';
+import { campanhaPrincipal, criarCampanha, entrarComCodigo, listaDaConta, mudarConvite, porNaCampanha } from './campanhas';
 import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type TokenData, type UserData } from './db';
 import { RoomInstance, type Client, type HotelApi } from './roomInstance';
 import { folhaDaPasta, gravarSentadoAjuste, refreshPortraits } from './portraits';
@@ -2491,6 +2492,7 @@ export class Hotel implements HotelApi {
     // a conta (tela de entrada) vale antes e depois do login
     if (m.t === 'contaCriar' || m.t === 'contaEntrar') return void this.conta(c, m);
     if (m.t === 'contaSair') return this.contaSair(m);
+    if (m.t === 'campanhasMinhas' || m.t === 'campanhaCriar' || m.t === 'campanhaEntrar' || m.t === 'campanhaConvite') return this.campanhas(c, m);
     if (!c.name) {
       if (m.t === 'login') this.login(c, m);
       return;
@@ -2838,6 +2840,9 @@ export class Hotel implements HotelApi {
       const conta: Conta = { id: (this.db.nextContaId ??= 1), nome, email, senha: hash, papel, sessoes: [], criadaEm: agora };
       this.db.nextContaId++;
       contas.push(conta);
+      // a conta de mestre é mestre da campanha do tabuleiro (a de jogador entra nela pelo código ou pelo link da ficha)
+      const principal = campanhaPrincipal(this.db);
+      if (papel === 'mestre' && principal) porNaCampanha(principal, conta, 'mestre', agora);
       if (this.persist) console.log(`[contas] conta nova: ${nome} (${papel})`);
       return this.contaAberta(c, conta);
     }
@@ -2885,6 +2890,41 @@ export class Hotel implements HotelApi {
     c.send({ t: 'conta', ok: true, sessao, nome: conta.nome, papel: conta.papel, ...(ficha?.chave ? { fichaKey: ficha.chave } : {}) });
   }
 
+  /**
+   * A tela "Minhas campanhas" (29/10): a lista da conta, criar campanha, entrar com o código e o convite do mestre. Vale
+   * antes do login, pela sessão da conta; a resposta é sempre a lista.
+   */
+  private campanhas(c: Client, m: Record<string, unknown>) {
+    const agora = Date.now();
+    const conta = typeof m.sessao === 'string' && m.sessao ? contaDaSessao(this.db.contas, m.sessao) : undefined;
+    if (!conta) return c.send({ t: 'campanhas', ok: false, erro: 'Sua sessão terminou. Entre de novo.', expirou: true });
+    const falha = (erro: string) => c.send({ t: 'campanhas', ok: false, erro });
+    let nova: number | undefined;
+    if (m.t === 'campanhaCriar') {
+      const r = criarCampanha(this.db, conta, m.nome, m.sistema, agora);
+      if (typeof r === 'string') return falha(r);
+      nova = r.id;
+      if (this.persist) console.log(`[campanhas] ${conta.nome} criou "${r.nome}" (${r.sistema})`);
+    } else if (m.t === 'campanhaEntrar') {
+      // o código é a chave de entrada: o mesmo freio das senhas erradas
+      if ((c.esperaConta ?? 0) > agora) return falha('Muitas tentativas seguidas. Espere meio minuto e tente de novo.');
+      const r = entrarComCodigo(this.db, conta, m.codigo, agora);
+      if (typeof r === 'string') {
+        c.falhasConta = (c.falhasConta ?? 0) + 1;
+        if (c.falhasConta >= 5) (c.falhasConta = 0), (c.esperaConta = agora + 30_000);
+        return falha(r);
+      }
+      c.falhasConta = 0;
+      nova = r.id;
+      if (this.persist) console.log(`[campanhas] ${conta.nome} entrou em "${r.nome}"`);
+    } else if (m.t === 'campanhaConvite') {
+      const r = mudarConvite(this.db, conta, m.id, m.acao);
+      if (typeof r === 'string') return falha(r);
+    }
+    if (m.t !== 'campanhasMinhas') this.save();
+    c.send({ t: 'campanhas', ok: true, lista: listaDaConta(this.db, conta), ...(nova ? { nova } : {}) });
+  }
+
   private contaSair(m: Record<string, unknown>) {
     if (typeof m.sessao === 'string' && m.sessao && fecharSessao(this.db.contas, m.sessao)) this.save();
   }
@@ -2909,6 +2949,9 @@ export class Hotel implements HotelApi {
     // o jogador que abre o link da ficha com a conta fica com ela ligada à conta
     if (conta?.papel === 'jogador' && daFicha && conta.fichaId !== daFicha.id) {
       conta.fichaId = daFicha.id;
+      // e entra na campanha do tabuleiro como jogador (a lista "Minhas campanhas" mostra)
+      const principal = campanhaPrincipal(this.db);
+      if (principal) porNaCampanha(principal, conta, 'jogador');
       this.save();
     }
     // com a conta, vale o papel dela (o computador do servidor sozinho não basta), mas a chave do

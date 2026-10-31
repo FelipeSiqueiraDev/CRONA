@@ -1,4 +1,4 @@
-import type { ClientMsg } from '@crona/shared';
+import { SISTEMAS, type ClientMsg, type ResumoCampanha, type SistemaId } from '@crona/shared';
 import { h } from './dom';
 import { existeArte } from './icons';
 import { Cena, UNIVERSOS, pedidos, type CenaLayout, type Clima, type Pol } from './entradaCena';
@@ -20,9 +20,17 @@ import { aoLiberar } from './audioCelular';
  * Modos: entrar (e-mail e senha), criar conta (nome, e-mail e senha) e o aviso do jogador que
  * ainda não tem ficha ligada à conta. A conta é do servidor (`contaEntrar`, `contaCriar`); a
  * resposta chega pela mensagem `conta` e o main.ts chama `resposta`.
+ *
+ * Depois de entrar, "Minhas campanhas" (29/10) no mesmo painel: as que a conta mestra e as de que participa, criar
+ * campanha (nome e sistema) e entrar com o código de convite. A lista vem do servidor (mensagem `campanhas`).
  */
 
-type Modo = 'entrar' | 'criar' | 'semFicha';
+type Modo = 'entrar' | 'criar' | 'semFicha' | 'campanhas' | 'novaCampanha' | 'codigo';
+/** o que a tela de campanhas pede ao servidor (o main.ts junta a sessão da conta) */
+export type PedidoCampanha =
+  | { t: 'campanhaCriar'; nome: string; sistema: SistemaId }
+  | { t: 'campanhaEntrar'; codigo: string }
+  | { t: 'campanhaConvite'; id: number; acao: 'gerar' | 'desligar' };
 /** [y, altura] em pixels do palco */
 type Caixa = [number, number];
 interface Ret {
@@ -160,6 +168,9 @@ const ICONE = {
   ver: SVG('<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/>'),
   som: SVG('<path d="M4 9.5h4l5-4.5v14l-5-4.5H4z"/>'),
   esconder: SVG('<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20 20 4"/>'),
+  campanha: SVG('<path d="M5 3.5h11l3 3v14H5z"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/>'),
+  sistema: SVG('<path d="M12 2.8 20 7.4v9.2L12 21.2 4 16.6V7.4z"/><path d="M12 2.8v18.4M4 7.4l16 9.2M20 7.4 4 16.6"/>'),
+  codigo: SVG('<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/>'),
 };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -168,8 +179,12 @@ export interface EntradaOpcoes {
   enviar(m: ClientMsg): void;
   /** o jogador sem ficha quer só ver o tabuleiro */
   verMesa(): void;
-  /** sair da conta (o jogador sem ficha) */
+  /** sair da conta (o jogador sem ficha, e a lista de campanhas) */
   sairDaConta(): void;
+  /** criar campanha, entrar com o código, mexer no convite */
+  campanha(m: PedidoCampanha): void;
+  /** a campanha escolhida na lista (a do tabuleiro abre o jogo) */
+  abrirCampanha(c: ResumoCampanha): void;
 }
 
 export class Entrada {
@@ -221,6 +236,15 @@ export class Entrada {
   private particulas: { x: number; y: number; vx: number; vy: number; r: number; f: number; quente: boolean; magia: boolean }[] = [];
   private erroTempo = 0;
   private aoRedimensionar = () => this.ajustar();
+  /** "Minhas campanhas": a lista, a linha da conta e os campos de criar e do código */
+  private lista: HTMLElement;
+  private contaLinha: HTMLElement;
+  private novaNome: { caixa: HTMLElement; input: HTMLInputElement };
+  private novaSistema: { caixa: HTMLElement; select: HTMLSelectElement };
+  private codigo: { caixa: HTMLElement; input: HTMLInputElement };
+  private campanhasDaConta: ResumoCampanha[] | null = null;
+  /** o cartão com o convite aberto (só o mestre) */
+  private conviteAberto: number | null = null;
 
   constructor(private op: EntradaOpcoes) {
     this.fundo = h('img', { class: 'ent-fundo', alt: '', draggable: 'false' });
@@ -252,12 +276,38 @@ export class Entrada {
     this.ou = h('div', { class: 'ent-ou' }, h('span', null, 'ou'));
     this.erroEl = h('div', { class: 'ent-erro', role: 'alert' });
     this.msg = h('div', { class: 'ent-msg' });
+    this.lista = h('div', { class: 'ent-lista', role: 'list', 'aria-label': 'Minhas campanhas' });
+    this.contaLinha = h('div', { class: 'ent-conta' });
+    const novaInput = h('input', { class: 'ent-input', type: 'text', placeholder: 'Nome da campanha', 'aria-label': 'Nome da campanha', maxlength: '60', spellcheck: 'false', autocomplete: 'off' });
+    this.novaNome = { caixa: h('label', { class: 'ent-campo ent-nova-nome' }, h('span', { class: 'ent-ic', html: ICONE.campanha }), novaInput), input: novaInput };
+    const select = h(
+      'select',
+      { class: 'ent-input ent-select', 'aria-label': 'Sistema da campanha' },
+      ...SISTEMAS.map((s) => h('option', { value: s.id }, s.pronto ? s.nome : `${s.nome} (sem tabuleiro ainda)`)),
+    );
+    this.novaSistema = { caixa: h('label', { class: 'ent-campo ent-nova-sistema' }, h('span', { class: 'ent-ic', html: ICONE.sistema }), select), select };
+    const codigoInput = h('input', {
+      class: 'ent-input ent-codigo-input',
+      type: 'text',
+      placeholder: 'Código de convite',
+      'aria-label': 'Código de convite',
+      maxlength: '9',
+      spellcheck: 'false',
+      autocomplete: 'off',
+      autocapitalize: 'characters',
+    });
+    this.codigo = { caixa: h('label', { class: 'ent-campo ent-codigo' }, h('span', { class: 'ent-ic', html: ICONE.codigo }), codigoInput), input: codigoInput };
     this.painel = h(
       'form',
       { class: 'ent-painel', novalidate: true, onsubmit: (e: Event) => (e.preventDefault(), this.enviar()) },
       this.campos.nome.caixa,
       this.campos.email.caixa,
       this.campos.senha.caixa,
+      this.novaNome.caixa,
+      this.novaSistema.caixa,
+      this.codigo.caixa,
+      this.lista,
+      this.contaLinha,
       this.msg,
       this.principal,
       this.ou,
@@ -377,7 +427,7 @@ export class Entrada {
       return this.trilha.tocando || !this.trilha.ligada;
     });
     // no computador, o cursor já no e-mail
-    if (matchMedia('(pointer: fine)').matches) setTimeout(() => this.campos.email.input.focus(), 700);
+    if (matchMedia('(pointer: fine)').matches) setTimeout(() => this.modo === 'entrar' && this.campos.email.input.focus(), 700);
   }
 
   /** A conta respondeu com erro: a mensagem e o painel tremendo. */
@@ -408,6 +458,111 @@ export class Entrada {
     this.painel.classList.remove('com-erro');
     this.painel.classList.add('certo');
     this.rotulo(this.principal, `BEM-VINDO, ${nome.toUpperCase()}`);
+  }
+
+  /**
+   * "Minhas campanhas": a lista da conta (a principal primeiro), com o nome de quem entrou. `nova` = a que acabou de
+   * ser criada ou em que acabou de entrar (fica marcada).
+   */
+  campanhas(nome: string, lista: ResumoCampanha[] | null, nova?: number) {
+    this.campanhasDaConta = lista;
+    this.esperando = false;
+    this.painel.classList.remove('esperando', 'certo', 'com-erro');
+    for (const c of Object.values(this.campos)) c.input.disabled = false;
+    this.novaNome.input.disabled = this.novaSistema.select.disabled = this.codigo.input.disabled = false;
+    if (nova) (this.novaNome.input.value = ''), (this.codigo.input.value = '');
+    this.contaLinha.replaceChildren(
+      h('span', null, 'Conta: ', h('b', null, nome)),
+      h('button', { class: 'ent-link', type: 'button', onclick: () => this.op.sairDaConta() }, 'sair'),
+    );
+    this.renderLista(nova);
+    this.definirModo('campanhas', this.modo !== 'campanhas');
+  }
+
+  /** As duas listas: as que mestro e as de que participo. */
+  private renderLista(nova?: number) {
+    // a lista ainda vindo do servidor
+    if (!this.campanhasDaConta) return this.lista.replaceChildren(h('p', { class: 'ent-vazio' }, 'Carregando as campanhas...'));
+    const todas = this.campanhasDaConta;
+    const grupo = (titulo: string, itens: ResumoCampanha[], vazio: string) =>
+      h(
+        'section',
+        { class: 'ent-grupo' },
+        h('h3', null, titulo, h('small', null, String(itens.length))),
+        ...(itens.length ? itens.map((c) => this.cartao(c, c.id === nova)) : [h('p', { class: 'ent-vazio' }, vazio)]),
+      );
+    this.lista.replaceChildren(
+      grupo('Mestro', todas.filter((c) => c.papel === 'mestre'), 'Nenhuma ainda: crie a sua.'),
+      grupo('Participo', todas.filter((c) => c.papel === 'jogador'), 'Nenhuma ainda: entre com o código do mestre.'),
+    );
+  }
+
+  private cartao(c: ResumoCampanha, nova: boolean): HTMLElement {
+    const sis = SISTEMAS.find((s) => s.id === c.sistema);
+    const mestre = c.papel === 'mestre';
+    const detalhe = [sis?.nome ?? 'Outro sistema', mestre ? `${c.jogadores} ${c.jogadores === 1 ? 'jogador' : 'jogadores'}` : `mestre: ${c.mestres.join(', ') || '?'}`].join(' · ');
+    const selo = c.principal ? h('span', { class: 'ent-selo' }, 'tabuleiro') : h('span', { class: 'ent-selo apagado' }, 'em preparo');
+    const abrir = h(
+      'button',
+      { class: 'ent-camp-abrir', type: 'button', title: c.principal ? 'Abrir o tabuleiro desta campanha' : 'Esta campanha ainda não tem tabuleiro', onclick: () => this.escolher(c) },
+      h('b', null, c.nome),
+      h('span', null, detalhe),
+    );
+    const partes: HTMLElement[] = [abrir, selo];
+    if (mestre) {
+      const aberto = this.conviteAberto === c.id;
+      partes.push(
+        h('button', {
+          class: `ent-camp-convite${aberto ? ' ativo' : ''}`,
+          type: 'button',
+          title: 'Convite',
+          'aria-label': `Convite de ${c.nome}`,
+          'aria-expanded': String(aberto),
+          html: ICONE.codigo,
+          onclick: () => {
+            this.conviteAberto = aberto ? null : c.id;
+            this.renderLista();
+          },
+        }),
+      );
+      if (aberto) partes.push(this.convite(c));
+    }
+    return h('div', { class: `ent-camp${nova ? ' nova' : ''}${c.principal ? ' principal' : ''}`, role: 'listitem' }, ...partes);
+  }
+
+  /** A linha do convite: o código, copiar, trocar e desligar (ou gerar, se não houver). */
+  private convite(c: ResumoCampanha): HTMLElement {
+    const pedir = (acao: 'gerar' | 'desligar') => this.op.campanha({ t: 'campanhaConvite', id: c.id, acao });
+    if (!c.convite)
+      return h(
+        'div',
+        { class: 'ent-convite' },
+        h('span', null, 'Sem convite: ninguém novo entra.'),
+        h('button', { class: 'ent-link', type: 'button', onclick: () => pedir('gerar') }, 'gerar código'),
+      );
+    const copiar = h('button', { class: 'ent-link', type: 'button' }, 'copiar');
+    copiar.onclick = () =>
+      void navigator.clipboard
+        ?.writeText(c.convite!)
+        .then(() => (copiar.textContent = 'copiado!'))
+        .catch(() => (copiar.textContent = 'não deu'));
+    return h(
+      'div',
+      { class: 'ent-convite' },
+      h('code', null, c.convite),
+      copiar,
+      h('button', { class: 'ent-link', type: 'button', title: 'Gera outro código; o antigo para de valer', onclick: () => pedir('gerar') }, 'trocar'),
+      h('button', { class: 'ent-link', type: 'button', title: 'Ninguém novo entra até gerar outro', onclick: () => pedir('desligar') }, 'desligar'),
+    );
+  }
+
+  private escolher(c: ResumoCampanha) {
+    if (this.esperando) return;
+    if (!c.principal) {
+      const sis = SISTEMAS.find((s) => s.id === c.sistema);
+      return this.erro(sis?.pronto ? 'Esta campanha ainda não tem tabuleiro: por enquanto, só a principal abre.' : `O tabuleiro de ${sis?.nome ?? 'outro sistema'} ainda não existe.`);
+    }
+    this.op.abrirCampanha(c);
   }
 
   /** O jogador entrou, mas a conta dele ainda não tem ficha. */
@@ -443,6 +598,19 @@ export class Entrada {
   private enviar() {
     if (this.esperando) return;
     if (this.modo === 'semFicha') return this.op.verMesa();
+    if (this.modo === 'campanhas') return this.definirModo('novaCampanha');
+    if (this.modo === 'novaCampanha') {
+      const nome = this.novaNome.input.value.trim();
+      if (nome.length < 2) return this.erro('Escreva o nome da campanha.'), this.novaNome.input.focus();
+      this.esperar(true);
+      return this.op.campanha({ t: 'campanhaCriar', nome, sistema: this.novaSistema.select.value as SistemaId });
+    }
+    if (this.modo === 'codigo') {
+      const codigo = this.codigo.input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (codigo.length !== 6) return this.erro('O código tem 6 letras e números (como K7Q-M2P).'), this.codigo.input.focus();
+      this.esperar(true);
+      return this.op.campanha({ t: 'campanhaEntrar', codigo });
+    }
     const nome = this.campos.nome.input.value.trim();
     const email = this.campos.email.input.value.trim();
     const senha = this.campos.senha.input.value;
@@ -461,6 +629,9 @@ export class Entrada {
 
   private trocar() {
     if (this.esperando) return;
+    // da lista: entrar com o código; de criar ou do código: volta à lista; o jogador sem ficha que veio da lista volta a ela
+    if (this.modo === 'campanhas') return this.definirModo('codigo');
+    if (this.modo === 'novaCampanha' || this.modo === 'codigo' || (this.modo === 'semFicha' && this.campanhasDaConta)) return this.definirModo('campanhas');
     if (this.modo === 'semFicha') return this.op.sairDaConta();
     this.definirModo(this.modo === 'entrar' ? 'criar' : 'entrar');
   }
@@ -469,7 +640,8 @@ export class Entrada {
     this.esperando = sim;
     this.painel.classList.toggle('esperando', sim);
     for (const c of Object.values(this.campos)) c.input.disabled = sim;
-    if (sim) this.rotulo(this.principal, this.modo === 'criar' ? 'CRIANDO...' : 'ENTRANDO...');
+    this.novaNome.input.disabled = this.novaSistema.select.disabled = this.codigo.input.disabled = sim;
+    if (sim) this.rotulo(this.principal, this.modo === 'criar' || this.modo === 'novaCampanha' ? 'CRIANDO...' : 'ENTRANDO...');
     else this.definirModo(this.modo, false);
   }
 
@@ -496,19 +668,35 @@ export class Entrada {
     this.painel.dataset.modo = modo;
     const pos = modo === 'criar' ? L.criar : L.entrar;
     const p = L.painel;
-    const caixa = (el: HTMLElement, c: Caixa, visivel = true) => {
-      el.style.left = `${L.campo.x - p.x}px`;
-      el.style.width = `${L.campo.w}px`;
+    const caixa = (el: HTMLElement, c: Caixa, visivel = true, x = L.campo.x, w = L.campo.w) => {
+      el.style.left = `${x - p.x}px`;
+      el.style.width = `${w}px`;
       el.style.top = `${c[0] - p.y}px`;
       el.style.height = `${c[1]}px`;
       el.classList.toggle('oculto', !visivel);
     };
+    const conta = modo === 'entrar' || modo === 'criar';
     caixa(this.campos.nome.caixa, modo === 'criar' ? L.criar.nome : L.entrar.email, modo === 'criar');
-    caixa(this.campos.email.caixa, pos.email, modo !== 'semFicha');
-    caixa(this.campos.senha.caixa, pos.senha, modo !== 'semFicha');
-    caixa(this.msg, [pos.email[0], pos.senha[0] + pos.senha[1] - pos.email[0]], modo === 'semFicha');
-    caixa(this.principal, pos.botao);
-    caixa(this.outro, pos.outro);
+    caixa(this.campos.email.caixa, pos.email, conta);
+    caixa(this.campos.senha.caixa, pos.senha, conta);
+    caixa(this.novaNome.caixa, L.entrar.email, modo === 'novaCampanha');
+    caixa(this.novaSistema.caixa, L.entrar.senha, modo === 'novaCampanha');
+    caixa(this.codigo.caixa, L.entrar.email, modo === 'codigo');
+    caixa(this.msg, modo === 'codigo' ? L.entrar.senha : [pos.email[0], pos.senha[0] + pos.senha[1] - pos.email[0]], modo === 'semFicha' || modo === 'codigo');
+    if (modo === 'codigo') this.msg.replaceChildren(h('span', null, 'Peça o código ao mestre da campanha.'));
+    // a lista vai do primeiro campo até perto do "ou"; embaixo, a conta e os dois botões lado a lado
+    caixa(this.lista, [L.entrar.email[0], L.entrar.ou - L.entrar.email[0] - 22 * L.u], modo === 'campanhas');
+    caixa(this.contaLinha, [L.entrar.ou - 12 * L.u, 24 * L.u], modo === 'campanhas');
+    if (modo === 'campanhas') {
+      const vao = 10 * L.u;
+      const meio = (L.campo.w - vao) / 2;
+      caixa(this.principal, L.entrar.outro, true, L.campo.x, meio);
+      caixa(this.outro, L.entrar.outro, true, L.campo.x + meio + vao, meio);
+    } else {
+      caixa(this.principal, pos.botao);
+      caixa(this.outro, pos.outro);
+    }
+    this.ou.classList.toggle('oculto', modo === 'campanhas');
     this.ou.style.top = this.erroEl.style.top = `${pos.ou - p.y}px`;
     this.ou.style.left = this.erroEl.style.left = `${L.campo.x - p.x}px`;
     this.ou.style.width = this.erroEl.style.width = `${L.campo.w}px`;
@@ -519,14 +707,18 @@ export class Entrada {
     email.setAttribute('aria-label', email.placeholder);
     email.type = modo === 'criar' ? 'email' : 'text';
     if (!this.esperando) {
-      this.rotulo(this.principal, modo === 'criar' ? 'CRIAR CONTA' : modo === 'semFicha' ? 'VER O TABULEIRO' : 'ENTRAR');
-      this.rotulo(this.outro, modo === 'criar' ? 'JÁ TENHO CONTA' : modo === 'semFicha' ? 'SAIR DA CONTA' : 'CRIAR CONTA');
+      const principal: Record<Modo, string> = { entrar: 'ENTRAR', criar: 'CRIAR CONTA', semFicha: 'VER O TABULEIRO', campanhas: 'CRIAR CAMPANHA', novaCampanha: 'CRIAR CAMPANHA', codigo: 'ENTRAR NA CAMPANHA' };
+      const outro: Record<Modo, string> = { entrar: 'CRIAR CONTA', criar: 'JÁ TENHO CONTA', semFicha: this.campanhasDaConta ? 'VOLTAR' : 'SAIR DA CONTA', campanhas: 'TENHO UM CÓDIGO', novaCampanha: 'VOLTAR', codigo: 'VOLTAR' };
+      this.rotulo(this.principal, principal[modo]);
+      this.rotulo(this.outro, outro[modo]);
     }
     if (mudou && animar) {
       this.painel.classList.remove('troca');
       void this.painel.offsetWidth;
       this.painel.classList.add('troca');
       if (modo === 'criar') setTimeout(() => this.campos.nome.input.focus(), 250);
+      if (modo === 'novaCampanha') setTimeout(() => this.novaNome.input.focus(), 250);
+      if (modo === 'codigo') setTimeout(() => this.codigo.input.focus(), 250);
       this.painel.classList.remove('com-erro');
     }
   }

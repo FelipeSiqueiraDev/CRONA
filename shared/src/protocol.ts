@@ -8,6 +8,7 @@ import type { ChamaCriatura } from './chama';
 import type { Npc } from './npcs';
 import type { CenaAoVivo, CenaMomento } from './cenas';
 import type { ViagemInfo } from './viagem';
+import type { ResumoCampanha, SistemaId } from './campanhas';
 import type { CampaignState, LootKind } from './rpg';
 import type { PapelConta, Role, Session, SessionAction, Token } from './session';
 import type { Documento } from './documentos';
@@ -420,6 +421,15 @@ export type ClientMsg =
   | { t: 'contaEntrar'; email: string; senha: string }
   /** sair: a sessão deste aparelho deixa de valer */
   | { t: 'contaSair'; sessao: string }
+  /**
+   * As campanhas da conta (29/10, a tela "Minhas campanhas"), antes do login, pela sessão: pedir a lista, criar
+   * (quem cria é o mestre), entrar com o código de convite (como jogador) e o mestre gerar ou desligar o convite. A
+   * resposta é sempre a mensagem `campanhas`.
+   */
+  | { t: 'campanhasMinhas'; sessao: string }
+  | { t: 'campanhaCriar'; sessao: string; nome: string; sistema: SistemaId }
+  | { t: 'campanhaEntrar'; sessao: string; codigo: string }
+  | { t: 'campanhaConvite'; sessao: string; id: number; acao: 'gerar' | 'desligar' }
   /** a tela do falso C.R.I.S para quem entra de fora: liga, desliga ou (sem `ligado`) pergunta; só o mestre */
   | { t: 'falsoCris'; ligado?: boolean }
   /** o mestre passa o dia (19/10): o que é "1 vez por dia" zera (a etapa ritualística do Ser Amaldiçoado) */
@@ -626,6 +636,9 @@ export type ServerMsg =
    */
   | { t: 'conta'; ok: true; sessao: string; nome: string; papel: PapelConta; fichaKey?: string }
   | { t: 'conta'; ok: false; erro: string; expirou?: boolean }
+  /** a lista "Minhas campanhas"; `nova` = a que acabou de ser criada ou em que acabou de entrar */
+  | { t: 'campanhas'; ok: true; lista: ResumoCampanha[]; nova?: number }
+  | { t: 'campanhas'; ok: false; erro: string; expirou?: boolean }
   /** como está a tela do falso C.R.I.S (resposta ao mestre) */
   | { t: 'falsoCris'; ligado: boolean }
   /** o dia da missão (começa no 1; o mestre passa) */
