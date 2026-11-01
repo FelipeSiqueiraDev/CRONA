@@ -167,6 +167,15 @@ export const DANO_DOS_RITUAIS: Record<string, Partial<Record<FormaRitual, DanoDo
   'presenca-do-medo': { basica: { dano: '5d8', tipo: 'mental', extra: { dano: '5d8', tipo: 'medo' } } },
 };
 
+/**
+ * O Convocar o Algoz tem dois testes, cada um quando o algoz chega (LR p. 128): em alcance curto da vítima, Vontade
+ * (falhou, abalada); adjacente, Fortitude (falhou, colapso e 0 PV; passou, 6d6 de Morte, que não a deixa abaixo de 1 PV).
+ */
+export const TESTES_DO_ALGOZ = {
+  vontade: { resistencia: 'Vontade parcial', rotulo: 'Em alcance curto: Vontade', livro: { dano: '', falhou: { condicao: 'abalado' } } as DanoDoRitual },
+  fortitude: { resistencia: 'Fortitude parcial', rotulo: 'Adjacente: Fortitude', livro: { dano: '', falhou: { zera: 'pv' }, passou: { dano: '6d6', tipo: 'morte' } } as DanoDoRitual },
+};
+
 /** O dano do ritual nesta forma, pelo livro (ou nada: o mestre digita). */
 export const danoDoRitual = (id: string, forma: FormaRitual): DanoDoRitual | null => DANO_DOS_RITUAIS[id]?.[forma] ?? null;
 

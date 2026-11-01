@@ -942,7 +942,7 @@ export class TelaJogador {
           'span',
           { class: 'jg-rit-txt' },
           h('span', { class: 'jg-rit-n' }, r.nome, seloDia(fs.ficha, regras.chaveDia.ritual(r.id))),
-          h('span', { class: 'jg-rit-campos' }, campo('Círculo', 'mais3', `${r.circulo}º`), campo('Custo', 'raio', `${k.pe} PE`), campo('Execução', 'ampulheta', r.execucao), campo('Alcance', 'alvo', r.alcance), campo('DT', 'olho', r.resistencia ? String(k.dt) : '—')),
+          h('span', { class: 'jg-rit-campos' }, campo('Círculo', 'mais3', `${r.circulo}º`), campo('Custo', 'raio', `${k.pe} PE`), campo('Execução', 'ampulheta', regras.nomeExecucao(r.execucao)), campo('Alcance', 'alvo', r.alcance), campo('DT', 'olho', r.resistencia ? String(k.dt) : '—')),
         ),
         estrela(r),
       );
@@ -974,7 +974,7 @@ export class TelaJogador {
         ...extras.map((x) => h('p', null, x)),
         h('p', { class: 'jg-det-meta' }, textoRef(r.ref)),
       ),
-      h('div', { class: 'jg-rit-campos largo' }, linha('Execução', r.execucao), linha('Alcance', r.alcance), linha('Resistência', r.resistencia ?? '—'), linha('DT', r.resistencia ? String(k.dt) : '—'), linha('Custo', `${k.pe} PE`)),
+      h('div', { class: 'jg-rit-campos largo' }, linha('Execução', regras.nomeExecucao(r.execucao)), linha('Alcance', r.alcance), linha('Resistência', r.resistencia ?? '—'), linha('DT', r.resistencia ? String(k.dt) : '—'), linha('Custo', `${k.pe} PE`)),
       this.blocoDia(regras.chaveDia.ritual(r.id)),
       h('div', { class: 'jg-det-bts' }, estrela, h('span', null, fav ? 'Favorito' : 'Marcar favorito')),
     );

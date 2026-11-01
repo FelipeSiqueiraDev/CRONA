@@ -117,6 +117,8 @@ interface Estado {
   ambiente: cb.AmbienteRitual;
   /** o catalisador usado (o uid da mochila) */
   catal: number | null;
+  /** qual teste do Convocar o Algoz (LR p. 128) */
+  algoz: 'vontade' | 'fortitude';
 }
 
 const novo = (chave: string): Estado => ({
@@ -142,6 +144,7 @@ const novo = (chave: string): Estado => ({
   danoExec: null,
   ambiente: '',
   catal: null,
+  algoz: 'vontade',
 });
 
 const RESISTENCIAS = ['', 'Fortitude anula', 'Fortitude parcial', 'Fortitude reduz à metade', 'Reflexos anula', 'Reflexos parcial', 'Reflexos reduz à metade', 'Vontade anula', 'Vontade parcial', 'Vontade reduz à metade', 'Vontade desacredita'];
@@ -160,8 +163,9 @@ export class ResolucaoRitual {
     const r = this.e.ritual >= 0 ? x.rituais[this.e.ritual] : undefined;
     if (r) {
       const f = r.formas.find((q) => q.forma === this.e.forma && !q.motivo) ?? r.formas[0];
+      const algoz = r.id === 'convocar-o-algoz' ? cb.TESTES_DO_ALGOZ[this.e.algoz] : null;
       const livro = cb.danoDoRitual(r.id, f.forma);
-      const res = livro?.resistencia ?? r.resistencia;
+      const res = algoz?.resistencia ?? livro?.resistencia ?? r.resistencia;
       // Alquebrado: +1 PE (LR p. 309); as névoas mudam PE, DT e execução; o catalisador perturbador dá DT +2 (SaH p. 44)
       const amb = cb.noAmbiente(this.e.ambiente, { pe: f.pe + (x.condicoesAtor.includes('alquebrado') ? 1 : 0), dt: r.dt, qual: r.qual, circulo: r.circulo });
       const cat = this.catalisador(x);
@@ -234,7 +238,7 @@ export class ResolucaoRitual {
     const medo = r.elemento === 'medo';
     const doLivro = r.id ? DANO_RITUAL[r.id] : undefined;
     // os dados do livro já vêm preenchidos (29/10: sem eles, o ritual de dano pulava o passo do dano)
-    const dadosLivro = r.id ? cb.danoDoRitual(r.id, r.forma) : null;
+    const dadosLivro = r.id === 'convocar-o-algoz' ? cb.TESTES_DO_ALGOZ[this.e.algoz].livro : r.id ? cb.danoDoRitual(r.id, r.forma) : null;
     // o catalisador potencializador: +1 dado do mesmo tipo no dano (SaH p. 44)
     const potente = this.catalisador(x)?.id === 'catalisador-potencializador';
     const mais = (f: string) => (potente && f.trim() ? f.replace(/(\d+)d(\d+)/, (_, n: string, d: string) => `${Number(n) + 1}d${d}`) : f);
@@ -272,6 +276,11 @@ export class ResolucaoRitual {
       // cada dano tem a sua conta; "ignora as resistências" tira a RD (Lâmina do Medo, LR p. 135)
       const contar = (p: cb.PartesDano, soma: number, t: TipoDano) => {
         const conta = cb.contaDano({ soma, fixo: p.fixo, tipo: t, rd: ignoraRd ? {} : a.rd, imunidades: a.imunidades, vulnerabilidades: el?.vulneravel ? [...a.vulnerabilidades, t] : a.vulnerabilidades, metade });
+        // o dano do algoz não deixa a vítima abaixo de 1 PV (LR p. 128)
+        if (r.id === 'convocar-o-algoz' && a.vitais && conta.final > a.vitais.pv - 1) {
+          conta.final = Math.max(0, a.vitais.pv - 1);
+          conta.conta = `${conta.conta}; fica com 1 PV = ${conta.final}`;
+        }
         return { conta, previa: cb.previaDano(a.vitais, conta.final, { tipo: t, naoLetalAntes: a.p.naoLetal, agente: a.agente, pessoa: a.pessoa }) };
       };
       // quem passa e o ritual dá outra coisa a ele (Inexistir, Lâmina e Conhecendo o Medo): os dados de quem passou, inteiros
@@ -340,6 +349,21 @@ export class ResolucaoRitual {
     );
     const extra: HTMLElement[] = [];
     const r = this.e.ritual >= 0 ? x.rituais[this.e.ritual] : undefined;
+    // o Convocar o Algoz: qual dos dois testes, pela distância do algoz à vítima (LR p. 128)
+    if (r?.id === 'convocar-o-algoz')
+      extra.push(
+        h(
+          'div',
+          { class: 'cb-rit-formas', role: 'group', 'aria-label': 'Teste do algoz' },
+          ...(['vontade', 'fortitude'] as const).map((q) =>
+            h(
+              'button',
+              { class: `cb-reacao${this.e.algoz === q ? ' on' : ''}`, type: 'button', onclick: () => ((this.e.algoz = q), (this.e.d20 = {}), (this.e.somaP = null), x.mudou()) },
+              cb.TESTES_DO_ALGOZ[q].rotulo,
+            ),
+          ),
+        ),
+      );
     // o elemento escolhido ao aprender (o Amaldiçoar Arma é de quatro elementos; LR p. 124): fica na ficha
     if (r?.elementos?.length && x.escolherElemento)
       extra.push(

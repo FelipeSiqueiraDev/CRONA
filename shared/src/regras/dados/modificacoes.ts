@@ -122,16 +122,19 @@ export const MODIFICACOES: Modificacao[] = [
   // ===== Sobrevivendo ao Horror =====
   { id: 'carregador-rapido', nome: 'Carregador rápido', ref: SAH(38), para: ['armaFogo', 'armaDisparo'],
     requisitos: [{ tipo: 'texto', texto: 'arma de fogo, besta ou balestra' }, { tipo: 'texto', texto: 'só com a regra opcional de contagem de munição (LR p. 174)' }],
-    especial: ['arma de fogo: recarga como ação livre 1x/rodada', 'besta ou balestra: até 5 recargas como ação livre com uma mão; depois, 1 virote por ação de movimento'] },
+    especial: ['arma de fogo: recarga como ação livre 1x/rodada', 'besta ou balestra: até 5 recargas como ação livre com uma mão; depois, 1 virote por ação de movimento'],
+    resumo: 'Carregadores prontos (ou uma aljava de virotes): recarregar fica mais rápido. Só com a contagem de munição.' },
   // Objetos elétricos. O livro a põe entre as modificações para acessórios, mas
   // cita também a lanterna e o taser (itens operacionais). O C.R.I.S só a
   // mostrava no taser.
   { id: 'bateria-potente', nome: 'Bateria potente', ref: SAH(39), para: ['acessorio'],
     requisitos: [{ tipo: 'texto', texto: 'só em objeto elétrico (lanterna, celular, notebook, taser; outros a critério do mestre)' }],
-    especial: ['lanterna, celular ou notebook: dobra a duração da bateria e o alcance da luz', 'taser: dobra os usos (4), dano 1d8 e DT +5', 'com a opção de duração de baterias (SaH p. 39): o dado da bateria cai um passo a cada dois usos'] },
+    especial: ['lanterna, celular ou notebook: dobra a duração da bateria e o alcance da luz', 'taser: dobra os usos (4), dano 1d8 e DT +5', 'com a opção de duração de baterias (SaH p. 39): o dado da bateria cai um passo a cada dois usos'],
+    resumo: 'Bateria reforçada para objeto elétrico: dura o dobro; no taser, dobra os usos, o dano vira 1d8 e a DT sobe 5.' },
   // Modificação paranormal. O tipo não tem alvo para item paranormal: fica
   // como acessório, com o requisito em texto.
   { id: 'lente-de-revelacao', nome: 'Lente de revelação', ref: SAH(45), para: ['acessorio'],
     requisitos: [{ tipo: 'texto', texto: 'só em câmera de aura paranormal' }],
-    especial: ['vê seres invisíveis e incorpóreos e ignora a camuflagem deles', 'foto de uma criatura em alcance curto: ação padrão e 1 PE; até o fim da cena, ela perde camuflagem e invisibilidade e fica corpórea (Vontade DT Pre evita)'] },
+    especial: ['vê seres invisíveis e incorpóreos e ignora a camuflagem deles', 'foto de uma criatura em alcance curto: ação padrão e 1 PE; até o fim da cena, ela perde camuflagem e invisibilidade e fica corpórea (Vontade DT Pre evita)'],
+    resumo: 'Lente para a câmera de aura: mostra o invisível e o incorpóreo; a foto (1 PE) prende a criatura ao corpo até o fim da cena.' },
 ];

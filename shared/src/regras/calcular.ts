@@ -4,7 +4,7 @@
  * das escolhas (montarEstado) mais a mochila.
  */
 import * as cat from './dados';
-import { BONUS_GRAU, CREDITOS, ELEMENTO_OPRIME, ITENS_NEX_ZERO, PENALIDADE_CARGA, PRECO_MALDICAO, patentePorPP } from './dados';
+import { BONUS_GRAU, CREDITOS, ELEMENTO_OPRIME, ITENS_NEX_ZERO, PENALIDADE_CARGA, PENALIDADE_SEM_KIT, PRECO_MALDICAO, patentePorPP } from './dados';
 import { montarEstado, type Estado, type PoderObtido, type Problema, type Pendencia, type RitualObtido } from './estado';
 import type { Ficha, ItemFicha } from './ficha';
 import { lugarDoItem, maosDoItem, maosOcupadas, MAOS, vestivel } from './mochila';
@@ -24,6 +24,8 @@ export interface PericiaCalculada {
   /** bônus total somado ao d20 */
   bonus: number;
   somenteTreinada: boolean;
+  /** o kit que o uso pede e falta na mochila (−5; na Medicina, já na conta; LR p. 40) */
+  semKit?: string;
   /** pode usar (as de "só treinada" pedem treino) */
   podeUsar: boolean;
 }
@@ -257,6 +259,16 @@ export function modificacaoServe(m: { id: string; para: AlvoModificacao[] }, it:
   const alvo = alvoModificacao(it);
   return !!alvo && m.para.includes(alvo);
 }
+
+/**
+ * As ferramentas que atiram (LR p. 66): fora do catálogo de armas, só para o ataque. A pistola sinalizadora serve uma
+ * vez como arma de disparo leve, alcance curto, 2d6 de fogo; a de dardos não fere: quem é atingido faz Fortitude
+ * (DT Agi) ou apaga até o fim da cena (passou: desprevenido e lento por 1 rodada).
+ */
+const FERRAMENTA_ARMA: Record<string, Arma> = {
+  'pistola-sinalizadora': { id: 'pistola-sinalizadora', nome: 'Pistola sinalizadora', ref: { fonte: 'LR', pagina: 66 }, categoria: 0, proficiencia: 'simples', tipo: 'disparo', empunhadura: 'leve', dano: '2d6', critico: { margem: 20, multiplicador: 2 }, alcance: 'curto', tipoDano: ['fogo'], espacos: 1 } as Arma,
+  'pistola-de-dardos': { id: 'pistola-de-dardos', nome: 'Pistola de dardos', ref: { fonte: 'LR', pagina: 66 }, categoria: 1, proficiencia: 'simples', tipo: 'disparo', empunhadura: 'leve', dano: '0', critico: { margem: 20, multiplicador: 2 }, alcance: 'curto', tipoDano: ['impacto'], espacos: 1 } as Arma,
+};
 
 /** O alcance uma categoria acima (curto → médio → longo → extremo; LR p. 60). */
 function subirAlcance(a: Alcance): Alcance {
@@ -633,6 +645,14 @@ export function calcular(f: Ficha): Calculado {
     }
     pericias[p.id] = { grau, atributo, dados: atr[atributo] + ganhos, penalidadeDados: perdidos, bonus, somenteTreinada: p.somenteTreinada, podeUsar: !p.somenteTreinada || grau !== 'destreinado' };
   }
+  // sem o kit que o uso pede, −5 (LR p. 40): a Medicina pede o kit em todo uso; nas outras, só em alguns usos (o aviso)
+  for (const e of cat.CATALOGO.equipamentos) {
+    if (!e.kitDe || !pericias[e.kitDe]) continue;
+    const tem = f.inventario.some((it) => it.id === e.id || (it.tipo === 'equipamento' && it.modificacoes?.includes('instrumental') && it.escolha?.pericia === e.kitDe));
+    if (tem) continue;
+    pericias[e.kitDe].semKit = e.nome;
+    if (e.kitDe === 'medicina') pericias.medicina.bonus += PENALIDADE_SEM_KIT;
+  }
 
   // ---------- DTs, resistências, reações ----------
   const dtHabilidades = {} as Record<AtributoId, number>;
@@ -659,9 +679,10 @@ export function calcular(f: Ficha): Calculado {
   const treinada = (p: PericiaId) => st.graus[p] !== 'destreinado';
   // a esquiva e o bloqueio usam o bônus da perícia; o "+N em testes de resistência" vale só no teste (LR p. 88, 114)
   const reacoes = {
+    // a braçadeira reforçada vestida: +2 na RD do bloqueio (SaH p. 42)
     // o bastão policial na mão dá +1 a mais na Defesa da esquiva (SaH p. 37)
     esquiva: treinada('reflexos') ? defesa + pericias.reflexos.bonus - resistBonus + (f.inventario.some((it) => it.id === 'bastao-policial' && lugarDoItem(it) === 'mao') ? 1 : 0) : null,
-    bloqueio: treinada('fortitude') ? pericias.fortitude.bonus - resistBonus : null,
+    bloqueio: treinada('fortitude') ? pericias.fortitude.bonus - resistBonus + (f.inventario.some((it) => it.id === 'bracadeira-reforcada' && lugarDoItem(it) !== 'mochila') ? 2 : 0) : null,
     contraAtaque: treinada('luta'),
   };
 
@@ -669,9 +690,16 @@ export function calcular(f: Ficha): Calculado {
   const ataques: Ataque[] = [];
   // o ataque desarmado está sempre lá (LR p. 57), com a soqueira se estiver na mão
   const armas: ItemFicha[] = f.inventario.filter((it) => it.tipo === 'arma');
+  // as ferramentas que viram arma na mão (LR p. 66; SaH p. 43): o pé de cabra e a pá contam como bastão; a pistola
+  // sinalizadora, uma vez, como arma de disparo leve (2d6 de fogo); a pistola de dardos dispara o sonífero
+  for (const it of f.inventario) {
+    if (it.tipo !== 'equipamento' || lugarDoItem(it) !== 'mao') continue;
+    const como = it.id === 'pe-de-cabra' || it.id === 'pa' ? 'bastao' : it.id === 'pistola-sinalizadora' ? 'pistola-sinalizadora' : it.id === 'pistola-de-dardos' ? 'pistola-de-dardos' : null;
+    if (como) armas.push({ ...it, id: como, tipo: 'arma', apelido: it.apelido ?? cat.equipamento(it.id)?.nome });
+  }
   if (!armas.some((it) => it.id === 'ataque-desarmado')) armas.push({ id: 'ataque-desarmado', tipo: 'arma' });
   for (const it of armas) {
-    const a = cat.arma(it.id);
+    const a = cat.arma(it.id) ?? FERRAMENTA_ARMA[it.id];
     if (!a) continue;
     const corpo = a.tipo === 'corpoACorpo';
     const per: PericiaId = corpo ? 'luta' : 'pontaria';
@@ -726,6 +754,7 @@ export function calcular(f: Ficha): Calculado {
     let mult = a.critico.multiplicador;
     for (const e of deArma('margem')) margem -= e.valor;
     for (const e of deArma('multiplicador')) mult += e.valor;
+    // a ferramenta que virou arma (pé de cabra, pá, as pistolas operacionais): sem penalidade de arma improvisada
     // a munição da arma: algum pacote dela na mochila (o pregador e o estilingue não pedem, LR p. 59; SaH p. 37)
     const mun = a.municao ? cat.equipamento(a.municao) : undefined;
     const municao = mun ? { id: mun.id, nome: mun.nome, tem: f.inventario.some((x) => x.id === mun.id && (x.qtd ?? 1) > 0) } : undefined;

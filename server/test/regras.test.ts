@@ -348,6 +348,33 @@ describe('mochila', () => {
     assert.equal(calcular(f).reacoes.esquiva! - esq, 1);
   });
 
+  test('kits, braçadeira, cargas e as ferramentas que viram arma (LR p. 40, 66; SaH p. 42–43)', () => {
+    const f = combatente();
+    // sem o kit de medicina, −5 em todo uso de Medicina
+    const sem = calcular(f).pericias.medicina;
+    assert.equal(sem.semKit, 'Kit de medicina');
+    f.inventario = [{ id: 'kit-de-medicina', tipo: 'equipamento' }];
+    assert.equal(calcular(f).pericias.medicina.bonus - sem.bonus, 5);
+    // a braçadeira reforçada: +2 na RD do bloqueio
+    const bloq = calcular(f).reacoes.bloqueio!;
+    f.inventario.push({ id: 'bracadeira-reforcada', tipo: 'equipamento' });
+    assert.equal(calcular(f).reacoes.bloqueio! - bloq, 2);
+    // o pé de cabra na mão conta como bastão
+    f.inventario = [{ id: 'pe-de-cabra', tipo: 'equipamento', uid: 1, empunhado: true }];
+    const pe = calcular(f).ataques.find((a) => a.nome === 'Pé de cabra')!;
+    assert.equal(pe.item, 'bastao');
+    assert.match(pe.dano, /^1d6/);
+    // o taser: duas cargas, e depois não usa
+    let inv: regras.ItemFicha[] = [{ id: 'taser', tipo: 'equipamento', uid: 2 }];
+    for (let i = 0; i < 2; i++) {
+      const r = regras.usar(inv, 2);
+      assert.ok(r.ok);
+      inv = r.ok ? r.inventario : inv;
+    }
+    assert.deepEqual(regras.cargasDoItem(inv[0]), { total: 2, restam: 0 });
+    assert.equal(regras.usar(inv, 2).ok, false);
+  });
+
   test('soqueira: +1 no dano desarmado, só na mão', () => {
     const f = combatente();
     f.inventario = [{ id: 'soqueira', tipo: 'equipamento' }];

@@ -268,6 +268,8 @@ const NOTA_DA_ARMA: Record<string, string> = {
   'fuzil-de-precisao': 'Veterano em Pontaria que mirou (ação de movimento): +5 na margem de ameaça (LR p. 58).',
   bazuca: 'Atinge o alvo e todos num raio de 3 m (esses fazem Reflexos DT Agi para metade). Recarregar a cada disparo: ação de movimento (LR p. 58).',
   'lanca-chamas': 'Linha de 1,5 m até o alcance curto: um teste contra a Defesa de cada ser na linha; quem é atingido fica em chamas (LR p. 58).',
+  'pistola-de-dardos': 'Não fere: quem é atingido faz Fortitude (DT Agi) ou apaga até o fim da cena; passou, desprevenido e lento por 1 rodada. Cada disparo gasta um dardo (LR p. 66).',
+  'pistola-sinalizadora': 'Serve uma vez como arma (LR p. 66).',
   shuriken: 'Veterano em Pontaria: uma vez por rodada, 1 PE para outro ataque de shuriken no mesmo alvo (SaH p. 37).',
   'faca-tatica': 'Contra-ataque com ela: +2. No bloqueio: 2 PE e sacrifica a faca para +20 na RD (SaH p. 37).',
   'bastao-policial': 'Na esquiva com ele na mão, +1 a mais na Defesa (já na conta da esquiva; SaH p. 37).',

@@ -151,10 +151,24 @@ export function tirar(inv: ItemFicha[], uid: number): ResultadoMochila {
 }
 
 /** Usa o item: o consumível gasta um (e sai da mochila no último). */
+/** As cargas do item de usos contados (não a munição, que dura cenas): quantas tem e quantas restam. */
+export function cargasDoItem(it: ItemFicha): { total: number; restam: number } | null {
+  if (it.tipo !== 'equipamento') return null;
+  const e = cat.equipamento(it.id);
+  if (!e?.usos || e.grupo === 'municao' || e.especial?.includes('consumível')) return null;
+  return { total: e.usos, restam: Math.max(0, e.usos - (it.cargasUsadas ?? 0)) };
+}
+
 export function usar(inv: ItemFicha[], uid: number): ResultadoMochila & { gastou?: boolean } {
   const i = indice(inv, uid);
   if (i < 0) return erro('Item não encontrado.');
   const it = inv[i];
+  // o item de cargas contadas (taser, spray, pistola de dardos): cada uso gasta uma; sem cargas, não usa (LR p. 66)
+  const cargas = cargasDoItem(it);
+  if (cargas) {
+    if (cargas.restam <= 0) return erro(`${it.apelido ?? cat.equipamento(it.id)?.nome ?? 'O item'} está sem cargas.`);
+    return { ok: true, inventario: inv.map((x, j) => (j === i ? { ...x, cargasUsadas: (x.cargasUsadas ?? 0) + 1 } : x)), gastou: true };
+  }
   if (!consumivel(it)) return { ok: true, inventario: inv, gastou: false };
   const qtd = (it.qtd ?? 1) - 1;
   const resto = (x: ItemFicha): ItemFicha => {

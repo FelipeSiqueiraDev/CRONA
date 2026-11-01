@@ -1304,7 +1304,8 @@ export class FichasScreen {
       const pc = c.pericias[p.id];
       if (this.soTreinadas && pc.grau === 'destreinado') continue;
       const nome = p.id === 'profissao' && fs.ficha.profissao ? `Profissão (${fs.ficha.profissao})` : p.nome;
-      const marcas = [p.somenteTreinada ? 'só treinada' : '', p.carga ? 'carga' : ''].filter(Boolean).join(', ');
+      // sem o kit que o uso pede (LR p. 40): na Medicina o −5 já está na conta; nas outras, só em alguns usos
+      const marcas = [p.somenteTreinada ? 'só treinada' : '', p.carga ? 'carga' : '', pc.semKit ? (p.id === 'medicina' ? `sem ${pc.semKit.toLowerCase()}: −5 já na conta` : `sem ${pc.semKit.toLowerCase()}: −5 nos usos que pedem o kit`) : ''].filter(Boolean).join(', ');
       linhas.push(
         h(
           ed ? 'button' : 'div',
@@ -2239,7 +2240,7 @@ function infoRitual(r: regras.Ritual, c: Calc): string {
   const conta = c.custoRituais[r.id] ?? { pe: [0, 1, 3, 6, 10][r.circulo], dt: c.dtRituais };
   const partes = [
     `${r.nome} (${NOME_ELEMENTO[r.elemento]}, ${r.circulo}º círculo)`,
-    `Custo ${conta.pe} PE · ${r.execucao} · alcance ${r.alcance}${r.alvo ? ` · ${r.alvo}` : ''} · ${r.duracao}`,
+    `Custo ${conta.pe} PE · ${regras.nomeExecucao(r.execucao)} · alcance ${r.alcance}${r.alvo ? ` · ${r.alvo}` : ''} · ${r.duracao}`,
     r.resistencia ? `Resistência: ${r.resistencia} (DT ${conta.dt})` : '',
     r.discente ? `Discente: +${r.discente.custoExtra} PE${r.discente.circulo ? `, ${r.discente.circulo}º círculo` : ''}` : '',
     r.verdadeiro ? `Verdadeiro: +${r.verdadeiro.custoExtra} PE${r.verdadeiro.circulo ? `, ${r.verdadeiro.circulo}º círculo` : ''}${r.verdadeiro.afinidade ? ', com afinidade' : ''}` : '',

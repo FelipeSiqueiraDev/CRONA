@@ -77,6 +77,8 @@ export interface ItemFicha {
    * o que se escolhe ao requisitar o item (LR p. 63 e 66): a perícia do utensílio e da vestimenta
    * (fora Luta e Pontaria) e o elemento dos itens "de (Elemento)" e do catalisador
    */
+  /** as cargas já gastas do item de usos contados (taser, spray de pimenta, pistola de dardos; LR p. 66) */
+  cargasUsadas?: number;
   /** a perícia do utensílio, o elemento das amarras ou o ritual guardado no selo paranormal (o selo: LR p. 151) */
   escolha?: { pericia?: PericiaId; elemento?: Elemento; ritual?: string };
   /** achado na missão: não ocupa vaga da patente, que limita o que a Ordem fornece (LR p. 53) */

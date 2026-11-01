@@ -160,3 +160,7 @@ export function descreverRequisito(r: Requisito): string {
       return r.texto;
   }
 }
+
+/** O nome da execução do ritual para mostrar (a ficha mostrava o código: "padrao"). */
+export const NOME_EXECUCAO: Record<string, string> = { livre: 'livre', reacao: 'reação', movimento: 'movimento', padrao: 'padrão', completa: 'completa' };
+export const nomeExecucao = (e: string) => NOME_EXECUCAO[e] ?? e;
