@@ -18,6 +18,11 @@ import { sfx } from './sfx';
 type TipoDano = regras.TipoDano;
 
 /** Um ataque que quem age pode fazer (da ficha do agente ou da ficha rápida da ameaça). */
+/** "2d10+3" com um dado a mais do mesmo tipo ("3d10+3"): a rajada (LR p. 59). */
+function maisUmDado(dano: string): string {
+  return dano.replace(/(\d+)d(\d+)/, (_, n: string, f: string) => `${Number(n) + 1}d${f}`);
+}
+
 export interface ArmaOpcao {
   /** o item do catálogo (a arte pintada dele); sem ele (ameaça), o ícone do ataque */
   item?: string;
@@ -50,6 +55,14 @@ export interface ArmaOpcao {
   naMao?: boolean;
   /** o item da mochila (para sacar) */
   uid?: number;
+  /** automática: pode disparar rajada, −1d20 e +1 dado de dano (LR p. 59) */
+  automatica?: boolean;
+  /** a espingarda: metade do dano em alcance médio ou maior (LR p. 58) */
+  metadeAlemDoCurto?: boolean;
+  /** o dano com os dois canos da espingarda de cano duplo (−1d20; SaH p. 37) */
+  doisCanos?: string;
+  /** a munição que falta na mochila (o nome do pacote) */
+  semMunicao?: string;
   /** a arma de corpo a corpo que se arremessa (LR p. 55): com Pontaria, na faixa dela (curto e −5 se não tem alcance) */
   arremesso?: { faixa: cb.Faixa; semAlcance: boolean; dados: number; penalidade?: number; bonus: number };
   /** a jogada pronta do agente (regras/jogadas.ts): já somada; os PE saem junto com o ataque */
@@ -141,6 +154,10 @@ interface Estado {
   liberado?: boolean;
   /** a arma de corpo a corpo arremessada; `volta` = puxada de volta (amarrada) em vez de cair perto do alvo */
   arremessar?: boolean;
+  /** rajada da arma automática (−1d20, +1 dado de dano; LR p. 59) */
+  rajada?: boolean;
+  /** os dois canos da espingarda de cano duplo (−1d20, 6d6; SaH p. 37) */
+  doisCanos?: boolean;
   volta?: boolean;
   /** o poder Combate Defensivo neste ataque */
   defensivo?: boolean;
@@ -271,7 +288,11 @@ export class ResolucaoAtaque {
 
   /** A arma como vai ser usada: arremessada, ela troca Luta por Pontaria e ganha a faixa do arremesso. */
   private comoUsa(a: ArmaOpcao | null): ArmaOpcao | null {
-    if (!a || !this.e.arremessar || !a.arremesso) return a;
+    if (!a) return a;
+    // a rajada e os dois canos: −1d20; a rajada, +1 dado do mesmo tipo; os dois canos, 6d6 (LR p. 59; SaH p. 37)
+    if (this.e.rajada && a.automatica) return { ...a, nome: `${a.nome} (rajada)`, penalidade: (a.penalidade ?? 0) - 1, dano: maisUmDado(a.dano) };
+    if (this.e.doisCanos && a.doisCanos) return { ...a, nome: `${a.nome} (os dois canos)`, penalidade: (a.penalidade ?? 0) - 1, dano: a.doisCanos };
+    if (!this.e.arremessar || !a.arremesso) return a;
     const r = a.arremesso;
     return { ...a, pericia: 'pontaria', faixa: r.faixa, dados: r.dados, penalidade: r.penalidade, bonus: r.bonus };
   }
@@ -360,7 +381,9 @@ export class ResolucaoAtaque {
     const previa = (final: number, tipo: TipoDano, nl: boolean) => (alvo ? cb.previaDano(alvo.vitais, final, { tipo, naoLetal: nl, naoLetalAntes: alvo.p.naoLetal, agente: alvo.agente, pessoa: alvo.pessoa }) : null);
     if (arma && acertou && this.e.soma !== null && alvo) {
       const partes = cb.danoCritico(arma.dano, mult);
-      const conta = cb.contaDano({ soma: this.e.soma, fixo: partes.fixo, tipo: arma.tipo, rd: alvo.rd, imunidades: alvo.imunidades, vulnerabilidades: alvo.vulnerabilidades });
+      // a espingarda além do alcance curto causa só metade (LR p. 58)
+      const metade = !!arma.metadeAlemDoCurto && x.tab?.metros != null && x.tab.metros > cb.METROS_FAIXA.curto;
+      const conta = cb.contaDano({ soma: this.e.soma, fixo: partes.fixo, tipo: arma.tipo, rd: alvo.rd, imunidades: alvo.imunidades, vulnerabilidades: alvo.vulnerabilidades, metade });
       // o bloqueio é RD de outra fonte: soma com a do alvo (LR p. 88, 313)
       if (bloqueio && conta.final > 0) {
         const f = Math.max(0, conta.final - bloqueio);
@@ -733,7 +756,7 @@ export class ResolucaoAtaque {
           this.e.d20 = this.e.d10 = this.e.soma = this.e.somaExtra = null;
           this.e.reacao = 'nenhuma';
           this.e.manual = {};
-          this.e.passagem = this.e.liberado = this.e.arremessar = this.e.defensivo = false;
+          this.e.passagem = this.e.liberado = this.e.arremessar = this.e.defensivo = this.e.rajada = this.e.doisCanos = false;
           this.e.ajDados = this.e.ajBonus = 0;
           x.mudou();
         },
@@ -1049,6 +1072,10 @@ export class ResolucaoAtaque {
         liga('Cai perto do alvo', !this.e.volta, 'A arma fica no chão, na casa do alvo', () => (this.e.volta = false)),
         liga('Volta para a mão', !!this.e.volta, 'Amarrada num fio: puxa de volta', () => (this.e.volta = true)),
       );
+    if (base?.automatica)
+      opcoes.push(liga('Rajada', !!this.e.rajada, '−1d20 no ataque e +1 dado de dano do mesmo tipo (LR p. 59)', () => (this.e.rajada = !this.e.rajada)));
+    if (base?.doisCanos)
+      opcoes.push(liga('Os dois canos', !!this.e.doisCanos, `−1d20 no ataque; dano ${base.doisCanos} (SaH p. 37)`, () => (this.e.doisCanos = !this.e.doisCanos)));
     if (x.combateDefensivo) opcoes.push(liga('Combate defensivo', !!this.e.defensivo, '−1d20 no ataque; +5 na Defesa até o seu próximo turno (LR p. 25)', () => (this.e.defensivo = !this.e.defensivo)));
     const ajNum = (rot: string, v: number | undefined, min: number, max: number, fn: (n: number) => void) => {
       const inp = h('input', { class: 'cb-dado', type: 'text', inputmode: 'numeric', value: v ? String(v) : '', placeholder: '0', 'aria-label': rot }) as HTMLInputElement;

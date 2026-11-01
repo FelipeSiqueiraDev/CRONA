@@ -43,6 +43,19 @@ export interface Ataque {
   notas: string[];
   /** a arma está na mão (o desarmado, sempre): só assim ataca */
   naMao: boolean;
+  /**
+   * A arma de corpo a corpo arremessada (LR p. 54–55; 01/11): Pontaria com a Agilidade, os dados e bônus que a arma
+   * dá e as penalidades dela (sem proficiência, arma improvisada). Antes a faca ágil somava a Agilidade duas vezes.
+   */
+  arremesso?: { dados: number; bonus: number; penalidadeDados: number };
+  /** arma automática: pode disparar rajada, −1d20 e +1 dado de dano (LR p. 59) */
+  automatica?: boolean;
+  /** a espingarda causa só metade do dano em alcance médio ou maior (LR p. 58) */
+  metadeAlemDoCurto?: boolean;
+  /** a espingarda de cano duplo dispara os dois canos: −1d20, dano 6d6 (SaH p. 37) */
+  doisCanos?: { dano: string };
+  /** a munição que a arma pede (LR p. 59) e se há algum pacote dela na mochila */
+  municao?: { id: string; nome: string; tem: boolean };
   /** o item da mochila (sem ele, o ataque desarmado) */
   uid?: number;
 }
@@ -160,7 +173,8 @@ function vale(escopo: Escopo, a: Arma, favorita?: string): boolean {
     case 'disparo':
       return a.tipo === 'disparo' || a.tipo === 'fogo';
     case 'fogo':
-      return a.tipo === 'fogo';
+      // o pregador pneumático conta como arma de fogo para os poderes (SaH p. 37)
+      return a.tipo === 'fogo' || a.id === 'pregador-pneumatico';
     case 'arremesso':
       return a.tipo === 'arremesso';
     case 'desarmado':
@@ -394,13 +408,16 @@ export function calcular(f: Ficha): Calculado {
   for (const x of doTipo('cargaAtributos')) espacos = Math.max(espacos, 5 * x.efeito.atributos.reduce((s, a) => s + atr[a], 0));
   for (const x of doTipo('espacos')) espacos += valor(x.efeito.valor, atr);
   let usados = 0;
+  let compactoEscondido = false;
   for (const it of f.inventario) {
     const b = baseDoItem(it);
     if (!b) {
       problemas.push({ nex, onde: 'Mochila', texto: `Item desconhecido: ${it.id}.`, severidade: 'erro' });
       continue;
     }
-    usados += espacosDoItem(it, b.espacos) * (it.qtd ?? 1);
+    // um revólver compacto de quem é treinado em Crime vai escondido no corpo, sem ocupar espaço (SaH p. 37)
+    const gratis = it.id === 'revolver-compacto' && st.graus.crime !== 'destreinado' && !compactoEscondido ? ((compactoEscondido = true), 1) : 0;
+    usados += espacosDoItem(it, b.espacos) * ((it.qtd ?? 1) - gratis);
   }
   // espaços a mais dos itens (mochila militar): o mesmo item não soma duas vezes (uma mochila nas costas)
   const somaEspacos = new Set<string>();
@@ -506,6 +523,9 @@ export function calcular(f: Ficha): Calculado {
     // guardado (nem vestido nem empunhado): não ajuda (LR p. 63)
     if (it.vestido === false && !it.empunhado) continue;
     const eq = cat.equipamento(it.id);
+    // o que pede a mão (o utensílio) só ajuda empunhado; o que se veste, só vestido (01/11, auditoria de 28/10)
+    if (eq?.especial?.includes('empunhado') && lugarDoItem(it) !== 'mao') continue;
+    if (eq?.especial?.includes('vestido') && lugarDoItem(it) !== 'vestido') continue;
     if (eq?.exigeTreino && st.graus[eq.exigeTreino] === 'destreinado') continue;
     // o bônus do item mais o das modificações dele (Aprimorado: +2 → +5)
     const doItem: Partial<Record<PericiaId, number>> = {};
@@ -596,7 +616,8 @@ export function calcular(f: Ficha): Calculado {
   const treinada = (p: PericiaId) => st.graus[p] !== 'destreinado';
   // a esquiva e o bloqueio usam o bônus da perícia; o "+N em testes de resistência" vale só no teste (LR p. 88, 114)
   const reacoes = {
-    esquiva: treinada('reflexos') ? defesa + pericias.reflexos.bonus - resistBonus : null,
+    // o bastão policial na mão dá +1 a mais na Defesa da esquiva (SaH p. 37)
+    esquiva: treinada('reflexos') ? defesa + pericias.reflexos.bonus - resistBonus + (f.inventario.some((it) => it.id === 'bastao-policial' && lugarDoItem(it) === 'mao') ? 1 : 0) : null,
     bloqueio: treinada('fortitude') ? pericias.fortitude.bonus - resistBonus : null,
     contraAtaque: treinada('luta'),
   };
@@ -662,6 +683,9 @@ export function calcular(f: Ficha): Calculado {
     let mult = a.critico.multiplicador;
     for (const e of deArma('margem')) margem -= e.valor;
     for (const e of deArma('multiplicador')) mult += e.valor;
+    // a munição da arma: algum pacote dela na mochila (o pregador e o estilingue não pedem, LR p. 59; SaH p. 37)
+    const mun = a.municao ? cat.equipamento(a.municao) : undefined;
+    const municao = mun ? { id: mun.id, nome: mun.nome, tem: f.inventario.some((x) => x.id === mun.id && (x.qtd ?? 1) > 0) } : undefined;
     ataques.push({
       item: a.id,
       nome: it.apelido ?? a.nome,
@@ -676,6 +700,14 @@ export function calcular(f: Ficha): Calculado {
       notas,
       naMao: it.id === 'ataque-desarmado' || lugarDoItem(it) === 'mao',
       uid: it.uid,
+      // arremessar a de corpo a corpo: Pontaria com a Agilidade e o que a arma dá, com as penalidades dela
+      ...(corpo && a.id !== 'ataque-desarmado'
+        ? { arremesso: { dados: atr.agi + dadosExtra, bonus: pericias.pontaria.bonus + (bonus - pericias.luta.bonus), penalidadeDados: penalidade } }
+        : {}),
+      ...(a.automatica ? { automatica: true } : {}),
+      ...(a.id === 'espingarda' || a.id === 'espingarda-cano-duplo' ? { metadeAlemDoCurto: true } : {}),
+      ...(a.id === 'espingarda-cano-duplo' ? { doisCanos: { dano: somarDados('6d6', dadosDano) + (danoFixo ? (danoFixo > 0 ? `+${danoFixo}` : `${danoFixo}`) : '') } } : {}),
+      ...(municao ? { municao } : {}),
     });
   }
 

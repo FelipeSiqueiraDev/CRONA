@@ -258,6 +258,25 @@ function hashTexto(t: string): string {
 const idDoObjeto = new WeakMap<object, number>();
 let proximoId = 0;
 
+/**
+ * O que cada arma especial faz e a tela do ataque não conta sozinha (01/11, auditoria de 28/10): fica escrito no
+ * ataque, com a página, para o mestre aplicar.
+ */
+const NOTA_DA_ARMA: Record<string, string> = {
+  'moto-serra': 'Cada 6 num dado de dano: role mais um dado. Ligar gasta uma ação de movimento (LR p. 59).',
+  'fuzil-de-precisao': 'Veterano em Pontaria que mirou (ação de movimento): +5 na margem de ameaça (LR p. 58).',
+  bazuca: 'Atinge o alvo e todos num raio de 3 m (esses fazem Reflexos DT Agi para metade). Recarregar a cada disparo: ação de movimento (LR p. 58).',
+  'lanca-chamas': 'Linha de 1,5 m até o alcance curto: um teste contra a Defesa de cada ser na linha; quem é atingido fica em chamas (LR p. 58).',
+  shuriken: 'Veterano em Pontaria: uma vez por rodada, 1 PE para outro ataque de shuriken no mesmo alvo (SaH p. 37).',
+  'faca-tatica': 'Contra-ataque com ela: +2. No bloqueio: 2 PE e sacrifica a faca para +20 na RD (SaH p. 37).',
+  'bastao-policial': 'Na esquiva com ele na mão, +1 a mais na Defesa (já na conta da esquiva; SaH p. 37).',
+  baioneta: 'Fixada num fuzil de duas mãos (ação de movimento): arma ágil de duas mãos, dano 1d6; atirar com ela fixada: −1d20 (SaH p. 37).',
+  'gancho-de-carne': 'Amarrado numa corda ou corrente: alcance de 4,5 m e 2 espaços (SaH p. 37).',
+  'espingarda-cano-duplo': 'Recarregar depois dos dois cartuchos: ação de movimento (SaH p. 37).',
+  balestra: 'Recarregar a cada disparo: ação de movimento (LR p. 58).',
+  besta: 'Recarregar a cada disparo: ação de movimento (LR p. 58).',
+};
+
 export class CombateScreen {
   readonly el: HTMLElement;
   /** onde o tabuleiro aparece (a tela MAPA usa este retângulo como janela do canvas) */
@@ -1253,17 +1272,18 @@ export class CombateScreen {
 
   private armasDaFicha(calc: regras.Calculado): ArmaOpcao[] {
     {
-      const luta = calc.pericias.luta;
       const pont = calc.pericias.pontaria;
       // a arma na mão primeiro (e o desarmado); a da mochila por último, para sacar
       return [...calc.ataques].sort((x, y) => Number(y.naMao) - Number(x.naMao)).map((a) => {
         const corpo = a.pericia !== 'pontaria';
         // a arma de corpo a corpo também se arremessa (LR p. 55): com Pontaria, no alcance dela (a faca, curto) ou em
         // alcance curto com −5 quando não tem; o que a arma soma além da perícia vai junto (20/10, a faca da Cora)
+        // o motor faz a conta do arremesso (Pontaria com a Agilidade e as penalidades da arma; 01/11)
         const arremesso =
-          corpo && a.item && a.item !== 'ataque-desarmado' && pont
-            ? { faixa: cb.faixaArma(a.alcance) ?? ('curto' as cb.Faixa), semAlcance: !cb.faixaArma(a.alcance), dados: pont.dados + (a.dados - luta.dados), penalidade: pont.penalidadeDados, bonus: pont.bonus + (a.bonus - luta.bonus) }
+          corpo && a.arremesso && pont
+            ? { faixa: cb.faixaArma(a.alcance) ?? ('curto' as cb.Faixa), semAlcance: !cb.faixaArma(a.alcance), dados: a.arremesso.dados, penalidade: a.arremesso.penalidadeDados, bonus: a.arremesso.bonus }
             : undefined;
+        const nota = NOTA_DA_ARMA[a.item];
         return {
           item: a.item,
           naMao: a.naMao,
@@ -1279,8 +1299,12 @@ export class CombateScreen {
           multiplicador: a.critico.multiplicador,
           // a faca é de corpo a corpo: o alcance dela é o do arremesso (antes ela contava como ataque à distância)
           faixa: corpo ? null : cb.faixaArma(a.alcance),
-          notas: a.notas,
+          notas: [...a.notas, ...(nota ? [nota] : []), ...(a.municao && !a.municao.tem ? [`Sem ${a.municao.nome.toLowerCase()} na mochila (LR p. 59).`] : [])],
           ...(arremesso ? { arremesso } : {}),
+          ...(a.automatica ? { automatica: true } : {}),
+          ...(a.metadeAlemDoCurto ? { metadeAlemDoCurto: true } : {}),
+          ...(a.doisCanos ? { doisCanos: a.doisCanos.dano } : {}),
+          ...(a.municao && !a.municao.tem ? { semMunicao: a.municao.nome } : {}),
         };
       });
     }

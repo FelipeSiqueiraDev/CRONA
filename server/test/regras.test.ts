@@ -299,6 +299,55 @@ describe('mochila', () => {
     assert.equal(des.dano, '1d3+2');
   });
 
+  test('arremesso: a faca ágil com Pontaria e a Agilidade uma vez só; a arma leva as penalidades dela (LR p. 54–57)', () => {
+    const f = combatente({ agi: 3, for: 1, int: 1, pre: 1, vig: 3 });
+    f.inventario = [
+      { id: 'faca', tipo: 'arma' },
+      { id: 'arma-improvisada', tipo: 'arma' },
+    ];
+    const c = calcular(f);
+    const faca = c.ataques.find((a) => a.item === 'faca')!;
+    assert.deepEqual(faca.arremesso, { dados: 3, bonus: c.pericias.pontaria.bonus, penalidadeDados: 0 });
+    assert.equal(c.ataques.find((a) => a.item === 'arma-improvisada')!.arremesso?.penalidadeDados, -1);
+    assert.equal(c.ataques.find((a) => a.item === 'ataque-desarmado')!.arremesso, undefined);
+  });
+
+  test('automática, espingarda, cano duplo e a munição na mochila (LR p. 58–59; SaH p. 37)', () => {
+    const f = combatente();
+    f.inventario = [
+      { id: 'submetralhadora', tipo: 'arma' },
+      { id: 'espingarda-cano-duplo', tipo: 'arma' },
+      { id: 'balas-curtas', tipo: 'equipamento' },
+    ];
+    const c = calcular(f);
+    const sub = c.ataques.find((a) => a.item === 'submetralhadora')!;
+    assert.equal(sub.automatica, true);
+    assert.deepEqual(sub.municao, { id: 'balas-curtas', nome: 'Balas curtas', tem: true });
+    const cano = c.ataques.find((a) => a.item === 'espingarda-cano-duplo')!;
+    assert.equal(cano.metadeAlemDoCurto, true);
+    // o +2 é o Para Bellum da origem Militar, que vale nos dois canos também
+    assert.equal(cano.doisCanos?.dano, '6d6+2');
+    assert.equal(cano.municao?.tem, false);
+  });
+
+  test('utensílio só ajuda na mão; o revólver compacto de quem tem Crime não ocupa espaço; o bastão policial na esquiva', () => {
+    const f = combatente();
+    f.pericias.livres = ['atletismo', 'reflexos'];
+    f.inventario = [{ id: 'utensilio', tipo: 'equipamento', escolha: { pericia: 'investigacao' } }];
+    const inv = () => calcular(f).pericias.investigacao.bonus;
+    const guardado = inv();
+    f.inventario[0].empunhado = true;
+    assert.equal(inv() - guardado, 2);
+    f.inventario = [{ id: 'revolver-compacto', tipo: 'arma' }];
+    const semCrime = calcular(f).carga.usados;
+    f.pericias.livres = ['crime', 'reflexos'];
+    assert.equal(semCrime - calcular(f).carga.usados, 1);
+    f.inventario = [{ id: 'bastao-policial', tipo: 'arma' }];
+    const esq = calcular(f).reacoes.esquiva!;
+    f.inventario[0].empunhado = true;
+    assert.equal(calcular(f).reacoes.esquiva! - esq, 1);
+  });
+
   test('soqueira: +1 no dano desarmado, só na mão', () => {
     const f = combatente();
     f.inventario = [{ id: 'soqueira', tipo: 'equipamento' }];
