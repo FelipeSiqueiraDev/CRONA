@@ -60,6 +60,8 @@ export interface ResumoCampanha {
   principal: boolean;
   /** só para o mestre */
   convite?: string;
+  /** só para o mestre: quem está na campanha */
+  membros?: { contaId: number; nome: string; papel: PapelConta }[];
 }
 
 /** Letras e números que não se confundem (sem 0/O, 1/I/L). */

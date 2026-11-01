@@ -1,7 +1,7 @@
 import type { ClientMsg, ServerMsg } from '@crona/shared';
 
 /** As mensagens de entrar: passam antes do `welcome` (as outras o servidor jogaria fora). A lista de campanhas também (29/10). */
-const ENTRADA = new Set<ClientMsg['t']>(['login', 'contaCriar', 'contaEntrar', 'contaSair', 'campanhasMinhas', 'campanhaCriar', 'campanhaEntrar', 'campanhaConvite']);
+const ENTRADA = new Set<ClientMsg['t']>(['login', 'contaCriar', 'contaEntrar', 'contaSair', 'campanhasMinhas', 'campanhaCriar', 'campanhaEntrar', 'campanhaConvite', 'campanhaMudar', 'contaDados', 'contaMudar', 'contaSairOutros', 'contaRecuperar']);
 const ehEntrada = (m: ClientMsg) => ENTRADA.has(m.t);
 
 export class Net {

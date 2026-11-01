@@ -31,6 +31,11 @@ export interface Conta {
   criadaEm: number;
   /** a conta veio do C.R.I.S (o id do usuário lá; scripts/dev/importar-cris.mts) */
   crisId?: string;
+  /**
+   * O código de nova senha (01/11): sem e-mail no CRONA, quem esqueceu a senha pede ao mestre, que gera o código na
+   * campanha. Fica só o sha256, e vale uma hora e uma vez.
+   */
+  recuperacao?: { h: string; ate: number };
 }
 
 const N = 16384;
@@ -94,4 +99,31 @@ export function fecharSessao(contas: Conta[] | undefined, sessao: string): boole
     achou ||= c.sessoes.length !== antes;
   }
   return achou;
+}
+
+/** Fecha todas as sessões da conta menos a deste aparelho (sair dos outros aparelhos; trocar a senha). */
+export function fecharOutras(conta: Conta, sessao: string, agora = Date.now()): number {
+  const h = hashSessao(sessao);
+  // conta só as que ainda valiam (as vencidas saem junto, sem contar)
+  const abertas = conta.sessoes.filter((s) => s.h !== h && valendo(s, agora)).length;
+  conta.sessoes = conta.sessoes.filter((s) => s.h === h);
+  return abertas;
+}
+
+/** Quantos aparelhos têm a conta aberta agora. */
+export const aparelhosAbertos = (conta: Conta, agora = Date.now()) => conta.sessoes.filter((s) => valendo(s, agora)).length;
+
+const VALIDADE_RECUPERACAO = 3600 * 1000;
+
+/** Guarda o código de nova senha (o hash) por uma hora; o anterior deixa de valer. */
+export function guardarRecuperacao(conta: Conta, codigo: string, agora = Date.now()) {
+  conta.recuperacao = { h: hashSessao(codigo), ate: agora + VALIDADE_RECUPERACAO };
+}
+
+/** Confere o código de nova senha. Certo, ele é gasto. */
+export function gastarRecuperacao(conta: Conta, codigo: string, agora = Date.now()): boolean {
+  const r = conta.recuperacao;
+  if (!r || r.ate < agora || r.h !== hashSessao(codigo)) return false;
+  delete conta.recuperacao;
+  return true;
 }

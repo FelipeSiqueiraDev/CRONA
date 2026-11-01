@@ -147,6 +147,89 @@ describe("campanhas das contas", () => {
     assert.deepEqual(r.ok && r.lista.map((c) => [c.principal, c.papel]), [[true, "jogador"]]);
   });
 
+  test("o mestre renomeia, tira, gera o código de nova senha e apaga; o jogador sai sozinho", async () => {
+    const mestre = await conta("Felipe");
+    let r = await lista(mestre.p, { t: "campanhaCriar", sessao: mestre.sessao, nome: "Neon", sistema: "cyberpunk" });
+    const id = r.ok ? r.nova! : 0;
+    r = await lista(mestre.p, { t: "campanhaConvite", sessao: mestre.sessao, id, acao: "gerar" });
+    const codigo = r.ok ? r.lista.find((c) => c.id === id)!.convite! : "";
+    const cora = await conta("Cora");
+    const miguel = await conta("Miguel");
+    await lista(cora.p, { t: "campanhaEntrar", sessao: cora.sessao, codigo });
+    await lista(miguel.p, { t: "campanhaEntrar", sessao: miguel.sessao, codigo });
+    const coraId = hotel.db.contas!.find((c) => c.nome === "Cora")!.id;
+
+    r = await lista(mestre.p, { t: "campanhaMudar", sessao: mestre.sessao, id, acao: "renomear", nome: "Neon Velho" });
+    const neon = r.ok ? r.lista.find((c) => c.id === id) : undefined;
+    assert.equal(neon?.nome, "Neon Velho");
+    assert.deepEqual(neon?.membros?.map((m) => m.nome), ["Felipe", "Cora", "Miguel"]);
+    // o jogador não mexe
+    const intruso = await lista(cora.p, { t: "campanhaMudar", sessao: cora.sessao, id, acao: "apagar" });
+    assert.ok(!intruso.ok && /Só o mestre/.test(intruso.erro));
+    // o mestre só sai se houver outro mestre
+    const sozinho = await lista(mestre.p, { t: "campanhaMudar", sessao: mestre.sessao, id, acao: "sair" });
+    assert.ok(!sozinho.ok && /único mestre/.test(sozinho.erro));
+
+    // o código de nova senha: vale uma vez e entra na conta
+    r = await lista(mestre.p, { t: "campanhaMudar", sessao: mestre.sessao, id, acao: "senha", contaId: coraId });
+    const nova = r.ok ? r.senha : undefined;
+    assert.equal(nova?.nome, "Cora");
+    const p = new Peer(hotel);
+    p.send({ t: "contaRecuperar", email: "cora", codigo: "AAA-AAA", senha: "nova-senha" });
+    assert.ok(!(await p.espera("conta")).ok);
+    p.send({ t: "contaRecuperar", email: "cora@crona.test", codigo: nova!.codigo.toLowerCase(), senha: "nova-senha" });
+    assert.ok((await p.espera("conta")).ok);
+    p.send({ t: "contaRecuperar", email: "cora@crona.test", codigo: nova!.codigo, senha: "outra-senha" });
+    assert.ok(!(await p.espera("conta")).ok);
+    // a sessão velha da Cora caiu junto com a senha velha
+    const velha = await lista(cora.p, { t: "campanhasMinhas", sessao: cora.sessao });
+    assert.ok(!velha.ok && velha.expirou);
+
+    r = await lista(mestre.p, { t: "campanhaMudar", sessao: mestre.sessao, id, acao: "tirar", contaId: coraId });
+    assert.deepEqual(r.ok && r.lista.find((c) => c.id === id)!.membros!.map((m) => m.nome), ["Felipe", "Miguel"]);
+    r = await lista(miguel.p, { t: "campanhaMudar", sessao: miguel.sessao, id, acao: "sair" });
+    assert.deepEqual(r.ok && r.lista, []);
+
+    // a principal não se apaga; a outra sim
+    const principal = hotel.db.campanhasJogo!.find((c) => c.principal)!;
+    const naoApaga = await lista(mestre.p, { t: "campanhaMudar", sessao: mestre.sessao, id: principal.id, acao: "apagar" });
+    assert.ok(!naoApaga.ok);
+    r = await lista(mestre.p, { t: "campanhaMudar", sessao: mestre.sessao, id, acao: "apagar" });
+    assert.deepEqual(r.ok && r.lista.map((c) => c.id), [principal.id]);
+  });
+
+  test("minha conta: troca nome, e-mail e senha só com a senha de agora; sair dos outros aparelhos", async () => {
+    const eu = await conta("Felipe");
+    const outro = new Peer(hotel);
+    outro.send({ t: "contaEntrar", email: "felipe@crona.test", senha: "segredo1" });
+    const sessao2 = await outro.espera("conta");
+    eu.p.send({ t: "contaDados", sessao: eu.sessao });
+    let d = await eu.p.espera("contaDados");
+    assert.ok(d.ok && d.aparelhos === 2 && d.email === "felipe@crona.test");
+
+    eu.p.send({ t: "contaMudar", sessao: eu.sessao, senhaAtual: "errada", nome: "Lipe" });
+    d = await eu.p.espera("contaDados");
+    assert.ok(!d.ok && /não confere/.test(d.erro));
+    eu.p.send({ t: "contaMudar", sessao: eu.sessao, senhaAtual: "segredo1", nome: "Lipe", email: "LIPE@crona.test" });
+    d = await eu.p.espera("contaDados");
+    assert.ok(d.ok && d.nome === "Lipe" && d.email === "lipe@crona.test" && /nome/.test(d.feito ?? ""));
+    assert.equal(hotel.db.contas!.find((c) => c.nome === "Lipe")!.papel, "mestre");
+
+    eu.p.send({ t: "contaSairOutros", sessao: eu.sessao });
+    d = await eu.p.espera("contaDados");
+    assert.ok(d.ok && d.aparelhos === 1 && /1 outro aparelho/.test(d.feito ?? ""));
+    outro.send({ t: "campanhasMinhas", sessao: sessao2.ok ? sessao2.sessao : "" });
+    const caiu = await outro.espera("campanhas");
+    assert.ok(!caiu.ok && caiu.expirou);
+
+    eu.p.send({ t: "contaMudar", sessao: eu.sessao, senhaAtual: "segredo1", senhaNova: "nova-senha" });
+    d = await eu.p.espera("contaDados");
+    assert.ok(d.ok && /senha/.test(d.feito ?? ""));
+    const p = new Peer(hotel);
+    p.send({ t: "contaEntrar", email: "lipe", senha: "nova-senha" });
+    assert.ok((await p.espera("conta")).ok);
+  });
+
   test("sem sessão válida, a lista pede para entrar de novo", async () => {
     const p = new Peer(hotel);
     const r = await lista(p, { t: "campanhasMinhas", sessao: "nada" });

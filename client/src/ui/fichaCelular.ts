@@ -206,7 +206,7 @@ export class FichaCelular {
   /** O aviso único de refazer o equipamento (19/10): abre a requisição da Ordem, pelas regras. */
   private verificarEquipamento() {
     // abre uma vez: a cada `fichas` que chegava (no combate, a cada 300 ms) abria outra por cima (28/10, auditoria)
-    if (!this.fs?.ficha.refazerEquipamento || this.subida || this.avisouEquipamento) return;
+    if (!this.fs?.ficha.refazerEquipamento || !this.fs.naBase || this.subida || this.avisouEquipamento) return;
     this.avisouEquipamento = true;
     const j = janela('EQUIPAMENTO', 'mochila', () => {}, 42);
     j.corpo.append(h('p', { class: 'fc-subida-intro' }, 'Ops, parece que não sobrou quase nada por aí, né?! Vamos refazer nossos equipamentos.'), h('p', { class: 'fj-dica' }, 'Peça à Ordem o que vai levar: a patente limita as categorias, e a carga a mais só avisa. As modificações ficam em cada item da mochila.'));
@@ -599,7 +599,7 @@ export class FichaCelular {
   private cartaoEquipamento(fs: FichaSalva, c: Calc) {
     const vagas = c.itens.filter((l) => l.limite > 0);
     const itens = fs.ficha.inventario.filter((it) => it.uid);
-    return this.cartao('EQUIPAMENTO', 'titulo-equipamentos', 'mochila', [
+    return this.cartao('EQUIPAMENTO', 'titulo-equipamentos', 'mochila', ([
       h(
         'div',
         { class: 'fc-casas' },
@@ -613,9 +613,9 @@ export class FichaCelular {
         ),
       ),
       h('p', { class: 'fc-nota' }, `${numero(c.carga.usados)}/${c.carga.espacos} espaços · ${vagas.map((l) => `cat. ${['0', 'I', 'II', 'III', 'IV'][l.categoria]} ${l.usados}/${l.limite}`).join(' · ') || 'patente sem limite de categoria'}`),
-      // fora da Sede o servidor recusa: o botão nem aparece (28/10; antes o item pedido sumia sem explicação)
+      // fora da Sede o servidor recusa: nem o botão nem aviso aparecem (01/11, pedido do Felipe)
       !fs.naBase
-        ? h('p', { class: 'fc-nota' }, 'Itens da Ordem só se pedem na base (a Sede).')
+        ? null
         : botao('Pedir itens à Ordem', 'mais', 'forte', () => {
         const r = clonarFicha(fs);
         const antes = r.ficha.inventario.length;
@@ -630,6 +630,6 @@ export class FichaCelular {
           },
         });
       }),
-    ]);
+    ] as (HTMLElement | null)[]).filter((x): x is HTMLElement => !!x));
   }
 }

@@ -70,15 +70,19 @@ export function listaDaConta(db: Database, conta: Conta): ResumoCampanha[] {
       jogadores: camp.membros.filter((m) => m.papel === 'jogador').length,
       principal: !!camp.principal,
       ...(papel === 'mestre' && camp.convite ? { convite: camp.convite } : {}),
+      ...(papel === 'mestre' ? { membros: camp.membros.map((m) => ({ contaId: m.contaId, nome: nomeDe.get(m.contaId) ?? '?', papel: m.papel })) } : {}),
     });
   }
   // a principal primeiro, depois a mais nova
   return lista.sort((a, b) => Number(b.principal) - Number(a.principal) || b.id - a.id);
 }
 
+const limparNome = (bruto: unknown) => (typeof bruto === 'string' ? bruto.trim().replace(/\s+/g, ' ') : '');
+const nomeRuim = (nome: string) => (nome.length < 2 || nome.length > MAX_NOME_CAMPANHA ? `O nome da campanha precisa de 2 a ${MAX_NOME_CAMPANHA} letras.` : null);
+
 export function criarCampanha(db: Database, conta: Conta, nomeBruto: unknown, sistema: unknown, agora = Date.now()): Campanha | string {
-  const nome = typeof nomeBruto === 'string' ? nomeBruto.trim().replace(/\s+/g, ' ') : '';
-  if (nome.length < 2 || nome.length > MAX_NOME_CAMPANHA) return `O nome da campanha precisa de 2 a ${MAX_NOME_CAMPANHA} letras.`;
+  const nome = limparNome(nomeBruto);
+  if (nomeRuim(nome)) return nomeRuim(nome)!;
   if (!ehSistema(sistema)) return 'Escolha o sistema da campanha.';
   const minhas = (db.campanhasJogo ?? []).filter((c) => papelEm(c, conta.id) === 'mestre');
   if (minhas.some((c) => c.nome.toLowerCase() === nome.toLowerCase())) return 'Você já mestra uma campanha com esse nome.';
@@ -111,4 +115,59 @@ export function mudarConvite(db: Database, conta: Conta, id: unknown, acao: unkn
     camp.convite = codigo;
   } else return 'Ação de convite inválida.';
   return camp;
+}
+
+/** O que mudou ao mexer na campanha: a conta que saiu do tabuleiro (o hotel desconecta) e o código de nova senha. */
+export interface Mudanca {
+  saiuDoTabuleiro?: Conta;
+  senha?: { conta: Conta; codigo: string };
+}
+
+/**
+ * Mexer na campanha (01/11): o mestre renomeia, apaga (a principal não), tira um jogador e gera o código de nova senha
+ * de um jogador dela; qualquer um sai (o último mestre não). Quem sai da principal perde a ficha ligada à conta; o
+ * mestre que sai dela vira jogador.
+ */
+export function mudarCampanha(db: Database, conta: Conta, id: unknown, acao: unknown, extra: { nome?: unknown; contaId?: unknown }): Mudanca | string {
+  const camp = (db.campanhasJogo ?? []).find((c) => c.id === id);
+  const meu = camp ? papelEm(camp, conta.id) : null;
+  if (!camp || !meu) return 'Essa campanha não está na sua lista.';
+  const mestres = camp.membros.filter((m) => m.papel === 'mestre').length;
+  const tirar = (alvo: Conta): Mudanca => {
+    camp.membros = camp.membros.filter((m) => m.contaId !== alvo.id);
+    if (!camp.principal) return {};
+    delete alvo.fichaId;
+    alvo.papel = 'jogador';
+    return { saiuDoTabuleiro: alvo };
+  };
+  if (acao === 'sair') {
+    if (meu === 'mestre' && mestres <= 1) return camp.principal ? 'Você é o único mestre do tabuleiro: ele não fica sem mestre.' : 'Você é o único mestre: passe a campanha a outro mestre ou apague-a.';
+    return tirar(conta);
+  }
+  if (meu !== 'mestre') return 'Só o mestre da campanha faz isso.';
+  if (acao === 'renomear') {
+    const nome = limparNome(extra.nome);
+    if (nomeRuim(nome)) return nomeRuim(nome)!;
+    if (nome === camp.nome) return {};
+    const minhas = (db.campanhasJogo ?? []).filter((c) => c !== camp && papelEm(c, conta.id) === 'mestre');
+    if (minhas.some((c) => c.nome.toLowerCase() === nome.toLowerCase())) return 'Você já mestra uma campanha com esse nome.';
+    camp.nome = nome;
+    if (camp.principal) db.nomeCampanha = nome;
+    return {};
+  }
+  if (acao === 'apagar') {
+    if (camp.principal) return 'A campanha do tabuleiro não se apaga.';
+    db.campanhasJogo = (db.campanhasJogo ?? []).filter((c) => c !== camp);
+    return {};
+  }
+  if (acao === 'tirar' || acao === 'senha') {
+    const alvo = (db.contas ?? []).find((c) => c.id === extra.contaId);
+    const papel = alvo ? papelEm(camp, alvo.id) : null;
+    if (!alvo || !papel) return 'Essa pessoa não está na campanha.';
+    if (alvo.id === conta.id) return acao === 'tirar' ? 'Para sair, use "Sair da campanha".' : 'A sua senha você troca em Minha conta.';
+    if (papel === 'mestre') return acao === 'tirar' ? 'Outro mestre sai sozinho; você não tira um mestre.' : 'O código de nova senha é só para jogadores.';
+    if (acao === 'tirar') return tirar(alvo);
+    return { senha: { conta: alvo, codigo: novoConvite(sorte) } };
+  }
+  return 'Ação inválida.';
 }

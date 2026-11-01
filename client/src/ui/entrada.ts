@@ -1,5 +1,6 @@
-import { SISTEMAS, type ClientMsg, type ResumoCampanha, type SistemaId } from '@crona/shared';
+import { SISTEMAS, type ClientMsg, type ResumoCampanha, type ServerMsg, type SistemaId } from '@crona/shared';
 import { h } from './dom';
+import { askNote, promptNote } from './note';
 import { existeArte } from './icons';
 import { Cena, UNIVERSOS, pedidos, type CenaLayout, type Clima, type Pol } from './entradaCena';
 import MARCA from './entradaMarca.json';
@@ -23,14 +24,24 @@ import { aoLiberar } from './audioCelular';
  *
  * Depois de entrar, "Minhas campanhas" (29/10) no mesmo painel: as que a conta mestra e as de que participa, criar
  * campanha (nome e sistema) e entrar com o código de convite. A lista vem do servidor (mensagem `campanhas`).
+ *
+ * Desde 01/11: "minha conta" (nome, e-mail, senha e os outros aparelhos), "esqueci a senha" (com o código que o mestre
+ * gera) e o painel de cada campanha (convite, quem está nela, renomear, apagar, sair).
  */
 
-type Modo = 'entrar' | 'criar' | 'semFicha' | 'campanhas' | 'novaCampanha' | 'codigo';
+type Modo = 'entrar' | 'criar' | 'semFicha' | 'campanhas' | 'novaCampanha' | 'codigo' | 'conta' | 'recuperar';
 /** o que a tela de campanhas pede ao servidor (o main.ts junta a sessão da conta) */
 export type PedidoCampanha =
   | { t: 'campanhaCriar'; nome: string; sistema: SistemaId }
   | { t: 'campanhaEntrar'; codigo: string }
-  | { t: 'campanhaConvite'; id: number; acao: 'gerar' | 'desligar' };
+  | { t: 'campanhaConvite'; id: number; acao: 'gerar' | 'desligar' }
+  | { t: 'campanhaMudar'; id: number; acao: 'renomear' | 'apagar' | 'tirar' | 'sair' | 'senha'; nome?: string; contaId?: number };
+/** o que "minha conta" pede ao servidor (o main.ts junta a sessão) */
+export type PedidoConta =
+  | { t: 'contaDados' }
+  | { t: 'contaMudar'; senhaAtual: string; nome?: string; email?: string; senhaNova?: string }
+  | { t: 'contaSairOutros' };
+type DadosConta = Extract<ServerMsg, { t: 'contaDados'; ok: true }>;
 /** [y, altura] em pixels do palco */
 type Caixa = [number, number];
 interface Ret {
@@ -171,6 +182,7 @@ const ICONE = {
   campanha: SVG('<path d="M5 3.5h11l3 3v14H5z"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/>'),
   sistema: SVG('<path d="M12 2.8 20 7.4v9.2L12 21.2 4 16.6V7.4z"/><path d="M12 2.8v18.4M4 7.4l16 9.2M20 7.4 4 16.6"/>'),
   codigo: SVG('<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/>'),
+  ajustes: SVG('<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>'),
 };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -185,6 +197,8 @@ export interface EntradaOpcoes {
   campanha(m: PedidoCampanha): void;
   /** a campanha escolhida na lista (a do tabuleiro abre o jogo) */
   abrirCampanha(c: ResumoCampanha): void;
+  /** minha conta: os dados, mudar, sair dos outros aparelhos */
+  conta(m: PedidoConta): void;
 }
 
 export class Entrada {
@@ -243,8 +257,19 @@ export class Entrada {
   private novaSistema: { caixa: HTMLElement; select: HTMLSelectElement };
   private codigo: { caixa: HTMLElement; input: HTMLInputElement };
   private campanhasDaConta: ResumoCampanha[] | null = null;
+  /** "esqueci a senha" (no modo entrar) e o código do mestre (no modo recuperar) */
+  private esqueci: HTMLButtonElement;
+  private recCodigo: { caixa: HTMLElement; input: HTMLInputElement };
+  /** minha conta: o formulário no lugar da lista */
+  private contaForm: HTMLElement;
+  private contaCampos: Record<'nome' | 'email' | 'senhaNova' | 'senhaAtual', HTMLInputElement>;
+  private contaAparelhos: HTMLElement;
+  private contaInfo: DadosConta | null = null;
+  /** o código de nova senha que o mestre acabou de gerar (mostrado no painel da campanha) */
+  private senhaGerada: { campanha: number; nome: string; codigo: string } | null = null;
   /** o cartão com o convite aberto (só o mestre) */
-  private conviteAberto: number | null = null;
+  /** a campanha com o painel aberto (convite, gente, renomear, apagar, sair) */
+  private gerirAberto: number | null = null;
 
   constructor(private op: EntradaOpcoes) {
     this.fundo = h('img', { class: 'ent-fundo', alt: '', draggable: 'false' });
@@ -297,6 +322,39 @@ export class Entrada {
       autocapitalize: 'characters',
     });
     this.codigo = { caixa: h('label', { class: 'ent-campo ent-codigo' }, h('span', { class: 'ent-ic', html: ICONE.codigo }), codigoInput), input: codigoInput };
+    const recInput = h('input', {
+      class: 'ent-input ent-codigo-input',
+      type: 'text',
+      placeholder: 'Código do mestre',
+      'aria-label': 'Código de nova senha, que o mestre gera',
+      maxlength: '9',
+      spellcheck: 'false',
+      autocomplete: 'one-time-code',
+      autocapitalize: 'characters',
+    });
+    this.recCodigo = { caixa: h('label', { class: 'ent-campo ent-rec-codigo' }, h('span', { class: 'ent-ic', html: ICONE.codigo }), recInput), input: recInput };
+    this.esqueci = h('button', { class: 'ent-link ent-esqueci', type: 'button', onclick: () => this.definirModo('recuperar') }, 'esqueci a senha');
+    const cc = (rotulo: string, tipo: string, auto: string, dica?: string) =>
+      h('input', { class: 'ent-cc-input', type: tipo, 'aria-label': rotulo, placeholder: dica ?? rotulo, autocomplete: auto, spellcheck: 'false', autocapitalize: 'off' });
+    this.contaCampos = {
+      nome: cc('Nome da conta', 'text', 'nickname'),
+      email: cc('E-mail', 'email', 'email'),
+      senhaNova: cc('Senha nova', 'password', 'new-password', 'Senha nova (deixe em branco para manter)'),
+      senhaAtual: cc('Senha de agora', 'password', 'current-password', 'Senha de agora (para salvar)'),
+    };
+    this.contaAparelhos = h('p', { class: 'ent-cc-aparelhos' });
+    const linhaCc = (rotulo: string, input: HTMLInputElement) => h('label', { class: 'ent-cc-linha' }, h('span', null, rotulo), input);
+    this.contaForm = h(
+      'div',
+      { class: 'ent-lista ent-minha-conta', role: 'group', 'aria-label': 'Minha conta' },
+      h('h3', null, 'Minha conta'),
+      linhaCc('Nome', this.contaCampos.nome),
+      linhaCc('E-mail', this.contaCampos.email),
+      linhaCc('Senha nova', this.contaCampos.senhaNova),
+      h('hr'),
+      linhaCc('Senha de agora', this.contaCampos.senhaAtual),
+      this.contaAparelhos,
+    );
     this.painel = h(
       'form',
       { class: 'ent-painel', novalidate: true, onsubmit: (e: Event) => (e.preventDefault(), this.enviar()) },
@@ -306,8 +364,11 @@ export class Entrada {
       this.novaNome.caixa,
       this.novaSistema.caixa,
       this.codigo.caixa,
+      this.recCodigo.caixa,
       this.lista,
+      this.contaForm,
       this.contaLinha,
+      this.esqueci,
       this.msg,
       this.principal,
       this.ou,
@@ -435,7 +496,7 @@ export class Entrada {
     this.esperar(false);
     this.erroEl.textContent = texto;
     this.painel.classList.add('com-erro');
-    this.painel.classList.remove('treme');
+    this.painel.classList.remove('treme', 'aviso-bom');
     void this.painel.offsetWidth;
     this.painel.classList.add('treme');
     clearTimeout(this.erroTempo);
@@ -473,10 +534,57 @@ export class Entrada {
     if (nova) (this.novaNome.input.value = ''), (this.codigo.input.value = '');
     this.contaLinha.replaceChildren(
       h('span', null, 'Conta: ', h('b', null, nome)),
+      h('button', { class: 'ent-link', type: 'button', onclick: () => this.abrirConta() }, 'minha conta'),
       h('button', { class: 'ent-link', type: 'button', onclick: () => this.op.sairDaConta() }, 'sair'),
     );
     this.renderLista(nova);
-    this.definirModo('campanhas', this.modo !== 'campanhas');
+    // a resposta de quem mexia na conta (ou no painel da campanha) não tira a pessoa de onde está
+    if (this.modo !== 'conta') this.definirModo('campanhas', this.modo !== 'campanhas');
+  }
+
+  /** O código de nova senha que o mestre acabou de gerar: fica à vista no painel da campanha. */
+  senhaDeJogador(s: { nome: string; codigo: string }) {
+    if (this.gerirAberto == null) return;
+    this.senhaGerada = { campanha: this.gerirAberto, ...s };
+    this.renderLista();
+  }
+
+  /** Minha conta: pede os dados e mostra o formulário. */
+  private abrirConta() {
+    if (this.esperando) return;
+    this.contaAparelhos.textContent = 'Carregando...';
+    this.contaCampos.senhaNova.value = this.contaCampos.senhaAtual.value = '';
+    this.op.conta({ t: 'contaDados' });
+    this.definirModo('conta');
+  }
+
+  /** O servidor respondeu sobre a conta (os dados, ou o que mudou). */
+  contaDados(d: DadosConta) {
+    this.contaInfo = d;
+    this.esperar(false);
+    const c = this.contaCampos;
+    c.nome.value = d.nome;
+    c.email.value = d.email;
+    c.senhaNova.value = c.senhaAtual.value = '';
+    const sair =
+      d.aparelhos > 1
+        ? h('button', { class: 'ent-link', type: 'button', onclick: () => (this.esperar(true), this.op.conta({ t: 'contaSairOutros' })) }, 'sair dos outros')
+        : null;
+    this.contaAparelhos.replaceChildren(
+      h('span', null, d.aparelhos > 1 ? `Aberta em ${d.aparelhos} aparelhos (este e mais ${d.aparelhos - 1}).` : 'Aberta só neste aparelho.'),
+      sair ?? '',
+    );
+    if (d.feito) this.aviso(d.feito);
+    const nomeLinha = this.contaLinha.querySelector('b');
+    if (nomeLinha) nomeLinha.textContent = d.nome;
+  }
+
+  /** Uma mensagem boa no lugar do erro (some sozinha). */
+  private aviso(texto: string) {
+    this.erroEl.textContent = texto;
+    this.painel.classList.add('com-erro', 'aviso-bom');
+    clearTimeout(this.erroTempo);
+    this.erroTempo = window.setTimeout(() => this.painel.classList.remove('com-erro', 'aviso-bom'), 5000);
   }
 
   /** As duas listas: as que mestro e as de que participo. */
@@ -509,25 +617,118 @@ export class Entrada {
       h('span', null, detalhe),
     );
     const partes: HTMLElement[] = [abrir, selo];
-    if (mestre) {
-      const aberto = this.conviteAberto === c.id;
-      partes.push(
-        h('button', {
-          class: `ent-camp-convite${aberto ? ' ativo' : ''}`,
-          type: 'button',
-          title: 'Convite',
-          'aria-label': `Convite de ${c.nome}`,
-          'aria-expanded': String(aberto),
-          html: ICONE.codigo,
-          onclick: () => {
-            this.conviteAberto = aberto ? null : c.id;
-            this.renderLista();
-          },
-        }),
-      );
-      if (aberto) partes.push(this.convite(c));
-    }
+    const aberto = this.gerirAberto === c.id;
+    partes.push(
+      h('button', {
+        class: `ent-camp-convite${aberto ? ' ativo' : ''}`,
+        type: 'button',
+        title: mestre ? 'Convite, jogadores e ajustes' : 'Ajustes',
+        'aria-label': `Ajustes de ${c.nome}`,
+        'aria-expanded': String(aberto),
+        html: ICONE.ajustes,
+        onclick: () => {
+          this.gerirAberto = aberto ? null : c.id;
+          if (!aberto) this.senhaGerada = null;
+          this.renderLista();
+        },
+      }),
+    );
+    if (aberto) partes.push(this.gerir(c));
     return h('div', { class: `ent-camp${nova ? ' nova' : ''}${c.principal ? ' principal' : ''}`, role: 'listitem' }, ...partes);
+  }
+
+  /** O painel da campanha: o convite e quem está nela (para o mestre), renomear, apagar e sair. */
+  private gerir(c: ResumoCampanha): HTMLElement {
+    const pedir = (acao: 'renomear' | 'apagar' | 'tirar' | 'sair' | 'senha', extra: { nome?: string; contaId?: number } = {}) =>
+      this.op.campanha({ t: 'campanhaMudar', id: c.id, acao, ...extra });
+    const link = (texto: string, titulo: string, fn: () => void, perigo = false) =>
+      h('button', { class: `ent-link${perigo ? ' perigo' : ''}`, type: 'button', title: titulo, onclick: fn }, texto);
+    const partes: HTMLElement[] = [];
+    if (c.papel === 'mestre') {
+      partes.push(this.convite(c));
+      const s = this.senhaGerada?.campanha === c.id ? this.senhaGerada : null;
+      if (s) {
+        const copiar = link('copiar', 'Copiar o código', () =>
+          void navigator.clipboard
+            ?.writeText(s.codigo)
+            .then(() => (copiar.textContent = 'copiado!'))
+            .catch(() => (copiar.textContent = 'não deu')),
+        );
+        partes.push(
+          h(
+            'div',
+            { class: 'ent-convite ent-senha-gerada', role: 'status' },
+            h('span', null, `Nova senha de ${s.nome}:`),
+            h('code', null, s.codigo),
+            copiar,
+            h('small', null, 'Vale uma hora e uma vez: em "esqueci a senha", com o e-mail ou o nome da conta.'),
+          ),
+        );
+      }
+      const gente = c.membros ?? [];
+      partes.push(
+        h(
+          'ul',
+          { class: 'ent-membros', 'aria-label': 'Quem está na campanha' },
+          ...gente.map((m) =>
+            h(
+              'li',
+              null,
+              h('b', null, m.nome),
+              h('span', { class: 'ent-membro-papel' }, m.papel === 'mestre' ? 'mestre' : 'jogador'),
+              m.papel === 'jogador'
+                ? h(
+                    'span',
+                    { class: 'ent-membro-acoes' },
+                    link('nova senha', `Gera um código para ${m.nome} trocar a senha`, () => pedir('senha', { contaId: m.contaId })),
+                    link('tirar', `Tira ${m.nome} da campanha`, () =>
+                      void askNote('Tirar da campanha?', `${m.nome} sai de "${c.nome}"${c.principal ? ' e perde a ficha ligada à conta' : ''}. Para voltar, precisa do convite.`, 'Tirar', true).then(
+                        (sim) => sim && pedir('tirar', { contaId: m.contaId }),
+                      ),
+                    true),
+                  )
+                : '',
+            ),
+          ),
+        ),
+      );
+      const acoes: HTMLElement[] = [
+        link('renomear', 'Trocar o nome da campanha', () =>
+          void promptNote('Renomear a campanha', [{ label: 'Nome', value: c.nome, max: 60 }], 'Renomear').then((r) => r && r[0].trim() && pedir('renomear', { nome: r[0] })),
+        ),
+      ];
+      if ((c.membros ?? []).filter((m) => m.papel === 'mestre').length > 1)
+        acoes.push(link('sair', 'Deixar de mestrar esta campanha', () => void askNote('Sair da campanha?', `Você deixa de mestrar "${c.nome}".`, 'Sair', true).then((sim) => sim && pedir('sair'))));
+      if (!c.principal)
+        acoes.push(
+          link(
+            'apagar',
+            'Apagar a campanha de vez',
+            () =>
+              void promptNote('Apagar a campanha?', [{ label: `Escreva "${c.nome}" para confirmar`, max: 60 }], 'Apagar de vez').then((r) => {
+                if (!r) return;
+                if (r[0].trim().toLowerCase() !== c.nome.toLowerCase()) return this.erro('O nome não confere: a campanha ficou.');
+                pedir('apagar');
+              }),
+            true,
+          ),
+        );
+      partes.push(h('div', { class: 'ent-gerir-acoes' }, ...acoes));
+    } else {
+      partes.push(
+        h(
+          'div',
+          { class: 'ent-gerir-acoes' },
+          h('span', null, `Mestre: ${c.mestres.join(', ') || '?'}`),
+          link('sair da campanha', 'Deixar esta campanha', () =>
+            void askNote('Sair da campanha?', `Você sai de "${c.nome}"${c.principal ? ' e a ficha deixa de estar ligada à sua conta' : ''}. Para voltar, precisa do convite.`, 'Sair', true).then(
+              (sim) => sim && pedir('sair'),
+            ),
+          true),
+        ),
+      );
+    }
+    return h('div', { class: 'ent-gerir' }, ...partes);
   }
 
   /** A linha do convite: o código, copiar, trocar e desligar (ou gerar, se não houver). */
@@ -599,6 +800,31 @@ export class Entrada {
     if (this.esperando) return;
     if (this.modo === 'semFicha') return this.op.verMesa();
     if (this.modo === 'campanhas') return this.definirModo('novaCampanha');
+    if (this.modo === 'conta') {
+      const c = this.contaCampos;
+      const d = this.contaInfo;
+      if (!d) return;
+      const nome = c.nome.value.trim();
+      const email = c.email.value.trim();
+      const senhaNova = c.senhaNova.value;
+      if (nome.length < 2) return this.erro('O nome precisa de pelo menos 2 letras.'), c.nome.focus();
+      if (!EMAIL_RE.test(email)) return this.erro('Confira o e-mail.'), c.email.focus();
+      if (senhaNova && senhaNova.length < 6) return this.erro('A senha nova precisa de pelo menos 6 caracteres.'), c.senhaNova.focus();
+      if (nome === d.nome && email.toLowerCase() === d.email && !senhaNova) return this.aviso('Nada mudou.');
+      if (!c.senhaAtual.value) return this.erro('Para salvar, escreva a senha de agora.'), c.senhaAtual.focus();
+      this.esperar(true);
+      return this.op.conta({ t: 'contaMudar', senhaAtual: c.senhaAtual.value, nome, email, ...(senhaNova ? { senhaNova } : {}) });
+    }
+    if (this.modo === 'recuperar') {
+      const quem = this.campos.email.input.value.trim();
+      const codigo = this.recCodigo.input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const senha = this.campos.senha.input.value;
+      if (quem.length < 2) return this.erro('Escreva o e-mail ou o nome da conta.'), this.campos.email.input.focus();
+      if (codigo.length !== 6) return this.erro('O código tem 6 letras e números (peça ao mestre).'), this.recCodigo.input.focus();
+      if (senha.length < 6) return this.erro('A senha nova precisa de pelo menos 6 caracteres.'), this.campos.senha.input.focus();
+      this.esperar(true);
+      return this.op.enviar({ t: 'contaRecuperar', email: quem, codigo, senha });
+    }
     if (this.modo === 'novaCampanha') {
       const nome = this.novaNome.input.value.trim();
       if (nome.length < 2) return this.erro('Escreva o nome da campanha.'), this.novaNome.input.focus();
@@ -631,7 +857,8 @@ export class Entrada {
     if (this.esperando) return;
     // da lista: entrar com o código; de criar ou do código: volta à lista; o jogador sem ficha que veio da lista volta a ela
     if (this.modo === 'campanhas') return this.definirModo('codigo');
-    if (this.modo === 'novaCampanha' || this.modo === 'codigo' || (this.modo === 'semFicha' && this.campanhasDaConta)) return this.definirModo('campanhas');
+    if (this.modo === 'novaCampanha' || this.modo === 'codigo' || this.modo === 'conta' || (this.modo === 'semFicha' && this.campanhasDaConta)) return this.definirModo('campanhas');
+    if (this.modo === 'recuperar') return this.definirModo('entrar');
     if (this.modo === 'semFicha') return this.op.sairDaConta();
     this.definirModo(this.modo === 'entrar' ? 'criar' : 'entrar');
   }
@@ -640,8 +867,9 @@ export class Entrada {
     this.esperando = sim;
     this.painel.classList.toggle('esperando', sim);
     for (const c of Object.values(this.campos)) c.input.disabled = sim;
-    this.novaNome.input.disabled = this.novaSistema.select.disabled = this.codigo.input.disabled = sim;
-    if (sim) this.rotulo(this.principal, this.modo === 'criar' || this.modo === 'novaCampanha' ? 'CRIANDO...' : 'ENTRANDO...');
+    this.novaNome.input.disabled = this.novaSistema.select.disabled = this.codigo.input.disabled = this.recCodigo.input.disabled = sim;
+    for (const i of Object.values(this.contaCampos)) i.disabled = sim;
+    if (sim) this.rotulo(this.principal, this.modo === 'criar' || this.modo === 'novaCampanha' ? 'CRIANDO...' : this.modo === 'conta' || this.modo === 'recuperar' ? 'SALVANDO...' : 'ENTRANDO...');
     else this.definirModo(this.modo, false);
   }
 
@@ -666,7 +894,7 @@ export class Entrada {
     if (!L) return;
     this.painel.classList.toggle('sem-transicao', !animar);
     this.painel.dataset.modo = modo;
-    const pos = modo === 'criar' ? L.criar : L.entrar;
+    const pos = modo === 'criar' || modo === 'recuperar' ? L.criar : L.entrar;
     const p = L.painel;
     const caixa = (el: HTMLElement, c: Caixa, visivel = true, x = L.campo.x, w = L.campo.w) => {
       el.style.left = `${x - p.x}px`;
@@ -675,10 +903,14 @@ export class Entrada {
       el.style.height = `${c[1]}px`;
       el.classList.toggle('oculto', !visivel);
     };
-    const conta = modo === 'entrar' || modo === 'criar';
+    const conta = modo === 'entrar' || modo === 'criar' || modo === 'recuperar';
     caixa(this.campos.nome.caixa, modo === 'criar' ? L.criar.nome : L.entrar.email, modo === 'criar');
-    caixa(this.campos.email.caixa, pos.email, conta);
+    // esqueci a senha: a conta em cima, o código do mestre no meio e a senha nova embaixo
+    caixa(this.campos.email.caixa, modo === 'recuperar' ? L.criar.nome : pos.email, conta);
+    caixa(this.recCodigo.caixa, L.criar.email, modo === 'recuperar');
     caixa(this.campos.senha.caixa, pos.senha, conta);
+    // "esqueci a senha" embaixo do botão de entrar, antes do "ou"
+    caixa(this.esqueci, [L.entrar.botao[0] + L.entrar.botao[1] + 4 * L.u, 20 * L.u], modo === 'entrar');
     caixa(this.novaNome.caixa, L.entrar.email, modo === 'novaCampanha');
     caixa(this.novaSistema.caixa, L.entrar.senha, modo === 'novaCampanha');
     caixa(this.codigo.caixa, L.entrar.email, modo === 'codigo');
@@ -686,8 +918,9 @@ export class Entrada {
     if (modo === 'codigo') this.msg.replaceChildren(h('span', null, 'Peça o código ao mestre da campanha.'));
     // a lista vai do primeiro campo até perto do "ou"; embaixo, a conta e os dois botões lado a lado
     caixa(this.lista, [L.entrar.email[0], L.entrar.ou - L.entrar.email[0] - 22 * L.u], modo === 'campanhas');
+    caixa(this.contaForm, [L.entrar.email[0], L.entrar.ou - L.entrar.email[0] - 16 * L.u], modo === 'conta');
     caixa(this.contaLinha, [L.entrar.ou - 12 * L.u, 24 * L.u], modo === 'campanhas');
-    if (modo === 'campanhas') {
+    if (modo === 'campanhas' || modo === 'conta') {
       const vao = 10 * L.u;
       const meio = (L.campo.w - vao) / 2;
       caixa(this.principal, L.entrar.outro, true, L.campo.x, meio);
@@ -696,19 +929,39 @@ export class Entrada {
       caixa(this.principal, pos.botao);
       caixa(this.outro, pos.outro);
     }
-    this.ou.classList.toggle('oculto', modo === 'campanhas');
+    this.ou.classList.toggle('oculto', modo === 'campanhas' || modo === 'conta');
     this.ou.style.top = this.erroEl.style.top = `${pos.ou - p.y}px`;
     this.ou.style.left = this.erroEl.style.left = `${L.campo.x - p.x}px`;
     this.ou.style.width = this.erroEl.style.width = `${L.campo.w}px`;
-    this.campos.senha.input.autocomplete = modo === 'criar' ? 'new-password' : 'current-password';
+    this.campos.senha.input.autocomplete = modo === 'criar' || modo === 'recuperar' ? 'new-password' : 'current-password';
+    this.campos.senha.input.placeholder = modo === 'recuperar' ? 'Senha nova' : 'Senha';
+    this.campos.senha.input.setAttribute('aria-label', this.campos.senha.input.placeholder);
     // para entrar, vale o e-mail ou o nome da conta
     const email = this.campos.email.input;
-    email.placeholder = modo === 'criar' ? 'E-mail' : 'E-mail ou nome';
+    email.placeholder = modo === 'criar' ? 'E-mail' : modo === 'recuperar' ? 'E-mail ou nome da conta' : 'E-mail ou nome';
     email.setAttribute('aria-label', email.placeholder);
     email.type = modo === 'criar' ? 'email' : 'text';
     if (!this.esperando) {
-      const principal: Record<Modo, string> = { entrar: 'ENTRAR', criar: 'CRIAR CONTA', semFicha: 'VER O TABULEIRO', campanhas: 'CRIAR CAMPANHA', novaCampanha: 'CRIAR CAMPANHA', codigo: 'ENTRAR NA CAMPANHA' };
-      const outro: Record<Modo, string> = { entrar: 'CRIAR CONTA', criar: 'JÁ TENHO CONTA', semFicha: this.campanhasDaConta ? 'VOLTAR' : 'SAIR DA CONTA', campanhas: 'TENHO UM CÓDIGO', novaCampanha: 'VOLTAR', codigo: 'VOLTAR' };
+      const principal: Record<Modo, string> = {
+        entrar: 'ENTRAR',
+        criar: 'CRIAR CONTA',
+        semFicha: 'VER O TABULEIRO',
+        campanhas: 'CRIAR CAMPANHA',
+        novaCampanha: 'CRIAR CAMPANHA',
+        codigo: 'ENTRAR NA CAMPANHA',
+        conta: 'SALVAR',
+        recuperar: 'TROCAR A SENHA',
+      };
+      const outro: Record<Modo, string> = {
+        entrar: 'CRIAR CONTA',
+        criar: 'JÁ TENHO CONTA',
+        semFicha: this.campanhasDaConta ? 'VOLTAR' : 'SAIR DA CONTA',
+        campanhas: 'TENHO UM CÓDIGO',
+        novaCampanha: 'VOLTAR',
+        codigo: 'VOLTAR',
+        conta: 'VOLTAR',
+        recuperar: 'VOLTAR',
+      };
       this.rotulo(this.principal, principal[modo]);
       this.rotulo(this.outro, outro[modo]);
     }
@@ -719,7 +972,8 @@ export class Entrada {
       if (modo === 'criar') setTimeout(() => this.campos.nome.input.focus(), 250);
       if (modo === 'novaCampanha') setTimeout(() => this.novaNome.input.focus(), 250);
       if (modo === 'codigo') setTimeout(() => this.codigo.input.focus(), 250);
-      this.painel.classList.remove('com-erro');
+      if (modo === 'recuperar') setTimeout(() => (this.campos.email.input.value ? this.recCodigo.input : this.campos.email.input).focus(), 250);
+      this.painel.classList.remove('com-erro', 'aviso-bom');
     }
   }
 

@@ -556,7 +556,7 @@ export class TelaJogador {
               },
             });
           })
-        : h('p', { class: 'jg-nota-base' }, ic('pino'), 'Itens da Ordem só se pedem na base (a Sede).'),
+        : null, // fora da Sede, nem o botão nem aviso (01/11)
       inv.length ? null : h('p', { class: 'jg-vazio' }, 'A mochila está vazia. Os itens vêm da requisição da Ordem e do que o mestre entrega.'),
     ];
     return partes.filter((x): x is HTMLElement => !!x);

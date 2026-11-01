@@ -37,6 +37,7 @@ import {
   DIR_KEYS,
   getLayout,
   MAX_NAME,
+  lerConvite,
   sanitizeCharPatch,
   sanitizeLook,
   type CharacterDef,
@@ -91,8 +92,8 @@ import {
   MAPA_MIN,
   URL_MAPA_RE,
 } from '@crona/shared';
-import { confereSenha, contaDaSessao, EMAIL_RE, fecharSessao, hashSenha, novaSessao, SENHA_MIN, senhaAntiga, type Conta } from './contas';
-import { campanhaPrincipal, criarCampanha, entrarComCodigo, listaDaConta, mudarConvite, porNaCampanha } from './campanhas';
+import { aparelhosAbertos, confereSenha, contaDaSessao, EMAIL_RE, fecharOutras, fecharSessao, gastarRecuperacao, guardarRecuperacao, hashSenha, novaSessao, SENHA_MIN, senhaAntiga, type Conta } from './contas';
+import { campanhaPrincipal, criarCampanha, entrarComCodigo, listaDaConta, mudarCampanha, mudarConvite, porNaCampanha } from './campanhas';
 import { loadDb, saveDbNow, scheduleSave, type CampaignData, type Database, type RoomData, type TokenData, type UserData } from './db';
 import { RoomInstance, type Client, type HotelApi } from './roomInstance';
 import { folhaDaPasta, gravarSentadoAjuste, refreshPortraits } from './portraits';
@@ -2492,7 +2493,10 @@ export class Hotel implements HotelApi {
     // a conta (tela de entrada) vale antes e depois do login
     if (m.t === 'contaCriar' || m.t === 'contaEntrar') return void this.conta(c, m);
     if (m.t === 'contaSair') return this.contaSair(m);
-    if (m.t === 'campanhasMinhas' || m.t === 'campanhaCriar' || m.t === 'campanhaEntrar' || m.t === 'campanhaConvite') return this.campanhas(c, m);
+    if (m.t === 'contaDados' || m.t === 'contaMudar' || m.t === 'contaSairOutros') return void this.minhaConta(c, m);
+    if (m.t === 'contaRecuperar') return void this.contaRecuperar(c, m);
+    if (m.t === 'campanhasMinhas' || m.t === 'campanhaCriar' || m.t === 'campanhaEntrar' || m.t === 'campanhaConvite' || m.t === 'campanhaMudar')
+      return this.campanhas(c, m);
     if (!c.name) {
       if (m.t === 'login') this.login(c, m);
       return;
@@ -2921,8 +2925,118 @@ export class Hotel implements HotelApi {
       const r = mudarConvite(this.db, conta, m.id, m.acao);
       if (typeof r === 'string') return falha(r);
     }
+    let senha: { nome: string; codigo: string } | undefined;
+    if (m.t === 'campanhaMudar') {
+      const r = mudarCampanha(this.db, conta, m.id, m.acao, { nome: m.nome, contaId: m.contaId });
+      if (typeof r === 'string') return falha(r);
+      // quem saiu do tabuleiro sai da sessão aberta nele
+      if (r.saiuDoTabuleiro) this.derrubarConta(r.saiuDoTabuleiro.id, c);
+      if (r.senha) {
+        guardarRecuperacao(r.senha.conta, r.senha.codigo, agora);
+        senha = { nome: r.senha.conta.nome, codigo: r.senha.codigo };
+      }
+      if (this.persist) console.log(`[campanhas] ${conta.nome}: ${String(m.acao)} na campanha ${String(m.id)}`);
+    }
     if (m.t !== 'campanhasMinhas') this.save();
-    c.send({ t: 'campanhas', ok: true, lista: listaDaConta(this.db, conta), ...(nova ? { nova } : {}) });
+    c.send({ t: 'campanhas', ok: true, lista: listaDaConta(this.db, conta), ...(nova ? { nova } : {}), ...(senha ? { senha } : {}) });
+  }
+
+  /** Desconecta as abas da conta que estão no tabuleiro (menos `menos`): saiu da campanha, trocou a senha ou o nome. */
+  private derrubarConta(contaId: number, menos?: Client) {
+    for (const o of this.clients.values()) if (o !== menos && o.contaId === contaId && o.name) o.kick?.();
+  }
+
+  /**
+   * Minha conta (01/11): o que a tela mostra, trocar nome, e-mail e senha (sempre com a senha de agora) e sair dos
+   * outros aparelhos. A resposta é a mensagem `contaDados`.
+   */
+  private async minhaConta(c: Client, m: Record<string, unknown>) {
+    const agora = Date.now();
+    const sessao = typeof m.sessao === 'string' ? m.sessao : '';
+    const conta = sessao ? contaDaSessao(this.db.contas, sessao) : undefined;
+    if (!conta) return c.send({ t: 'contaDados', ok: false, erro: 'Sua sessão terminou. Entre de novo.', expirou: true });
+    const falha = (erro: string) => c.send({ t: 'contaDados', ok: false, erro });
+    const dados = (feito?: string) =>
+      c.send({ t: 'contaDados', ok: true, nome: conta.nome, email: conta.email, papel: conta.papel, aparelhos: aparelhosAbertos(conta, agora), ...(feito ? { feito } : {}) });
+    if (m.t === 'contaDados') return dados();
+    if (m.t === 'contaSairOutros') {
+      const n = fecharOutras(conta, sessao);
+      this.derrubarConta(conta.id, c);
+      this.save();
+      return dados(n ? `Saiu de ${n} ${n === 1 ? 'outro aparelho' : 'outros aparelhos'}.` : 'Nenhum outro aparelho estava com a conta aberta.');
+    }
+    // contaMudar: a senha de agora confere, com o mesmo freio das senhas erradas
+    if ((c.esperaConta ?? 0) > agora) return falha('Muitas tentativas seguidas. Espere meio minuto e tente de novo.');
+    const atual = typeof m.senhaAtual === 'string' ? m.senhaAtual : '';
+    if (!atual || atual.length > 200 || !(await confereSenha(atual, conta.senha))) {
+      c.falhasConta = (c.falhasConta ?? 0) + 1;
+      if (c.falhasConta >= 5) (c.falhasConta = 0), (c.esperaConta = agora + 30_000);
+      return falha('A senha de agora não confere.');
+    }
+    c.falhasConta = 0;
+    const contas = this.db.contas ?? [];
+    const nome = typeof m.nome === 'string' ? m.nome.trim().replace(/\s+/g, ' ') : conta.nome;
+    const email = typeof m.email === 'string' ? m.email.trim().toLowerCase() : conta.email;
+    const senhaNova = typeof m.senhaNova === 'string' ? m.senhaNova : '';
+    if (nome !== conta.nome) {
+      if (nome.length < 2 || nome.length > MAX_NAME || !NAME_RE.test(nome)) return falha(`O nome precisa de 2 a ${MAX_NAME} letras ou números.`);
+      if (nome.toLowerCase() === SYSTEM_OWNER.toLowerCase()) return falha('Esse nome é reservado.');
+      if (contas.some((x) => x !== conta && x.nome.toLowerCase() === nome.toLowerCase())) return falha('Esse nome já é de outra conta.');
+    }
+    if (email !== conta.email) {
+      if (email.length > 120 || !EMAIL_RE.test(email)) return falha('Confira o e-mail.');
+      if (contas.some((x) => x !== conta && x.email === email)) return falha('Já existe uma conta com esse e-mail.');
+    }
+    if (senhaNova && (senhaNova.length < SENHA_MIN || senhaNova.length > 200)) return falha(`A senha nova precisa de pelo menos ${SENHA_MIN} caracteres.`);
+    const feito: string[] = [];
+    if (nome !== conta.nome) {
+      // o que o jogo guarda pelo nome (o visual, o inventário antigo, os quartos) vai junto
+      const de = conta.nome.toLowerCase();
+      const para = nome.toLowerCase();
+      if (de !== para && this.db.users[de] && !this.db.users[para]) {
+        this.db.users[para] = { ...this.db.users[de], name: nome };
+        delete this.db.users[de];
+      }
+      for (const r of this.db.rooms) if (r.owner.toLowerCase() === de) r.owner = nome;
+      conta.nome = nome;
+      feito.push('o nome');
+    }
+    if (email !== conta.email) (conta.email = email), feito.push('o e-mail');
+    if (senhaNova) {
+      conta.senha = await hashSenha(senhaNova);
+      delete conta.recuperacao;
+      fecharOutras(conta, sessao);
+      feito.push('a senha (os outros aparelhos saíram)');
+    }
+    // o tabuleiro aberto com o nome velho (ou a senha velha) sai
+    if (feito.length) this.derrubarConta(conta.id, c);
+    this.save();
+    if (feito.length && this.persist) console.log(`[contas] ${conta.nome} trocou ${feito.join(', ')}`);
+    dados(feito.length ? `Trocado: ${feito.join(', ')}.` : 'Nada mudou.');
+  }
+
+  /** Esqueci a senha (01/11): o código que o mestre gerou na campanha troca a senha e entra na conta. */
+  private async contaRecuperar(c: Client, m: Record<string, unknown>) {
+    const agora = Date.now();
+    const falha = (erro: string) => c.send({ t: 'conta', ok: false, erro });
+    if ((c.esperaConta ?? 0) > agora) return falha('Muitas tentativas seguidas. Espere meio minuto e tente de novo.');
+    const quem = typeof m.email === 'string' ? m.email.trim().toLowerCase() : '';
+    const codigo = typeof m.codigo === 'string' ? lerConvite(m.codigo) : null;
+    const senha = typeof m.senha === 'string' ? m.senha : '';
+    if (senha.length < SENHA_MIN || senha.length > 200) return falha(`A senha nova precisa de pelo menos ${SENHA_MIN} caracteres.`);
+    const contas = this.db.contas ?? [];
+    const conta = contas.find((x) => x.email === quem) ?? (quem.includes('@') ? undefined : contas.find((x) => x.nome.toLowerCase() === quem));
+    if (!conta || !codigo || !gastarRecuperacao(conta, codigo, agora)) {
+      c.falhasConta = (c.falhasConta ?? 0) + 1;
+      if (c.falhasConta >= 5) (c.falhasConta = 0), (c.esperaConta = agora + 30_000);
+      return falha('O código não confere com essa conta, ou já venceu (vale uma hora). Peça outro ao mestre.');
+    }
+    c.falhasConta = 0;
+    conta.senha = await hashSenha(senha);
+    conta.sessoes = [];
+    this.derrubarConta(conta.id, c);
+    if (this.persist) console.log(`[contas] ${conta.nome} trocou a senha pelo código do mestre`);
+    this.contaAberta(c, conta);
   }
 
   private contaSair(m: Record<string, unknown>) {

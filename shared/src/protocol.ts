@@ -422,6 +422,19 @@ export type ClientMsg =
   /** sair: a sessão deste aparelho deixa de valer */
   | { t: 'contaSair'; sessao: string }
   /**
+   * Minha conta (01/11), pela sessão. `contaDados` pede o que a tela mostra; `contaMudar` troca o nome, o e-mail ou a
+   * senha (sempre com a senha de agora; a senha nova fecha os outros aparelhos); `contaSairOutros` fecha os outros
+   * aparelhos. A resposta é a mensagem `contaDados`.
+   */
+  | { t: 'contaDados'; sessao: string }
+  | { t: 'contaMudar'; sessao: string; senhaAtual: string; nome?: string; email?: string; senhaNova?: string }
+  | { t: 'contaSairOutros'; sessao: string }
+  /**
+   * Esqueci a senha (01/11): o código de nova senha que o mestre gerou na campanha, a conta (e-mail ou nome) e a
+   * senha nova. Certo, entra na conta (a resposta é a mensagem `conta`), e os outros aparelhos saem.
+   */
+  | { t: 'contaRecuperar'; email: string; codigo: string; senha: string }
+  /**
    * As campanhas da conta (29/10, a tela "Minhas campanhas"), antes do login, pela sessão: pedir a lista, criar
    * (quem cria é o mestre), entrar com o código de convite (como jogador) e o mestre gerar ou desligar o convite. A
    * resposta é sempre a mensagem `campanhas`.
@@ -430,6 +443,11 @@ export type ClientMsg =
   | { t: 'campanhaCriar'; sessao: string; nome: string; sistema: SistemaId }
   | { t: 'campanhaEntrar'; sessao: string; codigo: string }
   | { t: 'campanhaConvite'; sessao: string; id: number; acao: 'gerar' | 'desligar' }
+  /**
+   * Mexer na campanha (01/11). O mestre renomeia, apaga (menos a principal), tira alguém e gera o código de nova senha
+   * de um jogador dela (`senha`); qualquer um sai dela (`sair`; o último mestre não sai).
+   */
+  | { t: 'campanhaMudar'; sessao: string; id: number; acao: 'renomear' | 'apagar' | 'tirar' | 'sair' | 'senha'; nome?: string; contaId?: number }
   /** a tela do falso C.R.I.S para quem entra de fora: liga, desliga ou (sem `ligado`) pergunta; só o mestre */
   | { t: 'falsoCris'; ligado?: boolean }
   /** o mestre passa o dia (19/10): o que é "1 vez por dia" zera (a etapa ritualística do Ser Amaldiçoado) */
@@ -637,7 +655,10 @@ export type ServerMsg =
   | { t: 'conta'; ok: true; sessao: string; nome: string; papel: PapelConta; fichaKey?: string }
   | { t: 'conta'; ok: false; erro: string; expirou?: boolean }
   /** a lista "Minhas campanhas"; `nova` = a que acabou de ser criada ou em que acabou de entrar */
-  | { t: 'campanhas'; ok: true; lista: ResumoCampanha[]; nova?: number }
+  | { t: 'campanhas'; ok: true; lista: ResumoCampanha[]; nova?: number; senha?: { nome: string; codigo: string } }
+  /** Minha conta: o que a tela mostra, e o aviso da última mudança (`feito`) ou o erro */
+  | { t: 'contaDados'; ok: true; nome: string; email: string; papel: PapelConta; aparelhos: number; feito?: string }
+  | { t: 'contaDados'; ok: false; erro: string; expirou?: boolean }
   | { t: 'campanhas'; ok: false; erro: string; expirou?: boolean }
   /** como está a tela do falso C.R.I.S (resposta ao mestre) */
   | { t: 'falsoCris'; ligado: boolean }

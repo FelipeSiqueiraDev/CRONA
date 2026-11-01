@@ -320,6 +320,7 @@ function criarEntrada() {
     verMesa: () => location.replace(`${location.pathname}?mesa`),
     sairDaConta: () => sairDaConta(),
     campanha: (p) => sessaoConta && net.send({ ...p, sessao: sessaoConta.sessao }),
+    conta: (p) => sessaoConta && net.send({ ...p, sessao: sessaoConta.sessao }),
     abrirCampanha: (c) => abrirCampanha(c),
   }));
 }
@@ -477,6 +478,18 @@ net.onMessage = (m: ServerMsg) => {
     case 'campanhas':
       if (m.ok) {
         if (sessaoConta) entrada?.campanhas(sessaoConta.nome, m.lista, m.nova);
+        if (m.senha) entrada?.senhaDeJogador(m.senha);
+      } else if (m.expirou) {
+        esquecerSessao();
+        sessaoConta = null;
+        mostrarEntrada(m.erro);
+      } else entrada?.erro(m.erro);
+      break;
+    case 'contaDados':
+      if (m.ok) {
+        // o nome pode ter mudado: a lista e o próximo login usam o novo
+        if (sessaoConta && sessaoConta.nome !== m.nome) guardarSessao((sessaoConta = { ...sessaoConta, nome: m.nome }));
+        entrada?.contaDados(m);
       } else if (m.expirou) {
         esquecerSessao();
         sessaoConta = null;
