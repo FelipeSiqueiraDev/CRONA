@@ -299,8 +299,16 @@ export class FichasScreen {
     this.render();
   }
 
+  /** o que a Identificação mostra da campanha (o nome e o lugar de cada agente), para não refazer à toa */
+  private chaveIdent = '';
+
   setCampanha(c: CampaignState) {
     this.campanha = c;
+    // a campanha chega a cada mudança de cena ou de peça: a Identificação só se refaz quando o que ela mostra mudou
+    // (01/11; antes piscava e perdia o toque, como o celular antes de 28/10)
+    const chave = JSON.stringify([c.nomeCampanha ?? c.title, c.party.map((p) => [p.look?.charId, p.roomId]), c.scenes.map((s) => [s.id, s.name])]);
+    if (chave === this.chaveIdent) return;
+    this.chaveIdent = chave;
     this.renderIdent();
   }
 
