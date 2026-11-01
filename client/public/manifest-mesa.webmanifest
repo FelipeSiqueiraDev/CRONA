@@ -1,0 +1,31 @@
+{
+  "lang": "pt-BR",
+  "scope": "/",
+  "background_color": "#07060a",
+  "theme_color": "#07060a",
+  "icons": [
+    {
+      "src": "/arte/marca/crona-icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/arte/marca/crona-icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "id": "/?mesa",
+  "name": "CRONA · Mesa",
+  "short_name": "CRONA Mesa",
+  "description": "O tabuleiro da mesa, em tela cheia.",
+  "start_url": "/?mesa",
+  "display": "fullscreen",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "landscape"
+}

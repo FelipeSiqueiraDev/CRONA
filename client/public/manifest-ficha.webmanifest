@@ -1,0 +1,30 @@
+{
+  "lang": "pt-BR",
+  "scope": "/",
+  "background_color": "#07060a",
+  "theme_color": "#07060a",
+  "icons": [
+    {
+      "src": "/arte/marca/crona-icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/arte/marca/crona-icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "id": "/?ficha",
+  "name": "CRONA · Ficha",
+  "short_name": "CRONA Ficha",
+  "description": "A sua ficha no celular.",
+  "start_url": "/?ficha",
+  "display": "standalone",
+  "display_override": [
+    "standalone"
+  ],
+  "orientation": "portrait"
+}

@@ -9,6 +9,23 @@
     <link rel="icon" type="image/png" sizes="64x64" href="/arte/marca/crona-icone-64.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/arte/marca/crona-icone-192.png" />
     <link rel="apple-touch-icon" href="/arte/marca/crona-icone-180.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CRONA" />
+    <script>
+      // instalar como aplicativo (01/11): cada tela tem o seu, que abre nela mesma e em tela cheia (a mesa e o
+      // mestre; a ficha do jogador sem a barra do navegador). A chave da ficha nunca vai no manifesto: o ?ficha sem
+      // chave usa a guardada no aparelho.
+      (function () {
+        var q = location.search;
+        var qual = /[?&]mesa\b/.test(q) ? '-mesa' : /[?&]ficha\b/.test(q) ? '-ficha' : '';
+        var l = document.createElement('link');
+        l.rel = 'manifest';
+        l.href = '/manifest' + qual + '.webmanifest';
+        document.head.appendChild(l);
+      })();
+    </script>
     <script>
       // o fundo da tela de entrada, adiantado só para quem vai vê-la (29/10: baixava em toda abertura, também para quem
       // já tem a conta guardada ou entra pela mesa, pelo link do mestre ou pela ficha)

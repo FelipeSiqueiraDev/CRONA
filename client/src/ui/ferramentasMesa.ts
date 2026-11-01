@@ -14,8 +14,8 @@ import { sfx } from './sfx';
  */
 type Tipo = FerramentaMesa['tipo'];
 
-/** A névoa revelada aos poucos aparece na barra? (docs/FERRAMENTAS-DA-MESA.md) */
-export const NEVOA_NA_TELA = false;
+import { NEVOA_NA_TELA } from './nevoaNaTela';
+export { NEVOA_NA_TELA };
 
 const FORMAS: { id: FormaTraco; nome: string; icone: string }[] = [
   { id: 'livre', nome: 'À mão livre', icone: 'rabisco' },

@@ -12,36 +12,8 @@ import { BarJogos } from './barJogos';
 import { TelaJogador } from './jogador';
 import { sfx } from './sfx';
 
-const CHAVE = 'crona.fichaKey';
-
-/** Chave do link da ficha (?ficha=...), guardada para abrir de novo sem o link. */
-export function lerChaveFicha(): string | null {
-  const q = new URLSearchParams(location.search);
-  const daUrl = q.get('ficha');
-  try {
-    if (daUrl) localStorage.setItem(CHAVE, daUrl);
-    return daUrl || (q.has('ficha') ? localStorage.getItem(CHAVE) : null);
-  } catch {
-    return daUrl;
-  }
-}
-
-/** Guarda a chave da ficha que a conta do jogador trouxe (abre com ?ficha, sem o link). */
-export function guardarChaveFicha(chave: string) {
-  try {
-    localStorage.setItem(CHAVE, chave);
-  } catch {
-    /* sem armazenamento */
-  }
-}
-
-export function esquecerChaveFicha() {
-  try {
-    localStorage.removeItem(CHAVE);
-  } catch {
-    /* sem armazenamento */
-  }
-}
+// a chave da ficha mora em session/fichaChave.ts (01/11); quem importava daqui continua achando
+export { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha } from '../session/fichaChave';
 
 export class TelaFicha {
   readonly el: HTMLElement;

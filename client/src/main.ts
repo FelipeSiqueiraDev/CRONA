@@ -31,8 +31,6 @@ import { breathMode } from './render/portrait';
 import { sprites } from './render/sprites';
 import { RoomView } from './room/RoomView';
 import { App } from './ui/app';
-import { CatalogWin, InventoryWin } from './ui/catalog';
-import { CharactersWin } from './ui/characters';
 import { closeTopWindow, fecharJanelas, h, manterRolagem, toast } from './ui/dom';
 import { ligarBancadaSentar } from './ui/bancadaSentar';
 import { ajusteAssentos } from './render/assentos';
@@ -41,28 +39,22 @@ let bancadaSentar: (() => void) | null | undefined;
 
 // a rolagem dos painéis não volta para o topo quando eles são refeitos (ui/dom.ts)
 manterRolagem();
-import { FxWin } from './ui/fx';
-import { HelpWin } from './ui/help';
 import { HintViewer } from './ui/infostand';
-import { Shell } from './ui/shell';
+import type { Shell } from './ui/shell';
 import { loadLogin, saveLogin } from './ui/login';
-import { TableScreen } from './ui/table';
-import { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha, TelaFicha } from './ui/telaFicha';
-import { Entrada } from './ui/entrada';
-import { FalsoCris } from './ui/falsoCris';
+import { esquecerChaveFicha, guardarChaveFicha, lerChaveFicha } from './session/fichaChave';
+import type { Entrada } from './ui/entrada';
+import type { FalsoCris } from './ui/falsoCris';
 import { mostrarTelaEscondida } from './ui/telaEscondida';
 import { ligarMedidor } from './ui/medidorFps';
 import { mostrarTelaViagem } from './ui/viagemTela';
 import { mostrarCena } from './ui/cenaTela';
 import { iniciarSugestaoDeCenas } from './ui/cenaSugestao';
-import { BarJogos } from './ui/barJogos';
 import { esquecerSessao, guardarSessao, lerSessao } from './session/conta';
 import { janelaAberta } from './ui/fichaModal';
-import { NavigatorWin } from './ui/navigator';
-import { RoomSettingsWin } from './ui/roomSettings';
 import { forgetGmKey, readGmKey, tableName, tableRequested } from './session/access';
 import { montarTemas } from './ui/temaUi';
-import { NEVOA_NA_TELA } from './ui/ferramentasMesa';
+import { NEVOA_NA_TELA } from './ui/nevoaNaTela';
 import { ligarMarcaOuro } from './ui/marcaOuro';
 import { sfx } from './ui/sfx';
 import { forcarMovel } from './render/forcar';
@@ -92,6 +84,11 @@ const devAuto = import.meta.env.DEV && new URLSearchParams(location.search).has(
 /** quem entra pela conta: o mestre e o jogador sem link (a mesa e os links continuam como antes) */
 const pedeConta = !tableMode && !fichaMode && !gmKey && !devAuto;
 let entrada: Entrada | null = null;
+/** o pedaço da tela de entrada: já no começo para quem entra pela conta; para os outros, só se a sessão cair */
+let moduloEntrada: typeof import('./ui/entrada') | null = pedeConta ? await import('./ui/entrada') : null;
+async function carregarEntrada() {
+  return (moduloEntrada ??= await import('./ui/entrada'));
+}
 /** a tela do falso C.R.I.S, enquanto estiver na frente (ui/falsoCris.ts) */
 let falsoCris: FalsoCris | null = null;
 const root = document.getElementById('app')!;
@@ -242,36 +239,20 @@ view.pvDe = (id) => {
 };
 if (import.meta.env.DEV) (window as unknown as { __crona: App }).__crona = app;
 
-const navigator = new NavigatorWin(app);
-const catalog = new CatalogWin(app, startPlace);
-const inventory = new InventoryWin(app, startPlace);
-const characters = new CharactersWin(app);
-const settings = new RoomSettingsWin(app);
-const help = new HelpWin();
-const fx = new FxWin(app);
 const hintViewer = new HintViewer(app);
-const shell = tableMode || fichaMode
-  ? null
-  : new Shell(app, {
-      navigator: () => navigator.toggle(),
-      catalog: () => catalog.toggle(),
-      trocar: (id, defId) => catalog.trocar(id, defId),
-      inventory: () => inventory.toggle(),
-      characters: () => characters.toggle(),
-      settings: () => settings.toggle(),
-      fx: () => fx.toggle(),
-      help: () => help.toggle(),
-      logout: () => sairDaConta(),
-    });
+/**
+ * Cada tela vem num pedaço próprio, baixado só por quem a usa (01/11): a do mestre (a interface inteira), a da mesa
+ * (o tabuleiro no tablet) e a do jogador (a ficha no celular). A tela de entrada também (`carregarEntrada`).
+ */
+const mestre = tableMode || fichaMode ? null : await import('./telas/mestre').then((m) => m.montarMestre(app, startPlace, () => sairDaConta()));
+const shell = mestre?.shell ?? null;
 const params = new URLSearchParams(location.search);
 // o medidor de desempenho (?fps): quadros por segundo, desenho, travadas e mudanças da interface
 if (params.has('fps')) ligarMedidor(view, canvas, () => app.state.room?.name ?? '');
-const table = tableMode ? new TableScreen(app) : null;
-const telaFicha = fichaMode
-  ? new TelaFicha(app, () => sairDaConta())
-  : null;
+const table = tableMode ? new (await import('./ui/table')).TableScreen(app) : null;
+const telaFicha = fichaMode ? new (await import('./ui/telaFicha')).TelaFicha(app, () => sairDaConta()) : null;
 /** os jogos do bar em que o mestre joga por um NPC (janelinha no canto) */
-const barMestre = shell ? new BarJogos(app, 'mestre') : null;
+const barMestre = mestre?.bar ?? null;
 // a marca de ouro das abas desliza de uma aba para a outra (em toda tela)
 ligarMarcaOuro();
 if (shell) {
@@ -311,11 +292,13 @@ function login(fresh = false) {
 
 /** A tela de entrada (conta da plataforma), com um aviso se houver. */
 function mostrarEntrada(aviso?: string) {
-  criarEntrada().mostrar(aviso);
+  if (moduloEntrada) return criarEntrada().mostrar(aviso);
+  void carregarEntrada().then(() => criarEntrada().mostrar(aviso));
 }
 
+/** A tela de entrada (o pedaço dela já baixado: `carregarEntrada`). */
 function criarEntrada() {
-  return (entrada ??= new Entrada({
+  return (entrada ??= new moduloEntrada!.Entrada({
     enviar: (m) => net.send(m),
     verMesa: () => location.replace(`${location.pathname}?mesa`),
     sairDaConta: () => sairDaConta(),
@@ -339,9 +322,9 @@ function mostrarEntradaOuCris() {
         .then((j: { falsoCris?: boolean }) => !!j.falsoCris);
   void cris
     .catch(() => false)
-    .then((sim) => {
+    .then(async (sim) => {
       if (!sim) return mostrarEntrada();
-      falsoCris = new FalsoCris({ enviar: (m) => net.send(m) });
+      falsoCris = new (await import('./ui/falsoCris')).FalsoCris({ enviar: (m) => net.send(m) });
       falsoCris.mostrar();
       // a entrada do CRONA já carrega por baixo (a arte é pesada): quando o C.R.I.S quebrar, ela está pronta
       criarEntrada().preparar();

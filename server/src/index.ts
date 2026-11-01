@@ -36,6 +36,7 @@ const MIME: Record<string, string> = {
   '.webp': 'image/webp',
   '.svg': 'image/svg+xml',
   '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
   '.mp3': 'audio/mpeg',
@@ -54,7 +55,7 @@ function sendJson(res: http.ServerResponse, status: number, body: unknown) {
 }
 
 /** Texto que vale comprimir (o JS de 1 MB vira ~300 kB). */
-const COMPRIME = new Set(['.js', '.css', '.html', '.json', '.svg', '.txt']);
+const COMPRIME = new Set(['.js', '.css', '.html', '.json', '.webmanifest', '.svg', '.txt']);
 /** O arquivo já comprimido, por caminho e data (o build não muda com o jogo no ar). */
 const gzCache = new Map<string, { mtime: number; buf: Buffer }>();
 
