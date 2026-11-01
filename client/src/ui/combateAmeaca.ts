@@ -143,6 +143,11 @@ export function editarAmeaca(
     const [cM, iM] = campoNum('margem', a.margem, 'mini');
     const [cX, iX] = campoNum('×', a.multiplicador, 'mini');
     const [cV, iV] = campoNum('por ação', a.vezes ?? 1, 'mini');
+    // a sequência da ação completa: o bônus de cada golpe ("9, 4, -1"), a Defesa depois e o lembrete
+    const seqEl = h('input', { class: 'fx-inp', value: a.golpes?.join(', ') ?? '', maxlength: 30, placeholder: '9, 4, -1', title: 'Golpes numa ação completa: o bônus de cada um, em ordem' });
+    const [cDd, iDd] = campoNum('Defesa depois', a.defesaDepois ?? 0, 'mini');
+    const notaEl = h('input', { class: 'fx-inp', value: a.nota ?? '', maxlength: 120, placeholder: 'anda 3 m entre os golpes' });
+    const lerSeq = () => (seqEl.value.match(/[-−]?\d+/g) ?? []).map((s) => Number(s.replace('−', '-'))).slice(0, 6);
     const alc = h('select', { class: 'fx-inp' }, ...FAIXAS.map((x) => h('option', { value: x.v, selected: cb.faixaArma(a.alcance) === cb.faixaArma(x.v) }, x.rot)));
     const linha = {
       el: h('div', { class: 'cb-fa-atk' }),
@@ -158,7 +163,9 @@ export function editarAmeaca(
               margem: num(iM, 20),
               multiplicador: num(iX, 2),
               ...(alc.value ? { alcance: alc.value } : {}),
-              ...(num(iV, 1) > 1 ? { vezes: num(iV, 1) } : {}),
+              ...(lerSeq().length > 1 ? { golpes: lerSeq(), completa: true } : num(iV, 1) > 1 ? { vezes: num(iV, 1) } : {}),
+              ...(num(iDd, 0) ? { defesaDepois: num(iDd, 0) } : {}),
+              ...(notaEl.value.trim() ? { nota: notaEl.value.trim() } : {}),
               // o dano a mais de outro tipo vem do livro e fica como está
               ...(a.extra ? { extra: a.extra } : {}),
             }
@@ -175,6 +182,9 @@ export function editarAmeaca(
       cX,
       cV,
       h('label', { class: 'fj-campo' }, h('span', null, 'Alcance'), alc),
+      h('label', { class: 'fj-campo cb-fa-dano' }, h('span', null, 'Sequência (completa)'), seqEl),
+      cDd,
+      h('label', { class: 'fj-campo cb-fa-nome' }, h('span', null, 'Lembrete'), notaEl),
       h('button', { class: 'cb-fa-x', type: 'button', title: 'Tirar o ataque', 'aria-label': 'Tirar o ataque', onclick: () => (linha.el.remove(), atkLinhas.splice(atkLinhas.indexOf(linha), 1)) }, ic('fechar')),
     );
     atkLinhas.push(linha);

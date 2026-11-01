@@ -52,6 +52,10 @@ function ataque(v: unknown): AtaqueAmeaca | null {
   const ex = o.extra && typeof o.extra === 'object' ? (o.extra as Record<string, unknown>) : null;
   const exDano = ex ? txt(ex.dano, 20).replace(/[^0-9dD+\-−\s]/g, '') : '';
   const exTipo = ex ? tipoDano(ex.tipo) : null;
+  // a sequência da ação completa: o bônus de cada golpe (de 2 a 6 golpes)
+  const golpes = Array.isArray(o.golpes) ? o.golpes.slice(0, 6).map((g) => int(g, -20, 60, 0)) : [];
+  const defesaDepois = int(o.defesaDepois, -20, 20, 0);
+  const nota = txt(o.nota, 120);
   return {
     nome,
     pericia: o.pericia === 'pontaria' ? 'pontaria' : 'luta',
@@ -62,8 +66,11 @@ function ataque(v: unknown): AtaqueAmeaca | null {
     margem: int(o.margem, 2, 20, 20),
     multiplicador: int(o.multiplicador, 2, 6, 2),
     ...(alcance ? { alcance } : {}),
-    ...(int(o.vezes, 1, 6, 1) > 1 ? { vezes: int(o.vezes, 1, 6, 1) } : {}),
+    ...(golpes.length < 2 && int(o.vezes, 1, 6, 1) > 1 ? { vezes: int(o.vezes, 1, 6, 1) } : {}),
     ...(/\d/.test(exDano) && exTipo ? { extra: { dano: exDano, tipo: exTipo } } : {}),
+    ...(golpes.length > 1 ? { golpes, completa: true } : o.completa === true ? { completa: true } : {}),
+    ...(defesaDepois ? { defesaDepois } : {}),
+    ...(nota ? { nota } : {}),
   };
 }
 

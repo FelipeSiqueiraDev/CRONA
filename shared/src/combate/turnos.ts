@@ -296,12 +296,55 @@ function lembrarPresenca(c: Combate, ctx: Contexto, quemChega?: Participante) {
   const pr = maior.f.presenca;
   const extra = com.length - 1;
   const quem = com.length > 1 ? ` (${com.length} criaturas; vale a de ${maior.p.nome})` : ` de ${maior.p.nome}`;
+  const dano = `${pr.dano}${extra ? `+${extra}d6` : ''}`;
   registrar(
     c,
     ctx.agora,
     'estado',
-    `Presença perturbadora${quem}: quem a vê faz Vontade DT ${pr.dt}; falhou, ${pr.dano}${extra ? `+${extra}d6` : ''} de dano mental; passou, metade. NEX ${pr.nex}% ou mais é imune (LR p. 180; uma vez por cena, DC-15).`,
+    `Presença perturbadora${quem}: quem a vê faz Vontade DT ${pr.dt}; falhou, ${dano} de dano mental; passou, metade. NEX ${pr.nex}% ou mais é imune (LR p. 180; uma vez por cena, DC-15).`,
   );
+  // o teste de cada agente fica nas pendências (01/11; antes, só o lembrete, e o mestre tirava a SAN à mão)
+  const feitos = new Set([...(c.presencaFeita ?? []), ...(c.presencas ?? []).map((x) => x.id)]);
+  const imunes: string[] = [];
+  for (const p of c.participantes) {
+    if (p.fora || p.lado !== 'agente' || p.companheiroDe || feitos.has(p.id)) continue;
+    const nex = ctx.nex?.(p.id);
+    if (nex != null && nex >= pr.nex) {
+      imunes.push(p.nome);
+      continue;
+    }
+    (c.presencas ??= []).push({ id: p.id, dt: pr.dt, dano, de: com.length > 1 ? `${com.length} criaturas` : maior.p.nome });
+  }
+  if (imunes.length) registrar(c, ctx.agora, 'estado', `Imunes à presença (NEX ${pr.nex}% ou mais): ${imunes.join(', ')}.`);
+}
+
+/**
+ * O teste de Vontade contra a presença perturbadora (01/11; LR p. 180): igual ou maior que a DT passa e sofre metade
+ * (arredondada para baixo, regra da mesa); falhou, o dano inteiro. O dano é mental: tira SAN.
+ */
+function presenca(c: Combate, a: Extract<AcaoCombate, { tipo: 'presenca' }>, ctx: Contexto): Resultado {
+  const erro = (motivo: string): Resultado => ({ ok: false, motivo });
+  const x = (c.presencas ?? []).find((y) => y.id === a.id);
+  if (!x) return erro('Não há teste de presença esperando para esse agente.');
+  const p = participante(c, x.id);
+  c.presencas = (c.presencas ?? []).filter((y) => y !== x);
+  if (!c.presencas.length) delete c.presencas;
+  c.presencaFeita = [...new Set([...(c.presencaFeita ?? []), x.id])];
+  if (!p) return { ok: true, combate: c };
+  if (a.descartar) {
+    registrar(c, ctx.agora, 'estado', `Presença perturbadora em ${p.nome}: o mestre dispensou o teste.`);
+    return { ok: true, combate: c };
+  }
+  const total = inteiro(a.total, -99, 999);
+  const soma = inteiro(a.soma, 0, 999);
+  if (total === undefined) return erro('Falta o total do teste de Vontade.');
+  if (soma === undefined) return erro(`Falta a soma dos dados do dano (${x.dano}).`);
+  const passou = total >= x.dt;
+  const final = passou ? Math.floor(soma / 2) : soma;
+  registrar(c, ctx.agora, 'acao', `${p.nome} encara a presença perturbadora (${x.de}): Vontade total ${total} contra DT ${x.dt} — ${passou ? 'passou, sofre metade' : 'falhou'}.`, [passou ? 'passou' : 'falhou']);
+  const vitais: MudancaVitais[] = [];
+  aplicarDano(c, p, { final, formula: x.dano, conta: passou ? `${soma}, metade: ${final}` : String(soma), tipo: 'mental' }, ctx, vitais);
+  return { ok: true, combate: c, vitais };
 }
 
 const NOME_SAIDA: Record<Saida, string> = { morto: 'morreu', insano: 'chegou à insanidade', saiu: 'saiu do combate' };
@@ -326,8 +369,16 @@ function ataque(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
   const vezes = inteiro(o.vezes, 1, 6) ?? 1;
   let golpe = '';
   if (o.qual === 'completa') {
-    if (ac.padrao || ac.movimento || ac.completa) return erro('A ação completa precisa do turno inteiro livre.');
-    ac.completa = true;
+    if (ac.completa) {
+      // a sequência da ação completa (a Dança das Lâminas): o próximo golpe da mesma ação
+      if (!ac.golpes) return erro('A ação completa já gastou o turno.');
+      ac.golpes -= 1;
+      golpe = ' (outro golpe da mesma ação completa)';
+    } else {
+      if (ac.padrao || ac.movimento) return erro('A ação completa precisa do turno inteiro livre.');
+      ac.completa = true;
+      if (vezes > 1) ac.golpes = vezes - 1;
+    }
   } else {
     if (ac.completa) return erro('A ação completa já gastou o turno.');
     if (ac.padrao) {
@@ -1118,6 +1169,9 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
 
     case 'massivo':
       return massivo(c, a, ctx);
+
+    case 'presenca':
+      return presenca(c, a, ctx);
 
     case 'perdaSan': {
       const i = (c.perdasSan ?? []).findIndex((x) => x.id === a.id);

@@ -495,6 +495,47 @@ export class CombateScreen {
   }
 
   /**
+   * O cartão da presença perturbadora (01/11; LR p. 180): o agente faz Vontade contra a DT; o mestre digita o total e
+   * a soma dos dados do dano mental, e o jogo tira a SAN (passou, metade).
+   */
+  private cartaoPresenca(c: Combate, x: NonNullable<Combate['presencas']>[number]): HTMLElement {
+    const nome = cb.participante(c, x.id)?.nome ?? 'O agente';
+    const von = this.calcDe(x.id)?.pericias.vontade;
+    const rola = von ? textoTeste(von.dados, von.bonus, von.penalidadeDados) : null;
+    const tot = h('input', { class: 'cb-dado', type: 'text', inputmode: 'numeric', maxlength: 3, placeholder: '—', 'aria-label': `Total da Vontade de ${nome}` }) as HTMLInputElement;
+    const dano = h('input', { class: 'cb-dado', type: 'text', inputmode: 'numeric', maxlength: 3, placeholder: '—', 'aria-label': `Soma dos dados do dano (${x.dano})` }) as HTMLInputElement;
+    const ler = (i: HTMLInputElement) => (i.value.trim() && Number.isFinite(Number(i.value)) ? Math.round(Number(i.value)) : null);
+    const enviar = (passou?: boolean) => {
+      const soma = ler(dano);
+      if (soma === null) return toast(`Digite a soma dos dados do dano (${x.dano}).`, 'error');
+      const t = ler(tot) ?? (passou === undefined ? null : passou ? x.dt : x.dt - 1);
+      if (t === null) return toast('Digite o total da Vontade, ou use Passou / Falhou.', 'error');
+      this.acao({ tipo: 'presenca', id: x.id, total: t, soma });
+    };
+    return h(
+      'div',
+      { class: 'cb-pend-item ruim cb-massivo' },
+      h('span', { class: 'cb-pend-ic' }, icPintado('alerta')),
+      h(
+        'div',
+        null,
+        h('p', null, h('b', null, `Presença perturbadora: ${nome} `), `vê ${x.de}. Vontade `, h('b', null, `DT ${x.dt}`), `; falhou, ${x.dano} de dano mental; passou, metade (LR p. 180).`),
+        h('p', null, rola ? `${nome} rola: ${rola}.` : 'Sem ficha: o mestre rola a Vontade.'),
+        h(
+          'div',
+          { class: 'cb-massivo-linha' },
+          h('label', { class: 'cb-caixa-dado' }, h('small', null, 'Vontade'), tot),
+          h('label', { class: 'cb-caixa-dado' }, h('small', null, x.dano), dano),
+          botao('Aplicar', null, () => enviar(), 'cb-mini'),
+          botao('Passou', null, () => enviar(true), 'cb-mini'),
+          botao('Falhou', null, () => enviar(false), 'cb-mini'),
+          botao('Dispensar', null, () => this.acao({ tipo: 'presenca', id: x.id, descartar: true }), 'cb-mini'),
+        ),
+      ),
+    );
+  }
+
+  /**
    * Abre uma aba da gaveta de baixo (Alvo, Efeitos e pendências, Registro). Na tela nova a gaveta fecha (só a barra de
    * abas fica à mostra) e abre por cima das colunas; o alvo ali é o cardzão da direita, então a aba dele não existe.
    */
@@ -1147,20 +1188,31 @@ export class CombateScreen {
   private armasDe(p: Participante): ArmaOpcao[] {
     const calc = this.calcDe(p.id);
     if (calc) return [...this.armasDaFicha(calc), ...this.jogadasDe(p, calc)];
-    return (this.ameacaDe(p.id)?.ataques ?? []).map((a) => ({
-      nome: a.nome,
-      pericia: a.pericia,
-      dados: a.dados,
-      bonus: a.bonus,
-      dano: a.dano,
-      tipo: a.tipo,
-      margem: a.margem,
-      multiplicador: a.multiplicador,
-      faixa: cb.faixaArma(a.alcance),
-      notas: [],
-      ...(a.vezes ? { vezes: a.vezes } : {}),
-      ...(a.extra ? { extra: a.extra } : {}),
-    }));
+    const ac = this.combate ? cb.acoesDe(this.combate, p.id) : null;
+    return (this.ameacaDe(p.id)?.ataques ?? []).map((a) => {
+      // a sequência da ação completa (a Dança das Lâminas): o golpe da vez, com o bônus dele
+      const seq = a.golpes && a.golpes.length > 1 ? a.golpes : null;
+      const n = seq && ac?.completa ? Math.min(seq.length - 1, seq.length - (ac.golpes ?? 0)) : 0;
+      return {
+        nome: seq ? `${a.nome} (${n + 1}º de ${seq.length})` : a.nome,
+        pericia: a.pericia,
+        dados: a.dados,
+        bonus: seq ? seq[n] : a.bonus,
+        dano: a.dano,
+        tipo: a.tipo,
+        margem: a.margem,
+        multiplicador: a.multiplicador,
+        faixa: cb.faixaArma(a.alcance),
+        notas: [
+          ...(seq ? [`Ação completa: ${seq.length} golpes (${seq.map((b) => (b < 0 ? `−${-b}` : `+${b}`)).join(', ')}).`] : a.completa ? ['Gasta a ação completa.'] : []),
+          ...(a.defesaDepois ? [`Depois, Defesa ${a.defesaDepois > 0 ? '+' : '−'}${Math.abs(a.defesaDepois)} até o próximo turno.`] : []),
+          ...(a.nota ? [a.nota] : []),
+        ],
+        ...(seq ? { vezes: seq.length, completa: true, sequencia: true } : a.completa ? { completa: true } : a.vezes ? { vezes: a.vezes } : {}),
+        ...(a.defesaDepois ? { defesaDepois: a.defesaDepois } : {}),
+        ...(a.extra ? { extra: a.extra } : {}),
+      };
+    });
   }
 
   /**
@@ -2064,7 +2116,7 @@ export class CombateScreen {
 
   private renderPend() {
     const c = this.combate;
-    const nMassivos = (c?.massivos?.length ?? 0) + (c?.perdasSan?.length ?? 0);
+    const nMassivos = (c?.massivos?.length ?? 0) + (c?.perdasSan?.length ?? 0) + (c?.presencas?.length ?? 0);
     if (nMassivos > this.massivosVistos) this.abrirGaveta('pend');
     this.massivosVistos = nMassivos;
     if (!this.mudou('pend', [c && { ...c, registro: c.registro.slice(-16) }, this.assinaturaPecas(), this.assinaturaFichas(), this.atorId])) return;
@@ -2107,6 +2159,7 @@ export class CombateScreen {
       } else itens.push(item('alerta', 'aviso', 'Ninguém pode agir: ponha alguém no combate ou encerre.'));
       // o teste de Fortitude do dano massivo (LR p. 88): na frente de tudo, com a caixa do total e o resultado
       for (const m of c.massivos ?? []) itens.unshift(this.cartaoMassivo(c, m));
+      for (const x of c.presencas ?? []) itens.unshift(this.cartaoPresenca(c, x));
       for (const d of depois) itens.push(item('alerta', 'ruim', h('span', null, h('b', null, 'Da última ação: '), d)));
       for (const p of c.participantes) {
         const cond = vitalConditions(this.vitais(p.id));

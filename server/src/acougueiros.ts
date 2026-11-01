@@ -33,3 +33,47 @@ export function acougueirosNoBestiario(db: Database): boolean {
   for (const a of ACOUGUEIROS) if (!db.bestiario.some((c) => c.id === a.id)) db.bestiario.push(criatura(a));
   return true;
 }
+
+/**
+ * A Dança das Lâminas da Ovelha (01/11): o mestre tinha posto os golpes como ataques soltos ("Dança das Lâminas (1º)",
+ * "(2º)", "(3º)"), e a tela mandava cada um como uma ação padrão (o 2º era recusado). Os golpes em sequência viram um
+ * ataque só, de ação completa, com o bônus de cada golpe; o lembrete das notas (Defesa 16 depois, anda 3 m entre eles)
+ * vira a Defesa −2 e o lembrete do ataque. Vale para o bestiário e para as fichas editadas no combate.
+ */
+export function juntarSequencias(f: combate.FichaAmeaca): boolean {
+  const re = /^(.*\S)\s*\((\d)º\)$/;
+  const grupos = new Map<string, combate.AtaqueAmeaca[]>();
+  for (const a of f.ataques) {
+    const m = re.exec(a.nome);
+    if (m) grupos.set(m[1], [...(grupos.get(m[1]) ?? []), a]);
+  }
+  let mudou = false;
+  for (const [nome, lista] of grupos) {
+    if (lista.length < 2) continue;
+    const ordem = [...lista].sort((a, b) => Number(re.exec(a.nome)![2]) - Number(re.exec(b.nome)![2]));
+    const base = ordem[0];
+    const dancaOvelha = /dança das lâminas/i.test(nome) && /defesa 16/i.test(f.notas ?? '');
+    const junto: combate.AtaqueAmeaca = {
+      ...base,
+      nome,
+      bonus: base.bonus,
+      golpes: ordem.map((a) => a.bonus),
+      completa: true,
+      ...(dancaOvelha ? { defesaDepois: 16 - f.defesa, nota: 'Anda 3 m entre os golpes.' } : {}),
+    };
+    const i = f.ataques.indexOf(base);
+    f.ataques = f.ataques.filter((a) => !lista.includes(a));
+    f.ataques.splice(Math.min(i, f.ataques.length), 0, junto);
+    mudou = true;
+  }
+  return mudou;
+}
+
+export function dancaDasLaminas0111(db: Database): boolean {
+  const d = db as Database & { danca0111?: boolean };
+  if (d.danca0111) return false;
+  d.danca0111 = true;
+  for (const c of db.bestiario ?? []) juntarSequencias(c.ficha);
+  for (const camp of Object.values(db.campaigns ?? {})) for (const f of Object.values(camp.ameacas ?? {})) juntarSequencias(f);
+  return true;
+}

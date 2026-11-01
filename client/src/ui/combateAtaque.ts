@@ -38,6 +38,12 @@ export interface ArmaOpcao {
   notas: string[];
   /** ataques por ação (o "×2" da ameaça) */
   vezes?: number;
+  /** gasta a ação completa (a sequência da ameaça, como a Dança das Lâminas) */
+  completa?: boolean;
+  /** é um golpe de uma sequência: os seguintes saem da mesma ação completa */
+  sequencia?: boolean;
+  /** a Defesa de quem ataca muda até o próximo turno dele (a Dança: −2) */
+  defesaDepois?: number;
   /** dano a mais de outro tipo, rolado à parte ("e 1d8 mental") */
   extra?: { dano: string; tipo: TipoDano };
   /** a arma está na mão (da ficha): só assim ataca; a da mochila precisa sacar antes */
@@ -657,14 +663,20 @@ export class ResolucaoAtaque {
     );
     // o "×2" da ameaça deixa mais ataques na mesma ação padrão
     // a investida é ação completa: precisa do turno inteiro livre, como o servidor confere (auditoria de 27/10)
-    const semAcao = x.acoes.completa || (k.ids.includes('investida') ? x.acoes.padrao || x.acoes.movimento : x.acoes.padrao && !x.acoes.golpes);
+    // a sequência da ação completa (a Dança das Lâminas) segue enquanto sobrarem golpes
+    const completa = k.ids.includes('investida') || !!arma?.completa;
+    const semAcao = x.acoes.completa
+      ? !(arma?.sequencia && x.acoes.golpes)
+      : completa
+        ? x.acoes.padrao || x.acoes.movimento
+        : x.acoes.padrao && !x.acoes.golpes;
     const confirmar = h(
       'button',
       {
         class: 'cb-bt forte',
         type: 'button',
         disabled: !pronto || semAcao || !!arma?.jogada?.erros.length,
-        title: semAcao ? 'A ação padrão deste turno já foi usada' : 'Aplica o dano e escreve no registro',
+        title: semAcao ? (completa ? 'A ação completa precisa do turno inteiro livre' : 'A ação padrão deste turno já foi usada') : 'Aplica o dano e escreve no registro',
         onclick: () => {
           if (!arma || !alvo || !k.res || !k.teste) return;
           sfx.click();
@@ -673,7 +685,7 @@ export class ResolucaoAtaque {
             quem: x.ator.id,
             alvo: alvo.p.id,
             arma: arma.nome,
-            qual: k.ids.includes('investida') ? 'completa' : 'padrao',
+            qual: completa ? 'completa' : 'padrao',
             teste: { dados: k.teste.dados, bonus: k.teste.bonus, d20: this.e.d20!, total: k.res.total, defesa: k.teste.defesa },
             situacoes: k.teste.ativas.map((s) => s.nome.toLowerCase()),
             resultado: k.res.resultado,
@@ -710,6 +722,8 @@ export class ResolucaoAtaque {
             ...(arma.jogada ? { jogada: { nome: arma.jogada.nome, pe: arma.jogada.pe } } : {}),
             ...(() => {
               const dt = k.ids.filter((id) => cb.DEFESA_ATE_O_TURNO[id]).map((id) => ({ nome: cb.situacao(id).nome, valor: cb.DEFESA_ATE_O_TURNO[id]! }));
+              // a Defesa que a sequência deixa (a Dança: Defesa 16), marcada no primeiro golpe
+              if (arma.defesaDepois && !x.acoes.completa) dt.push({ nome: arma.nome.replace(/ \(\d+º de \d+\)$/, ''), valor: arma.defesaDepois });
               return dt.length ? { defesaAteTurno: dt } : {};
             })(),
             ...(this.e.arremessar && arma.arremesso ? { arremesso: { ...(arma.uid !== undefined ? { uid: arma.uid } : {}), volta: !!this.e.volta } } : {}),

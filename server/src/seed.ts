@@ -42,7 +42,7 @@ import { retoquesCasas2110 } from './retoquesCasas';
 import { postosMansao2410, postosSantaAmalia2510 } from './postos';
 import { retoquesIgarape2210 } from './retoquesIgarape';
 import { avisoDeEvolucao2110, evolucaoMarcados2110 } from './evolucaoMarcados';
-import { acougueirosNoBestiario } from './acougueiros';
+import { acougueirosNoBestiario, dancaDasLaminas0111 } from './acougueiros';
 import { migrarCampanhas } from './campanhas';
 
 export const SYSTEM_OWNER = 'CRONA';
@@ -811,7 +811,7 @@ function trancasSemCadeado(db: Database): boolean {
 }
 
 export function upgradeDb(db: Database): boolean {
-  const trancas = [trancasSemCadeado(db), aplicarFichasCris(db), igualarMarcadosCris(db), mochilasDaHistoria(db), zerarMochilasMarcados(db), avisosDe1910(db), tepesECora1910(db), contaTesteNoMiguel(db), camarillaPv1910(db), refazerEquipamento1910(db), avisosSemCris1910(db), retoquesCasas2110(db), retoquesIgarape2210(db), evolucaoMarcados2110(db), avisoDeEvolucao2110(db), acougueirosNoBestiario(db), migrarCampanhas(db, db.nomeCampanha ?? 'Segredos do Outro Lado')].some(Boolean); // as fichas do C.R.I.S entram no Elenco (18/10)
+  const trancas = [trancasSemCadeado(db), aplicarFichasCris(db), igualarMarcadosCris(db), mochilasDaHistoria(db), zerarMochilasMarcados(db), avisosDe1910(db), tepesECora1910(db), contaTesteNoMiguel(db), camarillaPv1910(db), refazerEquipamento1910(db), avisosSemCris1910(db), retoquesCasas2110(db), retoquesIgarape2210(db), evolucaoMarcados2110(db), avisoDeEvolucao2110(db), acougueirosNoBestiario(db), dancaDasLaminas0111(db), migrarCampanhas(db, db.nomeCampanha ?? 'Segredos do Outro Lado')].some(Boolean); // as fichas do C.R.I.S entram no Elenco (18/10)
   const v = db.seedVersion ?? 1;
   // a Sede e a fazenda mudam de montagem sem esperar versão nova do banco
   if (v >= SEED_VERSION) {

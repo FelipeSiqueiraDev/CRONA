@@ -395,7 +395,11 @@ export class Hotel implements HotelApi {
       const calc = regras.calcular(f.ficha);
       return { geral: calc.limitePe, rituais: calc.limitePeRituais ?? calc.limitePe };
     };
-    return { agora: Date.now(), cena, pecas, vitais: (id) => vitais.get(id) ?? null, ameaca: (id) => ameacas[String(id)] ?? null, limitePe };
+    const nex = (id: number) => {
+      const ch = charDe.get(id);
+      return (ch ? (this.db.fichas ?? []).find((x) => x.personagem === ch && !x.npc)?.ficha.nex : undefined) ?? null;
+    };
+    return { agora: Date.now(), cena, pecas, vitais: (id) => vitais.get(id) ?? null, ameaca: (id) => ameacas[String(id)] ?? null, limitePe, nex };
   }
 
   /**

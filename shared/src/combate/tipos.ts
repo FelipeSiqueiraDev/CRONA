@@ -133,6 +133,12 @@ export interface Combate {
   massivos?: { alvo: number; dt: number; dano: number; naoLetal?: boolean }[];
   /** SAN perdida para sempre (Custo do Paranormal, rituais de Medo; LR p. 121) esperando o mestre aceitar ou negar (29/10) */
   perdasSan?: { id: number; quanto: number; motivo: string }[];
+  /**
+   * A presença perturbadora esperando o teste de cada agente (01/11; LR p. 180): a DT, o dano mental (com +1d6 por
+   * criatura a mais) e de quem é. Uma vez por cena para cada um (DC-15): quem já fez fica em `presencaFeita`.
+   */
+  presencas?: { id: number; dt: number; dano: string; de: string }[];
+  presencaFeita?: number[];
 }
 
 /** Um lugar na ordem de iniciativa: um agente, ou o turno do mestre com todos os seres dele. */
@@ -311,6 +317,8 @@ export type AcaoCombate =
   | { tipo: 'ataque'; ataque: AtaqueConfirmado }
   /** o resultado do teste de Fortitude do dano massivo (o total que o jogador tirou), ou `descartar` */
   | { tipo: 'massivo'; alvo: number; total?: number; d20?: number; descartar?: boolean }
+  /** o teste de Vontade contra a presença perturbadora: o total e a soma dos dados do dano mental, ou `descartar` */
+  | { tipo: 'presenca'; id: number; total?: number; soma?: number; descartar?: boolean }
   /** a SAN perdida para sempre: aceitar baixa o máximo na ficha; negar deixa como está */
   | { tipo: 'perdaSan'; id: number; aceitar: boolean }
   /** manobra resolvida na tela: teste oposto, condição no alvo e o dano de esmagar */
@@ -345,6 +353,8 @@ export interface Contexto {
   vitais: (id: number) => Vitais | null;
   /** a ficha rápida da ameaça de uma peça (presença perturbadora) */
   ameaca?: (id: number) => FichaAmeaca | null;
+  /** o NEX do agente da peça (a presença perturbadora não afeta quem tem o NEX dela; LR p. 180) */
+  nex?: (id: number) => number | null;
   /** o limite de PE por turno do agente, o geral e o dos rituais (LR p. 23); null = sem ficha, sem limite */
   limitePe?: (id: number) => { geral: number; rituais: number } | null;
 }
@@ -395,6 +405,17 @@ export interface AtaqueAmeaca {
   vezes?: number;
   /** dano a mais de outro tipo, rolado à parte ("3d6 Morte e 1d8 mental") */
   extra?: { dano: string; tipo: TipoDano };
+  /**
+   * Sequência numa ação completa (01/11; a Dança das Lâminas da Ovelha: até 3 golpes, +9, +4 e −1): o bônus de cada
+   * golpe, em ordem. Com ela, o ataque gasta a ação completa e `vezes` é o número de golpes.
+   */
+  golpes?: number[];
+  /** gasta a ação completa (sem `golpes`, um ataque só) */
+  completa?: boolean;
+  /** o que muda na Defesa de quem ataca até o próximo turno dele (a Dança: −2, Defesa 16) */
+  defesaDepois?: number;
+  /** lembrete na tela do ataque ("anda 3 m entre os golpes") */
+  nota?: string;
 }
 
 /** Presença perturbadora: NEX que dá imunidade, DT e o dano mental (LR p. 180). */

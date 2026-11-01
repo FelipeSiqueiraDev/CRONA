@@ -859,6 +859,89 @@ describe('ameaças do livro (LR p. 182–289)', () => {
     assert.equal(recusa(c, golpe()), 'A ação padrão já foi usada neste turno.');
   });
 
+  test('sequência na ação completa (a Dança das Lâminas): 3 golpes, a Defesa −2 até o turno; o 4º é recusado', () => {
+    let c = aplicar(montado(), { tipo: 'comecar' });
+    c = aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' });
+    const golpe = (bonus: number, primeiro = false): Acao => ({
+      tipo: 'ataque',
+      ataque: {
+        quem: 10,
+        alvo: 1,
+        arma: 'Dança das Lâminas',
+        qual: 'completa',
+        vezes: 3,
+        teste: { dados: 3, bonus, d20: 12, total: 12 + bonus, defesa: 15 },
+        situacoes: [],
+        resultado: 'erro',
+        ...(primeiro ? { defesaAteTurno: [{ nome: 'Dança das Lâminas', valor: -2 }] } : {}),
+      },
+    });
+    c = aplicar(c, golpe(9, true));
+    assert.equal(combate.acoesDe(c, 10).golpes, 2);
+    assert.deepEqual(combate.participante(c, 10)?.defesaTurno, [{ nome: 'Dança das Lâminas', valor: -2 }]);
+    c = aplicar(c, golpe(4));
+    c = aplicar(c, golpe(-1));
+    assert.match(c.registro.at(-1)!.texto, /outro golpe da mesma ação completa/);
+    assert.equal(recusa(c, golpe(-1)), 'A ação completa já gastou o turno.');
+    // a ação completa não começa com a padrão já usada
+    let d = aplicar(montado(), { tipo: 'comecar' });
+    d = aplicar(aplicar(d, { tipo: 'passar' }), { tipo: 'passar' });
+    d = aplicar(d, { tipo: 'ataque', ataque: { quem: 10, alvo: 1, arma: 'Lâminas Gêmeas', qual: 'padrao', teste: { dados: 3, bonus: 9, d20: 2, total: 11, defesa: 15 }, situacoes: [], resultado: 'erro' } });
+    assert.equal(recusa(d, golpe(9, true)), 'A ação completa precisa do turno inteiro livre.');
+  });
+
+  test('os golpes soltos da ficha ("Dança das Lâminas (1º)", "(2º)", "(3º)") viram a sequência', async () => {
+    const { juntarSequencias } = await import('../src/acougueiros');
+    const base = { nome: '', pericia: 'luta' as const, dados: 3, bonus: 0, dano: '1d6+3', tipo: 'corte' as const, margem: 20, multiplicador: 2, alcance: '1,5 m' };
+    const f: combate.FichaAmeaca = {
+      ...combate.fichaAmeacaVazia(),
+      defesa: 18,
+      notas: 'Dança das Lâminas (completa): até 3 ataques, anda 3 m entre eles; depois, Defesa 16 até o próximo turno.',
+      ataques: [
+        { ...base, nome: 'Lâminas Gêmeas', bonus: 9, vezes: 2 },
+        { ...base, nome: 'Dança das Lâminas (1º)', bonus: 9 },
+        { ...base, nome: 'Dança das Lâminas (2º)', bonus: 4 },
+        { ...base, nome: 'Dança das Lâminas (3º)', bonus: -1 },
+      ],
+    };
+    assert.equal(juntarSequencias(f), true);
+    assert.deepEqual(
+      f.ataques.map((a) => [a.nome, a.golpes, a.completa, a.defesaDepois]),
+      [
+        ['Lâminas Gêmeas', undefined, undefined, undefined],
+        ['Dança das Lâminas', [9, 4, -1], true, -2],
+      ],
+    );
+    // a ficha relida pela rede guarda a sequência
+    const lida = combate.lerFichaAmeaca(JSON.parse(JSON.stringify(f)))!;
+    assert.deepEqual(lida.ataques[1].golpes, [9, 4, -1]);
+    assert.equal(lida.ataques[1].nota, 'Anda 3 m entre os golpes.');
+    assert.equal(juntarSequencias(lida), false);
+  });
+
+  test('presença perturbadora: o teste de cada agente nas pendências; passou, metade da SAN; NEX alto é imune', () => {
+    const ovelha = { ...combate.fichaAmeacaVazia(), elemento: 'sangue' as const, vd: 60, presenca: { nex: 35, dt: 18, dano: '2d6' } };
+    const contexto = (): combate.Contexto => ({ ...ctx(), ameaca: (id) => (id === 10 ? ovelha : null), nex: (id) => (id === 2 ? 40 : 20) });
+    const ap = (c: Combate | null, a: Acao) => {
+      const r = combate.aplicar(c, a, contexto());
+      if (!r.ok) throw new Error(r.motivo);
+      return r;
+    };
+    const c = ap(montado(), { tipo: 'comecar' }).combate!;
+    // o Tepes (NEX 40%) é imune; a Cora e a Catarina testam
+    assert.deepEqual(c.presencas?.map((x) => [x.id, x.dt, x.dano]), [
+      [1, 18, '2d6'],
+      [3, 18, '2d6'],
+    ]);
+    const falhou = ap(c, { tipo: 'presenca', id: 1, total: 17, soma: 9 });
+    assert.deepEqual(falhou.vitais, [{ id: 1, san: 11 }]);
+    const passou = ap(falhou.combate!, { tipo: 'presenca', id: 3, total: 18, soma: 7 });
+    assert.deepEqual(passou.vitais, [{ id: 3, san: 17 }]);
+    assert.equal(passou.combate!.presencas, undefined);
+    assert.deepEqual(passou.combate!.presencaFeita, [1, 3]);
+    assert.equal(combate.aplicar(passou.combate!, { tipo: 'presenca', id: 1, total: 1, soma: 1 }, contexto()).ok, false);
+  });
+
   test('presença perturbadora: lembrete ao começar; com várias, a de maior VD e +1d6 por criatura a mais', () => {
     const fichas = new Map<number, combate.FichaAmeaca>([
       [10, { ...combate.fichaDoLivro(combate.ameacaLivro('zumbi-de-sangue')!) }],
