@@ -24,6 +24,10 @@ export type Saida = 'morto' | 'insano' | 'saiu';
 export interface Participante {
   /** id da peça no tabuleiro */
   id: number;
+  /** a Erosiva: turnos que ainda sofre 2d4 de Morte no começo (LR p. 146) */
+  erosao?: number;
+  /** a Consumidora com 2 PE: imóvel desde esta rodada; no começo do turno dele numa rodada seguinte, solta (LR p. 146) */
+  imovelDesde?: number;
   nome: string;
   lado: Lado;
   /** companheiro animal de um agente (29/10, o Felipe: "a Camarilla pertence ao Tepes"): o nome do dono. Animal, sem SAN */
@@ -169,6 +173,11 @@ export type TipoAcao = 'padrao' | 'movimento' | 'completa' | 'livre' | 'reacao';
 export interface AtaqueConfirmado {
   quem: number;
   alvo: number;
+  /**
+   * O que a arma faz no alvo quando acerta (01/11; LR p. 146): condições (a Consumidora deixa lento; com 2 PE,
+   * imóvel por uma rodada) e a Erosiva com 2 PE (2d4 de Morte no começo dos turnos dele por duas rodadas).
+   */
+  aoAcertar?: { condicoes?: string[]; imovelUmaRodada?: boolean; erosao?: boolean };
   /** a Defesa de quem ataca muda até o próximo turno dele (investida −5, combate defensivo +5) */
   defesaAteTurno?: { nome: string; valor: number }[];
   /** a arma foi arremessada: o item da mochila e se volta para a mão (amarrada num fio) ou cai perto do alvo */

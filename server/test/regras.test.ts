@@ -588,9 +588,48 @@ describe('correções da conferência de 01/10 (Veríssimo): a ficha', () => {
     ];
     // Jaqueta (paranormal 15) e Regenerativa (Sangue 10) em itens diferentes: vale a maior
     assert.equal(calcular(f).resistencias.sangue, 15);
-    // a proteção pesada (RD 2) e a Cinética dela (RD 5 na pesada): o mesmo item soma
+    // a proteção pesada (RD 2 nos físicos) e a Cinética dela (RD 5 na pesada, contra qualquer dano: LR p. 147)
     f.inventario = [{ id: 'protecao-pesada', tipo: 'protecao', maldicoes: ['cinetica'] }];
-    assert.equal(calcular(f).resistencias.balistico, 7);
+    const r = calcular(f).resistencias;
+    assert.equal((r.balistico ?? 0) + (r.todos ?? 0), 7);
+    assert.equal(r.todos, 5);
+  });
+
+  test('maldições e modificações no ataque e na mochila (auditoria de 28/10; LR p. 60, 144–151)', () => {
+    const f = combatente();
+    f.pp = 200;
+    // Proteção Elemental: as variantes são a mesma maldição, uma por item
+    const acessorio = catalogo.CATALOGO.equipamentos.find((e) => e.grupo === 'acessorio')!;
+    f.inventario = [{ id: acessorio.id, tipo: 'equipamento', maldicoes: ['protecao-elemental-sangue', 'protecao-elemental-morte'] }];
+    assert.ok(erros(f).some((e) => /Proteção Elemental duas vezes/.test(e)));
+    // Lancinante (+1d8 Sangue, multiplicado no crítico), Predadora e Mira Telescópica sobem o alcance
+    f.inventario = [
+      { id: 'faca', tipo: 'arma', maldicoes: ['lancinante'] },
+      { id: 'pistola', tipo: 'arma', modificacoes: ['mira-telescopica', 'visao-de-calor', 'tatica'] },
+      { id: 'fuzil-de-caca', tipo: 'arma', maldicoes: ['consumidora'], modificacoes: ['ferrolho-automatico', 'compensador'] },
+    ];
+    const c = calcular(f);
+    const faca = c.ataques.find((a) => a.item === 'faca')!;
+    assert.deepEqual(faca.extra, { dano: '1d8', tipo: 'sangue', critico: true });
+    const pistola = c.ataques.find((a) => a.item === 'pistola')!;
+    assert.equal(pistola.alcance, 'medio');
+    assert.equal(pistola.visaoDeCalor, true);
+    assert.equal(pistola.sacarLivre, true);
+    const fuzil = c.ataques.find((a) => a.item === 'fuzil-de-caca')!;
+    assert.equal(fuzil.automatica, true);
+    assert.equal(fuzil.compensador, true);
+    assert.deepEqual(fuzil.comPe, ['consumidora']);
+    assert.equal(fuzil.deixaLento, true);
+    // o compensador vale em arma que ficou automática pelo Ferrolho (LR p. 60)
+    assert.ok(!erros(f).some((e) => /Compensador/.test(e)));
+    // o selo tem a categoria do círculo do ritual guardado
+    const rit = catalogo.CATALOGO.rituais.find((r) => r.elemento === 'sangue' && r.circulo === 2)!;
+    assert.equal(regras.categoriaDoItem({ id: 'selos-paranormais-sangue', tipo: 'amaldicoado', escolha: { ritual: rit.id } }), 2);
+    assert.equal(regras.escolhaDoItem('amaldicoado', 'selos-paranormais-sangue'), 'ritual');
+    // a bateria potente vai no taser; a lente de revelação só na câmera de aura
+    assert.equal(regras.modificacaoServe(catalogo.modificacao('bateria-potente')!, { id: 'taser', tipo: 'equipamento' }), true);
+    assert.equal(regras.modificacaoServe(catalogo.modificacao('lente-de-revelacao')!, { id: acessorio.id, tipo: 'equipamento' }), false);
+    assert.equal(regras.modificacaoServe(catalogo.modificacao('lente-de-revelacao')!, { id: 'camera-de-aura-paranormal', tipo: 'equipamento' }), true);
   });
 
   test('V-13: bônus de itens diferentes na mesma perícia não somam (Sombria e Pé de Morto: +5, LR p. 63, 312)', () => {

@@ -919,7 +919,7 @@ export class CombateScreen {
           { class: 'vez-grupo' },
           h('h5', null, 'Na mochila'),
           ...(naMochila.length
-            ? naMochila.map((it) => linha(regras.nomeDoItem(it), it.qtd && it.qtd > 1 ? `${it.qtd} unidades` : 'guardado', it.uid !== undefined ? bt('Sacar', () => this.acao({ tipo: 'declarar', qual, texto: `saca ${regras.nomeDoItem(it)}`, quem: ator.id, sacar: it.uid! }), true) : null))
+            ? naMochila.map((it) => linha(regras.nomeDoItem(it), it.qtd && it.qtd > 1 ? `${it.qtd} unidades` : 'guardado', it.uid !== undefined ? bt('Sacar', () => this.acao({ tipo: 'declarar', qual: it.modificacoes?.includes('tatica') ? 'livre' : qual, texto: `saca ${regras.nomeDoItem(it)}${it.modificacoes?.includes('tatica') ? ' (Tática: ação livre)' : ''}`, quem: ator.id, sacar: it.uid! }), true) : null))
             : [h('p', { class: 'vez-vazio' }, 'Mochila vazia.')]),
         ),
       );
@@ -1301,7 +1301,13 @@ export class CombateScreen {
           faixa: corpo ? null : cb.faixaArma(a.alcance),
           notas: [...a.notas, ...(nota ? [nota] : []), ...(a.municao && !a.municao.tem ? [`Sem ${a.municao.nome.toLowerCase()} na mochila (LR p. 59).`] : [])],
           ...(arremesso ? { arremesso } : {}),
-          ...(a.automatica ? { automatica: true } : {}),
+          ...(a.automatica ? { automatica: true, ...(a.compensador ? { compensador: true } : {}) } : {}),
+          ...(a.extra ? { extra: a.extra } : {}),
+          ...(a.sacarLivre ? { sacarLivre: true } : {}),
+          ...(a.predadora ? { predadora: true } : {}),
+          ...(a.visaoDeCalor ? { visaoDeCalor: true } : {}),
+          ...(a.comPe ? { comPe: a.comPe } : {}),
+          ...(a.deixaLento ? { deixaLento: true } : {}),
           ...(a.metadeAlemDoCurto ? { metadeAlemDoCurto: true } : {}),
           ...(a.doisCanos ? { doisCanos: a.doisCanos.dano } : {}),
           ...(a.municao && !a.municao.tem ? { semMunicao: a.municao.nome } : {}),
@@ -1381,7 +1387,8 @@ export class CombateScreen {
       acoes: cb.acoesDe(c, ator.id),
       combateDefensivo: !!this.calcDe(ator.id)?.poderes.some((p) => p.id === 'combate-defensivo'),
       enviar: (a) => this.acao(a),
-      sacar: (arma) => arma.uid !== undefined && this.acao({ tipo: 'declarar', qual: 'movimento', texto: `sacou ${arma.nome}`, quem: ator.id, sacar: arma.uid }),
+      // a modificação Tática: sacar é ação livre (LR p. 60)
+      sacar: (arma) => arma.uid !== undefined && this.acao({ tipo: 'declarar', qual: arma.sacarLivre ? 'livre' : 'movimento', texto: `sacou ${arma.nome}${arma.sacarLivre ? ' (Tática: ação livre)' : ''}`, quem: ator.id, sacar: arma.uid }),
       andarAteOAlvo: alvo && !cards ? this.andarAteOAlvo(c, ator, alvo.p) : undefined,
       colarNoAlvo: alvo && !cards ? this.colarNoAlvo(ator, alvo.p) : undefined,
       mudou: () => (this.sigs.delete('res'), this.renderRes(), this.atualizarMarcas()),

@@ -5,7 +5,7 @@
  * 62), a munição que a arma usa (LR p. 59) e os itens amaldiçoados (só de agente especial em diante).
  * A janela de escolha (client/src/ui/requisicao.ts) desenha isto; o mestre pode passar por cima.
  */
-import { alvoModificacao, calcular, categoriaDoItem, proficiente, type Calculado } from './calcular';
+import { alvoModificacao, armaAutomatica, calcular, categoriaDoItem, modificacaoServe, proficiente, type Calculado } from './calcular';
 import * as cat from './dados';
 import { MALDICAO_PP_MINIMO } from './dados';
 import type { Ficha, ItemFicha, TipoItemCatalogo } from './ficha';
@@ -141,7 +141,9 @@ export function opcoesDeItens(f: Ficha, c: Calculado = calcular(f)): OpcaoItem[]
 // o que se escolhe dentro do item
 
 /** O que se escolhe ao requisitar o item: a perícia (utensílio, vestimenta, manual) ou o elemento (LR p. 63 e 66). */
-export function escolhaDoItem(tipo: TipoItemCatalogo, id: string): 'pericia' | 'elemento' | null {
+export function escolhaDoItem(tipo: TipoItemCatalogo, id: string): 'pericia' | 'elemento' | 'ritual' | null {
+  // o selo guarda um ritual do elemento dele: a categoria é a do círculo (LR p. 151)
+  if (tipo === 'amaldicoado' && id.startsWith('selos-paranormais-')) return 'ritual';
   if (tipo !== 'equipamento') return null;
   const e = cat.equipamento(id);
   if (!e) return null;
@@ -185,7 +187,8 @@ function confereRequisito(texto: string, it: ItemFicha): boolean | null {
   if (texto === 'só em proteção pesada') return it.tipo === 'protecao' && cat.protecao(it.id)?.tipo === 'pesada';
   if (texto === 'só em proteção leve') return it.tipo === 'protecao' && cat.protecao(it.id)?.tipo === 'leve';
   if (texto === 'só em balas curtas ou balas longas') return it.tipo === 'equipamento' && (it.id === 'balas-curtas' || it.id === 'balas-longas');
-  if (texto === 'só em arma automática') return it.tipo === 'arma' && !!cat.arma(it.id)?.automatica;
+  // o Ferrolho Automático torna a arma automática (LR p. 60)
+  if (texto === 'só em arma automática') return armaAutomatica(it);
   return null;
 }
 
@@ -230,7 +233,7 @@ export function opcoesDeMelhoria(f: Ficha, i: number): OpcaoMelhoria[] {
     if (c1.carga.usados !== e0) o.avisos.push(`Espaços: ${num(e0)} → ${num(c1.carga.usados)}.`);
   };
   for (const m of cat.CATALOGO.modificacoes) {
-    if (!alvo || !m.para.includes(alvo) || !cat.disponivel(m, f.regras)) continue;
+    if (!modificacaoServe(m, it) || !cat.disponivel(m, f.regras)) continue;
     const tem = !!it.modificacoes?.includes(m.id);
     const o: OpcaoMelhoria = { tipo: 'modificacao', id: m.id, nome: m.nome, ref: m.ref, resumo: m.resumo, tem, ok: true, motivos: [], avisos: [], categoria: 0 };
     for (const r of m.requisitos ?? []) {

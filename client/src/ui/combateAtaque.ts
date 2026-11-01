@@ -18,6 +18,14 @@ import { sfx } from './sfx';
 type TipoDano = regras.TipoDano;
 
 /** Um ataque que quem age pode fazer (da ficha do agente ou da ficha rápida da ameaça). */
+const NOME_MALDICAO_PE = { antielemento: 'Antielemento', energetica: 'Energética', consumidora: 'Consumidora', erosiva: 'Erosiva' } as const;
+const DICA_MALDICAO_PE = {
+  antielemento: '+4d8 de dano se o alvo for criatura do elemento da arma (LR p. 145)',
+  energetica: 'Até o fim da cena: +5 no ataque, ignora RD e o dano vira Energia (LR p. 146)',
+  consumidora: 'Se acertar, o alvo fica imóvel por uma rodada (LR p. 146)',
+  erosiva: 'Se acertar, 2d4 de Morte no começo dos próximos dois turnos do alvo (LR p. 146)',
+} as const;
+
 /** "2d10+3" com um dado a mais do mesmo tipo ("3d10+3"): a rajada (LR p. 59). */
 function maisUmDado(dano: string): string {
   return dano.replace(/(\d+)d(\d+)/, (_, n: string, f: string) => `${Number(n) + 1}d${f}`);
@@ -49,8 +57,19 @@ export interface ArmaOpcao {
   sequencia?: boolean;
   /** a Defesa de quem ataca muda até o próximo turno dele (a Dança: −2) */
   defesaDepois?: number;
-  /** dano a mais de outro tipo, rolado à parte ("e 1d8 mental") */
-  extra?: { dano: string; tipo: TipoDano };
+  /** dano a mais de outro tipo, rolado à parte ("e 1d8 mental"); `critico`: multiplica no crítico (a Lancinante) */
+  extra?: { dano: string; tipo: TipoDano; critico?: boolean };
+  /** o compensador anula o −1d20 da rajada (LR p. 60) */
+  compensador?: boolean;
+  /** a modificação Tática: sacar é ação livre (LR p. 60) */
+  sacarLivre?: boolean;
+  /** a Predadora anula a camuflagem e a cobertura (não a total); a Visão de Calor, qualquer camuflagem (LR p. 60, 146) */
+  predadora?: boolean;
+  visaoDeCalor?: boolean;
+  /** as maldições da arma que gastam 2 PE no ataque (LR p. 145–146) */
+  comPe?: ('antielemento' | 'energetica' | 'consumidora' | 'erosiva')[];
+  /** a Consumidora: o alvo atingido fica lento até o fim da cena */
+  deixaLento?: boolean;
   /** a arma está na mão (da ficha): só assim ataca; a da mochila precisa sacar antes */
   naMao?: boolean;
   /** o item da mochila (para sacar) */
@@ -158,6 +177,9 @@ interface Estado {
   rajada?: boolean;
   /** os dois canos da espingarda de cano duplo (−1d20, 6d6; SaH p. 37) */
   doisCanos?: boolean;
+  /** as maldições ligadas neste ataque, com 2 PE cada; `energeticaAtiva`: a Energética já paga nesta cena */
+  peMald?: ('antielemento' | 'energetica' | 'consumidora' | 'erosiva')[];
+  energeticaAtiva?: boolean;
   volta?: boolean;
   /** o poder Combate Defensivo neste ataque */
   defensivo?: boolean;
@@ -290,11 +312,16 @@ export class ResolucaoAtaque {
   private comoUsa(a: ArmaOpcao | null): ArmaOpcao | null {
     if (!a) return a;
     // a rajada e os dois canos: −1d20; a rajada, +1 dado do mesmo tipo; os dois canos, 6d6 (LR p. 59; SaH p. 37)
-    if (this.e.rajada && a.automatica) return { ...a, nome: `${a.nome} (rajada)`, penalidade: (a.penalidade ?? 0) - 1, dano: maisUmDado(a.dano) };
-    if (this.e.doisCanos && a.doisCanos) return { ...a, nome: `${a.nome} (os dois canos)`, penalidade: (a.penalidade ?? 0) - 1, dano: a.doisCanos };
-    if (!this.e.arremessar || !a.arremesso) return a;
-    const r = a.arremesso;
-    return { ...a, pericia: 'pontaria', faixa: r.faixa, dados: r.dados, penalidade: r.penalidade, bonus: r.bonus };
+    let b: ArmaOpcao = a;
+    // a Energética: +5 no ataque e o dano vira Energia (a RD some na conta do dano); a Antielemento: +4d8 (LR p. 145–146)
+    const mald = this.e.peMald ?? [];
+    if (mald.includes('energetica') || (this.e.energeticaAtiva && a.comPe?.includes('energetica'))) b = { ...b, bonus: b.bonus + 5, tipo: 'energia' };
+    if (mald.includes('antielemento')) b = { ...b, dano: `${b.dano}+4d8` };
+    if (this.e.rajada && b.automatica) return { ...b, nome: `${b.nome} (rajada)`, penalidade: (b.penalidade ?? 0) - (b.compensador ? 0 : 1), dano: maisUmDado(b.dano) };
+    if (this.e.doisCanos && b.doisCanos) return { ...b, nome: `${b.nome} (os dois canos)`, penalidade: (b.penalidade ?? 0) - 1, dano: b.doisCanos };
+    if (!this.e.arremessar || !b.arremesso) return b;
+    const r = b.arremesso;
+    return { ...b, pericia: 'pontaria', faixa: r.faixa, dados: r.dados, penalidade: r.penalidade, bonus: r.bonus };
   }
 
   /** Arma escolhida (a tela usa para o anel de alcance). */
@@ -346,6 +373,9 @@ export class ResolucaoAtaque {
     }
     // a camuflagem total engole a comum
     if (ids.has('camuflagemTotal')) ids.delete('camuflagem');
+    // a Predadora anula a camuflagem e a cobertura (não a total); a Visão de Calor, qualquer camuflagem (LR p. 60, 146)
+    if (arma?.predadora) ids.delete('camuflagem'), ids.delete('cobertura');
+    if (arma?.visaoDeCalor) ids.delete('camuflagem'), ids.delete('camuflagemTotal');
     const dist = !!arma?.faixa;
     return [...ids].filter((id) => {
       const s = cb.situacao(id);
@@ -383,7 +413,9 @@ export class ResolucaoAtaque {
       const partes = cb.danoCritico(arma.dano, mult);
       // a espingarda além do alcance curto causa só metade (LR p. 58)
       const metade = !!arma.metadeAlemDoCurto && x.tab?.metros != null && x.tab.metros > cb.METROS_FAIXA.curto;
-      const conta = cb.contaDano({ soma: this.e.soma, fixo: partes.fixo, tipo: arma.tipo, rd: alvo.rd, imunidades: alvo.imunidades, vulnerabilidades: alvo.vulnerabilidades, metade });
+      // a Energética ignora a resistência a dano (LR p. 146)
+      const energetica = (this.e.peMald ?? []).includes('energetica') || (!!this.e.energeticaAtiva && !!arma.comPe?.includes('energetica'));
+      const conta = cb.contaDano({ soma: this.e.soma, fixo: partes.fixo, tipo: arma.tipo, rd: energetica ? {} : alvo.rd, imunidades: alvo.imunidades, vulnerabilidades: alvo.vulnerabilidades, metade });
       // o bloqueio é RD de outra fonte: soma com a do alvo (LR p. 88, 313)
       if (bloqueio && conta.final > 0) {
         const f = Math.max(0, conta.final - bloqueio);
@@ -395,7 +427,8 @@ export class ResolucaoAtaque {
     // o dano a mais de outro tipo ("e 1d8 mental"): rolado à parte; no crítico, não multiplica (LR p. 82)
     let extra: Dano | null = null;
     if (arma?.extra && acertou && this.e.somaExtra !== null && alvo) {
-      const partes = cb.lerDano(arma.extra.dano);
+      // a Lancinante multiplica no crítico (LR p. 146); o resto, não
+      const partes = arma.extra.critico ? cb.danoCritico(arma.extra.dano, mult) : cb.lerDano(arma.extra.dano);
       const conta = cb.contaDano({ soma: this.e.somaExtra, fixo: partes.fixo, tipo: arma.extra.tipo, rd: alvo.rd, imunidades: alvo.imunidades, vulnerabilidades: alvo.vulnerabilidades });
       extra = { partes, conta, previa: previa(conta.final, arma.extra.tipo, false) };
     }
@@ -742,7 +775,22 @@ export class ResolucaoAtaque {
               : {}),
             ...(k.res.resultado === 'erro' && !arma.faixa && alvo.agente && alvo.reacoes?.contraAtaque && !alvo.p.reacao ? { contraAtaque: true } : {}),
             ...(arma.vezes ? { vezes: arma.vezes } : {}),
-            ...(arma.jogada ? { jogada: { nome: arma.jogada.nome, pe: arma.jogada.pe } } : {}),
+            // a jogada pronta e as maldições de 2 PE gastam junto com o ataque (o limite do turno conta, LR p. 23)
+            ...(() => {
+              const mald = (this.e.peMald ?? []).filter((m) => arma.comPe?.includes(m));
+              const nomes = [...(arma.jogada ? [arma.jogada.nome] : []), ...mald.map((m) => NOME_MALDICAO_PE[m])];
+              const pe = (arma.jogada?.pe ?? 0) + 2 * mald.length;
+              return nomes.length ? { jogada: { nome: nomes.join(' + '), pe } } : {};
+            })(),
+            ...(() => {
+              const mald = this.e.peMald ?? [];
+              const ao = {
+                ...(arma.deixaLento ? { condicoes: ['lento'] } : {}),
+                ...(mald.includes('consumidora') ? { imovelUmaRodada: true } : {}),
+                ...(mald.includes('erosiva') ? { erosao: true } : {}),
+              };
+              return Object.keys(ao).length ? { aoAcertar: ao } : {};
+            })(),
             ...(() => {
               const dt = k.ids.filter((id) => cb.DEFESA_ATE_O_TURNO[id]).map((id) => ({ nome: cb.situacao(id).nome, valor: cb.DEFESA_ATE_O_TURNO[id]! }));
               // a Defesa que a sequência deixa (a Dança: Defesa 16), marcada no primeiro golpe
@@ -757,6 +805,9 @@ export class ResolucaoAtaque {
           this.e.reacao = 'nenhuma';
           this.e.manual = {};
           this.e.passagem = this.e.liberado = this.e.arremessar = this.e.defensivo = this.e.rajada = this.e.doisCanos = false;
+          // a Energética paga vale até o fim da cena: os próximos ataques com ela não pagam de novo
+          if (this.e.peMald?.includes('energetica')) this.e.energeticaAtiva = true;
+          this.e.peMald = [];
           this.e.ajDados = this.e.ajBonus = 0;
           x.mudou();
         },
@@ -1073,7 +1124,23 @@ export class ResolucaoAtaque {
         liga('Volta para a mão', !!this.e.volta, 'Amarrada num fio: puxa de volta', () => (this.e.volta = true)),
       );
     if (base?.automatica)
-      opcoes.push(liga('Rajada', !!this.e.rajada, '−1d20 no ataque e +1 dado de dano do mesmo tipo (LR p. 59)', () => (this.e.rajada = !this.e.rajada)));
+      opcoes.push(liga('Rajada', !!this.e.rajada, `${base.compensador ? 'sem o −1d20 (compensador)' : '−1d20 no ataque'} e +1 dado de dano do mesmo tipo (LR p. 59–60)`, () => (this.e.rajada = !this.e.rajada)));
+    // as maldições que gastam 2 PE no ataque (LR p. 145–146)
+    for (const m of base?.comPe ?? []) {
+      const on = !!this.e.peMald?.includes(m);
+      if (m === 'energetica' && this.e.energeticaAtiva) {
+        opcoes.push(liga('Energética (ativa)', true, 'Já paga nesta cena: +5, ignora RD, dano de Energia. Clique para desligar.', () => (this.e.energeticaAtiva = false)));
+        continue;
+      }
+      opcoes.push(
+        liga(`${NOME_MALDICAO_PE[m]} (2 PE)`, on, DICA_MALDICAO_PE[m], () => {
+          const s = new Set(this.e.peMald ?? []);
+          if (on) s.delete(m);
+          else s.add(m);
+          this.e.peMald = [...s];
+        }),
+      );
+    }
     if (base?.doisCanos)
       opcoes.push(liga('Os dois canos', !!this.e.doisCanos, `−1d20 no ataque; dano ${base.doisCanos} (SaH p. 37)`, () => (this.e.doisCanos = !this.e.doisCanos)));
     if (x.combateDefensivo) opcoes.push(liga('Combate defensivo', !!this.e.defensivo, '−1d20 no ataque; +5 na Defesa até o seu próximo turno (LR p. 25)', () => (this.e.defensivo = !this.e.defensivo)));

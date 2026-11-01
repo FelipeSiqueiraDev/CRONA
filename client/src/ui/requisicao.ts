@@ -328,10 +328,18 @@ export function abrirRequisicao(r: Requisicao) {
     const qual = regras.escolhaDoItem(o.tipo, o.id);
     if (!qual) return null;
     const chave = `${o.tipo}:${o.id}`;
-    const lista = qual === 'pericia' ? regras.periciasDoItem() : (['sangue', 'morte', 'conhecimento', 'energia'] as const).map((id) => ({ id, nome: regras.NOME_ELEMENTO[id] }));
-    const sel = h('select', { class: 'fx-inp' }, h('option', { value: '' }, qual === 'pericia' ? 'Escolha a perícia…' : 'Escolha o elemento…'), ...lista.map((x) => h('option', { value: x.id, selected: escolhas.get(chave) === x.id }, x.nome))) as HTMLSelectElement;
+    // o selo: os rituais do elemento dele, com o círculo (que é a categoria do selo)
+    const elSelo = qual === 'ritual' ? (o.id.replace('selos-paranormais-', '') as regras.Elemento) : null;
+    const lista =
+      qual === 'pericia'
+        ? regras.periciasDoItem()
+        : qual === 'ritual'
+          ? regras.catalogo.CATALOGO.rituais.filter((x) => x.elemento === elSelo).map((x) => ({ id: x.id, nome: `${x.nome} (${x.circulo}º círculo, categoria ${['0', 'I', 'II', 'III', 'IV'][x.circulo]})` }))
+          : (['sangue', 'morte', 'conhecimento', 'energia'] as const).map((id) => ({ id, nome: regras.NOME_ELEMENTO[id] }));
+    const vazio = qual === 'pericia' ? 'Escolha a perícia…' : qual === 'ritual' ? 'Escolha o ritual do selo…' : 'Escolha o elemento…';
+    const sel = h('select', { class: 'fx-inp' }, h('option', { value: '' }, vazio), ...lista.map((x) => h('option', { value: x.id, selected: escolhas.get(chave) === x.id }, x.nome))) as HTMLSelectElement;
     sel.addEventListener('change', () => (sel.value ? escolhas.set(chave, sel.value) : escolhas.delete(chave)));
-    return h('label', { class: 'fj-campo rq-escolha' }, h('span', null, qual === 'pericia' ? 'Perícia que ele melhora (fora Luta e Pontaria)' : 'Elemento'), sel);
+    return h('label', { class: 'fj-campo rq-escolha' }, h('span', null, qual === 'pericia' ? 'Perícia que ele melhora (fora Luta e Pontaria)' : qual === 'ritual' ? 'Ritual guardado no selo' : 'Elemento'), sel);
   };
   const selecionarPorId = (o: regras.OpcaoItem) => {
     const el = [...grade.querySelectorAll<HTMLElement>('.rq-card')].find((c) => c.dataset.chave === `${o.tipo}:${o.id}`);
@@ -383,6 +391,7 @@ export function abrirRequisicao(r: Requisicao) {
       const it: regras.ItemFicha = { id: o.id, tipo: o.tipo };
       if (qual === 'pericia') it.escolha = { pericia: esc as regras.PericiaId };
       if (qual === 'elemento') it.escolha = { elemento: esc as regras.Elemento };
+      if (qual === 'ritual') it.escolha = { ritual: esc };
       // munição: mais um pacote na pilha que já está na mochila
       const pilha = municao ? f.inventario.find((x) => x.tipo === 'equipamento' && x.id === o.id && !x.achado && !x.modificacoes?.length) : undefined;
       if (pilha) pilha.qtd = (pilha.qtd ?? 1) + 1;

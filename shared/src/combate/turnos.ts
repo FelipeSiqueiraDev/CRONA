@@ -211,6 +211,17 @@ function comecarTurno(c: Combate, e: Entrada, ctx: Contexto) {
     if (p.fora) continue;
     // ritual sustentado: 1 PE (ação livre) ou o ritual acaba (LR p. 120)
     if (p.sustenta) registrar(c, ctx.agora, 'estado', `${p.nome} sustenta ${p.sustenta}: paga 1 PE agora ou o ritual acaba (LR p. 120).`);
+    // a Consumidora: o imóvel de uma rodada acaba no começo do turno seguinte dele (LR p. 146)
+    if (p.imovelDesde !== undefined && c.rodada > p.imovelDesde) {
+      semCondicao(p, 'imovel');
+      delete p.imovelDesde;
+      registrar(c, ctx.agora, 'estado', `${p.nome} deixa de estar imóvel (Consumidora, uma rodada).`);
+    }
+    if (p.erosao) {
+      p.erosao -= 1;
+      registrar(c, ctx.agora, 'estado', `${p.nome} envelhece pela Erosiva: sofre 2d4 de dano de Morte${p.erosao ? ' (mais uma rodada)' : ' (a última)'} (LR p. 146).`);
+      if (!p.erosao) delete p.erosao;
+    }
     const cs = p.condicoes ?? [];
     if (cs.includes('em-chamas')) registrar(c, ctx.agora, 'estado', `${p.nome} está em chamas: sofre 1d6 de fogo (LR p. 310).`);
     if (cs.includes('sangrando')) registrar(c, ctx.agora, 'estado', `${p.nome} está sangrando: Vigor DT 20; passou, estabiliza; falhou, perde 1d6 PV (LR p. 311).`);
@@ -449,6 +460,19 @@ function ataque(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
 
   const d = o.dano && typeof o.dano === 'object' ? (o.dano as Record<string, unknown>) : null;
   if (resultado !== 'erro' && d) aplicarDano(c, alvo, d, ctx, vitais);
+  // o que a arma faz ao acertar (a Consumidora, a Erosiva; LR p. 146)
+  const ao = resultado !== 'erro' && o.aoAcertar && typeof o.aoAcertar === 'object' ? (o.aoAcertar as Record<string, unknown>) : null;
+  if (ao) {
+    const conds = Array.isArray(ao.condicoes) ? ao.condicoes.map((x) => texto(x, 30)).filter((x) => !!condicaoDoCatalogo(x)).slice(0, 4) : [];
+    if (ao.imovelUmaRodada === true) conds.push('imovel');
+    for (const id of conds) comCondicao(alvo, id);
+    if (ao.imovelUmaRodada === true) alvo.imovelDesde = c.rodada;
+    if (conds.length) registrar(c, ctx.agora, 'estado', `${alvo.nome} fica ${conds.map((x) => condicaoDoCatalogo(x)!.nome.toLowerCase()).join(' e ')}${ao.imovelUmaRodada === true ? ' (imóvel por uma rodada)' : ''}.`);
+    if (ao.erosao === true) {
+      alvo.erosao = 2;
+      registrar(c, ctx.agora, 'estado', `${alvo.nome} sofre a Erosiva: 2d4 de Morte no começo dos próximos dois turnos dele (LR p. 146).`);
+    }
+  }
   // o dano a mais de outro tipo (ex.: "e 1d8 mental"), contado à parte
   const dx = o.danoExtra && typeof o.danoExtra === 'object' ? (o.danoExtra as Record<string, unknown>) : null;
   if (resultado !== 'erro' && dx) aplicarDano(c, alvo, dx, ctx, vitais);

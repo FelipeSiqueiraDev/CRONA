@@ -10,7 +10,7 @@ import type { Ficha, ItemFicha } from './ficha';
 import { lugarDoItem, maosDoItem, maosOcupadas, MAOS, vestivel } from './mochila';
 import { limitePeDoNex, patamar } from './nex';
 import { NOME_ATRIBUTO } from './requisitos';
-import type { AlvoModificacao, Arma, AtributoId, Categoria, ClasseId, Efeito, Elemento, Escopo, Grau, Nex, PericiaId, Proficiencia, TipoDano, Valor } from './tipos';
+import type { Alcance, AlvoModificacao, Arma, AtributoId, Categoria, ClasseId, Efeito, Elemento, Escopo, Grau, Nex, PericiaId, Proficiencia, TipoDano, Valor } from './tipos';
 import { ATRIBUTOS, NEX_LISTA } from './tipos';
 
 export interface PericiaCalculada {
@@ -50,6 +50,20 @@ export interface Ataque {
   arremesso?: { dados: number; bonus: number; penalidadeDados: number };
   /** arma automática: pode disparar rajada, −1d20 e +1 dado de dano (LR p. 59) */
   automatica?: boolean;
+  /** o compensador anula o −1d20 da rajada (LR p. 60) */
+  compensador?: boolean;
+  /** a modificação Tática: sacar é ação livre (LR p. 60) */
+  sacarLivre?: boolean;
+  /** dano a mais de outro tipo: Lancinante (+1d8 Sangue, multiplicado no crítico) ou Erosiva (+1d8 Morte); LR p. 146 */
+  extra?: { dano: string; tipo: TipoDano; critico?: boolean };
+  /** Predadora: anula a camuflagem e a cobertura (não a total; LR p. 146) */
+  predadora?: boolean;
+  /** Visão de Calor: ignora qualquer camuflagem do alvo (LR p. 60) */
+  visaoDeCalor?: boolean;
+  /** as maldições que gastam 2 PE no ataque (LR p. 145–146) */
+  comPe?: ('antielemento' | 'energetica' | 'consumidora' | 'erosiva')[];
+  /** Consumidora: o alvo atingido fica lento até o fim da cena (LR p. 146) */
+  deixaLento?: boolean;
   /** a espingarda causa só metade do dano em alcance médio ou maior (LR p. 58) */
   metadeAlemDoCurto?: boolean;
   /** a espingarda de cano duplo dispara os dois canos: −1d20, dano 6d6 (SaH p. 37) */
@@ -224,9 +238,35 @@ export function baseDoItem(it: ItemFicha): { nome: string; categoria: Categoria;
       return cat.protecao(it.id);
     case 'equipamento':
       return cat.equipamento(it.id);
-    case 'amaldicoado':
-      return cat.amaldicoado(it.id);
+    case 'amaldicoado': {
+      const a = cat.amaldicoado(it.id);
+      // o selo paranormal tem a categoria do círculo do ritual guardado nele (LR p. 151)
+      const rit = a && it.id.startsWith('selos-paranormais-') && it.escolha?.ritual ? cat.ritual(it.escolha.ritual) : undefined;
+      return a && rit ? { ...a, categoria: rit.circulo as Categoria } : a;
+    }
   }
+}
+
+/**
+ * A modificação cabe no item? Pelo tipo dele (LR p. 60–64), fora as duas que o livro diz onde vão: a bateria potente em
+ * objeto elétrico (a lanterna tática e o taser também) e a lente de revelação só na câmera de aura (SaH p. 39, 45).
+ */
+export function modificacaoServe(m: { id: string; para: AlvoModificacao[] }, it: ItemFicha): boolean {
+  if (m.id === 'bateria-potente') return it.id === 'taser' || it.id === 'lanterna-tatica' || alvoModificacao(it) === 'acessorio';
+  if (m.id === 'lente-de-revelacao') return it.id === 'camera-de-aura-paranormal';
+  const alvo = alvoModificacao(it);
+  return !!alvo && m.para.includes(alvo);
+}
+
+/** O alcance uma categoria acima (curto → médio → longo → extremo; LR p. 60). */
+function subirAlcance(a: Alcance): Alcance {
+  const ordem: Alcance[] = ['curto', 'medio', 'longo', 'extremo'];
+  return ordem[Math.min(ordem.length - 1, ordem.indexOf(a) + 1)] ?? a;
+}
+
+/** A arma é automática: a do catálogo ou com o Ferrolho Automático (LR p. 59–60). */
+export function armaAutomatica(it: ItemFicha): boolean {
+  return it.tipo === 'arma' && (!!cat.arma(it.id)?.automatica || !!it.modificacoes?.includes('ferrolho-automatico'));
 }
 
 /**
@@ -283,15 +323,17 @@ function efeitosDaMochila(f: Ficha, nex: Nex, problemas: Problema[], st: Estado)
       }
       if (!alvo || !m.para.includes(alvo)) erro(`${m.nome} não vai em ${base.nome}.`);
       if (m.id === 'empuxo' && !(it.tipo === 'arma' && cat.arma(it.id)?.tipo === 'corpoACorpo')) erro('Empuxo: só armas corpo a corpo.');
-      if (naMesma.has(m.id)) erro(`${base.nome}: ${m.nome} duas vezes.`);
-      naMesma.add(m.id);
+      // as variantes da Proteção Elemental são a mesma maldição: uma por item (LR p. 144)
+      const mesma = m.id.startsWith('protecao-elemental-') ? 'protecao-elemental' : m.id;
+      if (naMesma.has(mesma)) erro(`${base.nome}: ${mesma === m.id ? m.nome : 'Proteção Elemental'} duas vezes.`);
+      naMesma.add(mesma);
       for (const o of elementos) if (oprime[m.elemento] === o || oprime[o] === m.elemento) erro(`${base.nome}: maldições de elementos que se oprimem (${m.elemento} e ${o}).`);
       elementos.push(m.elemento);
       if (!emUso || vistos.has(m.id)) continue;
       vistos.add(m.id);
       por(chave, `${base.nome} (${m.nome})`, m.efeitos);
-      // Cinética: RD 2 na proteção leve, 5 na pesada (LR p. 147)
-      if (m.id === 'cinetica') por(chave, `${base.nome} (${m.nome})`, [{ alvo: 'resistencia', dano: 'fisico', valor: cat.protecao(it.id)?.tipo === 'pesada' ? 5 : 2 }]);
+      // Cinética: RD 2 na proteção leve, 5 na pesada, contra qualquer dano (LR p. 147; era só contra físico até 01/11)
+      if (m.id === 'cinetica') por(chave, `${base.nome} (${m.nome})`, [{ alvo: 'resistencia', dano: 'todos', valor: cat.protecao(it.id)?.tipo === 'pesada' ? 5 : 2 }]);
     }
     if (it.tipo === 'protecao' && emUso)
       for (const mId of it.modificacoes ?? []) {
@@ -441,7 +483,8 @@ export function calcular(f: Ficha): Calculado {
         problemas.push({ nex, onde: 'Mochila', texto: `Modificação desconhecida: ${mId}.`, severidade: 'erro' });
         continue;
       }
-      if (alvo && !m.para.includes(alvo)) problemas.push({ nex, onde: 'Mochila', texto: `${b?.nome ?? it.id}: ${m.nome} não serve para este item.`, severidade: 'erro' });
+      if ((alvo || m.id === 'bateria-potente' || m.id === 'lente-de-revelacao') && !modificacaoServe(m, it))
+        problemas.push({ nex, onde: 'Mochila', texto: `${b?.nome ?? it.id}: ${m.nome} não serve para este item.`, severidade: 'erro' });
       if (mods.indexOf(mId) !== i) problemas.push({ nex, onde: 'Mochila', texto: `${b?.nome ?? it.id}: ${m.nome} duas vezes.`, severidade: 'erro' });
       for (const x of m.incompativel ?? []) if (mods.includes(x) && mods.indexOf(x) > i) problemas.push({ nex, onde: 'Mochila', texto: `${b?.nome ?? it.id}: ${m.nome} não combina com ${cat.modificacao(x)?.nome ?? x}.`, severidade: 'erro' });
     }
@@ -695,7 +738,8 @@ export function calcular(f: Ficha): Calculado {
       penalidadeDados: penalidade,
       dano: somarDados(a.dano, dadosDano) + (danoFixo ? (danoFixo > 0 ? `+${danoFixo}` : `${danoFixo}`) : ''),
       critico: { margem: Math.max(2, margem), multiplicador: mult },
-      alcance: a.alcance,
+      // a Mira Telescópica e a Predadora (à distância) sobem o alcance uma categoria (LR p. 60, 146)
+      alcance: a.alcance && (it.modificacoes?.includes('mira-telescopica') || (it.maldicoes?.includes('predadora') && !corpo)) ? subirAlcance(a.alcance) : a.alcance,
       tipoDano: a.tipoDano,
       notas,
       naMao: it.id === 'ataque-desarmado' || lugarDoItem(it) === 'mao',
@@ -704,7 +748,20 @@ export function calcular(f: Ficha): Calculado {
       ...(corpo && a.id !== 'ataque-desarmado'
         ? { arremesso: { dados: atr.agi + dadosExtra, bonus: pericias.pontaria.bonus + (bonus - pericias.luta.bonus), penalidadeDados: penalidade } }
         : {}),
-      ...(a.automatica ? { automatica: true } : {}),
+      ...(armaAutomatica(it) ? { automatica: true, ...(it.modificacoes?.includes('compensador') ? { compensador: true } : {}) } : {}),
+      ...(it.modificacoes?.includes('tatica') ? { sacarLivre: true } : {}),
+      ...(it.maldicoes?.includes('lancinante')
+        ? { extra: { dano: '1d8', tipo: 'sangue' as TipoDano, critico: true } }
+        : it.maldicoes?.includes('erosiva')
+          ? { extra: { dano: '1d8', tipo: 'morte' as TipoDano } }
+          : {}),
+      ...(it.maldicoes?.includes('predadora') ? { predadora: true } : {}),
+      ...(it.modificacoes?.includes('visao-de-calor') ? { visaoDeCalor: true } : {}),
+      ...(it.maldicoes?.includes('consumidora') ? { deixaLento: true } : {}),
+      ...(() => {
+        const pe = (['antielemento', 'energetica', 'consumidora', 'erosiva'] as const).filter((m) => it.maldicoes?.includes(m));
+        return pe.length ? { comPe: pe } : {};
+      })(),
       ...(a.id === 'espingarda' || a.id === 'espingarda-cano-duplo' ? { metadeAlemDoCurto: true } : {}),
       ...(a.id === 'espingarda-cano-duplo' ? { doisCanos: { dano: somarDados('6d6', dadosDano) + (danoFixo ? (danoFixo > 0 ? `+${danoFixo}` : `${danoFixo}`) : '') } } : {}),
       ...(municao ? { municao } : {}),

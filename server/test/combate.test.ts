@@ -845,6 +845,37 @@ describe('ameaças do livro (LR p. 182–289)', () => {
     assert.ok(diabo.imunidades.includes('todos'));
   });
 
+  test('arma amaldiçoada ao acertar: Consumidora (lento; com 2 PE, imóvel uma rodada) e Erosiva (2d4 por dois turnos)', () => {
+    let c = aplicar(montado(), { tipo: 'comecar' });
+    // a Cora (vez dela) acerta o Ocultista com a Consumidora e a Erosiva pagas
+    c = aplicar(c, {
+      tipo: 'ataque',
+      ataque: {
+        quem: 1,
+        alvo: 10,
+        arma: 'Fuzil',
+        qual: 'padrao',
+        teste: { dados: 2, bonus: 5, d20: 15, total: 20, defesa: 15 },
+        situacoes: [],
+        resultado: 'acerto',
+        aoAcertar: { condicoes: ['lento'], imovelUmaRodada: true, erosao: true },
+      },
+    });
+    const oc = () => combate.participante(c, 10)!;
+    assert.deepEqual(oc().condicoes, ['lento', 'imovel']);
+    assert.equal(oc().erosao, 2);
+    // o turno do mestre na mesma rodada: o Ocultista ainda imóvel, e a Erosiva morde
+    c = aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' });
+    assert.ok(oc().condicoes?.includes('imovel'));
+    assert.equal(oc().erosao, 1);
+    assert.ok(c.registro.some((l) => /Erosiva: sofre 2d4 de dano de Morte \(mais uma rodada\)/.test(l.texto)));
+    // na rodada seguinte, o imóvel acaba e a Erosiva dá a última
+    // (o Acólito, a Catarina, e na rodada 2 a Cora, o Tepes e o Ocultista)
+    for (let i = 0; i < 5; i++) c = aplicar(c, { tipo: 'passar' });
+    assert.deepEqual(oc().condicoes, ['lento']);
+    assert.equal(oc().erosao, undefined);
+  });
+
   test('ataque ×2: dois ataques na mesma ação padrão; o terceiro é recusado (LR p. 179)', () => {
     let c = aplicar(montado(), { tipo: 'comecar' });
     c = aplicar(aplicar(c, { tipo: 'passar' }), { tipo: 'passar' });
