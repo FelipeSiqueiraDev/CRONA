@@ -2,6 +2,25 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## O site fora do tabuleiro (01/11; branch `claude/campanhas`, nada no 8080)
+
+- **O pedido:** "tudo que for necessário pra conta e também as pendências da campanha"; carregar por tela e o manifesto de tela cheia; "é imprescindível que tudo sobre as regras de combate estejam perfeitamente alinhados e funcionando, isso inclui o teste da ovelha"; o pedir itens sem nem a opção fora da base; as pendências do celular; o acabamento; "eliminar essas informações invisíveis e silenciosas"; "5/6 linhas do combate é o suficiente. Depois disso vamos excluindo o log".
+- **Conta:** minha conta (nome, e-mail, senha, sair dos outros aparelhos) e esqueci a senha com o código do mestre. Testes em `server/test/campanhas.test.ts`.
+- **Campanhas:** o painel de cada uma (convite, membros, renomear, apagar, tirar, sair, código de nova senha).
+- **Carregar por tela:** o JavaScript que o celular e a mesa baixam caiu de ~588 kB para ~300 kB (gzip). O CSS ficou num arquivo só de propósito: separar mudaria a ordem das regras e a aparência.
+- **Combate pelo livro (a auditoria de 28/10, `AUDITORIA-ITENS-RITUAIS.md`):**
+  - a Dança das Lâminas virou sequência de ação completa (+9, +4, −1, Defesa 16), conferida na prévia; a ficha da Ovelha se converte sozinha ao subir (`danca0111`);
+  - a presença perturbadora vira pendência por agente (Vontade, dano, metade);
+  - armas: arremesso, rajada, espingarda, cano duplo, munição, revólver compacto, bastão policial, pregador e as notas das especiais;
+  - modificações e maldições: Cinética, Proteção Elemental, selos, bateria e lente, compensador, Tática, Lancinante, Erosiva, Predadora, Visão de Calor, Mira Telescópica e as de 2 PE;
+  - rituais: quem passa e quem falha, componentes e mão livre, Alquebrado, concentração por dano, catalisadores, as névoas, o elemento do Amaldiçoar Arma, um sustentado por vez, Fedor Pútrido e Tremeluzir, a PE da Convocação Instantânea e os dois testes do Algoz;
+  - equipamentos: utensílio só na mão, kits (−5), braçadeira, cargas e as ferramentas que viram arma.
+- **Ficou de fora (o mestre aplica):** a Função Adicional (a segunda perícia), o kit de profissão (qual profissão), o manual operacional, os textos de amarras, mina, escuta e antiemético, a dúvida das amarras e do scanner com Medo, e a hemorragia do Descarnar (fica escrita no registro, sem a conta dos dois turnos).
+- **Celular:** o pedir itens fora da Sede some de vez; a Identificação da FICHAS do mestre não se refaz a cada campanha.
+- **Acabamento:** as janelas prendem o Tab, fecham com Esc e devolvem o foco; os botões só de ícone dizem o que fazem ao leitor de tela.
+- **Código morto:** fora o hud, o minimap, o Infostand, o chat e o aceno da sala e as mensagens walk, lookAt, tokenFace, layoutSet e capacitySet.
+- **Registro do combate:** guarda as 6 últimas linhas (ou o turno de agora, se for mais).
+
 ## Minhas campanhas (29/10; branch `claude/campanhas`, nada no 8080)
 
 - **O pedido:** "logar com a minha conta normal igual todos os usuários... uma lista de campanhas separadas em campanhas que eu participo e campanhas que eu mestro... criar campanha ou entrar em uma campanha com o código de convite". Depois: "Não se preocupe com a estrutura de tabuleiro por enquanto... Só quero deixar essa parte já preparada". E o sistema da campanha tem de aceitar outros (D&D, o cyberpunk que o Felipe faz com um jogador, o que vier).

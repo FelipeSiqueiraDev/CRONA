@@ -16,6 +16,8 @@ export function h<K extends keyof HTMLElementTagNameMap>(tag: K, props?: Props |
       else el.setAttribute(k, v === true ? '' : String(v));
     }
   for (const c of children) if (c !== null && c !== undefined && c !== false) el.append(c instanceof Node ? c : String(c));
+  // botão só de ícone: o leitor de tela lê a dica dele (01/11; antes dizia só "botão")
+  if (tag === 'button' && !el.hasAttribute('aria-label') && el.title && !el.textContent?.trim()) el.setAttribute('aria-label', el.title);
   return el;
 }
 
