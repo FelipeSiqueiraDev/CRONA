@@ -149,14 +149,11 @@ const GM_ONLY = new Set([
   'objToggle',
   'objRemove',
   'campaignSet',
-  'layoutSet',
   'planNota',
-  'capacitySet',
   'tokenAdd',
   'tokenEdit',
   'tokenRemove',
   'tokenWalk',
-  'tokenFace',
   'tokenScene',
   'vitals',
   'fichaApagar',
@@ -2092,11 +2089,6 @@ export class Hotel implements HotelApi {
         camp.subtitle = txt(m.subtitle, 40);
         if (typeof m.operacao === 'string') camp.operacao = txt(m.operacao, 40) || undefined;
         break;
-      case 'layoutSet': {
-        if (typeof m.roomId !== 'number' || typeof m.x !== 'number' || typeof m.y !== 'number') return;
-        camp.layout[m.roomId] = { ...camp.layout[m.roomId], x: Math.max(-40, Math.min(120, Math.round(m.x))), y: Math.max(-40, Math.min(120, Math.round(m.y))) };
-        break;
-      }
       case 'planNota': {
         camp.notas ??= [];
         const pos = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(-60, Math.min(200, Math.round(v * 10) / 10)) : null);
@@ -2116,13 +2108,6 @@ export class Hotel implements HotelApi {
           if (!texto || camp.notas.length >= 60) return;
           camp.notas.push({ id: this.nextItemId(), andar: txt(m.andar, 20), texto, x: pos(m.x) ?? 0, y: pos(m.y) ?? 0 });
         }
-        break;
-      }
-      case 'capacitySet': {
-        const k = txt(m.name, 16).toLowerCase();
-        const ud = this.db.users[k];
-        if (!ud || typeof m.capacity !== 'number') return;
-        ud.capacity = Math.max(1, Math.min(99, Math.round(m.capacity)));
         break;
       }
     }
@@ -2622,9 +2607,7 @@ export class Hotel implements HotelApi {
       case 'objToggle':
       case 'objRemove':
       case 'campaignSet':
-      case 'layoutSet':
       case 'planNota':
-      case 'capacitySet':
         this.campaignEdit(c, m);
         return;
       case 'fichaSalvar':

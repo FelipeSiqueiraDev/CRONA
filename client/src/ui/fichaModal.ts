@@ -47,7 +47,9 @@ export function janela(titulo: string, icone: NomeIcone, aoFechar: () => void, l
   const corpo = h('div', { class: 'fj-corpo' });
   const rodape = h('div', { class: 'fj-rodape' });
   const fecharBt = h('button', { class: 'fj-x', type: 'button', title: 'Fechar', 'aria-label': 'Fechar' }, ic('fechar'));
-  const caixa = h('section', { class: 'fj', role: 'dialog', 'aria-label': titulo, style: `width:min(${largura}rem, 94vw)` }, h('header', { class: 'fx-tit' }, h('span', { class: 'fx-tit-ic' }, ic(icone)), h('h3', null, titulo), fecharBt), corpo, rodape);
+  const caixa = h('section', { class: 'fj', role: 'dialog', 'aria-modal': 'true', 'aria-label': titulo, tabindex: '-1', style: `width:min(${largura}rem, 94vw)` }, h('header', { class: 'fx-tit' }, h('span', { class: 'fx-tit-ic' }, ic(icone)), h('h3', null, titulo), fecharBt), corpo, rodape);
+  // o foco volta para onde estava quando a janela fecha (01/11: quem usa o teclado ficava perdido no topo da página)
+  const antes = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   paperize(caixa, { seed: 71 + titulo.length, tone: '#d8c7a6', burn: 1, torn: 1.4, stains: 1, creases: 0.4, pad: 26 });
   const fundo = h('div', { class: 'fj-fundo' }, caixa);
   let fechada = false;
@@ -62,6 +64,7 @@ export function janela(titulo: string, icone: NomeIcone, aoFechar: () => void, l
       if (i >= 0) abertas.splice(i, 1);
       fundo.classList.add('saindo');
       setTimeout(() => fundo.remove(), 160);
+      if (antes?.isConnected) antes.focus({ preventScroll: true });
       aoFechar();
       if (!abertas.length) conferirFechadas();
     },
@@ -70,8 +73,35 @@ export function janela(titulo: string, icone: NomeIcone, aoFechar: () => void, l
   fundo.addEventListener('pointerdown', (e) => {
     if (e.target === fundo) j.fechar();
   });
+  // o teclado fica dentro da janela de cima: Tab dá a volta nela e Esc fecha (01/11)
+  fundo.addEventListener('keydown', (e) => {
+    if (abertas[abertas.length - 1] !== j) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      j.fechar();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    const focaveis = [...caixa.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((x) => !x.hasAttribute('disabled') && x.offsetParent !== null);
+    if (!focaveis.length) return;
+    const primeiro = focaveis[0];
+    const ultimo = focaveis[focaveis.length - 1];
+    if (e.shiftKey && (document.activeElement === primeiro || document.activeElement === caixa)) {
+      e.preventDefault();
+      ultimo.focus();
+    } else if (!e.shiftKey && document.activeElement === ultimo) {
+      e.preventDefault();
+      primeiro.focus();
+    }
+  });
   document.body.append(fundo);
   abertas.push(j);
+  // o foco entra na janela (o campo que ela tiver, ou a própria caixa)
+  requestAnimationFrame(() => {
+    if (fechada || caixa.contains(document.activeElement)) return;
+    (caixa.querySelector<HTMLElement>('input:not([type=hidden]), select, textarea') ?? caixa).focus({ preventScroll: true });
+  });
   return j;
 }
 

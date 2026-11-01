@@ -1067,7 +1067,6 @@ export class RoomInstance {
       case 'tokenEdit':
       case 'tokenRemove':
       case 'tokenWalk':
-      case 'tokenFace':
       case 'tokenScene':
       case 'vitals':
         this.tokenCmd(c, m);
@@ -1168,55 +1167,6 @@ export class RoomInstance {
 
   private err(c: Client, msg: string) {
     c.send({ t: 'error', msg });
-  }
-
-  private chat(u: RoomUser, raw: string, shout: boolean) {
-    const now = Date.now();
-    if (now - u.client.lastChat < 350) return;
-    u.client.lastChat = now;
-    const text = clean(raw, MAX_CHAT);
-    if (!text) return;
-    const name = u.client.name ?? '?';
-
-    const rollMatch = text.match(/^\/(?:r|rolar|roll)\s+(.+)$/i);
-    if (rollMatch) {
-      const spec = parseRoll(rollMatch[1]);
-      if (!spec) return this.err(u.client, 'Rolagem inválida. Ex: /r 2d20+3, /r 3d20kh');
-      const roll = evalRoll(spec, (s) => crypto.randomInt(1, s + 1));
-      this.broadcast({ t: 'chat', id: u.client.id, name, text: `rolou ${roll.expr}`, kind: 'roll', roll });
-      return;
-    }
-
-    this.broadcast({ t: 'chat', id: u.client.id, name, text, kind: shout ? 'shout' : 'say' });
-    // Os outros viram a cabeça para quem falou.
-    for (const o of this.users.values()) {
-      if (o === u || o.next || o.goal) continue;
-      const d = directionTo(o, u);
-      if (o.headDir !== d) {
-        o.headDir = d;
-        o.dirty = true;
-      }
-      o.headResetAt = now + 5000;
-    }
-  }
-
-  private action(u: RoomUser, a: unknown) {
-    if (a === 'wave') this.broadcast({ t: 'action', id: u.client.id, action: 'wave' });
-    else if (a === 'dance') {
-      u.dance = !u.dance;
-      u.dirty = true;
-    } else if (a === 'sit') {
-      if (!u.next && !u.goal && u.sit === 0) {
-        u.sit = 2;
-        if (u.dir % 2 === 1) u.dir = u.headDir = (u.dir + 7) % 8;
-        u.dirty = true;
-      }
-    } else if (a === 'stand') {
-      if (u.sit === 2) {
-        u.sit = 0;
-        u.dirty = true;
-      }
-    }
   }
 
   private takeFromInventory(c: Client, invId: unknown): InvItem | null | undefined {
@@ -1830,9 +1780,6 @@ export class RoomInstance {
           // o relógio da cena pode ter parado (ninguém olhando, nada andando): liga de novo
           this.ensureTimer();
         }
-        break;
-      case 'tokenFace':
-        if (isInt(m.dir)) this.faceToken(-u.client.id, m.dir);
         break;
       case 'tokenEdit': {
         const name = typeof m.name === 'string' ? clean(m.name, MAX_TOKEN_NAME) : '';

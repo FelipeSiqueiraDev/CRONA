@@ -673,11 +673,6 @@ net.onMessage = (m: ServerMsg) => {
     case 'status':
       for (const s of m.updates) view.applyStatus(s);
       break;
-    case 'chat':
-      break;
-    case 'action':
-      view.wave(m.id);
-      break;
     case 'itemAdd':
       view.addItem(m.item);
       app.emit('items');

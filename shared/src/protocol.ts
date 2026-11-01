@@ -464,10 +464,6 @@ export type ClientMsg =
   | { t: 'createRoom'; name: string; model: string }
   | { t: 'join'; roomId: number }
   | { t: 'peek'; roomId: number }
-  | { t: 'walk'; x: number; y: number }
-  | { t: 'lookAt'; x: number; y: number }
-  | { t: 'chat'; text: string; shout?: boolean }
-  | { t: 'action'; action: 'wave' | 'dance' | 'sit' | 'stand' }
   | { t: 'look'; look: AvatarLook }
   | { t: 'place'; defId?: string; invId?: number; x: number; y: number; rot: number }
   | { t: 'placeWall'; defId?: string; invId?: number; wall: 'l' | 'r'; plane: number; pos: number; z: number }
@@ -604,7 +600,6 @@ export type ClientMsg =
   | { t: 'tokenEdit'; tokenId: number; name?: string; look?: AvatarLook; color?: string; capacity?: number; armed?: boolean; hurt?: boolean; agachado?: boolean; alto?: boolean }
   | { t: 'tokenRemove'; tokenId: number }
   | { t: 'tokenWalk'; tokenId: number; x: number; y: number }
-  | { t: 'tokenFace'; tokenId: number; dir: number }
   /** PV/PE/SAN da peça: delta soma ao atual, value troca o atual, max troca o total */
   | { t: 'vitals'; tokenId: number; key: VitalKey; delta?: number; value?: number; max?: number }
   | { t: 'tokenScene'; tokenId: number; roomId: number }
@@ -620,10 +615,8 @@ export type ClientMsg =
   | { t: 'objToggle'; id: number }
   | { t: 'objRemove'; id: number }
   | { t: 'campaignSet'; title: string; subtitle: string; operacao?: string }
-  | { t: 'layoutSet'; roomId: number; x: number; y: number }
   /** anotação na planta: sem id cria; com id muda o texto ou a posição; apagar (ou texto vazio) tira */
   | { t: 'planNota'; id?: number; andar?: string; texto?: string; x?: number; y?: number; apagar?: boolean }
-  | { t: 'capacitySet'; name: string; capacity: number }
   | { t: 'floorPlan'; heightmap: string; door: Door }
   | { t: 'charUpdate'; id: number; patch: CharacterPatch }
   | { t: 'charDelete'; id: number }
@@ -696,8 +689,6 @@ export type ServerMsg =
   | { t: 'tokenTravel'; tokenId: number; roomId: number }
   | { t: 'userLook'; id: number; look: AvatarLook }
   | { t: 'status'; updates: UserStatus[] }
-  | { t: 'chat'; id: number; name: string; text: string; kind: ChatKind; roll?: RollResult }
-  | { t: 'action'; id: number; action: 'wave' }
   | { t: 'itemAdd'; item: FloorItem }
   | { t: 'itemUpdate'; item: FloorItem }
   /** alguém tentou abrir uma coisa trancada: em todas as telas ela mexe um tiquinho e trava, com a maçaneta e o trinco */
