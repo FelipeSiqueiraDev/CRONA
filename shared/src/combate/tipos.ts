@@ -136,7 +136,7 @@ export interface Combate {
    */
   massivos?: { alvo: number; dt: number; dano: number; naoLetal?: boolean }[];
   /** SAN perdida para sempre (Custo do Paranormal, rituais de Medo; LR p. 121) esperando o mestre aceitar ou negar (29/10) */
-  perdasSan?: { id: number; quanto: number; motivo: string }[];
+  perdasSan?: { id: number; quanto: number; motivo: string; pe?: true }[];
   /**
    * A presença perturbadora esperando o teste de cada agente (01/11; LR p. 180): a DT, o dano mental (com +1d6 por
    * criatura a mais) e de quem é. Uma vez por cena para cada um (DC-15): quem já fez fica em `presencaFeita`.
@@ -263,6 +263,10 @@ export interface AlvoRitual {
   danoExtra?: DanoConfirmado;
   /** condição do catálogo que o alvo ganha */
   condicao?: string;
+  /** o ritual leva os PV ou a SAN do alvo a 0 (quem falha na Lâmina do Medo ou no Conhecendo o Medo) */
+  zera?: 'pv' | 'san';
+  /** o que o ritual deixa no alvo e o jogo não conta (a hemorragia do Descarnar), escrito no registro */
+  nota?: string;
 }
 
 /** Um ritual que o mestre confirmou na tela (LR p. 117–121; COMBATE.md, seção 15.1). */
@@ -280,6 +284,10 @@ export interface RitualConfirmado {
   sustentado?: boolean;
   /** teste de Vontade de concentração (condição ruim ou terrível); falhou, o ritual não sai */
   concentracao?: { dt: number; d20: number; total: number; passou: boolean };
+  /** os itens da mochila de quem conjura que o ritual gasta (o catalisador; SaH p. 44) */
+  gastar?: number[];
+  /** a forma verdadeira da Convocação Instantânea: 1 PE para sempre (LR p. 128) */
+  pePermanente?: number;
   alvos: AlvoRitual[];
   /** Custo do Paranormal: o teste de Ocultismo, fora de Medo */
   custo?: { dt: number; d20: number; total: number; passou: boolean };
@@ -387,7 +395,7 @@ export interface MudancaVitais {
 }
 
 /** `perdaSan`: o servidor baixa a SAN máxima da ficha de quem perdeu (a ficha guarda em `perdas.san`) */
-export type Resultado = { ok: true; combate: Combate | null; vitais?: MudancaVitais[]; perdaSan?: { id: number; quanto: number } } | { ok: false; motivo: string };
+export type Resultado = { ok: true; combate: Combate | null; vitais?: MudancaVitais[]; perdaSan?: { id: number; quanto: number; pe?: true } } | { ok: false; motivo: string };
 
 // ------------------------------------------------------------------ ameaças
 

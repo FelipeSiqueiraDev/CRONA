@@ -7,6 +7,7 @@
  * servidor aplica; esta tela mostra, faz as contas e pede. O tabuleiro é o
  * mesmo da tela MAPA, com as marcações do combate por cima.
  */
+import { clonarFicha, gravarFicha } from '../fichaOrigem';
 import { combate as cb, footprint, getFurni, regras, vitalConditions, type AcaoMochila, type Character, type CharacterDef, type FichaSalva, type Session, type Vitals } from '@crona/shared';
 import { COR_LADO, marcasVazias } from '../render/combateMarcas';
 import { portraitCanvas } from '../render/portrait';
@@ -1563,10 +1564,18 @@ export class CombateScreen {
         .filter((f) => f === 'basica' || (f === 'discente' ? d.discente : d.verdadeiro))
         .map((f) => ({ forma: f, pe: cb.custoDaForma(custo.base, d, f, custo.ajuste), motivo: cb.formaLiberada(d, f, circuloMax, afinidade) }));
       const exec = d.execucao;
+      // gestos e componentes (LR p. 119): uma mão livre e os componentes do elemento (fora os de Medo)
+      const el = regras.elementoDoRitual(ficha, d.id);
+      const inv = ficha.inventario;
+      const semMao = regras.maosOcupadas(inv) >= 2 ? 'Sem mão livre para gesticular (LR p. 119).' : null;
+      const temComp = inv.some((it) => it.id === 'componentes-ritualisticos-de-elemento' && (!it.escolha?.elemento || it.escolha.elemento === el));
+      const semComp = el !== 'medo' && !temComp ? `Sem componentes ritualísticos de ${regras.NOME_ELEMENTO[el]} na mochila (LR p. 119).` : null;
       out.push({
         id: d.id,
         nome: d.nome,
-        elemento: d.elemento,
+        elemento: el,
+        ...(d.elementos?.length ? { elementos: d.elementos } : {}),
+        ...(semMao || semComp ? { bloqueio: (semMao ?? semComp)! } : {}),
         circulo: d.circulo,
         qual: exec === 'movimento' || exec === 'completa' || exec === 'livre' || exec === 'reacao' ? exec : 'padrao',
         alcance: d.alcance,
@@ -1609,6 +1618,17 @@ export class CombateScreen {
       vontade: calc ? { dados: calc.pericias.vontade.dados, bonus: calc.pericias.vontade.bonus, penalidade: calc.pericias.vontade.penalidadeDados } : null,
       limite: calc ? (calc.limitePeRituais ?? calc.limitePe) : null,
       gasto: ac.pe ?? 0,
+      // os catalisadores da mochila (SaH p. 44) e o elemento escolhido ao aprender (o Amaldiçoar Arma, LR p. 124)
+      catalisadores: (this.fichaDe(ator.id)?.ficha.inventario ?? [])
+        .filter((it) => it.uid !== undefined && it.id.startsWith('catalisador-'))
+        .map((it) => ({ uid: it.uid!, id: it.id, nome: regras.nomeDoItem(it), ...(it.escolha?.elemento ? { elemento: it.escolha.elemento } : {}) })),
+      escolherElemento: (id, el) => {
+        const fs = this.fichaDe(ator.id);
+        if (!fs) return;
+        const nova = clonarFicha(fs);
+        nova.ficha.elementoRitual = { ...nova.ficha.elementoRitual, [id]: el };
+        this.app.net.send(gravarFicha(nova));
+      },
       alvo: alvoP && !alvoP.fora ? this.alvoAtaque(c, alvoP) : null,
       naArea: this.modoCards ? this.areaDoMestre(c) : this.naAreaDoCombate(c, ator),
       testeDe: (p, t) => {
@@ -2242,7 +2262,7 @@ export class CombateScreen {
         item(
           'alerta',
           'ruim',
-          h('span', null, h('b', null, `${cb.participante(c!, x.id)?.nome ?? 'O agente'} perde ${x.quanto} de SAN máxima para sempre`), ` (${x.motivo}; LR p. 121).`),
+          h('span', null, h('b', null, `${cb.participante(c!, x.id)?.nome ?? 'O agente'} perde ${x.quanto} de ${x.pe ? 'PE' : 'SAN'} máxima para sempre`), ` (${x.motivo}; LR p. ${x.pe ? 128 : 121}).`),
           h('span', { class: 'cb-massivo-linha' }, botao('Aceitar', null, () => this.acao({ tipo: 'perdaSan', id: x.id, aceitar: true }), 'cb-mini'), botao('Negar', null, () => this.acao({ tipo: 'perdaSan', id: x.id, aceitar: false }), 'cb-mini')),
         ),
       );

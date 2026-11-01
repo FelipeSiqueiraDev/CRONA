@@ -211,6 +211,9 @@ function comecarTurno(c: Combate, e: Entrada, ctx: Contexto) {
     if (p.fora) continue;
     // ritual sustentado: 1 PE (ação livre) ou o ritual acaba (LR p. 120)
     if (p.sustenta) registrar(c, ctx.agora, 'estado', `${p.nome} sustenta ${p.sustenta}: paga 1 PE agora ou o ritual acaba (LR p. 120).`);
+    // sustentar o Fedor Pútrido e o Tremeluzir fere quem sustenta: 1d4 por rodada, que ignora resistências (SaH p. 52, 55)
+    if (p.sustenta && /fedor p[uú]trido/i.test(p.sustenta)) registrar(c, ctx.agora, 'estado', `${p.nome} sofre 1d4 de dano de Morte pelo Fedor Pútrido (ignora resistências; SaH p. 52).`);
+    if (p.sustenta && /tremeluzir/i.test(p.sustenta)) registrar(c, ctx.agora, 'estado', `${p.nome} sofre 1d4 de dano de Energia pelo Tremeluzir (ignora resistência; +1d4 se terminar a rodada dentro de um objeto; SaH p. 55).`);
     // a Consumidora: o imóvel de uma rodada acaba no começo do turno seguinte dele (LR p. 146)
     if (p.imovelDesde !== undefined && c.rodada > p.imovelDesde) {
       semCondicao(p, 'imovel');
@@ -793,6 +796,18 @@ function ritual(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
     if (d) aplicarDano(c, p, d, ctx, vitais);
     const dx = r.danoExtra && typeof r.danoExtra === 'object' ? (r.danoExtra as Record<string, unknown>) : null;
     if (dx) aplicarDano(c, p, dx, ctx, vitais);
+    // a Lâmina do Medo e o Conhecendo o Medo em quem falha: os PV (morrendo) ou a SAN (enlouquecendo) vão a 0 (LR p. 127, 135)
+    const vz = r.zera === 'pv' || r.zera === 'san' ? ctx.vitais(p.id) : null;
+    if (vz && r.zera === 'pv') {
+      mudar(vitais, p.id, 'pv', 0);
+      comCondicao(p, 'caido');
+      registrar(c, ctx.agora, 'acao', `${p.nome} vai a 0 PV pelo ritual${p.lado === 'agente' ? ': inconsciente e morrendo' : ''}.`, ['0 PV']);
+    } else if (vz && r.zera === 'san') {
+      mudar(vitais, p.id, 'san', 0);
+      registrar(c, ctx.agora, 'acao', `${p.nome} vai a 0 de SAN pelo ritual e fica enlouquecendo.`, ['enlouquecendo']);
+    }
+    const nota = texto(r.nota, 160);
+    if (nota) registrar(c, ctx.agora, 'estado', `${p.nome}: ${nota}.`);
     const cond = texto(r.condicao, 30);
     const def = cond ? condicaoDoCatalogo(cond) : undefined;
     if (def && criatura(ctx, p) && (def.grupo === 'medo' || def.grupo === 'mental')) registrar(c, ctx.agora, 'estado', `${p.nome} é criatura: imune a condições ${def.grupo === 'medo' ? 'de medo' : 'mentais'} (LR p. 180).`);
@@ -802,6 +817,8 @@ function ritual(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
     }
   }
   if (o.sustentado === true) {
+    // um ritual sustentado por vez: o novo toma o lugar do anterior (LR p. 120)
+    if (quem.sustenta && quem.sustenta !== nome) registrar(c, ctx.agora, 'estado', `${quem.nome} deixa de sustentar ${quem.sustenta} (um ritual sustentado por vez, LR p. 120).`);
     quem.sustenta = nome;
     registrar(c, ctx.agora, 'estado', `${quem.nome} sustenta ${nome}: 1 PE no começo de cada turno (LR p. 120).`);
   }
@@ -814,6 +831,9 @@ function ritual(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
     registrar(c, ctx.agora, 'acao', `Custo do Paranormal: Ocultismo d20 ${custo.d20}, total ${custo.total}${custo.dt ? ` contra DT ${custo.dt}` : ''} — ${custo.passou ? 'passou' : 'falhou'}.`, custo.passou ? undefined : ['falhou']);
     if (mental) registrar(c, ctx.agora, 'estado', `${quem.nome} sofre ${mental} de dano mental${perde ? ' e perde 1 de SAN para sempre' : ''} (LR p. 121).`, perde ? ['perde 1 de SAN para sempre'] : undefined);
   }
+  // a PE para sempre da Convocação Instantânea verdadeira (LR p. 128): espera o mestre, como a SAN
+  const pePerde = inteiro(o.pePermanente, 0, 5) ?? 0;
+  if (pePerde && quem.lado === 'agente') c.perdasSan = [...(c.perdasSan ?? []), { id: quem.id, quanto: pePerde, motivo: nome, pe: true }];
   // a SAN para sempre fica esperando o mestre aceitar (baixa o máximo na ficha) ou negar (29/10, o Felipe)
   if (perde && (o.medo === true || custo) && quem.lado === 'agente')
     c.perdasSan = [...(c.perdasSan ?? []), { id: quem.id, quanto: perde, motivo: o.medo === true ? `ritual de Medo (${nome})` : `Custo do Paranormal (${nome})` }];
@@ -1203,12 +1223,13 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       const [x] = c.perdasSan!.splice(i, 1);
       if (!c.perdasSan!.length) delete c.perdasSan;
       const nome = participante(c, x.id)?.nome ?? 'O agente';
+      const o = x.pe ? 'PE' : 'SAN';
       if (!a.aceitar) {
-        registrar(c, ctx.agora, 'estado', `${nome}: o mestre negou a perda de ${x.quanto} de SAN para sempre (${x.motivo}).`);
+        registrar(c, ctx.agora, 'estado', `${nome}: o mestre negou a perda de ${x.quanto} de ${o} para sempre (${x.motivo}).`);
         return ok();
       }
-      registrar(c, ctx.agora, 'estado', `${nome} perde ${x.quanto} de SAN máxima para sempre (${x.motivo}; LR p. 121).`, [`SAN máxima −${x.quanto}`]);
-      return { ok: true, combate: c, perdaSan: { id: x.id, quanto: x.quanto } };
+      registrar(c, ctx.agora, 'estado', `${nome} perde ${x.quanto} de ${o} máxima para sempre (${x.motivo}; LR p. ${x.pe ? 128 : 121}).`, [`${o} máxima −${x.quanto}`]);
+      return { ok: true, combate: c, perdaSan: { id: x.id, quanto: x.quanto, ...(x.pe ? { pe: true as const } : {}) } };
     }
 
     case 'vitais': {
@@ -1281,6 +1302,7 @@ const TIPOS = new Set<AcaoCombate['tipo']>([
   'lote',
   'ataque',
   'massivo',
+  'presenca',
   'perdaSan',
   'manobra',
   'ritual',

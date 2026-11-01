@@ -1030,6 +1030,45 @@ describe('combate: ritual', () => {
   const rit = (quem: number, extra: Partial<combate.RitualConfirmado> = {}): Acao => ({ tipo: 'ritual', ritual: { quem, ritual: 'Decadência', forma: 'basica', qual: 'padrao', pe: 3, dt: 16, alvos: [], ...extra } });
   const naVezDeTepes = () => aplicar(aplicar(montado(), { tipo: 'comecar' }), { tipo: 'passar' });
 
+  test('auditoria de 28/10: quem falha vai a 0, a nota fica no registro, um sustentado por vez e a PE para sempre', () => {
+    const c0 = naVezDeTepes();
+    // a Lâmina do Medo: quem falha vai a 0 PV; o Descarnar deixa a hemorragia escrita
+    const r = combate.aplicar(
+      c0,
+      rit(2, { ritual: 'Lâmina do Medo', alvos: [{ id: 10, zera: 'pv' }, { id: 11, nota: 'hemorragia: Fortitude no começo de cada turno' }], sustentado: true }),
+      ctx(),
+    );
+    assert.ok(r.ok);
+    assert.deepEqual(r.vitais?.find((v) => v.id === 10), { id: 10, pv: 0 });
+    assert.ok(r.combate!.registro.some((l) => /Acólito: hemorragia/.test(l.texto) || /: hemorragia/.test(l.texto)));
+    // conjurar outro sustentado troca o anterior, com o registro (LR p. 120)
+    const d = aplicar(aplicar(aplicar(aplicar(aplicar(r.combate!, { tipo: 'passar' }), { tipo: 'passar' }), { tipo: 'passar' }), { tipo: 'passar' }), { tipo: 'passar' });
+    const e = combate.aplicar(d, rit(2, { ritual: 'Fedor Pútrido', pe: 3, sustentado: true, pePermanente: 1 }), ctx());
+    assert.ok(e.ok);
+    assert.ok(e.combate!.registro.some((l) => l.texto === 'Tepes deixa de sustentar Lâmina do Medo (um ritual sustentado por vez, LR p. 120).'));
+    assert.deepEqual(e.combate!.perdasSan, [{ id: 2, quanto: 1, motivo: 'Fedor Pútrido', pe: true }]);
+    const f = combate.aplicar(e.combate!, { tipo: 'perdaSan', id: 2, aceitar: true }, ctx());
+    assert.ok(f.ok && f.perdaSan?.pe);
+  });
+
+  test('as névoas, a soma extrema e o que o livro diz de quem passa e de quem falha (LR p. 126–140)', () => {
+    const r = { pe: 3, dt: 16, qual: 'padrao', circulo: 2 };
+    assert.deepEqual(combate.noAmbiente('cineraria-discente', r), { pe: 1, dt: 21, qual: 'padrao', dano: null, bloqueio: null, linhas: ['Cinerária: DT +5', '−2 PE'] });
+    const rej = combate.noAmbiente('rejeitar-verdadeira', r);
+    assert.deepEqual([rej.pe, rej.dt, rej.qual, rej.dano], [7, 11, 'completa', 'minimo']);
+    assert.ok(combate.noAmbiente('dissonancia', r).bloqueio);
+    assert.equal(combate.somaExtrema(combate.lerDano('2d8+3'), 'maximo'), 16);
+    assert.equal(combate.somaExtrema(combate.lerDano('2d8+3'), 'minimo'), 2);
+    assert.deepEqual(combate.danoDoRitual('inexistir', 'discente')?.passou, { dano: '3d12', condicao: 'debilitado' });
+    assert.equal(combate.danoDoRitual('lamina-do-medo', 'basica')?.falhou?.zera, 'pv');
+    assert.equal(combate.danoDoRitual('descarnar', 'basica')?.parcialMetade, true);
+    assert.equal(combate.danoDoRitual('poeira-da-podridao', 'basica')?.resistencia, 'Fortitude reduz à metade');
+    assert.notEqual(combate.lerAcao({ tipo: 'presenca', id: 1, total: 10, soma: 4 }), null);
+    // o Amaldiçoar Arma é do elemento escolhido ao aprender (LR p. 124); sem escolha, o do catálogo
+    assert.equal(regras.elementoDoRitual({ elementoRitual: { 'amaldicoar-arma': 'sangue' } }, 'amaldicoar-arma'), 'sangue');
+    assert.equal(regras.elementoDoRitual({}, 'amaldicoar-arma'), 'conhecimento');
+  });
+
   test('gasta a execução e o PE; resistência e dano em cada alvo; o Custo do Paranormal tira SAN', () => {
     const c0 = naVezDeTepes();
     const r = combate.aplicar(

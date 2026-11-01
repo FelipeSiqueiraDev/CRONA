@@ -115,6 +115,15 @@ export interface DanoDoRitual {
   extra?: { dano: string; tipo: TipoDano };
   /** resistência "parcial" em que quem passa sofre a metade (o livro diz no texto do ritual) */
   parcialMetade?: true;
+  /**
+   * Quem passa no teste sofre outra coisa (01/11, auditoria de 28/10: a tela dava o mesmo dano a todos): outros dados,
+   * outro tipo e uma condição (Conhecendo o Medo, Lâmina do Medo, Inexistir).
+   */
+  passou?: { dano: string; tipo?: TipoDano; condicao?: string };
+  /** quem falha: os PV ou a SAN vão a 0 (Lâmina do Medo, Conhecendo o Medo), a condição e o que fica escrito no registro */
+  falhou?: { zera?: 'pv' | 'san'; condicao?: string; nota?: string };
+  /** a resistência quando o texto do ritual diz "veja texto" (Poeira da Podridão: Fortitude reduz à metade) */
+  resistencia?: string;
 }
 
 /**
@@ -126,22 +135,79 @@ export interface DanoDoRitual {
  */
 export const DANO_DOS_RITUAIS: Record<string, Partial<Record<FormaRitual, DanoDoRitual>>> = {
   decadencia: { basica: { dano: '2d8+2' }, discente: { dano: '3d8+3' }, verdadeira: { dano: '8d8+8' } },
-  eletrocussao: { basica: { dano: '3d6', tipo: 'eletricidade', parcialMetade: true }, discente: { dano: '6d6', parcialMetade: true }, verdadeira: { dano: '8d6', parcialMetade: true } },
-  descarnar: { basica: { dano: '3d8', tipo: 'corte', extra: { dano: '3d8', tipo: 'sangue' } }, discente: { dano: '5d8', tipo: 'corte', extra: { dano: '5d8', tipo: 'sangue' } } },
+  // a Eletrocussão básica deixa vulnerável por uma rodada quem falha; quem passa sofre metade e evita (LR p. 131)
+  eletrocussao: { basica: { dano: '3d6', tipo: 'eletricidade', parcialMetade: true, falhou: { condicao: 'vulneravel', nota: 'vulnerável por uma rodada' } }, discente: { dano: '6d6', parcialMetade: true }, verdadeira: { dano: '8d6', parcialMetade: true } },
+  // o Descarnar: quem passa sofre metade e não fica com a hemorragia (LR p. 129)
+  descarnar: {
+    basica: { dano: '3d8', tipo: 'corte', extra: { dano: '3d8', tipo: 'sangue' }, parcialMetade: true, falhou: { nota: 'hemorragia: Fortitude no começo de cada turno; falhou, 2d8 de Sangue; dois turnos seguidos passando, estanca' } },
+    discente: { dano: '5d8', tipo: 'corte', extra: { dano: '5d8', tipo: 'sangue' }, parcialMetade: true, falhou: { nota: 'hemorragia: Fortitude no começo de cada turno; falhou, 4d8 de Sangue; dois turnos seguidos passando, estanca' } },
+  },
   hemofagia: { basica: { dano: '6d6' }, discente: { dano: '6d6' }, verdadeira: { dano: '4d6' } },
-  inexistir: { basica: { dano: '10d12+10' }, discente: { dano: '15d12+15' }, verdadeira: { dano: '20d12+20' } },
+  // o Inexistir: quem passa sofre só os dados resistidos e fica debilitado por uma rodada (LR p. 133)
+  inexistir: {
+    basica: { dano: '10d12+10', passou: { dano: '2d12', condicao: 'debilitado' } },
+    discente: { dano: '15d12+15', passou: { dano: '3d12', condicao: 'debilitado' } },
+    verdadeira: { dano: '20d12+20', passou: { dano: '4d12', condicao: 'debilitado' } },
+  },
   'invadir-mente': { basica: { dano: '6d6', tipo: 'energia', parcialMetade: true }, discente: { dano: '10d6', tipo: 'energia', parcialMetade: true }, verdadeira: { dano: '10d6', tipo: 'energia', parcialMetade: true } },
   'miasma-entropico': { basica: { dano: '4d8', tipo: 'quimico', parcialMetade: true }, discente: { dano: '6d8', parcialMetade: true }, verdadeira: { dano: '4d8', tipo: 'quimico', parcialMetade: true } },
   paradoxo: { basica: { dano: '6d6' }, discente: { dano: '4d6' }, verdadeira: { dano: '13d6' } },
   perturbacao: { discente: { dano: '3d8' } },
-  'poeira-da-podridao': { basica: { dano: '4d8' }, verdadeira: { dano: '4d8+16' } },
+  // a Poeira da Podridão: Fortitude reduz à metade; quem falha não recupera PV por uma rodada (LR p. 138)
+  'poeira-da-podridao': {
+    basica: { dano: '4d8', resistencia: 'Fortitude reduz à metade', falhou: { nota: 'não recupera PV de nenhuma forma por uma rodada' } },
+    verdadeira: { dano: '4d8+16', resistencia: 'Fortitude reduz à metade', falhou: { nota: 'não recupera PV de nenhuma forma por uma rodada' } },
+  },
   'ferver-sangue': { basica: { dano: '4d8', parcialMetade: true }, verdadeira: { dano: '4d8', parcialMetade: true } },
   'chamas-do-caos': { discente: { dano: '4d6' }, verdadeira: { dano: '8d6' } },
   'consumir-manancial': { verdadeira: { dano: '3d6' } },
-  'conhecendo-o-medo': { basica: { dano: '10d6', tipo: 'mental' } },
-  'lamina-do-medo': { basica: { dano: '10d8', tipo: 'medo' } },
+  // quem falha vai a 0 (SAN no Conhecendo o Medo, PV na Lâmina); quem passa sofre o dano e fica apavorado (LR p. 127, 135)
+  'conhecendo-o-medo': { basica: { dano: '', falhou: { zera: 'san' }, passou: { dano: '10d6', tipo: 'mental', condicao: 'apavorado' } } },
+  'lamina-do-medo': { basica: { dano: '', falhou: { zera: 'pv' }, passou: { dano: '10d8', tipo: 'medo', condicao: 'apavorado' } } },
   'presenca-do-medo': { basica: { dano: '5d8', tipo: 'mental', extra: { dano: '5d8', tipo: 'medo' } } },
 };
 
 /** O dano do ritual nesta forma, pelo livro (ou nada: o mestre digita). */
 export const danoDoRitual = (id: string, forma: FormaRitual): DanoDoRitual | null => DANO_DOS_RITUAIS[id]?.[forma] ?? null;
+
+/**
+ * As névoas e áreas que mudam os rituais conjurados dentro delas (01/11; LR p. 126, 130, 140): a Cinerária (DT +5; a
+ * discente, −2 PE; a verdadeira, dano máximo), a Rejeitar Névoa (+2 PE por círculo e a execução um passo acima; a
+ * discente e a verdadeira, DT −5; a verdadeira, dano mínimo) e a Dissonância Acústica (ninguém conjura).
+ */
+export type AmbienteRitual = '' | 'cineraria' | 'cineraria-discente' | 'cineraria-verdadeira' | 'rejeitar' | 'rejeitar-discente' | 'rejeitar-verdadeira' | 'dissonancia';
+export const NOME_AMBIENTE: Record<AmbienteRitual, string> = {
+  '': 'Nenhuma',
+  cineraria: 'Cinerária',
+  'cineraria-discente': 'Cinerária (discente)',
+  'cineraria-verdadeira': 'Cinerária (verdadeira)',
+  rejeitar: 'Rejeitar Névoa',
+  'rejeitar-discente': 'Rejeitar Névoa (discente)',
+  'rejeitar-verdadeira': 'Rejeitar Névoa (verdadeira)',
+  dissonancia: 'Dissonância Acústica',
+};
+const PASSO_EXECUCAO: Record<string, string> = { livre: 'movimento', reacao: 'movimento', movimento: 'padrao', padrao: 'completa', completa: 'completa' };
+
+export function noAmbiente(a: AmbienteRitual, r: { pe: number; dt: number; qual: string; circulo: number }): { pe: number; dt: number; qual: string; dano: 'maximo' | 'minimo' | null; bloqueio: string | null; linhas: string[] } {
+  const o = { pe: r.pe, dt: r.dt, qual: r.qual, dano: null as 'maximo' | 'minimo' | null, bloqueio: null as string | null, linhas: [] as string[] };
+  if (a === 'dissonancia') o.bloqueio = 'Na Dissonância Acústica ninguém conjura rituais (LR p. 130).';
+  if (a.startsWith('cineraria')) {
+    o.dt += 5;
+    o.linhas.push('Cinerária: DT +5');
+    if (a !== 'cineraria') (o.pe = Math.max(1, o.pe - 2)), o.linhas.push('−2 PE');
+    if (a === 'cineraria-verdadeira') (o.dano = 'maximo'), o.linhas.push('dano máximo');
+  }
+  if (a.startsWith('rejeitar')) {
+    o.pe += 2 * r.circulo;
+    o.qual = PASSO_EXECUCAO[r.qual] ?? r.qual;
+    o.linhas.push(`Rejeitar Névoa: +${2 * r.circulo} PE, execução um passo acima`);
+    if (a !== 'rejeitar') (o.dt -= 5), o.linhas.push('DT −5');
+    if (a === 'rejeitar-verdadeira') (o.dano = 'minimo'), o.linhas.push('dano mínimo');
+  }
+  return o;
+}
+
+/** A soma que os dados dão no máximo ou no mínimo (a Cinerária e a Rejeitar Névoa verdadeiras). */
+export function somaExtrema(p: { grupos: { n: number; faces: number }[] }, qual: 'maximo' | 'minimo'): number {
+  return p.grupos.reduce((t, g) => t + (qual === 'maximo' ? g.n * g.faces : g.n), 0);
+}

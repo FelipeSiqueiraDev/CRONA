@@ -31,6 +31,10 @@ export interface RitualOpcao {
   dt: number;
   formas: { forma: cb.FormaRitual; pe: number; motivo: string | null }[];
   ref: string;
+  /** os elementos à escolha (o Amaldiçoar Arma); `elemento` é o escolhido na ficha */
+  elementos?: Elemento[];
+  /** por que não dá para conjurar (sem mão livre, sem componentes; LR p. 119) */
+  bloqueio?: string;
 }
 
 export interface CtxRitual {
@@ -44,6 +48,10 @@ export interface CtxRitual {
   vontade: { dados: number; bonus: number; penalidade?: number } | null;
   limite: number | null;
   gasto: number;
+  /** os catalisadores da mochila de quem conjura (SaH p. 44) */
+  catalisadores?: { uid: number; id: string; nome: string; elemento?: Elemento }[];
+  /** guarda na ficha o elemento escolhido do ritual de vários elementos */
+  escolherElemento?: (id: string, el: Elemento) => void;
   alvo: AlvoAtaque | null;
   /** quem está na área desenhada no tabuleiro (ferramenta Área) */
   naArea: AlvoAtaque[] | null;
@@ -101,6 +109,14 @@ interface Estado {
   condicao: string;
   custo: number | null;
   sustentado: boolean | null;
+  /** a soma dos dados de quem passou, quando o ritual dá outro dano a ele (Inexistir, Lâmina do Medo) */
+  somaP: number | null;
+  /** o dano que quem conjura sofreu durante a execução: a Vontade da concentração com DT igual a ele (LR p. 120) */
+  danoExec: number | null;
+  /** a névoa ou área em que conjura (Cinerária, Rejeitar Névoa, Dissonância) */
+  ambiente: cb.AmbienteRitual;
+  /** o catalisador usado (o uid da mochila) */
+  catal: number | null;
 }
 
 const novo = (chave: string): Estado => ({
@@ -122,6 +138,10 @@ const novo = (chave: string): Estado => ({
   condicao: '',
   custo: null,
   sustentado: null,
+  somaP: null,
+  danoExec: null,
+  ambiente: '',
+  catal: null,
 });
 
 const RESISTENCIAS = ['', 'Fortitude anula', 'Fortitude parcial', 'Fortitude reduz à metade', 'Reflexos anula', 'Reflexos parcial', 'Reflexos reduz à metade', 'Vontade anula', 'Vontade parcial', 'Vontade reduz à metade', 'Vontade desacredita'];
@@ -140,16 +160,24 @@ export class ResolucaoRitual {
     const r = this.e.ritual >= 0 ? x.rituais[this.e.ritual] : undefined;
     if (r) {
       const f = r.formas.find((q) => q.forma === this.e.forma && !q.motivo) ?? r.formas[0];
+      const livro = cb.danoDoRitual(r.id, f.forma);
+      const res = livro?.resistencia ?? r.resistencia;
+      // Alquebrado: +1 PE (LR p. 309); as névoas mudam PE, DT e execução; o catalisador perturbador dá DT +2 (SaH p. 44)
+      const amb = cb.noAmbiente(this.e.ambiente, { pe: f.pe + (x.condicoesAtor.includes('alquebrado') ? 1 : 0), dt: r.dt, qual: r.qual, circulo: r.circulo });
+      const cat = this.catalisador(x);
       return {
         id: r.id,
         nome: r.nome,
         elemento: r.elemento,
-        qual: r.qual,
-        pe: f.pe,
+        qual: amb.qual as cb.TipoAcao,
+        pe: amb.pe,
         forma: f.forma,
-        dt: r.dt,
-        resist: cb.lerResistencia(r.resistencia),
-        resistTexto: r.resistencia ?? '',
+        dt: amb.dt + (cat?.id === 'catalisador-perturbador' ? 2 : 0),
+        resist: cb.lerResistencia(res),
+        resistTexto: res ?? '',
+        circulo: r.circulo,
+        bloqueio: amb.bloqueio ?? r.bloqueio ?? null,
+        ambiente: amb,
         alcance: r.alcance,
         sustentavel: /sustentad/i.test(r.duracao),
         pessoal: r.alcance === 'pessoal',
@@ -167,11 +195,20 @@ export class ResolucaoRitual {
       dt: a.dt ?? 0,
       resist: cb.lerResistencia(a.resistencia),
       resistTexto: a.resistencia,
+      circulo: 1,
+      bloqueio: null as string | null,
+      ambiente: cb.noAmbiente(this.e.ambiente, { pe: a.pe, dt: a.dt ?? 0, qual: a.qual, circulo: 1 }),
       alcance: '',
       sustentavel: false,
       pessoal: false,
       ref: '',
     };
+  }
+
+  /** O catalisador escolhido, se ainda está na mochila e é do elemento do ritual. */
+  private catalisador(x: CtxRitual) {
+    const c = this.e.catal !== null ? x.catalisadores?.find((y) => y.uid === this.e.catal) : undefined;
+    return c ?? null;
   }
 
   /** A tela de cards escolhe o modo (um alvo, a área ou ninguém) no passo "Contra quem?". */
@@ -198,13 +235,23 @@ export class ResolucaoRitual {
     const doLivro = r.id ? DANO_RITUAL[r.id] : undefined;
     // os dados do livro já vêm preenchidos (29/10: sem eles, o ritual de dano pulava o passo do dano)
     const dadosLivro = r.id ? cb.danoDoRitual(r.id, r.forma) : null;
-    const formula = this.e.formula ?? dadosLivro?.dano ?? '';
+    // o catalisador potencializador: +1 dado do mesmo tipo no dano (SaH p. 44)
+    const potente = this.catalisador(x)?.id === 'catalisador-potencializador';
+    const mais = (f: string) => (potente && f.trim() ? f.replace(/(\d+)d(\d+)/, (_, n: string, d: string) => `${Number(n) + 1}d${d}`) : f);
+    const formula = this.e.formula ?? mais(dadosLivro?.dano ?? '');
+    const formulaP = dadosLivro?.passou ? mais(dadosLivro.passou.dano) : '';
+    const partesP = formulaP ? cb.lerDano(formulaP) : null;
     const formula2 = this.e.formula2 ?? dadosLivro?.extra?.dano ?? '';
     const tipo = this.e.tipo ?? dadosLivro?.tipo ?? doLivro?.tipo ?? ELEMENTO_DANO[r.elemento] ?? 'paranormal';
     const tipo2 = this.e.tipo2 ?? dadosLivro?.extra?.tipo ?? doLivro?.extra ?? tipo;
     const ignoraRd = this.e.ignoraRd ?? !!doLivro?.ignoraRd;
     const partes = formula.trim() ? cb.lerDano(formula) : null;
     const partes2 = formula2.trim() ? cb.lerDano(formula2) : null;
+    // a Cinerária verdadeira dá o dano máximo e a Rejeitar Névoa verdadeira, o mínimo: a soma sai sozinha
+    const extremo = r.ambiente.dano;
+    const soma = extremo && partes ? cb.somaExtrema(partes, extremo) : this.e.soma;
+    const soma2 = extremo && partes2 ? cb.somaExtrema(partes2, extremo) : this.e.soma2;
+    const somaP = extremo && partesP ? cb.somaExtrema(partesP, extremo) : this.e.somaP;
     const linhas = alvos.map((a) => {
       const k = String(a.p.id);
       const res = r.resist;
@@ -227,12 +274,19 @@ export class ResolucaoRitual {
         const conta = cb.contaDano({ soma, fixo: p.fixo, tipo: t, rd: ignoraRd ? {} : a.rd, imunidades: a.imunidades, vulnerabilidades: el?.vulneravel ? [...a.vulnerabilidades, t] : a.vulnerabilidades, metade });
         return { conta, previa: cb.previaDano(a.vitais, conta.final, { tipo: t, naoLetalAntes: a.p.naoLetal, agente: a.agente, pessoa: a.pessoa }) };
       };
-      const dano = partes && this.e.soma !== null && !anulou && !imune ? contar(partes, this.e.soma, tipo) : null;
-      const extra = partes2 && this.e.soma2 !== null && !anulou && !imune ? contar(partes2, this.e.soma2, tipo2) : null;
+      // quem passa e o ritual dá outra coisa a ele (Inexistir, Lâmina e Conhecendo o Medo): os dados de quem passou, inteiros
+      const outro = passou === true && !!dadosLivro?.passou;
+      const dano = imune || anulou ? null : outro ? (partesP && somaP !== null ? contar(partesP, somaP, dadosLivro!.passou!.tipo ?? tipo) : null) : partes && soma !== null ? contar(partes, soma, tipo) : null;
+      const extra = partes2 && soma2 !== null && !anulou && !imune && !outro ? contar(partes2, soma2, tipo2) : null;
       const falhou = !imune && (!res || passou === false);
-      return { a, k, base, el, dados, penalidade, d20, total, passou, anulou, metade, dano, extra, falhou, imune, pendente: !!res && !imune && d20 === null };
+      // quem falha na Lâmina ou no Conhecendo o Medo vai a 0 (PV ou SAN)
+      const zera = falhou && passou === false ? dadosLivro?.falhou?.zera : undefined;
+      return { a, k, base, el, dados, penalidade, d20, total, passou, anulou, metade: outro ? false : metade, dano, extra, falhou, imune, zera, pendente: !!res && !imune && d20 === null };
     });
-    const conc = x.agente ? cb.dtConcentracao(x.condicoesAtor, r.pe) : null;
+    // a concentração: a condição ruim ou terrível, ou o dano sofrido durante a execução (DT igual ao dano; LR p. 120)
+    const concCond = x.agente ? cb.dtConcentracao(x.condicoesAtor, r.pe) : null;
+    const concDano = x.agente && this.e.danoExec ? { dt: this.e.danoExec, motivo: `${this.e.danoExec} de dano na execução` } : null;
+    const conc = concCond && concDano ? (concDano.dt > concCond.dt ? concDano : concCond) : (concCond ?? concDano);
     const concPassou = conc && this.e.conc !== null && x.vontade ? cb.passouResistencia(this.e.conc, this.e.conc + x.vontade.bonus, conc.dt) : null;
     const custo = x.agente ? cb.custoParanormal(r.pe, medo, r.forma) : null;
     const custoRes = custo && !custo.medo && this.e.custo !== null && x.ocultismo ? cb.resultadoCusto(r.pe, this.e.custo, this.e.custo + x.ocultismo.bonus) : null;
@@ -240,14 +294,15 @@ export class ResolucaoRitual {
       (r.qual === 'padrao' && (x.acoes.padrao || x.acoes.completa)) ||
       (r.qual === 'movimento' && (x.acoes.completa || (x.acoes.movimento && x.acoes.padrao))) ||
       (r.qual === 'completa' && (x.acoes.padrao || x.acoes.movimento || x.acoes.completa));
-    return { r, alvos, linhas, medo, formula, formula2, tipo, tipo2, ignoraRd, partes, partes2, conc, concPassou, custo, custoRes, semAcao };
+    const precisaP = !!partesP && linhas.some((l) => l.passou === true);
+    return { r, alvos, linhas, medo, formula, formula2, formulaP, tipo, tipo2, ignoraRd, partes, partes2, partesP, precisaP, soma, soma2, somaP, livro: dadosLivro, conc, concPassou, custo, custoRes, semAcao };
   }
 
   passo(x: CtxRitual): number {
     const k = this.conta(x);
     if (this.e.modo !== 'nenhum' && !k.alvos.length) return 2;
     if (k.linhas.some((l) => l.pendente)) return 3;
-    if ((k.partes && this.e.soma === null) || (k.partes2 && this.e.soma2 === null)) return 4;
+    if ((k.partes && k.soma === null) || (k.partes2 && k.soma2 === null) || (k.precisaP && k.somaP === null)) return 4;
     if ((k.conc && this.e.conc === null) || (k.custo && !k.custo.medo && this.e.custo === null)) return 5;
     return 6;
   }
@@ -285,6 +340,54 @@ export class ResolucaoRitual {
     );
     const extra: HTMLElement[] = [];
     const r = this.e.ritual >= 0 ? x.rituais[this.e.ritual] : undefined;
+    // o elemento escolhido ao aprender (o Amaldiçoar Arma é de quatro elementos; LR p. 124): fica na ficha
+    if (r?.elementos?.length && x.escolherElemento)
+      extra.push(
+        h(
+          'label',
+          { class: 'cb-man-arma' },
+          h('small', null, 'Elemento escolhido ao aprender'),
+          h(
+            'select',
+            { class: 'fx-inp', onchange: (ev: Event) => (x.escolherElemento!(r.id, (ev.target as HTMLSelectElement).value as Elemento), x.mudou()) },
+            ...r.elementos.map((el) => h('option', { value: el, selected: el === r.elemento }, cb.NOME_ELEMENTO[el])),
+          ),
+        ),
+      );
+    // a névoa ou a área onde conjura (Cinerária, Rejeitar Névoa, Dissonância; LR p. 126, 130, 140)
+    extra.push(
+      h(
+        'label',
+        { class: 'cb-man-arma' },
+        h('small', null, 'Conjura dentro de'),
+        h(
+          'select',
+          { class: 'fx-inp', onchange: (ev: Event) => ((this.e.ambiente = (ev.target as HTMLSelectElement).value as cb.AmbienteRitual), (this.e.soma = this.e.soma2 = this.e.somaP = null), x.mudou()) },
+          ...(Object.keys(cb.NOME_AMBIENTE) as cb.AmbienteRitual[]).map((a) => h('option', { value: a, selected: a === this.e.ambiente }, cb.NOME_AMBIENTE[a])),
+        ),
+      ),
+    );
+    if (k.r.ambiente.linhas.length) extra.push(h('small', { class: 'cb-rit-res' }, k.r.ambiente.linhas.join(' · ')));
+    // o catalisador do elemento do ritual (SaH p. 44): consumido ao conjurar
+    const cats = (x.catalisadores ?? []).filter((c) => !c.elemento || c.elemento === k.r.elemento);
+    if (x.agente && cats.length)
+      extra.push(
+        h(
+          'label',
+          { class: 'cb-man-arma' },
+          h('small', null, 'Catalisador (gasta um)'),
+          h(
+            'select',
+            { class: 'fx-inp', onchange: (ev: Event) => ((this.e.catal = Number((ev.target as HTMLSelectElement).value) || null), (this.e.soma = null), x.mudou()) },
+            h('option', { value: '' }, '—'),
+            ...cats.map((c) => h('option', { value: String(c.uid), selected: c.uid === this.e.catal }, c.nome)),
+          ),
+        ),
+      );
+    const cat = this.catalisador(x);
+    if (cat?.id === 'catalisador-ampliador') extra.push(h('small', { class: 'cb-rit-res' }, 'Ampliador: o alcance sobe um passo ou a área dobra (SaH p. 44).'));
+    if (cat?.id === 'catalisador-prolongador') extra.push(h('small', { class: 'cb-rit-res' }, 'Prolongador: a duração dobra (não vale em instantâneo nem sustentado; SaH p. 44).'));
+    if (k.r.bloqueio) extra.push(linhaInfo('alerta', k.r.bloqueio, 'ruim'));
     if (r && r.formas.length > 1)
       extra.push(
         h(
@@ -360,7 +463,8 @@ export class ResolucaoRitual {
           campoDado('d20', l.d20, 20, (n) => ((this.e.d20[l.k] = n && n >= 1 ? n : null), x.mudou()), `rit:${l.k}`),
           l.passou === null ? h('span') : h('span', { class: `cb-rit-marca ${l.passou ? 'bom' : 'ruim'}` }, l.passou ? 'passou' : 'falhou'),
         );
-        if (res.efeito === 'parcial' && l.passou && k.partes)
+        if (l.zera) linha.append(h('small', { class: 'cb-rit-marca ruim' }, l.zera === 'pv' ? 'vai a 0 PV' : 'vai a 0 de SAN'));
+        if (res.efeito === 'parcial' && l.passou && k.partes && !k.livro?.passou)
           linha.append(h('label', { class: 'cb-rit-meia', title: 'Parcial: o ritual diz o que sobra; marque se é metade do dano' }, h('input', { type: 'checkbox', checked: l.metade, onchange: (ev: Event) => ((this.e.metade[l.k] = (ev.target as HTMLInputElement).checked), x.mudou()) }), '½'));
       }
       if (l.el) linha.title = l.el.texto;
@@ -397,9 +501,18 @@ export class ResolucaoRitual {
           h('span', null, 'Ignora a RD'),
         ),
       );
-    if (k.partes) corpo.push(h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, cb.textoDano(k.formula))), campoDado('soma dos dados', this.e.soma, 999, (n) => ((this.e.soma = n), x.mudou()), 'rit:soma', true));
-    if (k.partes2) corpo.push(h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, `${cb.textoDano(k.formula2)} (${cb.NOME_TIPO_DANO[k.tipo2]})`)), campoDado(`soma do dano a mais`, this.e.soma2, 999, (n) => ((this.e.soma2 = n), x.mudou()), 'rit:soma2'));
-    if (k.partes || k.partes2)
+    // dano máximo ou mínimo (as névoas verdadeiras): a soma já vem pronta
+    const ext = k.r.ambiente.dano;
+    if (k.partes) corpo.push(h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, cb.textoDano(k.formula))), ext ? h('small', { class: 'cb-rit-res' }, `${ext === 'maximo' ? 'Máximo' : 'Mínimo'}: ${k.soma}`) : campoDado('soma dos dados', this.e.soma, 999, (n) => ((this.e.soma = n), x.mudou()), 'rit:soma', true));
+    if (k.partes2) corpo.push(h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, `${cb.textoDano(k.formula2)} (${cb.NOME_TIPO_DANO[k.tipo2]})`)), ext ? h('small', { class: 'cb-rit-res' }, `${ext === 'maximo' ? 'Máximo' : 'Mínimo'}: ${k.soma2}`) : campoDado(`soma do dano a mais`, this.e.soma2, 999, (n) => ((this.e.soma2 = n), x.mudou()), 'rit:soma2'));
+    // quem passou sofre outros dados (Inexistir, Lâmina e Conhecendo o Medo)
+    if (k.precisaP)
+      corpo.push(
+        h('div', { class: 'cb-instrucao' }, ic('dados'), h('span', null, `Quem passou: ${cb.textoDano(k.formulaP)}${k.livro?.passou?.condicao ? ` e fica ${regras.catalogo.condicao(k.livro.passou.condicao)?.nome.toLowerCase() ?? k.livro.passou.condicao}` : ''}`)),
+        ext ? h('small', { class: 'cb-rit-res' }, `${ext === 'maximo' ? 'Máximo' : 'Mínimo'}: ${k.somaP}`) : campoDado('soma de quem passou', this.e.somaP, 999, (n) => ((this.e.somaP = n), x.mudou()), 'rit:somaP'),
+      );
+    if (k.livro?.falhou?.nota) corpo.push(h('small', { class: 'cb-rit-res' }, `Quem falha: ${k.livro.falhou.nota}.`));
+    if (k.partes || k.partes2 || k.partesP)
       for (const l of k.linhas) {
         if (l.imune) corpo.push(h('small', { class: 'cb-rit-linha' }, `${l.a.p.nome}: imune (criatura).`));
         else if (l.anulou) corpo.push(h('small', { class: 'cb-rit-linha' }, `${l.a.p.nome}: anulou.`));
@@ -416,7 +529,7 @@ export class ResolucaoRitual {
           'select',
           { class: 'fx-inp', onchange: (ev: Event) => ((this.e.condicao = (ev.target as HTMLSelectElement).value), x.mudou()) },
           h('option', { value: '' }, '—'),
-          ...conds.map((c) => h('option', { value: c.id, selected: c.id === this.e.condicao }, c.nome)),
+          ...conds.map((c) => h('option', { value: c.id, selected: c.id === (this.e.condicao || k.livro?.falhou?.condicao) }, c.nome)),
         ),
       ),
     );
@@ -428,6 +541,16 @@ export class ResolucaoRitual {
   private linhaCusto(x: CtxRitual, k: ReturnType<ResolucaoRitual['conta']>): HTMLElement {
     const r = k.r;
     const partes: HTMLElement[] = [];
+    // o dano que quem conjura sofreu durante a execução (atacado como reação, ou em chamas; LR p. 120)
+    if (x.agente)
+      partes.push(
+        h(
+          'div',
+          { class: 'cb-rit-custo' },
+          h('small', null, `Sofreu dano na execução?${x.condicoesAtor.includes('em-chamas') ? ' (em chamas: o dano do fogo)' : ''}`),
+          campoDado('dano', this.e.danoExec, 999, (n) => ((this.e.danoExec = n && n > 0 ? n : null), (this.e.conc = null), x.mudou()), 'rit:danoExec'),
+        ),
+      );
     if (k.conc) {
       partes.push(
         h(
@@ -464,7 +587,14 @@ export class ResolucaoRitual {
       h('label', { class: 'cb-dlg-check cb-man-check' }, h('input', { type: 'checkbox', class: 'cb-check', checked: sust, onchange: (ev: Event) => ((this.e.sustentado = (ev.target as HTMLInputElement).checked), x.mudou()) }), h('span', null, 'Sustentado')),
     );
     const faltaCusto = (!!k.conc && this.e.conc === null) || (!!k.custo && !k.custo.medo && this.e.custo === null && !!x.ocultismo);
-    const pronto = !k.linhas.some((l) => l.pendente) && !(k.partes && this.e.soma === null) && !(k.partes2 && this.e.soma2 === null) && !faltaCusto && (this.e.ritual >= 0 || !!this.e.avulso.nome.trim()) && (this.e.modo === 'nenhum' || k.alvos.length > 0);
+    const pronto =
+      !k.linhas.some((l) => l.pendente) &&
+      !(k.partes && k.soma === null) &&
+      !(k.partes2 && k.soma2 === null) &&
+      !(k.precisaP && k.somaP === null) &&
+      !faltaCusto &&
+      (this.e.ritual >= 0 || !!this.e.avulso.nome.trim()) &&
+      (this.e.modo === 'nenhum' || k.alvos.length > 0);
     const desfazer = h(
       'button',
       {
@@ -486,8 +616,8 @@ export class ResolucaoRitual {
       {
         class: 'cb-bt forte',
         type: 'button',
-        disabled: !pronto || k.semAcao || barrado,
-        title: k.semAcao ? 'A ação deste ritual já foi usada no turno' : 'Gasta o PE, aplica o dano e escreve no registro',
+        disabled: !pronto || k.semAcao || barrado || !!r.bloqueio,
+        title: r.bloqueio ?? (k.semAcao ? 'A ação deste ritual já foi usada no turno' : 'Gasta o PE, aplica o dano e escreve no registro'),
         onclick: () => {
           sfx.click();
           const concentracao = k.conc && this.e.conc !== null && x.vontade ? { dt: k.conc.dt, d20: this.e.conc, total: this.e.conc + x.vontade.bonus, passou: !!k.concPassou } : undefined;
@@ -498,8 +628,8 @@ export class ResolucaoRitual {
             ...(l.dano
               ? {
                   dano: {
-                    formula: cb.textoFormula(k.partes!),
-                    soma: this.e.soma!,
+                    formula: cb.textoFormula(l.passou === true && k.livro?.passou ? k.partesP! : k.partes!),
+                    soma: (l.passou === true && k.livro?.passou ? k.somaP : k.soma)!,
                     total: l.dano.conta.total,
                     tipo: k.tipo,
                     conta: l.dano.conta.conta,
@@ -511,7 +641,7 @@ export class ResolucaoRitual {
               ? {
                   danoExtra: {
                     formula: cb.textoFormula(k.partes2!),
-                    soma: this.e.soma2!,
+                    soma: k.soma2!,
                     total: l.extra.conta.total,
                     tipo: k.tipo2,
                     conta: l.extra.conta.conta,
@@ -519,7 +649,14 @@ export class ResolucaoRitual {
                   },
                 }
               : {}),
-            ...(this.e.condicao && l.falhou ? { condicao: this.e.condicao } : {}),
+            // a condição de quem falha (a escolhida, ou a do livro) e a de quem passa (apavorado, debilitado)
+            ...(() => {
+              const cf = this.e.condicao || k.livro?.falhou?.condicao;
+              const cp = k.livro?.passou?.condicao;
+              return l.falhou && cf ? { condicao: cf } : l.passou === true && cp ? { condicao: cp } : {};
+            })(),
+            ...(l.zera ? { zera: l.zera } : {}),
+            ...(l.falhou && l.passou === false && k.livro?.falhou?.nota ? { nota: k.livro.falhou.nota } : {}),
           }));
           const custo = k.custoRes && x.ocultismo && this.e.custo !== null ? { dt: 15 + r.pe, d20: this.e.custo, total: this.e.custo + x.ocultismo.bonus, passou: k.custoRes.passou } : undefined;
           const ritual: cb.RitualConfirmado = {
@@ -536,10 +673,13 @@ export class ResolucaoRitual {
             ...(custo ? { custo } : {}),
             ...(k.custo?.medo ? { medo: true, mental: k.custo.mental, sanPermanente: k.custo.sanPermanente } : {}),
             ...(k.custoRes && !k.custoRes.passou ? { mental: k.custoRes.mental, sanPermanente: k.custoRes.sanPermanente } : {}),
+            ...(this.catalisador(x) ? { gastar: [this.catalisador(x)!.uid] } : {}),
+            // a Convocação Instantânea verdadeira: 1 PE para sempre (LR p. 128)
+            ...(x.agente && r.id === 'convocacao-instantanea' && r.forma === 'verdadeira' ? { pePermanente: 1 } : {}),
           };
           x.enviar({ tipo: 'ritual', ritual });
           this.e.d20 = {};
-          this.e.soma = this.e.soma2 = this.e.custo = this.e.conc = null;
+          this.e.soma = this.e.soma2 = this.e.somaP = this.e.custo = this.e.conc = this.e.danoExec = this.e.catal = null;
           this.e.metade = {};
           x.mudou();
         },

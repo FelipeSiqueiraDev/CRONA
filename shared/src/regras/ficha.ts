@@ -158,6 +158,8 @@ export interface Ficha {
   nexVisto?: number;
   /** perdas permanentes (rituais de Medo, Custo do Paranormal) */
   perdas?: { san?: number; pe?: number };
+  /** o elemento escolhido ao aprender o ritual de vários elementos (o Amaldiçoar Arma, LR p. 124), pelo id */
+  elementoRitual?: Record<string, Elemento>;
   regras: RegrasFicha;
 }
 

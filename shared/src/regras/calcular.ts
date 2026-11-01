@@ -780,16 +780,18 @@ export function calcular(f: Ficha): Calculado {
     const rit = cat.ritual(r.id);
     if (!rit) continue;
     const base = CUSTO_CIRCULO[rit.circulo];
+    // o elemento escolhido ao aprender (o Amaldiçoar Arma é de quatro elementos; LR p. 124)
+    const elRit = elementoDoRitual(f, rit.id);
     let ajuste = 0;
     let dt = dtRituais;
     for (const x of doTipo('custoRitual')) {
       const el = x.efeito.elemento === 'escolhido' ? x.origem.escolha?.elemento : x.efeito.elemento;
-      if (!x.efeito.elemento || el === rit.elemento) ajuste += x.efeito.valor;
+      if (!x.efeito.elemento || el === elRit) ajuste += x.efeito.valor;
     }
     for (const x of doTipo('dtRituais')) {
       if (!x.efeito.elemento) continue;
       const el = x.efeito.elemento === 'escolhido' ? x.origem.escolha?.elemento : x.efeito.elemento;
-      if (el === rit.elemento) dt += x.efeito.valor;
+      if (el === elRit) dt += x.efeito.valor;
     }
     // o mínimo de 1 PE vale para o custo final, já com a forma avançada (LR p. 78, 121)
     custoRituais[r.id] = { pe: Math.max(1, base + ajuste), dt, base, ajuste };
@@ -907,4 +909,11 @@ export function textoEfeito(e: Efeito): string {
     default:
       return e.alvo;
   }
+}
+
+/** O elemento do ritual na ficha: o escolhido ao aprender (rituais de vários elementos, LR p. 124) ou o do catálogo. */
+export function elementoDoRitual(f: Pick<Ficha, 'elementoRitual'>, id: string): Elemento {
+  const r = cat.ritual(id);
+  const esc = f.elementoRitual?.[id];
+  return esc && r?.elementos?.includes(esc) ? esc : (r?.elemento ?? 'sangue');
 }

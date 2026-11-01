@@ -365,7 +365,7 @@ export class Hotel implements HotelApi {
   /** estados anteriores do combate de cada campanha, para o "Desfazer" (só na memória), com os PV/PE/SAN que cada passo mudou */
   /** as mesas do bar (o fliperama, o alvo, a sinuca), pelo id do móvel: quem joga em cada lugar e as jogadas guardadas */
   private mesas = new Map<number, MesaBar>();
-  private desfazeres = new Map<number, { combate: string; vitais: { id: number; antes: Vitals; depois?: Vitals }[]; mochilas?: { fichaId: number; inventario: regras.ItemFicha[] }[]; largados?: number[]; perdaSan?: { fichaId: number; antes: number } }[]>();
+  private desfazeres = new Map<number, { combate: string; vitais: { id: number; antes: Vitals; depois?: Vitals }[]; mochilas?: { fichaId: number; inventario: regras.ItemFicha[] }[]; largados?: number[]; perdaSan?: { fichaId: number; antes: number; pe?: boolean } }[]>();
 
   /** Peças da campanha e os PV/SAN delas, para as regras do combate. */
   private contextoCombate(group: number[], cena: number): cmb.Contexto {
@@ -823,8 +823,8 @@ export class Hotel implements HotelApi {
   }
 
   /** A SAN perdida para sempre da ficha (`perdas.san`): o máximo das peças acompanha. */
-  private perdaDeSan(f: FichaSalva, total: number) {
-    f.ficha = { ...f.ficha, perdas: { ...f.ficha.perdas, san: Math.max(0, total) } };
+  private perdaDeSan(f: FichaSalva, total: number, pe = false) {
+    f.ficha = { ...f.ficha, perdas: { ...f.ficha.perdas, [pe ? 'pe' : 'san']: Math.max(0, total) } };
     this.fichaParaPecas(f);
     this.fichaMudou(f);
   }
@@ -867,7 +867,7 @@ export class Hotel implements HotelApi {
       }
       if (passo.perdaSan) {
         const f = (this.db.fichas ?? []).find((y) => y.id === passo.perdaSan!.fichaId);
-        if (f) this.perdaDeSan(f, passo.perdaSan.antes);
+        if (f) this.perdaDeSan(f, passo.perdaSan.antes, passo.perdaSan.pe);
       }
       this.save();
       this.touch();
@@ -902,6 +902,18 @@ export class Hotel implements HotelApi {
       this.trocarMochila(sacar.f, sacar.inventario);
       this.fichaMudou(sacar.f);
     }
+    // o ritual gasta o catalisador da mochila de quem conjura (SaH p. 44): um da pilha
+    if (a.tipo === 'ritual' && a.ritual.gastar?.length) {
+      const f = this.fichaDaPeca(group, a.ritual.quem);
+      if (f) {
+        mochilas.push({ fichaId: f.id, inventario: f.ficha.inventario });
+        const inv = f.ficha.inventario
+          .map((it) => (it.uid !== undefined && a.ritual.gastar!.includes(it.uid) ? ((it.qtd ?? 1) > 1 ? { ...it, qtd: (it.qtd ?? 1) - 1 } : null) : it))
+          .filter((it): it is regras.ItemFicha => !!it);
+        this.trocarMochila(f, inv);
+        this.fichaMudou(f);
+      }
+    }
     // desarmar: o item da mão do alvo cai no chão, na casa dele (LR p. 85)
     if (a.tipo === 'manobra' && a.manobra.manobra === 'desarmar' && a.manobra.venceu) {
       const caiu = this.desarmar(group, a.manobra.alvo, a.manobra.item);
@@ -925,12 +937,14 @@ export class Hotel implements HotelApi {
       if (velho) mudou.push({ id: m.id, antes: velho, ...(depois ? { depois: { ...depois } } : {}) });
     }
     // a SAN perdida para sempre que o mestre aceitou: o máximo baixa na ficha (perdas.san) e nas peças
-    let perdaSan: { fichaId: number; antes: number } | undefined;
+    let perdaSan: { fichaId: number; antes: number; pe?: boolean } | undefined;
     if (r.perdaSan) {
       const f = this.fichaDaPeca(group, r.perdaSan.id);
       if (f) {
-        perdaSan = { fichaId: f.id, antes: f.ficha.perdas?.san ?? 0 };
-        this.perdaDeSan(f, perdaSan.antes + r.perdaSan.quanto);
+        // a SAN ou (a Convocação Instantânea verdadeira) os PE máximos que se perdem para sempre
+        const pe = !!r.perdaSan.pe;
+        perdaSan = { fichaId: f.id, antes: (pe ? f.ficha.perdas?.pe : f.ficha.perdas?.san) ?? 0, ...(pe ? { pe } : {}) };
+        this.perdaDeSan(f, perdaSan.antes + r.perdaSan.quanto, pe);
       }
     }
     pilha.push({ combate: JSON.stringify(antes), vitais: mudou, ...(mochilas.length ? { mochilas } : {}), ...(largados.length ? { largados } : {}), ...(perdaSan ? { perdaSan } : {}) });
