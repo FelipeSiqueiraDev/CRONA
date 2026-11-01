@@ -702,7 +702,10 @@ export class CombateScreen {
       h(
         'div',
         { class: 'vez-acoes' },
-        botaoMenu('atacar', 'Atacar', 'combate-atacar', 'espadas', 'arma, investida, manobra ou ritual', padraoLivre && !bl.padrao, () => this.irPara('atacar'), bl.padrao ?? 'a ação padrão já foi usada'),
+        // sobra golpe da mesma ação (o ×2 da ameaça, a Dança das Lâminas): o próximo ataque ainda dá
+        (ac.golpes ?? 0) > 0
+          ? botaoMenu('atacar', 'Atacar', 'combate-atacar', 'espadas', `mais ${ac.golpes} ${ac.golpes === 1 ? 'golpe' : 'golpes'} da mesma ação`, !bl.padrao, () => this.irPara('atacar'), bl.padrao)
+          : botaoMenu('atacar', 'Atacar', 'combate-atacar', 'espadas', 'arma, investida, manobra ou ritual', padraoLivre && !bl.padrao, () => this.irPara('atacar'), bl.padrao ?? 'a ação padrão já foi usada'),
         botaoMenu('movimento', 'Movimento', 'combate-movimento', 'bota', bl.movimento ? `andar até ${cb.textoMetros(metros)}` : `andar até ${cb.textoMetros(metros)}`, this.modoCards ? movOk : movLivre || padraoLivre, () => this.irPara('acao', 'movimento'), motivoMov),
         botaoMenu('item', 'Pegar ou guardar', 'combate-item', 'mochila', 'a mão, a mochila e o chão', this.modoCards ? movOk : movLivre || padraoLivre, () => this.irPara('acao', 'item'), motivoMov),
         botaoMenu('habilidade', 'Habilidade', 'combate-habilidade', 'estrela', temHab ? 'gastar PE' : 'nada de gastar PE', this.modoCards ? !bl.padrao && !sp && temHab : true, () => this.irPara('acao', 'habilidade'), bl.padrao ?? sp ?? 'sem habilidades que gastam PE'),
@@ -738,7 +741,7 @@ export class CombateScreen {
         cartao(
           'arma',
           a.jogada ? arteOu(['/arte/icones/combate-habilidade.png'], ic('estrela')) : a.item && a.item !== 'ataque-desarmado' ? arteDoItem({ id: a.item, tipo: 'arma', nome: a.nome }, a.pericia === 'pontaria' ? 'pistola' : 'faca', 'arte-ic') : arteOu([a.item ? '/arte/icones/for.png' : '/arte/icones/combate-atacar.png'], ic('punho')),
-          a.jogada ? a.jogada.nome : a.vezes ? `${a.nome} ×${a.vezes}` : a.nome,
+          a.jogada ? a.jogada.nome : a.vezes && !a.sequencia ? `${a.nome} ×${a.vezes}` : a.nome,
           `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} · dano ${a.dano} · ${a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo'}`,
           naMao && !travada ? () => (this.ataque.escolher(i), this.seguirParaAlvo('atacar')) : null,
           !naMao ? 'na mochila: saque em Pegar ou guardar' : travada ? a.jogada!.erros.join(' · ') : undefined,
@@ -3364,7 +3367,7 @@ export class CombateScreen {
   private ataquesDoCard(p: Participante, comInfo = false): LinhaAtaque[] {
     return this.armasDe(p).map((a) => ({
       ...(comInfo ? { info: () => this.abrirInfo(this.infoArma(a)) } : {}),
-      nome: a.jogada ? a.jogada.nome : a.vezes ? `${a.nome} ×${a.vezes}` : a.nome,
+      nome: a.jogada ? a.jogada.nome : a.vezes && !a.sequencia ? `${a.nome} ×${a.vezes}` : a.nome,
       teste: `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${textoTeste(a.dados, a.bonus, a.penalidade)}`,
       dano: `${a.dano}${a.extra ? ` e ${a.extra.dano} ${cb.NOME_TIPO_DANO[a.extra.tipo]}` : ''}`,
       resto: [`crítico ${a.margem}/×${a.multiplicador}`, a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo', a.naMao === false ? 'na mochila' : '', ...a.notas].filter(Boolean).join(' · '),

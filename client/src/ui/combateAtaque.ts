@@ -502,14 +502,14 @@ export class ResolucaoAtaque {
           ? h(
               'span',
               { class: 'cb-arma-txt' },
-              h('b', null, a.vezes ? `${a.nome} ×${a.vezes}` : a.nome),
+              h('b', null, a.vezes && !a.sequencia ? `${a.nome} ×${a.vezes}` : a.nome),
               h('small', null, `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${textoTeste(a.dados, a.bonus, a.penalidade)} · dano ${a.dano}${a.extra ? ` e ${a.extra.dano} ${cb.NOME_TIPO_DANO[a.extra.tipo]}` : ''}`),
               h('small', null, [`${a.margem}/${JUNTA}×${a.multiplicador}`, a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo', ...a.notas].join(' · ')),
             )
           : h(
               'span',
               { class: 'cb-arma-txt' },
-              h('b', null, a.vezes ? `${a.nome} ×${a.vezes}` : a.nome),
+              h('b', null, a.vezes && !a.sequencia ? `${a.nome} ×${a.vezes}` : a.nome),
               h('small', null, [`${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${textoTeste(a.dados, a.bonus, a.penalidade)}`, a.dano, a.margem < 20 ? String(a.margem) : '', a.faixa ? cb.NOME_FAIXA[a.faixa] : ''].filter(Boolean).join(' · ')),
             ),
       ),
