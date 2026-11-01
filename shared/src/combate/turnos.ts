@@ -25,7 +25,12 @@ import {
   type TipoRegistro,
 } from './tipos';
 
-const MAX_REGISTRO = 400;
+/**
+ * O registro do combate guarda só as últimas linhas (01/11, o Felipe: "5/6 linhas do combate é o suficiente. Depois
+ * disso vamos excluindo"): antes eram 400, e o combate inteiro ia para todas as telas a cada mudança. Fica o que veio
+ * desde o começo do turno de agora (os lembretes dele), e no mínimo as 6 últimas.
+ */
+const MAX_REGISTRO = 6;
 const MAX_TEXTO = 200;
 
 /** Id do lugar do mestre na ordem de iniciativa. */
@@ -149,7 +154,11 @@ export function acoesDe(c: Combate, id: number): AcoesTurno {
 
 function registrar(c: Combate, agora: number, tipo: TipoRegistro, t: string, destaque?: string[]) {
   c.registro.push({ em: agora, rodada: c.rodada, tipo, texto: t, ...(destaque?.length ? { destaque } : {}) });
-  if (c.registro.length > MAX_REGISTRO) c.registro.splice(0, c.registro.length - MAX_REGISTRO);
+  if (c.registro.length <= MAX_REGISTRO) return;
+  let turno = c.registro.length - 1;
+  while (turno > 0 && c.registro[turno].tipo !== 'turno') turno--;
+  const corte = Math.min(turno, c.registro.length - MAX_REGISTRO);
+  if (corte > 0) c.registro.splice(0, corte);
 }
 
 /** A criatura (ameaça com elemento) não tem SAN e é imune a dano mental, a condições mentais e de medo e a rituais de Medo (LR p. 180). */
