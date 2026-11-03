@@ -63,8 +63,8 @@ import { MarcasMesa } from '../render/marcasMesa';
 import { NevoaMesa } from '../render/nevoaMesa';
 import { imagemDoMapa } from '../render/mapaImagem';
 import { desenharItemNoChao } from '../render/itemNoChao';
-import { cenaStardew, desenharStardew, type AcertoStardew } from '../render/camStardew';
 import { desenharLargadoPixel } from '../render/chaoPixel';
+import { cenaStardew, desenharStardew, type AcertoStardew } from '../render/camStardew';
 import { cameraVoo, casaNoPonto, desenharMesa, enquadrar, marcasNoChao, marcasPorCima, matrizNaAltura, passo, projetar, type CameraVoo, type Enquadre, type FundoIso, type PecaTatica } from '../render/mapaTatico';
 import { folegoDaPeca } from '../render/folego';
 import { portraitCanvas, type BreathMode } from '../render/portrait';
@@ -3353,6 +3353,15 @@ export class RoomView {
           });
           continue;
         }
+        // sem a arte do Códex no tabuleiro: cada item do que é, em pixel por código, deitado no piso (render/chaoPixel.ts)
+        {
+          const z = real.z;
+          const box: WBox = { x0: real.x, x1: real.x + 1, y0: real.y, y1: real.y + 1, z0: z, z1: z + 0.2 };
+          const [cx, cy] = iso(real.x + 0.5, real.y + 0.5, z);
+          const loot = real.loot;
+          drawables.push({ box, sx0: cx - 30, sx1: cx + 30, sy0: cy - 22, sy1: cy + 22, draw: () => desenharLargadoPixel(ctx, loot, cx, cy, hash(real.id, 0)) });
+          continue;
+        }
       }
       const it = this.slides.size ? this.slidPos(real, now) : real;
       const moving = place?.kind === 'floor' && place.moveId === it.id;
@@ -3411,15 +3420,6 @@ export class RoomView {
       const pulsa = 0.5 + 0.5 * Math.sin(now / 300);
       const hov = this.hoverTile && this.mouse.inside ? chaveCasa(this.hoverTile.x, this.hoverTile.y) : '';
       sombrasAcesas = () => {
-        // sem a arte do Códex no tabuleiro: cada item do que é, em pixel por código, deitado no piso (render/chaoPixel.ts)
-        {
-          const z = real.z;
-          const box: WBox = { x0: real.x, x1: real.x + 1, y0: real.y, y1: real.y + 1, z0: z, z1: z + 0.2 };
-          const [cx, cy] = iso(real.x + 0.5, real.y + 0.5, z);
-          const loot = real.loot;
-          drawables.push({ box, sx0: cx - 30, sx1: cx + 30, sy0: cy - 22, sy1: cy + 22, draw: () => desenharLargadoPixel(ctx, loot, cx, cy, hash(real.id, 0)) });
-          continue;
-        }
         const quad = (x: number, y: number): [number, number][] => {
           const h = map.floorHeight(x, y) ?? 0;
           return [iso(x, y, h), iso(x + 1, y, h), iso(x + 1, y + 1, h), iso(x, y + 1, h)];
