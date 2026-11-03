@@ -2,6 +2,12 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Fichas dos Marcados no NEX 25%, repassadas pelo livro (03/11; só o motor mudou, nada no 8080 ainda)
+
+- **Resultado:** os quatro batem com o livro (PV, PE, SAN, limite de PE, Defesa, escolhas e itens). Pelo livro, **só o Tepes tem escolha pendente** (a perícia do −5 do Monstruoso no 25% e o poder de combatente do 30%); Catarina, Cora e Alosi não têm nada a escolher no 25% (a Alosi já fez as duas). O detalhe, o fluxo testado na tela e o que fica com o Felipe estão no fim de [`AUDITORIA-REGRAS.md`](AUDITORIA-REGRAS.md) ("Repassada dos quatro Marcados no NEX 25%").
+- **Corrigido:** o aviso da Vontade repetida (LR p. 22) só aparece enquanto a perícia a mais falta; a Alosi tinha o aviso de graça. Entra no jogo no próximo `npm run crona`.
+- **Decisões do Felipe:** Tepes em 30% mesmo? (decisão de 21/10); a Alosi sem a marca de refazer equipamento (mochila vazia); o atual de PV/PE/SAN do Tepes ainda é o do NEX 20%.
+
 ## O site fora do tabuleiro (01/11; branch `claude/campanhas`, nada no 8080)
 
 - **O pedido:** "tudo que for necessário pra conta e também as pendências da campanha"; carregar por tela e o manifesto de tela cheia; "é imprescindível que tudo sobre as regras de combate estejam perfeitamente alinhados e funcionando, isso inclui o teste da ovelha"; o pedir itens sem nem a opção fora da base; as pendências do celular; o acabamento; "eliminar essas informações invisíveis e silenciosas"; "5/6 linhas do combate é o suficiente. Depois disso vamos excluindo o log".

@@ -449,13 +449,16 @@ export function montarEstado(f: Ficha, ate: Nex = f.nex, excluir?: Exclusao): Es
     if (!classeAgente) return;
     // perícia fixa da classe que a origem já deu: escolhe outra no lugar (LR p. 22)
     let repetidas = 0;
+    const repetidasNomes: string[] = [];
     for (const p of classeAgente.pericias.fixas) {
       if (st.graus[p] !== 'destreinado') {
         repetidas++;
-        aviso(nex, 'Perícias', `${cat.pericia(p).nome} vem da classe e da origem: escolha outra perícia no lugar (LR p. 22).`);
+        repetidasNomes.push(cat.pericia(p).nome);
       } else st.graus[p] = 'treinado';
     }
     livresEsperadas += repetidas;
+    // o aviso some quando a perícia no lugar já foi escolhida (03/11: a Alosi já tinha as 7 e o aviso seguia lá, como se faltasse)
+    if (f.pericias.livres.length < livresEsperadas) for (const nome of repetidasNomes) aviso(nex, 'Perícias', `${nome} vem da classe e da origem: escolha outra perícia no lugar (LR p. 22).`);
     const grupos = classeAgente.pericias.grupos;
     const escolhidas = f.pericias.grupos;
     grupos.forEach((g, i) => {

@@ -159,3 +159,29 @@ O catálogo de itens inteiro (armas, munições, proteções, acessórios, explo
 - **Pequenas diferenças do livro (deixadas como estão):** a Tab. 3.10 imprime "Câmara de aura paranormal" e o texto, "Câmera"; o catálogo usa "Câmera". Os catalisadores aparecem como "Ampliado" na Tab. 1.5 e "Ampliador" no texto (p. 44); o catálogo usa o do texto, "Catalisador ampliador". O "Medidor de estabilidade da membrana" está descrito (LR p. 67) mas fora da Tab. 3.10: a categoria I é palpite, o mestre confirma.
 - **Mochilas (`scripts/dev/auditar-mochilas.mts`):** todos os itens e modificações das fichas existem no catálogo. A conta de categoria por patente (LR p. 52) bate em Catarina, Cora (com A Favorita a −I), Miguel, Nico, Rosa, Pedro, Ivete e Marcela. **Acima do limite:** Ômega-99 (cat. I 5/3, II 6/3) e ??? (cat. I 4/3), os dois que ficaram com o Felipe. Itens que não são do livro: "Grimório Pessoal" e "Kit de Perícia (Ocultismo)" do Ômega (o livro só tem kit para as perícias que o exigem, e Ocultismo não está entre elas).
 - **Tepes, Catarina, Alosi e Cora:** Tepes e Alosi com a mochila vazia; Catarina (katana cruel, kit de ladrão, proteção leve) e Cora (fuzil de caça com mira laser e calibre grosso, balas longas, celular, isqueiro, faca, algemas e granada de fumaça) sem erro.
+
+### Repassada dos quatro Marcados no NEX 25% (03/11/2026)
+
+Pedido do Felipe: "uma repassada detalhadíssima na parte das fichas dos jogadores: eles evoluíram de 20% para 25% e ainda precisam fazer algumas escolhas do 25%". Refeito com o livro na mão (LR p. 22–35 e as tabelas 1.3 a 1.5 pelas imagens; SaH p. 14, 17, 33 e 99) e com o banco de verdade lido (`scripts/dev/auditar-fichas.mts`); o fluxo da tela do jogador rodado na cópia `crona_visual`, nunca no 8080 (prints em `prints-evolucao/2026-11-03/`).
+
+**O que o livro dá no NEX 25%, por classe** (Tab. 1.3, 1.4 e 1.5): combatente, só o Ataque Especial de 3 PE e +10; especialista, só o Perito com 3 PE e +1d8; ocultista, o 2º círculo (Escolhido pelo Outro Lado) e um ritual novo de qualquer círculo que já conjura. **Não há escolha no NEX 25% de combatente nem de especialista.** O Monstruoso (SaH p. 99) acrescenta a alteração de 25%, e o Tepes, que está no 30%, ainda leva o poder de combatente do 30%.
+
+| | NEX | Escolhas já feitas (todas válidas pelo livro) | Falta escolher |
+|---|---|---|---|
+| **Tepes** | 30 (nexVisto 20) | Ser Amaldiçoado: Sangue, Combate Defensivo, +1 Vigor | **25%:** a perícia do −5 (Diplomacia, Enganação ou Intimidação). **30%:** um poder de combatente |
+| **Catarina** | 25 | Perito em Atletismo e Acrobacia (5%), Ninja Urbano, +1 Agilidade | nada (o Perito de 25% cresce sozinho) |
+| **Alosi** | 25 | os 3 rituais do 5%, Cicatrização e Cinerária (10%), Ritual Potente e Embaralhar (15%), Espirais da Perdição e +1 Presença (20%), **Chamas do Caos (2º círculo) e Tela de Ruído (2º círculo, Saber Ampliado) no 25%** | nada: as duas escolhas do 25% já estão feitas e válidas, e as 7 perícias livres (6 + a Vontade repetida) estão completas |
+| **Cora** | 25 | A Favorita: fuzil de caça, Tiro Certeiro, +1 Vigor | nada |
+
+Refeitos à parte pelas tabelas, **batem número por número:** PV, PE, SAN, limite de PE por turno (5 no 25%, 6 no 30%), Defesa (a do Tepes tem +2 do Patrulha, da origem Policial), carga e limite de itens da patente. Os nomes dos itens das quatro mochilas existem no livro e no catálogo (a conferência geral do catálogo está na seção anterior).
+
+**Corrigido:** o aviso "Vontade vem da classe e da origem: escolha outra perícia no lugar" (LR p. 22) ficava na ficha da Alosi mesmo com a perícia a mais já escolhida, como se faltasse algo. Agora o aviso só aparece enquanto a escolha falta (`shared/src/regras/estado.ts`, teste em `server/test/evolucao.test.ts`). Nenhum dado do banco foi mexido.
+
+**Tela do jogador (cópia de teste, Tepes de ponta a ponta):** no login abre "VOCÊ EVOLUIU" com os dois passos (25% e 30%: PV 53 e 61, PE 15 e 18, SAN 24 e 27, o Ataque Especial que cresce), cada escolha abre a janela do livro com as opções liberadas e as travadas com o motivo ("Não é uma das opções", "Precisa de Agilidade 3 (tem 1)"), gravar tira a pendência ("Já escolhido"), com tudo escolhido aparece o "Entendi", e depois o aviso de refazer o equipamento. Catarina, Alosi e Cora já viram o aviso (nexVisto 25) e entram direto na ficha, sem pendência.
+
+**Fica para o Felipe:**
+- **Tepes está no NEX 30%** (decisão de 21/10: "25% para todos e 30% para o Tepes"); se a ideia agora é 25% para ele também, é só baixar o NEX na ficha.
+- **Alosi está com a mochila vazia e sem a marca "refazer equipamento"**: ela não verá o aviso para pedir itens à Ordem. O Tepes vê (marcado). Marcar a Alosi é uma linha, se quiser.
+- **Cora, munição de Calibre Grosso:** o livro (LR p. 60) manda usar munição específica de calibre grosso, de mesma categoria da normal. O catálogo não separa a munição; as 3 balas longas dela valem como as de calibre grosso, por convenção da mesa.
+- **Atual × máximo do Tepes:** PV 45/61, PE 12/18, SAN 21/27 (os de antes do NEX 30); o livro não diz se o atual sobe junto, então ficou com o mestre.
+

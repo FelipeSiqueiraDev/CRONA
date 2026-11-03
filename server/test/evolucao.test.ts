@@ -159,3 +159,30 @@ describe('a migração dos nomes de itens (03/11)', () => {
     assert.equal(nomesDeItens0311(db), false);
   });
 });
+
+describe('a perícia que repete entre classe e origem (LR p. 22)', () => {
+  // Alosi: ocultista (Ocultismo e Vontade) e origem Religioso (Religião e Vontade): a Vontade repete e dá uma livre a mais
+  const alosi = (livres: string[]): regras.Ficha => ({
+    ...regras.novaFicha('Alosi'),
+    classe: 'ocultista',
+    trilha: 'graduado',
+    origem: 'religioso',
+    nex: 5,
+    atributos: { agi: 1, for: 1, int: 3, pre: 3, vig: 1 },
+    pericias: { grupos: [], livres: livres as regras.PericiaId[] },
+    progressao: { 5: { parametros: { 'escolhido-pelo-outro-lado': { rituais: ['perturbacao', 'eletrocussao', 'decadencia'] } } } },
+  });
+  const avisos = (f: regras.Ficha) => regras.calcular(f).problemas.filter((p) => /vem da classe e da origem/.test(p.texto));
+
+  it('avisa e pede a perícia a mais enquanto ela não foi escolhida', () => {
+    const f = alosi(['diplomacia', 'intuicao', 'investigacao', 'medicina', 'percepcao', 'pilotagem']);
+    assert.equal(avisos(f).length, 1);
+    assert.ok(regras.calcular(f).pendencias.some((p) => /^Escolha mais 1 perícia/.test(p.texto)));
+  });
+
+  it('com a perícia a mais já escolhida, o aviso some e não sobra pendência', () => {
+    const f = alosi(['diplomacia', 'intuicao', 'investigacao', 'medicina', 'percepcao', 'pilotagem', 'profissao']);
+    assert.equal(avisos(f).length, 0);
+    assert.ok(!regras.calcular(f).pendencias.some((p) => p.tipo === 'pericias'));
+  });
+});
