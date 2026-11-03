@@ -8,6 +8,7 @@
 import { alvoModificacao, armaAutomatica, calcular, categoriaDoItem, modificacaoServe, proficiente, type Calculado } from './calcular';
 import * as cat from './dados';
 import { MALDICAO_PP_MINIMO } from './dados';
+import { MUNICAO_CALIBRE_GROSSO } from './dados/equipamentos';
 import type { Ficha, ItemFicha, TipoItemCatalogo } from './ficha';
 import type { Categoria, Elemento, GrupoItem, PericiaId, Proficiencia, Ref } from './tipos';
 
@@ -186,7 +187,7 @@ export interface OpcaoMelhoria {
 function confereRequisito(texto: string, it: ItemFicha): boolean | null {
   if (texto === 'só em proteção pesada') return it.tipo === 'protecao' && cat.protecao(it.id)?.tipo === 'pesada';
   if (texto === 'só em proteção leve') return it.tipo === 'protecao' && cat.protecao(it.id)?.tipo === 'leve';
-  if (texto === 'só em balas curtas ou balas longas') return it.tipo === 'equipamento' && (it.id === 'balas-curtas' || it.id === 'balas-longas');
+  if (texto === 'só em balas curtas ou balas longas') return it.tipo === 'equipamento' && /^balas-(curtas|longas)(-calibre-grosso)?$/.test(it.id);
   // o Ferrolho Automático torna a arma automática (LR p. 60)
   if (texto === 'só em arma automática') return armaAutomatica(it);
   return null;
@@ -243,6 +244,16 @@ export function opcoesDeMelhoria(f: Ficha, i: number): OpcaoMelhoria[] {
       else if (v === null) o.avisos.push(`O mestre confere: ${r.texto}.`);
     }
     simular(o, (x) => (tem ? (x.modificacoes = x.modificacoes!.filter((y) => y !== m.id)) : x.modificacoes!.push(m.id)));
+    // o Calibre Grosso troca a munição da arma: só a de calibre grosso serve nela, e esta não serve em arma comum (LR p. 60)
+    if (m.id === 'calibre-grosso' && it.tipo === 'arma') {
+      const base = cat.arma(it.id)?.municao;
+      const normal = base ? cat.equipamento(base) : undefined;
+      const grosso = base ? cat.equipamento(base + MUNICAO_CALIBRE_GROSSO) : undefined;
+      if (normal && grosso) {
+        const temG = f.inventario.some((x) => x.tipo === 'equipamento' && x.id === grosso.id);
+        o.avisos.push(tem ? `Sem a modificação, a arma volta a usar ${normal.nome.toLowerCase()} (LR p. 59).` : temG ? `Passa a usar ${grosso.nome.toLowerCase()} (a mochila tem; LR p. 60).` : `Passa a usar ${grosso.nome.toLowerCase()}, e a mochila não tem: peça na requisição, com a mesma categoria da normal (LR p. 60).`);
+      }
+    }
     o.ok = o.motivos.length === 0;
     out.push(o);
   }

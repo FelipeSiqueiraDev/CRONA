@@ -138,6 +138,7 @@ describe('modificações de uma vez, pela jogadora (limite da patente)', () => {
     const agora = new Date().toISOString();
     const f = ficha();
     f.pp = 20; // Operador: 3 de categoria I, 1 de categoria II
+    f.equipamentoLivre = 'aberto'; // fora da base, só com a janela única de refazer o equipamento (03/11)
     gm.send({ t: 'fichaSalvar', ficha: { id: 0, nome: 'Teste', ficha: f, criadaEm: agora, atualizadaEm: agora } as FichaSalva });
     const id = gm.last('fichas')!.nova!;
     const salva = () => hotel.db.fichas!.find((x) => x.id === id)!;

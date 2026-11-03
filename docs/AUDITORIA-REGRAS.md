@@ -185,3 +185,11 @@ Refeitos à parte pelas tabelas, **batem número por número:** PV, PE, SAN, lim
 - **Cora, munição de Calibre Grosso:** o livro (LR p. 60) manda usar munição específica de calibre grosso, de mesma categoria da normal. O catálogo não separa a munição; as 3 balas longas dela valem como as de calibre grosso, por convenção da mesa.
 - **Atual × máximo do Tepes:** PV 45/61, PE 12/18, SAN 21/27 (os de antes do NEX 30); o livro não diz se o atual sobe junto, então ficou com o mestre.
 
+### Decisões do Felipe (03/11/2026): equipamento, munição e pendências explicadas
+
+- **Ômega-99 e ???:** mochilas esvaziadas (estavam acima do limite do livro, LR p. 52). **Medidor de estabilidade da membrana:** categoria II.
+- **Janela única do equipamento** (`equipamentoLivre`, `aberto` → `confirmado`): os quatro jogadores refazem a mochila uma vez, fora da base, dentro do livro; depois de confirmar, só na base (a regra que o servidor já impunha para pedir itens, estendida às modificações).
+- **Munição de calibre grosso (LR p. 60):** a arma com Calibre Grosso usa munição específica da mesma categoria da normal, que não serve em arma comum. Cinco pacotes novos (um por munição de arma de fogo), com nome nosso, porque o livro não os nomeia. Dúvida registrada: combustível e foguete de calibre grosso seguem a letra do livro.
+- **Pendências:** cada escolha aberta mostra o porquê (regra e página) a partir do motor (`explicarPendencia`): poder de classe nos NEX 15, 30, 45, 60, 75 e 90 (LR p. 23), aumento de atributo nos 20, 50, 80 e 95, grau nos 35 e 70, trilha no 10, versatilidade e afinidade no 50, ritual do ocultista por NEX (LR p. 32), perícia do Intelecto, e a Alteração do Monstruoso nos 25 e 35 (SaH p. 99).
+- **Atual × máximo:** PV, PE e SAN atuais dos quatro subiram ao máximo (pedido do Felipe).
+

@@ -86,7 +86,7 @@ export const EQUIPAMENTOS: Equipamento[] = [
   { id: 'emissor-de-pulsos-paranormais', nome: 'Emissor de pulsos paranormais', ref: LR(67), categoria: 2, espacos: 1, grupo: 'paranormal', especial: ['ativar: ação completa e 1 PE', 'pulso de um elemento: atrai criaturas dele e afasta as do elemento oposto (Vontade DT Pre evita)'], resumo: 'Caixinha coberta de sigilos que serve de isca: atrai criaturas de um elemento e espanta as do elemento oposto.' },
   { id: 'escuta-de-ruidos-paranormais', nome: 'Escuta de ruídos paranormais', ref: LR(67), categoria: 2, espacos: 1, grupo: 'paranormal', efeitos: [{ alvo: 'pericia', pericia: 'ocultismo', valor: 5, condicional: 'ouvindo a gravação, para identificar criatura' }], especial: ['ativar: ação completa e 2 PE; grava por até 24 horas'], resumo: 'Microfone espião que grava ruídos do Outro Lado; ouvir a gravação ajuda a identificar a criatura.' },
   // Sem linha na Tab. 3.10: categoria I como decidiu o C.R.I.S; espaço pelo padrão (1).
-  { id: 'medidor-de-estabilidade-da-membrana', nome: 'Medidor de estabilidade da membrana', ref: LR(67), categoria: 1, espacos: 1, grupo: 'paranormal', especial: ['exige Ocultismo treinado', 'fora da Tab. 3.10: o mestre confirma a categoria'], resumo: 'Conjunto de medidores com que alguém treinado em Ocultismo avalia a Membrana de um lugar e a chance de algo se manifestar ali.' },
+  { id: 'medidor-de-estabilidade-da-membrana', nome: 'Medidor de estabilidade da membrana', ref: LR(67), categoria: 2, espacos: 1, grupo: 'paranormal', especial: ['exige Ocultismo treinado', 'fora da Tab. 3.10: categoria II, decisão do mestre (03/11)'], resumo: 'Conjunto de medidores com que alguém treinado em Ocultismo avalia a Membrana de um lugar e a chance de algo se manifestar ali.' },
   { id: 'scanner-de-manifestacao-paranormal-de-elemento', nome: 'Scanner de manifestação paranormal de (elemento)', ref: LR(67), categoria: 2, espacos: 1, grupo: 'paranormal', especial: ['elemento à escolha', 'ativar: ação padrão; gasta 1 PE por rodada ligado', 'dá a direção das manifestações do elemento em alcance longo (inclui criaturas que o têm como complemento)'], resumo: 'Aparelho ligado a pequenos objetos amaldiçoados que aponta a direção das manifestações de um elemento, gastando PE enquanto está ligado.' },
 
   // ══ Sobrevivendo ao Horror (sem resumo) ══
@@ -152,3 +152,23 @@ export const EQUIPAMENTOS: Equipamento[] = [
   // Kit exigido pela fabricação em campo (SaH p. 94); categoria e espaço do kit de perícia (LR p. 63).
   { id: 'kit-de-profissao', nome: 'Kit de profissão', ref: SAH(94), categoria: 0, espacos: 1, grupo: 'kit', kitDe: 'profissao', especial: ['exigido para fabricar itens em campo', 'sem o kit: −5 no teste', 'um por profissão'] },
 ];
+
+/**
+ * Munição de calibre grosso (LR p. 60, Calibre Grosso): a arma com a modificação "precisa usar munição específica de
+ * calibre grosso", que "possui o mesmo custo em categoria de munição normal, mas não pode ser usada em armas normais".
+ * O livro não dá nome nem linha de tabela a ela: é a mesma munição (mesma categoria, espaço e duração) numa versão
+ * própria, uma por munição das armas de fogo (a flecha é de arma de disparo, que não leva a modificação).
+ */
+export const MUNICAO_CALIBRE_GROSSO = '-calibre-grosso';
+const DE_FOGO = ['balas-curtas', 'balas-longas', 'cartuchos', 'combustivel', 'foguete'];
+for (const id of DE_FOGO) {
+  const base = EQUIPAMENTOS.find((e) => e.id === id)!;
+  EQUIPAMENTOS.push({
+    ...base,
+    id: id + MUNICAO_CALIBRE_GROSSO,
+    nome: `${base.nome} de calibre grosso`,
+    ref: LR(60),
+    especial: ['munição de calibre grosso', 'só em arma com a modificação Calibre Grosso (e ela só usa esta)', ...(base.especial ?? [])],
+    resumo: `${base.resumo ?? base.nome} Versão de calibre grosso (LR p. 60): mesma categoria e espaço da normal, mas só serve em arma com a modificação Calibre Grosso, que só aceita esta.`,
+  });
+}

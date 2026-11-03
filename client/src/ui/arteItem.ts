@@ -19,5 +19,7 @@ export function arteDoItem(it: Pick<regras.ItemFicha, 'id' | 'tipo' | 'nome' | '
     const tipo = `tipo-${TIPO_CENA[kind]}`;
     return arteOu([`/arte/itens/pintados/${nome}.png`, `/arte/itens/${nome}.png`, `/arte/itens/pintados/${tipo}.png`, `/arte/itens/${tipo}.png`], lootIcon(kind, 44), cls);
   }
-  return arteOu([`/arte/itens/pintados/${it.id}.png`, `/arte/itens/${it.id}.png`], ic(icone), cls);
+  // a munição de calibre grosso usa a arte da munição normal (LR p. 60)
+  const base = it.id.replace(/-calibre-grosso$/, '');
+  return arteOu([`/arte/itens/pintados/${it.id}.png`, `/arte/itens/${it.id}.png`, ...(base !== it.id ? [`/arte/itens/pintados/${base}.png`, `/arte/itens/${base}.png`] : [])], ic(icone), cls);
 }

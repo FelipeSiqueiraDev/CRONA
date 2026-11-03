@@ -15,3 +15,4 @@ export * from './interludio';
 export * from './jogadas';
 export * from './porDia';
 export * from './evolucao';
+export * from './explicacao';

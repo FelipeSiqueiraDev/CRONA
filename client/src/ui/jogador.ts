@@ -33,6 +33,7 @@ import { blocoDia, seloDia } from './porDia';
 import { iconePixel } from './iconesPixel';
 import { botao, confirmar, escolher, janela } from './fichaModal';
 import { opcoesMelhoria } from './melhorias';
+import { equipamentoAberto, podeMexerEquipamento } from './equipamentoLivre';
 import { abrirRequisicao } from './requisicao';
 import { GRAU_CURTO, infoItem, NOME_ATR, NOME_ELEMENTO, NOME_GRAU, textoRef, textoTeste } from './fichaRegras';
 import { arteOu, ic, type NomeIcone } from './icons';
@@ -539,7 +540,18 @@ export class TelaJogador {
       this.titulo('MOCHILA', 'mochila', h('span', { class: 'jg-tit-extra' }, pintado(IC.carga, 'mochila'), h('b', null, `${numero(c.carga.usados)}/${c.carga.espacos}`), ' espaços')),
       h('div', { class: 'jg-casas' }, ...casas),
       // na base da Ordem (a Sede), o agente pede itens: a patente limita; a carga a mais só avisa (19/10)
-      this.fs?.naBase
+      equipamentoAberto(this.fs)
+        ? h('p', { class: 'jg-nota-equip' }, 'Equipamento livre: esta é a sua chance de refazer a mochila. Depois de confirmar, só na base.')
+        : null,
+      equipamentoAberto(this.fs)
+        ? botao('Confirmar equipamento', 'ok', '', async () => {
+            if (!(await confirmar('CONFIRMAR?', 'Confirmar o equipamento? Depois de confirmar, a mochila só muda na base da Ordem (a Sede).', 'Confirmar'))) return;
+            this.mudar((fs) => {
+              fs.ficha.equipamentoLivre = 'confirmado';
+            });
+          })
+        : null,
+      podeMexerEquipamento(this.fs)
         ? botao('Pedir itens à Ordem', 'mais', 'forte', () => {
             const r: FichaSalva = JSON.parse(JSON.stringify(this.fs));
             const pedidos: regras.ItemFicha[] = [];
@@ -585,7 +597,8 @@ export class TelaJogador {
       );
     if (this.equipe.length) acoes.push(botao('Entregar', 'pessoa', '', () => (j.fechar(), this.entregar(it, inf.nome))));
     // modificações e maldições do livro: o motor diz o que cabe (a patente sobe a categoria); o mestre vê no registro
-    if (it.tipo === 'arma' || it.tipo === 'protecao' || it.tipo === 'equipamento') acoes.push(botao('Modificar', 'engrenagem', '', () => (j.fechar(), this.modificar(uid))));
+    // só na base da Ordem, ou na janela única de refazer o equipamento (03/11)
+    if ((it.tipo === 'arma' || it.tipo === 'protecao' || it.tipo === 'equipamento') && podeMexerEquipamento(this.fs)) acoes.push(botao('Modificar', 'engrenagem', '', () => (j.fechar(), this.modificar(uid))));
     acoes.push(
       botao('Largar', 'lixo', 'perigo', async () => {
         if (!(await confirmar(`LARGAR ${inf.nome.toUpperCase()}?`, 'O item sai da mochila e fica no chão, na casa onde você está. Qualquer um pode pegar.', 'Largar', true))) return;

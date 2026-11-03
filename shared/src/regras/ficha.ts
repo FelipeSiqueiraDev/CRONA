@@ -152,6 +152,12 @@ export interface Ficha {
   /** 19/10, uma vez: depois das escolhas do NEX, o jogador refaz o equipamento (a mochila foi zerada); some ao fazer */
   refazerEquipamento?: boolean;
   /**
+   * 03/11, o Felipe: uma janela única para refazer a mochila (pedir itens fora da base, mexer nas modificações) dentro das
+   * regras do livro. `aberto` até o jogador confirmar o equipamento; `confirmado` fecha para sempre: daí em diante,
+   * equipamento só na base. O jogador só passa de aberto a confirmado (o servidor não deixa reabrir).
+   */
+  equipamentoLivre?: 'aberto' | 'confirmado';
+  /**
    * caso à parte (22/10, o Felipe sobre o Veríssimo): não foi marcado pelo paranormal e não tem afinidade. O NEX 50% não
    * pede o elemento de afinidade e nenhuma conta usa afinidade; o resto da ficha segue o livro.
    */

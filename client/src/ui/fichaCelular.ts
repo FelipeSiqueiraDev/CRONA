@@ -19,6 +19,7 @@ import { h, toast } from './dom';
 import { botao, escolher, janela } from './fichaModal';
 import { escolherCampo, escolherPendencia, GRAU_CURTO, infoItem, NOME_ATR, NOME_GRAU, periciasCriacao, podeMudarAtributo, pontosAtributo, textoTeste, type Campo } from './fichaRegras';
 import { abrirRequisicao } from './requisicao';
+import { equipamentoAberto, janelaEquipamentoLivre, podeMexerEquipamento } from './equipamentoLivre';
 import { arteDoItem } from './arteItem';
 import { arte, arteOu, ic, type NomeIcone } from './icons';
 import { sfx } from './sfx';
@@ -121,7 +122,11 @@ export class FichaCelular {
       const r = clonarFicha(fs);
       const botaoPend = (p: regras.Pendencia) => {
         const e = escolherPendencia(r.ficha, p);
-        return h(
+        // o porquê da escolha: a regra do livro, a página, e quantas opções estão liberadas (03/11, pedido do Felipe)
+        const ex = regras.explicarPendencia(r.ficha, p);
+        const ops = e && !e.texto ? e.opcoes() : [];
+        const livres = ops.filter((o) => o.ok).length;
+        const bt = h(
           'button',
           {
             class: 'fc-pend',
@@ -141,6 +146,13 @@ export class FichaCelular {
           },
           h('span', { class: 'fc-pend-txt' }, p.texto),
           e ? ic('direita') : h('small', null, 'com o mestre'),
+        );
+        return h(
+          'div',
+          { class: 'fc-pend-card' },
+          bt,
+          h('p', { class: 'fc-pend-porque' }, h('b', null, 'Por que você escolhe: '), ex.porque, ex.ref ? h('small', null, ` ${regras.textoRef(ex.ref)}`) : null),
+          ops.length ? h('p', { class: 'fc-pend-ops' }, `${livres} opç${livres === 1 ? 'ão liberada' : 'ões liberadas'}${ops.length > livres ? ` e ${ops.length - livres} travada${ops.length - livres === 1 ? '' : 's'} pelo livro (o motivo aparece ao escolher)` : ''}.`) : null,
         );
       };
       const soma = (n: number) => (n > 0 ? ` (+${n})` : '');
@@ -206,7 +218,13 @@ export class FichaCelular {
   /** O aviso único de refazer o equipamento (19/10): abre a requisição da Ordem, pelas regras. */
   private verificarEquipamento() {
     // abre uma vez: a cada `fichas` que chegava (no combate, a cada 300 ms) abria outra por cima (28/10, auditoria)
-    if (!this.fs?.ficha.refazerEquipamento || !this.fs.naBase || this.subida || this.avisouEquipamento) return;
+    if (!this.fs || this.subida || this.avisouEquipamento) return;
+    // a janela única de refazer a mochila (03/11): vale em qualquer lugar, até confirmar
+    if (equipamentoAberto(this.fs)) {
+      this.avisouEquipamento = true;
+      return void this.abrirEquipamentoLivre();
+    }
+    if (!this.fs.ficha.refazerEquipamento || !this.fs.naBase) return;
     this.avisouEquipamento = true;
     const j = janela('EQUIPAMENTO', 'mochila', () => {}, 42);
     j.corpo.append(h('p', { class: 'fc-subida-intro' }, 'Ops, parece que não sobrou quase nada por aí, né?! Vamos refazer nossos equipamentos.'), h('p', { class: 'fj-dica' }, 'Peça à Ordem o que vai levar: a patente limita as categorias, e a carga a mais só avisa. As modificações ficam em cada item da mochila.'));
@@ -228,6 +246,32 @@ export class FichaCelular {
         });
       }),
     );
+  }
+
+  /** O aviso e a requisição da janela única de refazer a mochila (03/11); depois de confirmar, nunca mais abre. */
+  private abrirEquipamentoLivre() {
+    if (!this.fs || !equipamentoAberto(this.fs)) return;
+    janelaEquipamentoLivre(this.fs, {
+      pedir: () => {
+        const r = clonarFicha(this.fs!);
+        const antes = JSON.stringify(r.ficha.inventario);
+        abrirRequisicao({
+          ficha: r.ficha,
+          nome: r.nome,
+          tema: r.tema,
+          mestre: false,
+          aoAdicionar: () => {},
+          aoFechar: () => {
+            if (JSON.stringify(r.ficha.inventario) !== antes) this.salvar(r);
+          },
+        });
+      },
+      confirmar: () => {
+        const r = clonarFicha(this.fs!);
+        r.ficha.equipamentoLivre = 'confirmado';
+        this.salvar(r);
+      },
+    });
   }
 
   /** Manda a cópia mexida (o servidor confere e devolve a ficha para todo mundo). */
@@ -613,8 +657,11 @@ export class FichaCelular {
         ),
       ),
       h('p', { class: 'fc-nota' }, `${numero(c.carga.usados)}/${c.carga.espacos} espaços · ${vagas.map((l) => `cat. ${['0', 'I', 'II', 'III', 'IV'][l.categoria]} ${l.usados}/${l.limite}`).join(' · ') || 'patente sem limite de categoria'}`),
+      // a janela única de refazer a mochila (03/11): enquanto aberta, o jogador reabre o aviso por aqui
+      equipamentoAberto(fs) ? h('p', { class: 'fc-nota fc-equip-livre-nota' }, 'Equipamento livre: esta é a sua chance de refazer a mochila. Depois de confirmar, só na base.') : null,
+      equipamentoAberto(fs) ? botao('Refazer / confirmar equipamento', 'mochila', 'forte', () => this.abrirEquipamentoLivre()) : null,
       // fora da Sede o servidor recusa: nem o botão nem aviso aparecem (01/11, pedido do Felipe)
-      !fs.naBase
+      !podeMexerEquipamento(fs)
         ? null
         : botao('Pedir itens à Ordem', 'mais', 'forte', () => {
         const r = clonarFicha(fs);

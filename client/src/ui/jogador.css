@@ -3187,3 +3187,40 @@ html.modo-ficha .fj:not(.rq) .fj-chips {
   color: var(--c-texto-3);
   white-space: nowrap;
 }
+
+/* a pendência com o porquê (03/11): o botão da escolha e, embaixo, a regra do livro que a gerou */
+.fc-pend-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+.fc-pend-porque,
+.fc-pend-ops {
+  margin: 0;
+  padding: 0 var(--s2);
+  font: 400 var(--t-corpo) / 1.4 var(--f-corpo);
+  color: var(--c-texto-2);
+}
+.fc-pend-porque b {
+  color: var(--c-ouro-hi);
+  font-weight: 700;
+}
+.fc-pend-porque small {
+  color: var(--c-texto-3);
+  white-space: nowrap;
+}
+.fc-pend-ops {
+  font-size: var(--t-rotulo);
+  color: var(--c-texto-3);
+}
+/* a janela única de refazer a mochila (03/11) */
+.fc-equip-livre-nota,
+.jg-nota-equip {
+  margin: 0;
+  padding: var(--s2) var(--s3);
+  border: calc(var(--u) * 0.45) solid var(--c-ouro);
+  border-radius: var(--raio);
+  background: rgba(5, 11, 20, 0.92);
+  font: 400 var(--t-corpo) / 1.4 var(--f-corpo);
+  color: var(--c-ouro-hi);
+}

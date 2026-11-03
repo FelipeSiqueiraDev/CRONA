@@ -4,6 +4,7 @@
  * das escolhas (montarEstado) mais a mochila.
  */
 import * as cat from './dados';
+import { MUNICAO_CALIBRE_GROSSO } from './dados/equipamentos';
 import { BONUS_GRAU, CREDITOS, ELEMENTO_OPRIME, ITENS_NEX_ZERO, PENALIDADE_CARGA, PENALIDADE_SEM_KIT, PRECO_MALDICAO, patentePorPP } from './dados';
 import { montarEstado, type Estado, type PoderObtido, type Problema, type Pendencia, type RitualObtido } from './estado';
 import type { Ficha, ItemFicha } from './ficha';
@@ -756,7 +757,8 @@ export function calcular(f: Ficha): Calculado {
     for (const e of deArma('multiplicador')) mult += e.valor;
     // a ferramenta que virou arma (pé de cabra, pá, as pistolas operacionais): sem penalidade de arma improvisada
     // a munição da arma: algum pacote dela na mochila (o pregador e o estilingue não pedem, LR p. 59; SaH p. 37)
-    const mun = a.municao ? cat.equipamento(a.municao) : undefined;
+    // a arma de Calibre Grosso só usa a munição de calibre grosso (LR p. 60)
+    const mun = a.municao ? cat.equipamento(it.modificacoes?.includes('calibre-grosso') ? a.municao + MUNICAO_CALIBRE_GROSSO : a.municao) : undefined;
     const municao = mun ? { id: mun.id, nome: mun.nome, tem: f.inventario.some((x) => x.id === mun.id && (x.qtd ?? 1) > 0) } : undefined;
     ataques.push({
       item: a.id,

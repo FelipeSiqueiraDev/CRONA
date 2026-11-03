@@ -1426,6 +1426,7 @@ export class Hotel implements HotelApi {
     const tira = lista(m.tira);
     if (!f || i < 0) return c.send({ t: 'error', msg: 'Item não encontrado.' });
     if (c.role !== 'gm' && f.id !== c.fichaId) return c.send({ t: 'error', msg: 'Você só pode mexer na sua mochila.' });
+    if (c.role !== 'gm' && !this.equipamentoLiberado(f)) return c.send({ t: 'error', msg: 'Modificações de equipamento só na base (a Sede). Peça ao mestre.' });
     const ops = regras.opcoesDeMelhoria(f.ficha, i);
     for (const t of poe) {
       const op = ops.find((o) => o.tipo === t.tipo && o.id === t.id);
@@ -1462,6 +1463,7 @@ export class Hotel implements HotelApi {
     if (!op) return c.send({ t: 'error', msg: 'Isso não vai neste item.' });
     if (c.role !== 'gm') {
       if (f.id !== c.fichaId) return c.send({ t: 'error', msg: 'Você só pode mexer na sua mochila.' });
+      if (!this.equipamentoLiberado(f)) return c.send({ t: 'error', msg: 'Modificações de equipamento só na base (a Sede). Peça ao mestre.' });
       if (!op.ok) return c.send({ t: 'error', msg: `${op.motivos[0] ?? 'A regra não deixa.'} Peça ao mestre.` });
       if (m.por === true) {
         const erro = regras.erroDeLimiteMelhorias(f.ficha, i, [{ tipo: m.tipo, id: m.id }]);
@@ -1522,6 +1524,14 @@ export class Hotel implements HotelApi {
   }
 
   /**
+   * Pode mexer no equipamento (pedir itens, trocar modificações)? Na base, ou na janela única de refazer o equipamento
+   * (`equipamentoLivre: 'aberto'`, 03/11); fora disso, só o mestre dá o que a mochila ganha.
+   */
+  private equipamentoLiberado(f: FichaSalva): boolean {
+    return f.ficha.equipamentoLivre === 'aberto' || this.naBase(f);
+  }
+
+  /**
    * A peça do agente trocou de cena: o celular dele recebe a ficha de novo, com o "na base" de agora (28/10, auditoria: o
    * "Pedir itens à Ordem" só mudava quando a ficha mudava por outro motivo).
    */
@@ -1576,6 +1586,11 @@ export class Hotel implements HotelApi {
       // quantas vezes por dia é do mestre; o jogador só marca o uso (19/10)
       f.ficha.limitesDia = antiga.ficha.limitesDia;
       if (!f.ficha.limitesDia) delete f.ficha.limitesDia;
+      // a janela única de refazer o equipamento (03/11): o jogador só passa de aberto a confirmado, nunca reabre
+      const livre = antiga.ficha.equipamentoLivre;
+      if (livre === 'aberto' && f.ficha.equipamentoLivre === 'confirmado') f.ficha.equipamentoLivre = 'confirmado';
+      else if (livre) f.ficha.equipamentoLivre = livre;
+      else delete f.ficha.equipamentoLivre;
       f.personagem = antiga.personagem;
       f.campanha = antiga.campanha;
       if (antiga.npc) f.npc = antiga.npc;
@@ -1621,7 +1636,7 @@ export class Hotel implements HotelApi {
       // (item do catálogo que não estava na mochila: trocar a faca por um fuzil também é pedir)
       const ja = new Set(antiga.ficha.inventario.map((i) => i.uid).filter((u) => u !== undefined));
       const pediu = f.ficha.inventario.some((i) => i.tipo !== 'cena' && (i.uid === undefined || !ja.has(i.uid)));
-      if (pediu && !this.naBase(antiga)) return recusa('Itens da Ordem só se pedem na base (a Sede). Peça ao mestre.');
+      if (pediu && !this.equipamentoLiberado(antiga)) return recusa('Itens da Ordem só se pedem na base (a Sede). Peça ao mestre.');
     }
     if (antiga) f.chave = antiga.chave;
     else delete f.chave;
