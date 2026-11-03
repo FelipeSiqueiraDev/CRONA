@@ -569,6 +569,8 @@ export class CombateScreen {
     this.gavetaAba = id;
     this.gaveta.dataset.aba = id;
     this.gaveta.classList.toggle('aberta', this.modoCards && this.gavAberta);
+    // a gaveta aberta ocupa a faixa de baixo e as colunas encolhem para ela (combateLayout.css), em vez de ficarem tapadas
+    this.palco.classList.toggle('cb-gav-aberta', this.modoCards && this.gavAberta);
     for (const b of this.gaveta.querySelectorAll<HTMLElement>('.cb-gav-aba')) b.classList.toggle('on', b.dataset.aba === id && (!this.modoCards || this.gavAberta));
   }
 
@@ -576,6 +578,7 @@ export class CombateScreen {
   private fecharGaveta() {
     this.gavAberta = false;
     this.gaveta.classList.remove('aberta');
+    this.palco.classList.remove('cb-gav-aberta');
     for (const b of this.gaveta.querySelectorAll<HTMLElement>('.cb-gav-aba')) b.classList.remove('on');
   }
 
@@ -3987,8 +3990,15 @@ export class CombateScreen {
   private menu() {
     const c = this.combate;
     const j = janela('COMBATE', 'espadas', () => {}, 46);
+    // item desligado de verdade: o motivo vai escrito (03/11: o texto apagado não dizia por que não dava para clicar)
+    const motivo = !c ? 'Não há combate aberto nesta cena.' : c.fase === 'montando' ? 'Só depois que o combate começar.' : 'O combate já terminou.';
     const item = (rotulo: string, icone: NomeIcone, dica: string, fn: () => void, desligado = false) =>
-      h('button', { class: 'cb-menu-item', type: 'button', disabled: desligado, onclick: () => (j.fechar(), fn()) }, ic(icone), h('span', null, h('b', null, rotulo), h('small', null, dica)));
+      h(
+        'button',
+        { class: 'cb-menu-item', type: 'button', disabled: desligado, onclick: () => (j.fechar(), fn()) },
+        ic(icone),
+        h('span', null, h('b', null, rotulo), h('small', null, dica), ...(desligado ? [h('small', { class: 'cb-menu-motivo' }, motivo)] : [])),
+      );
     const andando = c?.fase === 'andamento';
     j.corpo.append(
       h(

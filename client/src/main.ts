@@ -23,6 +23,7 @@ import './ui/retro.css';
 import './ui/hud.css';
 import './ui/combateRapido.css';
 import './ui/combateCards.css';
+import './ui/combateLayout.css';
 import './ui/cards.css';
 import { anyFurniName, getFurni, getWallFurni, portraitState, vitalConditions, type ResumoCampanha, type ServerMsg } from '@crona/shared';
 import { Net } from './net';
