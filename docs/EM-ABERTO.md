@@ -79,7 +79,8 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - A referência nova do Felipe (duas poses: a de sempre e a armada) em `arte/personagens/npc-camisa-rosa/referencia-2810.png`. A pose desarmada é a mesma da `foto.jpg`; o novo é o armado com **revólver na mão direita e facão na esquerda** (a tatuagem fica no braço esquerdo).
 - Instalado (aprovado pelo Felipe): o armado em pé nas 8 direções, o agachado armado nas 8 direções e o `retrato-armado.png` (novo). Commits `91e5fb5a` e `7cdb03b1`. O armado de antes (pistola) ficou em `arte\PERSONAGENS-ANIMACAO\trabalho\backup-pedro-2810\`.
 - Os pedidos: `trabalho\armado-estilo\pedir_armado_pedro.py`, `trabalho\agachado\pedir_agachado_armado_pedro.py` (refação com a tentativa anexada) e `trabalho\npcs-17-10\pedir_retrato_armado_pedro.py`. O agachado veio com a cor quente (acertada por `normalizar_agachado.py --armado --cor`) e grande demais: reduzido a 80% para ficar do tamanho do agachado desarmado (o mesmo dos outros personagens).
-- Não mudou: em pé desarmado, agachado, sentado (o `sentado.json` dele continua valendo) e deitado. Se o Felipe quiser o facão na bainha nas poses desarmadas, são uns 5 pedidos (em pé, agachado, sentado, deitado e o retrato). O retrato armado ainda não tem `-olhos-fechados`.
+- **O facão na bainha (03/11, aprovado e instalado):** em pé e agachado (8 direções), sentado (4), deitado (dormindo e caído), o retrato desarmado e a `oito-direcoes.png` refeita, com a bainha no quadril esquerdo. O gerador redesenhou a arte aprovada só acrescentando a bainha (`trabalho\bainha-pedro\pedir_bainha.py <pose>`); o sentado e o deitado foram igualados ao tamanho do instalado, direção por direção (o Pedro não tem `sentado.json`). O de antes ficou em `backup-pedro-2810\`.
+- Falta: o retrato armado e o desarmado sem `-olhos-fechados`; o `foto.jpg` e o `rosto.jpg` continuam os de antes (o rosto não mudou).
 
 ## Auditoria de 27/10: o que existe e não funciona
 
