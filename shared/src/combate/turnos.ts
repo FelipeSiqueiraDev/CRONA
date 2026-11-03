@@ -152,6 +152,17 @@ export function acoesDe(c: Combate, id: number): AcoesTurno {
   return c.acoes[String(id)] ?? livre();
 }
 
+/**
+ * Qual ação o movimento (o passo pelas sombras, o Movimentar-se) gasta agora, com as mesmas contas do `declarar`
+ * (LR p. 84): a de movimento, se ainda livre; senão a padrão vira movimento; null = não sobra nenhuma.
+ */
+export function acaoParaMover(ac: AcoesTurno): 'movimento' | 'padrao' | null {
+  if (ac.completa) return null;
+  if (!ac.movimento) return 'movimento';
+  if (!ac.padrao) return 'padrao';
+  return null;
+}
+
 function registrar(c: Combate, agora: number, tipo: TipoRegistro, t: string, destaque?: string[]) {
   c.registro.push({ em: agora, rodada: c.rodada, tipo, texto: t, ...(destaque?.length ? { destaque } : {}) });
   if (c.registro.length <= MAX_REGISTRO) return;

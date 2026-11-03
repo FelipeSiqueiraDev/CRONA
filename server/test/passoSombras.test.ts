@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { criaturaDoLivro, ehSombra, escuridaoNoPonto, fasePasso, lerSombras, PASSO_SOMBRAS, type ServerMsg } from "@crona/shared";
+import { combate, criaturaDoLivro, ehSombra, escuridaoNoPonto, fasePasso, lerSombras, motivoNaoSombra, PASSO_SOMBRAS, type ServerMsg } from "@crona/shared";
 import { Hotel } from "../src/hotel";
 import { seedDb, upgradeDb } from "../src/seed";
 
@@ -200,5 +200,27 @@ describe("a animação do passo", () => {
     assert.ok(fim.acabou && fim.altura === 1 && fim.preto === 0 && fim.pocaSaida === 0 && fim.pocaChegada === 0);
     // a saída dura uns 0,5 s (do preto à peça toda dentro do chão)
     assert.ok(fasePasso(640).altura <= 0.001);
+  });
+});
+
+/** O Ctrl + clique numa sombra (03/11): o aviso de por que a casa não serve e a ação que o passo gasta no combate. */
+describe("atalho Ctrl + clique do passo pelas sombras", () => {
+  const base = { existe: true, pisavel: true, ocupada: false, escura: true, marcada: false };
+
+  test("sombra de luz ou marcada à mão serve; casa com luz, ocupada, com móvel ou sem chão volta o motivo", () => {
+    assert.equal(motivoNaoSombra(base), null);
+    assert.equal(motivoNaoSombra({ ...base, escura: false, marcada: true }), null, "marcada à mão vale mesmo com luz");
+    assert.match(motivoNaoSombra({ ...base, escura: false })!, /luz/);
+    assert.match(motivoNaoSombra({ ...base, ocupada: true })!, /alguém/);
+    assert.match(motivoNaoSombra({ ...base, pisavel: false })!, /móvel|parede/);
+    assert.match(motivoNaoSombra({ ...base, existe: false, pisavel: false })!, /chão/);
+  });
+
+  test("no combate o passo gasta a ação de movimento; sem ela, a padrão; sem nenhuma, não vai", () => {
+    assert.equal(combate.acaoParaMover({ padrao: false, movimento: false, completa: false }), "movimento");
+    assert.equal(combate.acaoParaMover({ padrao: false, movimento: true, completa: false }), "padrao");
+    assert.equal(combate.acaoParaMover({ padrao: true, movimento: false, completa: false }), "movimento");
+    assert.equal(combate.acaoParaMover({ padrao: true, movimento: true, completa: false }), null);
+    assert.equal(combate.acaoParaMover({ padrao: false, movimento: false, completa: true }), null);
   });
 });

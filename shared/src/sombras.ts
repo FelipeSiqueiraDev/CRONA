@@ -46,6 +46,19 @@ export function escuridaoNoPonto(luzes: readonly LuzDeCasa[], escuridao: number,
 
 export const ehSombra = (escuro: number) => escuro >= LIMIAR_SOMBRA;
 
+/**
+ * Por que uma casa NÃO serve de sombra para o passo (null = serve). É o aviso do Ctrl + clique (03/11, o Felipe: andar
+ * pelas sombras sem abrir o painel): `existe` = tem chão; `pisavel` = dá para pisar (sem móvel nem parede); `ocupada` =
+ * outra peça está nela; `escura` = a luz da cena não chega; `marcada` = o mestre marcou à mão.
+ */
+export function motivoNaoSombra(c: { existe: boolean; pisavel: boolean; ocupada: boolean; escura: boolean; marcada: boolean }): string | null {
+  if (!c.existe) return 'Aí não tem chão.';
+  if (!c.pisavel) return 'Essa casa tem móvel ou parede: não dá para sair ali.';
+  if (c.ocupada) return 'Já tem alguém nessa casa.';
+  if (!c.escura && !c.marcada) return 'Essa casa tem luz: não é sombra. (Marcar sombras à mão libera.)';
+  return null;
+}
+
 /** A chave de uma casa nas listas de sombras ("x,y"). */
 export const chaveCasa = (x: number, y: number) => `${x},${y}`;
 

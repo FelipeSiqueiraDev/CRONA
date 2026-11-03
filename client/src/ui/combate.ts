@@ -773,6 +773,29 @@ export class CombateScreen {
     return h('div', { class: 'vez-menu' }, h('p', { class: 'vez-pergunta' }, 'Com o quê?'), h('div', { class: 'vez-cartoes' }, ...pg.itens), pg.pager);
   }
 
+  /**
+   * O Ctrl + clique numa sombra (a Magistrada): com um combate andando, o passo gasta a ação de movimento (ou a padrão
+   * que vira movimento), como o cartão "Passo pelas sombras"; fora do combate, o passo é livre. Devolve null quando o
+   * passo pode ir (e já mandou a declaração da ação), ou o aviso do porquê não.
+   */
+  passoPorAtalho(tokenId: number, x: number, y: number): string | null {
+    const c = this.combate;
+    // só o combate andando prende o passo à ação; montando ou encerrado, o passo é livre
+    const emCombate = !!c && c.fase === 'andamento' && !!cb.participante(c, -tokenId);
+    if (!c || !emCombate) {
+      this.app.net.send({ t: 'passoSombras', tokenId, x, y });
+      return null;
+    }
+    const dv = this.daVez();
+    const ator = dv?.ativos.find((p) => p.id === -tokenId);
+    if (!ator) return 'Não é a vez dela no combate.';
+    const qual = cb.acaoParaMover(cb.acoesDe(c, ator.id));
+    if (!qual) return 'Não sobra ação de movimento neste turno.';
+    this.app.net.send({ t: 'passoSombras', tokenId, x, y });
+    this.acao({ tipo: 'declarar', qual, texto: 'Onipresença: passa pelas sombras', quem: ator.id });
+    return null;
+  }
+
   /** O deslocamento em metros: o da ficha, o da ameaça, ou 9 m. */
   private deslocamentoDe(p: Participante): number {
     const calc = this.calcDe(p.id);

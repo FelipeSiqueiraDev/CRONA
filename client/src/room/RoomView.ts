@@ -41,6 +41,7 @@ import {
   fasePasso,
   PASSO_SOMBRAS,
   ehSombra,
+  motivoNaoSombra,
   escuridaoNoPonto,
   chaveCasa,
   type LuzDeCasa,
@@ -428,6 +429,8 @@ export interface RoomEvents {
   cobrir?(id: number): void;
   /** Ctrl + clique do mestre num móvel que abre e fecha: tranca ou destranca (sem nada à vista) */
   trancar?(id: number): void;
+  /** Ctrl + clique do mestre numa sombra, com uma peça de passo pelas sombras escolhida (a Magistrada): o passo, direto */
+  passoSombras?(tokenId: number, x: number, y: number): void;
 }
 
 interface Hit {
@@ -689,6 +692,11 @@ export class RoomView {
     this.painter.ctx = this.ctx;
     if (!live) return;
     this.bindInput();
+    // o Ctrl apertado acende as sombras (a dica do Ctrl + clique da Magistrada)
+    const ctrl = (e: KeyboardEvent) => void (this.ctrlApertado = e.ctrlKey || e.metaKey);
+    window.addEventListener('keydown', ctrl);
+    window.addEventListener('keyup', ctrl);
+    window.addEventListener('blur', () => void (this.ctrlApertado = false));
     if (typeof ResizeObserver !== 'undefined')
       new ResizeObserver((es) => {
         const r = es[es.length - 1]?.contentRect;
@@ -1465,6 +1473,10 @@ export class RoomView {
   /** o mestre está marcando sombras à mão: o clique numa casa marca ou desmarca */
   marcandoSombra = false;
   aoMarcarSombra: ((x: number, y: number, marcada: boolean) => void) | null = null;
+  /** a peça (id da peça no tabuleiro) anda pelas sombras? Quem liga é a tela do mestre (o dado vem do bestiário). */
+  podePassoSombras: ((tokenId: number) => boolean) | null = null;
+  /** o Ctrl está apertado (para acender as sombras como dica do Ctrl + clique) */
+  private ctrlApertado = false;
   private sombraTecla = (e: KeyboardEvent) => {
     if (e.key === 'Escape') this.cancelarSombra();
   };
@@ -1523,6 +1535,50 @@ export class RoomView {
 
   get escolhendoSombra() {
     return this.sombraEscolha !== null;
+  }
+
+  /** Pode usar o atalho Ctrl + clique de agora: o mestre, sem colocar móvel, com a peça escolhida que anda pelas sombras. */
+  private atalhoSombraPronto(): boolean {
+    return !this.watchOnly && !!this.info?.isOwner && !this.placement && !this.sombraEscolha && !this.marcandoSombra && !!this.myId && this.users.has(this.myId) && !!this.podePassoSombras?.(this.myId);
+  }
+
+  /** As sombras acesas como dica: com o Ctrl apertado e uma peça de passo pelas sombras escolhida (só no isométrico). */
+  private get dicaSombra(): boolean {
+    return this.ctrlApertado && this.tat.t <= 0 && this.atalhoSombraPronto();
+  }
+
+  /** Por que a casa não é uma sombra (a mensagem do aviso do Ctrl + clique). */
+  private motivoSombra(tile: { x: number; y: number }): string {
+    const map = this.map;
+    const existe = !!map && map.floorHeight(tile.x, tile.y) !== null;
+    const pisavel = existe && map!.walkState(tile.x, tile.y) === 'walk';
+    const ocupada = [...this.users.values()].some((u) => u.x === tile.x && u.y === tile.y);
+    const marcada = (this.info?.sombras ?? []).some((c) => c.x === tile.x && c.y === tile.y);
+    let escura = false;
+    if (existe) {
+      const [wx, wy] = iso(tile.x + 0.5, tile.y + 0.5, map!.floorHeight(tile.x, tile.y) ?? 0);
+      escura = ehSombra(escuridaoNoPonto(this.luzCasas.luzes, this.luzCasas.escuro, wx, wy));
+    }
+    return motivoNaoSombra({ existe, pisavel, ocupada, escura, marcada }) ?? 'Essa casa não serve de sombra.';
+  }
+
+  /**
+   * Ctrl + clique numa casa com a Magistrada (ou outra criatura do passo pelas sombras) escolhida: o passo, direto, sem
+   * abrir o painel (o Felipe, 03/11). Mesma regra do botão Passo: o servidor confere tudo. Casa que não é sombra: aviso
+   * com o motivo. Não mexe no Ctrl + clique de móvel (tranca, coberta) nem de peça. Devolve true quando usou o clique.
+   */
+  private atalhoSombra(tile: { x: number; y: number } | null, hit: Hit | null): boolean {
+    if (!tile || !this.atalhoSombraPronto()) return false;
+    if (hit?.kind === 'user' || hit?.kind === 'wall') return false;
+    if (hit?.kind === 'floor') {
+      const it = this.map?.getItem(hit.id);
+      const def = it ? getFurni(it.defId) : undefined;
+      // móvel de verdade (a porta, a cama, a mesa): o Ctrl + clique dele fica como era
+      if (!def || !(def.walkable || def.flat) || def.deita || (def.states ?? 0) > 1) return false;
+    }
+    if (this.casasDeSombra().has(chaveCasa(tile.x, tile.y))) this.events.passoSombras?.(this.myId, tile.x, tile.y);
+    else this.events.aviso?.(this.motivoSombra(tile));
+    return true;
   }
 
   /** O clique do mestre no modo das sombras. Devolve true quando usou o clique. */
@@ -2090,6 +2146,8 @@ export class RoomView {
       const alvo = tile ?? (hit?.kind === 'user' ? (this.users.get(hit.id) ?? null) : null);
       if (this.cliqueSombra(alvo ? { x: alvo.x, y: alvo.y } : null)) return;
     }
+    // Ctrl + clique numa sombra: o passo da Magistrada, direto (o Alt + clique, que aponta, não passa por aqui)
+    if (ctrl && !this.ferramenta && this.atalhoSombra(tile, hit)) return;
     // ferramenta do combate (medir, área): a casa da peça também serve
     if (this.aoClicarCasa) {
       if (!tile && hit?.kind === 'user') {
@@ -3348,7 +3406,7 @@ export class RoomView {
     const chaoPecas: (() => void)[] = [];
     // as sombras acesas para escolher (ou marcar): por cima da escuridão, para se verem; e as poças do passo pelas sombras
     let sombrasAcesas: (() => void) | null = null;
-    if (this.sombraEscolha || this.marcandoSombra) {
+    if (this.sombraEscolha || this.marcandoSombra || this.dicaSombra) {
       const casas = this.casasDeSombra();
       const pulsa = 0.5 + 0.5 * Math.sin(now / 300);
       const hov = this.hoverTile && this.mouse.inside ? chaveCasa(this.hoverTile.x, this.hoverTile.y) : '';

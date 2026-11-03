@@ -2337,7 +2337,7 @@ export class Shell {
       this.gm && cr?.passoSombras
         ? grupo(
             'Sombras',
-            tool('Passo', () => this.passoPelasSombras(id), `${cr.nome} some numa sombra e sai de outra que você escolhe (Onipresença, LR p. 252)`),
+            tool('Passo', () => this.passoPelasSombras(id), `${cr.nome} some numa sombra e sai de outra que você escolhe (Onipresença, LR p. 252). Atalho: Ctrl + clique numa sombra`),
             this.stateTool('Marcar', view.marcandoSombra, 'Marca ou desmarca uma sombra à mão no chão (além das casas escuras de luz)', () => this.marcarSombras()),
           )
         : null,
@@ -2375,6 +2375,12 @@ export class Shell {
       (x, y) => this.app.net.send({ t: 'passoSombras', tokenId: id, x, y }),
       () => undefined,
     );
+  }
+
+  /** Ctrl + clique numa sombra com a Magistrada escolhida: o passo direto, pelo combate se ele estiver andando. */
+  passoPorAtalho(id: number, x: number, y: number) {
+    const aviso = this.combate.passoPorAtalho(id, x, y);
+    if (aviso) toast(aviso);
   }
 
   /** Liga e desliga o marcar sombras à mão: o clique numa casa marca ou desmarca. */

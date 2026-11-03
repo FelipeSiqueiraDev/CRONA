@@ -216,12 +216,18 @@ const view = new RoomView(canvas, {
   },
   cobrir: (id) => net.send({ t: 'cobrir', id }),
   trancar: (id) => net.send({ t: 'trancar', id }),
+  passoSombras: (id, x, y) => (shell ? shell.passoPorAtalho(id, x, y) : net.send({ t: 'passoSombras', tokenId: id, x, y })),
   pecaDupla: (id) => net.send({ t: 'pecaForma', tokenId: id }),
   select: () => app.emit('selection'),
   openHint: (kind, id) => hintViewer.open(kind, id),
   aviso: (texto) => toast(texto),
 });
 app.view = view;
+// a criatura anda pelas sombras (a Magistrada, `passoSombras` no bestiário)? Libera o Ctrl + clique numa sombra
+view.podePassoSombras = (id) => {
+  const crId = view.users.get(id)?.criatura?.id;
+  return !!crId && !!app.state.bestiario.find((c) => c.id === crId)?.passoSombras;
+};
 // pose de cada peça no tabuleiro: Armado (no painel da peça) e machucado (menos da metade dos PV)
 view.estadoDe = (id) => {
   const ch = app.session.session?.characters.find((c) => c.id === -id);
@@ -503,6 +509,8 @@ net.onMessage = (m: ServerMsg) => {
       loginTries = 0;
       shell?.show();
       table?.show();
+      // o mestre já abre com o bestiário (sem ele, o Ctrl + clique da Magistrada e o grupo Sombras só aparecem depois)
+      if (m.role === 'gm') net.send({ t: 'bestiario' });
       // o tabuleiro abriu: a tela de entrada some devagar por cima dele
       entrada?.sair();
       entrada = null;
