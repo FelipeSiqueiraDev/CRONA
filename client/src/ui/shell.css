@@ -1446,7 +1446,47 @@ html {
 }
 .ic-bts {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
+}
+/*
+ * Cartão com botões (o item largado, o documento): os botões descem para uma fileira só deles, em grade que quebra
+ * linha, e o nome ganha a largura do cartão (03/11: Pegar, Entregar e Mostrar estouravam o painel e esmagavam o nome).
+ */
+.icard:has(> .ic-bts) {
+  grid-template-columns: 7rem minmax(0, 1fr);
+  grid-template-areas: 'ic tx' 'bt bt';
+  row-gap: 0.7rem;
+}
+.icard:has(> .ic-bts) > .ic-icon {
+  grid-area: ic;
+}
+.icard:has(> .ic-bts) > .ic-text {
+  grid-area: tx;
+}
+.icard:has(> .ic-bts) > .ic-bts {
+  grid-area: bt;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.2rem, 1fr));
+  gap: 0.5rem;
+  min-width: 0;
+}
+.icard > .ic-bts > .dbtn {
+  min-width: 0;
+  white-space: normal;
+}
+/* a arte pintada do item cabe na caixa do ícone, sem cortar nem esticar */
+.ic-icon > .arte-ic {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+.ic-icon > .arte-ic > img {
+  max-width: 88%;
+  max-height: 88%;
+  object-fit: contain;
+  filter: drop-shadow(0.1rem 0.2rem 0.1rem rgba(40, 25, 10, 0.4));
 }
 .icard[data-loot] {
   cursor: zoom-in;

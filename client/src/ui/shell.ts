@@ -50,7 +50,7 @@ import { clear, h, icon, toast, Win } from './dom';
 import { HintEditor, HintViewer } from './infostand';
 import { characterPicker, lookEditor } from './lookEditor';
 import { logIcon, lootIcon } from './lootIcons';
-import { arteDoItem } from './arteItem';
+import { arteDoItem, arteDoLoot } from './arteItem';
 import { brushSweep, brushWash, bump, countUp, drawStroke, eraseDraw, enter, floatText, flyArc, fxLayer, leave, pencilDraw, reduced, shake, stamp, tilt, typeInto, wait, wipeIn } from './motion';
 import { askNote, promptNote } from './note';
 import { abrirMapaMundi } from './mapaMundi';
@@ -2103,7 +2103,7 @@ export class Shell {
           // inspecionar o item (ou ler o documento): clique fora dos botões
           onclick: (e: Event) => !(e.target as Element).closest('button') && (sfx.paper(), this.inspecionarLoot(l, s)),
         },
-        h('div', { class: 'ic-icon' }, lootIcon(l.kind, 52)),
+        h('div', { class: 'ic-icon' }, arteDoLoot(l, 52)),
         h('div', { class: 'ic-text' }, h('b', null, l.name), h('small', null, `Espaços: ${fmt(l.espacos)} | ${lootKindLabel(l.kind)}${l.item ? ' · do livro' : ''}`)),
         right,
       );
