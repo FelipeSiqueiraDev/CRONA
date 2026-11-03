@@ -24,8 +24,17 @@ export const VITAL_KEYS: VitalKey[] = ['pv', 'pe', 'san'];
 export const VITAL_LABEL: Record<VitalKey, string> = { pv: 'PV', pe: 'PE', san: 'SAN' };
 export const VITAL_NAME: Record<VitalKey, string> = { pv: 'Vida', pe: 'Esforço', san: 'Sanidade' };
 
-/** Maior valor aceito para um total (PV/PE/SAN). */
+/** Maior valor aceito para um total de PE/SAN. */
 export const VITAL_LIMIT = 999;
+
+/**
+ * Maior valor aceito para os PV (03/11, o Felipe: "a Magistrada não tem 999 de vida"): os portadores de relíquia passam
+ * de mil (a Magistrada tem 1200, o Anfitrião 1413; LR pp. 252 e 276), e a ficha rápida da ameaça já aceitava até 9999.
+ */
+export const VITAL_LIMIT_PV = 9999;
+
+/** O teto de cada barra. */
+export const limiteDoVital = (k: VitalKey): number => (k === 'pv' ? VITAL_LIMIT_PV : VITAL_LIMIT);
 
 /** Ficha nova sem números ainda: o mestre ajusta. */
 export const DEFAULT_VITALS: Vitals = { pv: 20, pvMax: 20, pe: 5, peMax: 5, san: 20, sanMax: 20 };
@@ -39,7 +48,7 @@ export function applyVital(v: Vitals, key: VitalKey, change: { delta?: number; v
   const int = (n: unknown) => (typeof n === 'number' && Number.isFinite(n) ? Math.round(n) : undefined);
   const max = int(change.max);
   // PE e SAN podem ter máximo 0 (as criaturas não têm); o PV tem pelo menos 1
-  if (max !== undefined) out[mk] = Math.max(key === 'pv' ? 1 : 0, Math.min(VITAL_LIMIT, max));
+  if (max !== undefined) out[mk] = Math.max(key === 'pv' ? 1 : 0, Math.min(limiteDoVital(key), max));
   const value = int(change.value);
   const delta = int(change.delta);
   let cur = out[key];

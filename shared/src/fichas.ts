@@ -7,6 +7,7 @@
 import type { Ficha } from './regras/ficha';
 import { NEX_LISTA } from './regras/tipos';
 import { sanitizarJogadas, type Jogada } from './regras/jogadas';
+import { VITAL_LIMIT_PV } from './vitals';
 
 export interface Companheiro {
   nome: string;
@@ -127,7 +128,7 @@ export function sanitizarFicha(raw: unknown): FichaSalva | null {
   const npc = texto(o.npc, 60);
   if (npc) out.npc = npc;
   if (a && typeof a === 'object') {
-    out.atual = { pv: inteiro(a.pv, -999, 999) ?? 0, pe: inteiro(a.pe, 0, 999) ?? 0, san: inteiro(a.san, 0, 999) ?? 0 };
+    out.atual = { pv: inteiro(a.pv, -VITAL_LIMIT_PV, VITAL_LIMIT_PV) ?? 0, pe: inteiro(a.pe, 0, 999) ?? 0, san: inteiro(a.san, 0, 999) ?? 0 };
     for (const k of ['pvTemp', 'peTemp', 'sanTemp'] as const) {
       const v = inteiro(a[k], 0, 999);
       if (v) out.atual[k] = v;
@@ -156,8 +157,8 @@ export function sanitizarFicha(raw: unknown): FichaSalva | null {
     out.companheiro = {
       nome: texto(c.nome, 40)!,
       tipo: texto(c.tipo, 60) ?? '',
-      pv: inteiro(c.pv, 0, 999),
-      pvMax: inteiro(c.pvMax, 1, 999),
+      pv: inteiro(c.pv, 0, VITAL_LIMIT_PV),
+      pvMax: inteiro(c.pvMax, 1, VITAL_LIMIT_PV),
       funcao: texto(c.funcao, 120),
       tracos: lista(c.tracos, 8),
       imagem: texto(c.imagem, 120),
