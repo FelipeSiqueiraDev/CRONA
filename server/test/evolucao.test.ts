@@ -147,3 +147,15 @@ describe('a migração do Veríssimo sem afinidade', () => {
     assert.equal(verissimoSemAfinidade2210(db), false);
   });
 });
+
+describe('a migração dos nomes de itens (03/11)', () => {
+  it('põe o nome do livro na jaqueta do Veríssimo uma vez só', async () => {
+    const { nomesDeItens0311 } = await import('../src/nomesItens');
+    const ficha = regras.novaFicha('x');
+    ficha.inventario = [{ id: 'jaqueta-do-verissimo', uid: 1, nome: 'Jaqueta do Veríssimo', tipo: 'cena', espacos: 1 }] as never;
+    const db = { fichas: [{ id: 1, nome: 'V', npc: 'sr-verissimo', ficha, atualizadaEm: '' }] } as never as Parameters<typeof nomesDeItens0311>[0];
+    assert.equal(nomesDeItens0311(db), true);
+    assert.equal(db.fichas![0].ficha.inventario[0].nome, 'Jaqueta de Veríssimo');
+    assert.equal(nomesDeItens0311(db), false);
+  });
+});

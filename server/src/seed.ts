@@ -39,6 +39,7 @@ import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgen
 import { aplicarFichasCris } from './seedFichasCris';
 import { igualarMarcadosCris, mochilasDaHistoria, zerarMochilasMarcados, avisosDe1910, tepesECora1910, contaTesteNoMiguel, camarillaPv1910, refazerEquipamento1910, avisosSemCris1910 } from './marcadosCris';
 import { retoquesCasas2110 } from './retoquesCasas';
+import { nomesDeItens0311 } from './nomesItens';
 import { postosMansao2410, postosSantaAmalia2510 } from './postos';
 import { retoquesIgarape2210 } from './retoquesIgarape';
 import { avisoDeEvolucao2110, evolucaoMarcados2110 } from './evolucaoMarcados';
@@ -811,7 +812,7 @@ function trancasSemCadeado(db: Database): boolean {
 }
 
 export function upgradeDb(db: Database): boolean {
-  const trancas = [trancasSemCadeado(db), aplicarFichasCris(db), igualarMarcadosCris(db), mochilasDaHistoria(db), zerarMochilasMarcados(db), avisosDe1910(db), tepesECora1910(db), contaTesteNoMiguel(db), camarillaPv1910(db), refazerEquipamento1910(db), avisosSemCris1910(db), retoquesCasas2110(db), retoquesIgarape2210(db), evolucaoMarcados2110(db), avisoDeEvolucao2110(db), acougueirosNoBestiario(db), dancaDasLaminas0111(db), migrarCampanhas(db, db.nomeCampanha ?? 'Segredos do Outro Lado')].some(Boolean); // as fichas do C.R.I.S entram no Elenco (18/10)
+  const trancas = [trancasSemCadeado(db), aplicarFichasCris(db), igualarMarcadosCris(db), mochilasDaHistoria(db), zerarMochilasMarcados(db), avisosDe1910(db), tepesECora1910(db), contaTesteNoMiguel(db), camarillaPv1910(db), refazerEquipamento1910(db), avisosSemCris1910(db), retoquesCasas2110(db), retoquesIgarape2210(db), evolucaoMarcados2110(db), avisoDeEvolucao2110(db), acougueirosNoBestiario(db), nomesDeItens0311(db), dancaDasLaminas0111(db), migrarCampanhas(db, db.nomeCampanha ?? 'Segredos do Outro Lado')].some(Boolean); // as fichas do C.R.I.S entram no Elenco (18/10)
   const v = db.seedVersion ?? 1;
   // a Sede e a fazenda mudam de montagem sem esperar versão nova do banco
   if (v >= SEED_VERSION) {
