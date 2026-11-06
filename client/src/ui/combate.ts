@@ -2228,8 +2228,40 @@ export class CombateScreen {
 
   // ---------------------------------------------------------------- pendências
 
+  /** A janela da presença perturbadora (06/11): lembra o mestre que é a primeira coisa do combate, sem obrigar. */
+  private janelaPresenca: ReturnType<typeof janela> | null = null;
+  private presencasAvisadas = new Set<number>();
+
+  /**
+   * Chegou teste de presença novo (o combate começou, ou uma criatura com presença entrou): a janela abre com o teste
+   * de cada agente. Cada um se resolve ali ou se dispensa (quem ainda não viu a criatura); fechar deixa os que sobram
+   * nas pendências, como antes.
+   */
+  private avisarPresenca(c: Combate | null) {
+    const lista = c?.presencas ?? [];
+    if (this.janelaPresenca) {
+      if (!lista.length) return this.janelaPresenca.fechar();
+      this.janelaPresenca.corpo.querySelector('.cb-pres-lista')?.replaceChildren(...lista.map((x) => this.cartaoPresenca(c!, x)));
+      return;
+    }
+    // sem teste esperando, a lista de avisados zera: a próxima criatura com presença avisa de novo
+    if (!lista.length) return this.presencasAvisadas.clear();
+    const novas = lista.filter((x) => !this.presencasAvisadas.has(x.id));
+    if (!novas.length || !this.app.isGm) return;
+    for (const x of lista) this.presencasAvisadas.add(x.id);
+    const j = janela('PRESENÇA PERTURBADORA', 'alerta', () => (this.janelaPresenca = null), 60);
+    this.janelaPresenca = j;
+    j.corpo.append(
+      h('p', { class: 'fj-dica' }, `Primeira coisa do combate: quem vê ${lista[0].de} faz Vontade (DT ${lista[0].dt}). Falhou, ${lista[0].dano} de dano mental; passou, metade (LR p. 180).`),
+      h('p', { class: 'fj-dica' }, 'Quem ainda não viu a criatura: Dispensar (ou feche, e o teste fica nas pendências para depois).'),
+      h('div', { class: 'cb-pres-lista cb-pend-lista' }, ...lista.map((x) => this.cartaoPresenca(c!, x))),
+    );
+    j.rodape.append(h('span', { class: 'fj-esp' }), h('button', { class: 'fx-bt', type: 'button', onclick: () => j.fechar() }, h('span', null, 'Depois')));
+  }
+
   private renderPend() {
     const c = this.combate;
+    this.avisarPresenca(c);
     const nMassivos = (c?.massivos?.length ?? 0) + (c?.perdasSan?.length ?? 0) + (c?.presencas?.length ?? 0) + (c?.hemorragias?.length ?? 0);
     if (nMassivos > this.massivosVistos) this.abrirGaveta('pend');
     this.massivosVistos = nMassivos;
