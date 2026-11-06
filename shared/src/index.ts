@@ -21,6 +21,7 @@ export * from './lugares';
 export * from './bestiario';
 export * from './chama';
 export * from './sombras';
+export * from './tamanho';
 export * from './npcs';
 export * from './locais';
 export * from './cenas';

@@ -48,6 +48,9 @@ import {
   type LuzDeCasa,
   DIRS,
   DIR_TO_SHEET,
+  casasDaPegada,
+  desvioDoMeio,
+  pegadaDaPeca,
 } from '@crona/shared';
 import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avatarPixel';
 import { ajusteAssentos } from '../render/assentos';
@@ -647,8 +650,6 @@ export class RoomView {
     }
     this.events.walk(x, y);
   }
-  /** PV de cada peça, de 0 a 1 (o arco em volta da ficha no mapa tático) */
-  pvDe: ((id: number) => number | null) | null = null;
   /**
    * Vista tática: a câmera sai do isométrico, gira e sobe até ver a sala de cima, como um mapa de
    * batalha (o mestre liga, info.tatico; a mesa acompanha). t vai de 0 (isométrico) a 1 (em cima);
@@ -1482,12 +1483,17 @@ export class RoomView {
   private passosSombra = new Map<number, { de: { x: number; y: number }; para: { x: number; y: number }; t0: number }>();
   /** as luzes e a escuridão do último quadro, em px do mundo: quais casas são sombra de luz */
   private luzCasas: { luzes: LuzDeCasa[]; escuro: number } = { luzes: [], escuro: 0 };
+  /** as casas cobertas pela sombra que as luzes do cenário projetam das peças (06/11: também servem ao passo) */
+  private sombrasDePecas = new Set<string>();
+  private sombrasDePecasNovas = new Set<string>();
   private sombraEscolha: { tokenId: number; aoEscolher: (x: number, y: number) => void; aoFim: () => void } | null = null;
   /** o mestre está marcando sombras à mão: o clique numa casa marca ou desmarca */
   marcandoSombra = false;
   aoMarcarSombra: ((x: number, y: number, marcada: boolean) => void) | null = null;
   /** a peça (id da peça no tabuleiro) anda pelas sombras? Quem liga é a tela do mestre (o dado vem do bestiário). */
   podePassoSombras: ((tokenId: number) => boolean) | null = null;
+  /** casas de cada lado que a peça ocupa no chão (a criatura Grande, 2; tamanho.ts) */
+  ladoDe: ((tokenId: number) => number) | null = null;
   /** o Ctrl está apertado (para acender as sombras como dica do Ctrl + clique) */
   private ctrlApertado = false;
   private sombraTecla = (e: KeyboardEvent) => {
@@ -1513,7 +1519,8 @@ export class RoomView {
     const map = this.map;
     if (!map) return out;
     const manual = new Set((this.info?.sombras ?? []).map((c) => chaveCasa(c.x, c.y)));
-    const ocupadas = new Set([...this.users.values()].map((u) => chaveCasa(u.x, u.y)));
+    const ocupadas = new Set<string>();
+    for (const u of this.users.values()) for (const c of casasDaPegada(pegadaDaPeca(u.x, u.y, this.ladoDe?.(u.id) ?? 1))) ocupadas.add(chaveCasa(c.x, c.y));
     for (let y = 0; y < map.height; y++)
       for (let x = 0; x < map.width; x++) {
         const h = map.floorHeight(x, y);
@@ -1521,6 +1528,8 @@ export class RoomView {
         const k = chaveCasa(x, y);
         if (ocupadas.has(k)) continue;
         if (manual.has(k)) out.set(k, 'marcada');
+        // a sombra que uma peça projeta no chão também é sombra (06/11, o Felipe: "a sombra do personagem poderia contar")
+        else if (this.sombrasDePecas.has(k)) out.set(k, 'luz');
         else {
           const [wx, wy] = iso(x + 0.5, y + 0.5, h);
           if (ehSombra(escuridaoNoPonto(this.luzCasas.luzes, this.luzCasas.escuro, wx, wy))) out.set(k, 'luz');
@@ -1535,7 +1544,7 @@ export class RoomView {
     this.sombraEscolha = { tokenId, aoEscolher, aoFim };
     window.addEventListener('keydown', this.sombraTecla);
     const n = this.casasDeSombra().size;
-    this.events.aviso?.(n ? 'Clique na sombra de onde ela sai (Esc cancela).' : 'Nenhuma casa escura aqui: marque sombras à mão (Marcar sombras).');
+    this.events.aviso?.(n ? 'Clique num quadrado roxo: a sombra para onde ela vai (Esc cancela).' : 'Nenhuma casa escura aqui: marque sombras à mão (Marcar sombras).');
   }
 
   cancelarSombra() {
@@ -1570,7 +1579,7 @@ export class RoomView {
     let escura = false;
     if (existe) {
       const [wx, wy] = iso(tile.x + 0.5, tile.y + 0.5, map!.floorHeight(tile.x, tile.y) ?? 0);
-      escura = ehSombra(escuridaoNoPonto(this.luzCasas.luzes, this.luzCasas.escuro, wx, wy));
+      escura = ehSombra(escuridaoNoPonto(this.luzCasas.luzes, this.luzCasas.escuro, wx, wy)) || this.sombrasDePecas.has(chaveCasa(tile.x, tile.y));
     }
     return motivoNaoSombra({ existe, pisavel, ocupada, escura, marcada }) ?? 'Essa casa não serve de sombra.';
   }
@@ -2460,7 +2469,9 @@ export class RoomView {
     const minimo = Math.min(1, 0.6 / base);
     let q = this.qualidade;
     if (this.ritmo > 24 && espera > 1500 && q > minimo) q = Math.max(minimo, q - 0.15);
-    else if (this.ritmo < 15 && espera > 3000 && q < 1) q = Math.min(1, q + 0.15);
+    // volta a subir com mais de ~48 quadros por segundo (06/11: era acima de ~66, e o navegador do Felipe, o Opera GX,
+    // roda a ~52; a resolução ficava presa em 60% com o desenho levando 4 ms)
+    else if (this.ritmo < 21 && espera > 3000 && q < 1) q = Math.min(1, q + 0.15);
     if (q === this.qualidade) return;
     this.qualidade = q;
     this.qualidadeMudouEm = agora;
@@ -2719,16 +2730,19 @@ export class RoomView {
     for (const u of this.users.values()) {
       const p = this.userPos(u, now);
       const base = m?.bases.get(u.id);
+      const lado = this.ladoDe?.(u.id) ?? 1;
+      const desvio = desvioDoMeio(lado);
       out.push({
         id: u.id,
-        x: p.x,
-        y: p.y,
+        x: p.x + desvio,
+        y: p.y + desvio,
+        ...(lado > 1 ? { tam: lado } : {}),
         nome: u.name,
         cor: base ?? u.color,
         lado: base === COR_LADO.inimigo ? 'ameaca' : 'agente',
         retrato: this.retratoDe(u),
         // a mesa (o tablet) não mostra a vida de ninguém: os jogadores não podem saber (19/10)
-        pv: this.watchOnly ? undefined : (this.pvDe?.(u.id) ?? undefined),
+        // sem o arco de PV em volta da ficha (06/11, o Felipe: "essa vida em volta dos personagens na visão tática já era pra ter saído")
         vez: !!m?.vez.has(u.id),
         escolhida: !this.watchOnly && (u.id === this.myId || this.grupo.has(u.id) || (sel?.kind === 'user' && sel.id === u.id)),
         caido: !!m?.deitadas.has(u.id),
@@ -2768,8 +2782,11 @@ export class RoomView {
     let d0 = Infinity;
     for (const u of this.users.values()) {
       const p = this.userPos(u, now);
-      const d = Math.hypot(px - (e.x + (p.x + 0.5) * e.casa), py - (e.y + (p.y + 0.5) * e.casa));
-      if (d < e.casa * 0.62 && d < d0) {
+      // a criatura grande se escolhe em qualquer ponto da ficha dela (do tamanho da pegada)
+      const lado = this.ladoDe?.(u.id) ?? 1;
+      const dv = desvioDoMeio(lado);
+      const d = Math.hypot(px - (e.x + (p.x + 0.5 + dv) * e.casa), py - (e.y + (p.y + 0.5 + dv) * e.casa));
+      if (d < e.casa * 0.62 * lado && d < d0) {
         d0 = d;
         perto = { kind: 'user', id: u.id, test: () => true };
       }
@@ -3532,8 +3549,10 @@ export class RoomView {
       const passoSombra = this.passosSombra.get(u.id);
       const fase = passoSombra ? fasePasso(now - passoSombra.t0) : null;
       if (fase && !fase.visivel) continue;
-      const cx = p.x + 0.5;
-      const cy = p.y + 0.5;
+      // a criatura grande fica no meio da pegada dela (tamanho.ts; 06/11)
+      const desvio = desvioDoMeio(this.ladoDe?.(u.id) ?? 1);
+      const cx = p.x + 0.5 + desvio;
+      const cy = p.y + 0.5 + desvio;
       const sp = u.look.charId ? sprites.get(u.look.charId) : null;
       // pose do tabuleiro (arte em 32 bits) no estado da peça; sem ela, a folha
       const cdef = sprites.def(u.look.charId);
@@ -3700,6 +3719,17 @@ export class RoomView {
       // (o boneco e a pose com a âncora no meio dos pés já vêm assim)
       const afunda = !bq && (pf || sp) && !quadro?.noMeioDosPes && !deitada && !seated && u.sit !== 2 ? Math.round(H * 0.05) : 0;
       const { luz, sombras } = luzesDaPeca(luzesCena, sx, sy - HE * 0.5, cx, cy);
+      // as casas que a sombra projetada cobre (o mesmo comprimento do desenho: a altura do corpo deitada no chão)
+      if (!deitada && !seated)
+        for (const s of sombras) {
+          if (Math.min(0.45, s.a * 2) < 0.12) continue;
+          const casas = H * (Math.SQRT2 / 64) * Math.max(0.4, Math.min(0.85, 0.3 + 0.25 * s.dist));
+          for (let d = 0.55; d <= casas; d += 0.25) {
+            const qx = Math.floor(cx + s.D[0] * d);
+            const qy = Math.floor(cy + s.D[1] * d);
+            if (qx !== u.x || qy !== u.y) this.sombrasDePecasNovas.add(chaveCasa(qx, qy));
+          }
+        }
       // parada e em pé, a pose respira: o peito sobe e desce a partir da cintura, cada peça no seu tempo (17/10)
       const respira =
         pf && cdef && pose === 'stand' && !deitada && !sob && !u.agachado && !u.flutua
@@ -4013,6 +4043,13 @@ export class RoomView {
         lights.push({ x: sx, y: sy - HE * 0.4, radius: 78 + 26 * chamaDaPeca.intensidade, color: chamaDaPeca.cor, intensity: Math.min(0.75, 0.38 + 0.2 * chamaDaPeca.intensidade), flicker: 0.3, seed: u.phase, kind: 'personal' });
     }
 
+    {
+      // as sombras das peças deste quadro valem para o passo (troca as duas listas, sem criar outra)
+      const velha = this.sombrasDePecas;
+      this.sombrasDePecas = this.sombrasDePecasNovas;
+      velha.clear();
+      this.sombrasDePecasNovas = velha;
+    }
     perfil.marca('peças');
     // a neblina densa (o miolo do labirinto): casa a casa, ordenada com a sebe, para ficar DENTRO das paredes
     for (const c of this.fog.casas) {
@@ -4231,8 +4268,10 @@ export class RoomView {
         if (surge > 0.05) active.push({ ...L, intensity: L.intensity * surge });
       } else active.push(L);
     }
+    // a luz pessoal (a das peças e a do cursor do mouse) não decide se a casa é sombra: a do cursor acendia justo a casa
+    // embaixo do mouse, e o Ctrl + clique na casa roxa dizia "Essa casa tem luz" (06/11)
     this.luzCasas = {
-      luzes: active.map((L) => ({ x: L.x, y: L.y, radius: L.radius, intensity: L.intensity, k: L.mundo && L.mundo[2] < 1 ? 0.62 : 1 })),
+      luzes: active.filter((L) => L.kind !== 'personal').map((L) => ({ x: L.x, y: L.y, radius: L.radius, intensity: L.intensity, k: L.mundo && L.mundo[2] < 1 ? 0.62 : 1 })),
       escuro: darkness > 0.01 ? darkness : 0,
     };
     if (darkness > 0.01)

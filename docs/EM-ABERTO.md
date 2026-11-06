@@ -2,6 +2,21 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## O tamanho dos seres pelo livro, as sombras e a vista tática (06/11, tarde; nada no 8080)
+
+- **O pedido:** "pegar o tamanho real dos personagens como é tratado no livro e implementar no tabuleiro", "lembrando de ocupar esse espaço também na vista tática"; "a sombra do personagem poderia contar"; o Ctrl + clique da Magistrada dizendo "a casa tem luz"; "essa vida em volta dos personagens na visão tática já era pra ter saído".
+- **Tamanho (Tab. 7.1, LR p. 179):** o livro só dá a categoria e o espaço ocupado, sem altura. As regras ficam em `shared/src/tamanho.ts`.
+  - pegada no chão em casas: Médio e menores 1, Grande 2 × 2, Enorme 3 × 3, Colossal 6 × 6 (a mesma proporção de gente, 1 casa para o quadrado de 1,5 m);
+  - altura do boneco pela categoria (Minúsculo 0,3 m, Pequeno 0,9, Médio 1,8, Grande 3, Enorme 4,5, Colossal 9), ou a `altura` da criatura;
+  - o servidor não deixa ninguém entrar na pegada (`occupied`);
+  - o desenho fica no meio da pegada, a ficha da vista tática cresce junto e se escolhe em qualquer ponto dela;
+  - a distância, o adjacente, o flanco e o "alvo em corpo a corpo" contam da borda da pegada;
+  - testes em `server/test/tamanho.test.ts`; conferido na prévia com uma Dama de Sangue (Enorme), depois tirada.
+  - **Limite:** a criatura grande anda pela casa de referência; o caminho não confere se a pegada inteira cabe (pode passar por porta estreita ou encostar em móvel). O mestre ajusta.
+- **Sombras:** a luz do cursor e a das peças não decidem mais se a casa é sombra (o Ctrl + clique na casa roxa falhava); a sombra que as peças projetam no chão conta como sombra para o passo. O aviso do botão Passo virou "Clique num quadrado roxo: a sombra para onde ela vai".
+- **Vista tática:** sem o arco de PV em volta das fichas.
+- **Medidor `?fps`:** a qualidade volta a 100% acima de ~48 quadros por segundo (antes ~66: no Opera GX do Felipe ficava presa em 60%); o "interface N/s" diz qual parte da tela mudou; o "quadro longo" separa script e estilo.
+
 ## Regras da casa, munição, Quebrar, Porco, celular e desempenho (06/11; branch `claude/campanhas`, nada no 8080)
 
 - **O pedido:** "A Camarilla não participa de combates"; "Se um disparo for efetuado a munição TEM que contar"; "Quebre o item de verdade"; "Vamos fazer a ficha do porco"; as regras da casa do PDF; "Corrige a parada do celular"; "Vamos investigar a fundo o porque o tabuleiro faz isso, vamos melhorar a eficiencia dele ao máximo"; o boneco do Anárquico normal ("Pede sim uai, precisa ter").

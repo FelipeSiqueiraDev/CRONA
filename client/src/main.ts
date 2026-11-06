@@ -25,7 +25,7 @@ import './ui/combateRapido.css';
 import './ui/combateCards.css';
 import './ui/combateLayout.css';
 import './ui/cards.css';
-import { anyFurniName, getFurni, getWallFurni, portraitState, vitalConditions, type ResumoCampanha, type ServerMsg } from '@crona/shared';
+import { anyFurniName, getFurni, ladoDaCriatura, getWallFurni, portraitState, vitalConditions, type ResumoCampanha, type ServerMsg } from '@crona/shared';
 import { Net } from './net';
 import { clearIconCache } from './render/bubbles';
 import { breathMode } from './render/portrait';
@@ -229,6 +229,11 @@ view.podePassoSombras = (id) => {
   const crId = view.users.get(id)?.criatura?.id;
   return !!crId && !!app.state.bestiario.find((c) => c.id === crId)?.passoSombras;
 };
+// quantas casas a peça ocupa no chão: a criatura pela categoria de tamanho do livro (tamanho.ts; 06/11)
+view.ladoDe = (id) => {
+  const crId = view.users.get(id)?.criatura?.id;
+  return crId ? ladoDaCriatura(app.state.bestiario.find((c) => c.id === crId)) : 1;
+};
 // pose de cada peça no tabuleiro: Armado (no painel da peça) e machucado (menos da metade dos PV)
 view.estadoDe = (id) => {
   const ch = app.session.session?.characters.find((c) => c.id === -id);
@@ -238,11 +243,6 @@ view.estadoDe = (id) => {
 view.respiracaoDe = (id) => {
   const ch = app.session.session?.characters.find((c) => c.id === -id);
   return ch ? breathMode(vitalConditions(ch.vitals)) : null;
-};
-// os PV de cada peça (de 0 a 1), para o arco da ficha no mapa tático
-view.pvDe = (id) => {
-  const v = app.session.session?.characters.find((c) => c.id === -id)?.vitals;
-  return v && v.pvMax > 0 ? Math.max(0, Math.min(1, v.pv / v.pvMax)) : null;
 };
 if (import.meta.env.DEV) (window as unknown as { __crona: App }).__crona = app;
 

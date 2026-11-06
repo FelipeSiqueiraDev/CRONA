@@ -8,7 +8,7 @@
  * mesmo da tela MAPA, com as marcações do combate por cima.
  */
 import { clonarFicha, gravarFicha } from '../fichaOrigem';
-import { combate as cb, footprint, getFurni, regras, vitalConditions, type AcaoMochila, type Character, type CharacterDef, type FichaSalva, type Session, type Vitals } from '@crona/shared';
+import { casaMaisPerto, casasMaisPerto, combate as cb, footprint, getFurni, pegadaDaPeca, regras, vitalConditions, type AcaoMochila, type Character, type CharacterDef, type FichaSalva, type Session, type Vitals } from '@crona/shared';
 import { COR_LADO, marcasVazias } from '../render/combateMarcas';
 import { portraitCanvas } from '../render/portrait';
 import { cobertura as coberturaEntre, elevado, flanqueia, FORMAS, naArea, type Casa, type FormaArea } from '../room/combateGeo';
@@ -1448,24 +1448,32 @@ export class CombateScreen {
 
   private tabuleiroEntre(c: Combate, ator: Participante, alvo: Participante): TabuleiroAtaque | null {
     const map = this.app.view?.map;
-    const a = this.casa(ator.id);
-    const b = this.casa(alvo.id);
-    if (!map || !a || !b) return a && b ? null : { metros: null, adjacente: false, cobertura: { tipo: 'nenhuma' }, elevado: false, flanqueia: false, emCorpoACorpo: false };
+    const a0 = this.casa(ator.id);
+    const b0 = this.casa(alvo.id);
+    if (!map || !a0 || !b0) return a0 && b0 ? null : { metros: null, adjacente: false, cobertura: { tipo: 'nenhuma' }, elevado: false, flanqueia: false, emCorpoACorpo: false };
+    // a criatura grande ocupa várias casas: a distância conta entre as casas mais perto das duas pegadas (tamanho.ts)
+    const pegada = (id: number, x: { x: number; y: number }) => pegadaDaPeca(x.x, x.y, this.app.view.ladoDe?.(-id) ?? 1);
+    const pegAlvo = pegada(alvo.id, b0);
+    const [a, b] = casasMaisPerto(pegada(ator.id, a0), pegAlvo);
     const outras: Casa[] = [];
     for (const u of this.app.view.users.values()) if (-u.id !== ator.id && -u.id !== alvo.id) outras.push({ x: u.x, y: u.y });
     const doLado = c.participantes.filter((p) => p.lado === ator.lado && !p.fora && !vitalConditions(this.vitais(p.id)).morrendo);
-    const casasLado = doLado.map((p) => this.casa(p.id)).filter((x): x is Casa => !!x);
+    // de cada aliado, a casa dele mais perto do alvo (o flanco e o corpo a corpo também contam da borda)
+    const casasLado = doLado
+      .filter((p) => p.id !== ator.id)
+      .map((p) => {
+        const x = this.casa(p.id);
+        return x ? casasMaisPerto(pegada(p.id, x), pegAlvo)[0] : null;
+      })
+      .filter((x): x is Casa => !!x);
     return {
       metros: cb.metrosDe(cb.distanciaCasas(a, b)),
       adjacente: cb.adjacente(a, b),
       cobertura: coberturaEntre(map, a, b, outras, !!this.app.view.users.get(-alvo.id)?.agachado),
       elevado: elevado(map, a, b),
-      flanqueia: flanqueia(
-        a,
-        b,
-        casasLado.filter((x) => !(x.x === a.x && x.y === a.y)),
-      ),
-      emCorpoACorpo: casasLado.some((x) => cb.adjacente(x, b)),
+      flanqueia: flanqueia(a, b, casasLado),
+      // como antes: quem ataca, colado no alvo, também conta
+      emCorpoACorpo: cb.adjacente(a, b) || casasLado.some((x) => cb.adjacente(x, casaMaisPerto(pegAlvo, x.x, x.y))),
     };
   }
 

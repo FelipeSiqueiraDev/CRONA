@@ -91,6 +91,8 @@ import {
   MAPA_MAX,
   MAPA_MIN,
   URL_MAPA_RE,
+  alturaDaCriatura,
+  ladoDaCriatura,
 } from '@crona/shared';
 import { aparelhosAbertos, confereSenha, contaDaSessao, EMAIL_RE, fecharOutras, fecharSessao, gastarRecuperacao, guardarRecuperacao, hashSenha, novaSessao, SENHA_MIN, senhaAntiga, type Conta } from './contas';
 import { campanhaPrincipal, criarCampanha, entrarComCodigo, listaDaConta, mudarCampanha, mudarConvite, porNaCampanha } from './campanhas';
@@ -597,11 +599,19 @@ export class Hotel implements HotelApi {
     let mudou = false;
     for (const cr of this.db.bestiario ?? [])
       for (const ap of cr.aparencias) {
-        if (!ap.arte || this.charDaArte(ap.arte) !== null) continue;
+        // a altura do boneco pela categoria de tamanho do livro (06/11; 104 px = 1,80 m) ou a da criatura
+        const height = Math.round((104 * alturaDaCriatura(cr)) / 1.8);
+        const ja = ap.arte ? this.charDaArte(ap.arte) : null;
+        if (ja !== null) {
+          const ch = this.db.characters.find((c) => c.id === ja);
+          if (ch && ch.height !== height) ((ch.height = height), (mudou = true));
+          continue;
+        }
+        if (!ap.arte) continue;
         const sheet = folhaDaPasta(ap.arte);
         if (!sheet) continue;
         // a folha é a grade 4 × 2 das 8 direções; o tabuleiro usa as poses (tabuleiro-32bits), a folha é só o reserva
-        this.db.characters.push({ id: this.db.nextCharId++, name: `${cr.nome} (${ap.nome})`, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height: 104, fps: 4, sequence: [0], removeBg: false });
+        this.db.characters.push({ id: this.db.nextCharId++, name: `${cr.nome} (${ap.nome})`, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height, fps: 4, sequence: [0], removeBg: false });
         mudou = true;
       }
     // os NPCs do mestre (16/10): a arte deles vira personagem do mesmo jeito
@@ -1919,6 +1929,11 @@ export class Hotel implements HotelApi {
   }
 
   /** A criatura do bestiário se move pelas sombras (a Magistrada, `Criatura.passoSombras`)? */
+  /** Casas de cada lado que a criatura ocupa no chão (a categoria de tamanho do livro; tamanho.ts). */
+  ladoDaCriatura(id?: string): number {
+    return id ? ladoDaCriatura(this.db.bestiario?.find((x) => x.id === id)) : 1;
+  }
+
   criaturaPassoSombras(id?: string): boolean {
     return !!id && !!this.db.bestiario?.find((x) => x.id === id)?.passoSombras;
   }

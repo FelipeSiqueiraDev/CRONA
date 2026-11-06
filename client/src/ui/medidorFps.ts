@@ -54,15 +54,30 @@ export function ligarMedidor(view: RoomView, tela: HTMLCanvasElement, cena: () =
         const scripts = (e.scripts ?? []).filter((s) => s.duration > 5).map((s) => `${s.invoker} ${Math.round(s.duration)}ms ${s.sourceURL.split('/').pop() ?? ''}`);
         travadasLongas.push({ em: Math.round(e.startTime), ms: Math.round(e.duration), estilo: Math.round(estilo), scripts });
         if (travadasLongas.length > 30) travadasLongas.shift();
-        ultimaLonga = `${Math.round(e.duration)} ms: estilo ${Math.round(estilo)} ms${scripts[0] ? `, ${scripts[0]}` : ''}`;
+        // o que não é script nem estilo é a espera (o coletor de lixo, a placa de vídeo, outra aba)
+        const js = (e.scripts ?? []).reduce((s, x) => s + x.duration, 0);
+        ultimaLonga = `${Math.round(e.duration)}ms js ${Math.round(js)} est ${Math.round(estilo)}${scripts[0] ? ` ${scripts[0]}` : ''}`;
       }
     }).observe({ type: 'long-animation-frame', buffered: false });
   } catch {
     /* o navegador não mede quadros longos */
   }
   // a interface em volta do tabuleiro: cada mudança no HTML (fora o próprio medidor)
+  // e qual parte mudou mais (06/11: "interface 6/s" no PC do Felipe, com tudo parado; o nome diz quem é)
+  const porParte = new Map<string, number>();
+  const nomeDe = (n: Node) => {
+    const e = (n.nodeType === 1 ? n : n.parentElement) as HTMLElement | null;
+    if (!e) return '?';
+    const c = (x: Element | null) => (x && typeof x.className === 'string' && x.className ? `.${x.className.split(' ')[0]}` : x?.tagName.toLowerCase() ?? '');
+    return `${c(e.parentElement)}>${c(e)}`;
+  };
   new MutationObserver((ms) => {
-    for (const m of ms) if (m.target !== el) mudancas++;
+    for (const m of ms) {
+      if (m.target === el) continue;
+      mudancas++;
+      const k = `${nomeDe(m.target)}${m.attributeName ? `[${m.attributeName}]` : ''}`;
+      porParte.set(k, (porParte.get(k) ?? 0) + 1);
+    }
   }).observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
   const laco = () => {
     requestAnimationFrame(laco);
@@ -75,7 +90,7 @@ export function ligarMedidor(view: RoomView, tela: HTMLCanvasElement, cena: () =
     escrever([
       `${cena()}`,
       `FPS ${(quadros / s).toFixed(0)}   desenho ${(desenho / Math.max(1, quadros)).toFixed(1)} ms (pior ${pior.toFixed(0)})`,
-      `travadas ${travadas} (${travadoMs.toFixed(0)} ms)   interface ${Math.round(mudancas / s)}/s`,
+      `travadas ${travadas} (${travadoMs.toFixed(0)} ms)   interface ${Math.round(mudancas / s)}/s ${[...porParte].sort((x, y) => y[1] - x[1])[0]?.[0] ?? ''}`.slice(0, 52),
       `tela ${tela.width}x${tela.height}   dpr ${devicePixelRatio}   qualidade ${Math.round(view.qualidade * 100)}%`,
       `quadro longo: ${ultimaLonga || '—'}`.slice(0, 52),
       `partes: ${perfil
@@ -91,6 +106,7 @@ export function ligarMedidor(view: RoomView, tela: HTMLCanvasElement, cena: () =
     travadas = 0;
     travadoMs = 0;
     mudancas = 0;
+    porParte.clear();
     antes = agora;
   };
   requestAnimationFrame(laco);

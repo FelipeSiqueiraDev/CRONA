@@ -80,6 +80,8 @@ import {
   type WallItem,
   type ChamaCriatura,
   DIRS,
+  naPegada,
+  pegadaDaPeca,
 } from '@crona/shared';
 import type { RoomData, TokenData } from './db';
 import { SYSTEM_OWNER } from './seed';
@@ -130,6 +132,8 @@ export interface HotelApi {
   roomChanged(): void;
   /** a criatura do bestiário se move pelas sombras (Onipresença da Magistrada)? */
   criaturaPassoSombras(id?: string): boolean;
+  /** casas de cada lado que a criatura ocupa (tamanho.ts) */
+  ladoDaCriatura(id?: string): number;
   /** a hora do dia da campanha desta cena, e a troca dela (vale para todas as cenas da campanha) */
   horaDaCena(roomId: number): HoraDoDia | undefined;
   mudarHora(roomId: number, hora: HoraDoDia): void;
@@ -845,6 +849,9 @@ export class RoomInstance {
       if (o.client.id === exceptId) continue;
       if (o.x === x && o.y === y) return true;
       if (o.next && o.next.x === x && o.next.y === y) return true;
+      // a criatura grande ocupa a pegada inteira (06/11, a Tab. 7.1 do livro; tamanho.ts)
+      const lado = o.meta?.criatura ? this.hotel.ladoDaCriatura(o.meta.criatura.id) : 1;
+      if (lado > 1 && (naPegada(pegadaDaPeca(o.x, o.y, lado), x, y) || (o.next && naPegada(pegadaDaPeca(o.next.x, o.next.y, lado), x, y)))) return true;
     }
     return false;
   }
