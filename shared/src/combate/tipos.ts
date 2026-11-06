@@ -26,6 +26,8 @@ export interface Participante {
   id: number;
   /** a Erosiva: turnos que ainda sofre 2d4 de Morte no começo (LR p. 146) */
   erosao?: number;
+  /** a hemorragia do Descarnar: o dano, a DT e quantos turnos seguidos passou na Fortitude (dois estancam; LR p. 129) */
+  hemorragia?: { dano: string; dt: number; seguidos: number };
   /** a Consumidora com 2 PE: imóvel desde esta rodada; no começo do turno dele numa rodada seguinte, solta (LR p. 146) */
   imovelDesde?: number;
   nome: string;
@@ -143,6 +145,8 @@ export interface Combate {
    */
   presencas?: { id: number; dt: number; dano: string; de: string }[];
   presencaFeita?: number[];
+  /** a Fortitude da hemorragia esperando o mestre, no começo do turno de quem sangra (LR p. 129) */
+  hemorragias?: { id: number; dt: number; dano: string }[];
 }
 
 /** Um lugar na ordem de iniciativa: um agente, ou o turno do mestre com todos os seres dele. */
@@ -265,8 +269,10 @@ export interface AlvoRitual {
   condicao?: string;
   /** o ritual leva os PV ou a SAN do alvo a 0 (quem falha na Lâmina do Medo ou no Conhecendo o Medo) */
   zera?: 'pv' | 'san';
-  /** o que o ritual deixa no alvo e o jogo não conta (a hemorragia do Descarnar), escrito no registro */
+  /** o que o ritual deixa no alvo e o jogo não conta, escrito no registro */
   nota?: string;
+  /** a hemorragia do Descarnar em quem falhou: o dano de cada turno e a DT da Fortitude (LR p. 129) */
+  hemorragia?: { dano: string; dt: number };
 }
 
 /** Um ritual que o mestre confirmou na tela (LR p. 117–121; COMBATE.md, seção 15.1). */
@@ -336,6 +342,8 @@ export type AcaoCombate =
   | { tipo: 'massivo'; alvo: number; total?: number; d20?: number; descartar?: boolean }
   /** o teste de Vontade contra a presença perturbadora: o total e a soma dos dados do dano mental, ou `descartar` */
   | { tipo: 'presenca'; id: number; total?: number; soma?: number; descartar?: boolean }
+  /** a Fortitude da hemorragia: passou, ou falhou com a soma dos dados de Sangue */
+  | { tipo: 'hemorragia'; id: number; passou: boolean; soma?: number }
   /** a SAN perdida para sempre: aceitar baixa o máximo na ficha; negar deixa como está */
   | { tipo: 'perdaSan'; id: number; aceitar: boolean }
   /** manobra resolvida na tela: teste oposto, condição no alvo e o dano de esmagar */

@@ -591,7 +591,10 @@ export function calcular(f: Ficha): Calculado {
       const p = e.pericia === 'escolhida' ? it.escolha?.pericia : e.pericia;
       if (p) doItem[p] = (doItem[p] ?? 0) + valor(e.valor, atr);
     }
-    const principal = Object.keys(doItem)[0] as PericiaId | undefined;
+    // a perícia do item: a que ele melhora, ou a escolhida (o manual operacional dá treino, não bônus; SaH p. 39)
+    const principal = (Object.keys(doItem)[0] as PericiaId | undefined) ?? it.escolha?.pericia;
+    // a Função Adicional: +2 numa perícia a mais, escolhida (LR p. 64)
+    if (it.modificacoes?.includes('funcao-adicional') && it.escolha?.pericia2) doItem[it.escolha.pericia2] = (doItem[it.escolha.pericia2] ?? 0) + 2;
     for (const m of it.modificacoes ?? [])
       for (const e of cat.modificacao(m)?.efeitos ?? []) {
         if (e.alvo !== 'pericia' || e.condicional || e.pericia === 'todas') continue;
@@ -649,7 +652,9 @@ export function calcular(f: Ficha): Calculado {
   // sem o kit que o uso pede, −5 (LR p. 40): a Medicina pede o kit em todo uso; nas outras, só em alguns usos (o aviso)
   for (const e of cat.CATALOGO.equipamentos) {
     if (!e.kitDe || !pericias[e.kitDe]) continue;
-    const tem = f.inventario.some((it) => it.id === e.id || (it.tipo === 'equipamento' && it.modificacoes?.includes('instrumental') && it.escolha?.pericia === e.kitDe));
+    // o kit de profissão vale para a profissão dele (sem escolha, para qualquer uma; SaH p. 94); o Instrumental faz de kit
+    const daProfissao = (it: ItemFicha) => !it.escolha?.profissao || !f.profissao || it.escolha.profissao.trim().toLowerCase() === f.profissao.trim().toLowerCase();
+    const tem = f.inventario.some((it) => (it.id === e.id && (e.kitDe !== 'profissao' || daProfissao(it))) || (it.tipo === 'equipamento' && it.modificacoes?.includes('instrumental') && it.escolha?.kit === e.kitDe));
     if (tem) continue;
     pericias[e.kitDe].semKit = e.nome;
     if (e.kitDe === 'medicina') pericias.medicina.bonus += PENALIDADE_SEM_KIT;

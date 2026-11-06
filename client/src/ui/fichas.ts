@@ -1952,6 +1952,26 @@ export class FichasScreen {
       );
     };
     desenharMods();
+    // o que as modificações e o kit de profissão pedem escolher (LR p. 64; SaH p. 94)
+    const escolhaPericia = (rotulo: string, chave: 'pericia2' | 'kit', valor?: regras.PericiaId) =>
+      h(
+        'label',
+        { class: 'fj-campo' },
+        h('span', null, rotulo),
+        h(
+          'select',
+          { class: 'fx-inp', onchange: (e: Event) => ((it.escolha = { ...it.escolha, [chave]: (e.target as HTMLSelectElement).value || undefined }), this.render()) },
+          h('option', { value: '' }, 'Escolha…'),
+          ...regras.periciasDoItem().map((p) => h('option', { value: p.id, selected: p.id === valor }, p.nome)),
+        ),
+      );
+    if (it.modificacoes?.includes('funcao-adicional')) j.corpo.append(escolhaPericia('Função Adicional: +2 em', 'pericia2', it.escolha?.pericia2));
+    if (it.modificacoes?.includes('instrumental')) j.corpo.append(escolhaPericia('Instrumental: serve de kit de', 'kit', it.escolha?.kit));
+    if (it.id === 'kit-de-profissao') {
+      const prof = h('input', { class: 'fx-inp', value: it.escolha?.profissao ?? fs.ficha.profissao ?? '', maxlength: 40, placeholder: 'Profissão (ex.: mecânico)' }) as HTMLInputElement;
+      prof.addEventListener('change', () => (it.escolha = { ...it.escolha, profissao: prof.value.trim() || undefined }));
+      j.corpo.append(h('label', { class: 'fj-campo' }, h('span', null, 'Kit de qual profissão'), prof));
+    }
     if (it.tipo !== 'amaldicoado' && it.tipo !== 'cena') {
       j.corpo.append(
         h('h4', { class: 'fj-sub' }, 'Modificações e maldições'),

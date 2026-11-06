@@ -1051,6 +1051,26 @@ describe('combate: ritual', () => {
     assert.ok(f.ok && f.perdaSan?.pe);
   });
 
+  test('a hemorragia do Descarnar: Fortitude no começo do turno do alvo; falhou, dano; dois seguidos passando, estanca', () => {
+    let c = aplicar(naVezDeTepes(), rit(2, { ritual: 'Descarnar', alvos: [{ id: 10, hemorragia: { dano: '2d8', dt: 16 } }] }));
+    assert.deepEqual(combate.participante(c, 10)?.hemorragia, { dano: '2d8', dt: 16, seguidos: 0 });
+    // o turno do mestre: o Ocultista sangra
+    c = aplicar(c, { tipo: 'passar' });
+    assert.deepEqual(c.hemorragias, [{ id: 10, dt: 16, dano: '2d8' }]);
+    const r = combate.aplicar(c, { tipo: 'hemorragia', id: 10, passou: false, soma: 9 }, ctx());
+    assert.ok(r.ok);
+    assert.deepEqual(r.vitais, [{ id: 10, pv: 11 }]);
+    c = r.combate!;
+    // dois turnos seguidos passando: estanca
+    for (let rodada = 0; rodada < 2; rodada++) {
+      while (!c.hemorragias?.length) c = aplicar(c, { tipo: 'passar' });
+      c = aplicar(c, { tipo: 'hemorragia', id: 10, passou: true });
+    }
+    assert.equal(combate.participante(c, 10)?.hemorragia, undefined);
+    assert.ok(c.registro.some((l) => /a hemorragia estanca/.test(l.texto)));
+    assert.equal(combate.danoDoRitual('descarnar', 'discente')?.falhou?.hemorragia, '4d8');
+  });
+
   test('as névoas, a soma extrema e o que o livro diz de quem passa e de quem falha (LR p. 126–140)', () => {
     const r = { pe: 3, dt: 16, qual: 'padrao', circulo: 2 };
     assert.deepEqual(combate.noAmbiente('cineraria-discente', r), { pe: 1, dt: 21, qual: 'padrao', dano: null, bloqueio: null, linhas: ['Cinerária: DT +5', '−2 PE'] });

@@ -520,6 +520,38 @@ export class CombateScreen {
    * O cartão da presença perturbadora (01/11; LR p. 180): o agente faz Vontade contra a DT; o mestre digita o total e
    * a soma dos dados do dano mental, e o jogo tira a SAN (passou, metade).
    */
+  /** A Fortitude da hemorragia do Descarnar (LR p. 129): passou (dois seguidos estancam) ou falhou com o dano de Sangue. */
+  private cartaoHemorragia(c: Combate, x: NonNullable<Combate['hemorragias']>[number]): HTMLElement {
+    const p = cb.participante(c, x.id);
+    const nome = p?.nome ?? 'O alvo';
+    const fort = this.calcDe(x.id)?.pericias.fortitude;
+    const am = this.ameacaDe(x.id);
+    const rola = fort ? textoTeste(fort.dados, fort.bonus, fort.penalidadeDados) : am ? textoTeste(am.fortitude.dados, am.fortitude.bonus, 0) : null;
+    const dano = h('input', { class: 'cb-dado', type: 'text', inputmode: 'numeric', maxlength: 3, placeholder: '—', 'aria-label': `Soma dos dados (${x.dano})` }) as HTMLInputElement;
+    return h(
+      'div',
+      { class: 'cb-pend-item ruim cb-massivo' },
+      h('span', { class: 'cb-pend-ic' }, icPintado('alerta')),
+      h(
+        'div',
+        null,
+        h('p', null, h('b', null, `Hemorragia: ${nome} `), `Fortitude `, h('b', null, `DT ${x.dt}`), `; falhou, ${x.dano} de Sangue. Dois turnos seguidos passando, estanca${p?.hemorragia?.seguidos ? ' (já passou um)' : ''} (LR p. 129).`),
+        h('p', null, rola ? `${nome} rola: ${rola}.` : 'Sem ficha: o mestre rola a Fortitude.'),
+        h(
+          'div',
+          { class: 'cb-massivo-linha' },
+          botao('Passou', null, () => this.acao({ tipo: 'hemorragia', id: x.id, passou: true }), 'cb-mini'),
+          h('label', { class: 'cb-caixa-dado' }, h('small', null, x.dano), dano),
+          botao('Falhou', null, () => {
+            const n = Number(dano.value.trim());
+            if (!dano.value.trim() || !Number.isFinite(n)) return toast(`Digite a soma dos dados (${x.dano}).`, 'error');
+            this.acao({ tipo: 'hemorragia', id: x.id, passou: false, soma: Math.round(n) });
+          }, 'cb-mini'),
+        ),
+      ),
+    );
+  }
+
   private cartaoPresenca(c: Combate, x: NonNullable<Combate['presencas']>[number]): HTMLElement {
     const nome = cb.participante(c, x.id)?.nome ?? 'O agente';
     const von = this.calcDe(x.id)?.pericias.vontade;
@@ -2198,7 +2230,7 @@ export class CombateScreen {
 
   private renderPend() {
     const c = this.combate;
-    const nMassivos = (c?.massivos?.length ?? 0) + (c?.perdasSan?.length ?? 0) + (c?.presencas?.length ?? 0);
+    const nMassivos = (c?.massivos?.length ?? 0) + (c?.perdasSan?.length ?? 0) + (c?.presencas?.length ?? 0) + (c?.hemorragias?.length ?? 0);
     if (nMassivos > this.massivosVistos) this.abrirGaveta('pend');
     this.massivosVistos = nMassivos;
     if (!this.mudou('pend', [c && { ...c, registro: c.registro.slice(-16) }, this.assinaturaPecas(), this.assinaturaFichas(), this.atorId])) return;
@@ -2242,6 +2274,7 @@ export class CombateScreen {
       // o teste de Fortitude do dano massivo (LR p. 88): na frente de tudo, com a caixa do total e o resultado
       for (const m of c.massivos ?? []) itens.unshift(this.cartaoMassivo(c, m));
       for (const x of c.presencas ?? []) itens.unshift(this.cartaoPresenca(c, x));
+      for (const x of c.hemorragias ?? []) itens.unshift(this.cartaoHemorragia(c, x));
       for (const d of depois) itens.push(item('alerta', 'ruim', h('span', null, h('b', null, 'Da última ação: '), d)));
       for (const p of c.participantes) {
         const cond = vitalConditions(this.vitais(p.id));

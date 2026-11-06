@@ -154,8 +154,8 @@ export function escolhaDoItem(tipo: TipoItemCatalogo, id: string): 'pericia' | '
 }
 
 /** As perícias que um utensílio ou uma vestimenta podem melhorar (todas, fora Luta e Pontaria; LR p. 63). */
-export function periciasDoItem(): { id: PericiaId; nome: string }[] {
-  return cat.CATALOGO.pericias.filter((p) => p.id !== 'luta' && p.id !== 'pontaria').map((p) => ({ id: p.id, nome: p.nome }));
+export function periciasDoItem(id?: string): { id: PericiaId; nome: string }[] {
+  return cat.CATALOGO.pericias.filter((p) => id === 'manual-operacional' || (p.id !== 'luta' && p.id !== 'pontaria')).map((p) => ({ id: p.id, nome: p.nome }));
 }
 
 // ---------------------------------------------------------------------------

@@ -240,6 +240,11 @@ function comecarTurno(c: Combate, e: Entrada, ctx: Contexto) {
       delete p.imovelDesde;
       registrar(c, ctx.agora, 'estado', `${p.nome} deixa de estar imóvel (Consumidora, uma rodada).`);
     }
+    // a hemorragia do Descarnar: a Fortitude do começo do turno fica nas pendências (LR p. 129)
+    if (p.hemorragia && !(c.hemorragias ?? []).some((x) => x.id === p.id)) {
+      (c.hemorragias ??= []).push({ id: p.id, dt: p.hemorragia.dt, dano: p.hemorragia.dano });
+      registrar(c, ctx.agora, 'estado', `${p.nome} sangra (Descarnar): Fortitude DT ${p.hemorragia.dt}; falhou, ${p.hemorragia.dano} de Sangue (LR p. 129).`);
+    }
     if (p.erosao) {
       p.erosao -= 1;
       registrar(c, ctx.agora, 'estado', `${p.nome} envelhece pela Erosiva: sofre 2d4 de dano de Morte${p.erosao ? ' (mais uma rodada)' : ' (a última)'} (LR p. 146).`);
@@ -826,6 +831,13 @@ function ritual(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
       mudar(vitais, p.id, 'san', 0);
       registrar(c, ctx.agora, 'acao', `${p.nome} vai a 0 de SAN pelo ritual e fica enlouquecendo.`, ['enlouquecendo']);
     }
+    // o Descarnar em quem falhou: a hemorragia, até passar dois turnos seguidos na Fortitude
+    const hem = r.hemorragia && typeof r.hemorragia === 'object' ? (r.hemorragia as Record<string, unknown>) : null;
+    if (hem) {
+      const dano = texto(hem.dano, 12) || '2d8';
+      p.hemorragia = { dano, dt: inteiro(hem.dt, 1, 99) ?? 15, seguidos: 0 };
+      registrar(c, ctx.agora, 'estado', `${p.nome} fica com hemorragia: no começo de cada turno, Fortitude; falhou, ${dano} de Sangue; dois turnos seguidos passando, estanca (LR p. 129).`);
+    }
     const nota = texto(r.nota, 160);
     if (nota) registrar(c, ctx.agora, 'estado', `${p.nome}: ${nota}.`);
     const cond = texto(r.condicao, 30);
@@ -1237,6 +1249,32 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
     case 'presenca':
       return presenca(c, a, ctx);
 
+    case 'hemorragia': {
+      const x = (c.hemorragias ?? []).find((y) => y.id === a.id);
+      const p = participante(c, a.id);
+      if (!x || !p) return erro('Não há teste de hemorragia esperando para esse ser.');
+      c.hemorragias = (c.hemorragias ?? []).filter((y) => y !== x);
+      if (!c.hemorragias.length) delete c.hemorragias;
+      const vitais: MudancaVitais[] = [];
+      if (a.passou) {
+        const seguidos = (p.hemorragia?.seguidos ?? 0) + 1;
+        if (seguidos >= 2) {
+          delete p.hemorragia;
+          registrar(c, ctx.agora, 'acao', `${p.nome} passa na Fortitude pela segunda vez seguida: a hemorragia estanca.`, ['estancou']);
+        } else {
+          if (p.hemorragia) p.hemorragia.seguidos = seguidos;
+          registrar(c, ctx.agora, 'acao', `${p.nome} passa na Fortitude da hemorragia (mais um turno passando, estanca).`);
+        }
+        return { ok: true, combate: c };
+      }
+      const soma = inteiro(a.soma, 0, 999);
+      if (soma === undefined) return erro(`Falta a soma dos dados (${x.dano}).`);
+      if (p.hemorragia) p.hemorragia.seguidos = 0;
+      registrar(c, ctx.agora, 'acao', `${p.nome} falha na Fortitude da hemorragia.`, ['falhou']);
+      aplicarDano(c, p, { final: soma, formula: x.dano, conta: String(soma), tipo: 'sangue' }, ctx, vitais);
+      return { ok: true, combate: c, vitais };
+    }
+
     case 'perdaSan': {
       const i = (c.perdasSan ?? []).findIndex((x) => x.id === a.id);
       if (i < 0) return erro('Não há perda de SAN esperando para esse ser.');
@@ -1323,6 +1361,7 @@ const TIPOS = new Set<AcaoCombate['tipo']>([
   'ataque',
   'massivo',
   'presenca',
+  'hemorragia',
   'perdaSan',
   'manobra',
   'ritual',

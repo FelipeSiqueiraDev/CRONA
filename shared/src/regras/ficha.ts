@@ -80,7 +80,17 @@ export interface ItemFicha {
   /** as cargas já gastas do item de usos contados (taser, spray de pimenta, pistola de dardos; LR p. 66) */
   cargasUsadas?: number;
   /** a perícia do utensílio, o elemento das amarras ou o ritual guardado no selo paranormal (o selo: LR p. 151) */
-  escolha?: { pericia?: PericiaId; elemento?: Elemento; ritual?: string };
+  escolha?: {
+    pericia?: PericiaId;
+    elemento?: Elemento;
+    ritual?: string;
+    /** a perícia a mais da modificação Função Adicional (LR p. 64) */
+    pericia2?: PericiaId;
+    /** o kit de perícia que a modificação Instrumental faz do acessório (LR p. 64) */
+    kit?: PericiaId;
+    /** a profissão do kit de profissão (SaH p. 94) */
+    profissao?: string;
+  };
   /** achado na missão: não ocupa vaga da patente, que limita o que a Ordem fornece (LR p. 53) */
   achado?: boolean;
   /** item do cenário: nome, espaços, tipo (o ícone) e o texto do mestre */
