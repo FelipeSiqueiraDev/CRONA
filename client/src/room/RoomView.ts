@@ -1,3 +1,4 @@
+import { perfil } from '../render/perfil';
 import { CODEX_NO_TABULEIRO } from '../render/arteCodex';
 import {
   DEFAULT_PARTICLE_LEVEL,
@@ -184,6 +185,16 @@ interface PrepNo {
   sx1: number;
   sy1: number;
   chave?: string;
+  /** o pedaço pronto para a lista do quadro, reaproveitado enquanto o móvel não muda (06/11: sem objetos novos) */
+  dr?: Drawable & { q: QuadroNo };
+  hit?: Hit;
+}
+/** O que muda de um quadro para outro num pedaço parado. */
+interface QuadroNo {
+  it: { id: number; x: number; y: number; z: number; quebrado?: boolean };
+  alpha: number;
+  selected: boolean;
+  cela: { escuro: number } | undefined;
 }
 /** O móvel pronto para o quadro e o que ele era quando foi preparado (prepDoMovel). */
 interface PrepMovel {
@@ -531,7 +542,9 @@ export class RoomView {
    * mexe sozinho (lê o tempo ou a energia, usa imagem ou mistura de cor) e é desenhado ao vivo.
    */
   private nosProntos = new Map<string, { c: HTMLCanvasElement; ox: number; oy: number } | null>();
-  private nosEscala = '';
+  private nosEscala = NaN;
+  /** a matriz do mundo enquanto os móveis são desenhados (lida uma vez por quadro) */
+  private tMundo: DOMMatrix | null = null;
   private nosSala = -1;
   /** quanto tempo (ms) este quadro já gastou guardando pedaços novos: até 4 ms, para a entrada na cena não engasgar */
   private nosGasto = 0;
@@ -557,7 +570,7 @@ export class RoomView {
   /** o que não muda entre quadros em cada móvel parado (prepDoMovel), pelo id dele */
   private preps = new Map<number, PrepMovel>();
   /** os desenhos de móvel guardados por um instante (visualDoMovel) */
-  private visGuardados = new Map<string, { vis: FVisual; ate: number }>();
+  private visPorMovel = new Map<number, { vis: FVisual; ate: number; defId: string; estado: number; rot: number; piso?: string; escala?: number; vazio?: boolean; modelo?: string }>();
   /** a chave da camada estática sem a escala, e quando a escala mudou por último (o zoom em andamento) */
   private staticBase = '';
   private escalaVista = 0;
@@ -732,7 +745,7 @@ export class RoomView {
 
   // ---------- estado ----------
   enter(info: RoomInfo, items: FloorItem[], wallItems: WallItem[], users: UserInfo[], myId: number) {
-    this.visGuardados.clear();
+    this.visPorMovel.clear();
     this.preps.clear();
     this.info = info;
     this.entrouEm = performance.now();
@@ -2343,15 +2356,15 @@ export class RoomView {
    * (o móvel, o pedaço, o giro, o estado, o lugar); a escala entra aqui. `x0..y1`: onde ele fica no mundo (a silhueta).
    */
   private desenharNo(ctx: CanvasRenderingContext2D, draw: (p: Painter) => void, painter: Painter, chave: string, x0: number, y0: number, x1: number, y1: number) {
-    const T = ctx.getTransform();
+    // a matriz do mundo, lida uma vez por quadro (06/11: o getTransform de cada pedaço criava ~460 objetos por quadro)
+    const T = this.tMundo ?? ctx.getTransform();
     // dando zoom (a escala mudando), alguém forçando a tranca, ou a tela girada: ao vivo
     if (T.b || T.c || performance.now() - this.escalaMudouEm < 160 || forcandoAgora(painter.seed)) return draw(painter);
     const k = T.a;
-    const escala = k.toFixed(4);
     const sala = this.info?.id ?? -1;
-    if (escala !== this.nosEscala || sala !== this.nosSala) {
+    if (Math.abs(k - this.nosEscala) > 5e-5 || sala !== this.nosSala) {
       this.nosProntos.clear();
-      this.nosEscala = escala;
+      this.nosEscala = k;
       this.nosSala = sala;
     }
     let p = this.nosProntos.get(chave);
@@ -2363,10 +2376,10 @@ export class RoomView {
       this.nosProntos.set(chave, p);
     }
     if (!p) return draw(painter);
-    ctx.save();
+    // sem save/restore (guardam o estado inteiro do canvas): só a matriz muda e volta
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(p.c, Math.round(T.e + p.ox * k), Math.round(T.f + p.oy * k));
-    ctx.restore();
+    ctx.setTransform(T);
   }
 
   /** O desenho pronto de um pedaço de móvel, recortado no que tem pixel; `null` se ele mexe sozinho. */
@@ -2899,14 +2912,14 @@ export class RoomView {
    */
   private visualDoMovel(def: FurniDef, it: { id: number; defId: string; rot: number; escala?: number; vazio?: boolean; modelo?: string }, estado: number, ghost: boolean, now: number): FVisual {
     const piso = this.info?.floorStyle;
-    const chave = `${it.id}|${it.defId}|${estado}|${it.rot}|${piso ?? ''}|${it.escala ?? 1}|${it.vazio ? 1 : 0}|${it.modelo ?? ''}`;
-    const guardado = ghost ? undefined : this.visGuardados.get(chave);
-    if (guardado && guardado.ate > now) return guardado.vis;
+    // conferido campo a campo pelo número do móvel, sem montar texto (06/11: um texto novo por móvel por quadro)
+    const g = ghost ? undefined : this.visPorMovel.get(it.id);
+    if (g && g.ate > now && g.defId === it.defId && g.estado === estado && g.rot === it.rot && g.piso === piso && g.escala === it.escala && g.vazio === it.vazio && g.modelo === it.modelo) return g.vis;
     const base = furniVisual(def, estado, it.id);
     const comArte = visualComArte(def, base, estado, it.id, it.rot, piso, it.escala ?? 1, it.vazio, it.modelo);
     if (comArte && !ghost && artePodeGuardar(it.defId, it.id, piso, it.vazio, it.modelo)) {
-      if (this.visGuardados.size > 3000) this.visGuardados.clear();
-      this.visGuardados.set(chave, { vis: comArte, ate: now + 1000 });
+      if (this.visPorMovel.size > 3000) this.visPorMovel.clear();
+      this.visPorMovel.set(it.id, { vis: comArte, ate: now + 1000, defId: it.defId, estado, rot: it.rot, piso, escala: it.escala, vazio: it.vazio, modelo: it.modelo });
     }
     return comArte ?? base;
   }
@@ -2945,6 +2958,7 @@ export class RoomView {
   }
 
   private frameIso() {
+    perfil.comeco();
     this.resize();
     // cômodo grande: de tempos em tempos a câmera vai atrás das peças
     if (this.follow && (this.autoFit || this.watchOnly) && !this.camAnim && performance.now() > this.pontoAte) {
@@ -2997,6 +3011,7 @@ export class RoomView {
     ctx.drawImage(st.canvas, st.x, st.y, st.w, st.h);
     ctx.imageSmoothingEnabled = true;
     if (viagem) this.mundoViagem.casco(ctx, viagem);
+    perfil.marca('chão');
     // mapa improvisado: a imagem deitada no chão inteiro (a casa x, y vai para o losango dela)
     const imgMapa = imagemDoMapa(this.info.mapa);
     if (imgMapa) {
@@ -3037,6 +3052,7 @@ export class RoomView {
     this.painter.power = lm === 'blackout' ? 0 : lm === 'flicker' ? flickerLevel(t) : 1;
     const sel = this.selection;
 
+    perfil.marca('névoa e marcas');
     // itens de parede
     const place = this.placement;
     for (const it of map.allWallItems()) {
@@ -3081,6 +3097,7 @@ export class RoomView {
       }
     }
 
+    perfil.marca('itens de parede');
     // mobis de chão
     const flats: Drawable[] = [];
     const drawables: Drawable[] = [];
@@ -3151,6 +3168,63 @@ export class RoomView {
         // cela: a parede entre a cela aberta e a câmera fica transparente; o que dá para dentro da fechada, no escuro
         const cela = ghost ? undefined : celas?.mobi.get(it.id);
         const nodeAlpha = (xray ? alpha * 0.28 : alpha) * (cela ? 1 - 0.72 * cela.transp : 1);
+        // o pedaço parado (com o preparo do móvel, sem peça vazada, que mexe na caixa): o mesmo objeto de quadro em
+        // quadro, só com o que muda (06/11, o desempenho: ~460 objetos e funções novos por quadro no Bar)
+        if (prep && !def.vazio?.length && !encaixada && !def.sit) {
+          let dr = pn.dr;
+          if (!dr) {
+            const q: QuadroNo = { it, alpha: 1, selected: false, cela: undefined };
+            const chaveNo = pn.chave ?? `${it.id}|${n}`;
+            const desenho = node.draw;
+            dr = pn.dr = {
+              box: ordens[n],
+              sob: false,
+              sx0: sx0 - 12,
+              sx1: sx1 + 12,
+              sy0: sy0 - 24,
+              sy1: sy1 + 4,
+              poly: sil,
+              q,
+              draw: () => {
+                const c = this.ctx;
+                painter.m.set(rot, def.width, def.depth, ix, iy, iz);
+                painter.state = estado;
+                painter.seed = q.it.id;
+                c.globalAlpha = q.alpha;
+                if (q.it.quebrado) {
+                  c.save();
+                  const [bx, by] = iso(q.it.x + footprint(def, rot).sx / 2, q.it.y + footprint(def, rot).sy / 2, q.it.z);
+                  const giro = (((q.it.id * 2654435761) >>> 0) % 2 ? 1 : -1) * (0.05 + (((q.it.id * 40503) >>> 0) % 5) * 0.012);
+                  c.translate(bx, by);
+                  c.rotate(giro);
+                  c.translate(-bx, -by);
+                  c.filter = 'brightness(0.42) sepia(0.6) saturate(0.55) contrast(1.15)';
+                  desenho(painter);
+                  c.restore();
+                } else this.desenharNo(c, desenho, painter, chaveNo, sx0 - pad, sy0 - pad, sx1 + pad, sy1 + pad);
+                if (q.cela) escurecerForma(c, sil, q.cela.escuro);
+                c.globalAlpha = 1;
+                if (q.selected) {
+                  c.lineWidth = 1.5;
+                  c.strokeStyle = AMBER;
+                  c.beginPath();
+                  c.moveTo(sil[0][0], sil[0][1]);
+                  for (let i = 1; i < sil.length; i++) c.lineTo(sil[i][0], sil[i][1]);
+                  c.closePath();
+                  c.stroke();
+                }
+              },
+            };
+            pn.hit = { kind: 'floor', id: it.id, test: (x, y) => pointInPoly(x, y, sil) };
+          }
+          dr.q.it = it;
+          dr.q.alpha = nodeAlpha;
+          dr.q.selected = selected;
+          dr.q.cela = cela;
+          (flat ? flats : drawables).push(dr);
+          hitOf.set(dr, pn.hit!);
+          continue;
+        }
         const d: Drawable = {
           box: ordens[n],
           sob: encaixada,
@@ -3379,6 +3453,7 @@ export class RoomView {
       }
     }
 
+    perfil.marca('móveis (montar)');
     // fantasma de colocação
     let footprintTiles: { x: number; y: number }[] = [];
     let footprintOk = false;
@@ -3448,6 +3523,7 @@ export class RoomView {
       });
     }
 
+    perfil.marca('luzes e sombras');
     // avatares
     for (const u of this.users.values()) {
       const p = this.userPos(u, now);
@@ -3937,6 +4013,7 @@ export class RoomView {
         lights.push({ x: sx, y: sy - HE * 0.4, radius: 78 + 26 * chamaDaPeca.intensidade, color: chamaDaPeca.cor, intensity: Math.min(0.75, 0.38 + 0.2 * chamaDaPeca.intensidade), flicker: 0.3, seed: u.phase, kind: 'personal' });
     }
 
+    perfil.marca('peças');
     // a neblina densa (o miolo do labirinto): casa a casa, ordenada com a sebe, para ficar DENTRO das paredes
     for (const c of this.fog.casas) {
       const box = this.fog.caixaDaCasa(c);
@@ -4068,8 +4145,10 @@ export class RoomView {
       lights.push({ x: lx, y: ly, radius: 46, color: '#fff0dc', intensity: 0.28, kind: 'personal' });
     }
 
+    perfil.marca('efeitos');
     // desenha decalques, marca de colocação e o resto ordenado
     const orderFlats = flats.sort((a, b) => a.box.z0 - b.box.z0 || a.depth! - b.depth!);
+    this.tMundo = ctx.getTransform();
     for (const d of orderFlats) {
       d.draw();
       const h = hitOf.get(d);
@@ -4092,13 +4171,17 @@ export class RoomView {
       }
     }
     // embaixo das peças: as sombras e o anel, por cima do chão e por baixo de tudo que fica em pé
+    perfil.marca('decalques');
     for (const f of chaoPecas) f();
+    perfil.marca('chão das peças');
     const ordenados = sortDrawables(drawables);
+    perfil.marca('ordenar');
     for (const d of ordenados) {
       d.draw();
       const h = hitOf.get(d);
       if (h) hits.push(h);
     }
+    this.tMundo = null;
     this.hits = hits;
     if (viagem) {
       this.mundoViagem.frente(ctx);
@@ -4108,6 +4191,7 @@ export class RoomView {
       this.mundoViagem.proximo(ctx, viagem);
       ctx.restore();
     }
+    perfil.marca('desenhar em ordem');
     // a casa do mouse atrás de um móvel: o contorno tracejado por cima, para ver onde a peça vai parar
     if (this.cursorPorCima && ht && this.mouse.inside && !place) {
       const h = map.standHeight(ht.x, ht.y);
@@ -4127,6 +4211,7 @@ export class RoomView {
     // névoa (antes da luz: brilha perto das fontes)
     this.fog.draw(ctx, this.info.fog ?? 0, now);
 
+    perfil.marca('névoa');
     // luz, conforme o clima do mestre
     const mode = this.info.lightMode ?? 'normal';
     const surge = mode === 'flicker' ? flickerLevel(t) : 1;
@@ -4158,6 +4243,7 @@ export class RoomView {
       sombrasAcesas();
     }
 
+    perfil.marca('luz e hora');
     // a vida da cena (14/10, em todas as cenas): a chama que mexe e o brilho do fogo, o feixe da janela, a poeira na
     // luz, a fumaça e as brasas (fora da vista tática, que é a planta limpa)
     if (this.particles.active && this.tat.t < 0.5) {
@@ -4171,6 +4257,7 @@ export class RoomView {
       this.desenharVapor(ctx, map, now);
     }
 
+    perfil.marca('vida da cena');
     // a névoa para o mestre: o que a mesa não vê fica riscado, por cima de tudo
     if (nv && !esconde) this.nevoaView.desenharIso(ctx, map, nv, this.staticKey, false, mundo, scale, now);
 
@@ -4234,6 +4321,7 @@ export class RoomView {
     if (viagem) this.mundoViagem.clima(ctx, viagem, now, this.dpr);
     this.bubbles.draw(ctx, (wx) => wx * z + this.cam.x, this.vw);
     if (viagem?.destino) this.faixaDoDestino(viagem.destino);
+    perfil.marca('combate e marcas');
     // o retângulo da seleção por área (Ctrl + arrastar)
     const k = this.caixaSel;
     if (k) {
@@ -4250,6 +4338,7 @@ export class RoomView {
       ctx.strokeRect(x + 0.5, y + 0.5, w, hh);
       ctx.restore();
     }
+    perfil.marca('fim');
   }
 
   /** Quem está dentro do retângulo (o meio do corpo na tela) vira o grupo: o clique no chão manda todos (19/10). */

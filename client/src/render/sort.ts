@@ -84,7 +84,51 @@ function cobre(s: Drawable, o: Drawable) {
  * jardim da mansão tem mais de cem árvores): ordenados pela borda esquerda, cada um só encontra os que começam antes
  * de ele acabar.
  */
+// a última ordem (06/11, o desempenho): com tudo parado, as mesmas caixas na mesma sequência dão a mesma ordem, e a
+// ordenação (~4 ms no Bar) não precisa ser refeita a cada quadro. A conferência é número a número, sem criar nada.
+const CAMPOS = 11;
+let assinatura = new Float64Array(0);
+let ordemAntes = new Int32Array(0);
+let nAntes = -1;
+
 export function sortDrawables(list: Drawable[]): Drawable[] {
+  const n = list.length;
+  if (assinatura.length < n * CAMPOS) assinatura = new Float64Array(n * CAMPOS * 2);
+  let igual = n === nAntes;
+  for (let k = 0; k < n; k++) {
+    const d = list[k];
+    const b = d.box;
+    const o = k * CAMPOS;
+    const v0 = b.x0, v1 = b.x1, v2 = b.y0, v3 = b.y1, v4 = b.z0, v5 = b.z1, v6 = d.sx0, v7 = d.sx1, v8 = d.sy0, v9 = d.sy1, v10 = d.sob ? 1 : 0;
+    if (igual && (assinatura[o] !== v0 || assinatura[o + 1] !== v1 || assinatura[o + 2] !== v2 || assinatura[o + 3] !== v3 || assinatura[o + 4] !== v4 || assinatura[o + 5] !== v5 || assinatura[o + 6] !== v6 || assinatura[o + 7] !== v7 || assinatura[o + 8] !== v8 || assinatura[o + 9] !== v9 || assinatura[o + 10] !== v10)) igual = false;
+    assinatura[o] = v0;
+    assinatura[o + 1] = v1;
+    assinatura[o + 2] = v2;
+    assinatura[o + 3] = v3;
+    assinatura[o + 4] = v4;
+    assinatura[o + 5] = v5;
+    assinatura[o + 6] = v6;
+    assinatura[o + 7] = v7;
+    assinatura[o + 8] = v8;
+    assinatura[o + 9] = v9;
+    assinatura[o + 10] = v10;
+  }
+  if (igual) {
+    const r: Drawable[] = new Array(n);
+    for (let k = 0; k < n; k++) r[k] = list[ordemAntes[k]];
+    return r;
+  }
+  const res = ordenar(list);
+  // a ordem em índices da lista, para usar no próximo quadro
+  const pos = new Map<Drawable, number>();
+  for (let k = 0; k < n; k++) pos.set(list[k], k);
+  if (ordemAntes.length < n) ordemAntes = new Int32Array(n * 2);
+  for (let k = 0; k < n; k++) ordemAntes[k] = pos.get(res[k])!;
+  nAntes = n;
+  return res;
+}
+
+function ordenar(list: Drawable[]): Drawable[] {
   const n = list.length;
   for (const d of list) d.depth = (d.box.x0 + d.box.x1 + d.box.y0 + d.box.y1) / 2 + d.box.z0 * 0.001;
   const out: number[][] = Array.from({ length: n }, () => []);
