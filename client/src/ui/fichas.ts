@@ -1952,6 +1952,16 @@ export class FichasScreen {
       );
     };
     desenharMods();
+    // o item quebrado (a manobra Quebrar; LR p. 90): não funciona até o conserto (a Manutenção do interlúdio)
+    if (it.quebrado || it.danoSofrido)
+      j.corpo.append(
+        h(
+          'div',
+          { class: 'fj-campo' },
+          h('span', null, it.quebrado ? 'Quebrado: não funciona até o conserto (LR p. 90).' : `Já sofreu ${it.danoSofrido} de dano.`),
+          h('button', { class: 'fx-bt', type: 'button', onclick: () => ((delete it.quebrado, delete it.danoSofrido), this.render(), j.fechar()) }, 'Consertar'),
+        ),
+      );
     // o que as modificações e o kit de profissão pedem escolher (LR p. 64; SaH p. 94)
     const escolhaPericia = (rotulo: string, chave: 'pericia2' | 'kit', valor?: regras.PericiaId) =>
       h(

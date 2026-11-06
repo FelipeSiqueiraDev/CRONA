@@ -73,7 +73,10 @@ export type SituacaoId =
   | 'atacanteOfuscado'
   | 'atacanteAgarrado'
   | 'atacanteCego'
-  | 'naoLetal';
+  | 'naoLetal'
+  | 'disparoNaoLetal'
+  | 'olhoPredador'
+  | 'olhoPredador2';
 
 export interface Situacao {
   id: SituacaoId;
@@ -112,9 +115,14 @@ export const SITUACOES: Situacao[] = [
   { id: 'atacanteAgarrado', nome: 'Atacante agarrado', efeito: '−1d20', dados: -1, pagina: 310 },
   { id: 'atacanteCego', nome: 'Atacante cego', efeito: '50% de falha', falha: 50, pagina: 310 },
   { id: 'naoLetal', nome: 'Dano não letal', efeito: '−5', bonus: -5, so: 'corpo', pagina: 88 },
-  // regra da mesa (20/10, o Felipe: a Catarina passou correndo e bateu no Existido): o livro não deixa ação padrão no meio
-  // do movimento (LR p. 86, só o atropelar); a mesa libera, com −1d20
-  { id: 'passagem', nome: 'De passagem', efeito: '−1d20 (regra da mesa)', dados: -1, so: 'corpo', pagina: 86 },
+  // regra da casa 02, Golpe de Passagem (06/11; antes, desde 20/10, só −1d20): ataca no meio do movimento, com a ação
+  // padrão e a de movimento, metade do deslocamento, −1d20 e −5; depois anda o que sobra (o livro não deixa, LR p. 84–87)
+  { id: 'passagem', nome: 'Golpe de passagem', efeito: '−1d20 e −5; gasta a padrão e a de movimento (regra da casa)', dados: -1, bonus: -5, so: 'corpo', pagina: 86 },
+  // regra da casa 04, Disparo Não Letal: −5, o dano normal da arma; o não letal não é garantido (o mestre diz se saiu letal)
+  { id: 'disparoNaoLetal', nome: 'Disparo não letal', efeito: '−5 (regra da casa)', bonus: -5, so: 'distancia', pagina: 88 },
+  // regra da casa 03, Olho do Predador: uma rodada inteira mirando, +5 no próximo disparo; duas, +5 e +1d6 balístico
+  { id: 'olhoPredador', nome: 'Olho do predador', efeito: '+5 (uma rodada mirando; regra da casa)', bonus: 5, so: 'distancia', pagina: 87 },
+  { id: 'olhoPredador2', nome: 'Olho do predador (2 rodadas)', efeito: '+5 e +1d6 de dano balístico; escolhe a região (regra da casa)', bonus: 5, so: 'distancia', pagina: 87 },
   // o poder Combate Defensivo (LR p. 25): −1d20 nos ataques e +5 na Defesa até o próximo turno
   { id: 'combateDefensivo', nome: 'Combate defensivo', efeito: '−1d20; +5 na sua Defesa até o seu próximo turno', dados: -1, pagina: 25 },
   // arma sem alcance arremessada em alcance curto (LR p. 55)

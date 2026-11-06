@@ -63,6 +63,13 @@ export interface Participante {
   sustenta?: string;
   /** quem este ser está agarrando (id da peça; LR p. 85) */
   agarra?: number;
+  /**
+   * A prisão com corrente (regra da casa 01): o agarrar foi com a corrente. Desde a rodada seguinte, Atletismo no começo
+   * de cada turno, DT 10 e +5 a cada manutenção seguida; falhou, o alvo se liberta.
+   */
+  corrente?: { mantidas: number; desde: number };
+  /** o Olho do Predador (regra da casa 03): rodadas inteiras mirando no alvo (1: +5; 2: +5 e +1d6 balístico) */
+  mira?: { alvo: number; rodadas: number };
 }
 
 /** Ação preparada: acontece como reação até o próximo turno de quem preparou (LR p. 86). */
@@ -147,6 +154,8 @@ export interface Combate {
   presencaFeita?: number[];
   /** a Fortitude da hemorragia esperando o mestre, no começo do turno de quem sangra (LR p. 129) */
   hemorragias?: { id: number; dt: number; dano: string }[];
+  /** o Atletismo da prisão com corrente esperando o mestre, no começo do turno de quem prende (regra da casa 01) */
+  correntes?: { id: number; dt: number }[];
 }
 
 /** Um lugar na ordem de iniciativa: um agente, ou o turno do mestre com todos os seres dele. */
@@ -212,6 +221,10 @@ export interface AtaqueConfirmado {
   vezes?: number;
   /** a jogada pronta do agente: o nome e os PE que ela gasta junto com o ataque */
   jogada?: { nome: string; pe: number };
+  /** a arma da mochila que disparou e quantas balas foram (1; a rajada, 10; os dois canos, 2): a munição conta (LR p. 174) */
+  disparo?: { uid: number; balas: number };
+  /** o Golpe de Passagem (regra da casa 02): gasta também a ação de movimento */
+  passagem?: boolean;
 }
 
 /** Um lado do teste oposto: dados, bônus, o d20 que ficou e o total. */
@@ -254,8 +267,10 @@ export interface ManobraConfirmada {
   dano?: DanoConfirmado;
   /** quebrar: o objeto, os PV dele e se quebrou */
   objeto?: { nome: string; pv: number; quebrou: boolean };
-  /** desarmar: o item da mão do alvo que cai (sem ele, a primeira arma na mão) */
+  /** desarmar: o item da mão do alvo que cai (sem ele, a primeira arma na mão); quebrar: o item atingido */
   item?: number;
+  /** agarrar com a corrente (regra da casa 01): a prisão que se mantém com Atletismo */
+  corrente?: boolean;
 }
 
 /** Um alvo do ritual: o teste de resistência, o dano e a condição que ele ganha. */
@@ -325,7 +340,9 @@ export type AcaoCombate =
    * mochila do ser que vai para a mão junto (sacar é ação de movimento, LR p. 54); `guardar` = o item da mão que
    * volta para a mochila.
    */
-  | { tipo: 'declarar'; qual: TipoAcao; texto: string; quem?: number; especial?: boolean; sacar?: number; guardar?: number }
+  | { tipo: 'declarar'; qual: TipoAcao; texto: string; quem?: number; especial?: boolean; sacar?: number; guardar?: number; recarregar?: number; mirar?: number }
+  /** o Atletismo de manter a prisão com corrente (regra da casa 01); arrastar dá −5 e deve ser declarado antes */
+  | { tipo: 'corrente'; id: number; passou: boolean; arrastar?: boolean }
   /**
    * Várias ações que andam juntas (levantar-se = a ação de movimento e o fim do caído; primeiros socorros = a ação
    * padrão e o 1 PV): passam todas ou nenhuma, e o Desfazer volta todas (auditoria de 27/10).

@@ -64,7 +64,7 @@ const ACOES: Record<'movimento' | 'outras', OpcaoAcao[]> = {
     { id: 'sacar', nome: 'Sacar ou guardar', qual: 'movimento', dica: 'um item', pagina: 87 },
     { id: 'manipular', nome: 'Manipular item', qual: 'movimento', dica: 'pegar na mochila, abrir uma porta', pagina: 87 },
     { id: 'mirar', nome: 'Mirar', qual: 'movimento', dica: 'com Pontaria treinada, tira o −5 de atirar em corpo a corpo', pagina: 87, alvo: true },
-    { id: 'recarregar', nome: 'Recarregar', qual: 'movimento', dica: 'arma que pede recarga', pagina: 58 },
+    { id: 'recarregar', nome: 'Recarregar', qual: 'movimento', dica: 'enche a arma com os pacotes da mochila', pagina: 174 },
   ],
   outras: [
     { id: 'fintar', nome: 'Fintar', qual: 'padrao', dica: 'Enganação contra Reflexos, alcance curto', pagina: 86, alvo: true },
@@ -72,6 +72,7 @@ const ACOES: Record<'movimento' | 'outras', OpcaoAcao[]> = {
     { id: 'acalmar', nome: 'Acalmar', qual: 'padrao', dica: 'Diplomacia DT 20, +5 a cada vez na cena', pagina: 44, alvo: true },
     { id: 'assustar', nome: 'Assustar', qual: 'padrao', dica: 'Intimidação contra Vontade, alcance curto', pagina: 45, alvo: true },
     { id: 'apagar', nome: 'Apagar as chamas', qual: 'padrao', dica: 'tira o em chamas', pagina: 310 },
+    { id: 'olhoPredador', nome: 'Olho do predador', qual: 'completa', dica: 'a rodada inteira mirando: +5 no próximo disparo; duas rodadas, +1d6 e a região do corpo (regra da casa)', pagina: 87, alvo: true },
     { id: 'corrida', nome: 'Corrida', qual: 'completa', dica: 'Atletismo; aguenta rodadas iguais ao Vigor', pagina: 87 },
     { id: 'misericordia', nome: 'Golpe de misericórdia', qual: 'completa', dica: 'alvo indefeso adjacente: crítico automático', pagina: 87, alvo: true },
     { id: 'esconder', nome: 'Esconder-se', qual: 'livre', dica: 'Furtividade, no fim do turno', pagina: 45 },
@@ -521,6 +522,33 @@ export class CombateScreen {
    * a soma dos dados do dano mental, e o jogo tira a SAN (passou, metade).
    */
   /** A Fortitude da hemorragia do Descarnar (LR p. 129): passou (dois seguidos estancam) ou falhou com o dano de Sangue. */
+  /** O Atletismo da prisão com corrente (regra da casa 01): passou mantém; falhou, o alvo se liberta. Arrastar: −5. */
+  private cartaoCorrente(c: Combate, x: NonNullable<Combate['correntes']>[number]): HTMLElement {
+    const p = cb.participante(c, x.id);
+    const preso = p?.agarra ? cb.participante(c, p.agarra) : undefined;
+    const nome = p?.nome ?? 'Quem prende';
+    const atl = this.calcDe(x.id)?.pericias.atletismo;
+    const arrastar = h('input', { type: 'checkbox', class: 'cb-check', 'aria-label': 'Arrastar o alvo (−5)' }) as HTMLInputElement;
+    return h(
+      'div',
+      { class: 'cb-pend-item cb-massivo' },
+      h('span', { class: 'cb-pend-ic' }, icPintado('alerta')),
+      h(
+        'div',
+        null,
+        h('p', null, h('b', null, `Corrente: ${nome} `), `segura ${preso?.nome ?? 'o alvo'}. Atletismo `, h('b', null, `DT ${x.dt}`), ' (sem gastar ação; +5 a cada rodada seguida). Falhou, o alvo se liberta (regra da casa).'),
+        h('p', null, atl ? `${nome} rola: ${textoTeste(atl.dados, atl.bonus, atl.penalidadeDados)}${''}.` : 'Sem ficha: o mestre rola o Atletismo.'),
+        h(
+          'div',
+          { class: 'cb-massivo-linha' },
+          h('label', { class: 'cb-dlg-check' }, arrastar, h('span', null, 'Arrastando (−5, anda à metade)')),
+          botao('Manteve', null, () => this.acao({ tipo: 'corrente', id: x.id, passou: true, arrastar: arrastar.checked }), 'cb-mini'),
+          botao('Falhou', null, () => this.acao({ tipo: 'corrente', id: x.id, passou: false, arrastar: arrastar.checked }), 'cb-mini'),
+        ),
+      ),
+    );
+  }
+
   private cartaoHemorragia(c: Combate, x: NonNullable<Combate['hemorragias']>[number]): HTMLElement {
     const p = cb.participante(c, x.id);
     const nome = p?.nome ?? 'O alvo';
@@ -1129,11 +1157,15 @@ export class CombateScreen {
     return this.fichas.find((f) => f.personagem === charId) ?? null;
   }
 
-  /** O lado de quem entra: agente com ficha e o companheiro animal de um agente (a Camarilla do Tepes) com os agentes. */
+  /** O lado de quem entra: agente com ficha com os agentes; o resto, inimigo. */
   private ladoPadrao(id: number): cb.Lado {
-    if (this.fichaDe(id)) return 'agente';
+    return this.fichaDe(id) ? 'agente' : 'inimigo';
+  }
+
+  /** O companheiro animal de um agente (a Camarilla do Tepes): não participa de combates (06/11, regra da mesa). */
+  private ehCompanheiro(id: number): boolean {
     const nome = this.personagem(id)?.name?.trim().toLowerCase();
-    return nome && this.fichas.some((f) => !f.npc && f.companheiro?.nome?.trim().toLowerCase() === nome) ? 'agente' : 'inimigo';
+    return !!nome && this.fichas.some((f) => !f.npc && f.companheiro?.nome?.trim().toLowerCase() === nome);
   }
 
   private calcDe(id: number): Calc | null {
@@ -1270,7 +1302,7 @@ export class CombateScreen {
 
   private armasDe(p: Participante): ArmaOpcao[] {
     const calc = this.calcDe(p.id);
-    if (calc) return [...this.armasDaFicha(calc), ...this.jogadasDe(p, calc)];
+    if (calc) return [...this.armasDaFicha(calc, this.fichaDe(p.id)?.ficha.inventario ?? []), ...this.jogadasDe(p, calc)];
     const ac = this.combate ? cb.acoesDe(this.combate, p.id) : null;
     return (this.ameacaDe(p.id)?.ataques ?? []).map((a) => {
       // a sequência da ação completa (a Dança das Lâminas): o golpe da vez, com o bônus dele
@@ -1334,7 +1366,7 @@ export class CombateScreen {
     });
   }
 
-  private armasDaFicha(calc: regras.Calculado): ArmaOpcao[] {
+  private armasDaFicha(calc: regras.Calculado, inv: regras.ItemFicha[]): ArmaOpcao[] {
     {
       const pont = calc.pericias.pontaria;
       // a arma na mão primeiro (e o desarmado); a da mochila por último, para sacar
@@ -1375,6 +1407,14 @@ export class CombateScreen {
           ...(a.metadeAlemDoCurto ? { metadeAlemDoCurto: true } : {}),
           ...(a.doisCanos ? { doisCanos: a.doisCanos.dano } : {}),
           ...(a.municao && !a.municao.tem ? { semMunicao: a.municao.nome } : {}),
+          // a munição contada (LR p. 174): o que há na arma e nos pacotes
+          ...(() => {
+            const it = a.uid !== undefined ? inv.find((y) => y.uid === a.uid) : undefined;
+            const e = it ? regras.estadoMunicao(inv, it) : null;
+            if (!e) return {};
+            const vazia = e.capacidade ? (e.naArma ? undefined : e.naMochila ? 'sem bala na arma: recarregue (ação de movimento)' : 'sem bala na arma nem na mochila') : e.naMochila ? undefined : 'sem munição na mochila';
+            return { municao: { texto: regras.textoMunicao(e), ...(vazia ? { vazia } : {}) } };
+          })(),
         };
       });
     }
@@ -1571,6 +1611,12 @@ export class CombateScreen {
       // na tela nova a miniatura é movida na mesa
       empurrar: (alvo, casas) => !this.modoCards && this.empurrar(ator.id, alvo, casas),
       andarAteOAlvo: alvoP && !alvoP.fora && !this.modoCards ? this.andarAteOAlvo(c, ator, alvoP) : undefined,
+      // o item na mão do alvo (a manobra Quebrar acerta ele; LR p. 90)
+      itemNaMao: (p) => {
+        const naMao = (this.fichaDe(p.id)?.ficha.inventario ?? []).filter((it) => regras.lugarDoItem(it) === 'mao' && it.id !== 'ataque-desarmado' && it.uid !== undefined);
+        const it = naMao.find((y) => y.tipo === 'arma') ?? naMao[0];
+        return it ? { uid: it.uid!, nome: regras.nomeDoItem(it), danoSofrido: it.danoSofrido ?? 0, quebrado: !!it.quebrado } : null;
+      },
       ...(this.modoCards ? { semMapa: true, info: (id: cb.ManobraId) => this.abrirInfo(this.infoManobra(id)) } : {}),
       mudou: () => (this.sigs.delete('res'), this.renderRes(), this.atualizarMarcas()),
     };
@@ -2262,7 +2308,7 @@ export class CombateScreen {
   private renderPend() {
     const c = this.combate;
     this.avisarPresenca(c);
-    const nMassivos = (c?.massivos?.length ?? 0) + (c?.perdasSan?.length ?? 0) + (c?.presencas?.length ?? 0) + (c?.hemorragias?.length ?? 0);
+    const nMassivos = (c?.massivos?.length ?? 0) + (c?.perdasSan?.length ?? 0) + (c?.presencas?.length ?? 0) + (c?.hemorragias?.length ?? 0) + (c?.correntes?.length ?? 0);
     if (nMassivos > this.massivosVistos) this.abrirGaveta('pend');
     this.massivosVistos = nMassivos;
     if (!this.mudou('pend', [c && { ...c, registro: c.registro.slice(-16) }, this.assinaturaPecas(), this.assinaturaFichas(), this.atorId])) return;
@@ -2307,6 +2353,7 @@ export class CombateScreen {
       for (const m of c.massivos ?? []) itens.unshift(this.cartaoMassivo(c, m));
       for (const x of c.presencas ?? []) itens.unshift(this.cartaoPresenca(c, x));
       for (const x of c.hemorragias ?? []) itens.unshift(this.cartaoHemorragia(c, x));
+      for (const x of c.correntes ?? []) itens.unshift(this.cartaoCorrente(c, x));
       for (const d of depois) itens.push(item('alerta', 'ruim', h('span', null, h('b', null, 'Da última ação: '), d)));
       for (const p of c.participantes) {
         const cond = vitalConditions(this.vitais(p.id));
@@ -2565,7 +2612,7 @@ export class CombateScreen {
   }
 
   private montagem(c: Combate): HTMLElement {
-    const chars = [...(this.sessao?.characters ?? [])];
+    const chars = (this.sessao?.characters ?? []).filter((ch) => !this.ehCompanheiro(ch.id));
     const dentro = new Set(c.participantes.map((p) => p.id));
     chars.sort((a, b) => Number(dentro.has(b.id)) - Number(dentro.has(a.id)) || Number(b.sceneId === c.cena) - Number(a.sceneId === c.cena) || a.id - b.id);
     const linhas = chars.map((ch) => {
@@ -2979,6 +3026,20 @@ export class CombateScreen {
     const decl: cb.AcaoCombate = { tipo: 'declarar', qual: o.qual, texto: `${o.nome.toLowerCase()}${contra}`, quem: ator.id };
     const declarar = () => this.acao(decl);
     if (o.id === 'levantar') return this.levantar(ator);
+    // recarregar (LR p. 174): a arma na mão que tem carregador e não está cheia
+    if (o.id === 'recarregar') {
+      const inv = this.fichaDe(ator.id)?.ficha.inventario ?? [];
+      const armas = inv.filter((it) => regras.lugarDoItem(it) === 'mao' && it.uid !== undefined).map((it) => ({ it, e: regras.estadoMunicao(inv, it) })).filter((x) => x.e?.capacidade);
+      const r = armas.find((x) => (x.e!.naArma ?? 0) < x.e!.capacidade!) ?? armas[0];
+      if (!r) return toast('Nenhuma arma de fogo com carregador na mão.', 'error');
+      return this.acao({ ...decl, texto: 'recarrega', recarregar: r.it.uid! });
+    }
+    // o Olho do Predador (regra da casa 03): a rodada inteira mirando no alvo
+    if (o.id === 'olhoPredador') {
+      if (!alvo) return toast('Escolha o alvo da mira.', 'error');
+      if (!this.armasDe(ator).some((a) => !!a.faixa)) return toast('Mirar pede uma arma de disparo ou de fogo.', 'error');
+      return this.acao({ ...decl, mirar: alvo.id });
+    }
     if (o.id === 'esconder') {
       // esconder-se: a peça fica agachada (o Felipe, 17/10); levantar-se ou o botão Agachado do painel desfaz
       declarar();
@@ -3659,7 +3720,7 @@ export class CombateScreen {
    * mestre). As peças da cena já vêm marcadas; o mestre marca ou tira outras, diz o lado e a Iniciativa de cada um e confirma.
    */
   private montagemCards(c: Combate): HTMLElement {
-    const chars = [...(this.sessao?.characters ?? [])];
+    const chars = (this.sessao?.characters ?? []).filter((ch) => !this.ehCompanheiro(ch.id));
     const dentro = new Set(c.participantes.map((p) => p.id));
     chars.sort((a, b) => Number(dentro.has(b.id)) - Number(dentro.has(a.id)) || Number(b.sceneId === c.cena) - Number(a.sceneId === c.cena) || a.id - b.id);
     const cartao = (ch: Character) => this.cartaDoPreparo(c, [ch]);
@@ -4084,6 +4145,7 @@ export class CombateScreen {
     const c = this.combate;
     if (!c || c.fase !== 'andamento') return;
     const fora = (this.sessao?.characters ?? []).filter((ch) => {
+      if (this.ehCompanheiro(ch.id)) return false;
       const p = cb.participante(c, ch.id);
       return !p || p.fora;
     });

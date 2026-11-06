@@ -830,7 +830,7 @@ export class Hotel implements HotelApi {
   private combateAcao(c: Client, m: Record<string, unknown>) {
     const room = c.room;
     if (!room) return;
-    const a = cmb.lerAcao(m.a);
+    let a = cmb.lerAcao(m.a);
     if (!a) return c.send({ t: 'denied', action: 'combate', reason: 'Ação de combate inválida.' });
     const group = this.sceneGroup(room.data.id);
     const key = Math.min(...group);
@@ -890,9 +890,34 @@ export class Hotel implements HotelApi {
       if (!e.ok) return c.send({ t: 'denied', action: 'combate', reason: e.motivo });
       sacar = { f, inventario: e.inventario };
     }
+    // a munição conta a cada disparo (LR p. 174, regra que a mesa usa desde 06/11): sem bala, não dispara
+    let municao: { f: FichaSalva; inventario: regras.ItemFicha[] } | null = null;
+    if (a.tipo === 'ataque' && a.ataque.disparo && Number.isInteger(a.ataque.disparo.uid)) {
+      const f = this.fichaDaPeca(group, a.ataque.quem);
+      const balas = [1, 2, regras.BALAS_DA_RAJADA].includes(a.ataque.disparo.balas) ? a.ataque.disparo.balas : 1;
+      if (f) {
+        const d = regras.disparar(f.ficha.inventario, a.ataque.disparo.uid, balas);
+        if (!d.ok) return c.send({ t: 'denied', action: 'combate', reason: d.motivo });
+        municao = { f, inventario: this.comUids(d.inventario) };
+      }
+    }
+    // recarregar (ação de movimento): enche a arma com os pacotes da mochila (LR p. 174)
+    if (a.tipo === 'declarar' && typeof a.recarregar === 'number') {
+      const f = this.fichaDaPeca(group, a.quem);
+      if (!f) return c.send({ t: 'denied', action: 'combate', reason: 'Sem ficha: não há mochila para recarregar.' });
+      const d = regras.recarregar(f.ficha.inventario, a.recarregar);
+      if (!d.ok) return c.send({ t: 'denied', action: 'combate', reason: d.motivo });
+      municao = { f, inventario: this.comUids(d.inventario) };
+      a = { ...a, texto: d.texto.toLowerCase().startsWith('recarreg') ? d.texto : `recarrega: ${d.texto}` };
+    }
     const r = cmb.aplicar(antes, a, this.contextoCombate(group, room.data.id));
     if (!r.ok) return c.send({ t: 'denied', action: 'combate', reason: r.motivo });
     const mochilas: { fichaId: number; inventario: regras.ItemFicha[] }[] = [];
+    if (municao) {
+      mochilas.push({ fichaId: municao.f.id, inventario: municao.f.ficha.inventario });
+      this.trocarMochila(municao.f, municao.inventario);
+      this.fichaMudou(municao.f);
+    }
     const largados: number[] = [];
     if (sacar) {
       mochilas.push({ fichaId: sacar.f.id, inventario: sacar.f.ficha.inventario });
@@ -910,6 +935,11 @@ export class Hotel implements HotelApi {
         this.trocarMochila(f, inv);
         this.fichaMudou(f);
       }
+    }
+    // quebrar: o item da mão do alvo sofre o dano; a 0 PV, quebra de verdade (não funciona até o conserto; LR p. 90)
+    if (a.tipo === 'manobra' && a.manobra.manobra === 'quebrar' && a.manobra.venceu && a.manobra.dano && a.manobra.objeto) {
+      const q = this.quebrarItem(group, a.manobra.alvo, a.manobra.item, a.manobra.dano.final, a.manobra.objeto.quebrou);
+      if (q) mochilas.push(q);
     }
     // desarmar: o item da mão do alvo cai no chão, na casa dele (LR p. 85)
     if (a.tipo === 'manobra' && a.manobra.manobra === 'desarmar' && a.manobra.venceu) {
@@ -980,6 +1010,25 @@ export class Hotel implements HotelApi {
     this.trocarMochila(f, s.inventario);
     this.fichaMudou(f);
     return { antes: { fichaId: f.id, inventario: inv }, uid: it.uid! };
+  }
+
+  /** Itens novos da mochila (o pacote de munição aberto) ganham o número deles. */
+  private comUids(inv: regras.ItemFicha[]): regras.ItemFicha[] {
+    return inv.map((it) => (Number.isInteger(it.uid) ? it : { ...it, uid: this.nextItemId() }));
+  }
+
+  /** O item na mão do alvo sofre o dano da manobra Quebrar; quebrado, fica marcado (LR p. 90). */
+  private quebrarItem(group: number[], alvo: number, uid: number | undefined, dano: number, quebrou: boolean): { fichaId: number; inventario: regras.ItemFicha[] } | null {
+    const f = this.fichaDaPeca(group, alvo);
+    if (!f) return null;
+    const inv = f.ficha.inventario;
+    const naMao = inv.filter((it) => regras.lugarDoItem(it) === 'mao' && it.id !== 'ataque-desarmado');
+    const it = naMao.find((x) => x.uid === uid) ?? naMao.find((x) => x.tipo === 'arma') ?? naMao[0];
+    if (!it) return null;
+    const novo = inv.map((x) => (x === it ? { ...x, danoSofrido: (x.danoSofrido ?? 0) + Math.max(0, dano), ...(quebrou ? { quebrado: true } : {}) } : x));
+    this.trocarMochila(f, novo);
+    this.fichaMudou(f);
+    return { fichaId: f.id, inventario: inv };
   }
 
   /** A arma arremessada sai da mochila de quem atacou e cai na casa do alvo (ou na dele, se o alvo estiver em outra cena). */

@@ -35,6 +35,8 @@ export function nomeDoItem(it: ItemFicha): string {
   const el = it.escolha?.elemento;
   if (el) nome = /\(elemento\)/i.test(nome) ? nome.replace(/\(elemento\)/i, NOME_ELEMENTO[el]) : `${nome} (${NOME_ELEMENTO[el]})`;
   if (it.escolha?.pericia) nome = `${nome} (${cat.pericia(it.escolha.pericia).nome})`;
+  // quebrado na manobra Quebrar: não funciona até o conserto (LR p. 90)
+  if (it.quebrado) nome = `${nome} (quebrado)`;
   return nome;
 }
 

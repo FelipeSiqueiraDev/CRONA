@@ -45,6 +45,8 @@ export interface CtxManobra {
   andarAteOAlvo?: { metros: number; fazer: () => void };
   /** tela de cards (21/10): sem tabuleiro, o empurrão é com a miniatura na mesa */
   semMapa?: boolean;
+  /** o item na mão do alvo, com o dano que ele já sofreu (a manobra Quebrar; LR p. 90) */
+  itemNaMao?: (p: cb.Participante) => { uid: number; nome: string; danoSofrido: number; quebrado: boolean } | null;
   /** abre a abinha "O que é isso?" de uma manobra */
   info?: (id: cb.ManobraId) => void;
   mudou: () => void;
@@ -210,7 +212,10 @@ export class ResolucaoManobra {
         const naoLetal = arma.notas.some((n) => /não letal/i.test(n));
         dano = { partes, conta, previa: cb.previaDano(alvo.vitais, conta.final, { tipo: arma.tipo, naoLetal, naoLetalAntes: alvo.p.naoLetal, agente: alvo.agente, pessoa: alvo.pessoa }), naoLetal };
       } else {
-        const o = cb.objeto(this.e.objeto) ?? cb.OBJETOS[0];
+        const base = cb.objeto(this.e.objeto) ?? cb.OBJETOS[0];
+        // o dano que o item da ficha já sofreu conta: quebra quando a soma chega aos PV dele
+        const ja = x.itemNaMao?.(alvo.p)?.danoSofrido ?? 0;
+        const o = ja ? { ...base, pv: Math.max(1, base.pv - ja) } : base;
         const total = Math.max(0, this.e.soma + partes.fixo);
         objeto = { o, r: cb.danoNoObjeto(total, o), total };
       }
@@ -489,7 +494,11 @@ export class ResolucaoManobra {
             linhas.push(h('span', null, k.dano.conta.conta));
             if (k.dano.previa) linhas.push(h('span', { class: 'alerta' }, `${nome}: ${k.dano.previa.texto}`));
           }
-          if (k.objeto) linhas.push(h('span', null, `${k.objeto.o.nome}: ${k.objeto.r.conta}`), h('span', { class: 'alerta' }, k.objeto.r.quebrou ? 'Quebrou.' : 'Aguentou.'));
+          {
+            const it = x.itemNaMao?.(x.alvo!.p);
+            if (it) linhas.push(h('span', null, `Na mão de ${nome}: ${it.nome}${it.quebrado ? ' (já quebrado)' : it.danoSofrido ? ` (já sofreu ${it.danoSofrido})` : ''}.`));
+          }
+          if (k.objeto) linhas.push(h('span', null, `${k.objeto.o.nome}: ${k.objeto.r.conta}`), h('span', { class: 'alerta' }, k.objeto.r.quebrou ? 'Quebrou: o item não funciona até o conserto.' : 'Aguentou.'));
           break;
         }
       }
@@ -562,6 +571,9 @@ export class ResolucaoManobra {
                   },
                 }
               : {}),
+            // agarrar com a corrente: a prisão que se mantém com Atletismo (regra da casa 01)
+            ...(k.def.id === 'agarrar' && k.arma && /corrente/i.test(k.arma.nome) ? { corrente: true } : {}),
+            ...(k.def.id === 'quebrar' && x.itemNaMao?.(alvo.p) ? { item: x.itemNaMao(alvo.p)!.uid } : {}),
             ...(k.objeto
               ? {
                   objeto: { nome: k.objeto.o.nome, pv: k.objeto.o.pv, quebrou: k.objeto.r.quebrou },

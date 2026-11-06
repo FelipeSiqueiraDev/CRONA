@@ -1532,7 +1532,7 @@ describe('ataque do jeito da mesa (20/10)', () => {
     const t = combate.montarTeste({ dados: 2, bonus: 5, defesaBase: 15, distancia: false, situacoes: ['passagem', 'combateDefensivo'], ajuste: { dados: -1, bonus: 2 } });
     assert.equal(t.dados, 2);
     assert.equal(t.penalidade, -3, '−1d20 da passagem, −1d20 do defensivo e −1d20 do ajuste');
-    assert.equal(t.bonus, 7);
+    assert.equal(t.bonus, 2, 'o golpe de passagem também tira 5 (regra da casa 02, 06/11)');
     const a = combate.montarTeste({ dados: 1, bonus: 3, defesaBase: 12, distancia: true, situacoes: ['arremessoSemAlcance', 'passagem'] });
     assert.equal(a.bonus, -2, 'o −5 do arremesso; a passagem é só do corpo a corpo');
     assert.equal(a.penalidade, 0);
@@ -1619,16 +1619,14 @@ describe('o dano dos rituais pelo livro (29/10)', () => {
   });
 });
 
-describe('o companheiro animal (29/10)', () => {
-  test('a Camarilla entra do lado dos agentes, sem SAN: não fica enlouquecendo nem segura o encerrar por isso', () => {
+describe('o companheiro animal (29/10; fora do combate desde 06/11)', () => {
+  test('a Camarilla não participa de combates: não entra ao abrir nem pela montagem', () => {
     const pecas = [...PECAS, { id: 20, nome: 'Camarilla', agente: false, naCena: true, companheiroDe: 'D.Tepes' }];
-    const cx = (): combate.Contexto => ({ ...ctx(), pecas, vitais: (id) => (id === 20 ? { pv: 100, pvMax: 100, pe: 0, peMax: 0, san: 0, sanMax: 0 } : { pv: 20, pvMax: 20, pe: 5, peMax: 5, san: 20, sanMax: 20 }) });
-    let r = combate.aplicar(null, { tipo: 'abrir' }, cx());
-    r = combate.aplicar(r.ok ? r.combate : null, { tipo: 'participante', id: 20, iniciativa: 15 }, cx());
+    const cx = (): combate.Contexto => ({ ...ctx(), pecas });
+    const r = combate.aplicar(null, { tipo: 'abrir' }, cx());
     assert.ok(r.ok);
-    const p = combate.participante(r.combate!, 20)!;
-    assert.equal(p.lado, 'agente');
-    assert.equal(p.companheiroDe, 'D.Tepes');
-    assert.deepEqual(combate.emAberto(r.combate!, cx()), []);
+    assert.equal(combate.participante(r.combate!, 20), undefined);
+    const s = combate.aplicar(r.combate!, { tipo: 'participante', id: 20, iniciativa: 15 }, cx());
+    assert.equal(s.ok, false);
   });
 });
