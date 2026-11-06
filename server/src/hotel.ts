@@ -91,6 +91,8 @@ import {
   MAPA_MAX,
   MAPA_MIN,
   URL_MAPA_RE,
+  alturaDaCriatura,
+  ladoDaCriatura,
 } from '@crona/shared';
 import { aparelhosAbertos, confereSenha, contaDaSessao, EMAIL_RE, fecharOutras, fecharSessao, gastarRecuperacao, guardarRecuperacao, hashSenha, novaSessao, SENHA_MIN, senhaAntiga, type Conta } from './contas';
 import { campanhaPrincipal, criarCampanha, entrarComCodigo, listaDaConta, mudarCampanha, mudarConvite, porNaCampanha } from './campanhas';
@@ -597,11 +599,19 @@ export class Hotel implements HotelApi {
     let mudou = false;
     for (const cr of this.db.bestiario ?? [])
       for (const ap of cr.aparencias) {
-        if (!ap.arte || this.charDaArte(ap.arte) !== null) continue;
+        // a altura do boneco pela categoria de tamanho do livro (06/11; 104 px = 1,80 m) ou a da criatura
+        const height = Math.round((104 * alturaDaCriatura(cr)) / 1.8);
+        const ja = ap.arte ? this.charDaArte(ap.arte) : null;
+        if (ja !== null) {
+          const ch = this.db.characters.find((c) => c.id === ja);
+          if (ch && ch.height !== height) ((ch.height = height), (mudou = true));
+          continue;
+        }
+        if (!ap.arte) continue;
         const sheet = folhaDaPasta(ap.arte);
         if (!sheet) continue;
         // a folha é a grade 4 × 2 das 8 direções; o tabuleiro usa as poses (tabuleiro-32bits), a folha é só o reserva
-        this.db.characters.push({ id: this.db.nextCharId++, name: `${cr.nome} (${ap.nome})`, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height: 104, fps: 4, sequence: [0], removeBg: false });
+        this.db.characters.push({ id: this.db.nextCharId++, name: `${cr.nome} (${ap.nome})`, owner: SYSTEM_OWNER, sheet, cols: 4, rows: 2, dirs: ['n', 's'], anims: ['idle', 'idle'], height, fps: 4, sequence: [0], removeBg: false });
         mudou = true;
       }
     // os NPCs do mestre (16/10): a arte deles vira personagem do mesmo jeito
@@ -830,7 +840,7 @@ export class Hotel implements HotelApi {
   private combateAcao(c: Client, m: Record<string, unknown>) {
     const room = c.room;
     if (!room) return;
-    const a = cmb.lerAcao(m.a);
+    let a = cmb.lerAcao(m.a);
     if (!a) return c.send({ t: 'denied', action: 'combate', reason: 'Ação de combate inválida.' });
     const group = this.sceneGroup(room.data.id);
     const key = Math.min(...group);
@@ -890,9 +900,34 @@ export class Hotel implements HotelApi {
       if (!e.ok) return c.send({ t: 'denied', action: 'combate', reason: e.motivo });
       sacar = { f, inventario: e.inventario };
     }
+    // a munição conta a cada disparo (LR p. 174, regra que a mesa usa desde 06/11): sem bala, não dispara
+    let municao: { f: FichaSalva; inventario: regras.ItemFicha[] } | null = null;
+    if (a.tipo === 'ataque' && a.ataque.disparo && Number.isInteger(a.ataque.disparo.uid)) {
+      const f = this.fichaDaPeca(group, a.ataque.quem);
+      const balas = [1, 2, regras.BALAS_DA_RAJADA].includes(a.ataque.disparo.balas) ? a.ataque.disparo.balas : 1;
+      if (f) {
+        const d = regras.disparar(f.ficha.inventario, a.ataque.disparo.uid, balas);
+        if (!d.ok) return c.send({ t: 'denied', action: 'combate', reason: d.motivo });
+        municao = { f, inventario: this.comUids(d.inventario) };
+      }
+    }
+    // recarregar (ação de movimento): enche a arma com os pacotes da mochila (LR p. 174)
+    if (a.tipo === 'declarar' && typeof a.recarregar === 'number') {
+      const f = this.fichaDaPeca(group, a.quem);
+      if (!f) return c.send({ t: 'denied', action: 'combate', reason: 'Sem ficha: não há mochila para recarregar.' });
+      const d = regras.recarregar(f.ficha.inventario, a.recarregar);
+      if (!d.ok) return c.send({ t: 'denied', action: 'combate', reason: d.motivo });
+      municao = { f, inventario: this.comUids(d.inventario) };
+      a = { ...a, texto: d.texto.toLowerCase().startsWith('recarreg') ? d.texto : `recarrega: ${d.texto}` };
+    }
     const r = cmb.aplicar(antes, a, this.contextoCombate(group, room.data.id));
     if (!r.ok) return c.send({ t: 'denied', action: 'combate', reason: r.motivo });
     const mochilas: { fichaId: number; inventario: regras.ItemFicha[] }[] = [];
+    if (municao) {
+      mochilas.push({ fichaId: municao.f.id, inventario: municao.f.ficha.inventario });
+      this.trocarMochila(municao.f, municao.inventario);
+      this.fichaMudou(municao.f);
+    }
     const largados: number[] = [];
     if (sacar) {
       mochilas.push({ fichaId: sacar.f.id, inventario: sacar.f.ficha.inventario });
@@ -910,6 +945,11 @@ export class Hotel implements HotelApi {
         this.trocarMochila(f, inv);
         this.fichaMudou(f);
       }
+    }
+    // quebrar: o item da mão do alvo sofre o dano; a 0 PV, quebra de verdade (não funciona até o conserto; LR p. 90)
+    if (a.tipo === 'manobra' && a.manobra.manobra === 'quebrar' && a.manobra.venceu && a.manobra.dano && a.manobra.objeto) {
+      const q = this.quebrarItem(group, a.manobra.alvo, a.manobra.item, a.manobra.dano.final, a.manobra.objeto.quebrou);
+      if (q) mochilas.push(q);
     }
     // desarmar: o item da mão do alvo cai no chão, na casa dele (LR p. 85)
     if (a.tipo === 'manobra' && a.manobra.manobra === 'desarmar' && a.manobra.venceu) {
@@ -980,6 +1020,25 @@ export class Hotel implements HotelApi {
     this.trocarMochila(f, s.inventario);
     this.fichaMudou(f);
     return { antes: { fichaId: f.id, inventario: inv }, uid: it.uid! };
+  }
+
+  /** Itens novos da mochila (o pacote de munição aberto) ganham o número deles. */
+  private comUids(inv: regras.ItemFicha[]): regras.ItemFicha[] {
+    return inv.map((it) => (Number.isInteger(it.uid) ? it : { ...it, uid: this.nextItemId() }));
+  }
+
+  /** O item na mão do alvo sofre o dano da manobra Quebrar; quebrado, fica marcado (LR p. 90). */
+  private quebrarItem(group: number[], alvo: number, uid: number | undefined, dano: number, quebrou: boolean): { fichaId: number; inventario: regras.ItemFicha[] } | null {
+    const f = this.fichaDaPeca(group, alvo);
+    if (!f) return null;
+    const inv = f.ficha.inventario;
+    const naMao = inv.filter((it) => regras.lugarDoItem(it) === 'mao' && it.id !== 'ataque-desarmado');
+    const it = naMao.find((x) => x.uid === uid) ?? naMao.find((x) => x.tipo === 'arma') ?? naMao[0];
+    if (!it) return null;
+    const novo = inv.map((x) => (x === it ? { ...x, danoSofrido: (x.danoSofrido ?? 0) + Math.max(0, dano), ...(quebrou ? { quebrado: true } : {}) } : x));
+    this.trocarMochila(f, novo);
+    this.fichaMudou(f);
+    return { fichaId: f.id, inventario: inv };
   }
 
   /** A arma arremessada sai da mochila de quem atacou e cai na casa do alvo (ou na dele, se o alvo estiver em outra cena). */
@@ -1870,6 +1929,11 @@ export class Hotel implements HotelApi {
   }
 
   /** A criatura do bestiário se move pelas sombras (a Magistrada, `Criatura.passoSombras`)? */
+  /** Casas de cada lado que a criatura ocupa no chão (a categoria de tamanho do livro; tamanho.ts). */
+  ladoDaCriatura(id?: string): number {
+    return id ? ladoDaCriatura(this.db.bestiario?.find((x) => x.id === id)) : 1;
+  }
+
   criaturaPassoSombras(id?: string): boolean {
     return !!id && !!this.db.bestiario?.find((x) => x.id === id)?.passoSombras;
   }
@@ -2757,7 +2821,9 @@ export class Hotel implements HotelApi {
     const tokenId = m.tokenId;
     const itemId = m.itemId;
     const sentar = () => {
-      const f = this.fichaDoPersonagem(r.charId);
+      // o NPC do Elenco tem ficha, mas nunca um celular: é do mestre, que joga por ele na tela dele (04/11)
+      const fAchada = this.fichaDoPersonagem(r.charId);
+      const f = fAchada && !fAchada.npc ? fAchada : undefined;
       // a peça só joga uma coisa por vez
       for (const outra of [...this.mesas.values()]) {
         const i = outra.lugares.findIndex((l) => l.tokenId === tokenId || (f && l.fichaId === f.id));

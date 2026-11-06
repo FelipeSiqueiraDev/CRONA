@@ -21,11 +21,13 @@ function cartas(p: P, ...c: number[]): P {
 }
 
 describe('o 21 da Sala de Jogos', () => {
-  test('o total conta o Ás como 11 enquanto não estoura', () => {
-    assert.deepEqual(V.total([0, 12]), { valor: 21, mole: true });
+  test('o Ás vale sempre 1: não há mão mole nem 21 com duas cartas', () => {
+    assert.deepEqual(V.total([0, 12]), { valor: 11, mole: false });
     assert.deepEqual(V.total([0, 5, 9]), { valor: 17, mole: false });
-    assert.deepEqual(V.total([0, 0, 8]), { valor: 21, mole: true });
+    assert.deepEqual(V.total([0, 0, 8]), { valor: 11, mole: false });
     assert.equal(V.total([12, 11, 1]).valor, 22);
+    // o maior total de duas cartas é 20
+    for (let a = 0; a < 13; a++) for (let b = 0; b < 13; b++) assert.ok(V.total([a, b]).valor <= 20);
   });
 
   test('o primeiro lugar escolhe as fichas e começa; sem dealer, a casa é a banca', () => {
@@ -60,16 +62,6 @@ describe('o 21 da Sala de Jogos', () => {
     assert.equal(V.total(p.casa).valor, 18);
     assert.equal(p.resultados[0].como, 'ganhou');
     assert.equal(p.lugares[0].fichas, 120);
-  });
-
-  test('o blackjack de saída paga 3 para 2', () => {
-    let p = jogar(V.nova(1), [0, { tipo: 'comecar', fichas: 100, semente: 5 }]);
-    // jogador: Ás e K; casa: 9 e 7 (16, compra o 4 = 20)
-    p = cartas(p, 0, 8, 12, 6, 3);
-    p = jogar(p, [0, { tipo: 'aposta', valor: 10 }]);
-    assert.equal(p.fase, 'fim');
-    assert.equal(p.resultados[0].como, 'bj');
-    assert.equal(p.lugares[0].fichas, 115);
   });
 
   test('estourar perde; dobrar dobra a aposta e recebe uma carta só', () => {
@@ -117,9 +109,9 @@ describe('o 21 da Sala de Jogos', () => {
 
   test('a banca de gente sem fichas quebra e a partida acaba', () => {
     let p = jogar(V.nova(2), [1, { tipo: 'quero', dealer: true }], [0, { tipo: 'comecar', fichas: 20, semente: 8 }]);
-    // o jogador aposta tudo e faz blackjack; a banca (20) vira 18 e paga 30
-    p = cartas(p, 0, 7, 12, 9);
-    p = jogar(p, [0, { tipo: 'aposta', valor: 20 }], [1, { tipo: 'distribuir' }], [1, { tipo: 'virar' }]);
+    // o jogador aposta tudo e fica com 20; a banca (20) vira 18 e paga 20
+    p = cartas(p, 9, 7, 12, 9);
+    p = jogar(p, [0, { tipo: 'aposta', valor: 20 }], [1, { tipo: 'distribuir' }], [0, { tipo: 'parar' }], [1, { tipo: 'virar' }]);
     assert.equal(p.fase, 'acabou');
     assert.match(p.fim, /banca quebrou/);
   });

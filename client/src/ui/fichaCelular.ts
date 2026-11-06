@@ -24,7 +24,7 @@ import { arteDoItem } from './arteItem';
 import { arte, arteOu, ic, type NomeIcone } from './icons';
 import { sfx } from './sfx';
 import { vestirTema } from './temaUi';
-import { faixaAtributos } from './jogador';
+import { faixaAtributos, textoEstavel } from './jogador';
 
 type Calc = regras.Calculado;
 const cat = regras.catalogo;
@@ -64,15 +64,22 @@ export class FichaCelular {
   }
 
   setFicha(fs: FichaSalva | null) {
-    // a mesma ficha de novo (no combate chega a cada 300 ms): nada se refaz, e o toque não cai num botão que sumiu (28/10)
-    const json = fs ? JSON.stringify(fs) : '';
-    if (json === this.ultimaJson && this.fs) return;
+    // a mesma ficha de novo (no combate chega a cada 300 ms): nada se refaz, e o toque não cai num botão que sumiu (28/10).
+    // PV, PE e SAN de agora não aparecem nesta ficha: mudar só eles também não refaz (06/11: com as chaves em ordem, a
+    // cópia local e a do servidor dão o mesmo texto; antes a ficha inteira, o retrato e os cartões se refaziam a cada dano)
+    const json = fs ? textoEstavel({ ...fs, atual: 0, atualizadaEm: 0 }) : '';
+    if (json === this.ultimaJson && this.fs) {
+      if (fs) this.fs = clonarFicha(fs);
+      return;
+    }
     this.ultimaJson = json;
     this.fs = fs ? clonarFicha(fs) : null;
     this.render();
     this.subida?.();
   }
 
+  /** quantas vezes a Identificação esperou o boneco chegar */
+  private esperasBoneco = 0;
   /** a ficha que chegou por último, como veio do servidor */
   private ultimaJson = '';
   /** a janela da subida de NEX aberta: redesenha quando a ficha volta do servidor */
@@ -312,7 +319,12 @@ export class FichaCelular {
   private cartaoIdent(fs: FichaSalva, c: Calc) {
     const f = fs.ficha;
     const look = fs.personagem ? { skin: '#e8b98f', hair: '#3b2618', hairStyle: 0, top: '#2b2a30', pants: '#1c1b1f', shoes: '#3d3a40', outfit: 1, extra: 0, charId: fs.personagem } : null;
-    if (look && !sprites.def(look.charId)) setTimeout(() => this.fs && this.render(), 800);
+    // o boneco ainda não chegou: tenta de novo algumas vezes (sem limite, a ficha inteira se refazia a cada 0,8 s para
+    // quem não tem boneco, e o toque caía no meio da troca; 06/11)
+    if (look && !sprites.def(look.charId) && this.esperasBoneco < 8) {
+      this.esperasBoneco++;
+      setTimeout(() => this.fs && this.render(), 800);
+    }
     const linha = (rot: string, valor: string) => h('div', { class: 'fc-linha' }, h('small', null, rot), h('b', null, valor));
     return this.cartao(
       'IDENTIFICAÇÃO',

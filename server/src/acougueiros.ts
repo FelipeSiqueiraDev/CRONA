@@ -69,6 +69,43 @@ export function juntarSequencias(f: combate.FichaAmeaca): boolean {
   return mudou;
 }
 
+/**
+ * A ficha do Porco (06/11, o Felipe: "Vamos fazer a ficha do porco, não se preocupe"): caseira, no tamanho da da Ovelha
+ * (VD 60, Criatura de Sangue, presença NEX 35). A Ovelha dança e corta; o Porco é o contrário: lento, couro grosso, golpe
+ * pesado com o cutelo, o gancho que puxa e o estouro que atropela. Entra só se a ficha ainda for a em branco de 21/10.
+ */
+export const FICHA_PORCO: combate.FichaAmeaca = {
+  tipo: 'Criatura de Sangue',
+  elemento: 'sangue',
+  vd: 60,
+  presenca: { nex: 35, dt: 18, dano: '2d6' },
+  defesa: 15,
+  luta: { dados: 3, bonus: 10 },
+  fortitude: { dados: 3, bonus: 12 },
+  reflexos: { dados: 1, bonus: 2 },
+  vontade: { dados: 1, bonus: 5 },
+  rd: { sangue: 10, corte: 5, impacto: 5 },
+  imunidades: [],
+  vulnerabilidades: ['morte'],
+  ataques: [
+    { nome: 'Cutelo de Abate', pericia: 'luta', dados: 3, bonus: 10, dano: '2d8+6', tipo: 'corte', margem: 19, multiplicador: 3, alcance: '1,5 m' },
+    { nome: 'Gancho de Carne', pericia: 'luta', dados: 3, bonus: 10, dano: '1d8+6', tipo: 'perfuracao', margem: 20, multiplicador: 2, alcance: '3 m', nota: 'Acertou: pode agarrar e puxar o alvo 3 m (manobra, ação livre).' },
+  ],
+  notas:
+    'Ficha caseira (VD 60, 06/11). PV 110, machucado com 55. FOR 4, AGI 1, VIG 3, INT 0, PRE 1. Desloc. 9 m, visão no escuro e faro. Percepção 1d20+5, Iniciativa 1d20+2. Couro de Abate: RD 5 contra corte e impacto. Fome do Matadouro: quando deixa alguém a 0 PV, recupera 2d8 PV (livre, uma vez por rodada). Estouro (completa): anda até 18 m em linha reta e atropela quem estiver no caminho (Atropelar com +5; quem cai sofre 2d6 de impacto). Sem ataque à distância.',
+};
+
+export function fichaDoPorco0611(db: Database): boolean {
+  const d = db as Database & { porco0611?: boolean };
+  if (d.porco0611) return false;
+  d.porco0611 = true;
+  const c = db.bestiario?.find((x) => x.id === 'porco-acougueiro');
+  if (!c || c.ficha.ataques.length || !/a definir/i.test(c.ficha.notas ?? '')) return true;
+  c.ficha = structuredClone(FICHA_PORCO);
+  c.pv = 110;
+  return true;
+}
+
 export function dancaDasLaminas0111(db: Database): boolean {
   const d = db as Database & { danca0111?: boolean };
   if (d.danca0111) return false;

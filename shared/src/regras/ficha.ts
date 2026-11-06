@@ -79,8 +79,26 @@ export interface ItemFicha {
    */
   /** as cargas já gastas do item de usos contados (taser, spray de pimenta, pistola de dardos; LR p. 66) */
   cargasUsadas?: number;
+  /** balas na arma de fogo (contagem de munição, LR p. 174); sem o campo, cheia */
+  carregador?: number;
+  /** balas que sobram no pacote de munição aberto (LR p. 174); sem o campo, o pacote está fechado (20) */
+  balas?: number;
+  /** o dano que o item já sofreu (a manobra Quebrar, LR p. 90) */
+  danoSofrido?: number;
+  /** quebrado: não funciona até o conserto (LR p. 90; a Manutenção do interlúdio conserta) */
+  quebrado?: boolean;
   /** a perícia do utensílio, o elemento das amarras ou o ritual guardado no selo paranormal (o selo: LR p. 151) */
-  escolha?: { pericia?: PericiaId; elemento?: Elemento; ritual?: string };
+  escolha?: {
+    pericia?: PericiaId;
+    elemento?: Elemento;
+    ritual?: string;
+    /** a perícia a mais da modificação Função Adicional (LR p. 64) */
+    pericia2?: PericiaId;
+    /** o kit de perícia que a modificação Instrumental faz do acessório (LR p. 64) */
+    kit?: PericiaId;
+    /** a profissão do kit de profissão (SaH p. 94) */
+    profissao?: string;
+  };
   /** achado na missão: não ocupa vaga da patente, que limita o que a Ordem fornece (LR p. 53) */
   achado?: boolean;
   /** item do cenário: nome, espaços, tipo (o ícone) e o texto do mestre */

@@ -19,7 +19,7 @@ import { pisoDeCima } from './pisoTatico';
  * - Os móveis com forma (cadeira redonda, mesa com tábuas, planta de folhas), mais escuros
  *   quanto mais cobrem: até 0,8 m não cobrem, de 0,8 m dão cobertura, de 1,8 m tapam como
  *   parede (as mesmas medidas do combateGeo).
- * - As peças como fichas redondas com o retrato, o anel na cor do lado, o PV em arco e o nome.
+ * - As peças como fichas redondas com o retrato, o anel na cor do lado e o nome.
  * - Com arte (scripts/3d/cima.py): o móvel visto de cima no tampo, a parede do piso da sala e o
  *   aro das fichas (client/public/arte/tatico/); sem ela, o desenho por código.
  */
@@ -34,8 +34,6 @@ export interface PecaTatica {
   cor: string;
   lado: 'agente' | 'ameaca' | 'outro';
   retrato?: HTMLCanvasElement | null;
-  /** PV de 0 a 1 (o arco em volta) */
-  pv?: number;
   /** é a vez dela (brilha) */
   vez?: boolean;
   /** a peça comandada agora (anel de seleção) */
@@ -45,6 +43,8 @@ export interface PecaTatica {
   mira?: boolean;
   /** dentro da área (anel vermelho) */
   naArea?: boolean;
+  /** casas de cada lado que ela ocupa (a criatura Grande: 2; a ficha cresce junto; tamanho.ts) */
+  tam?: number;
 }
 
 /** Onde a sala cai no quadro do tático: a origem (casa 0,0) e o tamanho da casa, em px. */
@@ -442,7 +442,7 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
   // a ficha no tamanho de uma pessoa vista de cima, na proporção dos móveis: uma casa (0,75 m) de largura
   // (o quadrado do livro, 1,5 m, é o espaço que a peça ocupa nas regras, e não o tamanho dela)
   const raio = opcoes.ficha ?? 0.5;
-  for (const p of pecas) blocos.push({ prof: prof(p.x + 0.5, p.y + 0.5) + 0.02, z: 0.2, desenhar: () => desenharPeca(ctx, v, p, raio) });
+  for (const p of pecas) blocos.push({ prof: prof(p.x + 0.5, p.y + 0.5) + 0.02, z: 0.2, desenhar: () => desenharPeca(ctx, v, p, raio * (p.tam ?? 1)) });
   blocos.sort((a, b) => a.prof - b.prof || a.z - b.z);
   for (const b of blocos) b.desenhar();
   // as portas, no vão das paredes
@@ -466,7 +466,7 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
   const aNome = passo(0.82, 1, v.t);
   if (aNome > 0.01) {
     ctx.globalAlpha = aNome;
-    for (const p of pecas) plaquinha(ctx, v, p, raio);
+    for (const p of pecas) plaquinha(ctx, v, p, raio * (p.tam ?? 1));
     ctx.globalAlpha = 1;
   }
   opcoes.porCima?.(ctx, v);
@@ -1234,20 +1234,6 @@ function desenharPeca(ctx: CanvasRenderingContext2D, v: CameraVoo, p: PecaTatica
     ctx.arc(cx, cy, r * 1.3, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
-  }
-  if (p.pv !== undefined) {
-    const val = Math.max(0, Math.min(1, p.pv));
-    // na ameaça, por fora dos espinhos
-    const rp = r * (p.lado === 'ameaca' ? 1.24 : 1.11);
-    ctx.lineWidth = r * 0.11;
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.65)';
-    ctx.beginPath();
-    ctx.arc(cx, cy, rp, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.strokeStyle = val > 0.5 ? '#4fc06a' : val > 0.25 ? '#e0a23a' : '#e04a3a';
-    ctx.beginPath();
-    ctx.arc(cx, cy, rp, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * val);
-    ctx.stroke();
   }
   if (p.caido) {
     ctx.strokeStyle = '#e04a3a';

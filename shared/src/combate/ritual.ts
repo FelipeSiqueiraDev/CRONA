@@ -121,7 +121,7 @@ export interface DanoDoRitual {
    */
   passou?: { dano: string; tipo?: TipoDano; condicao?: string };
   /** quem falha: os PV ou a SAN vão a 0 (Lâmina do Medo, Conhecendo o Medo), a condição e o que fica escrito no registro */
-  falhou?: { zera?: 'pv' | 'san'; condicao?: string; nota?: string };
+  falhou?: { zera?: 'pv' | 'san'; condicao?: string; nota?: string; hemorragia?: string };
   /** a resistência quando o texto do ritual diz "veja texto" (Poeira da Podridão: Fortitude reduz à metade) */
   resistencia?: string;
 }
@@ -139,8 +139,8 @@ export const DANO_DOS_RITUAIS: Record<string, Partial<Record<FormaRitual, DanoDo
   eletrocussao: { basica: { dano: '3d6', tipo: 'eletricidade', parcialMetade: true, falhou: { condicao: 'vulneravel', nota: 'vulnerável por uma rodada' } }, discente: { dano: '6d6', parcialMetade: true }, verdadeira: { dano: '8d6', parcialMetade: true } },
   // o Descarnar: quem passa sofre metade e não fica com a hemorragia (LR p. 129)
   descarnar: {
-    basica: { dano: '3d8', tipo: 'corte', extra: { dano: '3d8', tipo: 'sangue' }, parcialMetade: true, falhou: { nota: 'hemorragia: Fortitude no começo de cada turno; falhou, 2d8 de Sangue; dois turnos seguidos passando, estanca' } },
-    discente: { dano: '5d8', tipo: 'corte', extra: { dano: '5d8', tipo: 'sangue' }, parcialMetade: true, falhou: { nota: 'hemorragia: Fortitude no começo de cada turno; falhou, 4d8 de Sangue; dois turnos seguidos passando, estanca' } },
+    basica: { dano: '3d8', tipo: 'corte', extra: { dano: '3d8', tipo: 'sangue' }, parcialMetade: true, falhou: { hemorragia: '2d8' } },
+    discente: { dano: '5d8', tipo: 'corte', extra: { dano: '5d8', tipo: 'sangue' }, parcialMetade: true, falhou: { hemorragia: '4d8' } },
   },
   hemofagia: { basica: { dano: '6d6' }, discente: { dano: '6d6' }, verdadeira: { dano: '4d6' } },
   // o Inexistir: quem passa sofre só os dados resistidos e fica debilitado por uma rodada (LR p. 133)

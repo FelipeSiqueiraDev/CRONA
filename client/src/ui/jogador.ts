@@ -145,6 +145,13 @@ const IC = {
   notasFixadas: ['notas-fixadas', 'titulo-anotacoes'],
 };
 
+/** JSON com as chaves dos objetos em ordem (a mesma ficha dá sempre o mesmo texto). */
+export function textoEstavel(v: unknown): string {
+  return JSON.stringify(v, (_k, x: unknown) =>
+    x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) : x,
+  );
+}
+
 export class TelaJogador {
   readonly el: HTMLElement;
   private fs: FichaSalva | null = null;
@@ -277,7 +284,9 @@ export class TelaJogador {
     if (!fs) return '';
     const c = this.calc;
     const jogadas = this.aba === 'ataques' && c ? (fs.jogadas ?? []).map((j) => regras.conferirJogada(fs.ficha, c, j, { peAtual: this.vit().pe }).erros) : 0;
-    return JSON.stringify([this.aba, { ...fs, atualizadaEm: 0, atual: 0 }, jogadas]);
+    // com as chaves em ordem: a cópia local e a do servidor trazem os mesmos campos em outra ordem, e o texto diferente
+    // refazia a aba a cada ponto de vida (06/11: a mochila piscava e o toque se perdia no meio do combate)
+    return textoEstavel([this.aba, { ...fs, atualizadaEm: 0, atual: 0 }, jogadas]);
   }
 
   private vit() {

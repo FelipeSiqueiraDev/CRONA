@@ -681,6 +681,8 @@ export class ResolucaoRitual {
             })(),
             ...(l.zera ? { zera: l.zera } : {}),
             ...(l.falhou && l.passou === false && k.livro?.falhou?.nota ? { nota: k.livro.falhou.nota } : {}),
+            // o Descarnar: quem falhou fica com a hemorragia (a Fortitude dela tem a DT do ritual)
+            ...(l.falhou && l.passou === false && k.livro?.falhou?.hemorragia ? { hemorragia: { dano: k.livro.falhou.hemorragia, dt: r.dt } } : {}),
           }));
           const custo = k.custoRes && x.ocultismo && this.e.custo !== null ? { dt: 15 + r.pe, d20: this.e.custo, total: this.e.custo + x.ocultismo.bonus, passou: k.custoRes.passou } : undefined;
           const ritual: cb.RitualConfirmado = {

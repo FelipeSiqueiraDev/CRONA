@@ -7,6 +7,7 @@ export * from './estado';
 export * from './requisitos';
 export * from './calcular';
 export * from './mochila';
+export * from './municao';
 export * from './opcoes';
 export * from './requisicao';
 export * from './rolagem';

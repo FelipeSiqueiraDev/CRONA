@@ -332,7 +332,7 @@ export function abrirRequisicao(r: Requisicao) {
     const elSelo = qual === 'ritual' ? (o.id.replace('selos-paranormais-', '') as regras.Elemento) : null;
     const lista =
       qual === 'pericia'
-        ? regras.periciasDoItem()
+        ? regras.periciasDoItem(o.id)
         : qual === 'ritual'
           ? regras.catalogo.CATALOGO.rituais.filter((x) => x.elemento === elSelo).map((x) => ({ id: x.id, nome: `${x.nome} (${x.circulo}º círculo, categoria ${['0', 'I', 'II', 'III', 'IV'][x.circulo]})` }))
           : (['sangue', 'morte', 'conhecimento', 'energia'] as const).map((id) => ({ id, nome: regras.NOME_ELEMENTO[id] }));

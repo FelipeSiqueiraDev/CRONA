@@ -304,7 +304,8 @@ function efeitosDaMochila(f: Ficha, nex: Nex, problemas: Problema[], st: Estado)
   const oprime = ELEMENTO_OPRIME as Partial<Record<Elemento, Elemento>>;
   for (const [i, it] of f.inventario.entries()) {
     const base = baseDoItem(it);
-    if (!base) continue;
+    // o item quebrado não funciona até o conserto (LR p. 90)
+    if (!base || it.quebrado) continue;
     const chave = `mochila:${i}`;
     // em uso: o que se empunha, na mão; o que se veste, vestido; o resto, na mochila
     const lugar = lugarDoItem(it);
@@ -438,7 +439,7 @@ export function calcular(f: Ficha): Calculado {
   /** proteções em uso sem a proficiência: −2d20 nos testes de Força e Agilidade (LR p. 62) */
   const semProficiencia: string[] = [];
   for (const [i, it] of f.inventario.entries()) {
-    if (it.tipo !== 'protecao' || lugarDoItem(it) === 'mochila') continue;
+    if (it.tipo !== 'protecao' || lugarDoItem(it) === 'mochila' || it.quebrado) continue;
     const p = cat.protecao(it.id);
     if (!p) continue;
     let d = p.defesa;
@@ -575,7 +576,7 @@ export function calcular(f: Ficha): Calculado {
     porItem.set(chave, m);
   };
   for (const [i, it] of f.inventario.entries()) {
-    if (it.tipo !== 'equipamento') continue;
+    if (it.tipo !== 'equipamento' || it.quebrado) continue;
     // guardado (nem vestido nem empunhado): não ajuda (LR p. 63)
     if (it.vestido === false && !it.empunhado) continue;
     const eq = cat.equipamento(it.id);
@@ -591,7 +592,10 @@ export function calcular(f: Ficha): Calculado {
       const p = e.pericia === 'escolhida' ? it.escolha?.pericia : e.pericia;
       if (p) doItem[p] = (doItem[p] ?? 0) + valor(e.valor, atr);
     }
-    const principal = Object.keys(doItem)[0] as PericiaId | undefined;
+    // a perícia do item: a que ele melhora, ou a escolhida (o manual operacional dá treino, não bônus; SaH p. 39)
+    const principal = (Object.keys(doItem)[0] as PericiaId | undefined) ?? it.escolha?.pericia;
+    // a Função Adicional: +2 numa perícia a mais, escolhida (LR p. 64)
+    if (it.modificacoes?.includes('funcao-adicional') && it.escolha?.pericia2) doItem[it.escolha.pericia2] = (doItem[it.escolha.pericia2] ?? 0) + 2;
     for (const m of it.modificacoes ?? [])
       for (const e of cat.modificacao(m)?.efeitos ?? []) {
         if (e.alvo !== 'pericia' || e.condicional || e.pericia === 'todas') continue;
@@ -649,7 +653,9 @@ export function calcular(f: Ficha): Calculado {
   // sem o kit que o uso pede, −5 (LR p. 40): a Medicina pede o kit em todo uso; nas outras, só em alguns usos (o aviso)
   for (const e of cat.CATALOGO.equipamentos) {
     if (!e.kitDe || !pericias[e.kitDe]) continue;
-    const tem = f.inventario.some((it) => it.id === e.id || (it.tipo === 'equipamento' && it.modificacoes?.includes('instrumental') && it.escolha?.pericia === e.kitDe));
+    // o kit de profissão vale para a profissão dele (sem escolha, para qualquer uma; SaH p. 94); o Instrumental faz de kit
+    const daProfissao = (it: ItemFicha) => !it.escolha?.profissao || !f.profissao || it.escolha.profissao.trim().toLowerCase() === f.profissao.trim().toLowerCase();
+    const tem = f.inventario.some((it) => (it.id === e.id && (e.kitDe !== 'profissao' || daProfissao(it))) || (it.tipo === 'equipamento' && it.modificacoes?.includes('instrumental') && it.escolha?.kit === e.kitDe));
     if (tem) continue;
     pericias[e.kitDe].semKit = e.nome;
     if (e.kitDe === 'medicina') pericias.medicina.bonus += PENALIDADE_SEM_KIT;
@@ -690,11 +696,12 @@ export function calcular(f: Ficha): Calculado {
   // ---------- ataques ----------
   const ataques: Ataque[] = [];
   // o ataque desarmado está sempre lá (LR p. 57), com a soqueira se estiver na mão
-  const armas: ItemFicha[] = f.inventario.filter((it) => it.tipo === 'arma');
+  // a arma quebrada não ataca até o conserto (LR p. 90)
+  const armas: ItemFicha[] = f.inventario.filter((it) => it.tipo === 'arma' && !it.quebrado);
   // as ferramentas que viram arma na mão (LR p. 66; SaH p. 43): o pé de cabra e a pá contam como bastão; a pistola
   // sinalizadora, uma vez, como arma de disparo leve (2d6 de fogo); a pistola de dardos dispara o sonífero
   for (const it of f.inventario) {
-    if (it.tipo !== 'equipamento' || lugarDoItem(it) !== 'mao') continue;
+    if (it.tipo !== 'equipamento' || lugarDoItem(it) !== 'mao' || it.quebrado) continue;
     const como = it.id === 'pe-de-cabra' || it.id === 'pa' ? 'bastao' : it.id === 'pistola-sinalizadora' ? 'pistola-sinalizadora' : it.id === 'pistola-de-dardos' ? 'pistola-de-dardos' : null;
     if (como) armas.push({ ...it, id: como, tipo: 'arma', apelido: it.apelido ?? cat.equipamento(it.id)?.nome });
   }

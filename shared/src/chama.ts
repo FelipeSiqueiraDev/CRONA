@@ -27,6 +27,8 @@ export const CHAMAS_DAS_CRIATURAS: Record<string, ChamaCriatura> = {
   'anfitriao-plautus': { cor: '#ff62ae', acento: '#9a2a86', intensidade: 1 },
   // o Anárquico Descontrolado (23/10, o Felipe: "ele não é vermelho, é roxo, brilhante; ele é literalmente feito de energia")
   'anarquico-descontrolado': { cor: '#a24bff', acento: '#4a1a9a', toque: '#ff7ae8', intensidade: 1.2 },
+  // o Anárquico de antes de descontrolar (06/11): a chama roxa e rosa só nos ombros e na cabeça, mais fraca
+  anarquico: { cor: '#b04bff', acento: '#5a1a9a', toque: '#ff6ad8', intensidade: 0.7 },
 };
 
 const limpoHex = (v: unknown): string | null => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : null);

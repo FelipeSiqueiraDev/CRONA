@@ -59,7 +59,8 @@ export function novoCombate(cena: number, pecas: PecaCombate[], agora: number): 
     rodada: 0,
     vez: null,
     agiram: [],
-    participantes: pecas.filter((p) => p.naCena).map((p) => participanteNovo(p, 1)),
+    // o companheiro animal (a Camarilla) não entra em combate (06/11, o Felipe: "A Camarilla não participa de combates")
+    participantes: pecas.filter((p) => p.naCena && !p.companheiroDe).map((p) => participanteNovo(p, 1)),
     mestre: { iniciativa: null, desempate: 0 },
     acoes: {},
     preparadas: [],
@@ -240,6 +241,11 @@ function comecarTurno(c: Combate, e: Entrada, ctx: Contexto) {
       delete p.imovelDesde;
       registrar(c, ctx.agora, 'estado', `${p.nome} deixa de estar imóvel (Consumidora, uma rodada).`);
     }
+    // a hemorragia do Descarnar: a Fortitude do começo do turno fica nas pendências (LR p. 129)
+    if (p.hemorragia && !(c.hemorragias ?? []).some((x) => x.id === p.id)) {
+      (c.hemorragias ??= []).push({ id: p.id, dt: p.hemorragia.dt, dano: p.hemorragia.dano });
+      registrar(c, ctx.agora, 'estado', `${p.nome} sangra (Descarnar): Fortitude DT ${p.hemorragia.dt}; falhou, ${p.hemorragia.dano} de Sangue (LR p. 129).`);
+    }
     if (p.erosao) {
       p.erosao -= 1;
       registrar(c, ctx.agora, 'estado', `${p.nome} envelhece pela Erosiva: sofre 2d4 de dano de Morte${p.erosao ? ' (mais uma rodada)' : ' (a última)'} (LR p. 146).`);
@@ -252,7 +258,14 @@ function comecarTurno(c: Combate, e: Entrada, ctx: Contexto) {
     const agarrado = c.participantes.find((q) => q.agarra === p.id && !q.fora);
     if (agarrado) registrar(c, ctx.agora, 'estado', `${p.nome} está agarrado por ${agarrado.nome}: soltar-se é ação padrão com teste de manobra (LR p. 85).`);
     const preso = p.agarra ? participante(c, p.agarra) : undefined;
-    if (preso && !preso.fora) registrar(c, ctx.agora, 'estado', `${p.nome} agarra ${preso.nome}: uma mão ocupada, anda à metade; soltar é ação livre (LR p. 85).`);
+    if (preso && !preso.fora && p.corrente) {
+      // a prisão com corrente (regra da casa 01): desde o turno seguinte, Atletismo sem gastar ação
+      if (c.rodada > p.corrente.desde && !(c.correntes ?? []).some((x) => x.id === p.id)) {
+        const dt = 10 + 5 * p.corrente.mantidas;
+        (c.correntes ??= []).push({ id: p.id, dt });
+        registrar(c, ctx.agora, 'estado', `${p.nome} segura ${preso.nome} com a corrente: Atletismo DT ${dt} (arrastando, −5); falhou, ${preso.nome} se liberta (regra da casa).`);
+      }
+    } else if (preso && !preso.fora) registrar(c, ctx.agora, 'estado', `${p.nome} agarra ${preso.nome}: uma mão ocupada, anda à metade; soltar é ação livre (LR p. 85).`);
   }
 }
 
@@ -268,13 +281,18 @@ function semCondicao(p: Participante, id: string) {
 
 /** Quem agarra `p` deixa de agarrar (o alvo se soltou, saiu ou perdeu a condição). */
 function largarQuemAgarra(c: Combate, p: Participante) {
-  for (const q of c.participantes) if (q.agarra === p.id) delete q.agarra;
+  for (const q of c.participantes) if (q.agarra === p.id) delete q.agarra, delete q.corrente;
 }
 
 /** `p` solta quem ele agarra; o alvo sai do agarrado se ninguém mais o segura. */
 function soltarAgarrado(c: Combate, p: Participante): Participante | undefined {
   const alvo = p.agarra ? participante(c, p.agarra) : undefined;
   delete p.agarra;
+  delete p.corrente;
+  if (c.correntes) {
+    c.correntes = c.correntes.filter((x) => x.id !== p.id);
+    if (!c.correntes.length) delete c.correntes;
+  }
   if (alvo && !c.participantes.some((q) => q.agarra === alvo.id)) semCondicao(alvo, 'agarrado');
   return alvo;
 }
@@ -425,6 +443,11 @@ function ataque(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
       if (vezes > 1) ac.golpes = vezes - 1;
     }
   }
+  // o Golpe de Passagem (regra da casa 02): a ação padrão e a de movimento
+  if (o.passagem === true) {
+    if (ac.movimento || ac.completa) return erro('O golpe de passagem gasta também a ação de movimento, e ela já foi usada.');
+    ac.movimento = true;
+  }
   const reacao = o.reacao === 'esquiva' || o.reacao === 'bloqueio' ? o.reacao : null;
   if (reacao) {
     if (alvo.lado !== 'agente') return erro('Ameaças não usam defesas especiais (LR p. 179).');
@@ -500,6 +523,8 @@ function ataque(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
   const dx = o.danoExtra && typeof o.danoExtra === 'object' ? (o.danoExtra as Record<string, unknown>) : null;
   if (resultado !== 'erro' && dx) aplicarDano(c, alvo, dx, ctx, vitais);
   c.ultimo = { quem: quem.id, alvo: alvo.id, resultado, ...(mult ? { multiplicador: mult } : {}), em: ctx.agora };
+  // o Olho do Predador vale só no primeiro disparo depois da preparação (regra da casa 03)
+  delete quem.mira;
   return { ok: true, combate: c, vitais };
 }
 
@@ -687,7 +712,10 @@ function manobra(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined):
       if (quem.agarra && quem.agarra !== alvo.id) soltarAgarrado(c, quem);
       quem.agarra = alvo.id;
       comCondicao(alvo, 'agarrado');
-      est(`${alvo.nome} fica agarrado por ${quem.nome}: desprevenido e imóvel, só ataca com arma leve e sofre −1d20 nos ataques; ${quem.nome} fica com uma mão ocupada e anda à metade (LR p. 85).`);
+      if (o.corrente === true) {
+        quem.corrente = { mantidas: 0, desde: c.rodada };
+        est(`${alvo.nome} fica preso pela corrente de ${quem.nome}: agarrado (não indefeso). ${quem.nome} fica com as duas mãos na corrente; a partir do próximo turno, Atletismo DT 10 no começo de cada turno (+5 a cada vez), sem gastar ação; arrastar o alvo: metade do deslocamento e −5 no teste. ${alvo.nome} escapa com a ação padrão vencendo Luta contra Luta (regra da casa).`);
+      } else est(`${alvo.nome} fica agarrado por ${quem.nome}: desprevenido e imóvel, só ataca com arma leve e sofre −1d20 nos ataques; ${quem.nome} fica com uma mão ocupada e anda à metade (LR p. 85).`);
       break;
     case 'derrubar':
       comCondicao(alvo, 'caido');
@@ -826,6 +854,13 @@ function ritual(c: Combate, x: unknown, ctx: Contexto, e: Entrada | undefined): 
       mudar(vitais, p.id, 'san', 0);
       registrar(c, ctx.agora, 'acao', `${p.nome} vai a 0 de SAN pelo ritual e fica enlouquecendo.`, ['enlouquecendo']);
     }
+    // o Descarnar em quem falhou: a hemorragia, até passar dois turnos seguidos na Fortitude
+    const hem = r.hemorragia && typeof r.hemorragia === 'object' ? (r.hemorragia as Record<string, unknown>) : null;
+    if (hem) {
+      const dano = texto(hem.dano, 12) || '2d8';
+      p.hemorragia = { dano, dt: inteiro(hem.dt, 1, 99) ?? 15, seguidos: 0 };
+      registrar(c, ctx.agora, 'estado', `${p.nome} fica com hemorragia: no começo de cada turno, Fortitude; falhou, ${dano} de Sangue; dois turnos seguidos passando, estanca (LR p. 129).`);
+    }
     const nota = texto(r.nota, 160);
     if (nota) registrar(c, ctx.agora, 'estado', `${p.nome}: ${nota}.`);
     const cond = texto(r.condicao, 30);
@@ -916,6 +951,7 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
         if (!p) {
           const peca = ctx.pecas.find((x) => x.id === id);
           if (!peca) return erro('Peça não encontrada.');
+          if (peca.companheiroDe) return erro(`${peca.nome} não participa de combates (regra da mesa).`);
           p = participanteNovo(peca, 1);
           c.participantes.push(p);
         }
@@ -1098,6 +1134,17 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       } else if (a.qual !== 'livre') return erro('Ação inválida.');
       c.acoes[String(p.id)] = ac;
       registrar(c, ctx.agora, 'acao', `${p.nome}: ${t} (${rotulo}).`);
+      // o Olho do Predador (regra da casa 03): a rodada inteira mirando no alvo; mover-se ou fazer outra coisa encerra
+      const alvoMira = a.qual === 'completa' ? inteiro(a.mirar, 1, 1e9) : undefined;
+      const mirado = alvoMira !== undefined ? participante(c, alvoMira) : undefined;
+      if (mirado && !mirado.fora) {
+        const rodadas = p.mira?.alvo === mirado.id ? Math.min(2, p.mira.rodadas + 1) : 1;
+        p.mira = { alvo: mirado.id, rodadas };
+        registrar(c, ctx.agora, 'estado', `${p.nome} mira em ${mirado.nome} (${rodadas} ${rodadas === 1 ? 'rodada' : 'rodadas'}): o próximo disparo tem +5${rodadas >= 2 ? ', +1d6 de dano balístico e escolhe a região do corpo' : ''} (Olho do Predador, regra da casa).`);
+      } else if (p.mira && a.qual !== 'livre') {
+        delete p.mira;
+        registrar(c, ctx.agora, 'estado', `${p.nome} deixa de mirar (Olho do Predador encerrado).`);
+      }
       return ok();
     }
 
@@ -1114,6 +1161,7 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       const id = inteiro(a.id, 1, 1e9);
       const peca = ctx.pecas.find((x) => x.id === id);
       if (!id || !peca) return erro('Peça não encontrada.');
+      if (peca.companheiroDe) return erro(`${peca.nome} não participa de combates (regra da mesa).`);
       let p = participante(c, id);
       if (p && !p.fora) return erro(`${p.nome} já está no combate.`);
       const lado: Lado = a.lado && LADOS.includes(a.lado) ? a.lado : peca.agente || peca.companheiroDe ? 'agente' : 'inimigo';
@@ -1237,6 +1285,49 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
     case 'presenca':
       return presenca(c, a, ctx);
 
+    case 'corrente': {
+      const x = (c.correntes ?? []).find((y) => y.id === a.id);
+      const p = participante(c, a.id);
+      if (!x || !p) return erro('Não há teste de corrente esperando para esse ser.');
+      c.correntes = (c.correntes ?? []).filter((y) => y !== x);
+      if (!c.correntes.length) delete c.correntes;
+      const preso = p.agarra ? participante(c, p.agarra) : undefined;
+      if (!a.passou) {
+        registrar(c, ctx.agora, 'acao', `${p.nome} falha no Atletismo (DT ${x.dt}${a.arrastar ? ', arrastando' : ''}): perde o controle da corrente${preso ? ` e ${preso.nome} se liberta` : ''} (regra da casa).`, ['soltou']);
+        soltarAgarrado(c, p);
+        return ok();
+      }
+      if (p.corrente) p.corrente.mantidas += 1;
+      registrar(c, ctx.agora, 'acao', `${p.nome} mantém a corrente (Atletismo DT ${x.dt}${a.arrastar ? ', arrastando: metade do deslocamento' : ''}); a próxima é DT ${x.dt + 5}.`);
+      return ok();
+    }
+
+    case 'hemorragia': {
+      const x = (c.hemorragias ?? []).find((y) => y.id === a.id);
+      const p = participante(c, a.id);
+      if (!x || !p) return erro('Não há teste de hemorragia esperando para esse ser.');
+      c.hemorragias = (c.hemorragias ?? []).filter((y) => y !== x);
+      if (!c.hemorragias.length) delete c.hemorragias;
+      const vitais: MudancaVitais[] = [];
+      if (a.passou) {
+        const seguidos = (p.hemorragia?.seguidos ?? 0) + 1;
+        if (seguidos >= 2) {
+          delete p.hemorragia;
+          registrar(c, ctx.agora, 'acao', `${p.nome} passa na Fortitude pela segunda vez seguida: a hemorragia estanca.`, ['estancou']);
+        } else {
+          if (p.hemorragia) p.hemorragia.seguidos = seguidos;
+          registrar(c, ctx.agora, 'acao', `${p.nome} passa na Fortitude da hemorragia (mais um turno passando, estanca).`);
+        }
+        return { ok: true, combate: c };
+      }
+      const soma = inteiro(a.soma, 0, 999);
+      if (soma === undefined) return erro(`Falta a soma dos dados (${x.dano}).`);
+      if (p.hemorragia) p.hemorragia.seguidos = 0;
+      registrar(c, ctx.agora, 'acao', `${p.nome} falha na Fortitude da hemorragia.`, ['falhou']);
+      aplicarDano(c, p, { final: soma, formula: x.dano, conta: String(soma), tipo: 'sangue' }, ctx, vitais);
+      return { ok: true, combate: c, vitais };
+    }
+
     case 'perdaSan': {
       const i = (c.perdasSan ?? []).findIndex((x) => x.id === a.id);
       if (i < 0) return erro('Não há perda de SAN esperando para esse ser.');
@@ -1323,6 +1414,8 @@ const TIPOS = new Set<AcaoCombate['tipo']>([
   'ataque',
   'massivo',
   'presenca',
+  'hemorragia',
+  'corrente',
   'perdaSan',
   'manobra',
   'ritual',

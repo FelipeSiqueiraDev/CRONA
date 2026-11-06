@@ -4,9 +4,14 @@
  * quando sobra pouca gente e responde a tiros; quatro barreiras se desfazem aos poucos. Cada fase é mais difícil
  * (mais fileiras, mais rápido, mais tiros) e toda terceira é um CHEFE: uma nave enorme com barra de vida e três
  * ataques. A nave de bônus que cruza o alto solta o TIRO DUPLO. Três vidas. Tudo em código, como os outros jogos.
+ *
+ * Em DUPLA (04/11, o Felipe: "Invasores tem que dar de dupla, quanto mais player mais difícil"): as duas naves jogam juntas
+ * contra a mesma frota. O celular de quem convidou ('dono') faz todas as contas (frota, tiros, chefe, as duas naves) e
+ * manda o quadro ao outro ('convidado') a cada dois passos; o convidado mexe a própria nave na hora e manda onde ela
+ * está e se atira. Com mais gente a frota é maior, mais rápida e atira mais, e o chefe tem mais vida.
  */
 import { sfx } from './sfx';
-import { COR, fx, H, texto, W, type Entrada, type Jogo, type Nivel } from './fliperamaJogos';
+import { COR, fx, H, texto, W, type Dupla, type Entrada, type Jogo, type Nivel } from './fliperamaJogos';
 
 // ---------------------------------------------------------------- as imagens (cada '#' é um pixel)
 
@@ -80,15 +85,25 @@ const FATOR_NIVEL = [0.8, 1, 1.3];
 /** fases de chefe: a cada três */
 const ehChefe = (fase: number) => fase % 3 === 0;
 
+/** Uma nave: a de quem convidou (0) ou a do convidado (1). */
+interface Nave {
+  x: number;
+  frio: number;
+  duplo: number;
+  imune: number;
+  vidas: number;
+  viva: boolean;
+}
+const novaNave = (x: number): Nave => ({ x, frio: 0, duplo: 0, imune: 90, vidas: 3, viva: true });
+const COR_NAVE = [COR.verdeClaro, COR.azulClaro];
+/** o quanto cada jogador a mais aperta o jogo (a frota, os tiros dela, a vida do chefe e as fileiras) */
+const MAIS_JOGADORES = { frota: 0.18, tiros: 0.55, chefe: 0.9, fileira: 1 };
+
 export class Invasores implements Jogo {
   pontos = 0;
   fim = false;
   private fase = 1;
-  private vidas = 3;
-  private nave = W / 2 - 4;
-  private frio = 0;
-  private duplo = 0;
-  private imune = 90;
+  private naves: Nave[];
   private tiros: Tiro[] = [];
   private tirosInimigos: Tiro[] = [];
   private aliens: Alien[] = [];
@@ -104,11 +119,23 @@ export class Invasores implements Jogo {
   private q = 0;
   private chefe: { x: number; y: number; vida: number; max: number; dir: number; frio: number; golpe: number } | null = null;
   private totalFase = 0;
+  /** em dupla: quem faz as contas ('dono'), quem só mexe a nave e desenha ('convidado'), ou sozinho */
+  private papel: 'sozinho' | 'dono' | 'convidado';
+  /** o dono: o que o convidado mandou (onde está a nave dele e se atira) */
+  remoto: { x: number; a: number } = { x: W / 2 + 20, a: 0 };
+  /** a nave deste celular na lista (o dono é a 0; o convidado, a 1) */
+  private eu: number;
+  private jogadores: number;
+  private atirouAgora = false;
 
   constructor(
-    _dupla?: unknown,
+    dupla?: Dupla,
     private nivel: Nivel = 1,
   ) {
+    this.papel = !dupla ? 'sozinho' : dupla.lado === 0 ? 'dono' : 'convidado';
+    this.jogadores = dupla ? 2 : 1;
+    this.eu = this.papel === 'convidado' ? 1 : 0;
+    this.naves = dupla ? [novaNave(W / 2 - 30), novaNave(W / 2 + 22)] : [novaNave(W / 2 - 4)];
     this.montarFase();
   }
 
@@ -118,13 +145,23 @@ export class Invasores implements Jogo {
   }
 
   resumo() {
-    return `FASE ${this.fase}`;
+    return this.jogadores > 1 ? `FASE ${this.fase} ${this.pontos} PONTOS` : `FASE ${this.fase}`;
+  }
+
+  /** A fase em que o jogo parou (para dizer se a dupla foi longe). */
+  get faseAtual() {
+    return this.fase;
   }
 
   // ---------------------------------------------------------------- as fases
 
   private fatorFase() {
-    return (1 + (this.fase - 1) * 0.12) * FATOR_NIVEL[this.nivel];
+    return (1 + (this.fase - 1) * 0.12) * FATOR_NIVEL[this.nivel] * (1 + (this.jogadores - 1) * MAIS_JOGADORES.frota);
+  }
+
+  /** Quanto os tiros inimigos aumentam com os jogadores. */
+  private fatorTiros() {
+    return 1 + (this.jogadores - 1) * MAIS_JOGADORES.tiros;
   }
 
   private montarFase() {
@@ -133,14 +170,16 @@ export class Invasores implements Jogo {
     this.disco = null;
     this.proxDisco = 500 + Math.random() * 400;
     this.anuncio = 120;
-    this.imune = 90;
+    for (const n of this.naves) n.imune = 90;
     this.aliens = [];
     this.chefe = null;
     if (ehChefe(this.fase)) {
-      const max = 26 + this.fase * 6 + this.nivel * 8;
+      const base = 26 + this.fase * 6 + this.nivel * 8;
+      const max = Math.round(base * (1 + (this.jogadores - 1) * MAIS_JOGADORES.chefe));
       this.chefe = { x: W / 2 - 13, y: 26, vida: max, max, dir: 1, frio: 90, golpe: 0 };
     } else {
-      const fileiras = Math.min(5, 3 + Math.floor((this.fase - 1) / 2));
+      const extra = (this.jogadores - 1) * MAIS_JOGADORES.fileira;
+      const fileiras = Math.min(5 + extra, 3 + Math.floor((this.fase - 1) / 2) + extra);
       for (let r = 0; r < fileiras; r++) for (let c = 0; c < COLUNAS; c++) this.aliens.push({ c, r, tipo: r === 0 ? 2 : r < 3 ? 1 : 0, vivo: true });
       this.gx = 10;
       this.gy = 24 + Math.min(3, Math.floor(this.fase / 3)) * 4;
@@ -159,6 +198,11 @@ export class Invasores implements Jogo {
     return { x: this.gx + a.c * PASSO_X, y: this.gy + a.r * PASSO_Y };
   }
 
+  /** As naves que ainda jogam. */
+  private vivas() {
+    return this.naves.filter((n) => n.viva);
+  }
+
   // ---------------------------------------------------------------- o passo
 
   passo(e: Entrada) {
@@ -168,32 +212,45 @@ export class Invasores implements Jogo {
       s.y += s.v;
       if (s.y > H) (s.y = 0), (s.x = Math.floor(Math.random() * W));
     }
-    // a nave: as setas (ou a alavanca) andam; o dedo leva a nave até ele
-    if (e.dedo) this.nave += Math.max(-4.2, Math.min(4.2, e.dedo.x - 4 - this.nave));
-    else this.nave += 2.4 * e.eixo.x;
-    this.nave = Math.max(2, Math.min(W - 11, this.nave));
-    // o A (e o dedo na tela) atira sem parar
-    if (this.frio > 0) this.frio--;
-    if (this.imune > 0) this.imune--;
-    if (this.duplo > 0) this.duplo--;
+    if (this.papel === 'convidado') return this.passoConvidado(e);
+    // a nave de quem joga aqui: as setas (ou a alavanca) andam; o dedo leva a nave até ele
+    const minha = this.naves[0];
+    if (minha.viva) {
+      if (e.dedo) minha.x += Math.max(-4.2, Math.min(4.2, e.dedo.x - 4 - minha.x));
+      else minha.x += 2.4 * e.eixo.x;
+      minha.x = Math.max(2, Math.min(W - 11, minha.x));
+    }
+    // a do convidado: onde ele diz que está
+    if (this.papel === 'dono' && this.naves[1].viva) this.naves[1].x = Math.max(2, Math.min(W - 11, this.remoto.x));
+    for (const n of this.naves) {
+      if (n.frio > 0) n.frio--;
+      if (n.imune > 0) n.imune--;
+      if (n.duplo > 0) n.duplo--;
+    }
     if (this.anuncio > 0) {
       this.anuncio--;
       this.passoTiros();
       return;
     }
-    if ((e.segura.has('a') || e.dedo || e.apertou.has('a')) && this.frio === 0) {
-      this.frio = this.duplo > 0 ? 11 : 15;
-      const cx = this.nave + 4;
-      if (this.duplo > 0) this.tiros.push({ x: cx - 3, y: Y_NAVE - 2, vx: 0, vy: -4.4 }, { x: cx + 3, y: Y_NAVE - 2, vx: 0, vy: -4.4 });
-      else this.tiros.push({ x: cx, y: Y_NAVE - 2, vx: 0, vy: -4.4 });
-      sfx.chip(880, 330, 0.06, 0.05);
-    }
+    // o A (e o dedo na tela) atira sem parar
+    this.atirar(0, !!(e.segura.has('a') || e.dedo || e.apertou.has('a')));
+    if (this.papel === 'dono') this.atirar(1, this.remoto.a === 1);
     if (this.chefe) this.passoChefe();
     else this.passoFrota();
     this.passoDisco();
     this.passoTiros();
     // a fase acabou?
     if (!this.chefe && this.vivos().length === 0) this.proximaFase();
+  }
+
+  private atirar(i: number, quer: boolean) {
+    const n = this.naves[i];
+    if (!n || !n.viva || !quer || n.frio > 0) return;
+    n.frio = n.duplo > 0 ? 11 : 15;
+    const cx = n.x + 4;
+    if (n.duplo > 0) this.tiros.push({ x: cx - 3, y: Y_NAVE - 2, vx: 0, vy: -4.4 }, { x: cx + 3, y: Y_NAVE - 2, vx: 0, vy: -4.4 });
+    else this.tiros.push({ x: cx, y: Y_NAVE - 2, vx: 0, vy: -4.4 });
+    sfx.chip(880, 330, 0.06, 0.05);
   }
 
   private passoFrota() {
@@ -210,22 +267,22 @@ export class Invasores implements Jogo {
       this.dir = -this.dir;
       this.gy += 6;
     }
-    // chegaram na altura da nave: perde uma vida e a frota volta para cima
+    // chegaram na altura da nave: cada nave perde uma vida e a frota volta para cima
     const baixo = Math.max(...vivos.map((a) => this.posAlien(a).y)) + 6;
     if (baixo >= Y_BARREIRA + 6) {
-      if (this.imune === 0) this.perderVida();
+      this.naves.forEach((n, i) => n.viva && n.imune === 0 && this.perderVida(i));
       this.gy = 24;
       this.tirosInimigos = [];
     }
     // eles atiram (a coluna de baixo, de vez em quando)
-    const chance = (0.008 + this.fase * 0.0016) * FATOR_NIVEL[this.nivel] * (1 + (1 - resto) * 1.2);
+    const chance = (0.008 + this.fase * 0.0016) * FATOR_NIVEL[this.nivel] * (1 + (1 - resto) * 1.2) * this.fatorTiros();
     if (Math.random() < chance) {
       const colunas = new Map<number, Alien>();
       for (const a of vivos) if (!colunas.has(a.c) || a.r > colunas.get(a.c)!.r) colunas.set(a.c, a);
       const lista = [...colunas.values()];
       const a = lista[Math.floor(Math.random() * lista.length)];
       const p = this.posAlien(a);
-      this.tirosInimigos.push({ x: p.x + 4, y: p.y + 6, vx: 0, vy: 1.5 + this.fase * 0.1 + this.nivel * 0.25 });
+      this.tirosInimigos.push({ x: p.x + 4, y: p.y + 6, vx: 0, vy: (1.5 + this.fase * 0.1 + this.nivel * 0.25) * (1 + (this.jogadores - 1) * 0.1) });
     }
   }
 
@@ -242,20 +299,24 @@ export class Invasores implements Jogo {
       const cx = c.x + 13;
       const vy = 1.7 + this.fase * 0.06 + this.nivel * 0.2;
       if (golpe === 0) {
-        // o leque: três tiros abertos
-        for (const vx of [-0.8, 0, 0.8]) this.tirosInimigos.push({ x: cx, y: c.y + 14, vx, vy, grande: true });
+        // o leque: três tiros abertos (cinco com mais gente)
+        const leque = this.jogadores > 1 ? [-1.6, -0.8, 0, 0.8, 1.6] : [-0.8, 0, 0.8];
+        for (const vx of leque) this.tirosInimigos.push({ x: cx, y: c.y + 14, vx, vy, grande: true });
       } else if (golpe === 1) {
-        // a mira: um tiro na direção da nave
-        const dx = this.nave + 4 - cx;
-        const dy = Y_NAVE - (c.y + 14);
-        const n = Math.hypot(dx, dy) || 1;
-        this.tirosInimigos.push({ x: cx, y: c.y + 14, vx: (dx / n) * (vy + 0.6), vy: (dy / n) * (vy + 0.6), grande: true });
+        // a mira: um tiro na direção de cada nave viva
+        for (const n of this.vivas()) {
+          const dx = n.x + 4 - cx;
+          const dy = Y_NAVE - (c.y + 14);
+          const m = Math.hypot(dx, dy) || 1;
+          this.tirosInimigos.push({ x: cx, y: c.y + 14, vx: (dx / m) * (vy + 0.6), vy: (dy / m) * (vy + 0.6), grande: true });
+        }
       } else {
-        // a chuva: uma fileira de tiros pela tela
-        for (let i = 0; i < 6; i++) this.tirosInimigos.push({ x: 12 + i * 27 + Math.random() * 8, y: c.y + 14, vx: 0, vy: vy * 0.85 });
+        // a chuva: uma fileira de tiros pela tela (mais tiros com mais gente)
+        const n = this.jogadores > 1 ? 8 : 6;
+        for (let i = 0; i < n; i++) this.tirosInimigos.push({ x: 12 + i * ((W - 24) / n) + Math.random() * 8, y: c.y + 14, vx: 0, vy: vy * 0.85 });
       }
       sfx.chip(180, 90, 0.18, 0.09);
-      c.frio = Math.round((furioso ? 50 : 78) / Math.max(0.8, f * 0.9));
+      c.frio = Math.round((furioso ? 50 : 78) / Math.max(0.8, f * 0.9) / (1 + (this.jogadores - 1) * 0.15));
     }
   }
 
@@ -273,7 +334,7 @@ export class Invasores implements Jogo {
   }
 
   private passoTiros() {
-    // os seus tiros
+    // os tiros das naves
     for (const t of this.tiros) {
       t.x += t.vx;
       t.y += t.vy;
@@ -318,7 +379,9 @@ export class Invasores implements Jogo {
           this.disco = null;
           const bonus = [50, 100, 150, 300][Math.floor(Math.random() * 4)];
           this.pontos += bonus;
-          this.duplo = 900;
+          // o tiro duplo vai para a nave que estiver mais perto do disco
+          const perto = this.vivas().sort((a, b) => Math.abs(a.x - d.x) - Math.abs(b.x - d.x))[0];
+          if (perto) perto.duplo = 900;
           sfx.arpejo([660, 880, 1175], 0.05, 0.07);
           fx.texto(d.x + 5, 8, `${bonus} DUPLO`, COR.amarelo);
           fx.faiscas(d.x + 5, 12, [COR.vermelho, COR.amarelo, COR.branco], 14, 1.6, 0.03, 26);
@@ -336,9 +399,14 @@ export class Invasores implements Jogo {
         t.y = H + 10;
         continue;
       }
-      if (this.imune === 0 && t.y >= Y_NAVE - 2 && t.y <= Y_NAVE + 5 && t.x >= this.nave && t.x <= this.nave + 9) {
-        t.y = H + 10;
-        this.perderVida();
+      if (t.y < Y_NAVE - 2 || t.y > Y_NAVE + 5) continue;
+      for (let i = 0; i < this.naves.length; i++) {
+        const n = this.naves[i];
+        if (n.viva && n.imune === 0 && t.x >= n.x && t.x <= n.x + 9) {
+          t.y = H + 10;
+          this.perderVida(i);
+          break;
+        }
       }
     }
   }
@@ -359,15 +427,17 @@ export class Invasores implements Jogo {
     return false;
   }
 
-  private perderVida() {
-    this.vidas--;
+  private perderVida(i: number) {
+    const n = this.naves[i];
+    n.vidas--;
     fx.tremer(6);
-    fx.faiscas(this.nave + 4, Y_NAVE, [COR.verdeClaro, COR.branco, COR.amarelo], 18, 2, 0.05, 30);
+    fx.faiscas(n.x + 4, Y_NAVE, [COR_NAVE[i], COR.branco, COR.amarelo], 18, 2, 0.05, 30);
     sfx.chip(300, 40, 0.5, 0.12);
     sfx.ruido(0.3, 800, 0.15, 150);
-    this.duplo = 0;
-    this.imune = 110;
-    if (this.vidas <= 0) this.fim = true;
+    n.duplo = 0;
+    n.imune = 110;
+    if (n.vidas <= 0) n.viva = false;
+    if (!this.naves.some((x) => x.viva)) this.fim = true;
   }
 
   private derrubarChefe() {
@@ -388,9 +458,120 @@ export class Invasores implements Jogo {
     this.pontos += 100 * this.fase;
     this.fase++;
     sfx.arpejo([523, 659, 784, 1046], 0.08, 0.08);
-    // uma vida de bônus a cada fase de chefe vencida
-    if (ehChefe(this.fase - 1) && this.vidas < 5) this.vidas++;
+    // uma vida de bônus a cada fase de chefe vencida (e quem tinha caído volta com uma)
+    if (ehChefe(this.fase - 1))
+      for (const n of this.naves) {
+        if (n.vidas < 5) n.vidas++;
+        n.viva = true;
+      }
     this.montarFase();
+  }
+
+  // ---------------------------------------------------------------- a dupla
+
+  /** O convidado: mexe a própria nave e segue o que o dono manda; as contas não são dele. */
+  private passoConvidado(e: Entrada) {
+    const n = this.naves[this.eu];
+    if (n.viva) {
+      if (e.dedo) n.x += Math.max(-4.2, Math.min(4.2, e.dedo.x - 4 - n.x));
+      else n.x += 2.4 * e.eixo.x;
+      n.x = Math.max(2, Math.min(W - 11, n.x));
+    }
+    if (n.frio > 0) n.frio--;
+    this.atirouAgora = !!(n.viva && this.anuncio === 0 && (e.segura.has('a') || e.dedo || e.apertou.has('a')));
+    if (this.atirouAgora && n.frio === 0) {
+      n.frio = n.duplo > 0 ? 11 : 15;
+      sfx.chip(880, 330, 0.06, 0.05);
+    }
+    if (this.anuncio > 0) this.anuncio--;
+    // entre um quadro e outro do dono, tudo segue na direção em que ia
+    for (const t of this.tiros) (t.x += t.vx), (t.y += t.vy);
+    for (const t of this.tirosInimigos) (t.x += t.vx), (t.y += t.vy);
+    this.tiros = this.tiros.filter((t) => t.y > 8);
+    this.tirosInimigos = this.tirosInimigos.filter((t) => t.y < H + 8);
+  }
+
+  /** O que o convidado manda ao dono: onde está a nave e se atira. */
+  posicao() {
+    return { x: Math.round(this.naves[this.eu].x * 10) / 10, a: this.atirouAgora ? 1 : 0 };
+  }
+
+  /** O quadro do jogo que o dono manda ao convidado (a cada dois passos): tudo o que se desenha. */
+  estado(): Record<string, unknown> {
+    const r = (n: number) => Math.round(n * 10) / 10;
+    const bits = (l: boolean[]) => {
+      const out: number[] = [];
+      for (let i = 0; i < l.length; i += 20) {
+        let v = 0;
+        for (let k = 0; k < 20 && i + k < l.length; k++) if (l[i + k]) v |= 1 << k;
+        out.push(v);
+      }
+      return out;
+    };
+    const c = this.chefe;
+    return {
+      f: this.fase,
+      p: this.pontos,
+      an: this.anuncio,
+      fm: this.fim ? 1 : 0,
+      g: [r(this.gx), r(this.gy)],
+      n: this.naves.map((n) => [r(n.x), n.vidas, n.duplo, n.imune, n.viva ? 1 : 0]),
+      av: bits(this.aliens.map((a) => a.vivo)),
+      di: this.disco ? [r(this.disco.x), this.disco.dir] : 0,
+      ba: this.barreiras.flatMap((b) => bits(b.celulas)),
+      ch: c ? [r(c.x), r(c.y), c.vida, c.max, c.golpe] : 0,
+      t: this.tiros.flatMap((t) => [r(t.x), r(t.y)]),
+      ti: this.tirosInimigos.flatMap((t) => [r(t.x), r(t.y), r(t.vx), r(t.vy), t.grande ? 1 : 0]),
+    };
+  }
+
+  /** O convidado recebe o quadro do dono (confere o formato; o que vem torto é ignorado). */
+  aplicar(s: unknown) {
+    if (!s || typeof s !== 'object') return;
+    const d = s as Record<string, unknown>;
+    const nums = (v: unknown, max: number): number[] | null => (Array.isArray(v) && v.length <= max && v.every((x) => typeof x === 'number' && Number.isFinite(x)) ? (v as number[]) : null);
+    if (typeof d.f !== 'number' || typeof d.p !== 'number' || !Array.isArray(d.n) || d.n.length !== this.naves.length) return;
+    const g = nums(d.g, 2);
+    const av = nums(d.av, 4);
+    const ba = nums(d.ba, 16);
+    const t = nums(d.t, 200);
+    const ti = nums(d.ti, 400);
+    if (!g || g.length !== 2 || !av || !ba || !t || !ti) return;
+    if (d.f !== this.fase) {
+      this.fase = d.f;
+      this.montarFase();
+    }
+    if (this.pontos < d.p) sfx.chip(520, 90, 0.05, 0.05);
+    this.pontos = d.p;
+    this.anuncio = typeof d.an === 'number' ? d.an : 0;
+    [this.gx, this.gy] = g;
+    this.aliens.forEach((a, i) => (a.vivo = (((av[Math.floor(i / 20)] ?? 0) >> i % 20) & 1) === 1));
+    this.barreiras.forEach((b, bi) => b.celulas.forEach((_, k) => (b.celulas[k] = (((ba[bi * 2 + Math.floor(k / 20)] ?? 0) >> k % 20) & 1) === 1)));
+    d.n.forEach((v, i) => {
+      const x = nums(v, 5);
+      if (!x || x.length < 5) return;
+      const n = this.naves[i];
+      // a nave deste celular anda na hora (o dono só confere as vidas e o resto)
+      if (i !== this.eu) n.x = x[0];
+      if (n.vidas > x[1]) {
+        fx.tremer(6);
+        sfx.chip(300, 40, 0.5, 0.12);
+        fx.faiscas(n.x + 4, Y_NAVE, [COR_NAVE[i], COR.branco, COR.amarelo], 18, 2, 0.05, 30);
+      }
+      n.vidas = x[1];
+      n.duplo = x[2];
+      n.imune = x[3];
+      n.viva = x[4] === 1;
+    });
+    const di = nums(d.di, 2);
+    this.disco = di && di.length === 2 ? { x: di[0], dir: di[1] } : null;
+    const ch = nums(d.ch, 5);
+    this.chefe = ch && ch.length === 5 ? { x: ch[0], y: ch[1], vida: ch[2], max: ch[3], dir: 1, frio: 0, golpe: ch[4] } : null;
+    this.tiros = [];
+    for (let i = 0; i + 1 < t.length; i += 2) this.tiros.push({ x: t[i], y: t[i + 1], vx: 0, vy: -4.4 });
+    this.tirosInimigos = [];
+    for (let i = 0; i + 4 < ti.length; i += 5) this.tirosInimigos.push({ x: ti[i], y: ti[i + 1], vx: ti[i + 2], vy: ti[i + 3], grande: ti[i + 4] === 1 });
+    if (d.fm === 1) this.fim = true;
   }
 
   // ---------------------------------------------------------------- o desenho
@@ -402,10 +583,16 @@ export class Invasores implements Jogo {
       g.fillStyle = s.v > 0.4 ? COR.claro : COR.medio;
       g.fillRect(Math.floor(s.x), Math.floor(s.y), 1, 1);
     }
-    // o alto: pontos, a fase e as vidas
+    // o alto: pontos, a fase e as vidas (de cada nave, em dupla)
     texto(g, String(this.pontos).padStart(5, '0'), 4, 3, COR.branco, 1);
     texto(g, `FASE ${this.fase}`, W / 2, 3, this.chefe ? COR.vermelho : COR.ouro, 1, 'meio');
-    for (let i = 0; i < Math.max(0, this.vidas); i++) sprite(g, ['..#..', '.###.', '#####'], W - 8 - i * 8, 3, COR.verdeClaro);
+    if (this.naves.length === 1) for (let i = 0; i < Math.max(0, this.naves[0].vidas); i++) sprite(g, ['..#..', '.###.', '#####'], W - 8 - i * 8, 3, COR.verdeClaro);
+    else
+      this.naves.forEach((n, i) => {
+        const x = W - 4 - (this.naves.length - i) * 26;
+        sprite(g, ['..#..', '.###.', '#####'], x, 3, n.viva ? COR_NAVE[i] : COR.escuro);
+        texto(g, `X${Math.max(0, n.vidas)}`, x + 7, 3, n.viva ? COR.claro : COR.escuro, 1);
+      });
     g.fillStyle = COR.escuro;
     g.fillRect(0, 10, W, 1);
     // o chão
@@ -448,15 +635,18 @@ export class Invasores implements Jogo {
       g.fillRect(Math.round(t.x) - (t.grande ? 1 : 0), Math.round(t.y), t.grande ? 3 : 2, 4);
       if (q % 6 < 3) (g.fillStyle = COR.amarelo), g.fillRect(Math.round(t.x), Math.round(t.y) + 1, 1, 2);
     }
-    // a nave (pisca enquanto está imune)
-    if (this.imune === 0 || q % 6 < 3) sprite(g, NAVE, this.nave, Y_NAVE - 1, this.duplo > 0 ? COR.amarelo : COR.verdeClaro);
-    if (this.duplo > 0) texto(g, 'DUPLO', 4, H - 9, COR.amarelo, 1);
+    // as naves (piscam enquanto estão imunes; a que caiu some)
+    this.naves.forEach((n, i) => {
+      if (!n.viva) return;
+      if (n.imune === 0 || q % 6 < 3) sprite(g, NAVE, n.x, Y_NAVE - 1, n.duplo > 0 ? COR.amarelo : COR_NAVE[i]);
+    });
+    if (this.naves[this.eu].duplo > 0) texto(g, 'DUPLO', 4, H - 9, COR.amarelo, 1);
     // o anúncio da fase
     if (this.anuncio > 0) {
       g.fillStyle = 'rgba(0,0,0,0.6)';
       g.fillRect(0, 84, W, 26);
       texto(g, this.chefe ? 'CUIDADO!' : `FASE ${this.fase}`, W / 2, 88, this.chefe ? COR.vermelho : COR.ouro, 2, 'meio');
-      texto(g, this.chefe ? 'UM CHEFE CHEGOU' : this.fase === 1 ? 'A ATIRA' : 'MAIS RAPIDO', W / 2, 102, COR.claro, 1, 'meio');
+      texto(g, this.chefe ? 'UM CHEFE CHEGOU' : this.fase === 1 ? (this.jogadores > 1 ? 'JUNTOS CONTRA A FROTA' : 'A ATIRA') : 'MAIS RAPIDO', W / 2, 102, COR.claro, 1, 'meio');
     }
   }
 }

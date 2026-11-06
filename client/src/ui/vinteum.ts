@@ -58,7 +58,7 @@ export class Vinteum implements TelaDoBar {
     this.el = h(
       'div',
       { class: 'bj bj-21' },
-      h('header', { class: 'bj-topo' }, h('b', null, '21'), h('span', null, 'blackjack · a banca para no 17 · o 21 de saída paga 3 para 2'), botaoMusica()),
+      h('header', { class: 'bj-topo' }, h('b', null, '21'), h('span', null, 'o Ás vale 1 · a banca para no 17 · passou de 21, estourou'), botaoMusica()),
       this.banca,
       this.palco,
       this.aviso,
@@ -313,7 +313,7 @@ export class Vinteum implements TelaDoBar {
     );
 
     // o meio do feltro: a frase pintada (e o recado da mesa, se houver)
-    this.meio.replaceChildren(h('span', null, 'BLACKJACK PAGA 3 PARA 2'), h('small', null, 'A BANCA COMPRA ATÉ 16 E PARA NO 17'));
+    this.meio.replaceChildren(h('span', null, 'O ÁS VALE 1'), h('small', null, 'A BANCA COMPRA ATÉ 16 E PARA NO 17'));
 
     // os lugares
     const resultado = (i: number, k: number) => p.resultados.find((r) => r.lugar === i && r.mao === k);
@@ -345,11 +345,14 @@ export class Vinteum implements TelaDoBar {
                   ...l.maos.map((mao, k) => {
                     const t = V.total(mao.cartas);
                     const r = resultado(i, k);
+                    // as cartas dos outros jogadores ficam viradas para baixo até a rodada fechar (04/11, o Felipe: "os
+                    // jogadores não podem ver as cartas um do outro"); o mestre vê a mesa toda
+                    const oculta = !eu(i) && !m.mestre && p.fase !== 'fim' && p.fase !== 'acabou';
                     return h(
                       'div',
                       { class: `v21-mao${vez && l.ativa === k ? ' ativa' : ''}` },
-                      h('div', { class: 'v21-cartas' }, ...mao.cartas.map((c, j) => this.carta(c, `l${i}m${k}c${j}${mao.dividida ? 'd' : ''}`, ordem))),
-                      h('div', { class: 'v21-pe' }, this.pilha(mao.aposta), h('span', { class: `v21-total${t.valor > 21 ? ' estourou' : ''}` }, t.mole && t.valor < 21 ? `${t.valor - 10}/${t.valor}` : String(t.valor))),
+                      h('div', { class: 'v21-cartas' }, ...mao.cartas.map((c, j) => this.carta(c, `l${i}m${k}c${j}${mao.dividida ? 'd' : ''}`, ordem, oculta))),
+                      h('div', { class: 'v21-pe' }, this.pilha(mao.aposta), h('span', { class: `v21-total${t.valor > 21 && !oculta ? ' estourou' : ''}` }, oculta ? '?' : String(t.valor))),
                       r ? h('div', { class: `v21-res ${r.como}`, style: `animation-delay:${atrasoRes}` }, COMO[r.como], r.volta > mao.aposta ? h('small', null, ` +${r.volta - mao.aposta}`) : null) : null,
                     );
                   }),

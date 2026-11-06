@@ -25,7 +25,7 @@ import './ui/combateRapido.css';
 import './ui/combateCards.css';
 import './ui/combateLayout.css';
 import './ui/cards.css';
-import { anyFurniName, getFurni, getWallFurni, portraitState, vitalConditions, type ResumoCampanha, type ServerMsg } from '@crona/shared';
+import { anyFurniName, getFurni, ladoDaCriatura, getWallFurni, portraitState, vitalConditions, type ResumoCampanha, type ServerMsg } from '@crona/shared';
 import { Net } from './net';
 import { clearIconCache } from './render/bubbles';
 import { breathMode } from './render/portrait';
@@ -229,6 +229,11 @@ view.podePassoSombras = (id) => {
   const crId = view.users.get(id)?.criatura?.id;
   return !!crId && !!app.state.bestiario.find((c) => c.id === crId)?.passoSombras;
 };
+// quantas casas a peça ocupa no chão: a criatura pela categoria de tamanho do livro (tamanho.ts; 06/11)
+view.ladoDe = (id) => {
+  const crId = view.users.get(id)?.criatura?.id;
+  return crId ? ladoDaCriatura(app.state.bestiario.find((c) => c.id === crId)) : 1;
+};
 // pose de cada peça no tabuleiro: Armado (no painel da peça) e machucado (menos da metade dos PV)
 view.estadoDe = (id) => {
   const ch = app.session.session?.characters.find((c) => c.id === -id);
@@ -238,11 +243,6 @@ view.estadoDe = (id) => {
 view.respiracaoDe = (id) => {
   const ch = app.session.session?.characters.find((c) => c.id === -id);
   return ch ? breathMode(vitalConditions(ch.vitals)) : null;
-};
-// os PV de cada peça (de 0 a 1), para o arco da ficha no mapa tático
-view.pvDe = (id) => {
-  const v = app.session.session?.characters.find((c) => c.id === -id)?.vitals;
-  return v && v.pvMax > 0 ? Math.max(0, Math.min(1, v.pv / v.pvMax)) : null;
 };
 if (import.meta.env.DEV) (window as unknown as { __crona: App }).__crona = app;
 
@@ -257,7 +257,16 @@ const params = new URLSearchParams(location.search);
 // o medidor de desempenho (?fps): quadros por segundo, desenho, travadas e mudanças da interface
 if (params.has('fps')) ligarMedidor(view, canvas, () => app.state.room?.name ?? '');
 const table = tableMode ? new (await import('./ui/table')).TableScreen(app) : null;
-const telaFicha = fichaMode ? new (await import('./ui/telaFicha')).TelaFicha(app, () => sairDaConta()) : null;
+// sem `await` no topo: a tela do jogador importa o próprio pacote de entrada, e esperar por ela aqui travava os dois
+// (tela preta no celular, 04/11); ela monta quando chega e a conexão só abre depois
+let telaFicha: InstanceType<(typeof import('./ui/telaFicha'))['TelaFicha']> | null = null;
+const telaFichaPronta: Promise<void> = fichaMode
+  ? import('./ui/telaFicha').then((m) => {
+      telaFicha = new m.TelaFicha(app, () => sairDaConta());
+      document.documentElement.classList.add('modo-ficha');
+      root.append(telaFicha.el);
+    })
+  : Promise.resolve();
 /** os jogos do bar em que o mestre joga por um NPC (janelinha no canto) */
 const barMestre = mestre?.bar ?? null;
 // a marca de ouro das abas desliza de uma aba para a outra (em toda tela)
@@ -269,10 +278,6 @@ if (shell) {
 if (table) {
   table.mountCanvas(canvas);
   root.append(table.el);
-}
-if (telaFicha) {
-  document.documentElement.classList.add('modo-ficha');
-  root.append(telaFicha.el);
 }
 
 app.on('placement', () => {
@@ -747,7 +752,7 @@ net.onClose = (code) => {
   }
   setTimeout(() => net.connect(), 1500);
 };
-net.connect();
+void telaFichaPronta.then(() => net.connect());
 
 // cada arte de personagem que chega (poses, boneco, deitado...) avisava a interface na hora, e cada aviso refazia os
 // painéis: os que chegam juntos (em 50 ms) viram um aviso só (29/10)

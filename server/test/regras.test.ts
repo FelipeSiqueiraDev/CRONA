@@ -348,6 +348,26 @@ describe('mochila', () => {
     assert.equal(calcular(f).reacoes.esquiva! - esq, 1);
   });
 
+  test('Função Adicional, Instrumental, kit de profissão e o manual operacional (LR p. 64; SaH p. 39, 94)', () => {
+    const f = combatente();
+    f.profissao = 'mecânico';
+    const acessorio = catalogo.CATALOGO.equipamentos.find((e) => e.grupo === 'utensilio')!;
+    const sem = calcular(f).pericias;
+    f.inventario = [{ id: acessorio.id, tipo: 'equipamento', empunhado: true, escolha: { pericia: 'investigacao', pericia2: 'medicina', kit: 'medicina' }, modificacoes: ['funcao-adicional', 'instrumental'] }];
+    const com = calcular(f).pericias;
+    // +2 na Medicina da Função Adicional e, com o Instrumental de kit de medicina, sem o −5
+    assert.equal(com.medicina.bonus - sem.medicina.bonus, 7);
+    assert.equal(com.medicina.semKit, undefined);
+    // o kit de profissão de outra profissão não serve
+    f.inventario = [{ id: 'kit-de-profissao', tipo: 'equipamento', escolha: { profissao: 'cozinheiro' } }];
+    assert.equal(calcular(f).pericias.profissao.semKit, 'Kit de profissão');
+    f.inventario = [{ id: 'kit-de-profissao', tipo: 'equipamento', escolha: { profissao: 'Mecânico' } }];
+    assert.equal(calcular(f).pericias.profissao.semKit, undefined);
+    // o manual operacional existe para Luta e Pontaria também
+    assert.ok(regras.periciasDoItem('manual-operacional').some((p) => p.id === 'luta'));
+    assert.ok(!regras.periciasDoItem().some((p) => p.id === 'luta'));
+  });
+
   test('kits, braçadeira, cargas e as ferramentas que viram arma (LR p. 40, 66; SaH p. 42–43)', () => {
     const f = combatente();
     // sem o kit de medicina, −5 em todo uso de Medicina

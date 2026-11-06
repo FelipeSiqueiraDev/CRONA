@@ -26,9 +26,9 @@ const DICA_MALDICAO_PE = {
   erosiva: 'Se acertar, 2d4 de Morte no começo dos próximos dois turnos do alvo (LR p. 146)',
 } as const;
 
-/** "2d10+3" com um dado a mais do mesmo tipo ("3d10+3"): a rajada (LR p. 59). */
-function maisUmDado(dano: string): string {
-  return dano.replace(/(\d+)d(\d+)/, (_, n: string, f: string) => `${Number(n) + 1}d${f}`);
+/** "2d10+3" com dados a mais do mesmo tipo ("4d10+3"): a rajada, +2 com a contagem de munição (LR p. 59, 174). */
+function maisDados(dano: string, n: number): string {
+  return dano.replace(/(\d+)d(\d+)/, (_, q: string, f: string) => `${Number(q) + n}d${f}`);
 }
 
 export interface ArmaOpcao {
@@ -82,6 +82,8 @@ export interface ArmaOpcao {
   doisCanos?: string;
   /** a munição que falta na mochila (o nome do pacote) */
   semMunicao?: string;
+  /** a munição contada (LR p. 174): o que há na arma e na mochila; `vazia` diz por que não dispara */
+  municao?: { texto: string; vazia?: string };
   /** a arma de corpo a corpo que se arremessa (LR p. 55): com Pontaria, na faixa dela (curto e −5 se não tem alcance) */
   arremesso?: { faixa: cb.Faixa; semAlcance: boolean; dados: number; penalidade?: number; bonus: number };
   /** a jogada pronta do agente (regras/jogadas.ts): já somada; os PE saem junto com o ataque */
@@ -173,8 +175,10 @@ interface Estado {
   liberado?: boolean;
   /** a arma de corpo a corpo arremessada; `volta` = puxada de volta (amarrada) em vez de cair perto do alvo */
   arremessar?: boolean;
-  /** rajada da arma automática (−1d20, +1 dado de dano; LR p. 59) */
+  /** rajada da arma automática (−1d20, +2 dados de dano e 10 balas com a contagem de munição; LR p. 59, 174) */
   rajada?: boolean;
+  /** o Disparo Não Letal saiu letal (regra da casa 04: o não letal não é garantido) */
+  saiuLetal?: boolean;
   /** os dois canos da espingarda de cano duplo (−1d20, 6d6; SaH p. 37) */
   doisCanos?: boolean;
   /** as maldições ligadas neste ataque, com 2 PE cada; `energeticaAtiva`: a Energética já paga nesta cena */
@@ -232,13 +236,16 @@ const ICONE_SIT: Partial<Record<cb.SituacaoId, NomeIcone>> = {
   atacanteAgarrado: 'mao',
   atacanteCego: 'olho',
   naoLetal: 'mao',
+  disparoNaoLetal: 'mao',
+  olhoPredador: 'mira',
+  olhoPredador2: 'mira',
   passagem: 'correr',
   combateDefensivo: 'escudo',
   arremessoSemAlcance: 'mira',
 };
 
 /** Situações que o mestre pode ligar à mão (o tabuleiro não vê). */
-const MANUAIS: cb.SituacaoId[] = ['investida', 'naoLetal', 'alvoDesprevenido', 'alvoCaido', 'flanqueando', 'elevado', 'cobertura'];
+const MANUAIS: cb.SituacaoId[] = ['investida', 'naoLetal', 'disparoNaoLetal', 'alvoDesprevenido', 'alvoCaido', 'flanqueando', 'elevado', 'cobertura'];
 /** Na tela de cards o mapa não vê nada: o mestre também marca o alcance, o corpo a corpo e a camuflagem. */
 const MANUAIS_MESA: cb.SituacaoId[] = [...MANUAIS, 'alcanceDobro', 'emCorpoACorpo', 'camuflagem', 'camuflagemTotal'];
 
@@ -317,15 +324,25 @@ export class ResolucaoAtaque {
     const mald = this.e.peMald ?? [];
     if (mald.includes('energetica') || (this.e.energeticaAtiva && a.comPe?.includes('energetica'))) b = { ...b, bonus: b.bonus + 5, tipo: 'energia' };
     if (mald.includes('antielemento')) b = { ...b, dano: `${b.dano}+4d8` };
-    if (this.e.rajada && b.automatica) return { ...b, nome: `${b.nome} (rajada)`, penalidade: (b.penalidade ?? 0) - (b.compensador ? 0 : 1), dano: maisUmDado(b.dano) };
+    // o Olho do Predador com duas rodadas mirando: +1d6 de dano balístico (regra da casa 03)
+    if (this.predador(b) === 2 && this.e.manual.olhoPredador2 !== false) b = { ...b, dano: `${b.dano}+1d6` };
+    if (this.e.rajada && b.automatica) return { ...b, nome: `${b.nome} (rajada)`, penalidade: (b.penalidade ?? 0) - (b.compensador ? 0 : 1), dano: maisDados(b.dano, 2) };
     if (this.e.doisCanos && b.doisCanos) return { ...b, nome: `${b.nome} (os dois canos)`, penalidade: (b.penalidade ?? 0) - 1, dano: b.doisCanos };
     if (!this.e.arremessar || !b.arremesso) return b;
     const r = b.arremesso;
     return { ...b, pericia: 'pontaria', faixa: r.faixa, dados: r.dados, penalidade: r.penalidade, bonus: r.bonus };
   }
 
+  /** As rodadas de mira do Olho do Predador que valem neste disparo (0: nenhuma; regra da casa 03). */
+  private predador(a: ArmaOpcao | null): number {
+    const m = this.ctx?.ator.mira;
+    return a?.faixa && m && this.ctx?.alvo?.p.id === m.alvo ? m.rodadas : 0;
+  }
+  private ctx: CtxAtaque | null = null;
+
   /** Arma escolhida (a tela usa para o anel de alcance). */
   armaEscolhida(x: CtxAtaque): ArmaOpcao | null {
+    this.ctx = x;
     this.sincronizar(x);
     return this.comoUsa(x.armas[this.e.arma] ?? null);
   }
@@ -347,6 +364,9 @@ export class ResolucaoAtaque {
       if (!dist && t.flanqueia) out.set('flanqueando', 'Flanqueando');
       if (t.elevado) out.set('elevado', 'Posição elevada');
     }
+    // o Olho do Predador: quem mirou no alvo (regra da casa 03)
+    const mira = this.predador(arma);
+    if (mira) out.set(mira >= 2 ? 'olhoPredador2' : 'olhoPredador', `Olho do predador (${mira} ${mira === 1 ? 'rodada' : 'rodadas'} mirando)`);
     if (x.escuridao === 'total') out.set('camuflagemTotal', 'Escuridão');
     else if (x.escuridao === 'camuflagem' || x.nevoa !== 'nenhuma') out.set('camuflagem', x.escuridao === 'camuflagem' ? 'Iluminação baixa' : 'Névoa');
     if (x.nevoa === 'espessa' && t?.metros != null && t.metros > 1.5) out.set('camuflagemTotal', 'Névoa espessa');
@@ -403,7 +423,8 @@ export class ResolucaoAtaque {
     const falhaPendente = pedeD10 && this.e.d10 === null;
     const acertou = !!res && res.resultado !== 'erro' && !falhaPendente;
     const mult = res?.resultado === 'critico' ? arma!.multiplicador : 1;
-    const naoLetal = ids.includes('naoLetal');
+    // o Disparo Não Letal: o dano entra não letal, a não ser que o mestre diga que saiu letal (regra da casa 04)
+    const naoLetal = ids.includes('naoLetal') || (ids.includes('disparoNaoLetal') && !this.e.saiuLetal);
     const bloqueio = this.e.reacao === 'bloqueio' ? (alvo?.reacoes?.bloqueio ?? 0) : 0;
     type Dano = { partes: cb.PartesDano; conta: cb.ContaDano; previa: ReturnType<typeof cb.previaDano> };
     let dano: Dano | null = null;
@@ -504,7 +525,7 @@ export class ResolucaoAtaque {
               { class: 'cb-arma-txt' },
               h('b', null, a.vezes && !a.sequencia ? `${a.nome} ×${a.vezes}` : a.nome),
               h('small', null, `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${textoTeste(a.dados, a.bonus, a.penalidade)} · dano ${a.dano}${a.extra ? ` e ${a.extra.dano} ${cb.NOME_TIPO_DANO[a.extra.tipo]}` : ''}`),
-              h('small', null, [`${a.margem}/${JUNTA}×${a.multiplicador}`, a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo', ...a.notas].join(' · ')),
+              h('small', null, [`${a.margem}/${JUNTA}×${a.multiplicador}`, a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo', ...(a.municao ? [a.municao.vazia ? `⚠ ${a.municao.vazia}` : a.municao.texto] : []), ...a.notas].join(' · ')),
             )
           : h(
               'span',
@@ -798,13 +819,16 @@ export class ResolucaoAtaque {
               return dt.length ? { defesaAteTurno: dt } : {};
             })(),
             ...(this.e.arremessar && arma.arremesso ? { arremesso: { ...(arma.uid !== undefined ? { uid: arma.uid } : {}), volta: !!this.e.volta } } : {}),
+            // a munição conta (LR p. 174): o disparo gasta 1 bala; a rajada, 10; os dois canos, 2
+            ...(arma.faixa && arma.municao && arma.uid !== undefined && !this.e.arremessar ? { disparo: { uid: arma.uid, balas: this.e.rajada && arma.automatica ? 10 : this.e.doisCanos && arma.doisCanos ? 2 : 1 } } : {}),
+            ...(k.ids.includes('passagem') ? { passagem: true } : {}),
             ...(this.e.ajDados || this.e.ajBonus ? { ajuste: { dados: this.e.ajDados ?? 0, bonus: this.e.ajBonus ?? 0 } } : {}),
           };
           x.enviar({ tipo: 'ataque', ataque });
           this.e.d20 = this.e.d10 = this.e.soma = this.e.somaExtra = null;
           this.e.reacao = 'nenhuma';
           this.e.manual = {};
-          this.e.passagem = this.e.liberado = this.e.arremessar = this.e.defensivo = this.e.rajada = this.e.doisCanos = false;
+          this.e.passagem = this.e.liberado = this.e.arremessar = this.e.defensivo = this.e.rajada = this.e.doisCanos = this.e.saiuLetal = false;
           // a Energética paga vale até o fim da cena: os próximos ataques com ela não pagam de novo
           if (this.e.peMald?.includes('energetica')) this.e.energeticaAtiva = true;
           this.e.peMald = [];
@@ -1022,7 +1046,7 @@ export class ResolucaoAtaque {
             },
           },
           ic('correr'),
-          h('span', null, h('b', null, arma.faixa ? 'Liberar o ataque (regra da mesa)' : 'Atacar de passagem (regra da mesa)'), h('small', null, arma.faixa ? 'o mestre deixa; use o ajuste para a penalidade' : 'bate no caminho e segue correndo: −1d20 no ataque')),
+          h('span', null, h('b', null, arma.faixa ? 'Liberar o ataque (regra da mesa)' : 'Golpe de passagem (regra da casa)'), h('small', null, arma.faixa ? 'o mestre deixa; use o ajuste para a penalidade' : 'bate no caminho e segue: ação padrão e de movimento, metade do deslocamento, −1d20 e −5')),
         ),
       );
       // o corpo a corpo longe, com a ação de movimento livre: anda até ficar colado no alvo e ataca
@@ -1124,7 +1148,13 @@ export class ResolucaoAtaque {
         liga('Volta para a mão', !!this.e.volta, 'Amarrada num fio: puxa de volta', () => (this.e.volta = true)),
       );
     if (base?.automatica)
-      opcoes.push(liga('Rajada', !!this.e.rajada, `${base.compensador ? 'sem o −1d20 (compensador)' : '−1d20 no ataque'} e +1 dado de dano do mesmo tipo (LR p. 59–60)`, () => (this.e.rajada = !this.e.rajada)));
+      opcoes.push(liga('Rajada', !!this.e.rajada, `${base.compensador ? 'sem o −1d20 (compensador)' : '−1d20 no ataque'}, +2 dados de dano do mesmo tipo e gasta 10 balas (LR p. 59–60, 174)`, () => (this.e.rajada = !this.e.rajada)));
+    // o Golpe de Passagem (regra da casa 02): corpo a corpo no meio do movimento
+    if (base && !base.faixa && !this.e.arremessar)
+      opcoes.push(liga('Golpe de passagem', !!this.e.passagem, 'Ataca no meio do movimento: gasta a ação padrão e a de movimento, anda só a metade, −1d20 e −5; depois do golpe, anda o que sobra (regra da casa)', () => (this.e.passagem = !this.e.passagem)));
+    // o Disparo Não Letal (regra da casa 04): o mestre diz se saiu letal
+    if (base?.faixa && this.e.manual.disparoNaoLetal)
+      opcoes.push(liga('Saiu letal', !!this.e.saiuLetal, 'O não letal não é garantido: o disparo causou dano letal (regra da casa)', () => (this.e.saiuLetal = !this.e.saiuLetal)));
     // as maldições que gastam 2 PE no ataque (LR p. 145–146)
     for (const m of base?.comPe ?? []) {
       const on = !!this.e.peMald?.includes(m);
