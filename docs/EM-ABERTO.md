@@ -2,6 +2,17 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Entrar numa sala sem travar (06/11, noite)
+
+- **O pedido:** "deixa os quartos carregando só quando a câmera estiver nele; não tem problema demorar um pouquiiinho pra carregar a sala, se quando eu for usar ela estiver tudo perfeitinho".
+- **Feito:** ao entrar numa cena, o tabuleiro fica coberto por "Preparando a sala…" (`RoomView.cobrirPreparo`).
+  - Por baixo, os desenhos prontos dos móveis se montam com 40 ms por quadro (depois, 4 ms), e a arte dos móveis termina de chegar (`artesChegando`, em `furniArte.ts`).
+  - Com três quadros completos seguidos, ou no máximo 7 s, a cobertura some num fade de 0,35 s.
+  - A mesa (o tablet) vê a mesma coisa.
+- **Medido na prévia:** com a arte já no cache, a cobertura sai em 3 quadros. A entrada a frio não deu para cronometrar, porque o painel estava escondido e o navegador segura os timers em ~1 por segundo.
+- **Ficou de fora, de propósito:** juntar os móveis parados numa camada só. Com a placa de vídeo, o desenho dos pedaços já leva ~1 ms por quadro, e a camada única quebraria a ordem de quem passa na frente e atrás dos móveis. Volta se a foto do `?fps` mostrar "desenhar em ordem" pesado.
+- **Pendente:** os retratos de olhos fechados do Pedro. O Códex estava sem cota até as 18h21, e o pedido foi reagendado.
+
 ## O tamanho dos seres pelo livro, as sombras e a vista tática (06/11, tarde; nada no 8080)
 
 - **O pedido:** "pegar o tamanho real dos personagens como é tratado no livro e implementar no tabuleiro", "lembrando de ocupar esse espaço também na vista tática"; "a sombra do personagem poderia contar"; o Ctrl + clique da Magistrada dizendo "a casa tem luz"; "essa vida em volta dos personagens na visão tática já era pra ter saído".

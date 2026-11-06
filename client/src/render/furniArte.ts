@@ -218,6 +218,14 @@ let lista: Record<string, MovelArte> | null = null;
 const modelos = new Map<string, string[]>();
 const imagens = new Map<string, Imagens | 'carregando' | 'erro'>();
 
+/** Quantas artes de móvel ainda estão chegando (as presas há mais de 8 s não contam: a sala não espera por elas). */
+export function artesChegando(): number {
+  const agora = performance.now();
+  let n = 0;
+  for (const [url, c] of imagens) if (c === 'carregando' && agora - (desde.get(url) ?? 0) < 8000) n++;
+  return n;
+}
+
 // o tabuleiro se pinta de novo a cada quadro: a arte aparece assim que chega. Falhou (o servidor reiniciando bem na
 // hora): tenta de novo, em vez de passar a sessão inteira com os móveis no desenho de código (10/10)
 function carregarLista(tentativa = 0) {

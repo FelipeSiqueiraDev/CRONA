@@ -56,7 +56,7 @@ import { drawPixelAvatar, PIXEL_AVATAR_HEIGHT, type Pose } from '../render/avata
 import { ajusteAssentos } from '../render/assentos';
 import { Bubbles, UI_FONT } from '../render/bubbles';
 import { COR_LADO, baseDoKit, desenharChao, desenharCima, desenharRotulos, type MarcasCombate } from '../render/combateMarcas';
-import { artePodeGuardar, type CeuDaJanela, chamineDaArte, desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
+import { artePodeGuardar, artesChegando, type CeuDaJanela, chamineDaArte, desenharParedeComArte, frenteDoFogo, PONTOS_DO_VOO, tamanhoReal, visualComArte } from '../render/furniArte';
 import type { FVisual } from '../render/furniKit';
 import { furniVisual } from '../render/furniFloor';
 import { estadoDaParede, estadoDoMovel } from '../render/soproMovel';
@@ -551,6 +551,15 @@ export class RoomView {
   private nosSala = -1;
   /** quanto tempo (ms) este quadro já gastou guardando pedaços novos: até 4 ms, para a entrada na cena não engasgar */
   private nosGasto = 0;
+  /** pedaços que ficaram sem o desenho pronto neste quadro (o orçamento acabou): a sala ainda está se montando */
+  private nosAdiados = 0;
+  /**
+   * A sala se preparando (06/11, o Felipe: "não tem problema demorar um pouquinho pra carregar a sala, se quando eu for
+   * usar ela estiver tudo perfeitinho"): coberta por "Preparando a sala…" enquanto a arte chega e os desenhos prontos dos
+   * móveis se montam, com orçamento grande; três quadros completos seguidos (ou 7 s) e ela aparece num fade.
+   */
+  private preparo: { desde: number; limpos: number } | null = null;
+  private revelouEm = 0;
   private mapper = new Mapper();
   private lighting = new Lighting();
   /** as celas da cena (porta de cela): fechadas no escuro, abertas acesas */
@@ -729,6 +738,7 @@ export class RoomView {
         console.error(e);
       }
       this.ultimoQuadroMs = performance.now() - t0;
+      this.cobrirPreparo(performance.now());
     };
     this.raf = requestAnimationFrame(loop);
     // a aba ou a janela voltou: começa de novo na qualidade cheia (escondida, o ritmo lento era o navegador poupando)
@@ -750,6 +760,7 @@ export class RoomView {
     this.preps.clear();
     this.info = info;
     this.entrouEm = performance.now();
+    this.preparo = { desde: this.entrouEm, limpos: 0 };
     // a cena nova já abre na vista dela (sem a câmera voar na entrada)
     this.tat.alvo = this.tat.t = info.tatico ? 1 : 0;
     this.tatZoom = { k: 1, dx: 0, dy: 0 };
@@ -2378,7 +2389,11 @@ export class RoomView {
     }
     let p = this.nosProntos.get(chave);
     if (p === undefined) {
-      if (this.nosGasto > 4) return draw(painter);
+      // na entrada, coberta, monta tudo de uma vez (40 ms por quadro); depois, aos poucos (4 ms)
+      if (this.nosGasto > (this.preparo ? 40 : 4)) {
+        this.nosAdiados++;
+        return draw(painter);
+      }
       const t0 = performance.now();
       p = this.prepararNo(draw, painter, k, x0, y0, x1, y1);
       this.nosGasto += performance.now() - t0;
@@ -2450,6 +2465,39 @@ export class RoomView {
     return { c: r, ox: wx + Math.max(0, bx0) / k, oy: wy + Math.max(0, by0) / k };
   }
 
+  /** A cobertura da sala se preparando: confere se o quadro saiu completo e pinta o véu por cima (some num fade). */
+  private cobrirPreparo(agora: number) {
+    const p = this.preparo;
+    if (p) {
+      // o chão e as paredes desta sala já feitos (na vista tática de cima, eles não entram)
+      const chao = this.tat.t >= 1 || this.staticKey.startsWith(`${this.info?.id ?? ''}|`);
+      const completo = this.nosAdiados === 0 && artesChegando() === 0 && chao;
+      p.limpos = completo ? p.limpos + 1 : 0;
+      if (p.limpos >= 3 || agora - p.desde > 7000) {
+        this.preparo = null;
+        this.revelouEm = agora;
+      }
+    }
+    const fade = this.preparo ? 1 : Math.max(0, 1 - (agora - this.revelouEm) / 350);
+    if (fade <= 0) return;
+    const ctx = this.ctx;
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = '#0d0b10';
+    ctx.fillRect(0, 0, W, H);
+    const px = Math.max(13, Math.round(16 * (this.dpr || 1)));
+    ctx.font = `400 ${px}px "Special Elite", "Courier Prime", monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#d9cfbd';
+    const pontos = '.'.repeat(1 + (Math.floor(agora / 400) % 3));
+    ctx.fillText(`Preparando a sala${pontos}`, W / 2, H / 2);
+    ctx.restore();
+  }
+
   /** Mede o ritmo dos quadros e muda a resolução quando ele cai ou sobra (a cada troca, espera para medir de novo). */
   private ajustarQualidade(agora: number) {
     const dt = agora - this.ultimoRaf;
@@ -2498,6 +2546,7 @@ export class RoomView {
 
   private frame() {
     this.nosGasto = 0;
+    this.nosAdiados = 0;
     const now = performance.now();
     const tat = this.tat;
     const sd = this.stardewAtivo();
