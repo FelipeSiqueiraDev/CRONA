@@ -257,7 +257,16 @@ const params = new URLSearchParams(location.search);
 // o medidor de desempenho (?fps): quadros por segundo, desenho, travadas e mudanças da interface
 if (params.has('fps')) ligarMedidor(view, canvas, () => app.state.room?.name ?? '');
 const table = tableMode ? new (await import('./ui/table')).TableScreen(app) : null;
-const telaFicha = fichaMode ? new (await import('./ui/telaFicha')).TelaFicha(app, () => sairDaConta()) : null;
+// sem `await` no topo: a tela do jogador importa o próprio pacote de entrada, e esperar por ela aqui travava os dois
+// (tela preta no celular, 04/11); ela monta quando chega e a conexão só abre depois
+let telaFicha: InstanceType<(typeof import('./ui/telaFicha'))['TelaFicha']> | null = null;
+const telaFichaPronta: Promise<void> = fichaMode
+  ? import('./ui/telaFicha').then((m) => {
+      telaFicha = new m.TelaFicha(app, () => sairDaConta());
+      document.documentElement.classList.add('modo-ficha');
+      root.append(telaFicha.el);
+    })
+  : Promise.resolve();
 /** os jogos do bar em que o mestre joga por um NPC (janelinha no canto) */
 const barMestre = mestre?.bar ?? null;
 // a marca de ouro das abas desliza de uma aba para a outra (em toda tela)
@@ -269,10 +278,6 @@ if (shell) {
 if (table) {
   table.mountCanvas(canvas);
   root.append(table.el);
-}
-if (telaFicha) {
-  document.documentElement.classList.add('modo-ficha');
-  root.append(telaFicha.el);
 }
 
 app.on('placement', () => {
@@ -747,7 +752,7 @@ net.onClose = (code) => {
   }
   setTimeout(() => net.connect(), 1500);
 };
-net.connect();
+void telaFichaPronta.then(() => net.connect());
 
 // cada arte de personagem que chega (poses, boneco, deitado...) avisava a interface na hora, e cada aviso refazia os
 // painéis: os que chegam juntos (em 50 ms) viram um aviso só (29/10)
