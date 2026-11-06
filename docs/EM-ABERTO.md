@@ -2,6 +2,39 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## Regras da casa, munição, Quebrar, Porco, celular e desempenho (06/11; branch `claude/campanhas`, nada no 8080)
+
+- **O pedido:** "A Camarilla não participa de combates"; "Se um disparo for efetuado a munição TEM que contar"; "Quebre o item de verdade"; "Vamos fazer a ficha do porco"; as regras da casa do PDF; "Corrige a parada do celular"; "Vamos investigar a fundo o porque o tabuleiro faz isso, vamos melhorar a eficiencia dele ao máximo"; o boneco do Anárquico normal ("Pede sim uai, precisa ter").
+- **Regras da casa:** as cinco do PDF e as decisões da mesa estão em [`REGRAS-DA-CASA.md`](REGRAS-DA-CASA.md). Testes em `server/test/regrasDaCasa.test.ts`.
+  - corrente: Atletismo como pendência no começo do turno;
+  - golpe de passagem: −1d20 e −5, gasta também o movimento;
+  - olho do predador: ação completa de mira, +5 e +1d6 com duas rodadas;
+  - disparo não letal: −5, com o botão "Saiu letal";
+  - faro: a rolagem é do mestre;
+  - Camarilla fora do combate.
+- **Munição:** a contagem do livro (LR p. 174), em `shared/src/regras/municao.ts`.
+  - O servidor gasta a cada disparo e recusa sem bala.
+  - O Recarregar da tela enche a arma.
+  - A arma mostra "6/6 na arma · 40 balas na mochila".
+  - O Desfazer devolve as balas.
+- **Quebrar:** o item da mão do alvo guarda o dano. Quebrado, não funciona (o motor ignora) até o Consertar na janela do item.
+- **Porco:** ficha caseira (VD 60) em `server/src/acougueiros.ts`. Entra uma vez (`porco0611`) se ainda estiver em branco. **Para o Felipe conferir os números.**
+- **Anárquico (normal):** o boneco das 8 direções, pedido ao Códex (2ª tentativa, o fundo da 1ª veio errado), cortado e instalado em `arte/personagens/anarquico/`, com a chama em `chama.ts`.
+- **Celular:** a ficha da engrenagem não se refaz mais a cada PV, PE ou SAN (ela nem mostra esses números). O retrato da Identificação tentava de novo a cada 0,8 s, para sempre, quando o boneco não chegava; agora tenta até 8 vezes.
+- **Desempenho do tabuleiro:** medido no Bar da prévia, chamando o desenho na mão (o painel estava escondido, sem placa de vídeo). O quadro caiu de ~27 ms (12 já com o cache montado) para ~11 ms.
+  - a matriz da câmera é lida uma vez por quadro (antes, ~460 vezes);
+  - sem `save`/`restore` e sem o `toFixed` em cada pedaço;
+  - a ordem de desenho é guardada enquanto nenhuma caixa muda (a ordenação levava ~4 ms por quadro parado);
+  - os objetos de desenho de cada pedaço parado são reaproveitados entre quadros.
+  - o visual de cada móvel é guardado e conferido campo a campo, sem montar texto.
+  - Com o painel à vista (placa de vídeo), o Bar ficou com **~2,7 ms por quadro** e o Jardim da Mansão (356 móveis) com **~5,7 ms**.
+- **O perfil:** `render/perfil.ts`, ligado com `?fps`; o medidor mostra as 3 partes mais caras do quadro.
+- **Quadros longos:** o medidor guarda os quadros longos do Chrome em `window.__travadas`, com o tempo de estilo e o script de cada um.
+- **Ainda aberto:**
+  - a travada de ~70 ms a cada ~5 s com tudo parado: com o painel escondido não se reproduz, e nada no HTML muda nesse intervalo. Falta uma foto do medidor `?fps` (a linha "quadro longo") no PC do Felipe;
+  - o desenho dos ~460 pedaços (drawImage) é o que sobra no quadro: o próximo passo seria juntar os móveis parados numa camada só.
+- **Não conferido na tela:** os botões novos do combate (golpe de passagem, olho do predador, cartão da corrente, recarregar) foram só pelo typecheck e pelos testes do motor.
+
 ## Decisões do Felipe sobre as fichas (03/11; só o código e a migração, nada no 8080 ainda)
 
 - **Migração única** (`server/src/ajustesFichas0311.ts`, guarda `db.ajustesFichas0311`, roda na próxima subida do servidor): a mochila do Ômega-99 e a da ??? ficam vazias; PV, PE e SAN atuais dos quatro jogadores sobem ao máximo (na ficha e na peça do tabuleiro); os quatro ganham a janela única do equipamento; a arma de Calibre Grosso passa a usar o pacote de calibre grosso (a Cora: as 3 balas longas viram "Balas longas de calibre grosso", mesma quantidade e categoria). Testada em cima de uma cópia das fichas de verdade: nenhuma ficha ganha erro novo e a Cora continua em cat. I 3/3 e II 1/1.
@@ -38,7 +71,7 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
   - modificações e maldições: Cinética, Proteção Elemental, selos, bateria e lente, compensador, Tática, Lancinante, Erosiva, Predadora, Visão de Calor, Mira Telescópica e as de 2 PE;
   - rituais: quem passa e quem falha, componentes e mão livre, Alquebrado, concentração por dano, catalisadores, as névoas, o elemento do Amaldiçoar Arma, um sustentado por vez, Fedor Pútrido e Tremeluzir, a PE da Convocação Instantânea e os dois testes do Algoz;
   - equipamentos: utensílio só na mão, kits (−5), braçadeira, cargas e as ferramentas que viram arma.
-- **Ficou de fora (o mestre aplica):** a Função Adicional (a segunda perícia), o kit de profissão (qual profissão), o manual operacional, os textos de amarras, mina, escuta e antiemético, a dúvida das amarras e do scanner com Medo, e a hemorragia do Descarnar (fica escrita no registro, sem a conta dos dois turnos).
+- **Ficou de fora (o mestre aplica; feito em 06/11):** a Função Adicional (a segunda perícia), o kit de profissão (qual profissão), o manual operacional, os textos de amarras, mina, escuta e antiemético, a dúvida das amarras e do scanner com Medo, e a hemorragia do Descarnar (fica escrita no registro, sem a conta dos dois turnos).
 - **Celular:** o pedir itens fora da Sede some de vez; a Identificação da FICHAS do mestre não se refaz a cada campanha.
 - **Acabamento:** as janelas prendem o Tab, fecham com Esc e devolvem o foco; os botões só de ícone dizem o que fazem ao leitor de tela.
 - **Código morto:** fora o hud, o minimap, o Infostand, o chat e o aceno da sala e as mensagens walk, lookAt, tokenFace, layoutSet e capacitySet.
