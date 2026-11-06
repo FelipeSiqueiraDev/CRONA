@@ -146,7 +146,7 @@ const IC = {
 };
 
 /** JSON com as chaves dos objetos em ordem (a mesma ficha dá sempre o mesmo texto). */
-function textoEstavel(v: unknown): string {
+export function textoEstavel(v: unknown): string {
   return JSON.stringify(v, (_k, x: unknown) =>
     x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) : x,
   );
