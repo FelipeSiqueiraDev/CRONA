@@ -11,7 +11,7 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
   - A mesa (o tablet) vê a mesma coisa.
 - **Medido na prévia:** com a arte já no cache, a cobertura sai em 3 quadros. A entrada a frio não deu para cronometrar, porque o painel estava escondido e o navegador segura os timers em ~1 por segundo.
 - **Ficou de fora, de propósito:** juntar os móveis parados numa camada só. Com a placa de vídeo, o desenho dos pedaços já leva ~1 ms por quadro, e a camada única quebraria a ordem de quem passa na frente e atrás dos móveis. Volta se a foto do `?fps` mostrar "desenhar em ordem" pesado.
-- **Pendente:** os retratos de olhos fechados do Pedro. O Códex estava sem cota até as 18h21, e o pedido foi reagendado.
+- **Os retratos de olhos fechados do Pedro** (armado e desarmado): feitos pelo Códex (`pedir_olhos_fechados_pedro.py`) e conferidos pixel a pixel. Só 0,1% da imagem mudou, na faixa dos olhos. Já instalados: o retrato dele pisca.
 
 ## O tamanho dos seres pelo livro, as sombras e a vista tática (06/11, tarde; nada no 8080)
 
