@@ -2757,7 +2757,9 @@ export class Hotel implements HotelApi {
     const tokenId = m.tokenId;
     const itemId = m.itemId;
     const sentar = () => {
-      const f = this.fichaDoPersonagem(r.charId);
+      // o NPC do Elenco tem ficha, mas nunca um celular: é do mestre, que joga por ele na tela dele (04/11)
+      const fAchada = this.fichaDoPersonagem(r.charId);
+      const f = fAchada && !fAchada.npc ? fAchada : undefined;
       // a peça só joga uma coisa por vez
       for (const outra of [...this.mesas.values()]) {
         const i = outra.lugares.findIndex((l) => l.tokenId === tokenId || (f && l.fichaId === f.id));

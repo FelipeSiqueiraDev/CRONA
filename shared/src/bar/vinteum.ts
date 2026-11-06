@@ -6,8 +6,8 @@
  *   quantas fichas cada jogador recebe e começa. Fica dealer o primeiro lugar que marcou; ninguém marcou, a banca é
  *   da casa e joga sozinha.
  * - A rodada: cada jogador aposta; as cartas saem (duas para cada um, duas para a banca, uma virada para baixo); cada
- *   um, na sua vez, pede, para, dobra ou divide; a banca vira a carta e compra até 17 (para no 17, mole ou duro); as
- *   apostas se acertam. O 21 de saída (blackjack) paga 3 para 2; o empate devolve a aposta.
+ *   um, na sua vez, pede, para, dobra ou divide; a banca vira a carta e compra até 17; as apostas se acertam. O Ás vale
+ *   sempre 1, então não há blackjack de saída; o empate devolve a aposta.
  * - O dealer de gente não decide: ele distribui, vira a carta e compra (a regra da banca diz quando para), e as fichas
  *   dele são a banca, que começa com as de todos os jogadores juntos e paga quem ganha. A banca sem fichas quebra, e a
  *   partida acaba.
@@ -36,19 +36,17 @@ export const ROTULOS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 
 export const rotulo = (c: Carta) => ROTULOS[c % 13];
 export const naipe = (c: Carta) => Math.floor(c / 13) % 4;
 export const vermelha = (c: Carta) => naipe(c) === 1 || naipe(c) === 2;
-/** o valor da carta no 21 (o Ás vale 1 aqui; `total` decide se ele vale 11) */
+/** o valor da carta no 21 (o Ás vale 1) */
 export const pontos = (c: Carta) => Math.min(10, (c % 13) + 1);
 
-/** O total da mão e se é "mole" (um Ás contando 11). */
+/**
+ * O total da mão. O Ás vale sempre 1 (04/11, o Felipe: "Ás vale somente 1"): sem Ás de 11, não existe mão "mole", e o
+ * 21 com duas cartas é impossível (o maior total de duas cartas é 20). `mole` fica no retorno só por compatibilidade.
+ */
 export function total(cartas: Carta[]): { valor: number; mole: boolean } {
   let v = 0;
-  let ases = 0;
-  for (const c of cartas) {
-    v += pontos(c);
-    if (c % 13 === 0) ases++;
-  }
-  const mole = ases > 0 && v + 10 <= 21;
-  return { valor: mole ? v + 10 : v, mole };
+  for (const c of cartas) v += pontos(c);
+  return { valor: v, mole: false };
 }
 
 export interface Mao {
