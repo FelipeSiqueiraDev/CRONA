@@ -408,6 +408,32 @@ const FAIXA_H = 15;
 const FAIXA_0 = 163;
 const VOLTA = W + 48;
 
+/**
+ * A faixa que pára (04/11, o Felipe: "muuuito carro em todos os modos, queria diversas velocidades, várias paradas"): de
+ * tempos em tempos o trânsito dela freia, fica parado um pouco e volta a andar; um sinal na beira da pista avisa. Tudo
+ * conta pelo relógio do jogo, então os dois celulares da dupla veem a mesma avenida.
+ */
+interface Parada {
+  /** quadros andando, freando, parado e acelerando (a soma é o ciclo) */
+  anda: number;
+  freia: number;
+  parado: number;
+  acelera: number;
+  /** onde no ciclo a faixa começa */
+  fase: number;
+}
+
+/** O quanto da velocidade a faixa tem agora (de 0, parada, a 1, andando). */
+function marcha(pa: Parada | null, t: number): number {
+  if (!pa) return 1;
+  const ciclo = pa.anda + pa.freia + pa.parado + pa.acelera;
+  const c = (t + pa.fase) % ciclo;
+  if (c < pa.anda) return 1;
+  if (c < pa.anda + pa.freia) return 1 - (c - pa.anda) / pa.freia;
+  if (c < pa.anda + pa.freia + pa.parado) return 0;
+  return (c - pa.anda - pa.freia - pa.parado) / pa.acelera;
+}
+
 export class Atravessa implements Jogo {
   pontos = 0;
   fim = false;
@@ -419,7 +445,7 @@ export class Atravessa implements Jogo {
   private atropelado = 0;
   /** depois do recuo, 14 quadros sem poder ser atropelado de novo (15/10) */
   private protegido = 0;
-  private faixas: { y: number; vel: number; dir: number; carros: Carro[] }[] = [];
+  private faixas: { y: number; vel: number; dir: number; carros: Carro[]; parada: Parada | null; /** a velocidade oscila devagar (período em quadros, fase e tamanho) */ onda: { per: number; fase: number; amp: number } }[] = [];
   /** em dupla: o outro agente (a altura e os pontos que o celular dele manda) */
   outro: { y: number; p: number; passos: number; x?: number } | null = null;
   private xOutro = 0;
@@ -436,20 +462,39 @@ export class Atravessa implements Jogo {
       this.xOutro = dupla.lado === 0 ? 108 : 44;
       this.outro = { y: 186, p: 0, passos: 0 };
     }
-    // o nível: menos carros e mais devagar (fácil), ou mais cheio e mais rápido (difícil)
-    const ritmo = [0.72, 1, 1.3][nivel];
-    const vels = [0.55, 0.8, 1.1, 1.45, 1.9, 2.1, 1.6, 1.25, 0.9, 0.6].map((v) => v * ritmo);
-    const quantos = [
-      [1, 2],
-      [2, 3],
-      [3, 4],
-    ][nivel];
+    // o nível: mais devagar e com mais paradas (fácil), ou mais rápido e mais cheio (difícil). Cada faixa tem a sua
+    // velocidade (de lesma a bólido), poucos carros e, em umas, o trânsito que freia e pára de vez em quando
+    const ritmo = [0.75, 1, 1.3][nivel];
+    const base = [0.4, 0.75, 1.15, 1.6, 2.2, 0.55, 1.9, 1.05, 2.5, 0.85];
+    // embaralha (pela semente) quais faixas são rápidas e quais lentas
+    for (let i = base.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [base[i], base[j]] = [base[j], base[i]];
+    }
+    const chanceParada = [0.8, 0.6, 0.45][nivel];
     for (let i = 0; i < 10; i++) {
-      const n = quantos[i % 3 === 0 ? 0 : 1];
-      const caminhao = i === 2 || i === 7;
+      // quantos carros, onde e de que tamanho é tudo sorteado a cada partida (04/11, o Felipe: "eu quero é aleatoriedade"),
+      // mas sempre com vão para passar: entre dois carros sobra no mínimo a largura do agente com folga, e a faixa
+      // rápida leva menos carros que a lenta
+      const veloz = base[i] * ritmo;
+      const [lo, hi] = [[1, 3], [2, 4], [2, 5]][nivel];
+      let n = lo + Math.floor(rnd() * (hi - lo + 1));
+      if (veloz > 1.9) n = Math.min(n, 2);
+      else if (veloz > 1.4) n = Math.min(n, 3);
+      const larg = Array.from({ length: n }, () => (rnd() < 0.22 ? 22 : 12));
+      const FOLGA = 24;
+      const livre = Math.max(0, VOLTA - larg.reduce((a, b) => a + b, 0) - n * FOLGA);
+      // os vãos de sobra, sorteados: às vezes carros colados no mínimo, às vezes um buraco enorme
+      const pesos = Array.from({ length: n }, () => 0.15 + rnd() ** 2 * 1.6);
+      const soma = pesos.reduce((a, b) => a + b, 0);
       const carros: Carro[] = [];
-      for (let k = 0; k < n; k++) carros.push({ x: -24 + (k * VOLTA) / n + aleat(0, 16), w: caminhao && k === 0 ? 22 : 12, cor: CORES_CARRO[(i * 3 + k) % CORES_CARRO.length] });
-      this.faixas.push({ y: FAIXA_0 - i * FAIXA_H, vel: vels[i], dir: i < 5 ? 1 : -1, carros });
+      let x = -24 + aleat(0, VOLTA);
+      for (let k = 0; k < n; k++) {
+        carros.push({ x: x % VOLTA, w: larg[k], cor: CORES_CARRO[Math.floor(rnd() * CORES_CARRO.length)] });
+        x += larg[k] + FOLGA + (livre * pesos[k]) / soma;
+      }
+      const parada: Parada | null = rnd() < chanceParada ? { anda: Math.round(aleat(90, 420)), freia: Math.round(aleat(14, 50)), parado: Math.round(aleat(50, 190)), acelera: Math.round(aleat(14, 50)), fase: Math.round(aleat(0, 600)) } : null;
+      this.faixas.push({ y: FAIXA_0 - i * FAIXA_H, vel: base[i] * ritmo * aleat(0.85, 1.15), dir: i < 5 ? 1 : -1, carros, parada, onda: { per: aleat(180, 520), fase: aleat(0, 6.28), amp: aleat(0.05, 0.3) } });
     }
   }
 
@@ -463,9 +508,10 @@ export class Atravessa implements Jogo {
     if (this.tempo < 600 && this.tempo % 60 === 0) sfx.chip(1200, 1200, 0.03, 0.05);
     // o trânsito aperta com o tempo
     const pressa = 1 + 0.5 * (1 - this.tempo / this.total);
+    const decorrido = this.total - this.tempo;
     for (const f of this.faixas)
       for (const c of f.carros) {
-        c.x += f.vel * f.dir * pressa;
+        c.x += f.vel * f.dir * pressa * marcha(f.parada, decorrido) * (1 + f.onda.amp * Math.sin((decorrido / f.onda.per) * 6.283 + f.onda.fase));
         if (f.dir > 0 && c.x > W + 24) c.x -= VOLTA;
         if (f.dir < 0 && c.x < -24) c.x += VOLTA;
       }
@@ -530,6 +576,16 @@ export class Atravessa implements Jogo {
       }
       g.fillStyle = COR.claro;
       for (let x = 0; x < W; x += 12) g.fillRect(x, y, 6, 1);
+    }
+    // o sinal da faixa que pára: vermelho quando freia ou está parada, verde quando anda
+    const decorrido = this.total - this.tempo;
+    for (const f of this.faixas) {
+      if (!f.parada) continue;
+      const m = marcha(f.parada, decorrido);
+      g.fillStyle = COR.escuro;
+      g.fillRect(f.dir > 0 ? 0 : W - 3, f.y + 5, 3, 6);
+      g.fillStyle = m < 0.5 ? COR.vermelho : COR.verde;
+      g.fillRect(f.dir > 0 ? 1 : W - 2, f.y + (m < 0.5 ? 6 : 8), 1, 2);
     }
     for (const f of this.faixas) for (const c of f.carros) this.carro(g, c, f.y, f.dir);
     // o outro agente (em dupla), de terno vinho
@@ -599,6 +655,8 @@ interface Plataforma {
   w: number;
   tipo: 'firme' | 'anda' | 'quebra';
   vx: number;
+  /** a plataforma que anda: onde ela começa (a posição sai do relógio do jogo, igual nos dois celulares) */
+  x0?: number;
   mola: boolean;
   quebrada: boolean;
   /** no DIFÍCIL (09/10): quantos pulos ela ainda aguenta (racha a cada um e quebra no último); sem limite, null */
@@ -623,10 +681,12 @@ export class PulaPula implements Jogo {
   private alto = 168;
   private plats: Plataforma[] = [];
   private proxY = 176;
+  /** o relógio do jogo, em passos */
+  private t = 0;
   private rnd: () => number;
   private estrelas: { x: number; y: number; cor: string }[];
   /** em dupla: os pontos do outro e se ele ainda está pulando */
-  outro: { p: number; vivo: boolean } | null = null;
+  outro: { p: number; vivo: boolean; x?: number; y?: number; sobe?: boolean } | null = null;
 
   constructor(
     private dupla?: Dupla,
@@ -645,7 +705,8 @@ export class PulaPula implements Jogo {
 
   /** Mais alto, mais difícil: de 0 a 1. */
   private dificuldade() {
-    const subida = (168 - this.alto) / 6500;
+    // pela altura de onde a plataforma nasce, e não de quem subiu mais: os dois celulares da dupla montam as mesmas
+    const subida = (168 - this.proxY) / 6500;
     return Math.min(1, [subida * 0.6, subida, 0.15 + subida * 1.3][this.nivel]);
   }
 
@@ -657,7 +718,9 @@ export class PulaPula implements Jogo {
       this.proxY -= vao;
       const anda = this.rnd() < 0.08 + d * 0.32;
       const w = Math.round(22 - d * 4) + [4, 0, -3][this.nivel];
-      this.plats.push({ x: this.al(0, W - w), y: this.proxY, w, tipo: anda ? 'anda' : 'firme', vx: anda ? this.al(0.5, 0.9 + d) * (this.rnd() < 0.5 ? -1 : 1) : 0, mola: !anda && this.rnd() < 0.06, quebrada: false, pulos: PULOS_POR_NIVEL[this.nivel] });
+      const px = this.al(0, W - w);
+      const pvx = anda ? this.al(0.5, 0.9 + d) * (this.rnd() < 0.5 ? -1 : 1) : 0;
+      this.plats.push({ x: px, x0: px, y: this.proxY, w, tipo: anda ? 'anda' : 'firme', vx: pvx, mola: !anda && this.rnd() < 0.06, quebrada: false, pulos: PULOS_POR_NIVEL[this.nivel] });
       // a que quebra é de enfeite: nunca é o único caminho
       if (this.rnd() < 0.1 + d * 0.2) this.plats.push({ x: this.al(0, W - w), y: this.proxY + vao / 2, w, tipo: 'quebra', vx: 0, mola: false, quebrada: false, pulos: null });
     }
@@ -665,6 +728,7 @@ export class PulaPula implements Jogo {
 
   passo(e: Entrada) {
     if (this.fim) return;
+    this.t++;
     // a força da alavanca dá a velocidade (o dedo, numa metade da tela, vai no máximo)
     const forca = e.dedo ? (e.dedo.x < W / 2 ? -1 : 1) : e.eixo.x;
     if (Math.abs(forca) > 0.02) {
@@ -679,9 +743,11 @@ export class PulaPula implements Jogo {
     this.vy = Math.min(5, this.vy + 0.16);
     this.y += this.vy;
     for (const p of this.plats) {
-      if (p.tipo === 'anda') {
-        p.x += p.vx;
-        if (p.x < 0 || p.x > W - p.w) p.vx = -p.vx;
+      if (p.tipo === 'anda' && p.x0 !== undefined) {
+        // vai e volta entre as bordas, pelo relógio do jogo (a mesma plataforma, no mesmo lugar, nos dois celulares)
+        const L = W - p.w;
+        const m = (((p.x0 + p.vx * this.t) % (2 * L)) + 2 * L) % (2 * L);
+        p.x = m > L ? 2 * L - m : m;
       }
       if (p.quebrada) p.y += 2.2;
     }
@@ -722,7 +788,10 @@ export class PulaPula implements Jogo {
       fx.faiscas(this.x, this.y - this.camY - 6, CONFETE, 16, 1.8, 0.04, 34);
       sfx.arpejo([784, 988, 1175], 0.05, 0.06);
     }
-    if (this.y - this.camY < 72) this.camY = this.y - 72;
+    // em dupla, a câmera segue o que está mais alto e os dois bonecos ficam na mesma tela (04/11, o Felipe)
+    const outroAlto = this.outro?.vivo && typeof this.outro.y === 'number' ? this.outro.y : Infinity;
+    const topo = Math.min(this.y, outroAlto);
+    if (topo - this.camY < 72) this.camY = topo - 72;
     this.gerar();
     this.plats = this.plats.filter((p) => p.y - this.camY < H + 24);
     if (this.y - this.camY > H + 12) {
@@ -820,6 +889,11 @@ export class PulaPula implements Jogo {
         g.fillRect(mx - 1, y - 5, 6, 2);
       }
     }
+    // o outro agente (em dupla), de terno vinho, onde ele está de verdade
+    if (this.outro?.vivo && typeof this.outro.x === 'number' && typeof this.outro.y === 'number') {
+      const oy = this.outro.y - this.camY - 10;
+      if (oy > -12 && oy < H) boneco(g, this.outro.sobe ? SUBINDO : PULANDO, this.outro.x - 4, oy, CORES_OUTRO);
+    }
     boneco(g, this.vy < 0 ? SUBINDO : PULANDO, this.x - 4, this.y - this.camY - 10, CORES_AGENTE, this.lado < 0);
     texto(g, String(this.pontos), 5, 4, COR.branco, 2);
     // em dupla: os pontos do outro, no canto
@@ -827,6 +901,11 @@ export class PulaPula implements Jogo {
       texto(g, curto(this.dupla.outro), W - 5, 4, COR.rosa, 1, 'dir');
       texto(g, this.outro.vivo ? String(this.outro.p) : `${this.outro.p} CAIU`, W - 5, 11, this.outro.vivo ? COR.rosa : COR.cinza, 1, 'dir');
     }
+  }
+
+  /** O que vai para o celular do outro (em dupla): os pontos, onde está e se sobe. */
+  posicao() {
+    return { p: this.pontos, x: Math.round(this.x), y: Math.round(this.y * 10) / 10, v: this.vy < 0 ? 1 : 0 };
   }
 
   resumo() {

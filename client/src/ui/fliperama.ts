@@ -13,15 +13,15 @@ import { bar } from '@crona/shared';
 import type { Dados, Mesa, TelaDoBar } from './barJogos';
 import { h } from './dom';
 import { musica, type NomeMusica } from './chiptune';
-import { Atravessa, COR, curto, fx, H, JOGOS as JOGOS_BASE, larguraTexto, Pong, PulaPula, semAcento, texto, W, type Botao, type Entrada, type Jogo, type Nivel } from './fliperamaJogos';
+import { Atravessa, COR, curto, fx, H, JOGOS as JOGOS_BASE, larguraTexto, Pong, PulaPula, semAcento, texto, W, type Botao, type Dupla, type Entrada, type Jogo, type Nivel } from './fliperamaJogos';
 import { Invasores } from './fliperamaInvasores';
 import { sfx } from './sfx';
 import { vestirComArte } from './arteBar';
 
-/** Os jogos do menu: os de dupla (fliperamaJogos.ts) e o INVASORES (15/10), que é só sozinho. */
+/** Os jogos do menu: os de fliperamaJogos.ts e o INVASORES (15/10; em dupla desde 04/11). */
 const JOGOS = [
   ...JOGOS_BASE,
-  { id: 'invasores', nome: 'INVASORES', dica: 'A ATIRA, TEM CHEFE', toque: 'O DEDO LEVA A NAVE E ATIRA', recorde: true, soSozinho: true, novo: (_d?: unknown, n?: Nivel) => new Invasores(undefined, n) as Jogo },
+  { id: 'invasores', nome: 'INVASORES', dica: 'A ATIRA, TEM CHEFE', toque: 'O DEDO LEVA A NAVE E ATIRA', recorde: true, novo: (d?: Dupla, n?: Nivel) => new Invasores(d, n) as Jogo },
 ] as const;
 /** A altura de cada jogo no menu (quatro cabem acima dos ajustes). */
 const yDoJogo = (i: number) => 40 + i * 14;
@@ -294,7 +294,7 @@ export class Fliperama implements TelaDoBar {
     const outro = this.outro();
     switch (d.tipo) {
       case 'convite':
-        if (typeof d.jogo !== 'number' || !JOGOS[d.jogo] || 'soSozinho' in JOGOS[d.jogo]) return;
+        if (typeof d.jogo !== 'number' || !JOGOS[d.jogo]) return;
         this.convite = d.jogo;
         this.conviteNivel = (d.nivel === 0 || d.nivel === 2 ? d.nivel : 1) as Nivel;
         this.partida = null;
@@ -322,7 +322,9 @@ export class Fliperama implements TelaDoBar {
     if (d.tipo === 'pong' && j instanceof Pong) j.aplicar(d.s);
     else if (d.tipo === 'raquete' && j instanceof Pong && typeof d.y === 'number') j.remoto = d.y;
     else if (d.tipo === 'pos' && j instanceof Atravessa && typeof d.y === 'number' && typeof d.p === 'number') j.outro = { y: d.y, p: d.p, passos: typeof d.passos === 'number' ? d.passos : 0, x: typeof d.x === 'number' ? d.x : undefined };
-    else if (d.tipo === 'pos' && j instanceof PulaPula && typeof d.p === 'number') j.outro = { p: d.p, vivo: true };
+    else if (d.tipo === 'pos' && j instanceof PulaPula && typeof d.p === 'number') j.outro = { p: d.p, vivo: true, x: typeof d.x === 'number' ? d.x : undefined, y: typeof d.y === 'number' ? d.y : undefined, sobe: d.v === 1 };
+    else if (d.tipo === 'inv' && j instanceof Invasores) j.aplicar(d.s);
+    else if (d.tipo === 'invIn' && j instanceof Invasores && typeof d.x === 'number' && Number.isFinite(d.x)) j.remoto = { x: d.x, a: d.a === 1 ? 1 : 0 };
     else if (d.tipo === 'fim' && typeof d.p === 'number') {
       p.fimOutro = d.p;
       if (j instanceof PulaPula) j.outro = { p: d.p, vivo: false };
@@ -591,7 +593,7 @@ export class Fliperama implements TelaDoBar {
         }
         // (um toque em espaço vazio do menu, fora das linhas, não começa o jogo)
         if (a && !tocouNoVazio) {
-          if (outro && this.dupla && !('soSozinho' in JOGOS[this.sel])) {
+          if (outro && this.dupla) {
             this.enviar({ tipo: 'convite', jogo: this.sel, nivel: this.nivel });
             this.estado = 'esperando';
             sfx.chip(660, 880, 0.12);
@@ -619,6 +621,7 @@ export class Fliperama implements TelaDoBar {
           if (this.partida) {
             this.enviar({ tipo: 'fim', p: this.jogo!.pontos });
             if (this.jogo instanceof Pong && this.partida.lado === 0) this.enviar({ tipo: 'pong', s: this.jogo.estado() });
+            if (this.jogo instanceof Invasores && this.partida.lado === 0) this.enviar({ tipo: 'inv', s: this.jogo.estado() });
           } else if (j.recorde && this.jogo!.pontos > (this.melhor?.pontos ?? 0)) this.melhor = { jogo: j.nome, pontos: this.jogo!.pontos };
           // o PULA-PULA já tem o som da queda
           if (j.id !== 'pula') sfx.arpejo([659, 523, 392, 262], 0.12);
@@ -707,6 +710,8 @@ export class Fliperama implements TelaDoBar {
     const p = this.partida;
     if (p) {
       if (this.esperandoOutro()) return null;
+      // o INVASORES em dupla é dos dois juntos: valeu se chegaram ao primeiro chefe
+      if (j instanceof Invasores) return j.faseAtual >= 4;
       const dele = p.fimOutro ?? (j instanceof Atravessa ? (j.outro?.p ?? 0) : j instanceof PulaPula ? (j.outro?.p ?? 0) : 0);
       return j.pontos >= dele;
     }
@@ -721,16 +726,23 @@ export class Fliperama implements TelaDoBar {
       if (this.quadro % 2) return;
       if (p.lado === 0) this.enviar({ tipo: 'pong', s: j.estado() });
       else this.enviar({ tipo: 'raquete', y: Math.round(j.minhaRaquete * 10) / 10 });
+    } else if (j instanceof Invasores) {
+      // o dono manda o quadro inteiro (a cada dois passos); o convidado, onde está a nave e se atira
+      if (this.quadro % 2) return;
+      if (p.lado === 0) this.enviar({ tipo: 'inv', s: j.estado() });
+      else this.enviar({ tipo: 'invIn', ...j.posicao() });
+    } else if (j instanceof PulaPula) {
+      // os dois bonecos na mesma tela: a posição e a altura vão a cada três passos
+      if (this.quadro % 3 === 0) this.enviar({ tipo: 'pos', ...j.posicao() });
     } else if (this.quadro % 6 === 0) {
       if (j instanceof Atravessa) this.enviar({ tipo: 'pos', ...j.posicao() });
-      else if (j instanceof PulaPula) this.enviar({ tipo: 'pos', p: j.pontos });
     }
   }
 
   /** Em dupla, ainda falta o outro terminar (o PULA-PULA de quem caiu primeiro, o fim do ATRAVESSA). */
   private esperandoOutro() {
     const p = this.partida;
-    if (!p || this.jogo instanceof Pong) return false;
+    if (!p || this.jogo instanceof Pong || this.jogo instanceof Invasores) return false;
     // o ATRAVESSA termina junto (o relógio é o mesmo): espera uns segundos pelo número final
     if (this.jogo instanceof Atravessa) return p.fimOutro === null && this.quadro - this.fimEm < 180;
     return p.fimOutro === null;
@@ -751,7 +763,7 @@ export class Fliperama implements TelaDoBar {
     this.sel = jogo;
     this.partida = { jogo, lado, outro: outro?.nome ?? '', fimOutro: null };
     const d = { semente, lado, outro: outro?.nome ?? '' };
-    this.jogo = JOGOS[jogo].id === 'pong' ? new Pong(lado === 0 ? 'dono' : 'convidado', nivel) : JOGOS[jogo].id === 'atravessa' ? new Atravessa(d, nivel) : new PulaPula(d, nivel);
+    this.jogo = JOGOS[jogo].id === 'pong' ? new Pong(lado === 0 ? 'dono' : 'convidado', nivel) : JOGOS[jogo].id === 'atravessa' ? new Atravessa(d, nivel) : JOGOS[jogo].id === 'invasores' ? new Invasores(d, nivel) : new PulaPula(d, nivel);
     this.convite = null;
     this.estado = 'jogo';
     this.quadro = 0;
@@ -1063,11 +1075,11 @@ export class Fliperama implements TelaDoBar {
       texto(g, rotulo, 24, y, aqui ? COR.branco : COR.cinza, 1);
       texto(g, aqui ? `< ${valor} >` : valor, W - 22, y, cor, 1, 'dir');
     };
-    if (outro) ajuste('dupla', 98, 'JOGAR', this.dupla && !('soSozinho' in j) ? `DUPLA ${curto(outro.nome)}` : 'SOZINHO', this.dupla && !('soSozinho' in j) ? COR.rosa : COR.claro);
+    if (outro) ajuste('dupla', 98, 'JOGAR', this.dupla ? `DUPLA ${curto(outro.nome)}` : 'SOZINHO', this.dupla ? COR.rosa : COR.claro);
     ajuste('nivel', 110, 'NIVEL', NIVEIS[this.nivel], [COR.verde, COR.amarelo, COR.vermelho][this.nivel]);
     ajuste('sens', 122, 'ALAVANCA', SENSIBILIDADES[this.sens].nome, COR.azulClaro);
-    texto(g, this.dupla && outro && !('soSozinho' in j) ? (j.id === 'pong' ? 'UM CONTRA O OUTRO' : j.id === 'atravessa' ? 'LADO A LADO NA AVENIDA' : 'QUEM SUBIR MAIS VENCE') : j.dica, W / 2, 136, COR.verde, 1, 'meio');
-    if (this.dupla && outro && !('soSozinho' in j)) texto(g, 'A CHAMA PARA JOGAR', W / 2, 148, COR.medio, 1, 'meio');
+    texto(g, this.dupla && outro ? (j.id === 'pong' ? 'UM CONTRA O OUTRO' : j.id === 'atravessa' ? 'LADO A LADO NA AVENIDA' : j.id === 'invasores' ? 'JUNTOS, QUANTO MAIS GENTE MAIS DIFICIL' : 'OS DOIS NA MESMA TELA') : j.dica, W / 2, 136, COR.verde, 1, 'meio');
+    if (this.dupla && outro) texto(g, 'A CHAMA PARA JOGAR', W / 2, 148, COR.medio, 1, 'meio');
     else if (j.recorde) {
       const l = this.lista();
       l.slice(0, 3).forEach((r, i) => texto(g, `${i + 1} ${r.n} ${String(r.p).padStart(5, ' ')}`, W / 2, 146 + i * 8, i === 0 ? COR.amarelo : COR.claro, 1, 'meio'));
@@ -1128,6 +1140,19 @@ export class Fliperama implements TelaDoBar {
     const p = this.partida!;
     const eu = curto(this.m?.jogadores[this.m.eu[0]] ?? '');
     const ele = curto(p.outro);
+    if (j instanceof Invasores) {
+      g.fillStyle = 'rgba(0,0,0,0.8)';
+      g.fillRect(6, 52, W - 12, 88);
+      g.fillStyle = COR.rosa;
+      g.fillRect(6, 52, W - 12, 1);
+      g.fillRect(6, 139, W - 12, 1);
+      texto(g, 'FIM DE JOGO', W / 2, 60, COR.ouro, 2, 'meio');
+      texto(g, `${eu} E ${ele}`, W / 2, 82, COR.rosa, 1, 'meio');
+      texto(g, `FASE ${j.faseAtual}`, W / 2, 96, COR.verdeClaro, 2, 'meio');
+      texto(g, `${j.pontos} PONTOS`, W / 2, 114, COR.amarelo, 1, 'meio');
+      if (this.espera === 0 && pisca) texto(g, 'APERTE A', W / 2, 126, COR.claro, 1, 'meio');
+      return;
+    }
     const meus = j.pontos;
     const dele = j instanceof Pong ? j.deles : (p.fimOutro ?? (j instanceof Atravessa ? (j.outro?.p ?? 0) : j instanceof PulaPula ? (j.outro?.p ?? 0) : 0));
     const espera = this.esperandoOutro();

@@ -18,6 +18,13 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - **Corrigido:** o aviso da Vontade repetida (LR p. 22) só aparece enquanto a perícia a mais falta; a Alosi tinha o aviso de graça. Entra no jogo no próximo `npm run crona`.
 - **Decisões do Felipe:** Tepes em 30% mesmo? (decisão de 21/10); a Alosi sem a marca de refazer equipamento (mochila vazia); o atual de PV/PE/SAN do Tepes ainda é o do NEX 20%.
 
+## Bar e celular (04/11; pedidos do Felipe, terminados e conferidos em 06/11)
+
+- **O 21:** o Ás vale só 1 (não há blackjack de saída; o maior total de duas cartas é 20); as cartas dos outros jogadores ficam viradas até a rodada fechar (o mestre vê tudo).
+- **NPC no bar:** o NPC do Elenco tem ficha, mas nunca celular: o mestre joga por ele.
+- **Fliperama:** o INVASORES em dupla (o celular de quem convidou faz as contas e manda o quadro; com mais gente, a frota é maior e atira mais, e o chefe tem mais vida); a avenida com poucos carros sorteados, sempre com vão, velocidades diferentes e faixas que param (com o sinal); o Pula-Pula com a plataforma que anda pelo relógio do jogo. Conferido em 06/11 rodando os dois lados na prévia: os dois celulares ficam iguais.
+- **Celular:** a tela do jogador monta sem esperar no topo (a tela preta de 04/11).
+
 ## O site fora do tabuleiro (01/11; branch `claude/campanhas`, nada no 8080)
 
 - **O pedido:** "tudo que for necessário pra conta e também as pendências da campanha"; carregar por tela e o manifesto de tela cheia; "é imprescindível que tudo sobre as regras de combate estejam perfeitamente alinhados e funcionando, isso inclui o teste da ovelha"; o pedir itens sem nem a opção fora da base; as pendências do celular; o acabamento; "eliminar essas informações invisíveis e silenciosas"; "5/6 linhas do combate é o suficiente. Depois disso vamos excluindo o log".
