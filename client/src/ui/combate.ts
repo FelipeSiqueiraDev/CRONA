@@ -745,7 +745,7 @@ export class CombateScreen {
         h('b', { class: 'card-tit' }, rotulo),
         h('span', { class: 'vez-acao-ic card-quadro' }, arteOu([`/arte/icones/${pintado}.png`], ic(icone))),
         h('small', { class: 'card-placa' }, ok ? sub : (motivo ?? sub)),
-        h('span', { class: 'card-pe' }, ok ? CUSTO[id] ?? 'Ação' : 'Já usada'),
+        h('span', { class: 'card-pe' }, ok ? (id === 'atacar' && ac.completa ? 'Ação completa' : (CUSTO[id] ?? 'Ação')) : 'Já usada'),
       );
     const motivoMov = bl.movimento ?? 'sem ação para andar';
     const movOk = !bl.movimento && (movLivre || (padraoLivre && !bl.padrao));
@@ -781,6 +781,9 @@ export class CombateScreen {
   /** O menu de ataque: cada arma, a investida, a manobra e o ritual. */
   private menuDeAtaque(c: Combate, ator: Participante): HTMLElement {
     const armas = this.armasDe(ator);
+    const ac = cb.acoesDe(c, ator.id);
+    // no meio da sequência da ação completa (a Dança das Lâminas) só o próximo golpe dela dá: o resto o servidor recusa
+    const seqAberta = !!ac.completa && (ac.golpes ?? 0) > 0;
     const cartao = (cls: string, arte: Node, nome: string, sub: string, fazer: (() => void) | null, _motivo?: string, info?: () => void): HTMLElement | null =>
       // o que não dá para usar agora sai da lista (17/10, o Felipe: "os ataques indisponíveis podiam sair da lista, assim a gente
       // não fica com as duas colunas e não tem que dar scroll")
@@ -805,8 +808,8 @@ export class CombateScreen {
           'arma',
           a.jogada ? arteOu(['/arte/icones/combate-habilidade.png'], ic('estrela')) : a.item && a.item !== 'ataque-desarmado' ? arteDoItem({ id: a.item, tipo: 'arma', nome: a.nome }, a.pericia === 'pontaria' ? 'pistola' : 'faca', 'arte-ic') : arteOu([a.item ? '/arte/icones/for.png' : '/arte/icones/combate-atacar.png'], ic('punho')),
           a.jogada ? a.jogada.nome : a.vezes && !a.sequencia ? `${a.nome} ×${a.vezes}` : a.nome,
-          `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} · dano ${a.dano} · ${a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo'}`,
-          naMao && !travada ? () => (this.ataque.escolher(i), this.seguirParaAlvo('atacar')) : null,
+          `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} · dano ${a.dano} · ${a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo'}${a.municao ? ` · ${a.municao.vazia ? `⚠ ${a.municao.vazia}` : a.municao.texto}` : ''}`,
+          naMao && !travada && (!seqAberta || a.sequencia) ? () => (this.ataque.escolher(i), this.seguirParaAlvo('atacar')) : null,
           !naMao ? 'na mochila: saque em Pegar ou guardar' : travada ? a.jogada!.erros.join(' · ') : undefined,
           this.modoCards ? () => this.abrirInfo(this.infoArma(a)) : undefined,
         ),
@@ -814,7 +817,6 @@ export class CombateScreen {
     });
     // a investida: corre até o dobro do deslocamento e ataca no corpo a corpo (+1d20 no ataque, −5 na Defesa)
     const corpo = armas.findIndex((a) => !a.faixa && a.naMao !== false && !a.jogada);
-    const ac = cb.acoesDe(c, ator.id);
     const completaLivre = !ac.padrao && !ac.movimento && !ac.completa;
     // caído só se arrasta 1,5 m (LR p. 87): não corre (29/10, a conferência: a investida aparecia para quem estava no chão)
     const caido = this.condicoesDe(c, ator).includes('caido');
@@ -828,9 +830,9 @@ export class CombateScreen {
         corpo < 0 ? 'precisa de uma arma de corpo a corpo na mão' : 'precisa do turno inteiro (padrão e movimento livres)',
       ),
     );
-    poe(cartao('manobra', arteOu(['/arte/icones/combate-manobra.png'], ic('mao')), 'Manobra', 'agarrar, derrubar, desarmar, empurrar…', () => this.seguirParaAlvo('manobra')));
+    poe(cartao('manobra', arteOu(['/arte/icones/combate-manobra.png'], ic('mao')), 'Manobra', 'agarrar, derrubar, desarmar, empurrar…', seqAberta ? null : () => this.seguirParaAlvo('manobra')));
     const rituais = this.rituaisDe(ator);
-    poe(cartao('ritual', arteOu(['/arte/icones/combate-ritual.png'], ic('pentagrama')), 'Ritual', rituais.length ? `${rituais.length} ritua${rituais.length > 1 ? 'is' : 'l'} conhecido${rituais.length > 1 ? 's' : ''}` : 'nenhum ritual', rituais.length ? () => this.seguirParaAlvo('ritual') : null, 'nenhum ritual conhecido'));
+    poe(cartao('ritual', arteOu(['/arte/icones/combate-ritual.png'], ic('pentagrama')), 'Ritual', rituais.length ? `${rituais.length} ritua${rituais.length > 1 ? 'is' : 'l'} conhecido${rituais.length > 1 ? 's' : ''}` : 'nenhum ritual', rituais.length && !seqAberta ? () => this.seguirParaAlvo('ritual') : null, 'nenhum ritual conhecido'));
     // tela nova: sem rolagem, seis cartões por página
     const pg = this.modoCards ? paginar('arma', lista, 6, () => (this.sigs.delete('res'), this.renderRes()), `${c.rodada}|${c.vez}|${ator.id}`) : { itens: lista, pager: null };
     return h('div', { class: 'vez-menu' }, h('p', { class: 'vez-pergunta' }, 'Com o quê?'), h('div', { class: 'vez-cartoes' }, ...pg.itens), pg.pager);
@@ -863,8 +865,7 @@ export class CombateScreen {
   private deslocamentoDe(p: Participante): number {
     const calc = this.calcDe(p.id);
     if (calc) return calc.deslocamento;
-    const am = this.ameacaDe(p.id) as (cb.FichaAmeaca & { deslocamento?: number }) | null;
-    return am?.deslocamento ?? 9;
+    return this.ameacaDe(p.id)?.deslocamento ?? 9;
   }
 
   /** As casas aonde a peça chega andando (por onde dá para pisar, sem atravessar ninguém). */
@@ -3530,7 +3531,7 @@ export class CombateScreen {
       nome: a.jogada ? a.jogada.nome : a.vezes && !a.sequencia ? `${a.nome} ×${a.vezes}` : a.nome,
       teste: `${a.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${textoTeste(a.dados, a.bonus, a.penalidade)}`,
       dano: `${a.dano}${a.extra ? ` e ${a.extra.dano} ${cb.NOME_TIPO_DANO[a.extra.tipo]}` : ''}`,
-      resto: [`crítico ${a.margem}/×${a.multiplicador}`, a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo', a.naMao === false ? 'na mochila' : '', ...a.notas].filter(Boolean).join(' · '),
+      resto: [`crítico ${a.margem}/×${a.multiplicador}`, a.faixa ? cb.NOME_FAIXA[a.faixa] : 'corpo a corpo', a.naMao === false ? 'na mochila' : '', a.municao ? (a.municao.vazia ? `⚠ ${a.municao.vazia}` : a.municao.texto) : '', ...a.notas].filter(Boolean).join(' · '),
       naMao: a.naMao !== false,
     }));
   }

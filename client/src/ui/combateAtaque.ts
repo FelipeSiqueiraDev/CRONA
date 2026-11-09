@@ -897,7 +897,7 @@ export class ResolucaoAtaque {
           'div',
           null,
           h('b', null, this.investida ? `Investida com ${arma.nome}` : arma.jogada ? arma.jogada.nome : arma.nome),
-          h('small', null, `${arma.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${textoTeste(arma.dados, arma.bonus, arma.penalidade)} · dano ${arma.dano}${arma.extra ? ` e ${arma.extra.dano} ${cb.NOME_TIPO_DANO[arma.extra.tipo]}` : ''} · crítico ${arma.margem}/${JUNTA}×${arma.multiplicador} · ${arma.faixa ? cb.NOME_FAIXA[arma.faixa] : 'corpo a corpo'}`),
+          h('small', null, `${arma.pericia === 'luta' ? 'Luta' : 'Pontaria'} ${textoTeste(arma.dados, arma.bonus, arma.penalidade)} · dano ${arma.dano}${arma.extra ? ` e ${arma.extra.dano} ${cb.NOME_TIPO_DANO[arma.extra.tipo]}` : ''} · crítico ${arma.margem}/${JUNTA}×${arma.multiplicador} · ${arma.faixa ? cb.NOME_FAIXA[arma.faixa] : 'corpo a corpo'}${arma.municao ? ` · ${arma.municao.vazia ? `⚠ ${arma.municao.vazia}` : arma.municao.texto}` : ''}`),
         ),
       ),
     );

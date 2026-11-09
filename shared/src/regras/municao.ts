@@ -80,7 +80,8 @@ export function estadoMunicao(inv: ItemFicha[], arma: ItemFicha): EstadoMunicao 
 
 /** "6/6 na arma · 40 na mochila" */
 export function textoMunicao(e: EstadoMunicao): string {
-  const mochila = `${e.naMochila} ${e.naMochila === 1 ? 'bala' : 'balas'} de ${e.nome.toLowerCase()} na mochila`;
+  // "60 disparos na mochila (balas longas de calibre grosso)": o nome do pacote já diz "balas", então não se repete
+  const mochila = `${e.naMochila} ${e.naMochila === 1 ? 'disparo' : 'disparos'} na mochila (${e.nome.toLowerCase()})`;
   return e.capacidade ? `${e.naArma}/${e.capacidade} na arma · ${mochila}` : mochila;
 }
 

@@ -4765,3 +4765,22 @@ html .fx .fx-sl-caixa.de-lado > .fx-sl-grade.uma-linha {
 /* o motivo de o conjunto escolhido não caber (modificações no limite da patente) */
 .fj-aviso-erro:empty { display: none; }
 .fj-aviso-erro { color: #ff9a8a; border-left: 3px solid #d9302c; padding-left: 8px; margin: 0 0 8px; }
+
+/* o aviso de item quebrado, no alto da janela do item (09/11) */
+.fj-quebrado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid #a85a50;
+  border-radius: 0.6rem;
+  background: rgba(168, 60, 50, 0.18);
+  color: #f2c4bd;
+  font-weight: 700;
+}
+.fj-quebrado.quebrou {
+  border-color: #e0584a;
+  background: rgba(200, 60, 50, 0.28);
+}

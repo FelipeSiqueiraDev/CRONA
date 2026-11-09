@@ -1202,7 +1202,9 @@ export class Hotel implements HotelApi {
 
   /** A peça é de um agente: o personagem tem ficha (a névoa abre em volta dela). */
   ehAgente(personagem: number | null | undefined): boolean {
-    return !!this.fichaDoPersonagem(personagem);
+    // o NPC do Elenco tem ficha, mas não é agente (não viaja com o grupo nem abre a névoa; auditoria de 27/10, nº 17)
+    const f = this.fichaDoPersonagem(personagem);
+    return !!f && !f.npc;
   }
 
   /** Armado na peça com ficha: empunha a primeira arma da mochila (trocando o que estiver na mão) ou guarda as armas. */

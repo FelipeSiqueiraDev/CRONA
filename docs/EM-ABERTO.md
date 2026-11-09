@@ -2,6 +2,28 @@
 
 O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia junto com o [`GUIA-DO-CLAUDE.md`](GUIA-DO-CLAUDE.md), que diz como trabalhar aqui. **Atualize este arquivo ao fim de cada bloco de trabalho.**
 
+## O combate conferido na tela (09/11; só na prévia `crona_visual`, nada no 8080)
+
+- **Como foi feito:** a prévia (`node scripts/dev/visual.mjs criar`, cópia do banco de verdade) com a Ovelha, a Cora e o Tepes; combate jogado pela própria tela, o servidor aceitando cada passo.
+- **Dança das Lâminas (Ovelha):** **já funcionava desde 01/11** (a linha "Falta" da Conferência jogando estava velha). Os 3 golpes (+9, +4, −1) numa ação completa, o 4º recusado, a Defesa 18 → 16 até o próximo turno. Conferido jogando: o menu mostra "(1º de 3)", "(2º de 3)", e o servidor aceitou os dois que joguei.
+  - Corrigido na tela: o cartão do Atacar dizia "Ação padrão" no meio da sequência (agora "Ação completa"), e no meio dela a lista ainda oferecia as Lâminas Gêmeas, a Manobra e o Ritual (o servidor recusaria); agora só o próximo golpe da Dança.
+  - A Defesa 16 é da ficha caseira da Ovelha (notas: "Defesa 16 até o próximo turno"); não vem do livro. O deslocamento "12 m" estava só nas notas e o menu usava 9 m: agora a ficha da ameaça tem `deslocamento` (migração `deslocamentoDasNotas0911`, teste em `combate.test.ts`).
+- **Conferidos na tela, funcionando:** golpe de passagem (gasta padrão e movimento, −1d20 e −5, "golpe de passagem" no registro); olho do predador (a mira com alvo, ação completa; sacar a arma depois encerra a mira, como a regra diz); cartão da corrente (Manteve/Falhou, DT 10 → 15, "Arrastando"); Recarregar (4/4, a mochila 60 → 59); Quebrar (o fuzil quebrado sai da lista de armas) e Consertar.
+- **Corrigido por causa disso:**
+  - "Escolher o alvo" (Outras ações) ficava depois dos cartões, fora da tela; agora a faixa do alvo fica colada embaixo (`combateLayout.css`).
+  - A munição não aparecia na tela nova do combate: o cartão da arma, a rolagem e o card dos ataques mostram "4/4 na arma · 60 disparos na mochila (balas longas de calibre grosso)" (o texto repetia "balas de balas").
+  - O aviso "QUEBRADO: não funciona até o conserto" estava no fim da janela do item; subiu para o alto, com o botão Consertar (`fichas.ts`).
+- **Ainda aberto:** na janela de 1024 × 768 o passo Rolagem fica apertado (o campo do d20 aparece cortado até rolar o painel do meio); numa tela maior cabe. A Presença Perturbadora segue como lembrete (o mestre rola a Vontade).
+
+## Segunda 09/11: auditoria reconferida, NPC fora dos agentes e celular que dormiu (no ar)
+
+- **Auditoria de 27/10 reconferida** (seção "Reconferida em 09/11" no fim de [`AUDITORIA-FUNCIONAMENTO.md`](AUDITORIA-FUNCIONAMENTO.md)): dos 35 defeitos, 32 resolvidos ou nunca foram defeito, 2 em parte, 1 aberto de propósito.
+- **Nº 17 feito:** `ehAgente` (hotel.ts) ignora ficha de NPC; o NPC do Elenco não viaja com o grupo nem abre a névoa.
+- **Nº 7 feito:** `net.ts` fecha a conexão (código 4002) ao voltar de mais de 20 s escondido ou quando a rede volta, e o reconectar de sempre abre outra.
+- **Ainda abertos da auditoria:** nº 32 (Identificação da FICHAS do mestre pode perder um toque) e nº 22 (o zoom da vista tática na mesa que reconecta, não conferido).
+- **Removidos:** as contas e peças de teste `teste1` e `teste2` (`scripts/dev/remover-testes.mts`).
+- **Nada commitado ainda** (o combate conferido de 09/11, estes dois consertos e a montagem de agora estão só no 8080 e na pasta).
+
 ## Entrar numa sala sem travar (06/11, noite)
 
 - **O pedido:** "deixa os quartos carregando só quando a câmera estiver nele; não tem problema demorar um pouquiiinho pra carregar a sala, se quando eu for usar ela estiver tudo perfeitinho".
@@ -139,7 +161,7 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
 - **Consertado (29/10):** os 9 defeitos acima (`95b343ef`; o dano dos rituais pelo livro em `DANO_DOS_RITUAIS`, `shared/src/combate/ritual.ts`). As decisões do Felipe (`b1c110f9`): o limite de PE recusa (a primeira habilidade do turno no custo mínimo passa, LR p. 24); a SAN para sempre vira pendência com Aceitar/Negar (`perdasSan`; aceitar grava `perdas.san` na ficha, e o Desfazer devolve); a Camarilla (o companheiro da ficha do Tepes, pelo nome da peça) entra do lado dos agentes, sem SAN. O ritual "parcial" que o livro diz metade (Eletrocussão, Invadir Mente, Miasma, Ferver Sangue) tira a metade sozinho (`3130e3cf`).
 - **Luta de teste na prévia (29/10):** os 4 contra o Porco, com os números do Sargento do livro (p. 289) só na ficha rápida da peça (o Porco do bestiário segue provisório: PV 20, Defesa 10, sem ataque). Quatro rodadas: a Cora matou o Porco com crítico ×3 do fuzil; a Catarina morreu (3 turnos morrendo). Jogada pela própria tela (`window.__combate`, só no desenvolvimento). A prévia ficou assim: Catarina morta, Tepes 5 PV, Porco morto na sala, o combate encerrado com o registro.
 - **Luta de teste contra a Ovelha (29/10, no lugar da do Porco):** a ficha caseira da Ovelha, sem mexer. Duas lutas acabaram no primeiro tiro da Cora (crítico ×3 do fuzil, margem 17, e a Ovelha falhou no dano massivo); na terceira, com a ameaça dispensada do dano massivo, cinco rodadas: a Ovelha derrubou a Catarina (morrendo 2/3) e a Cora a matou. O encerrar recusou por causa da Catarina morrendo; o combate ficou aberto assim na prévia. **Decidido pelo Felipe:** o dano massivo "só serve para pessoas, seres humanos"; feito no mesmo dia (`ehPessoa`: agentes e ameaças do tipo Pessoa, nunca criatura, animal ou o companheiro).
-- **Falta (achado contra a Ovelha):** a Dança das Lâminas (3 golpes, +9/+4/−1, ação completa) não dá para fazer na tela: cada golpe vai como ação padrão e o servidor recusa o 2º; e a Defesa 16 até o próximo turno não existe. A Presença Perturbadora só vira lembrete no registro: o mestre rola a Vontade fora e tira a SAN à mão.
+- **(Resolvido em 01/11, conferido em 09/11)** achado contra a Ovelha: a Dança das Lâminas (3 golpes, +9/+4/−1, ação completa) e a Defesa 16 até o próximo turno funcionam. A Presença Perturbadora só vira lembrete no registro: o mestre rola a Vontade fora e tira a SAN à mão.
 - **Falta (combate):** a Camarilla sem ficha de combate (ataque, Defesa) e sem PV na peça (o PV 100 está só no companheiro da ficha); a regra da casa do cachorro que o Felipe citou não está escrita em lugar nenhum; Inexistir e Descarnar no parcial (o dano de quem passa é outro: o mestre digita); a ficha do Porco e dos açougueiros.
 - **Prometido nos documentos e não feito:** munição gasta ao encerrar (COMBATE.md §16 e §20); item quebrado (Quebrar só registra).
 - **Ainda aberto:** o servidor confia no resultado que a tela manda (manobra, agarrar armado, arma na mochila); só daria problema se a tela errasse.

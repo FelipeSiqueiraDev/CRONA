@@ -1886,7 +1886,17 @@ export class FichasScreen {
     const resumo = (it.descricao || (base as { resumo?: string } | undefined)?.resumo || '').toLowerCase();
     const limpo = (x: string) => x.replace(/\s*\(a tabela marca[^)]*\)/, '').trim();
     const espLivre = esp?.map(limpo).filter((x) => x && !efeito.some((e) => limpo(e).includes(x)) && !resumo.includes(x.toLowerCase()));
-    j.corpo.append(corpoDoItem(it, c), ...(espLivre?.length ? [h('p', { class: 'jg-mi-txt' }, espLivre.join(' · '))] : []));
+    // o item quebrado (a manobra Quebrar; LR p. 90): o aviso fica em cima, à vista (o Consertar, só ao editar)
+    const avisoQuebrado =
+      it.quebrado || it.danoSofrido
+        ? h(
+            'div',
+            { class: `fj-quebrado${it.quebrado ? ' quebrou' : ''}` },
+            h('span', null, it.quebrado ? 'QUEBRADO: não funciona até o conserto (LR p. 90).' : `Já sofreu ${it.danoSofrido} de dano.`),
+            ed ? h('button', { class: 'fx-bt', type: 'button', onclick: () => ((delete it.quebrado, delete it.danoSofrido), this.render(), j.fechar()) }, 'Consertar') : null,
+          )
+        : null;
+    j.corpo.append(...(avisoQuebrado ? [avisoQuebrado] : []), corpoDoItem(it, c), ...(espLivre?.length ? [h('p', { class: 'jg-mi-txt' }, espLivre.join(' · '))] : []));
     if (!ed) {
       j.rodape.append(h('span', { class: 'fj-esp' }), h('button', { class: 'fx-bt', type: 'button', onclick: () => j.fechar() }, ic('fechar'), h('span', null, 'Fechar')));
       return;
@@ -1952,16 +1962,6 @@ export class FichasScreen {
       );
     };
     desenharMods();
-    // o item quebrado (a manobra Quebrar; LR p. 90): não funciona até o conserto (a Manutenção do interlúdio)
-    if (it.quebrado || it.danoSofrido)
-      j.corpo.append(
-        h(
-          'div',
-          { class: 'fj-campo' },
-          h('span', null, it.quebrado ? 'Quebrado: não funciona até o conserto (LR p. 90).' : `Já sofreu ${it.danoSofrido} de dano.`),
-          h('button', { class: 'fx-bt', type: 'button', onclick: () => ((delete it.quebrado, delete it.danoSofrido), this.render(), j.fechar()) }, 'Consertar'),
-        ),
-      );
     // o que as modificações e o kit de profissão pedem escolher (LR p. 64; SaH p. 94)
     const escolhaPericia = (rotulo: string, chave: 'pericia2' | 'kit', valor?: regras.PericiaId) =>
       h(

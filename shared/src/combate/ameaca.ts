@@ -105,6 +105,7 @@ export function lerFichaAmeaca(raw: unknown): FichaAmeaca | null {
   const el = elemento(o.elemento);
   const pres = presenca(o.presenca);
   const livro = typeof o.livro === 'string' && LIVRO.has(o.livro) ? o.livro : '';
+  const desloc = typeof o.deslocamento === 'number' && Number.isFinite(o.deslocamento) ? Math.round(Math.max(0, Math.min(60, o.deslocamento)) * 2) / 2 : 0;
   return {
     tipo: txt(o.tipo, 40) || 'Pessoa',
     ...(vd >= 0 ? { vd } : {}),
@@ -121,6 +122,7 @@ export function lerFichaAmeaca(raw: unknown): FichaAmeaca | null {
     ...(el ? { elemento: el } : {}),
     ...(pres ? { presenca: pres } : {}),
     ...(livro ? { livro } : {}),
+    ...(desloc > 0 ? { deslocamento: desloc } : {}),
     ...(notas ? { notas } : {}),
   };
 }
