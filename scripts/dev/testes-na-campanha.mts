@@ -1,0 +1,12 @@
+import fs from 'node:fs'; import path from 'node:path'; import { pathToFileURL } from 'node:url';
+const REPO = 'F:/Dhellow/CRONA/projeto';
+const env = fs.readFileSync(path.join(REPO, 'server', '.env'), 'utf8');
+process.env.CRONA_DB_URL = /^CRONA_DB_URL=(.*)$/m.exec(env)![1].trim();
+const mod = (p: string) => import(pathToFileURL(path.join(REPO, p)).href);
+const { abrirBanco } = await mod('server/src/banco/index.ts');
+const { campanhaPrincipal, porNaCampanha } = await mod('server/src/campanhas.ts');
+const b = await abrirBanco(); const db: any = await b.carregar();
+const camp = campanhaPrincipal(db); console.log('campanha:', camp.nome);
+for (const c of db.contas.filter((x: any) => /^teste[12]$/.test(x.nome))) console.log(c.nome, porNaCampanha(camp, c, 'jogador'));
+console.log(camp.membros.length, 'membros');
+await b.salvar(db); await b.fechar();

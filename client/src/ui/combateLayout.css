@@ -253,3 +253,14 @@ html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cc-ator-p .cc-foto 
 html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cc-ator-p .cc-perfil {
   gap: 0.5rem;
 }
+
+/* "Outras ações": o alvo e o botão "Escolher o alvo" ficam colados embaixo, sempre à vista, mesmo com a lista rolando
+   (09/11, a conferência na tela: no Olho do predador o botão ficava depois dos cartões, fora da tela) */
+.cb-modo-cards .vez-outras .cb-res-pe {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin-top: auto;
+  padding-top: 0.8rem;
+  background: linear-gradient(to bottom, transparent, rgba(7, 12, 24, 0.96) 0.8rem);
+}

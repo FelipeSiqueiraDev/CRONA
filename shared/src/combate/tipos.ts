@@ -493,5 +493,7 @@ export interface FichaAmeaca {
   presenca?: PresencaAmeaca;
   /** id da ameaça do livro de que a ficha veio (ameacasLivro.ts) */
   livro?: string;
+  /** deslocamento em metros (sem nada, 9 m): o quanto anda na ação de movimento e o dobro na investida */
+  deslocamento?: number;
   notas?: string;
 }

@@ -106,6 +106,24 @@ export function fichaDoPorco0611(db: Database): boolean {
   return true;
 }
 
+/**
+ * O deslocamento das fichas caseiras (09/11): o "Desloc. 12 m" estava só nas notas, e o menu do combate usava 9 m para
+ * todo mundo (a Ovelha andava 9 m em vez de 12). Passa o número das notas para o campo `deslocamento` (bestiário e fichas
+ * já editadas no combate).
+ */
+export function deslocamentoDasNotas0911(db: Database): boolean {
+  const d = db as Database & { desloc0911?: boolean };
+  if (d.desloc0911) return false;
+  d.desloc0911 = true;
+  const ajeita = (f: combate.FichaAmeaca) => {
+    const m = /desloc\.?\s*(\d+(?:[.,]\d+)?)\s*m(?![a-z])/i.exec(f.notas ?? '');
+    if (m && f.deslocamento === undefined) f.deslocamento = Number(m[1].replace(',', '.'));
+  };
+  for (const c of db.bestiario ?? []) ajeita(c.ficha);
+  for (const camp of Object.values(db.campaigns ?? {})) for (const f of Object.values(camp.ameacas ?? {})) ajeita(f);
+  return true;
+}
+
 export function dancaDasLaminas0111(db: Database): boolean {
   const d = db as Database & { danca0111?: boolean };
   if (d.danca0111) return false;

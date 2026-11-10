@@ -921,6 +921,24 @@ describe('ameaças do livro (LR p. 182–289)', () => {
     assert.equal(recusa(d, golpe(9, true)), 'A ação completa precisa do turno inteiro livre.');
   });
 
+  test('o deslocamento das notas ("Desloc. 12 m") vira o campo da ficha da ameaça, uma vez', async () => {
+    const { deslocamentoDasNotas0911 } = await import('../src/acougueiros');
+    const db = seedDb();
+    db.bestiario = [
+      { id: 'ovelha-x', nome: 'Ovelha', pv: 85, ficha: { ...combate.fichaAmeacaVazia(), notas: 'FOR 2. Desloc. 12 m, visão no escuro. Percepção 1d20+5.' }, aparencias: [] } as never,
+      { id: 'porco-x', nome: 'Porco', pv: 110, ficha: { ...combate.fichaAmeacaVazia(), notas: 'Desloc. 4,5 m, faro.' }, aparencias: [] } as never,
+      { id: 'sem-x', nome: 'Sem', pv: 10, ficha: { ...combate.fichaAmeacaVazia(), notas: 'nada de deslocamento aqui' }, aparencias: [] } as never,
+    ];
+    delete (db as { desloc0911?: boolean }).desloc0911;
+    assert.equal(deslocamentoDasNotas0911(db), true);
+    assert.deepEqual(db.bestiario.map((c) => c.ficha.deslocamento), [12, 4.5, undefined]);
+    assert.equal(deslocamentoDasNotas0911(db), false);
+    // a ficha relida pela rede guarda o deslocamento (e recusa o absurdo)
+    assert.equal(combate.lerFichaAmeaca({ ...db.bestiario[0].ficha })!.deslocamento, 12);
+    assert.equal(combate.lerFichaAmeaca({ ...db.bestiario[0].ficha, deslocamento: 9999 })!.deslocamento, 60);
+    assert.equal(combate.lerFichaAmeaca({ ...db.bestiario[0].ficha, deslocamento: 'x' })!.deslocamento, undefined);
+  });
+
   test('os golpes soltos da ficha ("Dança das Lâminas (1º)", "(2º)", "(3º)") viram a sequência', async () => {
     const { juntarSequencias } = await import('../src/acougueiros');
     const base = { nome: '', pericia: 'luta' as const, dados: 3, bonus: 0, dano: '1d6+3', tipo: 'corte' as const, margem: 20, multiplicador: 2, alcance: '1,5 m' };

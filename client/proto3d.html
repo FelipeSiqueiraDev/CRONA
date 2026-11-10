@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bar da Ordem em 3D</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #05060c;
+        overflow: hidden;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+      }
+      canvas#c {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+      canvas#c.pixelado {
+        image-rendering: pixelated;
+      }
+      #vinheta {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(ellipse at 50% 46%, rgba(0, 0, 0, 0) 44%, rgba(2, 2, 6, 0.78) 100%);
+      }
+      #hud {
+        position: fixed;
+        left: 14px;
+        bottom: 12px;
+        color: #e8d8b8;
+        font-size: 12px;
+        line-height: 1.55;
+        background: rgba(8, 8, 16, 0.62);
+        border: 1px solid rgba(232, 216, 184, 0.28);
+        border-radius: 8px;
+        padding: 8px 12px;
+        backdrop-filter: blur(4px);
+      }
+      #hud b {
+        color: #ffcf6a;
+        font-weight: 600;
+      }
+      #titulo {
+        position: fixed;
+        left: 14px;
+        top: 12px;
+        color: #f4e8cc;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-shadow: 0 1px 6px #000;
+      }
+      #titulo small {
+        display: block;
+        letter-spacing: 0.02em;
+        text-transform: none;
+        opacity: 0.7;
+        font-size: 11px;
+      }
+      #estado {
+        position: fixed;
+        right: 14px;
+        top: 12px;
+        color: #cdbd9a;
+        font-size: 11px;
+        text-align: right;
+        text-shadow: 0 1px 6px #000;
+      }
+      body.foto #hud,
+      body.foto #titulo,
+      body.foto #estado {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="vinheta"></div>
+    <div id="titulo">Sede da Ordem · Bar<small>protótipo 3D · só um tabuleiro</small></div>
+    <div id="estado"></div>
+    <div id="hud">
+      <b>arrastar</b> gira · <b>roda</b> zoom · <b>botão direito</b> move<br />
+      <b>1</b> visão geral · <b>2</b> mesa inclinada · <b>3</b> atrás do ombro (<b>3</b> de novo troca de agente) · <b>4</b> a porta<br />
+      <b>T</b> grade de 1,5 m · <b>C</b> clima (limpo, chuva, relâmpago) · <b>H</b> hora (noite, entardecer)<br /><b>P</b> pixelado (HD-2D) · <b>O</b> paleta posterizada · <code>?cidade=1</code> mostra a rua e os prédios<br /><b>K</b> standee ou pixel · <b>V</b> virar para a câmera · <b>G</b> os agentes giram no lugar · <code>?standee=chibi</code> testa as 8 direções
+    </div>
+    <script type="module" src="/src/bar3d/cena.ts"></script>
+  </body>
+</html>

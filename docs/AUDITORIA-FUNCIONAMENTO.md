@@ -74,3 +74,49 @@ O `fichaSalvar` troca a ficha inteira pela que o cliente mandou (`hotel.ts:1493`
 ## Código morto (sem efeito na tela)
 
 `chat`/`action` (o `hud.ts` e o `infostand.ts` não são criados), `walk`, `lookAt`, `tokenFace`, `layoutSet`, `capacitySet`, `scenes`, `userLook`, `client/src/ui/minimap.ts`. O registro do combate "na ordem trocada" (EM-ABERTO, 09/10) já foi feito em 17/10: o mais novo em cima, linha por linha.
+
+## Reconferida em 09/11
+
+Só leitura (nenhum código mudou nesta reconferência). Cada defeito foi procurado no código de hoje (branch `claude/campanhas`), com os commits de conserto de 27 e 28/10.
+
+| # | Defeito | Situação | Evidência |
+|---|---|---|---|
+| 1-6 | A: a ficha inteira por cima | corrigido | `shared/src/mesclarFicha.ts`; `fichaSalvar` mescla com a `base` (`hotel.ts:1632`) e a recusa reenvia a ficha (`recusa`, `hotel.ts:1635`); `clonarFicha`/`gravarFicha`/`rebasearFicha` em `client/src/fichaOrigem.ts`, usados em `fichas.ts`, `fichaCelular.ts` e `jogador.ts:215`; testes em `fichaSegura.test.ts` |
+| 7 | Reconexão | **em parte** | a fila espera o `welcome` (`net.ts:12-28`, `entrou()`) e o login preso saiu em `80f7d6ec`; continua sem ping nem `visibilitychange` na rede (só o desenho usa) |
+| 8 | A mesa recebia tudo | corrigido | `campanhaPublica` (`hotel.ts:2072`, `:3707`) |
+| 9 | O jogador passa por cima do mestre | corrigido | `fichaSalvar` restaura condições, `bonus`, `achado`, modificações e pedido fora da base (`hotel.ts:1637-1700`) |
+| 10 | Móveis/combate/`peek` | corrigido | `peek` só do mestre (`hotel.ts:2648-2655`); `trancado` e DT fora do cliente da mesa (`roomInstance.ts:758`); `cmb.visaoMesa` (`hotel.ts:2103`) |
+| 11 | Combate trava com todos fora | corrigido | `turnos.ts:1183` (`if (c.vez === null) proximo`) |
+| 12 | Registro preso em 400 | corrigido (e mudou) | `MAX_REGISTRO = 6` (`turnos.ts:34`); a tela acha a ação nova pela última linha |
+| 13 | Mensagens soltas | corrigido | ação `lote` (`turnos.ts:922`, `:1477`) |
+| 14 | Atrasar empatado | corrigido | `turnos.ts:1040` (usa a mesma Iniciativa, desempate) |
+| 15 | Investida sem a ação | corrigido | `combateAtaque.ts:742-744` pede o turno inteiro livre |
+| 16 | Desfazer por campanha | corrigido | a pilha zera em `abrir` (`hotel.ts:885`), PV pela diferença (`:860-870`) |
+| 17 | NPC com ficha entra como Agente | **aberto (de propósito)** | `ehAgente`/`fichaDoPersonagem` não filtram `npc` (`hotel.ts:1059`, `:1204`); só o 21 do bar já ignora ficha de NPC |
+| 18 | Texto do Desarmar | corrigido | `manobra.ts:29` ("o item cai na casa do alvo") |
+| 19 | Guardar móvel apaga o conteúdo | corrigido | `InvItem.dados` (`protocol.ts:405`), commit `c9b90a16` |
+| 20 | Atalhos valem em qualquer aba | corrigido | `main.ts` (comentários nas linhas que travam Delete, T e 1-9 na FICHAS) |
+| 21 | AMPLIAR/ESCONDER piscam | corrigido | `shell.ts:529-530`, `:789` (`.bv[data-tatico]`) |
+| 22 | ESCONDER e câmera não sobrevivem | corrigido (zoom da tática não conferido) | `telaEscondida` (`hotel.ts:228`), `camMestre` (`hotel.ts:178`) |
+| 23 | Painel da peça fecha ao agachar etc. | corrigido (por commit) | `c9b90a16` (`RoomView.ts`, `shell.ts`); não reproduzi na tela |
+| 24 | Item do móvel nunca é revelado | corrigido | botão `lootReveal` (`shell.ts:2091`) |
+| 25 | Menores | corrigido | `openState` (`shell.ts:1706`, `:2692`); objetivo recusado avisa (`hotel.ts:2154`); `mapaMundi.ts` tira os ouvintes ao fechar |
+| 26 | Componentes sem elemento | corrigido | `/\(elemento\)/i` em `shared/src/regras/requisicao.ts` (`b1d141a9`) |
+| 27 | "Adicionar mesmo assim" por carga | corrigido | decisão de 19/10, `naoCabe` (`hotel.ts:1172`) |
+| 28 | "Na mão" sem limite | corrigido | `regras.empunhar` (`fichas.ts:1902`) |
+| 29 | Ficha nova duplicada | corrigido | `fichas.ts:481` (sai uma vez só); `nova` só a quem criou (`hotel.ts:1614`) |
+| 30 | Item largado com nome antigo | corrigido (por commit) | `b1d141a9`; não achei o trecho de comparação para reler |
+| 31 | EQUIPAMENTO se empilha | corrigido | `avisouEquipamento` (`fichaCelular.ts:223-231`) |
+| 32 | Não-piscar | **em parte** | celular: `chaves` por seção (`jogador.ts:173`); Identificação da FICHAS do mestre: só pula o redesenho quando mudam números de jogo (`fichas.ts:297`, `soNumerosDeJogo`) |
+| 33 | "Pedir itens" não acompanha a cena | corrigido | `pecaMudouDeCena` (`hotel.ts:1604`, `roomInstance.ts:403`) |
+| 34 | Páginas em imagem pequenas | corrigido | `jogador.css:1979-2003` (70vh sem texto, ampliar com toque) |
+| 35 | Mestre sem tela de jogador no mesmo navegador | não é defeito | continua assim, só atrapalha o teste |
+
+**Resumo:** 32 de 35 corrigidos (ou nunca foram defeito), 2 em parte (7 e 32), 1 aberto de propósito (17).
+
+### Ainda abertos, do mais grave para o menos
+
+1. **#17 NPC com ficha entra como Agente** (médio): o Anárquico, a Camarilla e os da Ordem entram do lado dos agentes. Hoje o Felipe joga por eles, então só pesa se algum for inimigo. *Correção:* `ehAgente`/`fichaDoPersonagem` ignorarem `f.npc` (como o 21 já faz) e deixar o lado do NPC escolhível ao pôr no combate.
+2. **#7 Reconexão sem ping** (baixo-médio): celular dormindo continua com o socket morto até tentar enviar. *Correção:* `visibilitychange` + ping a cada ~25 s em `net.ts`, que reconecta se não vier resposta.
+3. **#32 Identificação da FICHAS do mestre ainda refaz a tela inteira** em mudança que não é só número de jogo (baixo): o toque pode se perder. *Correção:* guardar `chaves` por seção também em `fichas.ts`, como no celular.
+4. **#22 zoom da tática** (baixo, não conferido): confirmar se a mesa que reconecta recebe o zoom da vista tática, além da câmera. *Correção:* mandar o zoom junto de `camMestre`.
