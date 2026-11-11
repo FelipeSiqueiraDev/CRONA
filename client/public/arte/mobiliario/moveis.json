@@ -49842,5 +49842,471 @@
       }
     },
     "vooKv": 48.0
+  },
+  "porco_pendurado": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "porco_pendurado/giro-4.png",
+        "ax": 25.0,
+        "ay": 166.0
+      },
+      "2": {
+        "arquivo": "porco_pendurado/giro-2.png",
+        "ax": 23.0,
+        "ay": 166.0
+      },
+      "0": {
+        "arquivo": "porco_pendurado/giro-0.png",
+        "ax": 23.0,
+        "ay": 166.0
+      },
+      "6": {
+        "arquivo": "porco_pendurado/giro-6.png",
+        "ax": 25.0,
+        "ay": 166.0
+      }
+    },
+    "real": [
+      0.4,
+      0.75,
+      2.74
+    ],
+    "tampo": [
+      0.259,
+      0.504,
+      0.412,
+      0.465,
+      0.717
+    ]
+  },
+  "mesa_corte": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "mesa_corte/giro-4.png",
+        "ax": 37.0,
+        "ay": 110.0
+      },
+      "2": {
+        "arquivo": "mesa_corte/giro-2.png",
+        "ax": 102.0,
+        "ay": 110.0
+      },
+      "0": {
+        "arquivo": "mesa_corte/giro-0.png",
+        "ax": 37.0,
+        "ay": 110.0
+      },
+      "6": {
+        "arquivo": "mesa_corte/giro-6.png",
+        "ax": 102.0,
+        "ay": 110.0
+      }
+    },
+    "real": [
+      0.782,
+      2.241,
+      1.065
+    ],
+    "tampo": [
+      0.141,
+      0.61,
+      0.117,
+      2.134,
+      0.235
+    ]
+  },
+  "bloco_de_corte": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "bloco_de_corte/giro-4.png",
+        "ax": 32.0,
+        "ay": 64.0
+      },
+      "2": {
+        "arquivo": "bloco_de_corte/giro-2.png",
+        "ax": 32.0,
+        "ay": 66.0
+      },
+      "0": {
+        "arquivo": "bloco_de_corte/giro-0.png",
+        "ax": 32.0,
+        "ay": 61.0
+      },
+      "6": {
+        "arquivo": "bloco_de_corte/giro-6.png",
+        "ax": 32.0,
+        "ay": 60.0
+      }
+    },
+    "real": [
+      0.781,
+      0.578,
+      0.855
+    ],
+    "tampo": [
+      0.148,
+      0.594,
+      0.148,
+      0.605,
+      0.7
+    ]
+  },
+  "carrinho_de_carne": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "carrinho_de_carne/giro-4.png",
+        "ax": 36.0,
+        "ay": 69.0
+      },
+      "2": {
+        "arquivo": "carrinho_de_carne/giro-2.png",
+        "ax": 36.0,
+        "ay": 59.0
+      },
+      "0": {
+        "arquivo": "carrinho_de_carne/giro-0.png",
+        "ax": 36.0,
+        "ay": 59.0
+      },
+      "6": {
+        "arquivo": "carrinho_de_carne/giro-6.png",
+        "ax": 36.0,
+        "ay": 69.0
+      }
+    },
+    "real": [
+      0.644,
+      0.653,
+      0.79
+    ],
+    "tampo": [
+      0.108,
+      0.635,
+      0.108,
+      0.635,
+      0.624
+    ]
+  },
+  "tanque_de_escalda": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "tanque_de_escalda/giro-4.png",
+        "ax": 38.0,
+        "ay": 90.0
+      },
+      "2": {
+        "arquivo": "tanque_de_escalda/giro-2.png",
+        "ax": 70.0,
+        "ay": 90.0
+      },
+      "0": {
+        "arquivo": "tanque_de_escalda/giro-0.png",
+        "ax": 38.0,
+        "ay": 90.0
+      },
+      "6": {
+        "arquivo": "tanque_de_escalda/giro-6.png",
+        "ax": 70.0,
+        "ay": 90.0
+      }
+    },
+    "real": [
+      0.63,
+      1.42,
+      0.92
+    ],
+    "tampo": [
+      0.063,
+      0.684,
+      0.051,
+      1.457,
+      0.875
+    ]
+  },
+  "serra_de_fita": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "serra_de_fita/giro-4.png",
+        "ax": 36.0,
+        "ay": 98.0
+      },
+      "2": {
+        "arquivo": "serra_de_fita/giro-2.png",
+        "ax": 36.0,
+        "ay": 94.0
+      },
+      "0": {
+        "arquivo": "serra_de_fita/giro-0.png",
+        "ax": 36.0,
+        "ay": 102.0
+      },
+      "6": {
+        "arquivo": "serra_de_fita/giro-6.png",
+        "ax": 36.0,
+        "ay": 107.0
+      }
+    },
+    "real": [
+      0.728,
+      0.681,
+      1.5
+    ],
+    "tampo": [
+      0.096,
+      0.671,
+      0.096,
+      0.671,
+      0.38
+    ]
+  },
+  "porco_morto": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "porco_morto/giro-4.png",
+        "ax": 32.0,
+        "ay": 35.0
+      },
+      "2": {
+        "arquivo": "porco_morto/giro-2.png",
+        "ax": 33.0,
+        "ay": 37.0
+      },
+      "0": {
+        "arquivo": "porco_morto/giro-0.png",
+        "ax": 32.0,
+        "ay": 37.0
+      },
+      "6": {
+        "arquivo": "porco_morto/giro-6.png",
+        "ax": 33.0,
+        "ay": 38.0
+      }
+    },
+    "real": [
+      0.79,
+      0.517,
+      0.33
+    ],
+    "tampo": [
+      0.289,
+      0.552,
+      0.298,
+      0.459,
+      0.33
+    ]
+  },
+  "pilha_carvao": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "pilha_carvao/giro-4.png",
+        "ax": 89.0,
+        "ay": 102.0
+      },
+      "2": {
+        "arquivo": "pilha_carvao/giro-2.png",
+        "ax": 89.0,
+        "ay": 111.0
+      },
+      "0": {
+        "arquivo": "pilha_carvao/giro-0.png",
+        "ax": 89.0,
+        "ay": 143.0
+      },
+      "6": {
+        "arquivo": "pilha_carvao/giro-6.png",
+        "ax": 89.0,
+        "ay": 125.0
+      }
+    },
+    "real": [
+      2.034,
+      2.068,
+      1.34
+    ],
+    "tampo": [
+      0.545,
+      1.783,
+      0.627,
+      1.671,
+      0.465
+    ]
+  },
+  "fornalha": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "fornalha/giro-4.png",
+        "ax": 92.0,
+        "ay": 219.0
+      },
+      "2": {
+        "arquivo": "fornalha/giro-2.png",
+        "ax": 67.0,
+        "ay": 219.0
+      },
+      "0": {
+        "arquivo": "fornalha/giro-0.png",
+        "ax": 69.0,
+        "ay": 219.0
+      },
+      "6": {
+        "arquivo": "fornalha/giro-6.png",
+        "ax": 86.0,
+        "ay": 219.0
+      }
+    },
+    "real": [
+      1.654,
+      2.186,
+      3.4
+    ],
+    "tampo": [
+      0.348,
+      1.159,
+      1.41,
+      1.457,
+      1.06
+    ]
+  },
+  "fole": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "fole/giro-4.png",
+        "ax": 33.0,
+        "ay": 61.0
+      },
+      "2": {
+        "arquivo": "fole/giro-2.png",
+        "ax": 33.0,
+        "ay": 61.0
+      },
+      "0": {
+        "arquivo": "fole/giro-0.png",
+        "ax": 33.0,
+        "ay": 53.0
+      },
+      "6": {
+        "arquivo": "fole/giro-6.png",
+        "ax": 33.0,
+        "ay": 53.0
+      }
+    },
+    "real": [
+      0.37,
+      1.239,
+      0.688
+    ],
+    "tampo": [
+      0.219,
+      0.551,
+      0.078,
+      0.68,
+      0.34
+    ]
+  },
+  "escada_simples": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "escada_simples/giro-4.png",
+        "ax": 29.0,
+        "ay": 47.0
+      },
+      "2": {
+        "arquivo": "escada_simples/giro-2.png",
+        "ax": 61.0,
+        "ay": 47.0
+      },
+      "0": {
+        "arquivo": "escada_simples/giro-0.png",
+        "ax": 29.0,
+        "ay": 47.0
+      },
+      "6": {
+        "arquivo": "escada_simples/giro-6.png",
+        "ax": 61.0,
+        "ay": 47.0
+      }
+    },
+    "real": [
+      0.69,
+      1.44,
+      0.012
+    ]
+  },
+  "escada_simples_fria": {
+    "escala": 1,
+    "pixel": true,
+    "exato": true,
+    "codigo": true,
+    "giros": {
+      "4": {
+        "arquivo": "escada_simples_fria/giro-4.png",
+        "ax": 29.0,
+        "ay": 47.0
+      },
+      "2": {
+        "arquivo": "escada_simples_fria/giro-2.png",
+        "ax": 61.0,
+        "ay": 47.0
+      },
+      "0": {
+        "arquivo": "escada_simples_fria/giro-0.png",
+        "ax": 29.0,
+        "ay": 47.0
+      },
+      "6": {
+        "arquivo": "escada_simples_fria/giro-6.png",
+        "ax": 61.0,
+        "ay": 47.0
+      }
+    },
+    "real": [
+      0.69,
+      1.44,
+      0.012
+    ]
   }
 }

@@ -164,6 +164,8 @@ export interface Database {
   /** a montagem do Jardim do Fritz já aplicada no banco (24/10) */
   jardimFritzRev?: number;
   mansaoRev?: number;
+  /** o Frigorífico Albuquerque (Térreo e Área Gelada) já montado no banco (10/11) */
+  frigorificoRev?: number;
   /** o nome da campanha (a história inteira, em todos os lugares): "Segredos do Outro Lado" */
   nomeCampanha?: string;
   /** o bestiário (10/10): as criaturas, cada uma com uma ficha e várias aparências */

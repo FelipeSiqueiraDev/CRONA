@@ -2667,7 +2667,8 @@ export class RoomView {
     const dpr = this.dpr;
     const fr = this.frame_();
     const quadro = { x: fr.x * dpr, y: fr.y * dpr, w: fr.w * dpr, h: fr.h * dpr };
-    const e0 = enquadrar(map, quadro.w, quadro.h, 34 * dpr, quadro.x, quadro.y);
+    // o mapa improvisado (a planta de um lugar, como o Frigorífico) ocupa o quadro quase inteiro: margem curta, o mapa grande
+    const e0 = enquadrar(map, quadro.w, quadro.h, (info.mapa ? 8 : 34) * dpr, quadro.x, quadro.y);
     const z = this.tatZoom;
     const e = { x: z.dx + e0.x * z.k, y: z.dy + e0.y * z.k, casa: e0.casa * z.k };
     const camIso = { zoom: this.zoom * dpr, camX: this.cam.x * dpr, camY: this.cam.y * dpr };

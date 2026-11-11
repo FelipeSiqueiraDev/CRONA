@@ -34,6 +34,7 @@ import { montarTiradentes, TIRADENTES } from './seedTiradentes';
 import { montarSantaAmalia, SANTA_AMALIA } from './seedSantaAmalia';
 import { MANSAO, montarMansao } from './seedMansaoAlbuquerque';
 import { montarPedraSerena, PEDRA_SERENA } from './seedPedraSerena';
+import { montarFrigorifico } from './seedFrigorifico';
 import { JARDIM_FRITZ, montarJardimFritz } from './seedJardimFritz';
 import { coresDosAgentes, partyTokens, rebuildSede, seedSede, SEDE, temasDosAgentes } from './seedSede';
 import { aplicarFichasCris } from './seedFichasCris';
@@ -828,6 +829,7 @@ export function upgradeDb(db: Database): boolean {
     const mansao = montarMansao(db);
     const pedraSerena = montarPedraSerena(db);
     const jardimFritz = montarJardimFritz(db);
+    const frigorifico = montarFrigorifico(db);
     const cores = coresDosAgentes(db);
     const temas = temasDosAgentes(db);
     const van = vanNoLugar(db);
@@ -836,7 +838,7 @@ export function upgradeDb(db: Database): boolean {
     const npcs = npcsIniciais(db);
     const mesas = mesasMaisAltas(db);
     const postos = [postosMansao2410(db), postosSantaAmalia2510(db)].some(Boolean);
-    return postos || trancas || sede || fazenda || orfanato || santoBerco || igarape || tiradentes || santaAmalia || mansao || pedraSerena || jardimFritz || cores || temas || van || paredes || bestiario || npcs || mesas;
+    return postos || trancas || sede || fazenda || orfanato || santoBerco || igarape || tiradentes || santaAmalia || mansao || pedraSerena || jardimFritz || frigorifico || cores || temas || van || paredes || bestiario || npcs || mesas;
   }
   for (const r of db.rooms) {
     r.lightMode ??= 'normal';
@@ -923,6 +925,8 @@ export function upgradeDb(db: Database): boolean {
   montarPedraSerena(db);
   // o Jardim do Fritz, em Pedra Serena (24/10)
   montarJardimFritz(db);
+  // o Frigorífico Albuquerque, ligado ao Jardim da Mansão (10/11)
+  montarFrigorifico(db);
   coresDosAgentes(db);
   temasDosAgentes(db);
   paredesLivres(db);

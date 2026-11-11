@@ -318,7 +318,7 @@ export class RoomInstance {
     let sdir = fromRoomId !== null ? 3 : valid ? t.dir : d.dir;
     // descendo pela escada: a peça chega no pé dela, virada para a sala (em cima dos degraus, no chão, ela sumia atrás da escada);
     // subindo, chega na frente do vão da escada do andar de cima
-    const pe = back && /^(stairs_up|escada_desce|escada_vertical|escada_nobre|escada_nobre_desce|parede_escalada)$/.test(back.defId) ? this.stairFoot(back) : null;
+    const pe = back && /^(stairs_up|escada_desce|escada_simples|escada_simples_fria|escada_vertical|escada_nobre|escada_nobre_desce|parede_escalada)$/.test(back.defId) ? this.stairFoot(back) : null;
     if (pe) {
       [sx, sy] = [pe.x, pe.y];
       sdir = back!.rot;
