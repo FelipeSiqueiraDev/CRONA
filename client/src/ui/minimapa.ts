@@ -1457,7 +1457,16 @@ export class Minimapa {
       for (const [x, y] of doGrupo.casas) (fx += x + 0.5), (fy += y + 0.5);
       foco = [fx / doGrupo.casas.length, fy / doGrupo.casas.length, 0];
     }
-    const iso = this.camera(`p${p.id}/${a.nome}`, fit, W, H, foco, this.opc.grande ? 1.5 : 2, this.opc.grande ? 30 : 18);
+    // o zoom no cômodo do grupo é o que enquadra ELE inteiro no painel (antes era 2× fixo, e o Bar, que é grande, passava
+    // das bordas enquanto a peça, que é uma casa, sumia; 10/11, o Felipe)
+    let zoomAuto = this.opc.grande ? 1.5 : 2;
+    if (doGrupo?.casas.length) {
+      const mp: [number, number][] = [];
+      for (const [x, y] of doGrupo.casas) mp.push(Holo.proj(um, x, y), Holo.proj(um, x + 1, y + 1), Holo.proj(um, x + 1, y), Holo.proj(um, x, y + 1, PAREDE));
+      const sala = Holo.encaixarIso(mp, W, H - topo, pad * 1.6);
+      zoomAuto = Math.max(1, sala.S / fit.S);
+    }
+    const iso = this.camera(`p${p.id}/${a.nome}`, fit, W, H, foco, zoomAuto, this.opc.grande ? 40 : 28);
     this.S = iso.S;
     // um chão de grade embaixo do andar inteiro (a bandeja), bem fraco
     let x0 = Infinity;
@@ -1473,7 +1482,8 @@ export class Minimapa {
       }
     Holo.chao(ctx, iso, x0 - 1, y0 - 1, x1 - x0 + 2, y1 - y0 + 2, -0.05, 2, 0.55);
     const rotulos: { txt: string; x: number; y: number; tom: Holo.Tom }[] = [];
-    const pecaR = this.opc.grande ? 4 : 2.6;
+    // a peça ocupa uma casa: o ponto cresce com o zoom (com o cômodo todo à vista ele não some mais)
+    const pecaR = Math.max(this.opc.grande ? 4 : 2.6, Math.min(this.opc.grande ? 14 : 10, iso.S * 0.7));
     const ordem = [...comodos].sort((q, r) => Math.min(...q.casas.map(([x, y]) => x + y)) - Math.min(...r.casas.map(([x, y]) => x + y)));
     for (const c of ordem) {
       const atual = c.s.id === cur;
