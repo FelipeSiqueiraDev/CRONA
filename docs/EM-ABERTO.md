@@ -561,7 +561,7 @@ Ressalvas aceitas do revisor: Catarina armado com a lâmina espelhada entre ne e
 - **Arte dos monstros no tabuleiro** (8 direções, altura da Catarina): no jogo, o Diabo, a Magistrada, o Anfitrião e as 5 faces, o Deus da Morte em
   **lodo preto**, só o crânio claro, sem braçadeiras (v2), e os Existidos **dourados** no estilo dos outros bonecos (v5: marcas, olhos e boca brilhando
   em dourado, cabelo desgrenhado). Os de antes ficam em `arte\PERSONAGENS-ANIMACAO\trabalho\_backup-existidos-dourados`. O Deus da Morte no livro é
-  Médio (LR p. 230); o Felipe acha que ele é bem maior: decidir se ganha o tamanho Grande ou só a escala do desenho.
+  Médio (LR p. 230); decidido em 11/11: ele é Grande no tabuleiro (2 × 2 casas, 3 m), por decisão do Felipe, diferente do livro (`ameacasLivro.ts`).
 - **O Alosi no estilo dos monstros** foi desenhado só para comparar (`docs/alosi-antigo-e-novo.png`); não entrou no jogo. O Felipe decide se os
   Marcados e os NPCs vão para esse estilo ou se os monstros voltam ao dos NPCs.
 
