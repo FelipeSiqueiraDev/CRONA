@@ -228,12 +228,16 @@ export function montarCascaLowpoly(dados: DadosBar): Casca {
   const abrir = [{ z0: zp0, z1: zp1, y0: 0, y1: ALT_PORTA, porta: true }, ...JANELAS.map((j) => ({ ...j, y0: Y0J, y1: Y1J, porta: false }))].sort((a, b) => a.z0 - b.z0);
   const cortes = [zIni, ...abrir.flatMap((o) => [o.z0, o.z1]), zFim];
   const xm = xEsq - ESP / 2;
+  // cada parede no grupo dela, para sumir quando a câmera passa para trás dela
+  const gEsq = new THREE.Group();
+  const gFun = new THREE.Group();
+  grupo.add(gEsq, gFun);
   const parede = (a: number, b: number, y0: number, y1: number) => {
-    const bx = caixa(grupo, M.parede, xm, (y0 + y1) / 2, (a + b) / 2, ESP, y1 - y0, b - a);
+    const bx = caixa(gEsq, M.parede, xm, (y0 + y1) / 2, (a + b) / 2, ESP, y1 - y0, b - a);
     // o lambri (madeira) na altura até 0,9 m, só na face de dentro
     if (y0 < 0.9) {
       const topo = Math.min(y1, 0.9);
-      caixa(grupo, M.lambri, xEsq + 0.012, (y0 + topo) / 2, (a + b) / 2, 0.024, topo - y0, b - a, false);
+      caixa(gEsq, M.lambri, xEsq + 0.012, (y0 + topo) / 2, (a + b) / 2, 0.024, topo - y0, b - a, false);
     }
     void bx;
   };
@@ -246,27 +250,27 @@ export function montarCascaLowpoly(dados: DadosBar): Casca {
     else {
       if (o.y0 > 0.01) parede(a, b, 0, o.y0);
       parede(a, b, o.y1, ALT);
-      if (!o.porta) janela(grupo, a, b, o.y0, o.y1, xEsq, casca);
+      if (!o.porta) janela(gEsq, a, b, o.y0, o.y1, xEsq, casca);
     }
   }
   // parede do fundo
-  caixa(grupo, M.parede, (xEsq - ESP + xFim) / 2, ALT / 2, zIni - ESP / 2, xFim - xEsq + ESP, ALT, ESP);
-  caixa(grupo, M.lambri, (xEsq + xFim) / 2, 0.45, zIni + 0.012, xFim - xEsq, 0.9, 0.024, false);
+  caixa(gFun, M.parede, (xEsq - ESP + xFim) / 2, ALT / 2, zIni - ESP / 2, xFim - xEsq + ESP, ALT, ESP);
+  caixa(gFun, M.lambri, (xEsq + xFim) / 2, 0.45, zIni + 0.012, xFim - xEsq, 0.9, 0.024, false);
   // rodapé e friso de teto: só 2 caixas por parede, para dar o acabamento
-  caixa(grupo, M.friso, (xEsq + xFim) / 2, 0.9, zIni + 0.02, xFim - xEsq, 0.05, 0.04, false);
-  caixa(grupo, M.friso, (xEsq + xFim) / 2, ALT - 0.05, zIni + 0.03, xFim - xEsq, 0.1, 0.06, false);
+  caixa(gFun, M.friso, (xEsq + xFim) / 2, 0.9, zIni + 0.02, xFim - xEsq, 0.05, 0.04, false);
+  caixa(gFun, M.friso, (xEsq + xFim) / 2, ALT - 0.05, zIni + 0.03, xFim - xEsq, 0.1, 0.06, false);
   for (const [a, b] of [
     [zIni, zp0 - 0.07],
     [zp1 + 0.07, zFim],
   ]) {
-    caixa(grupo, M.friso, xEsq + 0.02, 0.9, (a + b) / 2, 0.04, 0.05, b - a, false);
-    caixa(grupo, M.friso, xEsq + 0.03, ALT - 0.05, (a + b) / 2, 0.06, 0.1, b - a, false);
+    caixa(gEsq, M.friso, xEsq + 0.02, 0.9, (a + b) / 2, 0.04, 0.05, b - a, false);
+    caixa(gEsq, M.friso, xEsq + 0.03, ALT - 0.05, (a + b) / 2, 0.06, 0.1, b - a, false);
   }
   // a porta
   const larg = zp1 - zp0;
-  caixa(grupo, M.batente, xm, ALT_PORTA / 2, zp0 + 0.02, ESP, ALT_PORTA, 0.04);
-  caixa(grupo, M.batente, xm, ALT_PORTA / 2, zp1 - 0.02, ESP, ALT_PORTA, 0.04);
-  caixa(grupo, M.batente, xm, ALT_PORTA - 0.02, zc, ESP, 0.04, larg);
+  caixa(gEsq, M.batente, xm, ALT_PORTA / 2, zp0 + 0.02, ESP, ALT_PORTA, 0.04);
+  caixa(gEsq, M.batente, xm, ALT_PORTA / 2, zp1 - 0.02, ESP, ALT_PORTA, 0.04);
+  caixa(gEsq, M.batente, xm, ALT_PORTA - 0.02, zc, ESP, 0.04, larg);
   const lFolha = 0.88;
   const folha = new THREE.Mesh(new THREE.BoxGeometry(0.04, 2.07, lFolha), M.porta);
   folha.geometry.translate(0, 0, lFolha / 2);
@@ -282,13 +286,32 @@ export function montarCascaLowpoly(dados: DadosBar): Casca {
   folha.rotation.y = -1.15;
   folha.castShadow = true;
   folha.receiveShadow = true;
-  grupo.add(folha);
+  gEsq.add(folha);
   casca.folhaPorta = folha;
-  caixa(grupo, mat('#6a5240'), xm, 0.015, zc, ESP + 0.04, 0.03, larg);
+  caixa(gEsq, mat('#6a5240'), xm, 0.015, zc, ESP + 0.04, 0.03, larg);
   for (const it of dados.parede) {
     const o = itemDeParede(it, dados, casca);
-    if (o) grupo.add(o);
+    if (o) (it.wall === 'l' ? gEsq : gFun).add(o);
   }
+  // as outras duas paredes (11/11, o Felipe: "no 3D a gente faz as 4 paredes"): a da direita e a da frente fecham o cômodo
+  // e somem sozinhas quando a câmera está do lado de fora delas (o corte de maquete só de onde se olha)
+  const gDir = new THREE.Group();
+  caixa(gDir, M.parede, xFim + ESP / 2, ALT / 2, (zIni + zFim) / 2, ESP, ALT, zFim - zIni + ESP * 2);
+  caixa(gDir, M.lambri, xFim - 0.012, 0.45, (zIni + zFim) / 2, 0.024, 0.9, zFim - zIni, false);
+  caixa(gDir, M.friso, xFim - 0.02, 0.9, (zIni + zFim) / 2, 0.04, 0.05, zFim - zIni, false);
+  caixa(gDir, M.friso, xFim - 0.03, ALT - 0.05, (zIni + zFim) / 2, 0.06, 0.1, zFim - zIni, false);
+  const gFre = new THREE.Group();
+  caixa(gFre, M.parede, (xEsq - ESP + xFim) / 2, ALT / 2, zFim + ESP / 2, xFim - xEsq + ESP, ALT, ESP);
+  caixa(gFre, M.lambri, (xEsq + xFim) / 2, 0.45, zFim - 0.012, xFim - xEsq, 0.9, 0.024, false);
+  caixa(gFre, M.friso, (xEsq + xFim) / 2, 0.9, zFim - 0.02, xFim - xEsq, 0.05, 0.04, false);
+  caixa(gFre, M.friso, (xEsq + xFim) / 2, ALT - 0.05, zFim - 0.03, xFim - xEsq, 0.1, 0.06, false);
+  grupo.add(gDir, gFre);
+  casca.paredesDeCorte = [
+    { obj: gDir, eixo: 'x', lim: xFim, lado: -1 },
+    { obj: gFre, eixo: 'z', lim: zFim, lado: -1 },
+    { obj: gEsq, eixo: 'x', lim: xEsq, lado: 1 },
+    { obj: gFun, eixo: 'z', lim: zIni, lado: 1 },
+  ];
   // a laje embaixo do piso: dá o corte de "maquete" sem nenhum prédio em volta
   const lw = xFim - xEsq + 0.5;
   const ld = zFim - zIni + 0.5;

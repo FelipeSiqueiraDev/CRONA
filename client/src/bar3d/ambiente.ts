@@ -28,6 +28,8 @@ export interface Casca {
   porta: { z0: number; z1: number };
   /** a folha da porta da rua (a interação abre e fecha; fechada = rotação 0, aberta = −1,15) */
   folhaPorta?: THREE.Mesh;
+  /** paredes da frente (low-poly): somem quando a câmera está do lado de fora delas, para ver o cômodo */
+  paredesDeCorte?: { obj: THREE.Object3D; eixo: 'x' | 'z'; lim: number; lado: 1 | -1 }[];
 }
 
 /** A madeira escura das molduras (rodapé, guarda-cadeira, moldura de teto, batentes). */

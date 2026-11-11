@@ -11,7 +11,8 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { Agente, AGENTES } from './agentes';
-import { montarCasca } from './ambiente';
+import { montarCasca, type Casca } from './ambiente';
+
 import { Clima, HORAS, TEMPOS } from './clima';
 import { CASA, carregarBar } from './dados';
 import { Interacao } from './interacao';
@@ -34,6 +35,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const cena = new THREE.Scene();
 cena.fog = new THREE.Fog('#120d22', 60, 150);
+let paredesDeCorte: NonNullable<Casca['paredesDeCorte']> = [];
 const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 400);
 
 const hemi = new THREE.HemisphereLight(LOWPOLY ? '#fff0d8' : '#4a5a9a', LOWPOLY ? '#b08a68' : '#7a4a26', 1.4);
@@ -199,6 +201,7 @@ async function iniciar() {
   // a cidade lá fora (rua, prédios, céu) só nas cenas ao ar livre ou com ?cidade=1; o bar é um interior fechado
   const CIDADE = params.get('cidade') === '1' || (dados.cena as unknown as { aberto?: boolean }).aberto === true;
   const casca = LOWPOLY ? montarCascaLowpoly(dados) : montarCasca(dados, CIDADE);
+  paredesDeCorte = casca.paredesDeCorte ?? [];
   cena.add(casca.grupo);
   ventiladores = casca.ventiladores;
   const moveis = await montarMoveis(dados);
@@ -335,6 +338,7 @@ function quadro(dt: number) {
     if (k >= 1) transicao = null;
   }
   controles.update();
+  for (const p of paredesDeCorte) p.obj.visible = ((p.eixo === 'x' ? camera.position.x : camera.position.z) - p.lim) * p.lado > 0.05;
   clima.atualizar(dt);
   interacao?.atualizar(dt, tempo);
   for (const a of agentes) a.atualizar(tempo, camera.position, dt);
