@@ -701,7 +701,8 @@ export class RoomInstance {
   /** Só o mestre controla a cena (o servidor decide pelo papel da conexão). */
   /** o mestre escondeu o tabuleiro da mesa (a tela de carregamento) */
   /** o último enquadramento do mestre nesta cena: a mesa que entra (ou recarrega) começa nele */
-  private camMestre: { cx: number; cy: number; w: number; h: number } | null = null;
+  /** a câmera do mestre; `tk`, `tx` e `ty` são o zoom da vista tática (k de 1 a 5) e o deslocamento, como fração do quadro (10/11) */
+  private camMestre: { cx: number; cy: number; w: number; h: number; tk?: number; tx?: number; ty?: number } | null = null;
 
   isOwner(c: Client) {
     return c.role === 'gm';
@@ -1132,7 +1133,9 @@ export class RoomInstance {
       case 'camMestre':
         // a câmera do mestre vai para a mesa (e para quem mais estiver vendo a cena)
         if (this.isOwner(u.client) && [m.cx, m.cy, m.w, m.h].every((v) => typeof v === 'number' && Number.isFinite(v)) && (m.w as number) > 0 && (m.h as number) > 0) {
-          this.camMestre = { cx: m.cx as number, cy: m.cy as number, w: m.w as number, h: m.h as number };
+          const nun = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+          const tk = nun(m.tk);
+          this.camMestre = { cx: m.cx as number, cy: m.cy as number, w: m.w as number, h: m.h as number, ...(tk !== undefined && tk >= 1 && tk <= 5 ? { tk, tx: Math.max(-10, Math.min(10, nun(m.tx) ?? 0)), ty: Math.max(-10, Math.min(10, nun(m.ty) ?? 0)) } : {}) };
           this.broadcast({ t: 'camMestre', ...this.camMestre }, u.client.id);
         }
         break;

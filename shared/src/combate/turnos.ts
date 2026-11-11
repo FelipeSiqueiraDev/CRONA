@@ -4,6 +4,7 @@
  * e devolvem uma cópia mudada, ou o motivo da recusa.
  */
 import { condicao as condicaoDoCatalogo } from '../regras/dados';
+import { limiteDoVital } from '../vitals';
 import { consequencia, consequenciaMental, consequenciaNaoLetal, dadoDaFalha, ehPessoa, METROS_POR_CASA, textoMetros } from './ataque';
 import { casasEmpurrao, empurraUmQuadrado, manobra as defManobra, type ManobraId } from './manobra';
 import {
@@ -1351,7 +1352,8 @@ export function aplicar(atual: Combate | null, a: AcaoCombate, ctx: Contexto): R
       const m: MudancaVitais = { id: p.id };
       const partes: string[] = [];
       for (const k of ['pv', 'pe', 'san'] as const) {
-        const n = inteiro(a[k], 0, 999);
+        // o PV passa de 999 (a Magistrada tem 1200, LR p. 252): o teto é o do `limiteDoVital`, e o máximo da peça manda
+        const n = inteiro(a[k], 0, limiteDoVital(k));
         if (n === undefined) continue;
         const novo = Math.min(v[`${k}Max`], n);
         if (novo === v[k]) continue;

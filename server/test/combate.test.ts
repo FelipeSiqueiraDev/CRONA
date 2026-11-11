@@ -684,6 +684,19 @@ describe('combate: ataque, PE, condições e ritual', () => {
     assert.deepEqual(r.vitais, [{ id: 3, pv: 1 }]);
     assert.equal(r.combate!.registro.at(-1)?.texto, 'Catarina: PV 0 → 1 (primeiros socorros).');
   });
+
+  test('o PV passa de 999: a Magistrada (1200) volta aos 1200 e cai abaixo dos 600 (10/11)', () => {
+    vitais.set(3, { pv: 650, pvMax: 1200 });
+    const c = aplicar(montado(), { tipo: 'comecar' });
+    const sobe = combate.aplicar(c, { tipo: 'vitais', id: 3, pv: 1200, motivo: 'volta aos 1200' }, ctx());
+    assert.ok(sobe.ok);
+    assert.deepEqual(sobe.vitais, [{ id: 3, pv: 1200 }]);
+    // o máximo da peça manda: pedir mais que o máximo fica no máximo
+    vitais.set(3, { pv: 650, pvMax: 1200 });
+    const topo = combate.aplicar(c, { tipo: 'vitais', id: 3, pv: 5000, motivo: 'teste' }, ctx());
+    assert.ok(topo.ok);
+    assert.deepEqual(topo.vitais, [{ id: 3, pv: 1200 }]);
+  });
 });
 
 describe('manobras: regras puras', () => {

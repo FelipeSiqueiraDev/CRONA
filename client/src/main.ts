@@ -853,7 +853,7 @@ window.addEventListener('keydown', (e) => {
     if (tableMode || app.state.role !== 'gm' || !app.state.room) return;
     const v = view.vistaDoMestre();
     if (!v) return;
-    const chave = `${app.state.room.id}:${v.cx}:${v.cy}:${v.w}:${v.h}`;
+    const chave = `${app.state.room.id}:${v.cx}:${v.cy}:${v.w}:${v.h}:${v.tk ?? ''}:${v.tx ?? ''}:${v.ty ?? ''}`;
     if (chave === ultima) return;
     ultima = chave;
     net.send({ t: 'camMestre', ...v });

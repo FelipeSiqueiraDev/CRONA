@@ -127,7 +127,7 @@ export function abrirRequisicao(r: Requisicao) {
   // ---------- as seções
   const secoes = h('nav', { class: 'rq-secoes', 'aria-label': 'Seções' });
   // ---------- a lista: busca, filtros e os cartões
-  const busca = h('input', { class: 'rq-busca-campo', type: 'search', placeholder: 'Procurar pelo nome ou pelo que faz…', 'aria-label': 'Procurar item' }) as HTMLInputElement;
+  const busca = h('input', { class: 'rq-busca-campo', type: 'search', placeholder: 'Buscar item ou efeito…', 'aria-label': 'Procurar item' }) as HTMLInputElement;
   const filtros = h('div', { class: 'rq-filtros' });
   const grade = h('div', { class: 'rq-grade', role: 'list' });
   const lista = h('section', { class: 'rq-lista' }, h('div', { class: 'rq-busca' }, ic('lupa'), busca), filtros, grade);

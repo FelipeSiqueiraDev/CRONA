@@ -792,11 +792,16 @@ export class RoomView {
 
   /** Escolhe o maior zoom em que o quarto inteiro cabe na tela e centraliza. */
   /** a câmera do mestre que a mesa segue (18/10): o centro e o pedaço do mundo que ele vê */
-  private camDoMestre: { cx: number; cy: number; w: number; h: number } | null = null;
+  private camDoMestre: { cx: number; cy: number; w: number; h: number; tk?: number; tx?: number; ty?: number } | null = null;
 
-  /** A mesa enquadra o mesmo pedaço do mundo que o mestre está vendo. */
-  seguirMestre(c: { cx: number; cy: number; w: number; h: number }) {
+  /** A mesa enquadra o mesmo pedaço do mundo que o mestre está vendo (e o zoom da vista tática, se ele a usa). */
+  seguirMestre(c: { cx: number; cy: number; w: number; h: number; tk?: number; tx?: number; ty?: number }) {
     this.camDoMestre = c;
+    if (this.tatico) {
+      const fr = this.frame_();
+      // o deslocamento do zoom tático vem como fração do quadro (os quadros do mestre e da mesa têm tamanhos diferentes)
+      this.tatZoom = c.tk && c.tk > 1 ? { k: c.tk, dx: (c.tx ?? 0) * fr.w * this.dpr, dy: (c.ty ?? 0) * fr.h * this.dpr } : { k: 1, dx: 0, dy: 0 };
+    }
     this.follow = false;
     this.autoFit = false;
     this.needFit = false;
@@ -809,11 +814,19 @@ export class RoomView {
   }
 
   /** O que o mestre está vendo agora (para mandar à mesa). */
-  vistaDoMestre(): { cx: number; cy: number; w: number; h: number } | null {
+  vistaDoMestre(): { cx: number; cy: number; w: number; h: number; tk?: number; tx?: number; ty?: number } | null {
     if (!this.map) return null;
     const f = this.frame_();
     if (!f.w || !f.h) return null;
-    return { cx: Math.round((f.x + f.w / 2 - this.cam.x) / this.zoom), cy: Math.round((f.y + f.h / 2 - this.cam.y) / this.zoom), w: Math.round(f.w / this.zoom), h: Math.round(f.h / this.zoom) };
+    const v: { cx: number; cy: number; w: number; h: number; tk?: number; tx?: number; ty?: number } = { cx: Math.round((f.x + f.w / 2 - this.cam.x) / this.zoom), cy: Math.round((f.y + f.h / 2 - this.cam.y) / this.zoom), w: Math.round(f.w / this.zoom), h: Math.round(f.h / this.zoom) };
+    // a vista tática tem o zoom e o deslocamento dela (zoomTatico): vão junto, para a mesa (que reconecta) ver o mesmo mapa
+    if (this.tatico) {
+      const z = this.tatZoom;
+      v.tk = Math.round(z.k * 100) / 100;
+      v.tx = z.k > 1 ? Math.round((z.dx / (f.w * this.dpr)) * 1000) / 1000 : 0;
+      v.ty = z.k > 1 ? Math.round((z.dy / (f.h * this.dpr)) * 1000) / 1000 : 0;
+    }
+    return v;
   }
 
   fit() {
