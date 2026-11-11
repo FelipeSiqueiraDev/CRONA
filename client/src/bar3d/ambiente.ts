@@ -26,6 +26,8 @@ export interface Casca {
   piso: [number, number, number, number];
   /** a abertura da porta, em metros (z0..z1 na parede esquerda) */
   porta: { z0: number; z1: number };
+  /** a folha da porta da rua (a interação abre e fecha; fechada = rotação 0, aberta = −1,15) */
+  folhaPorta?: THREE.Mesh;
 }
 
 /** A madeira escura das molduras (rodapé, guarda-cadeira, moldura de teto, batentes). */
@@ -568,6 +570,7 @@ export function montarCasca(dados: DadosBar, cidade = false): Casca {
   folha.castShadow = true;
   folha.receiveShadow = true;
   grupo.add(folha);
+  casca.folhaPorta = folha;
   const soleira = new THREE.Mesh(new THREE.BoxGeometry(ESPESSURA + 0.04, 0.03, larguraPorta), new THREE.MeshStandardMaterial({ color: '#5a4a3a', roughness: 0.85 }));
   soleira.position.set(xMeioParede, 0.015, zCentroPorta);
   soleira.receiveShadow = true;

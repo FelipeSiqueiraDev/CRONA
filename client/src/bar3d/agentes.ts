@@ -266,6 +266,17 @@ export class Agente {
     return melhor;
   }
 
+  /** Interação (protótipo): para onde o agente olha, em radianos no chão do jogo (atan2 de y, x); escolhe o sprite das 8 direções. */
+  olharPara(ang: number) {
+    this.olhaAng = ang;
+  }
+
+  /** Interação (protótipo): o balanço do passo e a altura do corpo (sentado desce) sem mexer na respiração. */
+  corpo(dy: number, rz: number) {
+    this.quadro.position.y = 0.04 + dy;
+    this.quadro.rotation.z = rz;
+  }
+
   atualizar(t: number, cam: THREE.Vector3, dt = 0) {
     if (Agente.girando) this.olhaAng += dt * 0.9;
     if (Agente.modo === 'ilustrado' && this.standees.size > 0) {

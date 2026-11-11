@@ -22,6 +22,10 @@ export interface Resultado {
   glb: number;
   /** os tipos que ainda usam a reserva */
   reserva: string[];
+  /** o que a medida do apoio achou para cada item que pousa em cima de outro móvel (para conferir) */
+  diag: { id: number; def: string; apoios: string[]; topo: number | null; faixas: [number, number][]; y: number }[];
+  /** cada móvel colocado (o grupo, o dado do jogo e a pegada), para a interação achar e mexer */
+  entradas: Entrada[];
 }
 
 const cor = (s: string | undefined, fallback: string) => new THREE.Color(s ?? fallback);
@@ -591,6 +595,95 @@ function halo(cor: string, tamanho: number, opacidade: number, x: number, y: num
   return sp;
 }
 
+// ---------------------------------------------------------------- os itens em cima dos móveis
+// O `z` que o jogo guarda é em unidades do jogo, de outro modelo de móvel: o copo "a 1,8" não cai na altura do tampo do
+// balcão de verdade (10/11, o Felipe: "os itens nas mesas estão flutuando, quero eles NA mesa"). A altura vem do que está
+// embaixo: um raio para baixo, sobre vários pontos da casa, acha o tampo REAL do modelo carregado (a moda das alturas, que
+// ignora garrafas e outros enfeites no meio) e a base do item (o mínimo da malha) pousa exatamente ali.
+export interface Entrada {
+  m: MobiBar;
+  def: DefBar;
+  g: THREE.Group;
+  sx: number;
+  sy: number;
+}
+
+/** Os tipos que nunca seguram nada (chão, luz, tapete e sujeira). */
+const NAO_APOIA = new Set(['rug', 'dirt', 'ceiling_lamp', 'floor_lamp', 'stairs_down']);
+
+/** As malhas sólidas de um grupo: sem o contorno, o halo e a sombra mole. */
+function malhasSolidas(o: THREE.Object3D): THREE.Mesh[] {
+  const lista: THREE.Mesh[] = [];
+  o.traverse((n) => {
+    const m = n as THREE.Mesh;
+    if (!m.isMesh || (m as unknown as { isSprite?: boolean }).isSprite) return;
+    if ((m.userData as { casca?: boolean }).casca) return;
+    const mt = m.material as THREE.Material | THREE.Material[];
+    const um = Array.isArray(mt) ? mt[0] : mt;
+    if (um && (um as THREE.MeshBasicMaterial).isMeshBasicMaterial) return; // a sombra mole e os brilhos de papel
+    lista.push(m);
+  });
+  return lista;
+}
+
+/** O ponto mais baixo (y do mundo) de um item, medido nas malhas sólidas. */
+function baseDe(g: THREE.Object3D): number {
+  g.updateWorldMatrix(true, true);
+  let min = Infinity;
+  const caixa = new THREE.Box3();
+  for (const m of malhasSolidas(g)) {
+    caixa.setFromObject(m, true);
+    if (!caixa.isEmpty()) min = Math.min(min, caixa.min.y);
+  }
+  return Number.isFinite(min) ? min : g.position.y;
+}
+
+const raio = new THREE.Raycaster();
+
+/** O tampo em que o item pousa (y do mundo), ou null se não há nada embaixo dele. */
+function topoDoApoio(e: Entrada, candidatos: Entrada[]): { topo: number; faixas: [number, number][]; apoios: string[] } | null {
+  const cx = e.g.position.x;
+  const cz = e.g.position.z;
+  const apoios = candidatos.filter((c) => {
+    if (c === e || NAO_APOIA.has(c.def.kind)) return false;
+    if (c.m.z >= e.m.z - 1e-6 && c.m.z > 0.01) return false;
+    return cx >= c.m.x * CASA - 1e-6 && cx <= (c.m.x + c.sx) * CASA + 1e-6 && cz >= c.m.y * CASA - 1e-6 && cz <= (c.m.y + c.sy) * CASA + 1e-6;
+  });
+  if (!apoios.length) return null;
+  const malhas = apoios.flatMap((c) => malhasSolidas(c.g));
+  const meia = Math.min(0.26, (Math.min(e.sx, e.sy) * CASA) / 2 - 0.04);
+  const alturas: number[] = [];
+  const passos = 5;
+  for (let i = 0; i < passos; i++) {
+    for (let k = 0; k < passos; k++) {
+      const x = cx + (i / (passos - 1) - 0.5) * 2 * meia;
+      const z = cz + (k / (passos - 1) - 0.5) * 2 * meia;
+      raio.set(new THREE.Vector3(x, 4, z), new THREE.Vector3(0, -1, 0));
+      raio.far = 8;
+      const acertos = raio.intersectObjects(malhas, false);
+      if (acertos.length) alturas.push(acertos[0].point.y);
+    }
+  }
+  if (!alturas.length) return null;
+  const nomes = apoios.map((c) => `${c.def.id}#${c.m.id}`);
+  // as alturas em faixas de 2 cm. O tampo é a faixa mais ALTA que cobre uma parte boa da casa (as garrafas e os enfeites no
+  // meio cobrem pouco e ficam de fora; o fundo de um engradado, que fica embaixo da borda, também)
+  const faixas = new Map<number, number[]>();
+  for (const y of alturas) {
+    const f = Math.round(y / 0.02);
+    (faixas.get(f) ?? faixas.set(f, []).get(f)!).push(y);
+  }
+  const lista = [...faixas.entries()].sort((a, b) => a[0] - b[0]);
+  const minimo = Math.max(2, Math.ceil(alturas.length * 0.12));
+  let escolhida = [...lista].reverse().find(([, ys]) => ys.length >= minimo)?.[1];
+  if (!escolhida) escolhida = [...lista].sort((a, b) => b[1].length - a[1].length || b[0] - a[0])[0][1];
+  return {
+    topo: escolhida.reduce((a, b) => a + b, 0) / escolhida.length,
+    faixas: lista.map(([f, ys]) => [Math.round(f * 2) / 100, ys.length] as [number, number]),
+    apoios: nomes,
+  };
+}
+
 export async function montarMoveis(dados: DadosBar): Promise<Resultado> {
   const grupo = new THREE.Group();
   const luzes: Luz[] = [];
@@ -604,6 +697,7 @@ export async function montarMoveis(dados: DadosBar): Promise<Resultado> {
   let glb = 0;
   const reservas = new Set<string>();
   const Z = dados.Z_PER_M;
+  const entradas: Entrada[] = [];
   let lampadas = 0;
   for (const m of dados.mobis) {
     const def = dados.defs[m.defId];
@@ -658,8 +752,27 @@ export async function montarMoveis(dados: DadosBar): Promise<Resultado> {
       g.add(r);
     }
     grupo.add(g);
+    entradas.push({ m, def, g, sx, sy });
   }
-  return { grupo, luzes, brilhos, glb, reserva: [...reservas] };
+  // os itens em cima de outros móveis (copo, caneca, cinzeiro, papéis, velas, computador, jarra, caixa empilhada...): do mais
+  // baixo para o mais alto, para o que está embaixo já estar no lugar quando o de cima for medido
+  grupo.updateMatrixWorld(true);
+  const diag: Resultado['diag'] = [];
+  const prontos = entradas.filter((e) => e.m.z <= 0.01);
+  const emCima = entradas.filter((e) => e.m.z > 0.01 && !NAO_APOIA.has(e.def.kind)).sort((a, b) => a.m.z - b.m.z || a.m.id - b.m.id);
+  for (const e of emCima) {
+    const achou = topoDoApoio(e, prontos);
+    if (achou) {
+      // a base do item no tampo, centrada: se a casa é a do apoio e ele cobre uma casa só, o centro da casa já é o do apoio
+      e.g.position.y = 0;
+      const base = baseDe(e.g);
+      e.g.position.y = achou.topo - base;
+      e.g.updateMatrixWorld(true);
+    }
+    diag.push({ id: e.m.id, def: e.def.id, apoios: achou?.apoios ?? [], topo: achou ? Math.round(achou.topo * 1000) / 1000 : null, faixas: achou?.faixas ?? [], y: Math.round(e.g.position.y * 1000) / 1000 });
+    prontos.push(e);
+  }
+  return { grupo, luzes, brilhos, glb, reserva: [...reservas], diag, entradas };
 }
 
 export type { MobiBar };

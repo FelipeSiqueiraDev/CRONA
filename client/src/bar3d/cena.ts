@@ -14,6 +14,7 @@ import { Agente, AGENTES } from './agentes';
 import { montarCasca } from './ambiente';
 import { Clima, HORAS, TEMPOS } from './clima';
 import { CASA, carregarBar } from './dados';
+import { Interacao } from './interacao';
 import { contorno, montarMoveis } from './moveis';
 
 const params = new URLSearchParams(location.search);
@@ -118,6 +119,7 @@ interface Visao {
 const CENTRO = new THREE.Vector3(8.2, 0.4, 5.5);
 let agentes: Agente[] = [];
 let ombro = 0;
+let interacao: Interacao | null = null;
 
 function visao(n: number): Visao {
   if (n === 1) return { pos: new THREE.Vector3(CENTRO.x + 12.8, 18.0, CENTRO.z + 13.6), alvo: new THREE.Vector3(CENTRO.x - 0.3, 0.2, CENTRO.z + 0.1), fov: 38 };
@@ -191,7 +193,7 @@ function mostrarEstado() {
 }
 
 async function iniciar() {
-  const { dados } = await carregarBar();
+  const { dados, mapa } = await carregarBar();
   // a cidade lá fora (rua, prédios, céu) só nas cenas ao ar livre ou com ?cidade=1; o bar é um interior fechado
   const CIDADE = params.get('cidade') === '1' || (dados.cena as unknown as { aberto?: boolean }).aberto === true;
   const casca = montarCasca(dados, CIDADE);
@@ -234,6 +236,27 @@ async function iniciar() {
   irPara(Number(params.get('cam') ?? (FOTO ? 1 : 2)), true);
   mostrarEstado();
 
+  // a interação: escolher, andar, objetos e a senha da geladeira (interacao.ts)
+  interacao = new Interacao({
+    cena,
+    camera,
+    controles,
+    canvas,
+    dados,
+    mapa,
+    agentes,
+    entradas: moveis.entradas,
+    lampadas: lampadasNoite,
+    brilhos: moveis.brilhos,
+    folhaPorta: casca.folhaPorta,
+    irPara: (n) => irPara(n),
+    camAtual: () => atual,
+    setOmbro: (i) => {
+      ombro = i;
+    },
+    mostrarEstado,
+  });
+
   // a console de depuração e das fotos
   const w = window as unknown as Record<string, unknown>;
   w.proto = {
@@ -251,8 +274,9 @@ async function iniciar() {
     ombro: (i: number) => ((ombro = i), irPara(3, true)),
     camera,
     controles,
+    interacao: interacao.api,
     renderizar: () => quadro(0.016),
-    info: () => ({ glb: moveis.glb, reserva: moveis.reserva, luzes: lampadasNoite.length, tri: renderer.info.render.triangles, chamadas: renderer.info.render.calls }),
+    info: () => ({ glb: moveis.glb, reserva: moveis.reserva, apoios: moveis.diag, luzes: lampadasNoite.length, tri: renderer.info.render.triangles, chamadas: renderer.info.render.calls }),
   };
   w.__pronto = false;
   pronto = true;
@@ -306,6 +330,7 @@ function quadro(dt: number) {
   }
   controles.update();
   clima.atualizar(dt);
+  interacao?.atualizar(dt, tempo);
   for (const a of agentes) a.atualizar(tempo, camera.position, dt);
   for (const v of ventiladores) v.rotation.z += dt * 4.5;
   // as chamas das velas e lâmpadas piscam de leve
