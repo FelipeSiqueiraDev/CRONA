@@ -9,6 +9,7 @@ import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { anguloDoGiro, CASA, pegada, type DadosBar, type DefBar, type MobiBar } from './dados';
 import { ALTURA_PAREDE } from './ambiente';
 import { sombraMole, tapete } from './texturas';
+import { LOWPOLY } from './estilo';
 
 type Luz = { luz: THREE.PointLight; base: number };
 
@@ -430,7 +431,7 @@ export function reserva(def: DefBar, luzes: Luz[], brilhos: Resultado['brilhos']
 const loader = new GLTFLoader();
 
 async function carregarGlb(defId: string): Promise<THREE.Object3D | null> {
-  const url = `/prototipo3d/modelos/${defId}.glb`;
+  const url = `/prototipo3d/${LOWPOLY ? 'lowpoly' : 'modelos'}/${defId}.glb`;
   try {
     const r = await fetch(url, { headers: { Accept: 'model/gltf-binary' }, cache: 'no-store' });
     if (!r.ok || (r.headers.get('content-type') ?? '').includes('html')) return null;
@@ -504,7 +505,40 @@ function comContorno(o: THREE.Object3D) {
  * filtro vizinho-mais-próximo (pixel nítido) e só ganha ajuste se vier brilhante demais; o que vem sem textura é forçado
  * ao fosco (rugosidade ≥ 0,68, metal ≤ 0,22, sem verniz nem reflexo do ambiente). O VIDRO é transparente e o EMISSIVO é moderado.
  */
+/** Low-poly: tudo fosco e chapado (sem textura, sem metal, sem reflexo), flat shading; só o vidro e o emissivo mudam. */
+function prepararLowpoly(o: THREE.Object3D, brilhos: Resultado['brilhos']) {
+  o.traverse((n) => {
+    const mesh = n as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    const lista = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    for (const base of lista) {
+      const m = base as THREE.MeshStandardMaterial;
+      if (!m || !('roughness' in m)) continue;
+      const nome = (m.name ?? '').toUpperCase();
+      m.flatShading = true;
+      m.roughness = 1;
+      m.metalness = 0;
+      m.envMapIntensity = 0;
+      m.map = null;
+      const fis = m as unknown as THREE.MeshPhysicalMaterial;
+      if ('specularIntensity' in fis) fis.specularIntensity = 0;
+      if (nome.includes('VIDRO') || nome.includes('POCA')) {
+        m.transparent = true;
+        m.depthWrite = false;
+        mesh.castShadow = false;
+      } else if (nome.includes('EMISSIVO') || nome.includes('NEON') || nome.includes('CHAMA')) {
+        m.emissiveIntensity = Math.max(m.emissiveIntensity, 0.9);
+        brilhos.push({ mat: m, base: m.emissiveIntensity });
+      }
+      m.needsUpdate = true;
+    }
+  });
+}
+
 function prepararGlb(o: THREE.Object3D, brilhos: Resultado['brilhos']) {
+  if (LOWPOLY) return prepararLowpoly(o, brilhos);
   o.traverse((n) => {
     const mesh = n as THREE.Mesh;
     if (!mesh.isMesh) return;
@@ -684,6 +718,29 @@ function topoDoApoio(e: Entrada, candidatos: Entrada[]): { topo: number; faixas:
   };
 }
 
+/** A poça de luz quente que uma lâmpada deixa no chão (low-poly): um círculo aditivo que some nas bordas, sem custo de luz. */
+let texPoca: THREE.CanvasTexture | null = null;
+function pocaDeLuz(yChao: number, raio = 1.5): THREE.Mesh {
+  if (!texPoca) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const g = c.getContext('2d')!;
+    const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gr.addColorStop(0, 'rgba(255,214,140,0.28)');
+    gr.addColorStop(0.55, 'rgba(255,200,120,0.1)');
+    gr.addColorStop(1, 'rgba(255,190,100,0)');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, 128, 128);
+    texPoca = new THREE.CanvasTexture(c);
+    texPoca.colorSpace = THREE.SRGBColorSpace;
+  }
+  const p = new THREE.Mesh(new THREE.PlaneGeometry(raio * 2, raio * 2), new THREE.MeshBasicMaterial({ map: texPoca, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  p.rotation.x = -Math.PI / 2;
+  p.position.y = yChao + 0.015;
+  p.renderOrder = 2;
+  return p;
+}
+
 export async function montarMoveis(dados: DadosBar): Promise<Resultado> {
   const grupo = new THREE.Group();
   const luzes: Luz[] = [];
@@ -714,6 +771,17 @@ export async function montarMoveis(dados: DadosBar): Promise<Resultado> {
       if (def.kind === 'ceiling_lamp') c.position.y = ALTURA_PAREDE;
       g.add(c);
       glb++;
+      if (LOWPOLY) {
+        // low-poly: ZERO luzes de ponto (barato em tablet). O calor vem da hemisférica + direcional e do brilho dos emissivos;
+        // cada lâmpada ganha só uma poça de luz no chão (um desenho aditivo) e um halo
+        if (def.kind === 'ceiling_lamp') {
+          g.add(halo('#ffcf8a', 0.9, 0.5, 0, ALTURA_PAREDE - 0.55, 0));
+          g.add(pocaDeLuz(-g.position.y));
+        } else if (def.kind === 'floor_lamp') {
+          g.add(halo('#ffbf70', 0.8, 0.45, 0, def.alturaM * 0.86, 0));
+          g.add(pocaDeLuz(-g.position.y, 1.1));
+        } else if (def.kind === 'candles') g.add(halo('#ffa850', 0.35, 0.5, 0, 0.17, 0));
+      } else {
       // o modelo não traz luz: as lâmpadas, as velas e o brilho das geladeiras vêm do mesmo lugar da reserva
       const luzesDaReserva: THREE.PointLight[] = [];
       reserva(def, luzes, []).traverse((o) => {
@@ -733,6 +801,7 @@ export async function montarMoveis(dados: DadosBar): Promise<Resultado> {
           luz.luz.shadow.normalBias = 0.03;
           luz.luz.shadow.radius = 6;
         }
+      }
       }
     } else {
       reservas.add(m.defId);

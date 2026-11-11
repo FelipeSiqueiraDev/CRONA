@@ -28,6 +28,9 @@ const CEUS: Record<(typeof HORAS)[number], Ceu> = {
   entardecer: { topo: '#232a68', meio: '#b0506c', baixo: '#f2a566', hemiCeu: '#c08aa8', hemiChao: '#8a5a38', hemi: 2.1, lua: '#ffb070', luaForca: 1.5, predios: 0.55, lampadas: 1.0, neblina: '#6a3e50', exposicao: 1.5 },
 };
 
+/** Low-poly: luz quente e suave de tarde dentro do bar (hemisférica clara + uma direcional leve), sem escurecer com a hora. */
+const CEU_LOWPOLY: Ceu = { topo: '#9fb3bd', meio: '#9fb3bd', baixo: '#9fb3bd', hemiCeu: '#fff0d8', hemiChao: '#b08a68', hemi: 2.3, lua: '#ffe2b4', luaForca: 2.2, predios: 0, lampadas: 1, neblina: '#9fb3bd', exposicao: 1 };
+
 function gradiente(topo: string, meio: string, baixo: string): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = 8;
@@ -132,7 +135,10 @@ export class Clima {
     private brilhosMoveis: { mat: THREE.MeshStandardMaterial; base: number }[],
     /** com cidade (cenas ao ar livre ou ?cidade=1) a chuva cai lá fora; sem ela (o bar), só o clarão e o som na janela */
     private cidade = false,
+    /** low-poly: céu fixo, claro e suave (a hora não escurece a sala) */
+    private lowpoly = false,
   ) {
+    if (lowpoly) this.corVidro.set('#ffffff');
     const N = 1500;
     this.gotas = new Float32Array(N * 6);
     this.velocidades = new Float32Array(N);
@@ -180,16 +186,17 @@ export class Clima {
   }
 
   private aplicar(inicial: boolean) {
-    const c = CEUS[HORAS[this.hora]];
+    const c = this.lowpoly ? CEU_LOWPOLY : CEUS[HORAS[this.hora]];
     this.alvo = c;
     const chuvoso = this.tempo > 0;
     // o céu (a imagem de fundo)
     const escuro = (cor: string) => new THREE.Color(cor).multiplyScalar(chuvoso ? 0.62 : 1).getStyle();
     const antiga = this.cena.background as THREE.Texture | null;
-    this.cena.background = this.cidade ? gradiente(escuro(c.topo), escuro(c.meio), escuro(c.baixo)) : gradiente('#040408', '#07060c', '#0b0910');
+    this.cena.background = this.lowpoly ? new THREE.Color('#9fb3bd') : this.cidade ? gradiente(escuro(c.topo), escuro(c.meio), escuro(c.baixo)) : gradiente('#040408', '#07060c', '#0b0910');
     antiga?.dispose();
     (this.cena.fog as THREE.Fog).color.set(c.neblina);
     if (!this.cidade) (this.cena.fog as THREE.Fog).color.set('#060509');
+    if (this.lowpoly) (this.cena.fog as THREE.Fog).color.set('#9fb3bd');
     (this.cena.fog as THREE.Fog).near = this.cidade ? (chuvoso ? 38 : 60) : 90;
     (this.cena.fog as THREE.Fog).far = this.cidade ? (chuvoso ? 95 : 150) : 220;
     this.chuva.visible = chuvoso && this.cidade;
@@ -197,7 +204,7 @@ export class Clima {
     // o vidro das janelas segue a hora (entardecer: um laranja de fora); sem cidade atrás é só um vidro escuro
     const vidro = HORAS[this.hora] === 'noite' ? new THREE.Color('#ffffff') : new THREE.Color('#ffc9a0').multiplyScalar(1.5);
     this.corVidro.copy(vidro).multiplyScalar(chuvoso ? 0.8 : 1);
-    for (const v of this.casca.vidros) v.color.copy(this.corVidro);
+    if (!this.lowpoly) for (const v of this.casca.vidros) v.color.copy(this.corVidro);
     this.hemi.color.set(c.hemiCeu);
     this.hemi.groundColor.set(c.hemiChao);
     this.lua.color.set(c.lua);
@@ -253,10 +260,10 @@ export class Clima {
       this.hemi.color.copy(this.corAlvo.hemi).lerp(new THREE.Color('#e8f0ff'), Math.min(1, f * k * 3));
       this.renderer.toneMappingExposure = c.exposicao + f * 0.35 * (this.cidade ? 1 : 0.4);
       for (const l of this.casca.luzesJanela) l.intensity = f * 18;
-      for (const v of this.casca.vidros) v.color.setScalar(1 + f * 5);
+      if (!this.lowpoly) for (const v of this.casca.vidros) v.color.setScalar(1 + f * 5);
     } else {
       for (const l of this.casca.luzesJanela) l.intensity = 0;
-      for (const v of this.casca.vidros) v.color.copy(this.corVidro);
+      if (!this.lowpoly) for (const v of this.casca.vidros) v.color.copy(this.corVidro);
       this.hemi.intensity = c.hemi * (chuvoso ? 0.78 : 1);
       this.lua.intensity = c.luaForca * (chuvoso ? 0.55 : 1);
       this.hemi.color.copy(this.corAlvo.hemi);

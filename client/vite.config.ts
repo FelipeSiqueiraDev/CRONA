@@ -9,6 +9,8 @@ export default defineConfig({
     strictPort: true,
     // o tablet da mesa abre pela rede (http://IP-deste-computador:5173/?mesa)
     host: true,
+    // o túnel da Cloudflare (o protótipo 3D visto de fora)
+    allowedHosts: true,
     // Pastas sincronizadas (OneDrive) às vezes perdem eventos de arquivo.
     watch: { usePolling: true, interval: 250 },
     proxy: {

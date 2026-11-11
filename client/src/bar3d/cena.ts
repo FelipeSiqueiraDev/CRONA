@@ -16,6 +16,8 @@ import { Clima, HORAS, TEMPOS } from './clima';
 import { CASA, carregarBar } from './dados';
 import { Interacao } from './interacao';
 import { contorno, montarMoveis } from './moveis';
+import { LOWPOLY } from './estilo';
+import { montarCascaLowpoly } from './lowpoly';
 
 const params = new URLSearchParams(location.search);
 const FOTO = params.has('foto');
@@ -25,22 +27,22 @@ const canvas = document.getElementById('c') as HTMLCanvasElement;
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: FOTO });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.type = LOWPOLY ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+renderer.toneMapping = LOWPOLY ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = LOWPOLY ? 1 : 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const cena = new THREE.Scene();
 cena.fog = new THREE.Fog('#120d22', 60, 150);
 const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 400);
 
-const hemi = new THREE.HemisphereLight('#4a5a9a', '#7a4a26', 1.4);
+const hemi = new THREE.HemisphereLight(LOWPOLY ? '#fff0d8' : '#4a5a9a', LOWPOLY ? '#b08a68' : '#7a4a26', 1.4);
 cena.add(hemi);
 const lua = new THREE.DirectionalLight('#8aa4ff', 0.55);
-lua.position.set(-12, 22, -9);
+lua.position.set(LOWPOLY ? 14 : -12, 22, LOWPOLY ? 16 : -9);
 lua.target.position.set(8, 0, 5.5);
 lua.castShadow = true;
-lua.shadow.mapSize.set(2048, 2048);
+lua.shadow.mapSize.set(LOWPOLY ? 1024 : 2048, LOWPOLY ? 1024 : 2048);
 const sc = lua.shadow.camera;
 sc.left = -14;
 sc.right = 14;
@@ -65,7 +67,7 @@ let composer: EffectComposer | null = null;
 let bloom: UnrealBloomPass | null = null;
 
 // HD-2D: o quadro é desenhado em 1/PX do tamanho da tela e sobe com o filtro vizinho-mais-próximo (tecla P liga e desliga)
-const PX_PADRAO = Math.max(1, Math.min(4, Number(params.get('px') ?? 2)));
+const PX_PADRAO = Math.max(1, Math.min(4, Number(params.get('px') ?? (LOWPOLY ? 1 : 2))));
 let pixelado = PX_PADRAO > 1;
 const fatorPx = () => (pixelado ? PX_PADRAO : 1);
 function tamanho() {
@@ -196,7 +198,7 @@ async function iniciar() {
   const { dados, mapa } = await carregarBar();
   // a cidade lá fora (rua, prédios, céu) só nas cenas ao ar livre ou com ?cidade=1; o bar é um interior fechado
   const CIDADE = params.get('cidade') === '1' || (dados.cena as unknown as { aberto?: boolean }).aberto === true;
-  const casca = montarCasca(dados, CIDADE);
+  const casca = LOWPOLY ? montarCascaLowpoly(dados) : montarCasca(dados, CIDADE);
   cena.add(casca.grupo);
   ventiladores = casca.ventiladores;
   const moveis = await montarMoveis(dados);
@@ -208,16 +210,19 @@ async function iniciar() {
   await Promise.all(agentes.map((a) => a.carregar()));
   for (const a of agentes) cena.add(a.grupo);
 
-  clima = new Clima(cena, renderer, hemi, lua, casca, moveis.luzes, moveis.brilhos, CIDADE);
+  clima = new Clima(cena, renderer, hemi, lua, casca, moveis.luzes, moveis.brilhos, CIDADE, LOWPOLY);
   // os brilhos da casca (letreiro, TV) entram na mesma hora
   for (const b of casca.brilhosDeParede) moveis.brilhos.push(b);
 
-  composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, samples: 4 }));
-  composer.addPass(new RenderPass(cena, camera));
-  bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.28, 0.45, 1.1);
-  composer.addPass(bloom);
-  composer.addPass(new OutputPass());
-  composer.addPass(POSTER);
+  // low-poly: SEM pós-processo (sem bloom, sem posterização): o quadro vai direto para a tela, o mais barato possível
+  if (!LOWPOLY) {
+    composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, samples: 4 }));
+    composer.addPass(new RenderPass(cena, camera));
+    bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.28, 0.45, 1.1);
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
+    composer.addPass(POSTER);
+  }
   tamanho();
 
   // o que veio na URL
@@ -273,6 +278,7 @@ async function iniciar() {
     poster: (v?: boolean) => alternarPoster(v),
     ombro: (i: number) => ((ombro = i), irPara(3, true)),
     camera,
+    cena,
     controles,
     interacao: interacao.api,
     renderizar: () => quadro(0.016),

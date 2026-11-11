@@ -6,6 +6,7 @@
  * suavizada), o que pega luz e dá paralaxe quando a câmera gira. O contorno exato vem do `alphaTest` da textura.
  */
 import * as THREE from 'three';
+import { LOWPOLY } from './estilo';
 
 export interface Standee {
   grupo: THREE.Group;
@@ -16,7 +17,7 @@ export interface Standee {
 }
 
 /** células na altura da figura (a célula tem ALTURA / CELULAS ≈ 8 mm) */
-const CELULAS = 220;
+const CELULAS = LOWPOLY ? 110 : 220; // low-poly: malha 7x mais leve (o recorte fica facetado, como o resto)
 /** espessura total (m) na borda e a mais no miolo */
 const BORDA = 0.03;
 const MIOLO = 0.06;
