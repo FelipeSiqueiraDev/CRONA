@@ -5,7 +5,10 @@
  */
 import * as THREE from 'three';
 import { CASA, centroDa } from './dados';
+import { CASAS_POR_SEGUNDO } from './caminho3d';
 import { construirStandee, type Standee } from './standee';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { LOWPOLY } from './estilo';
 import { sombraMole } from './texturas';
 
 export interface AgenteDef {
@@ -47,7 +50,22 @@ const ESPELHO: Record<string, string> = { s: 's', n: 'n', e: 'w', w: 'e', se: 's
  */
 const FONTE_STANDEE = new URLSearchParams(location.search).get('standee');
 const urlStandee = (pasta: string, d: string) =>
-  FONTE_STANDEE === 'chibi' ? `/arte/personagens/${pasta}/tabuleiro-32bits/idle-desarmado-${d}.png` : `/arte/personagens/${pasta}/standee-${d}.png`;
+  FONTE_STANDEE === 'chibi'
+    ? `/arte/personagens/${pasta}/tabuleiro-32bits/idle-desarmado-${d}.png`
+    : LOWPOLY
+      ? `/arte/personagens/${pasta}/standee-lp-${d}.png` // a folha low-poly do personagem (11/11), recortada por `scripts/3d/lowpoly/folha_standee.mjs`
+      : `/arte/personagens/${pasta}/standee-${d}.png`;
+
+/**
+ * O agente como MALHA 3D de verdade (11/11): o GLB low-poly animado (`scripts/3d/lowpoly/personagem_alosi.py`) no lugar do
+ * standee. Liga sozinho no estilo lowpoly para quem tem modelo; `?agente3d=0` volta ao standee, `?agente3d=1` liga também fora do lowpoly.
+ */
+const PARAM_3D = new URLSearchParams(location.search).get('agente3d');
+const USA_3D = PARAM_3D === '1' || (LOWPOLY && PARAM_3D !== '0');
+const COM_MODELO = new Set(['alosi']);
+const URL_MODELO = (pasta: string) => `/prototipo3d/lowpoly/personagens/${pasta}.glb`;
+/** o passo do clipe Walk cobre 1,6 m por ciclo de 1 s */
+const M_POR_CICLO_WALK = 1.6;
 
 /** A altura do recorte em metros: gente do livro, 1,80 m. */
 const ALTURA = 1.8;
@@ -142,6 +160,15 @@ export class Agente {
   static virarParaCamera = true;
   /** os agentes giram devagar no lugar (tecla G), para ver a troca das direções */
   static girando = false;
+  /** os agentes com modelo 3D seguram o grimório aberto (clipe Armado_idle); tecla F */
+  static armado = new URLSearchParams(location.search).get('armado') === '1';
+  /** o modelo 3D animado, se houver */
+  private modelo: THREE.Object3D | null = null;
+  private mixer: THREE.AnimationMixer | null = null;
+  private acoes = new Map<string, THREE.AnimationAction>();
+  private clipeAtual = '';
+  private mov = 0;
+  private caido = false;
   /** um standee por direção desenhada (o relevo sai do contorno de cada uma) */
   private standees = new Map<string, Standee>();
   private standeeAtual = '';
@@ -227,7 +254,51 @@ export class Agente {
       this.standees.set(f[0], st);
       this.quadro.add(st.grupo);
     }
+    if (USA_3D && COM_MODELO.has(this.def.pasta)) {
+      try {
+        const gltf = await new GLTFLoader().loadAsync(URL_MODELO(this.def.pasta));
+        const m = gltf.scene;
+        m.traverse((n) => {
+          const me = n as THREE.Mesh;
+          if (!me.isMesh) return;
+          me.castShadow = true;
+          me.receiveShadow = false;
+          me.frustumCulled = false;
+          for (const mt of Array.isArray(me.material) ? me.material : [me.material]) {
+            const st = mt as THREE.MeshStandardMaterial;
+            st.flatShading = true;
+            st.roughness = 1;
+            st.metalness = 0;
+            st.map = null;
+            st.needsUpdate = true;
+          }
+        });
+        this.modelo = m;
+        this.quadro.add(m);
+        this.mixer = new THREE.AnimationMixer(m);
+        for (const c of gltf.animations) this.acoes.set(c.name, this.mixer.clipAction(c));
+        this.tocar('Idle', 0);
+      } catch (e) {
+        console.warn('modelo 3D do agente não carregou, fica o standee', e);
+      }
+    }
     this.aplicarModo();
+  }
+
+  /** Troca o clipe com um fio de mistura. */
+  private tocar(nome: string, fade = 0.25) {
+    if (nome === this.clipeAtual) return;
+    const nova = this.acoes.get(nome);
+    if (!nova) return;
+    const velha = this.acoes.get(this.clipeAtual);
+    nova.reset().setEffectiveWeight(1).play();
+    if (velha) velha.crossFadeTo(nova, fade, false);
+    this.clipeAtual = nome;
+  }
+
+  /** Marca o agente como caído (clipe Caido) ou de pé de novo. */
+  definirCaido(v: boolean) {
+    this.caido = v;
   }
 
   /** A direção k, se dá para mostrar: desenhada, ou o espelho de uma desenhada. */
@@ -240,8 +311,10 @@ export class Agente {
 
   /** Mostra o pixel ou o standee, conforme `Agente.modo`. */
   aplicarModo() {
-    const ilus = Agente.modo === 'ilustrado' && this.standees.size > 0;
-    this.recorte.visible = !ilus;
+    const m3 = !!this.modelo && Agente.modo === 'ilustrado';
+    if (this.modelo) this.modelo.visible = m3;
+    const ilus = !m3 && Agente.modo === 'ilustrado' && this.standees.size > 0;
+    this.recorte.visible = !ilus && !m3;
     for (const [k, st] of this.standees) st.grupo.visible = ilus && k === this.standeeAtual;
   }
 
@@ -272,13 +345,31 @@ export class Agente {
   }
 
   /** Interação (protótipo): o balanço do passo e a altura do corpo (sentado desce) sem mexer na respiração. */
-  corpo(dy: number, rz: number) {
+  corpo(dy: number, rz: number, mov = 0, sentDy = 0) {
+    this.mov = mov;
+    if (this.modelo) {
+      // o modelo balança sozinho no passo (clipe Walk): só a altura de sentado vem de fora
+      this.quadro.position.y = 0.04 + sentDy;
+      this.quadro.rotation.z = 0;
+      return;
+    }
     this.quadro.position.y = 0.04 + dy;
     this.quadro.rotation.z = rz;
   }
 
   atualizar(t: number, cam: THREE.Vector3, dt = 0) {
     if (Agente.girando) this.olhaAng += dt * 0.9;
+    if (this.modelo && this.mixer && Agente.modo === 'ilustrado') {
+      const andando = this.mov > 0.15;
+      const nome = this.caido ? 'Caido' : andando ? 'Walk' : Agente.armado ? 'Armado_idle' : 'Idle';
+      this.tocar(nome);
+      const w = this.acoes.get('Walk');
+      if (w) w.timeScale = andando ? (CASAS_POR_SEGUNDO * CASA) / M_POR_CICLO_WALK : 1;
+      this.mixer.update(dt);
+      // o modelo olha para onde anda (a frente dele é +Z; o olhar vem do chão do jogo: x e y viram x e z)
+      this.quadro.rotation.y = Math.atan2(Math.cos(this.olhaAng), Math.sin(this.olhaAng));
+      return;
+    }
     if (Agente.modo === 'ilustrado' && this.standees.size > 0) {
       // a ilustração da direção que a câmera vê (como os tokens da referência: girando, aparecem o perfil e as costas)
       const disp = this.disponivel(this.escolher(cam, (d) => !!this.disponivel(d)))!;

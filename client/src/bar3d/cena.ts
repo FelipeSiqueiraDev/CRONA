@@ -276,6 +276,9 @@ async function iniciar() {
     pixel: (v?: boolean) => alternarPixel(v),
     personagem: (v?: 'pixel' | 'ilustrado') => alternarPersonagem(v),
     virar: (v?: boolean) => alternarVirar(v),
+    agentes,
+    armado: (v?: boolean) => (Agente.armado = v ?? !Agente.armado),
+    caido: (i: number, v = true) => agentes[i].definirCaido(v),
     girar: (v?: boolean) => ((Agente.girando = v ?? !Agente.girando), mostrarEstado()),
     clarao: () => clima.clarao(),
     poster: (v?: boolean) => alternarPoster(v),
@@ -369,6 +372,7 @@ window.addEventListener('keydown', (e) => {
   else if (e.key === 'o' || e.key === 'O') alternarPoster();
   else if (e.key === 'k' || e.key === 'K') alternarPersonagem();
   else if (e.key === 'v' || e.key === 'V') alternarVirar();
+  else if (e.key === 'f' || e.key === 'F') ((Agente.armado = !Agente.armado), mostrarEstado());
   else if (e.key === 'g' || e.key === 'G') ((Agente.girando = !Agente.girando), mostrarEstado());
 });
 

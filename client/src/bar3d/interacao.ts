@@ -851,7 +851,7 @@ export class Interacao {
       rt.a.def.olha[1] = Math.sin(rt.ang);
       const bob = Math.abs(Math.sin(rt.passo)) * 0.026 * rt.mov;
       const sway = Math.sin(rt.passo) * 0.04 * rt.mov;
-      rt.a.corpo(rt.sentDy + bob, sway);
+      rt.a.corpo(rt.sentDy + bob, sway, rt.mov, rt.sentDy);
     });
   }
 
