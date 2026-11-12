@@ -553,7 +553,7 @@ export type ClientMsg =
   /** ponto de atenção ou desenho rápido para a mesa (só o mestre; some sozinho) */
   | { t: 'marca'; marca: MarcaMesa }
   /** a câmera do mestre (o centro e o pedaço do mundo que ele vê, em pixels do iso): a mesa enquadra igual (18/10) */
-  | { t: 'camMestre'; cx: number; cy: number; w: number; h: number }
+  | { t: 'camMestre'; cx: number; cy: number; w: number; h: number; tk?: number; tx?: number; ty?: number }
   /** o mestre esconde o tabuleiro da mesa atrás da tela de carregamento (18/10) */
   | { t: 'telaEscondida'; on: boolean }
   /** o mestre acerta a pose sentada de um personagem numa direção (28/10): [dx, dy] em pixels do tabuleiro; 0, 0 tira */
@@ -678,7 +678,7 @@ export type ServerMsg =
   /** ponto de atenção ou desenho do mestre, para todos que olham a cena */
   | { t: 'marca'; marca: MarcaMesa }
   /** a câmera do mestre (o centro e o pedaço do mundo que ele vê, em pixels do iso): a mesa enquadra igual (18/10) */
-  | { t: 'camMestre'; cx: number; cy: number; w: number; h: number }
+  | { t: 'camMestre'; cx: number; cy: number; w: number; h: number; tk?: number; tx?: number; ty?: number }
   /** o mestre esconde o tabuleiro da mesa atrás da tela de carregamento (18/10) */
   | { t: 'telaEscondida'; on: boolean }
   /** a peça entrou numa sombra e saiu noutra (a animação, para todos que olham a cena; a posição nova vem em `status`) */

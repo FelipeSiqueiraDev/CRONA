@@ -44,11 +44,13 @@ describe("Mansão Albuquerque", () => {
   });
 
   test("toda passagem leva a outra sala da mansão, que tem a volta, e todas se alcançam a partir do jardim", () => {
-    const ids = new Set(salas.map((r) => r.id));
+    // o Jardim tem a Entrada para a Rua do Frigorífico Albuquerque (outro lugar, fora da mansão): o destino conta
+    const todas = db.rooms.filter((r) => r.name.startsWith(MANSAO) || r.name.startsWith("Frigorífico Albuquerque"));
+    const ids = new Set(todas.map((r) => r.id));
     for (const r of salas)
       for (const it of r.items.filter((i) => getFurni(i.defId)?.portal)) {
         assert.ok(it.link !== undefined && ids.has(it.link), `${r.name}: passagem ${it.defId} em ${it.x},${it.y} sem destino`);
-        const volta = salas.find((s) => s.id === it.link)!;
+        const volta = todas.find((s) => s.id === it.link)!;
         assert.ok(volta.items.some((i) => i.link === r.id), `${volta.name} não volta para ${r.name}`);
       }
     const vistos = new Set([porNome("Jardim").id]);
@@ -58,10 +60,11 @@ describe("Mansão Albuquerque", () => {
       for (const it of r.items)
         if (it.link !== undefined && !vistos.has(it.link)) {
           vistos.add(it.link);
-          fila.push(salas.find((s) => s.id === it.link)!);
+          const prox = salas.find((s) => s.id === it.link);
+          if (prox) fila.push(prox);
         }
     }
-    assert.equal(vistos.size, salas.length, "alguma sala ficou sem caminho");
+    assert.equal([...vistos].filter((id) => salas.some((s) => s.id === id)).length, salas.length, "alguma sala ficou sem caminho");
   });
 
   test("as escadas ligam os andares: as duas escadarias do Salão sobem ao Hall Superior, a parede de escalada leva ao mezanino", () => {

@@ -200,3 +200,25 @@ describe('mapa improvisado', () => {
     assert.ok(g.largura * g.altura <= 9000);
   });
 });
+
+describe('a câmera do mestre (com o zoom da vista tática)', () => {
+  test('o zoom tático vai para a mesa, e a mesa que entra depois já recebe o mesmo enquadramento', () => {
+    gm.send({ t: 'camMestre', cx: 100, cy: 80, w: 300, h: 200, tk: 2.5, tx: -0.25, ty: 0.1 });
+    const c = mesa.last('camMestre')!;
+    assert.deepEqual([c.cx, c.cy, c.w, c.h, c.tk, c.tx, c.ty], [100, 80, 300, 200, 2.5, -0.25, 0.1]);
+    // a mesa que caiu e voltou
+    const volta = new Peer(hotel);
+    volta.send({ t: 'login', name: 'Mesa2', look, mesa: true });
+    volta.send({ t: 'join', roomId: bar().data.id });
+    const v = volta.last('camMestre')!;
+    assert.equal(v.tk, 2.5);
+    assert.equal(v.tx, -0.25);
+  });
+
+  test('zoom fora de 1 a 5 não passa (fica só o enquadramento), e o de 1 volta ao normal', () => {
+    gm.send({ t: 'camMestre', cx: 10, cy: 10, w: 100, h: 100, tk: 9, tx: 1, ty: 1 });
+    assert.equal(mesa.last('camMestre')!.tk, undefined);
+    gm.send({ t: 'camMestre', cx: 10, cy: 10, w: 100, h: 100, tk: 1, tx: 0, ty: 0 });
+    assert.equal(mesa.last('camMestre')!.tk, 1);
+  });
+});

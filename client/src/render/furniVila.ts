@@ -33,6 +33,15 @@ export const VILA_BUILDERS: Record<string, Builder> = {
     return V([B([0.3, 0.7, 0.3, 0.7, 0, 0.02], def.colors[0])]);
   },
 
+  /** a fornalha de tijolo: o fogo forte na boca em arco, na frente (a luz laranja cai no chão) */
+  fornalha(def, state) {
+    const h = alto(def.height);
+    return V(
+      [B([0.1, def.depth - 0.1, 0.1, def.width - 0.1, 0, h], def.colors[0])],
+      lightIf(state === 0, { u: def.depth * 0.78, v: def.width / 2, z: 0.45, radius: 300, color: '#ff8a2a', intensity: 1.15, flicker: 0.25, kind: 'fire' }),
+    );
+  },
+
   /** a lareira encostada na parede: o fogo na boca dela */
   lareira(def, state) {
     const h = alto(def.height);

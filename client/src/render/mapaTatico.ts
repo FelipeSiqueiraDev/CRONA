@@ -416,7 +416,7 @@ export function desenharMesa(ctx: CanvasRenderingContext2D, map: RoomMap, piso: 
     }
     blocos.push({ prof: prof(it.x + fp.sx / 2, it.y + fp.sy / 2), z: it.z ?? 0, desenhar: () => desenharMovel(ctx, v, it, def) });
     // a escada que encosta na porta da sala: continua pela casa da porta até o vão (de cima, ela não acaba antes)
-    if (/stairs_up|escada_desce/.test(`${def.id} ${def.kind}`)) {
+    if (/stairs_up|escada_desce|escada_simples/.test(`${def.id} ${def.kind}`)) {
       const d = fp.sy > fp.sx ? fp.sy : fp.sx;
       const atras = it.rot === 4 ? [it.x, it.y - 1] : it.rot === 0 ? [it.x, it.y + d] : it.rot === 2 ? [it.x - 1, it.y] : [it.x + d, it.y];
       if (atras[0] === map.door.x && atras[1] === map.door.y)

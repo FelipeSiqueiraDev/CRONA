@@ -216,8 +216,11 @@ export class ResolucaoRitual {
   }
 
   /** A tela de cards escolhe o modo (um alvo, a área ou ninguém) no passo "Contra quem?". */
-  definirModo(m: 'alvo' | 'area' | 'nenhum') {
-    this.e.modo = m;
+  definirModo(m: 'alvo' | 'area' | 'nenhum', chave?: string) {
+    // o passo "Contra quem?" vem antes de o ritual montar a tela: sem a chave do turno, o `sincronizar` zerava o modo
+    // escolhido (a área virava "um alvo") na primeira montagem (10/11, a conferência na tela)
+    if (chave !== undefined && chave !== this.e.chave) this.e = { ...novo(chave), modo: m };
+    else this.e.modo = m;
   }
 
   /** O modo de alvo de agora (a tela de cards troca a lista de alvos por caixas de marcar quando é a área). */
@@ -713,6 +716,15 @@ export class ResolucaoRitual {
       ic('ok'),
       h('span', null, 'Confirmar ação'),
     );
-    return h('section', { class: 'cb-dano cb-rit-pe' }, h('div', { class: 'cb-dano-cab' }, h('h4', null, h('span', null, '4.'), ' CUSTO DO PARANORMAL')), h('div', { class: 'cb-dano-corpo' }, ...partes), h('div', { class: 'cb-dano-botoes' }, desfazer, confirmar));
+    // o motivo do botão desligado à vista (antes só aparecia ao passar o mouse; 10/11, a conferência na tela)
+    const motivo = r.bloqueio ?? (k.semAcao ? 'A ação deste ritual já foi usada no turno' : '');
+    return h(
+      'section',
+      { class: 'cb-dano cb-rit-pe' },
+      h('div', { class: 'cb-dano-cab' }, h('h4', null, h('span', null, '4.'), ' CUSTO DO PARANORMAL')),
+      h('div', { class: 'cb-dano-corpo' }, ...partes),
+      motivo ? h('p', { class: 'cb-motivo-bloqueio', role: 'status' }, motivo) : null,
+      h('div', { class: 'cb-dano-botoes' }, desfazer, confirmar),
+    );
   }
 }

@@ -1881,8 +1881,9 @@ html.modo-ficha .fj:not(.rq) .fx-inp:focus {
   position: absolute;
   top: var(--s1);
   right: var(--s1);
-  width: calc(var(--u) * 10);
-  height: calc(var(--u) * 10);
+  /* o dedo precisa de 44 px, mesmo em celular estreito (10/11) */
+  width: max(44px, calc(var(--u) * 10));
+  height: max(44px, calc(var(--u) * 10));
   display: grid;
   place-items: center;
   padding: 0;
@@ -3124,9 +3125,13 @@ html.modo-ficha .fj:not(.rq) .fj-chips {
   opacity: 0.45;
 }
 .jg-per-n {
+  /* o nome comprido ("Profissão (Historiador)") quebra em até duas linhas em vez de virar "Profissão (Histor…" (10/11) */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
 }
 .jg-per-g.treinado {
   color: var(--c-ouro);
@@ -3223,4 +3228,115 @@ html.modo-ficha .fj:not(.rq) .fj-chips {
   background: rgba(5, 11, 20, 0.92);
   font: 400 var(--t-corpo) / 1.4 var(--f-corpo);
   color: var(--c-ouro-hi);
+}
+
+/* ---------------------------------------------------------------- alvos de toque (10/11)
+   A unidade encolhe com a largura da tela (--u = largura / 94): em celular estreito (340 px) os botões ficavam com
+   38-40 px. O dedo precisa de 44 px. */
+.jg-topo-bt {
+  width: max(44px, calc(var(--u) * 11));
+  height: max(44px, calc(var(--u) * 11));
+}
+.jg-vital-bts button {
+  height: max(44px, calc(var(--u) * 10.5));
+}
+.jg-filtro {
+  min-height: max(44px, calc(var(--u) * 10.5));
+}
+.jg-tit-bt,
+.jg .fx-bt,
+.fc .fx-bt,
+html.modo-ficha .fj:not(.rq) .fx-bt {
+  min-height: max(44px, calc(var(--u) * 11));
+}
+
+/* ---------------------------------------------------------------- a requisição de equipamento no celular (10/11)
+   A janela de pedir itens (requisicao.css) é desenhada em rem, e no celular a raiz vale ~4 px (largura / 94): o nome
+   do item saía com 8 px, a categoria com 5,6 px e o X com 16 px. Aqui o mínimo legível e o dedo de 44 px. */
+html.modo-ficha .fj.rq .fx-tit h3 {
+  font-size: 13px;
+}
+html.modo-ficha .fj.rq .fj-x,
+html.modo-ficha .fj.rq .rq-det-voltar,
+html.modo-ficha .fj.rq .rq-det-fechar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+}
+html.modo-ficha .fj.rq .fj-x .ic,
+html.modo-ficha .fj.rq .rq-det-voltar .ic,
+html.modo-ficha .fj.rq .rq-det-fechar .ic {
+  width: 20px;
+  height: 20px;
+}
+html.modo-ficha .fj.rq .rq-quem b {
+  font-size: 15px;
+}
+html.modo-ficha .fj.rq .rq-quem span,
+html.modo-ficha .fj.rq .rq-vaga,
+html.modo-ficha .fj.rq .rq-vaga b,
+html.modo-ficha .fj.rq .rq-carga-n,
+html.modo-ficha .fj.rq .rq-pedidos,
+html.modo-ficha .fj.rq .rq-tem {
+  font-size: 11px;
+}
+html.modo-ficha .fj.rq .rq-secao {
+  min-height: 44px;
+  font-size: 13px;
+  grid-template-columns: 22px auto auto;
+}
+html.modo-ficha .fj.rq .rq-secao .arte-ic,
+html.modo-ficha .fj.rq .rq-secao .arte-ic img,
+html.modo-ficha .fj.rq .rq-secao > .ic {
+  width: 22px;
+  height: 22px;
+}
+html.modo-ficha .fj.rq .rq-secao small {
+  font-size: 10px;
+}
+html.modo-ficha .fj.rq .rq-chip,
+html.modo-ficha .fj.rq .rq-ordem {
+  min-height: 44px;
+  font-size: 12px;
+}
+html.modo-ficha .fj.rq .rq-busca {
+  min-height: 48px;
+}
+html.modo-ficha .fj.rq .rq-busca-campo {
+  font-size: 16px;
+}
+html.modo-ficha .fj.rq .rq-nome {
+  font-size: 12px;
+  line-height: 1.15;
+}
+html.modo-ficha .fj.rq .rq-num,
+html.modo-ficha .fj.rq .rq-tags,
+html.modo-ficha .fj.rq .rq-tags i {
+  font-size: 10px;
+}
+html.modo-ficha .fj.rq .rq-cat {
+  font-size: 10px;
+  min-width: 16px;
+  min-height: 16px;
+}
+html.modo-ficha .fj.rq .rq-motivo {
+  font-size: 10px;
+}
+html.modo-ficha .fj.rq .fj-rodape .fx-bt,
+html.modo-ficha .fj.rq .fj-rodape button {
+  min-height: 44px;
+  font-size: 13px;
+}
+html.modo-ficha .fj.rq .rq-det-nome {
+  font-size: 17px;
+}
+html.modo-ficha .fj.rq :is(.rq-det-tipo, .rq-det-resumo, .rq-det-esp, .rq-checks li, .rq-det-tem, .rq-travado, .rq-det-vazio p, .rq-det-num dt, .rq-det-num dd) {
+  font-size: 12px;
+}
+html.modo-ficha .fj.rq .rq-det-acoes .fx-bt {
+  min-height: 44px;
+  font-size: 13px;
+}
+html.modo-ficha .fj.rq .rq-chip-cat {
+  min-width: 44px;
 }

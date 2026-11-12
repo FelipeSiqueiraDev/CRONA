@@ -15,6 +15,38 @@ O que está pela metade, o que falta e o que o Códex ainda vai entregar. Leia j
   - O aviso "QUEBRADO: não funciona até o conserto" estava no fim da janela do item; subiu para o alto, com o botão Consertar (`fichas.ts`).
 - **Ainda aberto:** na janela de 1024 × 768 o passo Rolagem fica apertado (o campo do d20 aparece cortado até rolar o painel do meio); numa tela maior cabe. A Presença Perturbadora segue como lembrete (o mestre rola a Vontade).
 
+## O Frigorífico Albuquerque (11/11; nada no 8080 ainda)
+
+- **O pedido:** "o Frigorífico fica na campanha da Mansão Albuquerque; é lá que o Alosi e a Catarina vão lutar". Refeito como cenas isométricas normais (nada de mapa com imagem de fundo). Funciona em **1918**: nada de PC, inox moderno nem plástico.
+- **Feito** (`server/src/seedFrigorifico.ts`, migração única `db.frigorificoRev` = 2, sem subir `MANSAO_REV`; testes em `server/test/frigorifico.test.ts`; prints em `docs/prints-frigorifico/`):
+  - Sete cenas: Rua da Frente (aberta), **Salão de Abate** (24 × 20, Térreo), **Área Gelada** (12 × 9, Subsolo), Escritório, Casa da Caldeira, Currais, Doca de Carga. O minimapa vê um prédio com Térreo e Subsolo. O Jardim da Mansão tem uma Entrada para a Rua.
+  - **Móveis novos** (pixel art por código, `scripts/3d/estilo/pecas_px/frigorifico.py`; defs em `shared/src/furni.ts`; só chaves novas no `moveis.json`): `porco_pendurado`, `porco_morto` (Currais, nas baias, sem cama), `mesa_corte` e `carrinho_de_carne` (madeira), `bloco_de_corte`, `tanque_de_escalda`, `pilha_carvao` (monte de pedaços angulares, 3 × 3), `fornalha` (2 × 2, tijolo vermelho-escuro com cintas de ferro, boca em arco com fogo e luz laranja, chaminé afunilada; a luz está em `furniVila.ts`), `fole` (couro e madeira, bico de ferro) e `serra_de_fita` (fora das cenas: elétrica demais para 1918).
+  - **Escada camuflada:** `escada_simples` (Salão) e `escada_simples_fria` (Gelada), arte em pixel (vão no piso e degraus mais escuros a cada degrau, sem corrimão), na quina de trás (0,0) das duas cenas, nada em volta. A passagem liga as duas cenas (o servidor reconhece as duas ids em `roomInstance.ts`).
+  - **Área Gelada:** estilo novo `camara_fria` (ladrilho do jogo repintado em azul-petróleo escuro por `scripts/3d/estilo/camara_fria_tex.py`, textura em `arte/texturas/px/camara_fria/`), escura (0,5), ambiente `#1c4c9c`, só varais (18 porcos espalhados, com corredores) e lâmpadas fluorescentes frias.
+  - **Época (1918):** Escritório com mesa e cadeira de madeira, estante, arquivo, livro-caixa e candelabro; Caldeira só com a fornalha, o fole e o monte de carvão; Salão com luz de filamento.
+  - O teste da Mansão agora aceita a Entrada do Jardim para a Rua do Frigorífico.
+- **Item "Fole de forja":** ícone provisório por código em `client/public/arte/itens/pintados/fole-de-forja.png`; o prompt da ilustração está na seção 6 do `PEDIDO-UNICO-CODEX.txt`. O item **não** entrou no catálogo de equipamentos (`shared/src/regras/dados/equipamentos.ts`): lá tudo vem de página do livro (`Fonte` = LR ou SaH). Decisão do Felipe: item da casa, e como marcar a fonte.
+- **Falta:** rack de facas, esteira de abate, meia carcaça pendurada à parte; as lâmpadas fluorescentes da Gelada são anacrônicas, mas dão a luz fria pedida; conferir jogando uma peça do Jardim à Gelada (os testes cobrem as passagens, mas não cliquei na escada na prévia).
+
+## Combate conferido de ponta a ponta (10/11; só a prévia `crona_visual`, nada no 8080, sem commit)
+
+- **Como foi:** uma luta inteira na prévia, os 4 Marcados contra a Ovelha (Açougueira) no Bar, depois a Magistrada entrando, tudo pela tela (cliques e os campos dos dados) em 1024 × 768: abrir, iniciativa, Presença Perturbadora (Passou, Falhou, metade da SAN), Dança das Lâminas (+9, +4, −1; Defesa 18 → 16; o 3º golpe errou), fuzil (munição 4/4 → 3/4, RD balístico 5, camuflagem do escuro), Derrubar (teste oposto), ritual de **área** (Eletrocussão em D.Tepes e na Ovelha, Fortitude parcial, o Custo do Paranormal), Primeiros socorros (Alosi 0 → 1 PV), a Magistrada a 599/1200 ("Machucado"), Encerrar. Prints em `docs/prints-combate-conferencia/`.
+- **Consertado:**
+  - **O PV acima de 999 no combate:** o "Vitais" (cura, socorro, ajuste) cortava em 999; a Magistrada voltava a 999/1200. Agora vale o `limiteDoVital` (9999) e o máximo da peça (`shared/src/combate/turnos.ts`, teste novo em `server/test/combate.test.ts`).
+  - **A área do ritual se perdia:** escolher "Uma área (vários)" em "Contra quem?" voltava a "Um alvo" na primeira montagem do ritual (o estado era reiniciado pela chave do turno); `definirModo` agora recebe a chave (`combateRitual.ts`, `combate.ts`).
+  - **Layout em 1024 × 768 (o app vira 16:9 e o painel do meio tem 46,7 rem com a gaveta aberta)**, tudo em `combateLayout.css`:
+    - Rolagem do ataque: "Em quem" e "Rolou na mesa" lado a lado, sem rolar (o d20 não fica mais cortado);
+    - lista de manobras e de rituais em colunas (3 colunas nos rituais, com o "Conjura dentro de" e as formas na mesma linha);
+    - Rolagem da manobra: os dois cartões baixos, lado a lado, com o texto de cima na linha toda (antes se cobriam);
+    - "Contra quem?" e "Quem está na área?": os cartões rolam por dentro e o Continuar fica sempre à vista.
+  - **O motivo do botão Confirmar desligado** (ritual sem componente, ação já usada) passou a aparecer escrito, não só ao passar o mouse.
+- **Conferido sem achar defeito:** golpe e dano com crítico (dados ×3, bônus fixo), RD e vulnerabilidade da Ovelha, o contra-ataque do Tepes depois do erro, a Defesa 16 da Dança, o cartão da corrente não foi aberto (o Tepes não tinha a corrente na mão).
+- **A Magistrada (LR p. 252):** o livro diz "Imunidades: Condições, dano": ela não sofre dano nenhum (o combate mostra "imune a todo dano: 0"). O PV 1200/600 só muda pelo ajuste do mestre ("Vitais"), por exemplo no Enigma do Medo.
+- **Ainda aberto:**
+  - a paginação das armas e das ações às vezes deixa uma página com um cartão só (Manobra sozinha na página 2, com 6 por página);
+  - o componente ritualístico do Alosi: na cópia de teste ele está sem eles (o Felipe disse que ele precisa repor) e o ritual fica bloqueado, como o livro manda (LR p. 119);
+  - não conferido: o Recarregar/Quebrar em luta longa, o dano massivo e a hemorragia, a morte de uma criatura e o fim com o resumo de quem saiu, o ritual de Medo e o ritual sustentado, a janela da granada.
+
 ## Segunda 09/11: auditoria reconferida, NPC fora dos agentes e celular que dormiu (no ar)
 
 - **Auditoria de 27/10 reconferida** (seção "Reconferida em 09/11" no fim de [`AUDITORIA-FUNCIONAMENTO.md`](AUDITORIA-FUNCIONAMENTO.md)): dos 35 defeitos, 32 resolvidos ou nunca foram defeito, 2 em parte, 1 aberto de propósito.
@@ -529,7 +561,7 @@ Ressalvas aceitas do revisor: Catarina armado com a lâmina espelhada entre ne e
 - **Arte dos monstros no tabuleiro** (8 direções, altura da Catarina): no jogo, o Diabo, a Magistrada, o Anfitrião e as 5 faces, o Deus da Morte em
   **lodo preto**, só o crânio claro, sem braçadeiras (v2), e os Existidos **dourados** no estilo dos outros bonecos (v5: marcas, olhos e boca brilhando
   em dourado, cabelo desgrenhado). Os de antes ficam em `arte\PERSONAGENS-ANIMACAO\trabalho\_backup-existidos-dourados`. O Deus da Morte no livro é
-  Médio (LR p. 230); o Felipe acha que ele é bem maior: decidir se ganha o tamanho Grande ou só a escala do desenho.
+  Médio (LR p. 230); decidido em 11/11: ele é Grande no tabuleiro (2 × 2 casas, 3 m), por decisão do Felipe, diferente do livro (`ameacasLivro.ts`).
 - **O Alosi no estilo dos monstros** foi desenhado só para comparar (`docs/alosi-antigo-e-novo.png`); não entrou no jogo. O Felipe decide se os
   Marcados e os NPCs vão para esse estilo ou se os monstros voltam ao dos NPCs.
 
@@ -1982,3 +2014,16 @@ Os zips que entraram ficam em `_entregas-originais/`, na pasta da arte.
 - Galo, Touro, Porco e Ovelha entraram no bestiário (`server/src/acougueiros.ts`, ids `*-acougueiro`) com foto e rosto em `arte/personagens/<bicho>-acougueiro/`. As referências estão em `campanha/referencias/acougueiros/`.
 - **As fichas de combate ficam para o Felipe/mestre definir:** os Açougueiros vieram só como ilustração, sem números do livro. Entram em branco (elemento Sangue, PV 20 provisório); editar no painel da ameaça.
 - Poses: só em pé e morto (regra dos monstros).
+
+## Celular e auditoria (10/11)
+
+- **Ficha do jogador, 375 e 340 px** (`?ficha=`, prévia): as 7 abas (Agente, Perícias, Mochila, Ataques, Poderes, Rituais, Docs) sem nada saindo da tela nem rolagem para o lado. Consertado:
+  - os botões de **PV/PE/SAN, Menu, Sair, filtros e botões de ouro** ficavam com 38-40 px em tela estreita (a unidade `--u` encolhe com a largura): agora no mínimo 44 px (`jogador.css`, bloco "alvos de toque");
+  - a **estrela de favorito dos rituais** passou de 40 para 44 px; o nome comprido de perícia ("Profissão (Historiador)") quebra em duas linhas em vez de cortar;
+  - os botões de +/− de PV, PE e SAN ficam com 38 × 44 em 340 px (a largura do cartão não deixa mais; a altura é a do dedo).
+- **Pedir itens à Ordem no celular** (`requisicao.css` é em rem, e no celular a raiz vale ~4 px): o nome do item saía com 8 px, a categoria com 5,6 px, o X com 16 px e os filtros com 25-31 px de altura. Em `jogador.css` (`html.modo-ficha .fj.rq`) agora: nomes 12 px, rótulos 10-11 px, X de 44 px, seções e filtros de 44 px, busca de 16 px (o iOS não dá zoom) e o texto da busca mais curto ("Buscar item ou efeito…"). A janela e o detalhe do item conferidos.
+- **Painel OBJETO do mestre:** em 375 px de largura a tela do mestre inteira não é pensada para o celular (as colunas ficam espremidas); o painel foi conferido na largura de uma tela de verdade (1280 px), com 8 tipos de item dentro de uma mesa (arma, documento, chave, carta, consumível, fita, caixa, item): cada um com a arte do tipo, os botões Entregar e Mostrar cabem na largura do cartão. **Não conferido:** o desenho do item largado no chão (a pilha), só o da lista.
+- **Auditoria nº 22 (zoom da vista tática na mesa):** `camMestre` agora leva também `tk` (zoom de 1 a 5) e `tx`/`ty` (o deslocamento, como fração do quadro, porque o quadro da mesa tem outro tamanho). A mesa aplica o zoom ao seguir o mestre, e a que reconecta recebe o último enquadramento. Server em `roomInstance.ts` (confere e limita), protocolo, `RoomView.vistaDoMestre`/`seguirMestre`. Testes em `server/test/mesa.test.ts`.
+- **Auditoria nº 32 (Identificação da FICHAS do mestre):** a Identificação já só se refaz quando o que ela mostra muda (01/11). Faltava o caso em que a lista chega com o campo em foco: `setFichas` agora refaz guardando o campo (o texto digitado, o foco e o cursor voltam). Não reproduzi o caso de ponta a ponta na prévia, só passa por typecheck.
+- **Reconexão e tela preta:** `ws.close(4002)` no console: o celular reconecta sozinho em ~5 s e a ficha volta (PV e nome); abrir `?ficha=` do zero 5 vezes (4 jogadores, 1 repetido) sempre monta. Falta um celular de verdade que durma.
+- **Ficou aberto:** o desenho do item largado no chão em outros tipos; a ficha do Cora/Tepes em 340 px (só a do Alosi foi varrida a fundo, as outras foram só montadas); o botão +/− de 38 px de largura.

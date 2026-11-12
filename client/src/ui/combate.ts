@@ -3255,7 +3255,7 @@ export class CombateScreen {
                 'aria-pressed': String(modo === id),
                 onclick: () => {
                   sfx.click();
-                  this.ritualRes.definirModo(id);
+                  this.ritualRes.definirModo(id, `${c.rodada}|${c.vez}|${ator.id}`);
                   if (id === 'nenhum') return seguir();
                   this.sigs.delete('res');
                   this.renderRes();

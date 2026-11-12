@@ -296,7 +296,33 @@ export class FichasScreen {
       return;
     }
     if (!nova && !this.rascunho && this.soNumerosDeJogo(antes, this.lista)) return this.renderJogo();
+    this.renderGuardandoOCampo();
+  }
+
+  /**
+   * Refaz a tela sem perder o que o mestre está digitando (auditoria nº 32, 10/11): quando a lista chega do servidor
+   * com o campo da ficha em foco (o nome, uma anotação), o campo novo volta com o mesmo texto, o foco e o cursor.
+   */
+  private renderGuardandoOCampo() {
+    const campos = () => [...this.el.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select')];
+    const foco = document.activeElement as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+    const i = foco && this.el.contains(foco) ? campos().indexOf(foco) : -1;
+    const guardado = i >= 0 && foco ? { i, valor: foco.value, ini: 'selectionStart' in foco ? foco.selectionStart : null, fim: 'selectionEnd' in foco ? foco.selectionEnd : null } : null;
     this.render();
+    if (!guardado) return;
+    const novo = campos()[guardado.i];
+    if (!novo || novo.type === 'checkbox' || novo.type === 'radio') return;
+    // só devolve o que estava sendo digitado: o campo que não é o mesmo (a ficha trocou) fica como veio
+    if (novo.value !== guardado.valor && novo.value.trim() !== '' && guardado.valor.trim() === '') return;
+    novo.value = guardado.valor;
+    novo.focus({ preventScroll: true });
+    if (guardado.ini !== null && 'setSelectionRange' in novo) {
+      try {
+        novo.setSelectionRange(guardado.ini, guardado.fim ?? guardado.ini);
+      } catch {
+        /* o tipo do campo não aceita cursor */
+      }
+    }
   }
 
   /** o que a Identificação mostra da campanha (o nome e o lugar de cada agente), para não refazer à toa */

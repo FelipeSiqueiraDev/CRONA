@@ -123,6 +123,7 @@ const COR_PISO: Partial<Record<FloorStyle, string>> = {
   galpao: '#2c2e30',
   xadrez: '#2c3c52',
   azulejo: '#1d3d58',
+  camara_fria: '#12304a',
   carpete: '#3b2456',
   musgo: '#253a2c',
   metal: '#2c3540',
@@ -245,6 +246,19 @@ export class Minimapa {
   /** Algum agente já pisou na cena (as outras ficam apagadas). */
   private visitada(id: number) {
     return !!this.host.campanha()?.visitadas?.includes(id);
+  }
+
+  /** A roda com Ctrl: `dir` -1 sobe um andar (para cima na lista), 1 desce; no último, fica onde está. */
+  private andarPelaRoda(dir: -1 | 1) {
+    const v = this.vista;
+    if (v?.tipo !== 'predio') return;
+    const p = this.predio(v.predio);
+    if (!p || p.andares.length < 2) return;
+    const i = p.andares.findIndex((a) => a.nome === v.andar);
+    const j = Math.max(0, Math.min(p.andares.length - 1, i + dir));
+    if (i < 0 || j === i) return;
+    sfx.click();
+    this.mostrar({ tipo: 'predio', predio: p.id, andar: p.andares[j].nome }, false);
   }
 
   /** Muda o nível mostrado; volta a acompanhar se for o da cena aberta. */
@@ -478,6 +492,12 @@ export class Minimapa {
       'wheel',
       (e) => {
         if (this.anim) return;
+        // Ctrl + roda: sobe e desce as camadas do lugar (os andares do prédio), inclusive com uma peça sendo arrastada, para
+        // levá-la a outro andar (10/11, o Felipe: "pegar a personagem na Base e trazer para o Bar arrastando")
+        if ((e.ctrlKey || e.metaKey) && this.vista?.tipo === 'predio') {
+          e.preventDefault();
+          return this.andarPelaRoda(e.deltaY < 0 ? -1 : 1);
+        }
         if (HOLO_LIGADO) {
           e.preventDefault();
           return this.zoomHolo(at(e), e.deltaY < 0 ? 1.18 : 1 / 1.18);
@@ -1223,7 +1243,16 @@ export class Minimapa {
     const aqui = predios.find((p) => ondeCur?.predio === p.id)?.marco;
     const peca = cur === s.id ? s.users[0] : undefined;
     const foco: [number, number, number] | null = aqui ? [aqui.x + aqui.w / 2, aqui.y + aqui.h / 2, 0] : peca ? [peca.x, peca.y, 0] : null;
-    const iso = this.camera(`t${s.id}`, fit, W, H, foco, this.opc.grande ? 1.3 : 1.5, this.opc.grande ? 26 : 16);
+    // com o grupo num prédio, o zoom é o que enquadra o prédio inteiro (e não um fator fixo que o corta)
+    let zoomT = this.opc.grande ? 1.3 : 1.5;
+    if (aqui) {
+      const pa = predios.find((p) => ondeCur?.predio === p.id)!;
+      const pts: [number, number][] = [];
+      for (const [x, y, z] of [[aqui.x, aqui.y, 0], [aqui.x + aqui.w, aqui.y, 0], [aqui.x + aqui.w, aqui.y + aqui.h, 0], [aqui.x, aqui.y + aqui.h, 0], [aqui.x, aqui.y, altura(pa)], [aqui.x + aqui.w, aqui.y + aqui.h, altura(pa)]]) pts.push(Holo.proj(um, x, y, z));
+      const caixa = Holo.encaixarIso(pts, W, H, (this.opc.grande ? 30 : 12) * 1.6);
+      zoomT = Math.max(1, caixa.S / fit.S);
+    }
+    const iso = this.camera(`t${s.id}`, fit, W, H, foco, zoomT, this.opc.grande ? 40 : 28);
     this.isoTerreno = { cena: s.id, iso };
     const visitado = this.visitada(s.id);
     Holo.chao(ctx, iso, 0, 0, raw.width, raw.height, 0, 4, visitado ? 1 : 0.5);
@@ -1252,7 +1281,8 @@ export class Minimapa {
     const rotulos: { txt: string; x: number; y: number; tom: Holo.Tom }[] = [];
     let iPeca = 0;
     pecas.sort((a, b) => a.prof - b.prof);
-    const pecaR = this.opc.grande ? 4.2 : 2.6;
+    // a peça acompanha o zoom (uma casa de gente nunca vira um ponto perdido; 10/11, o Felipe: em tudo, não só no Bar)
+    const pecaR = Math.max(this.opc.grande ? 4.2 : 2.6, Math.min(this.opc.grande ? 14 : 10, iso.S * 0.7));
     const desenharPecasAte = (prof: number) => {
       for (; iPeca < pecas.length && pecas[iPeca].prof <= prof; iPeca++) {
         const q = pecas[iPeca];
@@ -1457,7 +1487,16 @@ export class Minimapa {
       for (const [x, y] of doGrupo.casas) (fx += x + 0.5), (fy += y + 0.5);
       foco = [fx / doGrupo.casas.length, fy / doGrupo.casas.length, 0];
     }
-    const iso = this.camera(`p${p.id}/${a.nome}`, fit, W, H, foco, this.opc.grande ? 1.5 : 2, this.opc.grande ? 30 : 18);
+    // o zoom no cômodo do grupo é o que enquadra ELE inteiro no painel (antes era 2× fixo, e o Bar, que é grande, passava
+    // das bordas enquanto a peça, que é uma casa, sumia; 10/11, o Felipe)
+    let zoomAuto = this.opc.grande ? 1.5 : 2;
+    if (doGrupo?.casas.length) {
+      const mp: [number, number][] = [];
+      for (const [x, y] of doGrupo.casas) mp.push(Holo.proj(um, x, y), Holo.proj(um, x + 1, y + 1), Holo.proj(um, x + 1, y), Holo.proj(um, x, y + 1, PAREDE));
+      const sala = Holo.encaixarIso(mp, W, H - topo, pad * 1.6);
+      zoomAuto = Math.max(1, sala.S / fit.S);
+    }
+    const iso = this.camera(`p${p.id}/${a.nome}`, fit, W, H, foco, zoomAuto, this.opc.grande ? 40 : 28);
     this.S = iso.S;
     // um chão de grade embaixo do andar inteiro (a bandeja), bem fraco
     let x0 = Infinity;
@@ -1473,7 +1512,8 @@ export class Minimapa {
       }
     Holo.chao(ctx, iso, x0 - 1, y0 - 1, x1 - x0 + 2, y1 - y0 + 2, -0.05, 2, 0.55);
     const rotulos: { txt: string; x: number; y: number; tom: Holo.Tom }[] = [];
-    const pecaR = this.opc.grande ? 4 : 2.6;
+    // a peça ocupa uma casa: o ponto cresce com o zoom (com o cômodo todo à vista ele não some mais)
+    const pecaR = Math.max(this.opc.grande ? 4 : 2.6, Math.min(this.opc.grande ? 14 : 10, iso.S * 0.7));
     const ordem = [...comodos].sort((q, r) => Math.min(...q.casas.map(([x, y]) => x + y)) - Math.min(...r.casas.map(([x, y]) => x + y)));
     for (const c of ordem) {
       const atual = c.s.id === cur;

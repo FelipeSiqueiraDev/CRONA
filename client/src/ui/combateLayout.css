@@ -264,3 +264,160 @@ html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cc-ator-p .cc-perfi
   padding-top: 0.8rem;
   background: linear-gradient(to bottom, transparent, rgba(7, 12, 24, 0.96) 0.8rem);
 }
+
+/* ---------------------------------------------------------------- a Rolagem e o Resultado em duas colunas com a gaveta aberta
+   (10/11, o campo do d20 ficava cortado em 1024 x 768: o painel do meio tem só 46,7 rem de altura com a gaveta aberta;
+   o "Em quem" e o "Rolou na mesa" agora ficam lado a lado, o resto ocupa as duas colunas) */
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .atq-corpo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  align-items: stretch;
+  gap: 0.6rem 0.8rem;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .atq-corpo > :is(.atq-escolhida, .atq-det, .atq-resumo, .atq-reacao, .atq-sit, .atq-vazio) {
+  grid-column: 1 / -1;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .atq-corpo > .atq-bloco {
+  padding: 0.5rem 1rem;
+  gap: 0.4rem;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .atq-corpo {
+  gap: 0.4rem 0.8rem;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .atq-det > summary {
+  padding-block: 0.3rem;
+  min-height: 0;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .atq-escolhida {
+  padding: 0;
+}
+
+/* ---------------------------------------------------------------- a lista de manobras (e de rituais) em duas colunas com a gaveta aberta
+   (10/11: em 1024 x 768 só três das seis manobras apareciam, o resto rolava) */
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-col-arma .cb-col-lista {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-content: start;
+  gap: 0.4rem 0.6rem !important;
+}
+
+/* ---------------------------------------------------------------- a Rolagem da manobra com a gaveta aberta
+   (10/11: dois cartões de 24 rem em duas fileiras, o primeiro cortado e o outro por cima; agora o texto de cima ocupa a
+   linha toda e os dois cartões ficam lado a lado, baixos) */
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-col-rol .cb-col-corpo:has(.cb-man-rol) {
+  align-content: start !important;
+  gap: 0.6rem 1rem !important;
+  padding: 0.6rem 0.8rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-col-corpo > .cb-man-qual {
+  grid-column: 1 / -1;
+  font-size: 1.5rem;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-man-rol {
+  min-height: 0 !important;
+  padding: 0.7rem 1rem !important;
+  gap: 0.6rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-man-rol .cb-instrucao {
+  gap: 0.3rem !important;
+  font-size: 1.35rem !important;
+  line-height: 1.25 !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-man-rol .cb-instrucao b {
+  margin-bottom: 0.2rem;
+  font-size: 1.7rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-man-rol .cb-instrucao :is(.ic, .arte-ic) {
+  width: 2.4rem !important;
+  height: 2.4rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-man-rol .cb-caixa-dado {
+  width: 11rem !important;
+  min-height: 5rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-man-rol :is(.cb-dado, .cb-dado.grande) {
+  font-size: 3.2rem !important;
+}
+
+/* ---------------------------------------------------------------- "Contra quem?" e "Quem está na área?" com a gaveta aberta
+   (10/11: o botão Continuar ficava abaixo da dobra; agora os cartões rolam por dentro e o rodapé fica sempre à vista) */
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cc-passo-alvo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cc-passo-alvo .cc-alvos-grade {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.3rem;
+  gap: 0.6rem 0.8rem;
+  align-content: start;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cc-passo-alvo .cc-passo-rodape {
+  flex: none;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cc-alvos-grade .cc-alvo-card {
+  height: 10.6rem;
+  padding: 0.6rem 1rem 0.6rem 0.8rem;
+  gap: 0.9rem;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cc-alvos-grade .cc-alvo-foto {
+  width: 7.6rem !important;
+  height: 7.6rem !important;
+}
+
+/* ---------------------------------------------------------------- o passo do ritual com a gaveta aberta
+   (10/11: a lista dos rituais ficava com 1,5 linha, espremida pelo "Conjura dentro de", pelo aviso e pelas formas; agora o
+   seletor e as formas dividem uma linha, a lista passa para três colunas de linhas baixas e rola por dentro) */
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-rit .cb-man-extra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.2rem 0.8rem;
+  align-items: center;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-rit .cb-man-extra > .cb-man-arma {
+  grid-column: 1;
+  grid-row: 1;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-rit .cb-man-extra > .cb-rit-formas {
+  grid-column: 2;
+  grid-row: 1;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-rit .cb-man-extra > .cb-sit {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-rit .cb-col-arma .cb-col-lista {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0.3rem 0.5rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-rit .cb-col-lista .cb-arma {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0.25rem 0.5rem !important;
+  gap: 0.5rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-rit .cb-col-lista .cb-arma .cb-arma-ic {
+  width: 2.6rem !important;
+  height: 2.6rem !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-col-arma .cb-col-lista {
+  grid-auto-rows: max-content !important;
+}
+html:not(.modo-ficha) .cb-palco.cb-modo-cards.cb-gav-aberta .cb-res .cb-rit .cb-col-lista .cb-arma {
+  padding-block: 0.4rem !important;
+}
+
+/* o motivo de o botão Confirmar estar desligado (ritual sem componente, ação já usada), à vista */
+.cb-modo-cards .cb-motivo-bloqueio {
+  margin: 0;
+  padding: 0.4rem 1rem;
+  border-left: 0.3rem solid #ff9b8a;
+  background: rgba(120, 28, 20, 0.35);
+  color: #ffd2c8;
+  font-size: 1.5rem;
+  line-height: 1.25;
+}

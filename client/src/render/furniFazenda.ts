@@ -1143,6 +1143,47 @@ export const FAZENDA_BUILDERS: Record<string, Builder> = {
     ]);
   },
 
+  /** A escada de descida camuflada (sem corrimão, sem borda escura): só os degraus, na cor do piso, afundando no vão. */
+  escada_simples(def) {
+    const [piso, escuro] = def.colors;
+    const D = def.depth;
+    return V([
+      N([0, D, 0, 1, 0, 0.1], (p) => {
+        const ctx = p.ctx;
+        const borda: P3[] = [
+          [0.0, 0.0, 0.004],
+          [D, 0.0, 0.004],
+          [D, 1.0, 0.004],
+          [0.0, 1.0, 0.004],
+        ];
+        p.poly(borda, escuro, "rgba(0,0,0,0.45)");
+        ctx.save();
+        const s = borda.map(([u, v, z]) => p.m.p(u, v, z));
+        ctx.beginPath();
+        ctx.moveTo(s[0][0], s[0][1]);
+        for (const q of s.slice(1)) ctx.lineTo(q[0], q[1]);
+        ctx.closePath();
+        ctx.clip();
+        for (let k = 0; k < 7; k++) {
+          const u = D - k * 0.27;
+          const z = -0.12 * (k + 1);
+          p.poly(
+            [
+              [u, 0.0, z],
+              [u - 0.27, 0.0, z],
+              [u - 0.27, 1.0, z],
+              [u, 1.0, z],
+            ],
+            shade(piso, -0.18 - k * 0.1 - (k % 2) * 0.12),
+          );
+          p.line([u, 0.0, z], [u, 1.0, z], "rgba(255,255,255,0.3)", 1.5);
+          p.line([u - 0.27, 0.0, z], [u - 0.27, 1.0, z], "rgba(0,0,0,0.35)", 1.5);
+        }
+        ctx.restore();
+      }),
+    ]);
+  },
+
   armario(def) {
     const [madeira, ferragem] = def.colors;
     const W = def.width;

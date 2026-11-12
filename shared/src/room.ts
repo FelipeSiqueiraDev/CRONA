@@ -35,6 +35,7 @@ export const FLOOR_STYLES = [
   { id: 'madeira', name: 'Madeira escura' },
   { id: 'taco', name: 'Madeira clara' },
   { id: 'ladrilho', name: 'Ladrilho branco' },
+  { id: 'camara_fria', name: 'Ladrilho azul-petróleo (câmara fria)' },
   { id: 'xadrez', name: 'Xadrez' },
   { id: 'azulejo', name: 'Azulejo azul' },
   { id: 'carpete', name: 'Carpete roxo' },
